@@ -69,7 +69,7 @@ const About: React.FC = () => {
           justifyContent: 'center',
         }}
         role="region"
-        aria-label="Sobre o Clubinhos NIB"
+        aria-label="Sobre o Clubinho NIB"
       >
         <Typography
           variant="h3"
@@ -96,7 +96,7 @@ const About: React.FC = () => {
             textAlign: { xs: 'justify', sm: 'left' },
           }}
         >
-          O Clubinhos NIB é uma plataforma dedicada ao evangelismo e à edificação espiritual,
+          O Clubinho NIB é uma plataforma dedicada ao evangelismo e à edificação espiritual,
           baseada nos princípios da fé cristã batista.
         </Typography>
 

@@ -114,7 +114,7 @@ const Home: React.FC = () => {
         <Box
           component="img"
           src={banner}
-          alt="Banner Clubinhos NIB"
+          alt="Banner Clubinho NIB"
           sx={{
             width: '100%',
             height: '100%',
@@ -155,7 +155,7 @@ const Home: React.FC = () => {
               fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
             }}
           >
-            Bem-vindo ao Clubinhos NIB
+            Bem-vindo ao Clubinho NIB
           </Typography>
           <Typography
             variant="h5"

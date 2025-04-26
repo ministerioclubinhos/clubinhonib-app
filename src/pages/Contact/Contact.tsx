@@ -282,7 +282,7 @@ const Contact: React.FC = () => {
           justifyContent: 'center',
         }}
         role="region"
-        aria-label="Formulário de Contato do Clubinhos NIB"
+        aria-label="Formulário de Contato do Clubinho NIB"
       >
         <Typography
           variant="h4"
