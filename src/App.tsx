@@ -136,6 +136,7 @@ const App: React.FC = () => {
 
 export default App;
 
+
 /* 
   Sugestão futura: centralizar rotas em um array para facilitar manutenção
   const publicRoutes = [
