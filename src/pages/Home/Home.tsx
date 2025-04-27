@@ -170,7 +170,7 @@ const Home: React.FC = () => {
           </Typography>
         </Box>
       </Box>
-      
+
       {isAuthenticated && weekMaterial && weekMaterial.route && (
         <WeekBanner
           title={weekMaterial.title ?? 'Sem título'}

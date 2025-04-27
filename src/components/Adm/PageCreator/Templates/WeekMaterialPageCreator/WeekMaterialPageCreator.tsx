@@ -22,6 +22,7 @@ import WeekAudios from './WeekAudios';
 import WeekImages from './WeekImages';
 import api from '../../../../../config/axiosConfig';
 import { MediaItem, MediaType, MediaUploadType } from 'store/slices/types';
+import { url } from 'inspector';
 
 interface WeekMaterialPageCreatorProps {
   fromTemplatePage?: boolean;
@@ -63,7 +64,7 @@ export default function WeekMaterialPageCreator({
 }: WeekMaterialPageCreatorProps) {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const studyData = useSelector((state: RootState) => state.weekMaterial.weekMaterialSData);
+  const weekMaterialSData = useSelector((state: RootState) => state.weekMaterial.weekMaterialSData);
 
   const [pageTitle, setPageTitle] = useState('');
   const [pageSubtitle, setPageSubtitle] = useState('');
@@ -102,16 +103,16 @@ export default function WeekMaterialPageCreator({
   }, [fromTemplatePage, dispatch]);
 
   useEffect(() => {
-    if (!fromTemplatePage && studyData) {
-      setPageTitle(studyData.title);
-      setPageSubtitle(studyData.subtitle);
-      setPageDescription(studyData.description);
-      setVideos(studyData.videos);
-      setDocuments(studyData.documents);
-      setImages(studyData.images);
-      setAudios(studyData.audios);
+    if (!fromTemplatePage && weekMaterialSData) {
+      setPageTitle(weekMaterialSData.title);
+      setPageSubtitle(weekMaterialSData.subtitle);
+      setPageDescription(weekMaterialSData.description);
+      setVideos(weekMaterialSData.videos);
+      setDocuments(weekMaterialSData.documents);
+      setImages(weekMaterialSData.images);
+      setAudios(weekMaterialSData.audios);
     }
-  }, [fromTemplatePage, studyData]);
+  }, [fromTemplatePage, weekMaterialSData]);
 
   const handleSavePage = async () => {
     const hasError = !pageTitle || !pageSubtitle || !pageDescription;
@@ -140,6 +141,8 @@ export default function WeekMaterialPageCreator({
       const processedDocs = documents.map((d, i) => buildFileItem(d, i, 'document', formData));
       const processedImgs = images.map((i, n) => buildFileItem(i, n, 'image', formData));
       const processedAudios = audios.map((a, x) => buildFileItem(a, x, 'audio', formData));
+      console.log("processedVideos: ", processedVideos);
+
 
       const mapItem = (item: MediaItem & { fileField?: string }, type: MediaType) => ({
         ...(item.id && { id: item.id }),
@@ -148,21 +151,22 @@ export default function WeekMaterialPageCreator({
         mediaType: type,
         uploadType: item.uploadType,
         isLocalFile: item.uploadType === MediaUploadType.UPLOAD,
+        url: item.url,
         platformType:
           item.uploadType === MediaUploadType.UPLOAD ? null : (item.platformType ?? null),
         ...(item.uploadType === MediaUploadType.LINK && item.url && { url: item.url }),
         ...(item.uploadType === MediaUploadType.UPLOAD &&
           item.fileField && {
-            fieldKey: item.fileField,
-          }),
+          fieldKey: item.fileField,
+        }),
         ...(item.uploadType === MediaUploadType.UPLOAD &&
           item.size && {
-            size: item.size,
-          }),
+          size: item.size,
+        }),
       });
 
       const payload = {
-        ...(fromTemplatePage ? {} : { id: studyData?.id }),
+        ...(fromTemplatePage ? {} : { id: weekMaterialSData?.id }),
         pageTitle,
         pageSubtitle,
         pageDescription,
@@ -176,11 +180,11 @@ export default function WeekMaterialPageCreator({
 
       const res = fromTemplatePage
         ? await api.post('/week-material-pages', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          })
-        : await api.patch(`/week-material-pages/${studyData?.id}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        : await api.patch(`/week-material-pages/${weekMaterialSData?.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
 
       if (!res?.data) throw new Error('Erro ao salvar');
 
