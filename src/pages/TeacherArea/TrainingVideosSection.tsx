@@ -1,21 +1,46 @@
-import React from 'react';
-import { Box, Typography, Paper, Grid, Card, CardContent, CardMedia } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  TextField,
+  Button,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 import { RootState } from '../../store/slices';
 import { RouteData } from 'store/slices/route/routeSlice';
+import { MediaTargetType } from 'store/slices/types';
 
 const TrainingVideosSection: React.FC = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [search, setSearch] = useState('');
+  const [expanded, setExpanded] = useState(false);
 
   const videos: RouteData[] = useSelector((state: RootState) =>
-    state.routes.routes.filter((route) => route.entityType === 'VideosPage')
+    state.routes.routes.filter((route) => route.entityType === MediaTargetType.VideosPage)
   );
 
+  const filteredVideos = videos.filter((video) =>
+    video.title.toLowerCase().includes(search.toLowerCase()) ||
+    video.subtitle?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const visibleCount = isMobile ? 2 : 4;
+  const videosToDisplay = expanded ? filteredVideos : filteredVideos.slice(0, visibleCount);
+
   const handleRedirect = (path: string) => {
-    // Garante que o path seja absoluto
     const absolutePath = `/${path.replace(/^\/+/, '')}`;
     navigate(absolutePath);
   };
@@ -31,65 +56,91 @@ const TrainingVideosSection: React.FC = () => {
         borderRadius: 2,
       }}
     >
-      {/* Título */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <VideoLibraryIcon sx={{ color: '#7e57c2', mr: 1 }} />
         <Typography variant="h6" fontWeight="bold" color="#424242">
-          Vídeos de Capacitação
+          Galeria de Vídeos
         </Typography>
       </Box>
 
-      {/* Grid de Cards */}
-      {videos.length > 0 ? (
-        <Grid container spacing={3}>
-          {videos.map((video) => (
-            <Grid item xs={12} sm={6} md={4} key={video.id}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card
-                  sx={{
-                    height: '100%',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    borderRadius: 2,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
-                    },
-                  }}
-                  onClick={() => handleRedirect(video.path)}
-                >
-                  <CardMedia
-                    component="img"
-                    image={video.image || 'https://via.placeholder.com/300x140?text=Vídeo'}
-                    alt={video.title}
-                    sx={{
-                      height: { xs: 140, md: 160 },
-                      objectFit: 'cover',
-                    }}
-                  />
+      <TextField
+        size="small"
+        placeholder="Buscar vídeos..."
+        variant="outlined"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        fullWidth
+        sx={{
+          mb: 3,
+          backgroundColor: '#fff',
+          borderRadius: 1,
+          input: { fontSize: '0.9rem' },
+        }}
+      />
 
-                  <CardContent>
-                    <Typography variant="subtitle1" fontWeight="bold" color="#424242" gutterBottom>
-                      {video.title}
-                    </Typography>
-                    <Typography variant="body2" color="#616161" noWrap>
-                      {video.subtitle}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Grid>
-          ))}
-        </Grid>
+      {videosToDisplay.length > 0 ? (
+        <>
+          <Grid container spacing={3}>
+            {videosToDisplay.map((video) => (
+              <Grid item xs={12} sm={6} md={3} key={video.id}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card
+                    sx={{
+                      height: '100%',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
+                      },
+                    }}
+                    onClick={() => handleRedirect(video.path)}
+                  >
+                    <CardMedia
+                      component="img"
+                      image={video.image || 'https://via.placeholder.com/300x140?text=Vídeo'}
+                      alt={video.title}
+                      sx={{
+                        height: { xs: 140, md: 160 },
+                        objectFit: 'cover',
+                      }}
+                    />
+                    <CardContent>
+                      <Typography variant="subtitle1" fontWeight="bold" color="#424242" gutterBottom>
+                        {video.title}
+                      </Typography>
+                      <Typography variant="body2" color="#616161" noWrap>
+                        {video.subtitle}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+
+          {filteredVideos.length > visibleCount && (
+            <Box textAlign="center" mt={3}>
+              <Button
+                size="small"
+                variant="text"
+                onClick={() => setExpanded((prev) => !prev)}
+              >
+                {expanded ? 'Ver menos' : 'Ver mais'}
+              </Button>
+            </Box>
+          )}
+        </>
       ) : (
         <Typography variant="body2" color="text.secondary" textAlign="center">
-          Nenhum vídeo disponível no momento.
+          Nenhum vídeo encontrado.
         </Typography>
       )}
     </Paper>

@@ -1,14 +1,40 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/slices'; 
 import { Box, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { MediaTargetType } from 'store/slices/types';
 
-interface BannerProps {
-  title: string;
-  subtitle?: string;
-  linkTo: string;
-}
+const WeekMaterialsBanner: React.FC = () => {
+  const routes = useSelector((state: RootState) => state.routes.routes);
+  const currentWeekRoute = routes.find(
+    (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.current === true
+  );
+  
+  if (!currentWeekRoute) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          minHeight: { xs: '60vh', sm: '65vh', md: '50vh' },
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          color: '#fff',
+          background: 'linear-gradient(135deg, #e8ffe8 0%, #00bf3f 100%)',
+          px: 2,
+          py: { xs: 6, md: 8 },
+          boxShadow: 'inset 0 0 100px rgba(0,0,0,0.1)',
+        }}
+      >
+        <Typography variant="h6" sx={{ textAlign: 'center' }}>
+          Nenhum material semanal atual encontrado.
+        </Typography>
+      </Box>
+    );
+  }
 
-const WeekBanner: React.FC<BannerProps> = ({ title, subtitle, linkTo }) => {
   return (
     <Box
       sx={{
@@ -34,7 +60,7 @@ const WeekBanner: React.FC<BannerProps> = ({ title, subtitle, linkTo }) => {
             fontSize: { xs: '1.2rem', md: '1.5rem' },
           }}
         >
-          Olá Clubinho, estamos na semana:
+          Olá Professor do Clubinho, estamos na semana:
         </Typography>
 
         <Typography
@@ -47,10 +73,10 @@ const WeekBanner: React.FC<BannerProps> = ({ title, subtitle, linkTo }) => {
             color: '#ffffff',
           }}
         >
-          {title}
+          {currentWeekRoute.title}
         </Typography>
 
-        {subtitle && (
+        {currentWeekRoute.subtitle && (
           <>
             <Typography
               variant="h6"
@@ -71,7 +97,7 @@ const WeekBanner: React.FC<BannerProps> = ({ title, subtitle, linkTo }) => {
                 textShadow: '2px 2px 6px rgba(0, 0, 0, 0.6)',
               }}
             >
-              {subtitle}
+              {currentWeekRoute.subtitle}
             </Typography>
           </>
         )}
@@ -81,7 +107,7 @@ const WeekBanner: React.FC<BannerProps> = ({ title, subtitle, linkTo }) => {
           color="secondary"
           size="large"
           component={Link}
-          to={linkTo}
+          to={`/${currentWeekRoute.path}`}
           sx={{
             mt: 5,
             fontWeight: 'bold',
@@ -98,4 +124,4 @@ const WeekBanner: React.FC<BannerProps> = ({ title, subtitle, linkTo }) => {
   );
 };
 
-export default WeekBanner;
+export default WeekMaterialsBanner;

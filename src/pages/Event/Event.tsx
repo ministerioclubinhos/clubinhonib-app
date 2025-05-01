@@ -37,6 +37,8 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
 import api from '../../config/axiosConfig';
 import { setEvents } from '../../store/slices/events/eventsSlice';
+import EventDetailsModal from './EventDetailsModal';
+import EventFormModal from './EventFormModal';
 
 dayjs.locale('pt-br');
 
@@ -84,11 +86,6 @@ const Eventos: React.FC = () => {
 
   const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false);
   const [deleteTargetEvent, setDeleteTargetEvent] = useState<any | null>(null);
-
-  const [formTitle, setFormTitle] = useState('');
-  const [formDate, setFormDate] = useState('');
-  const [formLocation, setFormLocation] = useState('');
-  const [formDescription, setFormDescription] = useState('');
 
   const eventosAntigosRef = useRef<HTMLDivElement | null>(null);
 
@@ -155,7 +152,10 @@ const Eventos: React.FC = () => {
           <Box
             sx={{
               height: 180,
-              backgroundColor: '#e0e0e0',
+              backgroundImage: evento.media ? `url(${evento.media.url})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundColor: evento.media ? 'transparent' : '#e0e0e0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -163,9 +163,11 @@ const Eventos: React.FC = () => {
               borderRadius: '8px 8px 0 0',
             }}
           >
-            <Typography variant="h6" color="text.secondary">
-              Imagem do Evento
-            </Typography>
+            {!evento.media && (
+              <Typography variant="h6" color="text.secondary">
+                Imagem do Evento
+              </Typography>
+            )}
           </Box>
           <Typography
             variant="h6"
@@ -234,46 +236,13 @@ const Eventos: React.FC = () => {
   const handleAddNewEvent = () => {
     setDialogAddEditMode('add');
     setCurrentEditEvent(null);
-    setFormTitle('');
-    setFormDate('');
-    setFormLocation('');
-    setFormDescription('');
     setDialogAddEditOpen(true);
   };
 
   const handleEditEvent = (evento: any) => {
     setDialogAddEditMode('edit');
     setCurrentEditEvent(evento);
-    setFormTitle(evento.title);
-    setFormDate(dayjs(evento.date).format('YYYY-MM-DD'));
-    setFormLocation(evento.location);
-    setFormDescription(evento.description);
     setDialogAddEditOpen(true);
-  };
-
-  const handleSubmitAddEdit = async () => {
-    try {
-      if (dialogAddEditMode === 'add') {
-        await api.post('/events', {
-          title: formTitle,
-          date: formDate,
-          location: formLocation,
-          description: formDescription,
-        });
-      } else {
-        if (!currentEditEvent?.id) return;
-        await api.patch(`/events/${currentEditEvent.id}`, {
-          title: formTitle,
-          date: formDate,
-          location: formLocation,
-          description: formDescription,
-        });
-      }
-      setDialogAddEditOpen(false);
-      await reloadEventsAndLeaveEditMode();
-    } catch (error) {
-      console.error('Erro ao criar/editar evento:', error);
-    }
   };
 
   const handleDeleteEvent = (evento: any) => {
@@ -376,7 +345,6 @@ const Eventos: React.FC = () => {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  //  gap: 1,
                   justifyContent: { xs: 'center', md: 'flex-start' },
                   fontFamily: 'Roboto, sans-serif',
                 }}
@@ -456,7 +424,6 @@ const Eventos: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Botões flutuantes no modo mobile para admin */}
           {isMobile && isAdmin && (
             <Box
               sx={{
@@ -507,7 +474,6 @@ const Eventos: React.FC = () => {
             </Box>
           )}
 
-          {/* Bloco Principal */}
           <Box
             sx={{
               mt: { xs: 1, md: 3 },
@@ -613,7 +579,6 @@ const Eventos: React.FC = () => {
             </Grid>
           </Box>
 
-          {/* Próximos Eventos */}
           {leftoverFuturos.length > 0 && (
             <Accordion
               defaultExpanded
@@ -645,7 +610,6 @@ const Eventos: React.FC = () => {
             </Accordion>
           )}
 
-          {/* Eventos Anteriores */}
           {mostrarAntigos && leftoverAnteriores.length > 0 && (
             <Accordion
               ref={eventosAntigosRef}
@@ -679,154 +643,22 @@ const Eventos: React.FC = () => {
         </Box>
       )}
 
-      {/* Dialog de Detalhes */}
       {eventoSelecionado && (
-        <Dialog
-          open
+        <EventDetailsModal
+          open={!!eventoSelecionado}
           onClose={() => setEventoSelecionado(null)}
-          maxWidth="sm"
-          fullWidth
-          sx={{
-            '& .MuiDialog-paper': {
-              borderRadius: 3,
-              boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-            },
-          }}
-        >
-          <DialogTitle
-            sx={{
-              textAlign: 'center',
-              fontWeight: 'bold',
-              color: theme.palette.primary.main,
-              fontFamily: 'Roboto, sans-serif',
-            }}
-          >
-            {eventoSelecionado.title}
-            <IconButton
-              aria-label="close"
-              onClick={() => setEventoSelecionado(null)}
-              sx={{ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
-            <Box mt={2}>
-              <Typography
-                variant="subtitle1"
-                gutterBottom
-                sx={{ fontFamily: 'Roboto, sans-serif' }}
-              >
-                <strong>Data:</strong> {dayjs(eventoSelecionado.date).format('DD [de] MMMM')}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                gutterBottom
-                sx={{ fontFamily: 'Roboto, sans-serif' }}
-              >
-                <strong>Local:</strong> {eventoSelecionado.location}
-              </Typography>
-              <Typography variant="subtitle1" sx={{ fontFamily: 'Roboto, sans-serif' }}>
-                <strong>Descrição:</strong> {eventoSelecionado.description}
-              </Typography>
-            </Box>
-          </DialogContent>
-          <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
-            <Button
-              onClick={() => setEventoSelecionado(null)}
-              color="primary"
-              variant="text"
-              sx={{ fontFamily: 'Roboto, sans-serif' }}
-            >
-              Fechar
-            </Button>
-          </DialogActions>
-        </Dialog>
+          event={eventoSelecionado}
+        />
       )}
 
-      {/* Dialog de ADD/EDIT Evento */}
-      <Dialog
+      <EventFormModal
         open={dialogAddEditOpen}
         onClose={() => setDialogAddEditOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: 3,
-            boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-          },
-        }}
-      >
-        <DialogTitle sx={{ fontFamily: 'Roboto, sans-serif' }}>
-          {dialogAddEditMode === 'add' ? 'Adicionar Evento' : 'Editar Evento'}
-          <IconButton
-            aria-label="close"
-            onClick={() => setDialogAddEditOpen(false)}
-            sx={{ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          <Box display="flex" flexDirection="column" gap={2} mt={1}>
-            <TextField
-              label="Título"
-              value={formTitle}
-              onChange={(e) => setFormTitle(e.target.value)}
-              fullWidth
-              variant="outlined"
-              sx={{ fontFamily: 'Roboto, sans-serif' }}
-            />
-            <TextField
-              label="Data"
-              type="date"
-              value={formDate}
-              onChange={(e) => setFormDate(e.target.value)}
-              fullWidth
-              variant="outlined"
-              InputLabelProps={{ shrink: true }}
-              sx={{ fontFamily: 'Roboto, sans-serif' }}
-            />
-            <TextField
-              label="Local"
-              value={formLocation}
-              onChange={(e) => setFormLocation(e.target.value)}
-              fullWidth
-              variant="outlined"
-              sx={{ fontFamily: 'Roboto, sans-serif' }}
-            />
-            <TextField
-              label="Descrição"
-              value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
-              multiline
-              rows={3}
-              fullWidth
-              variant="outlined"
-              sx={{ fontFamily: 'Roboto, sans-serif' }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setDialogAddEditOpen(false)}
-            color="inherit"
-            sx={{ fontFamily: 'Roboto, sans-serif' }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleSubmitAddEdit}
-            variant="contained"
-            color="primary"
-            sx={{ fontFamily: 'Roboto, sans-serif' }}
-          >
-            {dialogAddEditMode === 'add' ? 'Adicionar' : 'Salvar'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onSuccess={reloadEventsAndLeaveEditMode}
+        mode={dialogAddEditMode}
+        initialData={currentEditEvent}
+      />
 
-      {/* Dialog de Confirmação de DELETE */}
       <Dialog
         open={dialogDeleteOpen}
         onClose={handleCloseDelete}
