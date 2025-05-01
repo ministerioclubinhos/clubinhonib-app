@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/slices';
 import banner from '../../assets/banner.jpg';
 import WeekMaterialsBanner from './WeekMaterialsBanner';
 import CardsSection from './CardsSection';
+import { Link } from 'react-router-dom';
 
 const Home: React.FC = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -90,6 +91,28 @@ const Home: React.FC = () => {
             Ministério de evangelismo que leva a palavra de Deus para as crianças que precisam
             conhecer o amor de Jesus.
           </Typography>
+
+
+          {isAuthenticated &&
+            <Button
+              variant="contained"
+              component={Link}
+              to="/area-do-professor"
+              sx={{
+                mt: { xs: 3, md: 4 },
+                backgroundColor: '#FFD700',
+                color: '#000',
+                fontWeight: 'bold',
+                '&:hover': {
+                  backgroundColor: '#C62828',
+                  color: '#fff',
+                },
+              }}
+            >
+              ÁREA DO PROFESSOR
+            </Button>
+
+          }
         </Box>
       </Box>
 

@@ -22,7 +22,6 @@ interface Props {
   onClose: () => void;
 }
 
-// Type guard to check if page has a valid route and path
 const hasRoutePath = (
   page: IdeasPageData | null
 ): page is IdeasPageData & { route: { path: string } } => {
@@ -65,10 +64,20 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
           </video>
         );
       case 'document':
-        return <Typography variant="body2">[Documento - Clique na URL para acessar]</Typography>;
+        return (
+          <Button
+            variant="outlined"
+            href={media.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Baixar documento ${media.title}`}
+          >
+            Baixar Documento
+          </Button>
+        );
       case 'audio':
         return (
-          <audio controls>
+          <audio controls style={{ width: '100%' }}>
             <source src={media.url} type="audio/mpeg" />
             Seu navegador não suporta áudio.
           </audio>
@@ -84,11 +93,11 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
     if (!items.length) return null;
 
     return (
-      <Paper elevation={1} sx={{ p: 2, borderRadius: 2, mt: 2, bgcolor: '#fcfcfc' }}>
-        <Typography variant="subtitle1" fontWeight="bold" color="primary" mb={2}>
+      <Paper elevation={1} sx={{ p: 3, borderRadius: 2, mt: 3, bgcolor: '#fcfcfc' }}>
+        <Typography variant="h6" fontWeight="bold" color="primary" mb={2}>
           {type[0].toUpperCase() + type.slice(1)}s
         </Typography>
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
           {items.map((media) => (
             <Grid item xs={12} sm={6} md={4} key={media.id}>
               <Box
@@ -98,28 +107,31 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
                   border: '1px solid #ddd',
                   bgcolor: '#fff',
                   height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
                 }}
               >
                 {renderMediaPreview(media)}
-                <Typography mt={1}>
-                  <strong>Título:</strong> {media.title}
+                <Typography variant="body1" fontWeight="medium">
+                  {media.title}
                 </Typography>
-                <Typography variant="body2">
-                  <strong>Descrição:</strong> {media.description}
+                <Typography variant="body2" color="text.secondary">
+                  {media.description}
                 </Typography>
-                <Typography variant="body2">
+                <Typography variant="body2" color="text.secondary">
                   <strong>Upload:</strong> {media.uploadType}
                 </Typography>
-                <Typography variant="body2">
+                <Typography variant="body2" color="text.secondary">
                   <strong>Local:</strong> {media.isLocalFile ? 'Sim' : 'Não'}
                 </Typography>
                 {media.originalName && (
-                  <Typography variant="body2">
+                  <Typography variant="body2" color="text.secondary">
                     <strong>Arquivo:</strong> {media.originalName}
                   </Typography>
                 )}
                 {media.size && (
-                  <Typography variant="body2">
+                  <Typography variant="body2" color="text.secondary">
                     <strong>Tamanho:</strong> {(media.size / 1024).toFixed(1)} KB
                   </Typography>
                 )}
@@ -151,7 +163,7 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" aria-labelledby="dialog-title">
       <IconButton
         onClick={onClose}
-        sx={{ position: 'absolute', top: 8, right: 8 }}
+        sx={{ position: 'absolute', top: 16, right: 16 }}
         aria-label="Fechar modal"
       >
         <Close />
@@ -159,52 +171,41 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
 
       <DialogTitle
         id="dialog-title"
-        sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem' }}
+        sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.75rem', pb: 2 }}
       >
         Detalhes da Página de Ideias
       </DialogTitle>
 
-      <DialogContent>
+      <DialogContent sx={{ px: { xs: 2, md: 4 }, py: 3 }}>
         {page && (
           <Stack spacing={4}>
-            {page.route?.image && (
-              <Box textAlign="center">
-                <img
-                  src={page.route.image}
-                  alt={`Imagem da página ${page.title}`}
-                  style={{ maxHeight: 200, borderRadius: 12, marginBottom: 16 }}
-                  loading="lazy"
-                />
-              </Box>
-            )}
-
-            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
-              <Typography variant="h6" textAlign="center" fontWeight="bold" color="primary" mb={3}>
+            <Paper elevation={2} sx={{ p: 4, borderRadius: 2 }}>
+              <Typography variant="h5" textAlign="center" fontWeight="bold" color="primary" mb={3}>
                 Informações Gerais
               </Typography>
-              <Grid container spacing={2}>
+              <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <Typography>
+                  <Typography variant="body1">
                     <strong>Título:</strong> {page.title}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography>
+                  <Typography variant="body1">
                     <strong>Subtítulo:</strong> {page.subtitle}
                   </Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography sx={{ whiteSpace: 'pre-wrap' }}>
+                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                     <strong>Descrição:</strong> {page.description}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography>
+                  <Typography variant="body1">
                     <strong>Criado em:</strong> {formatDate(page.createdAt)}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography>
+                  <Typography variant="body1">
                     <strong>Atualizado em:</strong> {formatDate(page.updatedAt)}
                   </Typography>
                 </Grid>
@@ -222,9 +223,9 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
 
             {Array.isArray(page.sections) &&
               page.sections.map((section) => (
-                <Paper key={section.id} elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+                <Paper key={section.id} elevation={2} sx={{ p: 4, borderRadius: 2 }}>
                   <Typography
-                    variant="h6"
+                    variant="h5"
                     textAlign="center"
                     fontWeight="bold"
                     color="primary"
@@ -232,14 +233,14 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
                   >
                     {section.title}
                   </Typography>
-                  <Typography mb={1}>
+                  <Typography variant="body1" mb={2}>
                     <strong>Descrição:</strong> {section.description}
                   </Typography>
                   <Chip
                     label={section.public ? 'Seção Pública' : 'Seção Privada'}
                     color={section.public ? 'success' : 'default'}
                     size="small"
-                    sx={{ mb: 2 }}
+                    sx={{ mb: 3 }}
                     aria-label={`Seção ${section.public ? 'pública' : 'privada'}`}
                   />
                   {['document', 'video', 'image', 'audio'].map((type) =>
@@ -251,7 +252,7 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
         )}
       </DialogContent>
 
-      <DialogActions sx={{ justifyContent: 'center', mt: 2 }}>
+      <DialogActions sx={{ justifyContent: 'center', mt: 2, pb: 3 }}>
         <Button onClick={onClose} variant="outlined" aria-label="Fechar modal">
           Fechar
         </Button>

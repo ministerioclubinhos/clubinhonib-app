@@ -12,6 +12,8 @@ import WeekMaterialDetailsModal from './WeekMaterialDetailsModal';
 import WeekMaterialCard from './WeekMaterialCard';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
 import SetCurrentWeekConfirmDialog from './SetCurrentWeekConfirmDialog';
+import { fetchRoutes } from '../../../store/slices/route/routeSlice';
+
 
 export default function WeekMaterialListPage() {
   const [weekMaterials, setWeekMaterials] = useState<WeekMaterialPageData[]>([]);
@@ -82,6 +84,8 @@ export default function WeekMaterialListPage() {
     try {
       await api.post(`/week-material-pages/current-week/${materialToSetAsCurrent.id}`);
       await fetchWeekMaterials();
+      await dispatch(fetchRoutes());
+
     } catch {
       setError('Erro ao definir como material da semana atual.');
     } finally {
