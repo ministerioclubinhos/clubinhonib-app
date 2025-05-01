@@ -9,7 +9,8 @@ export enum Type {
 export interface RouteData {
   id: string;
   title: string;
-  public: boolean;
+  public: boolean;  
+  current: boolean;
   subtitle: string;
   path: string;
   idToFetch: string;

@@ -1,91 +1,13 @@
-import React, { useMemo, useEffect } from 'react';
-import {
-  Box,
-  Typography,
-  Grid,
-  Card as MuiCard,
-  CardContent,
-  CardMedia,
-  CircularProgress,
-} from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { motion } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
+import { Box, Typography } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/slices';
 import banner from '../../assets/banner.jpg';
-import WeekBanner from '../../components/WeekBanner/WeekBanner';
-import { AppDispatch, RootState as RootStateType } from '../../store/slices';
-import { fetchCurrentWeekMaterial } from '../../store/slices/week-material/weekMaterialSlice';
-
-interface CustomCardProps {
-  title: string;
-  description: string;
-  image: string | null;
-  link: string;
-}
-
-const StyledCard = styled(MuiCard)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius * 2,
-  boxShadow: theme.shadows[4],
-  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-  width: '100%',
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  '&:hover': {
-    transform: 'translateY(-5px)',
-    boxShadow: theme.shadows[8],
-  },
-}));
-
-const CustomCard = ({ title, description, image, link }: CustomCardProps) => {
-  const truncatedDescription =
-    description && description.length > 60 ? `${description.slice(0, 57)}...` : (description ?? '');
-
-  return (
-    <StyledCard>
-      <CardMedia component="img" height="200" image={image ?? ''} alt={title ?? 'Imagem do card'} />
-      <CardContent>
-        <Typography variant="h6" fontWeight="bold" gutterBottom>
-          {title ?? 'Sem título'}
-        </Typography>
-        <Typography variant="body2" color="textSecondary">
-          {truncatedDescription}
-        </Typography>
-      </CardContent>
-    </StyledCard>
-  );
-};
+import WeekMaterialsBanner from './WeekMaterialsBanner';
+import CardsSection from './CardsSection';
 
 const Home: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-
-  useEffect(() => {
-    dispatch(fetchCurrentWeekMaterial());
-  }, [dispatch]);
-
-  const { dynamicRoutes, isAuthenticated, routeLoading, weekMaterial, weekMaterialLoading } =
-    useSelector((state: RootStateType) => ({
-      dynamicRoutes: state.routes.routes,
-      isAuthenticated: state.auth.isAuthenticated,
-      routeLoading: state.routes.loading,
-      weekMaterial: state.weekMaterial.weekMaterialSData,
-      weekMaterialLoading: state.weekMaterial.loading,
-    }));
-
-  const feedImageGalleryId = process.env.REACT_APP_FEED_MINISTERIO_ID ?? '';
-
-  const filteredCards = useMemo(() => {
-    return dynamicRoutes.filter(
-      (card) =>
-        (isAuthenticated || card.public) &&
-        card.idToFetch !== feedImageGalleryId &&
-        card.entityType !== 'WeekMaterialsPage' &&
-        card.entityType !== 'meditation'
-    );
-  }, [dynamicRoutes, isAuthenticated, feedImageGalleryId]);
-
-  const isLoading = routeLoading || weekMaterialLoading;
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   return (
     <Box
@@ -171,46 +93,9 @@ const Home: React.FC = () => {
         </Box>
       </Box>
 
-      {isAuthenticated && weekMaterial && (
-        <WeekBanner
-          title={weekMaterial.title ?? 'Sem título'}
-          subtitle={weekMaterial.subtitle ?? ''}
-          linkTo={`/${weekMaterial.route.path}`}
-        />
-      )}
+      {isAuthenticated && <WeekMaterialsBanner />}
 
-      {isLoading ? (
-        <Box sx={{ my: 10 }}>
-          <CircularProgress />
-        </Box>
-      ) : filteredCards.length > 0 ? (
-        <Box sx={{ width: { xs: '95%', sm: '90%', md: '85%' }, py: { xs: 4, sm: 6 } }}>
-          <Grid container spacing={3} justifyContent="center" alignItems="stretch">
-            {filteredCards.map((card, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={card.id} display="flex">
-                <motion.div
-                  style={{ width: '100%' }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <a
-                    href={`/${card.path}`}
-                    style={{ textDecoration: 'none', display: 'block', height: '100%' }}
-                  >
-                    <CustomCard
-                      title={card.title}
-                      description={card.description}
-                      image={card.image}
-                      link={`/${card.path}`}
-                    />
-                  </a>
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      ) : null}
+      <CardsSection />
     </Box>
   );
 };

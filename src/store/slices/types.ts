@@ -18,6 +18,17 @@ export enum MediaPlatform {
   ANY = 'ANY',
 }
 
+export enum MediaTargetType {
+  WeekMaterialsPage = 'WeekMaterialsPage',
+  VideosPage = 'VideosPage',
+  ImagesPage = 'ImagesPage',
+  Meditation = 'Meditation',
+  IdeasSection = 'IdeasSection',
+  IdeasPage = 'IdeasPage',
+  Document = 'Document',
+  Event='Event'
+}
+
 export interface MediaItem {
   id?: string;
   file?: File;

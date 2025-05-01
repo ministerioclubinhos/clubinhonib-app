@@ -83,7 +83,7 @@ const authSlice = createSlice({
       state.accessToken = accessToken.replace(/^"|"$/g, '');
       state.refreshToken = refreshToken.replace(/^"|"$/g, '');
       state.isAuthenticated = true;
-      if (user) state.user = user; // Atualiza o user apenas se fornecido
+      if (user) state.user = user;
       state.error = null;
       log('[AuthSlice] Login realizado com sucesso:', { user });
     },
