@@ -38,6 +38,7 @@ import CommentsListPage from 'components/Adm/PageComments/CommentsListPage';
 import DocumentManager from 'components/Adm/PageDocuments/DocumentManager';
 import IdeasPageListPage from 'components/Adm/PageIdeasMaterial/IdeasPageListPage';
 import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
+import WeekMaterialsList from 'pages/TeacherArea/WeekMaterialsList';
 
 const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatchType>();
@@ -83,6 +84,7 @@ const App: React.FC = () => {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/area-do-professor" element={<TeacherArea />} />
+            <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
           </Route>
 
           <Route element={<ProtectedRoute requiredRole="admin" />}>

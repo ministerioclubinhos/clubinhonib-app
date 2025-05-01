@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Container,
   Typography,
@@ -12,13 +12,13 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Button,
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/slices';
 import TeacherWeekBanner from './TeacherWeekBanner';
 import TeacherMeditationBanner from './TeacherMeditationBanner';
 import { setMeditationData, MeditationData } from '../../store/slices/meditation/meditationSlice';
-import { fetchCurrentWeekMaterial } from '../../store/slices/week-material/weekMaterialSlice';
 import { motion } from 'framer-motion';
 import CommentsSection from './CommentsSection';
 import TrainingVideosSection from './TrainingVideosSection';
@@ -28,31 +28,34 @@ import InfoIcon from '@mui/icons-material/Info';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import api from '../../config/axiosConfig';
 import IdeasGallerySection from './IdeasGallerySection';
+import { Link } from 'react-router-dom';
 
 const TeacherArea: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const meditationData = useSelector((state: RootState) => state.meditation.meditationData);
-  const currentMaterialWeek = useSelector(
-    (state: RootState) => state.weekMaterial.weekMaterialSData
-  );
 
   const [loading, setLoading] = useState(true);
+  const hasFetchedMeditationData = useRef(false);
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
       try {
-        const meditations = await api.get('/meditations/this-week');
-        if (meditations.data.meditation) {
-          dispatch(setMeditationData(meditations.data.meditation as MeditationData));
+        setLoading(true);
+        if (!hasFetchedMeditationData.current) {
+          const meditations = await api.get('/meditations/this-week');
+          if (meditations.data.meditation) {
+            dispatch(setMeditationData(meditations.data.meditation as MeditationData));
+          }
+          hasFetchedMeditationData.current = true;
         }
-        await dispatch(fetchCurrentWeekMaterial());
       } catch (error) {
         console.error('Erro ao buscar dados da área do professor:', error);
       } finally {
         setLoading(false);
       }
-    }
+    };
+
     fetchData();
   }, [dispatch]);
 
@@ -73,20 +76,26 @@ const TeacherArea: React.FC = () => {
       sx={{ width: '100%', mt: 10, mb: 8, mx: 0, px: 0, bgcolor: '#f5f7fa' }}
     >
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 6 }}>
-        {currentMaterialWeek && currentMaterialWeek.title && currentMaterialWeek.route.path && (
-          <Box sx={{ flex: 1 }}>
-            <TeacherWeekBanner
-              title={currentMaterialWeek.title}
-              subtitle={currentMaterialWeek.subtitle}
-              linkTo={`/${currentMaterialWeek.route.path}`}
-            />
-          </Box>
-        )}
+        {/* Removidas as props do TeacherWeekBanner */}
+        <Box sx={{ flex: 1 }}>
+          <TeacherWeekBanner />
+        </Box>
         {meditationData && meditationData.days && meditationData.days.length > 0 && (
           <Box sx={{ flex: 1 }}>
             <TeacherMeditationBanner meditation={meditationData} />
           </Box>
         )}
+      </Box>
+      {/* O restante do código permanece igual */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 4 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          component={Link}
+          to="/lista-materias-semanais"
+        >
+          Ver Lista de Materiais Semanais
+        </Button>
       </Box>
 
       <Paper
@@ -121,6 +130,7 @@ const TeacherArea: React.FC = () => {
           Área do Professor
         </Typography>
         <Divider sx={{ my: 3, borderColor: '#e0e0e0' }} />
+        {/* O restante do código continua igual */}
 
         {isAuthenticated ? (
           <Box>

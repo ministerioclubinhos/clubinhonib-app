@@ -1,18 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
 import { MeditationData, WeekDayLabel } from '../../store/slices/meditation/meditationSlice';
 import { sharedBannerStyles } from './SharedBannerStyles';
-import { MediaItem, MediaUploadType, MediaPlatform } from 'store/slices/types';
+import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
 
 interface TeacherMeditationBannerProps {
   meditation: MeditationData;
@@ -28,41 +24,6 @@ export default function TeacherMeditationBanner({ meditation }: TeacherMeditatio
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const getPreviewUrl = (media: MediaItem): string => {
-    const originalUrl = media.url || '';
-
-    if (media.uploadType === MediaUploadType.UPLOAD) {
-      return originalUrl;
-    }
-
-    switch (media.platformType) {
-      case MediaPlatform.GOOGLE_DRIVE: {
-        const match = originalUrl.match(/\/d\/([^/]+)\//);
-        if (match?.[1]) {
-          return `https://drive.google.com/file/d/${match[1]}/preview`;
-        }
-        return originalUrl;
-      }
-
-      case MediaPlatform.ONEDRIVE: {
-        if (originalUrl.includes('onedrive.live.com/embed')) {
-          return originalUrl;
-        }
-        return originalUrl;
-      }
-
-      case MediaPlatform.DROPBOX: {
-        return originalUrl.includes('dropbox.com')
-          ? originalUrl.replace('?dl=0', '?raw=1')
-          : originalUrl;
-      }
-
-      case MediaPlatform.ANY:
-      default:
-        return originalUrl;
-    }
-  };
-
   const handleOpenPreview = () => {
     if (!meditation.media?.url) return;
     setOpenModal(true);
@@ -73,15 +34,15 @@ export default function TeacherMeditationBanner({ meditation }: TeacherMeditatio
       <Box
         sx={{
           ...sharedBannerStyles,
-          background: 'linear-gradient(to bottom right, #E60026 0%, #dceeff 100%)',
-          color: '#3e2723',
+          background: 'linear-gradient(to bottom right, #00796b 0%, #004d40 100%)',
+          color: '#e0f2f1',
         }}
       >
         <Typography
           variant="h4"
           fontWeight="bold"
           sx={{
-            color: '#fff',
+            color: '#e0f2f1',
             textShadow: '2px 2px 6px rgba(0,0,0,0.85)',
             mb: 2,
           }}
@@ -94,7 +55,7 @@ export default function TeacherMeditationBanner({ meditation }: TeacherMeditatio
           fontWeight="medium"
           gutterBottom
           sx={{
-            color: '#fff',
+            color: '#e0f2f1',
             textShadow: '2px 2px 6px rgba(0,0,0,0.85)',
           }}
         >
@@ -109,7 +70,7 @@ export default function TeacherMeditationBanner({ meditation }: TeacherMeditatio
             <Typography
               variant="subtitle1"
               sx={{
-                color: '#fff',
+                color: '#e0f2f1',
                 textShadow: '2px 2px 6px rgba(0,0,0,0.85)',
                 mt: 1,
                 fontWeight: 500,
@@ -122,7 +83,7 @@ export default function TeacherMeditationBanner({ meditation }: TeacherMeditatio
               variant="subtitle1"
               fontStyle="italic"
               sx={{
-                color: '#fff',
+                color: '#e0f2f1',
                 textShadow: '2px 2px 6px rgba(0,0,0,0.85)',
                 mt: 1,
               }}
@@ -134,7 +95,7 @@ export default function TeacherMeditationBanner({ meditation }: TeacherMeditatio
           <Typography
             variant="body1"
             sx={{
-              color: '#fff',
+              color: '#e0f2f1',
               textShadow: '2px 2px 6px rgba(0,0,0,0.85)',
             }}
           >
@@ -145,7 +106,19 @@ export default function TeacherMeditationBanner({ meditation }: TeacherMeditatio
         {meditation.media?.url && (
           <Button
             variant="outlined"
-            sx={{ mt: 3, alignSelf: 'center' }}
+            sx={{
+              mt: 3,
+              alignSelf: 'center',
+              borderColor: '#e0f2f1',
+              color: '#e0f2f1',
+              '&:hover': {
+                backgroundColor: '#004d40',
+                borderColor: '#004d40',
+                color: '#ffffff',
+              },
+              padding: '10px 20px',
+              textTransform: 'none',
+            }}
             onClick={handleOpenPreview}
           >
             Visualizar Meditação
@@ -153,34 +126,12 @@ export default function TeacherMeditationBanner({ meditation }: TeacherMeditatio
         )}
       </Box>
 
-      <Dialog
+      <MediaDocumentPreviewModal
         open={openModal}
         onClose={() => setOpenModal(false)}
-        maxWidth="xl"
-        fullWidth
-        PaperProps={{
-          sx: {
-            m: 0,
-            borderRadius: 2,
-            width: isMobile ? '100%' : '90%',
-            height: isMobile ? '100%' : '75%',
-          },
-        }}
-      >
-        <DialogTitle>Visualização da Meditação</DialogTitle>
-        <DialogContent dividers sx={{ p: 0 }}>
-          <Box sx={{ width: '100%', height: '100%' }}>
-            <iframe
-              src={getPreviewUrl(meditation.media)}
-              style={{ width: '100%', height: '100%', border: 'none' }}
-              title="Documento"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenModal(false)}>Fechar</Button>
-        </DialogActions>
-      </Dialog>
+        media={meditation.media}
+        title={meditation.topic}
+      />
     </>
   );
 }

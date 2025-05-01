@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { MediaItem } from '../types';
 
 export interface EventData {
   id: string;
@@ -8,6 +9,7 @@ export interface EventData {
   date: string;
   location: string;
   description: string;
+  media: MediaItem;
 }
 
 interface EventsState {

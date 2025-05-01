@@ -1,15 +1,37 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/slices';
 import { Box, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { sharedBannerStyles } from './SharedBannerStyles';
+import { MediaTargetType } from 'store/slices/types';
 
-interface TeacherWeekBannerProps {
-  title: string;
-  subtitle?: string;
-  linkTo: string;
-}
+const TeacherWeekBanner: React.FC = () => {
+  const routes = useSelector((state: RootState) => state.routes.routes);
+  const currentWeekRoute = routes.find(
+    (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.current === true
+  );
 
-const TeacherWeekBanner: React.FC<TeacherWeekBannerProps> = ({ title, subtitle, linkTo }) => {
+  if (!currentWeekRoute) {
+    return (
+      <Box
+        sx={{
+          ...sharedBannerStyles,
+          background: 'linear-gradient(to bottom right, #0073E6 0%, #dceeff 100%)',
+          color: '#fff',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: 200,
+        }}
+      >
+        <Typography variant="h6" sx={{ textAlign: 'center' }}>
+          Nenhum material semanal atual encontrado.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -35,16 +57,16 @@ const TeacherWeekBanner: React.FC<TeacherWeekBannerProps> = ({ title, subtitle, 
           fontWeight="bold"
           gutterBottom
           sx={{
-            color: '#fff', // <- Aqui define a cor da fonte
+            color: '#fff',
             textShadow: '4px 4px 12px rgba(0, 0, 0, 0.85)',
             fontSize: { xs: '2rem', md: '3rem' },
             my: 2,
           }}
         >
-          {title}
+          {currentWeekRoute.title}
         </Typography>
 
-        {subtitle && (
+        {currentWeekRoute.subtitle && (
           <>
             <Typography
               variant="h6"
@@ -64,7 +86,7 @@ const TeacherWeekBanner: React.FC<TeacherWeekBannerProps> = ({ title, subtitle, 
                 textShadow: '2px 2px 6px rgba(0, 0, 0, 0.7)',
               }}
             >
-              {subtitle}
+              {currentWeekRoute.subtitle}
             </Typography>
           </>
         )}
@@ -74,7 +96,7 @@ const TeacherWeekBanner: React.FC<TeacherWeekBannerProps> = ({ title, subtitle, 
           color="secondary"
           size="large"
           component={Link}
-          to={linkTo}
+          to={`/${currentWeekRoute.path}`}
           sx={{
             mt: 5,
             fontWeight: 'bold',
