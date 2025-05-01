@@ -96,8 +96,8 @@ const About: React.FC = () => {
             textAlign: { xs: 'justify', sm: 'left' },
           }}
         >
-          O Clubinho NIB é uma plataforma dedicada ao evangelismo e à edificação espiritual, baseada
-          nos princípios da fé cristã batista.
+          O Clubinho NIB é uma plataforma dedicada ao evangelismo e à edificação espiritual,
+          baseada nos princípios da fé cristã batista.
         </Typography>
 
         <Section
