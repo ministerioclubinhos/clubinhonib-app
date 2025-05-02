@@ -76,7 +76,6 @@ const TeacherArea: React.FC = () => {
       sx={{ width: '100%', mt: 10, mb: 8, mx: 0, px: 0, bgcolor: '#f5f7fa' }}
     >
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 6 }}>
-        {/* Removidas as props do TeacherWeekBanner */}
         <Box sx={{ flex: 1 }}>
           <TeacherWeekBanner />
         </Box>
@@ -86,7 +85,6 @@ const TeacherArea: React.FC = () => {
           </Box>
         )}
       </Box>
-      {/* O restante do código permanece igual */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 4 }}>
         <Button
           variant="contained"
@@ -130,7 +128,6 @@ const TeacherArea: React.FC = () => {
           Área do Professor
         </Typography>
         <Divider sx={{ my: 3, borderColor: '#e0e0e0' }} />
-        {/* O restante do código continua igual */}
 
         {isAuthenticated ? (
           <Box>

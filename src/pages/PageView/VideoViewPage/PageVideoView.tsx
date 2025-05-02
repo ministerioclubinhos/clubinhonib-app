@@ -122,7 +122,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
         mb: { xs: 2, md: 0 },
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth={false}>
         <Paper
           elevation={4}
           sx={{

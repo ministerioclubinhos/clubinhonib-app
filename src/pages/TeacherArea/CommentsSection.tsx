@@ -13,6 +13,7 @@ import {
   Alert,
   CircularProgress,
   Grid,
+  useTheme,
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store/slices';
@@ -27,6 +28,7 @@ import { setComments } from 'store/slices/comment/commentsSlice';
 
 const CommentsSection: React.FC = () => {
   const dispatch = useDispatch();
+  const theme = useTheme();
   const rawComments = useSelector((state: RootState) => state.comments.comments);
   const comments = useMemo(() => rawComments?.filter((c) => c.published) || [], [rawComments]);
 
@@ -73,13 +75,7 @@ const CommentsSection: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await api.post('/comments', {
-        name: formData.name,
-        comment: formData.comment,
-        clubinho: formData.clubinho,
-        neighborhood: formData.neighborhood,
-      });
-
+      await api.post('/comments', formData);
       setFormData({ name: '', comment: '', clubinho: '', neighborhood: '' });
       setErrors({ name: false, comment: false, clubinho: false, neighborhood: false });
       setFormOpen(false);
@@ -110,6 +106,12 @@ const CommentsSection: React.FC = () => {
         { breakpoint: 960, settings: { slidesToShow: 2 } },
         { breakpoint: 600, settings: { slidesToShow: 1 } },
       ],
+      arrows: true,
+      appendDots: (dots: React.ReactNode) => (
+        <Box sx={{ mt: 2 }}>
+          <ul style={{ margin: 0, padding: 0 }}>{dots}</ul>
+        </Box>
+      ),
     }),
     []
   );
@@ -132,7 +134,7 @@ const CommentsSection: React.FC = () => {
     <Paper
       elevation={2}
       sx={{
-        p: { xs: 0, md: 3 },
+        p: { xs: 2, md: 3 },
         mt: 5,
         borderLeft: '5px solid #0288d1',
         backgroundColor: '#e1f5fe',
@@ -147,8 +149,9 @@ const CommentsSection: React.FC = () => {
           color="#424242"
           sx={{
             mt: { xs: 2, md: 3 },
+            mb: { xs: 2, md: 3 },
 
-            fontSize: { xs: '1.2rem', md: '1.5rem' },
+            fontSize: { xs: '1rem', md: '1.5rem' },
           }}
         >
           Comentários dos Professores
@@ -197,7 +200,9 @@ const CommentsSection: React.FC = () => {
                       multiline={field === 'comment'}
                       rows={field === 'comment' ? 3 : 1}
                       value={formData[field as keyof typeof formData]}
-                      onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [field]: e.target.value })
+                      }
                       error={errors[field as keyof typeof errors]}
                       helperText={
                         errors[field as keyof typeof errors]
@@ -216,7 +221,9 @@ const CommentsSection: React.FC = () => {
                 sx={{ borderRadius: 20, textTransform: 'none' }}
                 disabled={isSubmitting}
                 endIcon={
-                  isSubmitting && <CircularProgress color="inherit" size={18} sx={{ ml: 1 }} />
+                  isSubmitting && (
+                    <CircularProgress color="inherit" size={18} sx={{ ml: 1 }} />
+                  )
                 }
               >
                 {isSubmitting ? 'Enviando...' : 'Submeter comentário'}
@@ -227,51 +234,65 @@ const CommentsSection: React.FC = () => {
       </Box>
 
       {comments.length > 0 ? (
-        <Slider {...sliderSettings}>
-          {comments.map((comment) => (
-            <Box key={comment.id} sx={{ p: 2 }}>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
+        <Box sx={{ position: 'relative', px: 1, '& .slick-prev:before, & .slick-next:before': { color: '#0288d1', fontSize: '28px', }, }}>
+          <Slider {...sliderSettings}>
+            {comments.map((comment) => (
+              <Box
+                key={comment.id}
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
               >
-                <Card
-                  sx={{
-                    height: '100%',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    borderRadius: 2,
-                    backgroundColor: '#fff',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
-                      transform: 'translateY(-4px)',
-                    },
-                  }}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar sx={{ bgcolor: '#0288d1', mr: 2 }}>{comment.name.charAt(0)}</Avatar>
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight="bold" color="#424242">
-                          {comment.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {new Date(comment.createdAt).toLocaleDateString()}
-                        </Typography>
+                  <Card
+                    sx={{
+                      width: { xs: '110%', sm: '100%' },
+                      maxWidth: 400,
+                      height: '100%',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      borderRadius: 2,
+                      backgroundColor: '#fff',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
+                        transform: 'translateY(-4px)',
+                      },
+                    }}
+                  >
+
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Avatar sx={{ bgcolor: '#0288d1', mr: 2 }}>
+                          {comment.name.charAt(0)}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight="bold" color="#424242">
+                            {comment.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </Typography>
+                        </Box>
                       </Box>
-                    </Box>
-                    <Typography variant="body2" color="#616161" sx={{ mb: 2 }}>
-                      {comment.comment}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {comment.clubinho} • {comment.neighborhood}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Box>
-          ))}
-        </Slider>
+                      <Typography variant="body2" color="#616161" sx={{ mb: 2 }}>
+                        {comment.comment}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {comment.clubinho} • {comment.neighborhood}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </Box>
+            ))}
+          </Slider>
+        </Box>
       ) : (
         <Typography variant="body2" color="text.secondary" textAlign="center">
           Nenhum comentário publicado ainda. Envie o seu e ele aparecerá após avaliação.
