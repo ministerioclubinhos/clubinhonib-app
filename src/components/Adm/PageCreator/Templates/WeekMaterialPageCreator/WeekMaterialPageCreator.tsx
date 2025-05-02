@@ -22,7 +22,6 @@ import WeekAudios from './WeekAudios';
 import WeekImages from './WeekImages';
 import api from '../../../../../config/axiosConfig';
 import { MediaItem, MediaType, MediaUploadType } from 'store/slices/types';
-import { url } from 'inspector';
 
 interface WeekMaterialPageCreatorProps {
   fromTemplatePage?: boolean;
@@ -188,7 +187,7 @@ export default function WeekMaterialPageCreator({
 
       if (!res?.data) throw new Error('Erro ao salvar');
 
-      await dispatch(fetchRoutes());
+      await dispatch(fetchRoutes());      
 
       setSnackbar({
         open: true,

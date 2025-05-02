@@ -213,7 +213,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
         overflow: 'hidden',
       }}
     >
-      <Container maxWidth="lg" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <Container maxWidth={false} sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
