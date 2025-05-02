@@ -12,30 +12,6 @@ const WeekMaterialsBanner: React.FC = () => {
   );
   if (!currentWeekRoute) return null;
 
-  if (!currentWeekRoute) {
-    return (
-      <Box
-        sx={{
-          width: '100%',
-          minHeight: { xs: '60vh', sm: '65vh', md: '50vh' },
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          color: '#fff',
-          background: 'linear-gradient(135deg, #e8ffe8 0%, #00bf3f 100%)',
-          px: 2,
-          py: { xs: 6, md: 8 },
-          boxShadow: 'inset 0 0 100px rgba(0,0,0,0.1)',
-        }}
-      >
-        <Typography variant="h6" sx={{ textAlign: 'center' }}>
-          Nenhum material semanal atual encontrado.
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box
       sx={{
@@ -45,7 +21,7 @@ const WeekMaterialsBanner: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        color: '#fff',
+        color: '#FFFFFF',
         background: 'linear-gradient(135deg, #e8ffe8 0%, #00bf3f 100%)',
         px: 2,
         py: { xs: 6, md: 8 },
@@ -71,7 +47,7 @@ const WeekMaterialsBanner: React.FC = () => {
           sx={{
             textShadow: '4px 4px 12px rgba(0, 0, 0, 0.8)',
             fontSize: { xs: '2.2rem', md: '3.2rem' },
-            color: '#ffffff',
+            color: '#FFFFFF',
           }}
         >
           {currentWeekRoute.title}
@@ -105,7 +81,6 @@ const WeekMaterialsBanner: React.FC = () => {
 
         <Button
           variant="contained"
-          color="secondary"
           size="large"
           component={Link}
           to={`/${currentWeekRoute.path}`}
@@ -116,6 +91,10 @@ const WeekMaterialsBanner: React.FC = () => {
             py: 1.5,
             fontSize: { xs: '0.9rem', md: '1rem' },
             boxShadow: '0px 4px 12px rgba(0,0,0,0.3)',
+            backgroundColor: '#800080',
+            '&:hover': {
+              backgroundColor: '#C62828',
+            },
           }}
         >
           Saber mais
