@@ -71,7 +71,7 @@ const DocumentsSection: React.FC = () => {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <DescriptionIcon sx={{ color: '#0288d1', mr: 1 }} />
-        <Typography variant="h6" fontWeight="bold" color="#424242">
+        <Typography variant="h6" fontWeight="bold" color="#424242" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
           Documentos Importantes
         </Typography>
       </Box>

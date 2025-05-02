@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
 import {
   Container,
   Typography,
@@ -11,14 +11,12 @@ import {
   Grid,
   Card,
   CardContent,
-  CircularProgress,
   Button,
 } from '@mui/material';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/slices';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/slices';
 import TeacherWeekBanner from './TeacherWeekBanner';
 import TeacherMeditationBanner from './TeacherMeditationBanner';
-import { setMeditationData, MeditationData } from '../../store/slices/meditation/meditationSlice';
 import { motion } from 'framer-motion';
 import CommentsSection from './CommentsSection';
 import TrainingVideosSection from './TrainingVideosSection';
@@ -26,71 +24,98 @@ import DocumentsSection from './DocumentsSection';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InfoIcon from '@mui/icons-material/Info';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import api from '../../config/axiosConfig';
 import IdeasGallerySection from './IdeasGallerySection';
 import { Link } from 'react-router-dom';
+import { MediaTargetType } from 'store/slices/types';
 
 const TeacherArea: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const meditationData = useSelector((state: RootState) => state.meditation.meditationData);
+  const routes = useSelector((state: RootState) => state.routes.routes);
 
-  const [loading, setLoading] = useState(true);
-  const hasFetchedMeditationData = useRef(false);
+  const today = new Date();
+  const weekdayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  const currentWeekRoute = routes.find(
+    (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.current
+  );
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        if (!hasFetchedMeditationData.current) {
-          const meditations = await api.get('/meditations/this-week');
-          if (meditations.data.meditation) {
-            dispatch(setMeditationData(meditations.data.meditation as MeditationData));
-          }
-          hasFetchedMeditationData.current = true;
-        }
-      } catch (error) {
-        console.error('Erro ao buscar dados da área do professor:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const meditationDay = routes.find(
+    (route) =>
+      route.entityType === 'MeditationDay' &&
+      route.path.toLowerCase().includes(weekdayName)
+  );
 
-    fetchData();
-  }, [dispatch]);
+  const showWeekBanner = !!currentWeekRoute;
+  const showMeditationBanner = !!meditationDay;
+
+  const activeBanners = [showWeekBanner, showMeditationBanner].filter(Boolean).length;
+
+  const bannerStyles = {
+    flex: {
+      xs: '1 1 100%',
+      md: activeBanners === 1 ? '1 1 100%' : '1 1 48%',
+    },
+    maxWidth: { xs: '100%', md: activeBanners === 1 ? '100%' : '48%' },
+    mb: { xs: 2, md: 0 },
+  };
 
   const motivacaoEvangelismo =
     '💬 Que tal aproveitar esta semana para compartilhar o amor de Jesus com alguém da sua comunidade? Uma conversa, uma visita, uma oração... cada gesto conta!';
 
-  if (loading) {
-    return (
-      <Box sx={{ mt: 20, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Container
       maxWidth={false}
-      sx={{ width: '100%', mt: 10, mb: 8, mx: 0, px: 0, bgcolor: '#f5f7fa' }}
+      sx={{ width: '100%', mt: 10, mb: 8, mx: 0, px: { xs: 2, md: 4 }, bgcolor: '#f5f7fa' }}
     >
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 6 }}>
-        <Box sx={{ flex: 1 }}>
-          <TeacherWeekBanner />
-        </Box>
-        {meditationData && meditationData.days && meditationData.days.length > 0 && (
-          <Box sx={{ flex: 1 }}>
-            <TeacherMeditationBanner meditation={meditationData} />
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: { xs: 2, md: 3 },
+          mb: 6,
+          justifyContent: 'space-between',
+        }}
+      >
+        {activeBanners === 0 ? (
+          <Box
+            sx={{
+              flex: '1 1 100%',
+              textAlign: 'center',
+              p: 3,
+              bgcolor: '#fff',
+              borderRadius: 2,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            }}
+          >
+            <Typography variant="h6" color="text.secondary">
+              Nenhum banner disponível no momento.
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mt={1}>
+              Verifique novamente mais tarde ou acesse a lista de materiais semanais.
+            </Typography>
           </Box>
+        ) : (
+          <>
+            {showWeekBanner && (
+              <Box sx={bannerStyles}>
+                <TeacherWeekBanner />
+              </Box>
+            )}
+            {showMeditationBanner && (
+              <Box sx={bannerStyles}>
+                <TeacherMeditationBanner />
+              </Box>
+            )}
+          </>
         )}
       </Box>
+
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 4 }}>
         <Button
           variant="contained"
           color="primary"
           component={Link}
           to="/lista-materias-semanais"
+          sx={{ px: 4, py: 1.5, fontWeight: 'bold' }}
         >
           Ver Lista de Materiais Semanais
         </Button>
@@ -106,25 +131,44 @@ const TeacherArea: React.FC = () => {
           borderRadius: 2,
         }}
       >
-        <Box textAlign="center">
-          <Typography variant="h6" fontWeight="bold" color="#2196f3" gutterBottom>
+        <Box
+          sx={{
+            maxWidth: '800px',
+            margin: '0 auto',
+            textAlign: 'center',
+          }}
+        >
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            color="#2196f3"
+            gutterBottom
+            sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }}
+          >
             ✨ Motivação para Evangelizar
           </Typography>
-          <Typography variant="body1" textAlign="center">
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: { xs: '0.95rem', md: '1.1rem' },
+              color: '#424242',
+            }}
+          >
             {motivacaoEvangelismo}
           </Typography>
         </Box>
       </Paper>
 
+
       <Paper
         elevation={4}
         sx={{
-          p: { xs: 1, md: 5 },
+          p: { xs: 2, md: 5 },
           borderRadius: 3,
           background: 'linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%)',
         }}
       >
-        <Typography variant="h4" fontWeight="bold" color="#424242" gutterBottom>
+        <Typography variant="h4" fontWeight="bold" color="#424242" gutterBottom sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' } }}>
           Área do Professor
         </Typography>
         <Divider sx={{ my: 3, borderColor: '#e0e0e0' }} />
@@ -154,108 +198,70 @@ const TeacherArea: React.FC = () => {
             </Box>
 
             <Grid container spacing={3} sx={{ mt: 4 }}>
-              <Grid item xs={12} md={4}>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                  <Card
-                    sx={{
-                      borderLeft: '5px solid #4caf50',
-                      height: '100%',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      transition: 'all 0.3s ease',
-                      '&:hover': { boxShadow: '0 6px 18px rgba(0,0,0,0.15)' },
-                    }}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <CheckCircleIcon sx={{ color: '#4caf50', mr: 1 }} />
-                        <Typography variant="h6" fontWeight="bold" color="#424242">
-                          Objetivos da Área
-                        </Typography>
-                      </Box>
-                      <List dense>
-                        <ListItem>
-                          <ListItemText primary="Materiais alinhados ao calendário semanal." />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText primary="Conteúdos por faixa etária e tema." />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText primary="Apoio didático e sugestões de atividades." />
-                        </ListItem>
-                      </List>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                  <Card
-                    sx={{
-                      borderLeft: '5px solid #f44336',
-                      height: '100%',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      transition: 'all 0.3s ease',
-                      '&:hover': { boxShadow: '0 6px 18px rgba(0,0,0,0.15)' },
-                    }}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <InfoIcon sx={{ color: '#f44336', mr: 1 }} />
-                        <Typography variant="h6" fontWeight="bold" color="#424242">
-                          Orientações
-                        </Typography>
-                      </Box>
-                      <List dense>
-                        <ListItem>
-                          <ListItemText primary="Acesse o banner semanal para o tema atual." />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText primary="Adapte os materiais à sua turma." />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText primary="Compartilhe ideias com outros professores." />
-                        </ListItem>
-                      </List>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                  <Card
-                    sx={{
-                      borderLeft: '5px solid #ff9800',
-                      height: '100%',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      transition: 'all 0.3s ease',
-                      '&:hover': { boxShadow: '0 6px 18px rgba(0,0,0,0.15)' },
-                    }}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <LightbulbIcon sx={{ color: '#ff9800', mr: 1 }} />
-                        <Typography variant="h6" fontWeight="bold" color="#424242">
-                          Dicas Rápidas
-                        </Typography>
-                      </Box>
-                      <List dense>
-                        <ListItem>
-                          <ListItemText primary="Prepare a aula com antecedência." />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText primary="Reforce valores bíblicos de forma criativa." />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText primary="Crie um ambiente acolhedor." />
-                        </ListItem>
-                      </List>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </Grid>
+              {[
+                {
+                  icon: <CheckCircleIcon sx={{ color: '#4caf50', mr: 1 }} />,
+                  title: 'Objetivos da Área',
+                  color: '#4caf50',
+                  items: [
+                    'Materiais alinhados ao calendário semanal.',
+                    'Conteúdos por faixa etária e tema.',
+                    'Apoio didático e sugestões de atividades.',
+                  ],
+                },
+                {
+                  icon: <InfoIcon sx={{ color: '#f44336', mr: 1 }} />,
+                  title: 'Orientações',
+                  color: '#f44336',
+                  items: [
+                    'Acesse o banner semanal para o tema atual.',
+                    'Adapte os materiais à sua turma.',
+                    'Compartilhe ideias com outros professores.',
+                  ],
+                },
+                {
+                  icon: <LightbulbIcon sx={{ color: '#ff9800', mr: 1 }} />,
+                  title: 'Dicas Rápidas',
+                  color: '#ff9800',
+                  items: [
+                    'Prepare a aula com antecedência.',
+                    'Reforce valores bíblicos de forma criativa.',
+                    'Crie um ambiente acolhedor.',
+                  ],
+                },
+              ].map((section, index) => (
+                <Grid item xs={12} md={4} key={index}>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                    <Card
+                      sx={{
+                        borderLeft: `5px solid ${section.color}`,
+                        height: '100%',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': { boxShadow: '0 6px 18px rgba(0,0,0,0.15)' },
+                      }}
+                    >
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          {section.icon}
+                          <Typography variant="h6" fontWeight="bold" color="#424242">
+                            {section.title}
+                          </Typography>
+                        </Box>
+                        <List dense>
+                          {section.items.map((item, idx) => (
+                            <ListItem key={idx}>
+                              <ListItemText primary={item} />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </Grid>
+              ))}
             </Grid>
+
             <DocumentsSection />
             <IdeasGallerySection />
             <TrainingVideosSection />

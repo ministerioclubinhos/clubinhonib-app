@@ -11,6 +11,7 @@ const TeacherWeekBanner: React.FC = () => {
   const currentWeekRoute = routes.find(
     (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.current === true
   );
+  if (!currentWeekRoute) return null;
 
   if (!currentWeekRoute) {
     return (
