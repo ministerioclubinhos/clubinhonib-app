@@ -1,4 +1,3 @@
-// components/IdeasMaterialDocuments.tsx
 import { useState } from 'react';
 import {
   Box,
@@ -66,17 +65,18 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
 
   const handleAddOrUpdate = () => {
     const isValid =
-      tempDoc.uploadType === 'upload' || validateMediaURL(tempDoc.url, tempDoc.platformType);
+      tempDoc.uploadType === MediaUploadType.UPLOAD ||
+      validateMediaURL(tempDoc.url, tempDoc.platformType);
     const hasError =
       !tempDoc.title ||
       !tempDoc.description ||
       !tempDoc.url ||
-      (tempDoc.uploadType === 'link' && !isValid);
+      (tempDoc.uploadType === MediaUploadType.LINK && !isValid);
 
     setErrors({
       title: !tempDoc.title,
       description: !tempDoc.description,
-      url: !tempDoc.url || (tempDoc.uploadType === 'link' && !isValid),
+      url: !tempDoc.url || (tempDoc.uploadType === MediaUploadType.LINK && !isValid),
     });
 
     if (hasError) return;
@@ -156,7 +156,7 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
             </Select>
           </FormControl>
         </Grid>
-        {tempDoc.uploadType === 'link' && (
+        {tempDoc.uploadType === MediaUploadType.LINK && (
           <>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
@@ -189,7 +189,7 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
             </Grid>
           </>
         )}
-        {tempDoc.uploadType === 'upload' && (
+        {tempDoc.uploadType === MediaUploadType.UPLOAD && (
           <Grid item xs={12}>
             <Button variant="outlined" component="label">
               Upload de Documento
@@ -216,7 +216,7 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
               <Typography fontWeight="bold">{doc.title}</Typography>
               <Typography variant="body2">{doc.description}</Typography>
               <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                {doc.uploadType === 'upload' && (
+                {doc.uploadType === MediaUploadType.UPLOAD && (
                   <Tooltip title="Visualizar">
                     <IconButton onClick={() => window.open(doc.url, '_blank')}>
                       <Visibility />

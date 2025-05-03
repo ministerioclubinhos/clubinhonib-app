@@ -19,7 +19,7 @@ const WeekMaterialsList = () => {
     const routes = useSelector((state: RootState) => state.routes.routes);
     const loading = useSelector((state: RootState) => state.routes.loading);
     const weekMaterialsRoutes = routes.filter(
-        (route) => route.entityType === MediaTargetType.WeekMaterialsPage
+        (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.public
     );
 
     const [filter, setFilter] = useState('');
@@ -71,18 +71,46 @@ const WeekMaterialsList = () => {
                 align="center"
                 gutterBottom
                 sx={{
-                    fontSize: { xs: '1.5rem', md: '2rem' } // mobile: 1.5rem, desktop: 2rem
+                    fontSize: { xs: '1.5rem', md: '2rem' }
                 }}
             >                Materiais Semanais
             </Typography>
-            <TextField
-                label="Título, subtítulo ou descrição"
-                variant="outlined"
-                fullWidth
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                sx={{ marginBottom: 4 }}
-            />
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: 2,
+                    alignItems: 'center',
+                    marginBottom: 4,
+                }}
+            >
+                <TextField
+                    label="Título, subtítulo ou descrição"
+                    variant="outlined"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    sx={{
+                        width: { xs: '100%', md: '90%' },
+                        height: { xs: 48, md: 56 },
+                    }}
+                />
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    component={Link}
+                    to="/area-do-professor"
+                    sx={{
+                        width: { xs: '100%', sm: '10%' },
+                        height: { xs: 40, sm: 56 },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        px: { sm: 3 },
+                    }}
+                >
+                    Área do Professor
+                </Button>
+            </Box>
+
+
             <Grid container spacing={4} justifyContent="center">
                 {filteredRoutes.map((route) => (
                     <Grid item xs={12} sm={6} md={4} lg={3} key={route.id}>

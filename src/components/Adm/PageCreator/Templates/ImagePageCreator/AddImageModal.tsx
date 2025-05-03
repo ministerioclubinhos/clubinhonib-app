@@ -11,40 +11,49 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  IconButton,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { MediaItem, MediaPlatform, MediaUploadType, MediaType } from 'store/slices/types';
 
 interface AddImageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (media: MediaItem) => void;
+  onSubmit: (medias: MediaItem[]) => void;
 }
 
 export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps) {
   const [mode, setMode] = useState<MediaUploadType>(MediaUploadType.UPLOAD);
-  const [file, setFile] = useState<File | null>(null);
-  const [tempUrl, setTempUrl] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [tempUrls, setTempUrls] = useState<string[]>([]);
   const [urlInput, setUrlInput] = useState('');
   const [platformType, setPlatformType] = useState<MediaPlatform>(MediaPlatform.ANY);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setTempUrl(url);
-      return () => URL.revokeObjectURL(url);
+    if (files.length > 0) {
+      const urls = files.map((file) => URL.createObjectURL(file));
+      setTempUrls(urls);
+      return () => urls.forEach((url) => URL.revokeObjectURL(url));
+    } else {
+      setTempUrls([]);
     }
-  }, [file]);
+  }, [files]);
 
   const reset = () => {
-    setFile(null);
-    setTempUrl('');
+    setFiles([]);
+    setTempUrls([]);
     setUrlInput('');
     setTitle('');
     setDescription('');
     setPlatformType(MediaPlatform.ANY);
     setMode(MediaUploadType.UPLOAD);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setTempUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = () => {
@@ -56,23 +65,30 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
       isLocalFile: mode === MediaUploadType.UPLOAD,
     };
 
-    if (mode === MediaUploadType.UPLOAD && file) {
-      onSubmit({
+    let medias: MediaItem[] = [];
+
+    if (mode === MediaUploadType.UPLOAD && files.length > 0) {
+      medias = files.map((file) => ({
         ...base,
         file,
         url: '',
         originalName: file.name,
         size: file.size,
-      } as MediaItem);
+      } as MediaItem));
     }
 
     if (mode === MediaUploadType.LINK && urlInput.trim()) {
-      onSubmit({
+      const urls = urlInput.split(',').map((url) => url.trim());
+      medias = urls.map((url) => ({
         ...base,
-        url: urlInput.trim(),
+        url,
         platformType: platformType,
         file: undefined,
-      } as MediaItem);
+      } as MediaItem));
+    }
+
+    if (medias.length > 0) {
+      onSubmit(medias);
     }
 
     reset();
@@ -81,25 +97,9 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
 
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>Adicionar Nova Imagem</DialogTitle>
+      <DialogTitle>Adicionar Nova(s) Imagem(ns)</DialogTitle>
 
       <DialogContent>
-        <TextField
-          fullWidth
-          label="Título da imagem (opcional)"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          margin="normal"
-        />
-
-        <TextField
-          fullWidth
-          label="Descrição da imagem (opcional)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          margin="normal"
-        />
-
         <FormControl fullWidth margin="normal">
           <InputLabel>Modo de envio</InputLabel>
           <Select
@@ -115,21 +115,42 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
         {mode === MediaUploadType.UPLOAD && (
           <>
             <Button variant="outlined" component="label" fullWidth sx={{ mt: 1 }}>
-              Upload da imagem
+              Upload de imagens
               <input
                 hidden
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={(e) => {
-                  const selected = e.target.files?.[0];
-                  if (selected) setFile(selected);
+                  const selectedFiles = Array.from(e.target.files || []);
+                  setFiles((prev) => [...prev, ...selectedFiles]);
                 }}
               />
             </Button>
 
-            {tempUrl && (
+            {tempUrls.length > 0 && (
               <Box mt={2} textAlign="center">
-                <img src={tempUrl} alt="Preview" style={{ maxWidth: '100%', borderRadius: 8 }} />
+                {tempUrls.map((url, index) => (
+                  <Box key={index} sx={{ position: 'relative', mb: 2 }}>
+                    <img
+                      src={url}
+                      alt={`Preview ${index + 1}`}
+                      style={{ maxWidth: '100%', borderRadius: 8 }}
+                    />
+                    <IconButton
+                      onClick={() => handleRemoveImage(index)}
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        bgcolor: 'rgba(255, 255, 255, 0.7)',
+                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' },
+                      }}
+                    >
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  </Box>
+                ))}
               </Box>
             )}
           </>
@@ -153,7 +174,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
 
             <TextField
               fullWidth
-              label="URL da imagem"
+              label="URLs das imagens (separadas por vírgula)"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               margin="normal"
@@ -167,7 +188,11 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={mode === MediaUploadType.UPLOAD ? !file : !urlInput.trim()}
+          disabled={
+            mode === MediaUploadType.UPLOAD
+              ? files.length === 0
+              : !urlInput.trim()
+          }
         >
           Adicionar
         </Button>

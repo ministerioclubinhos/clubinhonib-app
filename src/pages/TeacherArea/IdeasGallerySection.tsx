@@ -122,7 +122,7 @@ const IdeasGallerySection: React.FC = () => {
                         {idea.title}
                       </Typography>
                       <Typography variant="body2" color="#616161" noWrap>
-                        {idea.subtitle}
+                        {idea.description}
                       </Typography>
                     </CardContent>
                   </Card>

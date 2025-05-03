@@ -109,16 +109,24 @@ const TeacherArea: React.FC = () => {
         )}
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1, mb: 4 }}>
         <Button
           variant="contained"
           color="primary"
           component={Link}
           to="/lista-materias-semanais"
-          sx={{ px: 4, py: 1.5, fontWeight: 'bold' }}
+          sx={{
+            px: { xs: 1, md: 4 },
+            py: { xs: 1, md: 1.5 },
+            fontWeight: 'bold',
+            fontSize: { xs: '0.75rem', md: '1rem' },
+            width: { xs: '100%', md: 'auto' },
+            height: { xs: 40, md: 48 },
+          }}
         >
           Ver Lista de Materiais Semanais
         </Button>
+
       </Box>
 
       <Paper
