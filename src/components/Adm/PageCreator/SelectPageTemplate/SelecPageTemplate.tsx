@@ -55,17 +55,19 @@ export default function SelecPageTemplate() {
     <Box
       sx={{
         minHeight: '100vh',
-        px: { xs: 0, md: 0 },
+        px: 0,
         py: { xs: 0, md: 8 },
-        mt: { xs: 0, md: 0 },
-        mb: { xs: 0, md: 0 },
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        justifyContent: 'flex-start',
         bgcolor: 'linear-gradient(to bottom, #f4f4f4, #e8e8e8)',
         textAlign: 'center',
+        mt: 0,
+        mb: 0,
       }}
     >
+
       <Typography
         variant="h4"
         fontWeight="bold"

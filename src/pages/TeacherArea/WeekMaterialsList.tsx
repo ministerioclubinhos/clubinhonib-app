@@ -19,7 +19,7 @@ const WeekMaterialsList = () => {
     const routes = useSelector((state: RootState) => state.routes.routes);
     const loading = useSelector((state: RootState) => state.routes.loading);
     const weekMaterialsRoutes = routes.filter(
-        (route) => route.entityType === MediaTargetType.WeekMaterialsPage
+        (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.public
     );
 
     const [filter, setFilter] = useState('');

@@ -41,15 +41,13 @@ export default function ImageSection({
   const isDescriptionEmpty = description.trim() === '';
 
   return (
-    <Container maxWidth={false} sx={{ maxWidth: '95% !important', p: 0 }}>
+    <Container maxWidth={false} sx={{ p: 0 }}>
       <Card sx={{ mb: 4, p: 2 }}>
         <Grid container spacing={2}>
-          {/* Área da Imagem */}
           <Grid item xs={12} md={6}>
             <ImageItem mediaItems={mediaItems} onRemoveMedia={onRemoveMedia} />
           </Grid>
 
-          {/* Área de Texto */}
           <Grid item xs={12} md={6}>
             <CardContent sx={{ p: 0 }}>
               <TextField
@@ -82,14 +80,31 @@ export default function ImageSection({
                 label="Seção pública"
               />
 
-              <Box mt={2} display="flex" gap={2} flexWrap="wrap">
-                <Button variant="contained" onClick={onOpenModal}>
+              <Box
+                mt={2}
+                display="flex"
+                gap={2}
+                flexDirection={{ xs: 'row', md: 'column' }}
+                flexWrap="nowrap"
+              >
+                <Button
+                  variant="contained"
+                  onClick={onOpenModal}
+                  sx={{ fontSize: { xs: '0.75rem', md: '1rem' }, px: 2 }}
+                >
                   + Imagem
                 </Button>
-                <Button variant="outlined" color="error" onClick={onRemoveSection}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={onRemoveSection}
+                  sx={{ fontSize: { xs: '0.75rem', md: '1rem' }, px: 2 }}
+                >
                   Excluir Seção
                 </Button>
               </Box>
+
+
             </CardContent>
           </Grid>
         </Grid>

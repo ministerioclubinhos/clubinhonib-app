@@ -76,7 +76,7 @@ export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
     setErrors({
       title: !tempVideo.title,
       description: !tempVideo.description,
-      url: !tempVideo.url || (tempVideo.uploadType === 'link' && !isValid),
+      url: !tempVideo.url || (tempVideo.uploadType === MediaUploadType.LINK && !isValid),
     });
 
     if (hasError) return;
@@ -154,7 +154,7 @@ export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
             </Select>
           </FormControl>
         </Grid>
-        {tempVideo.uploadType === 'link' && (
+        {tempVideo.uploadType === MediaUploadType.LINK && (
           <>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>

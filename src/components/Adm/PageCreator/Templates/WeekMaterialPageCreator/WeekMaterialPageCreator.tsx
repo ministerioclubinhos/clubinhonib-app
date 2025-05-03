@@ -187,7 +187,7 @@ export default function WeekMaterialPageCreator({
 
       if (!res?.data) throw new Error('Erro ao salvar');
 
-      await dispatch(fetchRoutes());      
+      await dispatch(fetchRoutes());
 
       setSnackbar({
         open: true,
@@ -210,8 +210,16 @@ export default function WeekMaterialPageCreator({
 
   return (
     <Box
-      sx={{ p: 0, m: 0, mt: fromTemplatePage ? 0 : 10, width: '98%', maxWidth: 1000, mx: 'auto' }}
+      sx={{
+        px: { xs: 0, md: 4 },
+        py: { xs: 0, md: 5 },
+        mt: { xs: 0, md: 5 },
+        mb: { xs: 0, md: 0 },
+        width: '98%',
+        mx: 'auto',
+      }}
     >
+
       <Typography
         variant="h3"
         mb={3}
@@ -222,7 +230,7 @@ export default function WeekMaterialPageCreator({
         {fromTemplatePage ? 'Adicionar Semana' : 'Editar Semana'}
       </Typography>
 
-      <Box sx={{ maxWidth: 800, mx: 'auto', mb: 4 }}>
+      <Box sx={{ mb: 4 }}>
         <TextField
           label="Semana"
           fullWidth
@@ -256,12 +264,28 @@ export default function WeekMaterialPageCreator({
         {fromTemplatePage ? 'Materiais da Semana' : 'Materiais da Semana'}
       </Typography>
 
-      <Tabs value={tab} onChange={(_, val) => setTab(val)} centered>
+      <Tabs
+        value={tab}
+        onChange={(_, val) => setTab(val)}
+        centered
+        sx={{
+          minHeight: { xs: 32, md: 48 },
+          mb: { xs: 1, md: 2 },
+          px: { xs: 0, md: 2 },
+          '& .MuiTab-root': {
+            minHeight: { xs: 32, md: 60 },
+            minWidth: { xs: 60, md: 200 },
+            px: { xs: 1, md: 2 },
+            fontSize: { xs: '0.7rem', md: '0.875rem' },
+          },
+        }}
+      >
         <Tab label="Vídeos" />
         <Tab label="Doc" />
         <Tab label="Img" />
         <Tab label="Áudio" />
       </Tabs>
+
       <Divider sx={{ my: 3 }} />
 
       {tab === 0 && <WeekVideos videos={videos} setVideos={setVideos} />}

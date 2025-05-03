@@ -115,8 +115,8 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
           mt: { xs: 8, md: 10 },
           width: '95%',
           maxWidth: 'none',
-          mx: 'auto',
-          px: { xs: 2, sm: 3, md: 0 },
+          mx: { xs: 0, md: 0 },
+          px: { xs: 0, md: 0 },
         }}
       >
         <Alert severity="error">{error}</Alert>
@@ -132,7 +132,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
           width: '95%',
           maxWidth: 'none',
           mx: 'auto',
-          px: { xs: 2, sm: 3, md: 0 },
+          px: { xs: 2, md: 0 },
         }}
       >
         <Typography align="center">Nenhuma página de ideias encontrada.</Typography>
@@ -151,417 +151,405 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
         background: 'linear-gradient(180deg, #e3f2fd 0%, #bbdefb 100%)',
         pt: { xs: 8, md: 10 },
         pb: 4,
+        mx: { xs: 0, md: 0 },
+        my: { xs: 0, md: 0 },
+
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      <Container
-        maxWidth={false}
-        disableGutters
-        sx={{
-          width: '90%',
-          mx: 'auto',
-          px: { xs: 2, sm: 3, md: 0 },
-        }}
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
       >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Box textAlign="center" mb={{ xs: 6, md: 8 }}>
-            <Typography
-              variant="h3"
-              fontWeight="bold"
-              color="primary.main"
-              sx={{ fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3.5rem' } }}
-            >
-              {title}
-            </Typography>
-            {subtitle && (
+        <Box textAlign="center" mb={{ xs: 6, md: 8 }}>
+          <Typography
+            variant="h3"
+            fontWeight="bold"
+            color="primary.main"
+            sx={{ fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3.5rem' } }}
+          >
+            {title}
+          </Typography>
+          <Typography
+            variant="body1"
+            mt={2}
+            color="text.secondary"
+            maxWidth={{ xs: '100%', sm: '90%', md: '800px' }}
+            mx="auto"
+            sx={{ fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' } }}
+          >
+            {description}
+          </Typography>
+        </Box>
+      </motion.div>
+
+      {sections.map((section, sectionIndex) => {
+        const videos = section.medias.filter((media) => media.mediaType === 'video');
+        const documents = section.medias.filter((media) => media.mediaType === 'document');
+        const images = section.medias.filter((media) => media.mediaType === 'image');
+
+        return (
+          <Box
+            key={section.id || sectionIndex}
+            sx={{
+              backgroundColor: 'white',
+              borderRadius: { xs: 2, md: 3 },
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+              mb: { xs: 4, md: 6 },
+              mx: { xs: 1, md: 6 },
+
+              overflow: 'hidden',
+            }}
+          >
+            <Box sx={{ p: { xs: 0.5, sm: 3, md: 4 } }}>
               <Typography
-                variant="h6"
-                mt={1}
-                color="text.secondary"
-                sx={{ fontSize: { xs: '0.9rem', sm: '1.2rem', md: '1.5rem' } }}
+                variant="h5"
+                fontWeight="bold"
+                color="primary.main"
+                mb={2}
+                sx={{ fontSize: { xs: '1.3rem', sm: '1.6rem', md: '2rem' } }}
               >
-                {subtitle}
+                {section.title}
               </Typography>
-            )}
-            <Typography
-              variant="body1"
-              mt={2}
-              color="text.secondary"
-              maxWidth={{ xs: '100%', sm: '90%', md: '800px' }}
-              mx="auto"
-              sx={{ fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' } }}
-            >
-              {description}
-            </Typography>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                mb={{ xs: 3, md: 4 }}
+                sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1.1rem' } }}
+              >
+                {section.description}
+              </Typography>
+
+              {videos.length > 0 && (
+                <Box sx={{ mb: { xs: 2, md: 3 } }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(245, 245, 245, 0.5)',
+                      borderRadius: { xs: 1, md: 2 },
+                      p: { xs: 1.5, md: 2 },
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      color="secondary.main"
+                      sx={{ fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' } }}
+                    >
+                      🎬 Vídeos ({videos.length})
+                    </Typography>
+                    <IconButton
+                      onClick={() =>
+                        toggleMediaType(section.id || sectionIndex.toString(), 'videos')
+                      }
+                      aria-label={
+                        expandedMediaTypes[`${section.id || sectionIndex}-videos`]
+                          ? 'Comprimir vídeos'
+                          : 'Expandir vídeos'
+                      }
+                      sx={{
+                        color: 'primary.main',
+                        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
+                      }}
+                    >
+                      {expandedMediaTypes[`${section.id || sectionIndex}-videos`] ? (
+                        <ExpandLessIcon fontSize="inherit" />
+                      ) : (
+                        <ExpandMoreIcon fontSize="inherit" />
+                      )}
+                    </IconButton>
+                  </Box>
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{
+                      height: expandedMediaTypes[`${section.id || sectionIndex}-videos`]
+                        ? 'auto'
+                        : 0,
+                      opacity: expandedMediaTypes[`${section.id || sectionIndex}-videos`] ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.3 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          sm: 'repeat(2, 1fr)',
+                          md: 'repeat(3, 1fr)',
+                          lg: 'repeat(4, 1fr)',
+                        },
+                        gap: { xs: 2, md: 3 },
+                        py: { xs: 2, md: 3 },
+                        px: { xs: 0, md: 3 },
+                      }}
+                    >
+                      {videos.map((video) => (
+                        <motion.div
+                          key={video.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            sx={{
+                              borderRadius: { xs: 1, md: 2 },
+                              px: { xs: 0, md: 3 },
+                              overflow: 'hidden',
+                              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+                            }}
+                          >
+                            <IdeasVideoPlayerView video={video} />
+                          </Box>
+                        </motion.div>
+                      ))}
+                    </Box>
+                  </motion.div>
+                </Box>
+              )}
+
+              {documents.length > 0 && (
+                <Box sx={{ mb: { xs: 2, md: 3 } }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(245, 245, 245, 0.5)',
+                      borderRadius: { xs: 1, md: 2 },
+                      p: { xs: 1.5, md: 2 },
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      color="secondary.main"
+                      sx={{ fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' } }}
+                    >
+                      📄 Documentos ({documents.length})
+                    </Typography>
+                    <IconButton
+                      onClick={() =>
+                        toggleMediaType(section.id || sectionIndex.toString(), 'documents')
+                      }
+                      aria-label={
+                        expandedMediaTypes[`${section.id || sectionIndex}-documents`]
+                          ? 'Comprimir documentos'
+                          : 'Expandir documentos'
+                      }
+                      sx={{
+                        color: 'primary.main',
+                        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
+                      }}
+                    >
+                      {expandedMediaTypes[`${section.id || sectionIndex}-documents`] ? (
+                        <ExpandLessIcon fontSize="inherit" />
+                      ) : (
+                        <ExpandMoreIcon fontSize="inherit" />
+                      )}
+                    </IconButton>
+                  </Box>
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{
+                      height: expandedMediaTypes[`${section.id || sectionIndex}-documents`]
+                        ? 'auto'
+                        : 0,
+                      opacity: expandedMediaTypes[`${section.id || sectionIndex}-documents`]
+                        ? 1
+                        : 0,
+                    }}
+                    transition={{ duration: 0.3 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          sm: 'repeat(2, 1fr)',
+                          md: 'repeat(3, 1fr)',
+                          lg: 'repeat(4, 1fr)',
+                        },
+                        gap: { xs: 2, md: 3 },
+                        p: { xs: 2, md: 3 },
+                      }}
+                    >
+                      {documents.map((doc) => (
+                        <motion.div
+                          key={doc.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            sx={{
+                              borderRadius: { xs: 1, md: 2 },
+                              overflow: 'hidden',
+                              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+                            }}
+                          >
+                            <IdeasDocumentViewer document={doc} />
+                          </Box>
+                        </motion.div>
+                      ))}
+                    </Box>
+                  </motion.div>
+                </Box>
+              )}
+
+              {images.length > 0 && (
+                <Box sx={{ mb: { xs: 2, md: 3 } }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(245, 245, 245, 0.5)',
+                      borderRadius: { xs: 1, md: 2 },
+                      p: { xs: 1.5, md: 2 },
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      color="secondary.main"
+                      sx={{ fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' } }}
+                    >
+                      🖼️ Imagens ({images.length})
+                    </Typography>
+                    <IconButton
+                      onClick={() =>
+                        toggleMediaType(section.id || sectionIndex.toString(), 'images')
+                      }
+                      aria-label={
+                        expandedMediaTypes[`${section.id || sectionIndex}-images`]
+                          ? 'Comprimir imagens'
+                          : 'Expandir imagens'
+                      }
+                      sx={{
+                        color: 'primary.main',
+                        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
+                      }}
+                    >
+                      {expandedMediaTypes[`${section.id || sectionIndex}-images`] ? (
+                        <ExpandLessIcon fontSize="inherit" />
+                      ) : (
+                        <ExpandMoreIcon fontSize="inherit" />
+                      )}
+                    </IconButton>
+                  </Box>
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{
+                      height: expandedMediaTypes[`${section.id || sectionIndex}-images`]
+                        ? 'auto'
+                        : 0,
+                      opacity: expandedMediaTypes[`${section.id || sectionIndex}-images`] ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.3 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          sm: 'repeat(2, 1fr)',
+                          md: 'repeat(3, 1fr)',
+                          lg: 'repeat(4, 1fr)',
+                        },
+                        gap: { xs: 2, md: 3 },
+                        p: { xs: 2, md: 3 },
+                      }}
+                    >
+                      {images.map((img) => (
+                        <motion.div
+                          key={img.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            sx={{
+                              borderRadius: { xs: 1, md: 2 },
+                              overflow: 'hidden',
+                              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+                            }}
+                          >
+                            <IdeasImageGalleryView image={img} />
+                          </Box>
+                        </motion.div>
+                      ))}
+                    </Box>
+                  </motion.div>
+                </Box>
+              )}
+            </Box>
           </Box>
-        </motion.div>
+        );
+      })}
 
-        {sections.map((section, sectionIndex) => {
-          const videos = section.medias.filter((media) => media.mediaType === 'video');
-          const documents = section.medias.filter((media) => media.mediaType === 'document');
-          const images = section.medias.filter((media) => media.mediaType === 'image');
-
-          return (
-            <Box
-              key={section.id || sectionIndex}
+      {isAdmin && (
+        <Zoom in={true}>
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 20,
+              right: 20,
+              zIndex: 1300,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+            }}
+          >
+            <Fab
+              color="warning"
+              onClick={handleEdit}
+              disabled={isDeleting}
+              aria-label="Editar página"
               sx={{
-                backgroundColor: 'white',
-                borderRadius: { xs: 2, md: 3 },
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                mb: { xs: 4, md: 6 },
-                overflow: 'hidden',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                width: { xs: 48, sm: 56 },
+                height: { xs: 48, sm: 56 },
               }}
             >
-              <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-                <Typography
-                  variant="h5"
-                  fontWeight="bold"
-                  color="primary.main"
-                  mb={2}
-                  sx={{ fontSize: { xs: '1.3rem', sm: '1.6rem', md: '2rem' } }}
-                >
-                  {section.title}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  mb={{ xs: 3, md: 4 }}
-                  sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1.1rem' } }}
-                >
-                  {section.description}
-                </Typography>
-
-                {videos.length > 0 && (
-                  <Box sx={{ mb: { xs: 2, md: 3 } }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        backgroundColor: 'rgba(245, 245, 245, 0.5)',
-                        borderRadius: { xs: 1, md: 2 },
-                        p: { xs: 1.5, md: 2 },
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        fontWeight="bold"
-                        color="secondary.main"
-                        sx={{ fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' } }}
-                      >
-                        🎬 Vídeos ({videos.length})
-                      </Typography>
-                      <IconButton
-                        onClick={() =>
-                          toggleMediaType(section.id || sectionIndex.toString(), 'videos')
-                        }
-                        aria-label={
-                          expandedMediaTypes[`${section.id || sectionIndex}-videos`]
-                            ? 'Comprimir vídeos'
-                            : 'Expandir vídeos'
-                        }
-                        sx={{
-                          color: 'primary.main',
-                          fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
-                        }}
-                      >
-                        {expandedMediaTypes[`${section.id || sectionIndex}-videos`] ? (
-                          <ExpandLessIcon fontSize="inherit" />
-                        ) : (
-                          <ExpandMoreIcon fontSize="inherit" />
-                        )}
-                      </IconButton>
-                    </Box>
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{
-                        height: expandedMediaTypes[`${section.id || sectionIndex}-videos`]
-                          ? 'auto'
-                          : 0,
-                        opacity: expandedMediaTypes[`${section.id || sectionIndex}-videos`] ? 1 : 0,
-                      }}
-                      transition={{ duration: 0.3 }}
-                      style={{ overflow: 'hidden' }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: {
-                            xs: '1fr',
-                            sm: 'repeat(2, 1fr)',
-                            md: 'repeat(3, 1fr)',
-                            lg: 'repeat(4, 1fr)',
-                          },
-                          gap: { xs: 2, md: 3 },
-                          p: { xs: 2, md: 3 },
-                        }}
-                      >
-                        {videos.map((video) => (
-                          <motion.div
-                            key={video.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <Box
-                              sx={{
-                                borderRadius: { xs: 1, md: 2 },
-                                overflow: 'hidden',
-                                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-                              }}
-                            >
-                              <IdeasVideoPlayerView video={video} />
-                            </Box>
-                          </motion.div>
-                        ))}
-                      </Box>
-                    </motion.div>
-                  </Box>
-                )}
-
-                {documents.length > 0 && (
-                  <Box sx={{ mb: { xs: 2, md: 3 } }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        backgroundColor: 'rgba(245, 245, 245, 0.5)',
-                        borderRadius: { xs: 1, md: 2 },
-                        p: { xs: 1.5, md: 2 },
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        fontWeight="bold"
-                        color="secondary.main"
-                        sx={{ fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' } }}
-                      >
-                        📄 Documentos ({documents.length})
-                      </Typography>
-                      <IconButton
-                        onClick={() =>
-                          toggleMediaType(section.id || sectionIndex.toString(), 'documents')
-                        }
-                        aria-label={
-                          expandedMediaTypes[`${section.id || sectionIndex}-documents`]
-                            ? 'Comprimir documentos'
-                            : 'Expandir documentos'
-                        }
-                        sx={{
-                          color: 'primary.main',
-                          fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
-                        }}
-                      >
-                        {expandedMediaTypes[`${section.id || sectionIndex}-documents`] ? (
-                          <ExpandLessIcon fontSize="inherit" />
-                        ) : (
-                          <ExpandMoreIcon fontSize="inherit" />
-                        )}
-                      </IconButton>
-                    </Box>
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{
-                        height: expandedMediaTypes[`${section.id || sectionIndex}-documents`]
-                          ? 'auto'
-                          : 0,
-                        opacity: expandedMediaTypes[`${section.id || sectionIndex}-documents`]
-                          ? 1
-                          : 0,
-                      }}
-                      transition={{ duration: 0.3 }}
-                      style={{ overflow: 'hidden' }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: {
-                            xs: '1fr',
-                            sm: 'repeat(2, 1fr)',
-                            md: 'repeat(3, 1fr)',
-                            lg: 'repeat(4, 1fr)',
-                          },
-                          gap: { xs: 2, md: 3 },
-                          p: { xs: 2, md: 3 },
-                        }}
-                      >
-                        {documents.map((doc) => (
-                          <motion.div
-                            key={doc.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <Box
-                              sx={{
-                                borderRadius: { xs: 1, md: 2 },
-                                overflow: 'hidden',
-                                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-                              }}
-                            >
-                              <IdeasDocumentViewer document={doc} />
-                            </Box>
-                          </motion.div>
-                        ))}
-                      </Box>
-                    </motion.div>
-                  </Box>
-                )}
-
-                {images.length > 0 && (
-                  <Box sx={{ mb: { xs: 2, md: 3 } }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        backgroundColor: 'rgba(245, 245, 245, 0.5)',
-                        borderRadius: { xs: 1, md: 2 },
-                        p: { xs: 1.5, md: 2 },
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        fontWeight="bold"
-                        color="secondary.main"
-                        sx={{ fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' } }}
-                      >
-                        🖼️ Imagens ({images.length})
-                      </Typography>
-                      <IconButton
-                        onClick={() =>
-                          toggleMediaType(section.id || sectionIndex.toString(), 'images')
-                        }
-                        aria-label={
-                          expandedMediaTypes[`${section.id || sectionIndex}-images`]
-                            ? 'Comprimir imagens'
-                            : 'Expandir imagens'
-                        }
-                        sx={{
-                          color: 'primary.main',
-                          fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
-                        }}
-                      >
-                        {expandedMediaTypes[`${section.id || sectionIndex}-images`] ? (
-                          <ExpandLessIcon fontSize="inherit" />
-                        ) : (
-                          <ExpandMoreIcon fontSize="inherit" />
-                        )}
-                      </IconButton>
-                    </Box>
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{
-                        height: expandedMediaTypes[`${section.id || sectionIndex}-images`]
-                          ? 'auto'
-                          : 0,
-                        opacity: expandedMediaTypes[`${section.id || sectionIndex}-images`] ? 1 : 0,
-                      }}
-                      transition={{ duration: 0.3 }}
-                      style={{ overflow: 'hidden' }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: {
-                            xs: '1fr',
-                            sm: 'repeat(2, 1fr)',
-                            md: 'repeat(3, 1fr)',
-                            lg: 'repeat(4, 1fr)',
-                          },
-                          gap: { xs: 2, md: 3 },
-                          p: { xs: 2, md: 3 },
-                        }}
-                      >
-                        {images.map((img) => (
-                          <motion.div
-                            key={img.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <Box
-                              sx={{
-                                borderRadius: { xs: 1, md: 2 },
-                                overflow: 'hidden',
-                                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-                              }}
-                            >
-                              <IdeasImageGalleryView image={img} />
-                            </Box>
-                          </motion.div>
-                        ))}
-                      </Box>
-                    </motion.div>
-                  </Box>
-                )}
-              </Box>
-            </Box>
-          );
-        })}
-
-        {isAdmin && (
-          <Zoom in={true}>
-            <Box
+              <EditIcon fontSize={isMobile ? 'medium' : 'large'} />
+            </Fab>
+            <Fab
+              color="error"
+              onClick={() => setDeleteConfirmOpen(true)}
+              disabled={isDeleting}
+              aria-label="Excluir página"
               sx={{
-                position: 'fixed',
-                bottom: { xs: 60, sm: 80 },
-                right: { xs: 12, sm: 16 },
-                display: 'flex',
-                flexDirection: 'column',
-                gap: { xs: 1.5, md: 2 },
-                zIndex: 1000,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                width: { xs: 48, sm: 56 },
+                height: { xs: 48, sm: 56 },
               }}
             >
-              <Fab
-                color="warning"
-                onClick={handleEdit}
-                disabled={isDeleting}
-                aria-label="Editar página"
-                sx={{
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                  width: { xs: 48, sm: 56 },
-                  height: { xs: 48, sm: 56 },
-                }}
-              >
-                <EditIcon fontSize={isMobile ? 'medium' : 'large'} />
-              </Fab>
-              <Fab
-                color="error"
-                onClick={() => setDeleteConfirmOpen(true)}
-                disabled={isDeleting}
-                aria-label="Excluir página"
-                sx={{
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                  width: { xs: 48, sm: 56 },
-                  height: { xs: 48, sm: 56 },
-                }}
-              >
-                <DeleteIcon fontSize={isMobile ? 'medium' : 'large'} />
-              </Fab>
-            </Box>
-          </Zoom>
-        )}
+              <DeleteIcon fontSize={isMobile ? 'medium' : 'large'} />
+            </Fab>
+          </Box>
+        </Zoom>
+      )}
 
-        <DeleteConfirmationDialog
-          open={deleteConfirmOpen}
-          onClose={() => setDeleteConfirmOpen(false)}
-          onConfirm={handleDeletePage}
-          isDeleting={isDeleting}
-        />
-      </Container>
+      <DeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onConfirm={handleDeletePage}
+        isDeleting={isDeleting}
+      />
     </Box>
   );
 }
