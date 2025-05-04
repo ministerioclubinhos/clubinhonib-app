@@ -46,6 +46,12 @@ const cardData = [
     path: '/adm/documentos',
   },
   {
+    title: 'Informativos',
+    description: 'Gerencie banners informativos do site.',
+    icon: <EventNote fontSize="large" color="primary" />,
+    path: '/adm/informativos',
+  },
+  {
     title: 'Criar Página',
     description: 'Adicione novas páginas de conteúdo ao site.',
     icon: <AddBox fontSize="large" color="primary" />,
