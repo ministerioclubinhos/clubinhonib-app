@@ -49,7 +49,7 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
   const [currentEditingIndex, setCurrentEditingIndex] = useState<number | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState('');
-  const [onConfirmAction, setOnConfirmAction] = useState<() => void>(() => {});
+  const [onConfirmAction, setOnConfirmAction] = useState<() => void>(() => { });
   const [isSaving, setIsSaving] = useState(false);
   const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
   const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
@@ -145,14 +145,15 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
 
       const response = fromTemplatePage
         ? await api.post('/image-pages', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          })
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
         : await api.patch(`/image-pages/${imageData?.id}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
 
       await dispatch(fetchRoutes());
       navigate(`/${response.data.route.path}`);
+      setSuccessSnackbarOpen(true);
     } catch (error) {
       console.error(error);
       setError('Erro ao enviar dados. Verifique o console.');
@@ -168,9 +169,15 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
 
   const closeModal = () => setIsModalOpen(false);
 
-  const handleModalSubmit = (media: MediaItem) => {
+  const handleModalSubmit = (medias: MediaItem[]) => {
     if (currentEditingIndex !== null) {
-      addMediaToSection(currentEditingIndex, media);
+      setSections((prev) =>
+        prev.map((section, i) =>
+          i === currentEditingIndex
+            ? { ...section, mediaItems: [...section.mediaItems, ...medias] }
+            : section
+        )
+      );
     }
     closeModal();
   };
@@ -195,22 +202,14 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
           prev.map((section, i) =>
             i === sectionIndex
               ? {
-                  ...section,
-                  mediaItems: section.mediaItems.filter((_, j) => j !== mediaIndex),
-                }
+                ...section,
+                mediaItems: section.mediaItems.filter((_, j) => j !== mediaIndex),
+              }
               : section
           )
         )
     );
     setConfirmModalOpen(true);
-  };
-
-  const addMediaToSection = (index: number, media: MediaItem) => {
-    setSections((prev) =>
-      prev.map((section, i) =>
-        i === index ? { ...section, mediaItems: [...section.mediaItems, media] } : section
-      )
-    );
   };
 
   const updateCaption = (index: number, caption: string) => {
@@ -235,15 +234,21 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
     <Container
       maxWidth={false}
       sx={{
-        maxWidth: '95% !important',
-        mt: { xs: 0, md: 0 },
-        mb: { xs: 0, md: 0 },
-        pt: { xs: 2, md: 0 },
-        pb: { xs: 2, md: 2 },
+        mt: { xs: 0, md: 4 },
+        pb: { xs: 0, md: 2 },
+        pt: 0,
         px: 0,
+        mb: 0,
       }}
     >
-      <Typography variant="h4" fontWeight="bold" mb={3} textAlign="center">
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        mb={3}
+        textAlign="center"
+        sx={{ fontSize: { xs: '1.2rem', md: '2.5rem' } }}
+      >
+
         {fromTemplatePage ? 'Criar Galeria de Fotos' : 'Editar Galeria de Fotos'}
       </Typography>
 

@@ -27,6 +27,7 @@ import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import IdeasGallerySection from './IdeasGallerySection';
 import { Link } from 'react-router-dom';
 import { MediaTargetType } from 'store/slices/types';
+import InformativeBanner from './InformativeBanner';
 
 const TeacherArea: React.FC = () => {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -66,12 +67,14 @@ const TeacherArea: React.FC = () => {
       maxWidth={false}
       sx={{ width: '100%', mt: 10, mb: 8, mx: 0, px: { xs: 2, md: 4 }, bgcolor: '#f5f7fa' }}
     >
+      <InformativeBanner />
       <Box
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
           gap: { xs: 2, md: 3 },
           mb: 6,
+          mt: 3,
           justifyContent: 'space-between',
         }}
       >
@@ -95,6 +98,7 @@ const TeacherArea: React.FC = () => {
           </Box>
         ) : (
           <>
+
             {showWeekBanner && (
               <Box sx={bannerStyles}>
                 <TeacherWeekBanner />
@@ -109,16 +113,24 @@ const TeacherArea: React.FC = () => {
         )}
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1, mb: 4 }}>
         <Button
           variant="contained"
           color="primary"
           component={Link}
           to="/lista-materias-semanais"
-          sx={{ px: 4, py: 1.5, fontWeight: 'bold' }}
+          sx={{
+            px: { xs: 1, md: 4 },
+            py: { xs: 1, md: 1.5 },
+            fontWeight: 'bold',
+            fontSize: { xs: '0.75rem', md: '1rem' },
+            width: { xs: '100%', md: 'auto' },
+            height: { xs: 40, md: 48 },
+          }}
         >
           Ver Lista de Materiais Semanais
         </Button>
+
       </Box>
 
       <Paper

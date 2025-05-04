@@ -16,7 +16,7 @@ export interface IdeasPageData {
   id?: string;
   public?: boolean;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   description: string;
   createdAt?: string;
   updatedAt?: string;

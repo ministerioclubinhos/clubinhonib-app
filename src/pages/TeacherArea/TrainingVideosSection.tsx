@@ -117,7 +117,7 @@ const TrainingVideosSection: React.FC = () => {
                         {video.title}
                       </Typography>
                       <Typography variant="body2" color="#616161" noWrap>
-                        {video.subtitle}
+                        {video.description}
                       </Typography>
                     </CardContent>
                   </Card>

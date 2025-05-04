@@ -34,6 +34,7 @@ const CardsSection: React.FC = () => {
         card.idToFetch !== feedImageGalleryId &&
         card.entityType !== MediaTargetType.WeekMaterialsPage &&
         card.entityType !== MediaTargetType.Document &&
+        card.entityType !== MediaTargetType.Informative &&
         card.entityType !== MediaTargetType.Meditation
     );
     setCards(filteredCards);

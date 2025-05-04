@@ -87,6 +87,14 @@ const AdminLayout: React.FC = () => {
           <ListItemText primary="Comentários" />
         </ListItemButton>
 
+        <ListItemButton onClick={() => navigate('/adm/informativos')}>
+
+          <ListItemIcon>
+            <EventNote />
+          </ListItemIcon>
+          <ListItemText primary="Informativos" />
+        </ListItemButton>
+
         <ListItemButton onClick={() => navigate('/adm/criar-pagina')}>
           <ListItemIcon>
             <AddBox />
@@ -107,10 +115,9 @@ const AdminLayout: React.FC = () => {
         minHeight: '100vh',
       }}
     >
-      {/* AppBar (mobile only) */}
       {isMobile && (
         <AppBar position="fixed" color="inherit" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
-          <Toolbar>
+          <Toolbar >
             <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{ mr: 2 }}>
               <MenuIcon />
             </IconButton>
@@ -121,7 +128,6 @@ const AdminLayout: React.FC = () => {
         </AppBar>
       )}
 
-      {/* Sidebar */}
       <Drawer
         variant={isMobile ? 'temporary' : 'permanent'}
         open={isMobile ? mobileOpen : true}
@@ -153,8 +159,7 @@ const AdminLayout: React.FC = () => {
           minHeight: '100vh',
         }}
       >
-        {/* Garante espaço abaixo da AppBar no mobile */}
-        {isMobile && <Toolbar />}
+        {isMobile && <Toolbar sx={{ minHeight: 0, paddingTop: 0, paddingBottom: 0 }} />}
         <Outlet />
       </Box>
     </Box>

@@ -39,6 +39,7 @@ import DocumentManager from 'components/Adm/PageDocuments/DocumentManager';
 import IdeasPageListPage from 'components/Adm/PageIdeasMaterial/IdeasPageListPage';
 import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
 import WeekMaterialsList from 'pages/TeacherArea/WeekMaterialsList';
+import InformativeBannerListPage from 'components/Adm/PageInformative/InformativeBannerListPage';
 
 const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatchType>();
@@ -93,6 +94,7 @@ const App: React.FC = () => {
               <Route path="meditacoes" element={<MeditationListPage />} />
               <Route path="comentarios" element={<CommentsListPage />} />
               <Route path="documentos" element={<DocumentManager />} />
+              <Route path="informativos" element={<InformativeBannerListPage />} />
               <Route path="paginas-materiais-semanais" element={<WeekMaterialListPage />} />
               <Route path="paginas-fotos" element={<ImagePageListPage />} />
               <Route path="paginas-videos" element={<VideoPageListPage />} />
@@ -137,19 +139,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
-
-/* 
-  Sugestão futura: centralizar rotas em um array para facilitar manutenção
-  const publicRoutes = [
-    { path: "/", element: <Home /> },
-    { path: "/sobre", element: <About /> },
-    // ...
-  ];
-  const protectedRoutes = [
-    { path: "/area-do-professor", element: <TeacherArea /> },
-  ];
-  const adminRoutes = [
-    { path: "/adm", element: <AdminLayout />, children: [...] },
-  ];
-*/

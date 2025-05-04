@@ -12,6 +12,8 @@ import eventsReducer from './events/eventsSlice';
 import commentsReducer from './comment/commentsSlice';
 import documentReducer from './documents/documentSlice';
 import ideasReducer from './ideas/ideasSlice';
+import informativeBannerReducer from './informative/informativeBannerSlice';
+
 
 const authPersistConfig = {
   key: 'auth',
@@ -30,6 +32,7 @@ const rootReducer = combineReducers({
   comments: commentsReducer,
   document: documentReducer,
   ideas: ideasReducer,
+  informativeBanner: informativeBannerReducer, // 👈 registra o reducer aqui
 });
 
 export const store = configureStore({

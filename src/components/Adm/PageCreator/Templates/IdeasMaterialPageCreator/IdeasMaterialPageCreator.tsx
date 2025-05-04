@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   TextField,
   Button,
   Typography,
-  IconButton,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -12,11 +11,7 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
+  IconButton,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
@@ -27,8 +22,9 @@ import { AppDispatch, RootState } from 'store/slices';
 import { fetchRoutes } from 'store/slices/route/routeSlice';
 import { clearIdeasData, IdeasSection } from 'store/slices/ideas/ideasSlice';
 import api from 'config/axiosConfig';
-import { IdeasMaterialSection } from './IdeasMaterialSection';
 import { MediaUploadType } from 'store/slices/types';
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
+import { IdeasMaterialSection } from './IdeasMaterialSection';
 
 interface PageCreatorProps {
   fromTemplatePage?: boolean;
@@ -40,41 +36,36 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
   const ideasData = useSelector((state: RootState) => state.ideas.ideasData);
 
   const [pageTitle, setPageTitle] = useState('');
-  const [pageSubtitle, setPageSubtitle] = useState('');
   const [pageDescription, setPageDescription] = useState('');
   const [sections, setSections] = useState<IdeasSection[]>([]);
   const [expandedSectionIndex, setExpandedSectionIndex] = useState<number | null>(null);
-
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success' as 'success' | 'error',
   });
-
-  const [errors, setErrors] = useState({
-    title: false,
-    subtitle: false,
-    description: false,
-  });
-
-  const [openDeleteSectionDialog, setOpenDeleteSectionDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sectionToDelete, setSectionToDelete] = useState<number | null>(null);
 
   useEffect(() => {
     if (fromTemplatePage) {
       dispatch(clearIdeasData());
       setPageTitle('');
-      setPageSubtitle('');
       setPageDescription('');
       setSections([]);
     } else if (ideasData) {
       setPageTitle(ideasData.title || '');
-      setPageSubtitle(ideasData.subtitle || '');
       setPageDescription(ideasData.description || '');
       setSections(ideasData.sections || []);
     }
   }, [fromTemplatePage, ideasData, dispatch]);
+
+  const errors = useMemo(() => ({
+    title: !pageTitle.trim(),
+    description: !pageDescription.trim(),
+    sections: sections.length === 0,
+  }), [pageTitle, pageDescription, sections]);
 
   const handleAddSection = () => {
     const newSection: IdeasSection = {
@@ -92,7 +83,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
 
   const handleDeleteSectionClick = (index: number) => {
     setSectionToDelete(index);
-    setOpenDeleteSectionDialog(true);
+    setDeleteDialogOpen(true);
   };
 
   const confirmDeleteSection = () => {
@@ -103,18 +94,11 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
       }
       setSectionToDelete(null);
     }
-    setOpenDeleteSectionDialog(false);
+    setDeleteDialogOpen(false);
   };
 
   const handleSavePage = async () => {
-    const hasError = !pageTitle || !pageSubtitle || !pageDescription || sections.length === 0;
-    setErrors({
-      title: !pageTitle,
-      subtitle: !pageSubtitle,
-      description: !pageDescription,
-    });
-
-    if (hasError) {
+    if (Object.values(errors).some(Boolean)) {
       setSnackbar({
         open: true,
         message: 'Preencha todos os campos obrigatórios e adicione pelo menos uma seção.',
@@ -129,7 +113,6 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
       const payload: any = {
         ...(fromTemplatePage ? {} : ideasData?.id ? { id: ideasData.id } : {}),
         title: pageTitle,
-        subtitle: pageSubtitle,
         description: pageDescription,
         sections: sections.map((section, sectionIndex) => {
           const sectionPayload: any = {
@@ -151,9 +134,8 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
                 const fieldKey = `${media.mediaType}_${sectionIndex}_${midiaIndex}.${extension}`;
                 formData.append(fieldKey, media.file, fieldKey);
                 return { ...baseItem, fieldKey };
-              } else {
-                return { ...baseItem, url: media.url };
               }
+              return { ...baseItem, url: media.url };
             }),
           };
           return sectionPayload;
@@ -162,18 +144,11 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
 
       formData.append('ideasMaterialsPageData', JSON.stringify(payload));
 
-      let res;
-      if (fromTemplatePage) {
-        res = await api.post('/ideas-pages', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-      } else {
-        res = await api.patch(`/ideas-pages/${ideasData?.id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-      }
+      const response = await (fromTemplatePage
+        ? api.post('/ideas-pages', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        : api.patch(`/ideas-pages/${ideasData?.id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }));
 
-      if (!res?.data) throw new Error('Erro ao salvar');
+      if (!response?.data) throw new Error('Erro ao salvar');
 
       setSnackbar({
         open: true,
@@ -182,11 +157,9 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
       });
 
       await dispatch(fetchRoutes());
-      navigate(`/${res.data.route.path}`);
-      window.location.reload();
-
-    } catch (err) {
-      console.error('Erro ao salvar:', err);
+      navigate(`/${response.data.route.path}`);
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
       setSnackbar({
         open: true,
         message: 'Erro ao salvar a página.',
@@ -198,12 +171,28 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
   };
 
   return (
-    <Box sx={{ p: 2, maxWidth: 1200, mx: 'auto', mt: fromTemplatePage ? 0 : 4 }}>
-      <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
+    <Box
+      sx={{
+        py: { xs: 0, md: 4 },
+        px: { xs: 0, md: 4 },
+        mt: { xs: 0, md: 4 },
+        mb: { xs: 0, md: 0 },
+      }}
+    >
+      <Typography
+        variant="h4"
+        align="center"
+        gutterBottom
+        sx={{
+          mb: { xs: 4, md: 6 },
+          fontWeight: 'bold',
+          fontSize: { xs: '1.5rem', md: '2.5rem' },
+        }}
+      >
         {fromTemplatePage ? 'Nova Página de Ideias' : 'Editar Página de Ideias'}
       </Typography>
 
-      <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+      <Paper elevation={2} sx={{ p: { xs: 1, md: 4 }, mx: { xs: 0, md: 4 }, mb: 4 }}>
         <TextField
           label="Título da Página"
           fullWidth
@@ -211,15 +200,6 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
           onChange={(e) => setPageTitle(e.target.value)}
           error={errors.title}
           helperText={errors.title ? 'Campo obrigatório' : ''}
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          label="Subtítulo da Página"
-          fullWidth
-          value={pageSubtitle}
-          onChange={(e) => setPageSubtitle(e.target.value)}
-          error={errors.subtitle}
-          helperText={errors.subtitle ? 'Campo obrigatório' : ''}
           sx={{ mb: 2 }}
         />
         <TextField
@@ -239,29 +219,17 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
           <Typography variant="h5" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
             Seções
           </Typography>
-
           {sections.map((section, index) => (
             <Accordion
               key={index}
               expanded={expandedSectionIndex === index}
-              onChange={() =>
-                setExpandedSectionIndex(expandedSectionIndex === index ? null : index)
-              }
+              onChange={() => setExpandedSectionIndex(expandedSectionIndex === index ? null : index)}
               sx={{ mb: 2, borderRadius: 2 }}
             >
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="h6" sx={{ flexGrow: 1 }}>
                   {section.title || `Seção ${index + 1}`}
                 </Typography>
-                <IconButton
-                  color="error"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteSectionClick(index);
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
               </AccordionSummary>
               <AccordionDetails>
                 <IdeasMaterialSection
@@ -269,6 +237,14 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
                   onUpdate={(updatedSection) => handleUpdateSection(index, updatedSection)}
                 />
               </AccordionDetails>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
+                <IconButton
+                  color="error"
+                  onClick={() => handleDeleteSectionClick(index)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
             </Accordion>
           ))}
         </>
@@ -298,20 +274,11 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
         </Button>
       </Box>
 
-      <Dialog open={openDeleteSectionDialog} onClose={() => setOpenDeleteSectionDialog(false)}>
-        <DialogTitle>Confirmar Exclusão</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Tem certeza que deseja excluir esta seção? Esta ação não pode ser desfeita.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDeleteSectionDialog(false)}>Cancelar</Button>
-          <Button onClick={confirmDeleteSection} color="error">
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDeleteSection}
+      />
 
       <Snackbar
         open={snackbar.open}

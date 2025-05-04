@@ -53,10 +53,10 @@ interface MediaType {
   label: string;
   items: MediaItem[];
   component:
-    | React.ComponentType<VideoProps>
-    | React.ComponentType<DocumentProps>
-    | React.ComponentType<ImageProps>
-    | React.ComponentType<AudioProps>;
+  | React.ComponentType<VideoProps>
+  | React.ComponentType<DocumentProps>
+  | React.ComponentType<ImageProps>
+  | React.ComponentType<AudioProps>;
   propName: 'video' | 'document' | 'image' | 'audio';
 }
 
@@ -337,12 +337,12 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
             <Box
               sx={{
                 position: 'fixed',
-                bottom: 80,
-                right: 16,
+                bottom: 24,
+                right: 24,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
-                zIndex: 1000,
+                zIndex: 1300,
               }}
             >
               <Fab

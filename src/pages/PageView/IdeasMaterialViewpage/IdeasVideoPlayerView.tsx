@@ -102,7 +102,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
   };
 
   return (
-    <Box sx={{ width: '100%', p: 1 }}>
+    <Box sx={{ width: '100%', px: { xs: 0, md: 3 }, }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
