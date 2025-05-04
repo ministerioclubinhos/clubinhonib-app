@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { clearImageData } from '../../../../store/slices/image/imageSlice';
-
 import {
   Box,
   Typography,
@@ -15,7 +14,6 @@ import {
 import { ReactElement } from 'react';
 import VideoPageCreator from '../Templates/VideoPageCreator/VideoPageCreator';
 import PhotoPageCreator from '../Templates/ImagePageCreator/ImagePageCreator';
-import EventPageCreator from '../Templates/EventPageCreator/EventPageCreator';
 import MeditationPageCreator from '../Templates/MeditationPageCreator/MeditationPageCreator';
 import WeekMaterialPageCreator from '../Templates/WeekMaterialPageCreator/WeekMaterialPageCreator';
 import { IdeasMaterialPageCreator } from '../Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
@@ -25,8 +23,7 @@ enum Options {
   MEDITATION = 'Adicionar meditação da Semana',
   GALLERY = 'Adicionar galeria de Fotos',
   VIDEOS = 'Adicionar galeria de Videos',
-  IDEAS = 'Adicionar uma pagina de Ideias',
-  EVENTS = 'Adicionar pagina de Eventos',
+  IDEAS = 'Adicionar pagina de Ideias',
 }
 
 const componentMap: Record<keyof typeof Options, () => ReactElement> = {
@@ -35,7 +32,6 @@ const componentMap: Record<keyof typeof Options, () => ReactElement> = {
   MEDITATION: () => <MeditationPageCreator fromTemplatePage={true} />,
   IDEAS: () => <IdeasMaterialPageCreator fromTemplatePage={true} />,
   WEEK_MATERIALS: () => <WeekMaterialPageCreator fromTemplatePage={true} />,
-  EVENTS: () => <EventPageCreator />,
 };
 
 export default function SelecPageTemplate() {

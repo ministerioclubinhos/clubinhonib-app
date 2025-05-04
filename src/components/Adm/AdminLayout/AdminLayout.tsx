@@ -87,6 +87,14 @@ const AdminLayout: React.FC = () => {
           <ListItemText primary="Comentários" />
         </ListItemButton>
 
+        <ListItemButton onClick={() => navigate('/adm/informativos')}>
+
+          <ListItemIcon>
+            <EventNote />
+          </ListItemIcon>
+          <ListItemText primary="Informativos" />
+        </ListItemButton>
+
         <ListItemButton onClick={() => navigate('/adm/criar-pagina')}>
           <ListItemIcon>
             <AddBox />
