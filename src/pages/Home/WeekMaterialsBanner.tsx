@@ -37,7 +37,7 @@ const WeekMaterialsBanner: React.FC = () => {
             fontSize: { xs: '1.2rem', md: '1.5rem' },
           }}
         >
-          Olá Professor do Clubinho, estamos na semana:
+          Olá Professor do Clubinho, estamos na:
         </Typography>
 
         <Typography

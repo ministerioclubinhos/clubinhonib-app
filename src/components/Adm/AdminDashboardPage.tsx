@@ -1,6 +1,16 @@
 import { Box, Typography, Grid, Paper, Button } from '@mui/material';
-import { EventNote, AddBox, PhotoLibrary, VideoLibrary, Description } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import {
+  EventNote,
+  AddBox,
+  PhotoLibrary,
+  VideoLibrary,
+  Description,
+  InsertComment,
+  Article,
+  Campaign,
+  ContactPhone,
+  Lightbulb,
+} from '@mui/icons-material';import { useNavigate } from 'react-router-dom';
 
 const cardData = [
   {
@@ -24,32 +34,38 @@ const cardData = [
   {
     title: 'Páginas de Ideias',
     description: 'Gerencie as páginas de ideias que os professores podem acessar.',
-    icon: <EventNote fontSize="large" color="primary" />,
+    icon: <Lightbulb fontSize="large" color="primary" />,
     path: '/adm/paginas-ideias',
   },
   {
     title: 'Meditações',
     description: 'Crie, edite e visualize meditações semanais.',
-    icon: <EventNote fontSize="large" color="primary" />,
+    icon: <Article fontSize="large" color="primary" />,
     path: '/adm/meditacoes',
   },
   {
     title: 'Comentários',
     description: 'Gerencie comentários e feedbacks dos usuários.',
-    icon: <EventNote fontSize="large" color="primary" />,
+    icon: <InsertComment fontSize="large" color="primary" />,
     path: '/adm/comentarios',
   },
   {
     title: 'Documentos',
     description: 'Gerencie documentos que os professores podem acessar.',
-    icon: <EventNote fontSize="large" color="primary" />,
+    icon: <Description fontSize="large" color="primary" />,
     path: '/adm/documentos',
   },
   {
     title: 'Informativos',
     description: 'Gerencie banners informativos do site.',
-    icon: <EventNote fontSize="large" color="primary" />,
+    icon: <Campaign fontSize="large" color="primary" />,
     path: '/adm/informativos',
+  },
+  {
+    title: 'Contatos',
+    description: 'Gerencie contatos enviados para o clubinho.',
+    icon: <ContactPhone fontSize="large" color="primary" />,
+    path: '/adm/contatos',
   },
   {
     title: 'Criar Página',
@@ -58,6 +74,7 @@ const cardData = [
     path: '/adm/criar-pagina',
   },
 ];
+
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();

@@ -33,7 +33,7 @@ import DocumentPreviewModal from './DocumentPreviewModal';
 import DocumentViewModal from './DocumentViewModal';
 import DocumentDeleteConfirmModal from './DocumentDeleteConfirmModal';
 
-const DocumentManager: React.FC = () => {
+const DocumentList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [documents, setDocuments] = useState<any[]>([]);
@@ -243,4 +243,4 @@ const DocumentManager: React.FC = () => {
   );
 };
 
-export default DocumentManager;
+export default DocumentList;
