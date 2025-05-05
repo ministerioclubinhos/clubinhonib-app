@@ -252,9 +252,12 @@ const CommentsSection: React.FC = () => {
                 >
                   <Card
                     sx={{
-                      width: { xs: '110%', sm: '100%' },
-                      maxWidth: 400,
-                      height: '100%',
+                      width: { xs: '100%', sm: '96%', md: '90%' },
+                      maxWidth: 1000,
+                      minHeight: { xs: 250, md: 200 },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       borderRadius: 2,
                       backgroundColor: '#fff',
@@ -265,29 +268,77 @@ const CommentsSection: React.FC = () => {
                       },
                     }}
                   >
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        px: { xs: 0.3, md: 1 }
+                      }}
+                    >
+                      <Box sx={{ mb: 2, }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <Avatar sx={{ bgcolor: '#0288d1', mr: 2 }}>
+                            {comment.name.charAt(0)}
+                          </Avatar>
+                          <Box>
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight="bold"
+                              color="#424242"
+                              sx={{
+                                fontSize: { xs: '.8rem', md: '1.25rem' },
+                                mb: { xs: 1, md: 2 },
+                                textAlign: { xs: 'left', md: 'left' },
+                              }}
+                            >
+                              {comment.name}
+                            </Typography>
 
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Avatar sx={{ bgcolor: '#0288d1', mr: 2 }}>
-                          {comment.name.charAt(0)}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight="bold" color="#424242">
-                            {comment.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {new Date(comment.createdAt).toLocaleDateString()}
-                          </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {new Date(comment.createdAt).toLocaleDateString()}
+                            </Typography>
+                          </Box>
                         </Box>
+                        <Typography
+                          variant="body1"
+                          color="text.primary"
+                          sx={{
+                            fontWeight: 500,
+                            fontSize: { xs: '1rem', md: '1.05rem' },
+                            mb: { xs: 0, md: 2 },
+                            lineHeight: 1.6,
+                            backgroundColor: '#f9f9f9',
+                            padding: { xs: 0, md: 1.5 },
+                            borderRadius: 1,
+                            borderLeft: '4px solid #0288d1',
+                          }}
+                        >
+                          {comment.comment}
+                        </Typography>
+
                       </Box>
-                      <Typography variant="body2" color="#616161" sx={{ mb: 2 }}>
-                        {comment.comment}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: 'inline-block',
+                          mt: 1,
+                          px: 1.5,
+                          py: 0.5,
+                          backgroundColor: '#e3f2fd',
+                          color: '#0288d1',
+                          fontWeight: 500,
+                          borderRadius: 2,
+                          fontSize: '0.75rem',
+                        }}
+                      >
                         {comment.clubinho} • {comment.neighborhood}
                       </Typography>
+
                     </CardContent>
                   </Card>
+
                 </motion.div>
               </Box>
             ))}
