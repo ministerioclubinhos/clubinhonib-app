@@ -5,8 +5,7 @@ import {
   Typography,
   Container,
   Grid,
-  Card,
-  CardContent,
+  Card
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/slices';
@@ -316,11 +315,11 @@ const Home: React.FC = () => {
             <Button
               variant="contained"
               component={Link}
-              to="/login"
+              to="/contato"
               sx={{
                 px: 4,
                 py: 1.5,
-                backgroundColor: '#FFD700', // Amarelo
+                backgroundColor: '#FFD700',
                 color: '#000',
                 fontWeight: 'bold',
                 '&:hover': {
@@ -329,7 +328,7 @@ const Home: React.FC = () => {
                 },
               }}
             >
-              Área do Professor
+              Entre em Contato
             </Button>
           )}
         </Container>
