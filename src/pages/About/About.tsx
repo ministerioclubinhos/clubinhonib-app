@@ -7,16 +7,23 @@ const About: React.FC = () => {
   const Section: React.FC<{
     title: string;
     content: string;
-  }> = ({ title, content }) => (
-    <Box component="article" sx={{ mb: 4 }}>
+    isMain?: boolean;
+  }> = ({ title, content, isMain = false }) => (
+    <section style={{ marginBottom: '3rem' }}>
       <Typography
-        variant="h5"
-        fontWeight="bold"
+        variant={isMain ? 'h2' : 'h5'}
+        component={isMain ? 'h1' : 'h2'}
+        fontWeight={isMain ? 800 : 600}
         gutterBottom
+        textAlign="center"
         sx={{
-          color: theme.palette.secondary.main,
+          color: isMain
+            ? theme.palette.primary.main
+            : theme.palette.secondary.main,
           fontFamily: "'Poppins', sans-serif",
-          fontSize: { xs: '1.25rem', sm: '1.5rem' },
+          fontSize: isMain
+            ? { xs: '2rem', sm: '2.8rem', md: '3.5rem' }
+            : { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
         }}
       >
         {title}
@@ -26,12 +33,13 @@ const About: React.FC = () => {
         sx={{
           fontSize: { xs: '1rem', sm: '1.1rem' },
           lineHeight: 1.8,
-          color: theme.palette.text.primary,
+          color: theme.palette.text.secondary,
+          textAlign: 'center',
         }}
       >
         {content}
       </Typography>
-    </Box>
+    </section>
   );
 
   return (
@@ -43,7 +51,6 @@ const About: React.FC = () => {
       minHeight="calc(100vh - 128px)"
       px={{ xs: 2, sm: 3, md: 4 }}
       mt={{ xs: 7, md: 5 }}
-      mb={0}
       sx={{
         background: 'linear-gradient(135deg, white 0%, #007bff 100%)',
         fontFamily: "'Roboto', sans-serif",
@@ -53,61 +60,36 @@ const About: React.FC = () => {
       <Paper
         elevation={6}
         sx={{
-          p: { xs: 2, sm: 3, md: 4 },
-          mt: { xs: 4, md: 6 },
-          mb: { xs: 2, md: 4 },
+          p: { xs: 3, sm: 4, md: 5 },
+          my: { xs: 4, md: 6 },
           width: '100%',
-          maxWidth: { xs: '100%', sm: 900 },
+          maxWidth: 960,
           borderRadius: 3,
-          transition: 'transform 0.3s ease-in-out',
+          transition: 'transform 0.3s ease',
           '&:hover': {
-            transform: 'translateY(-4px)',
+            transform: 'translateY(-6px)',
           },
-          minHeight: '70%',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
+          alignItems: 'center',
         }}
         role="region"
         aria-label="Sobre o Clubinho NIB"
       >
-        <Typography
-          variant="h3"
-          component="h1"
-          fontWeight={700}
-          gutterBottom
-          textAlign="center"
-          sx={{
-            fontFamily: "'Poppins', sans-serif",
-            color: theme.palette.primary.main,
-            fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
-          }}
-        >
-          Quem Somos
-        </Typography>
-
-        <Typography
-          variant="body1"
-          paragraph
-          sx={{
-            fontSize: { xs: '1rem', sm: '1.1rem' },
-            lineHeight: 1.8,
-            color: theme.palette.text.primary,
-            textAlign: { xs: 'justify', sm: 'left' },
-          }}
-        >
-          O Clubinho NIB é uma plataforma dedicada ao evangelismo e à edificação espiritual,
-          baseada nos princípios da fé cristã batista.
-        </Typography>
+        <Section
+          title="Quem Somos"
+          content="O Ministério de Clubinho Bíblico é um programa evangelístico infantil, composto por pessoas que decidiram fazer de Jesus o Senhor de suas vidas, com metodologia e ensinamentos que nasceram na, estes servos do Senhor Jesus, formam uma equipe de professores que detém um vasto conhecimento no ensino voltado para evangelismo infantil, que de maneira singular estão espalhados em escolas, abrigos, praças e principalmente nas residências dos membros da Nova Igreja Batista."
+          isMain
+        />
 
         <Section
           title="Nossa História"
-          content="Com mais de 20 anos de trajetória, temos alcançado milhares de vidas através de cultos, encontros e atividades transformadoras."
+          content="Com mais de 20 anos de Programa Evangelístico Infantil, o Ministério de Clubinho teve os seus primeiros passos na Nova Igreja Batista Tabernáculo e agora na coordenação da Nova Igreja Batista da Torquato Tapajós, tem inovado de forma gradual a forma de levar a Palavra de Deus para as crianças que não tem acesso às igrejas e os ensinamentos da Bíblia."
         />
 
         <Section
           title="Missão e Visão"
-          content="Nossa missão é compartilhar o evangelho com amor e clareza, enquanto nossa visão é construir uma comunidade sólida e comprometida com os ensinamentos de Cristo."
+          content="Nosso objetivo tem como finalidade anunciar o Evangelho para as crianças nos diversos bairros da cidade de Manaus e regiões, ensinando a Palavra de Deus de uma maneira alegre, dinâmica e criativa, garantindo que esta criança, possa desfrutar de um ambiente acolhedor e com princípios bíblicos. Contribuindo em parceria com os pais e responsáveis para que além do ensino baseado na vida de Jesus, juntos possamos formar cidadãos conscientes de valores morais e éticos."
         />
       </Paper>
     </Box>
