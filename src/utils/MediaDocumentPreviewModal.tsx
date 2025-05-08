@@ -9,6 +9,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { MediaItem } from 'store/slices/types';
 import { getMediaPreviewUrl } from './getMediaPreviewUrl';
+import { useEffect } from 'react';
 
 interface Props {
   open: boolean;
@@ -17,13 +18,29 @@ interface Props {
   title?: string;
 }
 
-export default function MediaDocumentPreviewModal({ open, onClose, media, title }: Props) {
+export default function MediaDocumentPreviewModal({
+  open,
+  onClose,
+  media,
+  title,
+}: Props) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   if (!media) return null;
 
   const previewUrl = getMediaPreviewUrl(media);
+
+  // Se for mobile e estiver abrindo, abre nova aba e fecha o modal imediatamente
+  useEffect(() => {
+    if (open && fullScreen && previewUrl) {
+      window.open(previewUrl, '_blank');
+      onClose(); // fecha o modal instantaneamente
+    }
+  }, [open, fullScreen, previewUrl, onClose]);
+
+  // Impede renderização do modal no mobile
+  if (fullScreen) return null;
 
   return (
     <Dialog
