@@ -39,6 +39,17 @@ export default function MediaDocumentPreviewModal({
 
   if (!media || !previewUrl || fullScreen) return null;
 
+  // Se for mobile e estiver abrindo, abre nova aba e fecha o modal imediatamente
+  useEffect(() => {
+    if (open && fullScreen && previewUrl) {
+      window.open(previewUrl, '_blank');
+      onClose(); // fecha o modal instantaneamente
+    }
+  }, [open, fullScreen, previewUrl, onClose]);
+
+  // Impede renderização do modal no mobile
+  if (fullScreen) return null;
+
   return (
     <Dialog
       open={open}
