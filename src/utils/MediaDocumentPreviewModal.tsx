@@ -27,9 +27,17 @@ export default function MediaDocumentPreviewModal({
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  if (!media) return null;
+  const previewUrl = media ? getMediaPreviewUrl(media) : null;
 
-  const previewUrl = getMediaPreviewUrl(media);
+  // Se for mobile, abrir em nova aba e não renderizar modal
+  useEffect(() => {
+    if (open && fullScreen && previewUrl) {
+      window.open(previewUrl, '_blank');
+      onClose(); // fecha imediatamente
+    }
+  }, [open, fullScreen, previewUrl, onClose]);
+
+  if (!media || !previewUrl || fullScreen) return null;
 
   // Se for mobile e estiver abrindo, abre nova aba e fecha o modal imediatamente
   useEffect(() => {
@@ -46,7 +54,7 @@ export default function MediaDocumentPreviewModal({
     <Dialog
       open={open}
       onClose={onClose}
-      fullScreen={fullScreen}
+      fullScreen={false}
       maxWidth={false}
       PaperProps={{
         sx: {

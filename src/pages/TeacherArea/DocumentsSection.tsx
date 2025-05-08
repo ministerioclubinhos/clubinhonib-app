@@ -36,20 +36,10 @@ const DocumentsSection: React.FC = () => {
     (route) => route.entityType === 'Document'
   );
 
-  const isMobile = window.innerWidth < 768;
-
   const handleOpenModal = async (route: RouteData) => {
     try {
       const response = await api.get(`/documents/${route.idToFetch}`);
-      const document = response.data;
-      const media = document?.media;
-
-      if (isMobile && media?.url) {
-        window.open(media.url, '_blank');
-        return;
-      }
-
-      dispatch(setDocumentData(document));
+      dispatch(setDocumentData(response.data));
       setOpenModal(true);
     } catch (error) {
       console.error('Erro ao buscar documento:', error);
@@ -63,7 +53,7 @@ const DocumentsSection: React.FC = () => {
   };
 
   const handleToggleExpand = () => {
-    setIsExpanded((prev) => !prev);
+    setIsExpanded(!isExpanded);
   };
 
   const truncateDescription = (
@@ -154,7 +144,9 @@ const DocumentsSection: React.FC = () => {
               <Button
                 variant="outlined"
                 color="primary"
-                endIcon={isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                endIcon={
+                  isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                }
                 onClick={handleToggleExpand}
               >
                 {isExpanded ? 'Ver menos' : 'Ver mais documentos'}
