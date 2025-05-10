@@ -252,7 +252,7 @@ const CommentsSection: React.FC = () => {
                 >
                   <Card
                     sx={{
-                      width: { xs: '100%', sm: '95%', md: '90%' },
+                      width: { xs: '100%', sm: '96%', md: '90%' },
                       maxWidth: 1000,
                       minHeight: { xs: 250, md: 200 },
                       display: 'flex',
