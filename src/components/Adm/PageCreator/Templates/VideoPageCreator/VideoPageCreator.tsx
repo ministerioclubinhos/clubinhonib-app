@@ -18,11 +18,11 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
-import api from '../../../../../config/axiosConfig';
-import { AppDispatch, RootState } from '../../../../../store/slices';
-import { fetchRoutes } from '../../../../../store/slices/route/routeSlice';
-import { clearVideoData } from '../../../../../store/slices/video/videoSlice';
-import { validateMediaURL } from '../../../../../utils/validateMediaURL';
+import api from '@/config/axiosConfig';
+import { AppDispatch, RootState } from '@/store/slices';
+import { fetchRoutes } from '@/store/slices/route/routeSlice';
+import { clearVideoData } from '@/store/slices/video/videoSlice';
+import { validateMediaURL } from '@/utils/validateMediaURL';
 import VideoForm from './VideoForm';
 import VideoList from './VideoList';
 import { MediaItem, MediaType, MediaUploadType, MediaPlatform } from 'store/slices/types';

@@ -22,8 +22,8 @@ import {
 } from '@mui/material';
 import { Visibility, Delete, Edit, Publish } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
-import api from '../../../config/axiosConfig';
-import { AppDispatch, RootState } from '../../../store/slices';
+import api from '@/config/axiosConfig';
+import { AppDispatch, RootState } from '@/store/slices';
 import { CommentData, setComments } from 'store/slices/comment/commentsSlice';
 import CommentDetailsModal from './CommentDetailsModal';
 

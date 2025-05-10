@@ -16,14 +16,14 @@ import {
   useTheme,
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store/slices';
+import { RootState } from '@/store/slices';
 import { motion } from 'framer-motion';
 import Slider from 'react-slick';
 import CommentIcon from '@mui/icons-material/Comment';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import api from '../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { setComments } from 'store/slices/comment/commentsSlice';
 
 const CommentsSection: React.FC = () => {

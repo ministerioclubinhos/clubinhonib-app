@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { clearImageData } from '../../../../store/slices/image/imageSlice';
+import { clearImageData } from '@/store/slices/image/imageSlice';
 import {
   Box,
   Typography,
@@ -12,11 +12,11 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import { ReactElement } from 'react';
-import VideoPageCreator from '../Templates/VideoPageCreator/VideoPageCreator';
-import PhotoPageCreator from '../Templates/ImagePageCreator/ImagePageCreator';
-import MeditationPageCreator from '../Templates/MeditationPageCreator/MeditationPageCreator';
-import WeekMaterialPageCreator from '../Templates/WeekMaterialPageCreator/WeekMaterialPageCreator';
-import { IdeasMaterialPageCreator } from '../Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
+import VideoPageCreator from '@/components/Adm/PageCreator/Templates/VideoPageCreator/VideoPageCreator';
+import PhotoPageCreator from '@/components/Adm/PageCreator/Templates/ImagePageCreator/ImagePageCreator';
+import MeditationPageCreator from '@/components/Adm/PageCreator/Templates/MeditationPageCreator/MeditationPageCreator';
+import WeekMaterialPageCreator from '@/components/Adm/PageCreator/Templates/WeekMaterialPageCreator/WeekMaterialPageCreator';
+import { IdeasMaterialPageCreator } from '@/components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
 
 enum Options {
   WEEK_MATERIALS = 'Adicionar Materiais da Semana',

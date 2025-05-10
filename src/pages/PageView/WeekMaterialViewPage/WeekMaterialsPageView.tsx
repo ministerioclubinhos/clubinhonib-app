@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import api from '../../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { fetchRoutes } from 'store/slices/route/routeSlice';
 import { RootState, AppDispatch } from 'store/slices';
 import {

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { InternalAxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
-import { store } from '../store/slices';
-import { logout, login } from '../store/slices/auth/authSlice';
+import { store } from '@/store/slices';
+import { logout, login } from '@/store/slices/auth/authSlice';
 
 const baseURL = process.env.REACT_APP_API_URL ?? 'http://localhost:3000';
 

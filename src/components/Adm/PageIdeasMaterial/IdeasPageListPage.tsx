@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, Grid, CircularProgress, Alert, TextField, Button } from '@mui/material';
-import api from '../../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { IdeasPageData } from 'store/slices/ideas/ideasSlice';
 import IdeasPageCard from './IdeasPageCard';
 import IdeasPageDetailsModal from './IdeasPageDetailsModal';

@@ -1,5 +1,5 @@
+import apiAxios from '@/config/axiosConfig';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiAxios from '../../../config/axiosConfig';
 
 export enum Type {
   Page = 'page',

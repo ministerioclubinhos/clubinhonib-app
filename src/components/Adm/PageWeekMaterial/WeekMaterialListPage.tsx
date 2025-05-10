@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Box, Typography, Grid, CircularProgress, Alert, TextField } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../config/axiosConfig';
-import { AppDispatch } from '../../../store/slices';
+import api from '@/config/axiosConfig';
+import { AppDispatch } from '@/store/slices';
 import {
   setWeekMaterialData,
   WeekMaterialPageData,
@@ -12,7 +12,7 @@ import WeekMaterialDetailsModal from './WeekMaterialDetailsModal';
 import WeekMaterialCard from './WeekMaterialCard';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
 import SetCurrentWeekConfirmDialog from './SetCurrentWeekConfirmDialog';
-import { fetchRoutes } from '../../../store/slices/route/routeSlice';
+import { fetchRoutes } from '@/store/slices/route/routeSlice';
 
 
 export default function WeekMaterialListPage() {

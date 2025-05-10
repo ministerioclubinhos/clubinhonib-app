@@ -20,10 +20,10 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import api from '../../../config/axiosConfig';
-import { RootState, AppDispatch } from '../../../store/slices';
-import { setVideoData } from '../../../store/slices/video/videoSlice';
-import { fetchRoutes } from '../../../store/slices/route/routeSlice';
+import api from '@/config/axiosConfig';
+import { RootState, AppDispatch } from '@/store/slices';
+import { setVideoData } from '@/store/slices/video/videoSlice';
+import { fetchRoutes } from '@/store/slices/route/routeSlice';
 import VideoCard from './VideoCard';
 
 interface VideoPageViewProps {

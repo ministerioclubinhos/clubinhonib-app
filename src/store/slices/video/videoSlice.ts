@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RouteData } from '../route/routeSlice';
-import { MediaItem } from '../types';
+import { RouteData } from '@/store/slices/route/routeSlice';
+import { MediaItem } from '@/store/slices/types';
 
 export interface VideoPageData {
   id?: string;

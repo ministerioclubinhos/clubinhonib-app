@@ -11,15 +11,15 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../../../../store/slices';
-import { fetchRoutes } from '../../../../../store/slices/route/routeSlice';
+import { AppDispatch, RootState } from '@/store/slices';
+import { fetchRoutes } from '@/store/slices/route/routeSlice';
 import {
   clearMeditationData,
   clearMedia,
   DayItem,
-} from '../../../../../store/slices/meditation/meditationSlice';
+} from '@/store/slices/meditation/meditationSlice';
 import MeditationForm from './MeditationForm';
 import { AxiosError } from 'axios';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';

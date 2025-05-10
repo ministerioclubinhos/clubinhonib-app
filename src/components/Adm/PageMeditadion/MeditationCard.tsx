@@ -16,10 +16,10 @@ import {
   WeekDay,
   WeekDayLabel,
   setMeditationData,
-} from '../../../store/slices/meditation/meditationSlice';
+} from '@/store/slices/meditation/meditationSlice';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../../store/slices';
+import { AppDispatch } from '@/store/slices';
 import { getMediaPreviewUrl } from 'utils/getMediaPreviewUrl';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
 
