@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store/slices';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import Slider from 'react-slick';
 import { motion } from 'framer-motion';
@@ -8,6 +7,7 @@ import { MediaTargetType } from 'store/slices/types';
 import { RouteData } from 'store/slices/route/routeSlice';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import { RootState } from '@/store/slices';
 
 const colorThemes = [
   { background: 'linear-gradient(135deg, #FF512F, #DD2476)', textColor: '#ffffff' },

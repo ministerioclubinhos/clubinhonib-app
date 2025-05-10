@@ -8,7 +8,7 @@ import {
   Box,
   Button,
 } from '@mui/material';
-import { DayItem, WeekDay, WeekDayLabel } from '../../../store/slices/meditation/meditationSlice';
+import { DayItem, WeekDay, WeekDayLabel } from '@/store/slices/meditation/meditationSlice';
 
 interface Props {
   day: DayItem | null;

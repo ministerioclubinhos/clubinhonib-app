@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Box, Typography, Grid, CircularProgress, Alert, TextField } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../config/axiosConfig';
-import { AppDispatch } from '../../../store/slices';
+import api from '@/config/axiosConfig';
+import { AppDispatch } from '@/store/slices';
 import { setImageData, ImagePageData } from 'store/slices/image/imageSlice';
 
 import ImagePageCard from './ImagePageCard';

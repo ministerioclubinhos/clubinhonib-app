@@ -13,14 +13,14 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../../../../store/slices';
-import { fetchRoutes } from '../../../../../store/slices/route/routeSlice';
-import { clearWeekMaterialData } from '../../../../../store/slices/week-material/weekMaterialSlice';
+import { AppDispatch, RootState } from '@/store/slices';
+import { fetchRoutes } from '@/store/slices/route/routeSlice';
+import { clearWeekMaterialData } from '@/store/slices/week-material/weekMaterialSlice';
 import WeekVideos from './WeekVideos';
 import WeekDocuments from './WeekDocuments';
 import WeekAudios from './WeekAudios';
 import WeekImages from './WeekImages';
-import api from '../../../../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { MediaItem, MediaType, MediaUploadType } from 'store/slices/types';
 
 interface WeekMaterialPageCreatorProps {

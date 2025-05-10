@@ -32,11 +32,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store/slices';
+import { RootState } from '@/store/slices';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
-import api from '../../config/axiosConfig';
-import { setEvents } from '../../store/slices/events/eventsSlice';
+import api from '@/config/axiosConfig';
+import { setEvents } from '@/store/slices/events/eventsSlice';
 import EventDetailsModal from './EventDetailsModal';
 import EventFormModal from './EventFormModal';
 

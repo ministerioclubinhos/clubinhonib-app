@@ -8,8 +8,8 @@ import {
   Card
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/slices';
-import banner from '../../assets/banner.jpg';
+import { RootState, AppDispatch } from '@/store/slices';
+import banner from '@/assets/banner.jpg';
 import WeekMaterialsBanner from './WeekMaterialsBanner';
 import CardsSection from './CardsSection';
 import { Link } from 'react-router-dom';
@@ -17,7 +17,7 @@ import { motion } from 'framer-motion';
 import SchoolIcon from '@mui/icons-material/School';
 import GroupIcon from '@mui/icons-material/Group';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import api from '../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';

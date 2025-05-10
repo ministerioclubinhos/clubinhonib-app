@@ -24,7 +24,7 @@ import {
   DayItem,
   WeekDay,
   WeekDayLabel,
-} from '../../../../../store/slices/meditation/meditationSlice';
+} from '@/store/slices/meditation/meditationSlice';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 
 interface Props {

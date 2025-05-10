@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import apiAxios from '../../../config/axiosConfig';
+import apiAxios from '@/config/axiosConfig';
 
 export enum RoleUser {
   ADMIN = 'admin',

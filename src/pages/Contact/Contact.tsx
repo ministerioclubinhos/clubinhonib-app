@@ -10,7 +10,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import api from '../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 
 const formatPhone = (value: string) => {
   const cleaned = value.replace(/\D/g, '').slice(0, 11);

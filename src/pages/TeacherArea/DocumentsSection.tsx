@@ -12,9 +12,9 @@ import { motion } from 'framer-motion';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import api from '../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../store/slices';
+import { RootState } from '@/store/slices';
 import {
   setDocumentData,
   clearDocumentData,

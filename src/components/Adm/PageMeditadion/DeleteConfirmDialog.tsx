@@ -6,7 +6,7 @@ import {
   Typography,
   Button,
 } from '@mui/material';
-import { MeditationData } from '../../../store/slices/meditation/meditationSlice';
+import { MeditationData } from '@/store/slices/meditation/meditationSlice';
 
 interface Props {
   meditation: MeditationData | null;
