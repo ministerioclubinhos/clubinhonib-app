@@ -4,7 +4,7 @@ import { Box, Typography, Grid, Card as MuiCard, CardContent, CardMedia } from '
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store/slices';
+import { RootState } from '@/store/slices';
 import { MediaTargetType } from 'store/slices/types';
 
 const StyledCard = styled(MuiCard)(({ theme }) => ({

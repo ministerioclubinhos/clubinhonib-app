@@ -8,7 +8,7 @@ import {
   clearMedia,
 } from 'store/slices/documents/documentSlice';
 import { RootState } from 'store/slices';
-import api from '../../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { MediaItem, MediaType, MediaUploadType, MediaPlatform } from 'store/slices/types';
 import DocumentMediaForm from './DocumentMediaForm';
 

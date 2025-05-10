@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState as RootStateType } from '../../store/slices';
+import { RootState as RootStateType } from '@/store/slices';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
 interface ProtectedRouteProps {

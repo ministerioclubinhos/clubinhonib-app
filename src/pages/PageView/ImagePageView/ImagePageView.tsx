@@ -16,12 +16,12 @@ import {
   Fab,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import api from '../../../config/axiosConfig';
-import { setImageData } from '../../../store/slices/image/imageSlice';
-import { RootState, AppDispatch } from '../../../store/slices';
-import { fetchRoutes } from '../../../store/slices/route/routeSlice';
+import api from '@/config/axiosConfig';
+import { setImageData } from '@/store/slices/image/imageSlice';
+import { RootState, AppDispatch } from '@/store/slices';
+import { fetchRoutes } from '@/store/slices/route/routeSlice';
 import { RoleUser } from 'store/slices/auth/authSlice';
-import type { ImagePageData } from '../../../store/slices/image/imageSlice';
+import type { ImagePageData } from '@/store/slices/image/imageSlice';
 import SectionImagePageView from './SectionImagePageView';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';

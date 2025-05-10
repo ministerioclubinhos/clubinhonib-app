@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store/slices';
+import { RootState } from '@/store/slices';
 import { Box, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { sharedBannerStyles } from './SharedBannerStyles';

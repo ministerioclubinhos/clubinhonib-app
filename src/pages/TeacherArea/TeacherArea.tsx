@@ -14,7 +14,7 @@ import {
   Button,
 } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store/slices';
+import { RootState } from '@/store/slices';
 import TeacherWeekBanner from './TeacherWeekBanner';
 import TeacherMeditationBanner from './TeacherMeditationBanner';
 import { motion } from 'framer-motion';

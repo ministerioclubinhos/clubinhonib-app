@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
-import { RootState } from '../../store/slices';
+import { RootState } from '@/store/slices';
 import { RouteData } from 'store/slices/route/routeSlice';
 import { MediaTargetType } from 'store/slices/types';
 

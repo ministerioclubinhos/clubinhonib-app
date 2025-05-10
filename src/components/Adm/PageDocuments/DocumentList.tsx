@@ -25,7 +25,7 @@ import {
   setMedia,
 } from 'store/slices/documents/documentSlice';
 import { AppDispatch } from 'store/slices';
-import api from '../../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import DocumentForm from './DocumentForm';
 import DocumentCard from './DocumentCard';
 import DocumentDetailsModal from './DocumentDetailsModal';

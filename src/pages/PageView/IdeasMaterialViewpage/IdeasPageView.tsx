@@ -18,7 +18,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import api from '../../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { fetchRoutes } from 'store/slices/route/routeSlice';
 import { RootState, AppDispatch } from 'store/slices';
 import { setIdeasData, IdeasPageData } from 'store/slices/ideas/ideasSlice';

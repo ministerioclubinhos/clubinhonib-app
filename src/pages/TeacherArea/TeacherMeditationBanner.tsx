@@ -15,8 +15,8 @@ import {
   setMeditationData,
   MeditationData,
   WeekDayLabel,
-} from '../../store/slices/meditation/meditationSlice';
-import api from '../../config/axiosConfig';
+} from '@/store/slices/meditation/meditationSlice';
+import api from '@/config/axiosConfig';
 
 export default function TeacherMeditationBanner() {
   const dispatch = useDispatch<AppDispatch>();

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, Grid, CircularProgress, Alert, TextField } from '@mui/material';
-import api from '../../../config/axiosConfig';
-import { MeditationData, DayItem } from '../../../store/slices/meditation/meditationSlice';
+import api from '@/config/axiosConfig';
+import { MeditationData, DayItem } from '@/store/slices/meditation/meditationSlice';
 import MeditationCard from './MeditationCard';
 import DayDetailsDialog from './DayDetailsDialog';
 import MediaPreviewDialog from './MediaPreviewDialog';

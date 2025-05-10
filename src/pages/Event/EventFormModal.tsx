@@ -13,7 +13,7 @@ import {
   Alert,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import api from '../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 
 interface EventFormModalProps {
   open: boolean;

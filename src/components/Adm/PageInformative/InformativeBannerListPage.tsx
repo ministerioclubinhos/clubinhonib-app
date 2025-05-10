@@ -10,7 +10,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
-import api from '../../../config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { useDispatch } from 'react-redux';
 import {
   setInformativeBanner,

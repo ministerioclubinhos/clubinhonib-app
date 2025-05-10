@@ -15,9 +15,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-import api from '../../config/axiosConfig';
-import { RootState as RootStateType, AppDispatch as AppDispatchType } from '../../store/slices';
-import { login, RoleUser } from '../../store/slices/auth/authSlice';
+import api from '@/config/axiosConfig';
+import { RootState as RootStateType, AppDispatch as AppDispatchType } from '@/store/slices';
+import { login, RoleUser } from '@/store/slices/auth/authSlice';
 
 interface LoginResponse {
   message: string;
