@@ -1,100 +1,177 @@
+import React, { useState } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton,
-  useMediaQuery,
-  useTheme,
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Card,
+  CardContent,
+  Button,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import { MediaItem } from 'store/slices/types';
-import { getMediaPreviewUrl } from './getMediaPreviewUrl';
-import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import api from '../../config/axiosConfig';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store/slices';
+import {
+  setDocumentData,
+  clearDocumentData,
+} from 'store/slices/documents/documentSlice';
+import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
+import { RouteData } from 'store/slices/route/routeSlice';
 
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  media: MediaItem | null;
-  title?: string;
-}
+const DocumentsSection: React.FC = () => {
+  const dispatch = useDispatch();
+  const documentData = useSelector(
+    (state: RootState) => state.document.documentData
+  );
+  const routes = useSelector((state: RootState) => state.routes.routes);
+  const [openModal, setOpenModal] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-export default function MediaDocumentPreviewModal({
-  open,
-  onClose,
-  media,
-  title,
-}: Props) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const documentRoutes = routes.filter(
+    (route) => route.entityType === 'Document'
+  );
 
-  const previewUrl = media ? getMediaPreviewUrl(media) : null;
-
-  // Se for mobile, abrir em nova aba e não renderizar modal
-  useEffect(() => {
-    if (open && fullScreen && previewUrl) {
-      window.open(previewUrl, '_blank');
-      onClose(); // fecha imediatamente
+  const handleOpenModal = async (route: RouteData) => {
+    try {
+      const response = await api.get(`/documents/${route.idToFetch}`);
+      dispatch(setDocumentData(response.data));
+      setOpenModal(true);
+    } catch (error) {
+      console.error('Erro ao buscar documento:', error);
+      setError('Não foi possível carregar o documento.');
     }
-  }, [open, fullScreen, previewUrl, onClose]);
+  };
 
-  if (!media || !previewUrl || fullScreen) return null;
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    dispatch(clearDocumentData());
+  };
 
-  // Se for mobile e estiver abrindo, abre nova aba e fecha o modal imediatamente
-  useEffect(() => {
-    if (open && fullScreen && previewUrl) {
-      window.open(previewUrl, '_blank');
-      onClose(); // fecha o modal instantaneamente
-    }
-  }, [open, fullScreen, previewUrl, onClose]);
+  const handleToggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
 
-  // Impede renderização do modal no mobile
-  if (fullScreen) return null;
+  const truncateDescription = (
+    description: string | undefined,
+    maxLength: number
+  ) => {
+    if (!description) return 'Sem descrição';
+    return description.length > maxLength
+      ? `${description.substring(0, maxLength)}...`
+      : description;
+  };
+
+  const displayedRoutes = isExpanded
+    ? documentRoutes
+    : documentRoutes.slice(0, 4);
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullScreen={false}
-      maxWidth={false}
-      PaperProps={{
-        sx: {
-          width: '90vw',
-          height: '85vh',
-          maxWidth: '90vw',
-          borderRadius: 3,
-        },
+    <Paper
+      elevation={2}
+      sx={{
+        p: { xs: 2, md: 3 },
+        mt: 5,
+        borderLeft: '5px solid #0288d1',
+        backgroundColor: '#e1f5fe',
+        borderRadius: 2,
       }}
     >
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          bgcolor: theme.palette.primary.main,
-          color: 'white',
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-          pr: 2,
-        }}
-      >
-        {title || media.title}
-        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent sx={{ p: 0 }}>
-        <iframe
-          src={previewUrl}
-          title={media.title}
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            borderBottomLeftRadius: 12,
-            borderBottomRightRadius: 12,
-          }}
-        />
-      </DialogContent>
-    </Dialog>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <DescriptionIcon sx={{ color: '#0288d1', mr: 1 }} />
+        <Typography
+          variant="h6"
+          fontWeight="bold"
+          color="#424242"
+          sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}
+        >
+          Documentos Importantes
+        </Typography>
+      </Box>
+
+      {error ? (
+        <Typography variant="body2" color="error" textAlign="center">
+          {error}
+        </Typography>
+      ) : documentRoutes.length > 0 ? (
+        <>
+          <Grid container spacing={3}>
+            {displayedRoutes.map((route) => (
+              <Grid item xs={12} sm={6} md={3} key={route.id}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card
+                    sx={{
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
+                      },
+                    }}
+                    onClick={() => handleOpenModal(route)}
+                  >
+                    <CardContent sx={{ py: 1 }}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        color="#424242"
+                        gutterBottom
+                      >
+                        {route.title}
+                      </Typography>
+                      <Typography variant="body2" color="#616161">
+                        {truncateDescription(route.description, 70)}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+
+          {documentRoutes.length > 4 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                endIcon={
+                  isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                }
+                onClick={handleToggleExpand}
+              >
+                {isExpanded ? 'Ver menos' : 'Ver mais documentos'}
+              </Button>
+            </Box>
+          )}
+        </>
+      ) : (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          textAlign="center"
+        >
+          Nenhum documento disponível no momento.
+        </Typography>
+      )}
+
+      <MediaDocumentPreviewModal
+        open={openModal}
+        onClose={handleCloseModal}
+        media={documentData?.media || null}
+        title={documentData?.name}
+      />
+    </Paper>
   );
-}
+};
+
+export default DocumentsSection;

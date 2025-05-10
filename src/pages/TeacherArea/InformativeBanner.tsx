@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/slices';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import Slider from 'react-slick';
 import { motion } from 'framer-motion';
 import { MediaTargetType } from 'store/slices/types';
@@ -19,8 +19,11 @@ const colorThemes = [
 
 const InformativeBanner: React.FC = () => {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [maxHeight, setMaxHeight] = useState({ mobile: 260, desktop: 300 });
 
   const routes = useSelector((state: RootState) => state.routes.routes) as RouteData[];
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const informativeRoutes = useMemo(
     () =>
@@ -30,6 +33,25 @@ const InformativeBanner: React.FC = () => {
       ),
     [routes]
   );
+
+  useEffect(() => {
+    if (informativeRoutes.length === 0) return;
+
+    const heights = informativeRoutes.map((route) => {
+      const content = (route.title || '') + (route.subtitle || '');
+      const charCount = content.length;
+
+      const mobileHeight = Math.min(260 + charCount * 0.5, 400);
+      const desktopHeight = Math.min(300 + charCount * 0.3, 300);
+
+      return { mobile: mobileHeight, desktop: desktopHeight };
+    });
+
+    const maxMobileHeight = Math.max(...heights.map((h) => h.mobile), 260);
+    const maxDesktopHeight = Math.max(...heights.map((h) => h.desktop), 300);
+
+    setMaxHeight({ mobile: maxMobileHeight, desktop: maxDesktopHeight });
+  }, [informativeRoutes]);
 
   const carouselSettings = {
     dots: true,
@@ -43,7 +65,7 @@ const InformativeBanner: React.FC = () => {
     pauseOnHover: true,
     beforeChange: (_: number, next: number) => setActiveSlide(next),
     appendDots: (dots: React.ReactNode) => (
-      <Box sx={{ mt: 2 }}>
+      <Box sx={{ mt: { xs: 1, md: 2 } }}>
         <ul style={{ margin: 0, padding: 0 }}>{dots}</ul>
       </Box>
     ),
@@ -54,26 +76,36 @@ const InformativeBanner: React.FC = () => {
 
     return (
       <motion.div
-        key={`${route.id}-${activeSlide}`} // força reanimação
+        key={`${route.id}-${activeSlide}`}
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        style={{
+          height: isMobile ? `${maxHeight.mobile}px` : `${maxHeight.desktop}px`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+        }}
       >
         <Box
           sx={{
             background: theme.background,
             color: theme.textColor,
-            padding: '32px 16px',
+            padding: { xs: '0px', md: 0 },
             borderRadius: '12px',
             boxShadow: '0 6px 18px rgba(0, 0, 0, 0.3)',
             display: 'flex',
+            flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            height: { xs: 260, md: 300 }, // altura fixa para evitar saltos
+            width: '100%',
+            height: '100%', // Fill parent height
             textAlign: 'center',
+            boxSizing: 'border-box',
           }}
         >
-          <Box sx={{ maxWidth: 800, width: '100%' }}>
+          <Box sx={{ maxWidth: { xs: '95%', md: '90%' }, width: '100%' }}>
             <motion.div
               key={`info-${activeSlide}`}
               initial={{ x: -80, opacity: 0 }}
@@ -83,7 +115,7 @@ const InformativeBanner: React.FC = () => {
               <Typography
                 variant="overline"
                 sx={{
-                  fontSize: { xs: '1.1rem', md: '2.2rem' },
+                  fontSize: { xs: '1rem', md: '2.2rem' },
                   fontWeight: 700,
                   letterSpacing: '1px',
                   textTransform: 'uppercase',
@@ -106,7 +138,7 @@ const InformativeBanner: React.FC = () => {
                 variant="h5"
                 gutterBottom
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.7rem' },
+                  fontSize: { xs: '.9rem', md: '1.7rem' },
                   fontWeight: 'bold',
                   textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
                 }}
@@ -136,15 +168,28 @@ const InformativeBanner: React.FC = () => {
   if (informativeRoutes.length === 0) return null;
 
   if (informativeRoutes.length === 1) {
-    return renderBanner(informativeRoutes[0], 0);
+    return (
+      <Box
+        sx={{
+          height: isMobile ? `${maxHeight.mobile}px` : `${maxHeight.desktop}px`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {renderBanner(informativeRoutes[0], 0)}
+      </Box>
+    );
   }
 
   return (
-    <Slider {...carouselSettings}>
-      {informativeRoutes.map((route, index) => (
-        <div key={route.id}>{renderBanner(route, index)}</div>
-      ))}
-    </Slider>
+    <Box sx={{ minHeight: { xs: 260, md: 300 } }}>
+      <Slider {...carouselSettings}>
+        {informativeRoutes.map((route, index) => (
+          <div key={route.id}>{renderBanner(route, index)}</div>
+        ))}
+      </Slider>
+    </Box>
   );
 };
 
