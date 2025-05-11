@@ -5,6 +5,8 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
+  Box,
+  Button,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect } from 'react';
@@ -46,6 +48,8 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
           height: '85vh',
           maxWidth: '90vw',
           borderRadius: 3,
+          display: 'flex',
+          flexDirection: 'column',
         },
       }}
     >
@@ -54,7 +58,7 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          bgcolor: theme.palette.primary.main,
+          bgcolor: '#81d742',
           color: 'white',
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
@@ -66,7 +70,8 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent sx={{ p: 0 }}>
+
+      <DialogContent sx={{ p: 0, flexGrow: 1 }}>
         <iframe
           src={previewUrl}
           title={media.title}
@@ -74,11 +79,22 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
             width: '100%',
             height: '100%',
             border: 'none',
-            borderBottomLeftRadius: 12,
-            borderBottomRightRadius: 12,
           }}
         />
       </DialogContent>
+
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          justifyContent: 'flex-end',
+          borderTop: '1px solid #ccc',
+        }}
+      >
+        <Button variant="contained" color="primary" onClick={onClose}>
+          Fechar
+        </Button>
+      </Box>
     </Dialog>
   );
 }
