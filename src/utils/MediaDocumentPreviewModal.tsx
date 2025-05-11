@@ -7,6 +7,7 @@ import {
   useTheme,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { useEffect } from 'react';
 import { MediaItem } from 'store/slices/types';
 import { getMediaPreviewUrl } from './getMediaPreviewUrl';
 
@@ -19,9 +20,17 @@ interface Props {
 
 export default function MediaDocumentPreviewModal({ open, onClose, media, title }: Props) {
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  if (!media) return null;
+  useEffect(() => {
+    if (open && media && isMobile) {
+      const url = getMediaPreviewUrl(media);
+      window.open(url, '_blank');
+      onClose(); // fecha o modal imediatamente
+    }
+  }, [open, media, isMobile, onClose]);
+
+  if (!media || (isMobile && open)) return null;
 
   const previewUrl = getMediaPreviewUrl(media);
 
@@ -29,7 +38,7 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
     <Dialog
       open={open}
       onClose={onClose}
-      fullScreen={fullScreen}
+      fullScreen={false}
       maxWidth={false}
       PaperProps={{
         sx: {
