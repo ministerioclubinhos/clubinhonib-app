@@ -15,7 +15,19 @@ import {
   useMediaQuery,
   Divider,
 } from '@mui/material';
-import { Menu as MenuIcon, EventNote, AddBox } from '@mui/icons-material';
+import {
+  Menu as MenuIcon,
+  EventNote,
+  AddBox,
+  PhotoLibrary,
+  VideoLibrary,
+  Lightbulb,
+  MenuBook,
+  Description,
+  Comment,
+  Notifications,
+  ContactMail,
+} from '@mui/icons-material';
 
 const drawerWidth = 240;
 
@@ -35,76 +47,70 @@ const AdminLayout: React.FC = () => {
           Painel Admin
         </Typography>
       </Box>
-      <Divider sx={{ mb: 1 }} />
+      <Divider />
 
+      <Box sx={{ px: 2, py: 1 }}>
+        <Typography variant="caption" fontWeight="bold" color="text.secondary">
+          Páginas
+        </Typography>
+      </Box>
       <List>
         <ListItemButton onClick={() => navigate('/adm/paginas-materiais-semanais')}>
-          <ListItemIcon>
-            <EventNote />
-          </ListItemIcon>
-          <ListItemText primary="Páginas de materiais" />
+          <ListItemIcon><EventNote /></ListItemIcon>
+          <ListItemText primary="Materiais semanais" />
         </ListItemButton>
-
         <ListItemButton onClick={() => navigate('/adm/paginas-fotos')}>
-          <ListItemIcon>
-            <EventNote />
-          </ListItemIcon>
+          <ListItemIcon><PhotoLibrary /></ListItemIcon>
           <ListItemText primary="Páginas de fotos" />
         </ListItemButton>
-
         <ListItemButton onClick={() => navigate('/adm/paginas-videos')}>
-          <ListItemIcon>
-            <EventNote />
-          </ListItemIcon>
+          <ListItemIcon><VideoLibrary /></ListItemIcon>
           <ListItemText primary="Páginas de vídeos" />
         </ListItemButton>
-
         <ListItemButton onClick={() => navigate('/adm/paginas-ideias')}>
-          <ListItemIcon>
-            <EventNote />
-          </ListItemIcon>
+          <ListItemIcon><Lightbulb /></ListItemIcon>
           <ListItemText primary="Páginas de ideias" />
         </ListItemButton>
+      </List>
 
+      <Divider />
+      <Box sx={{ px: 2, py: 1 }}>
+        <Typography variant="caption" fontWeight="bold" color="text.secondary">
+          Conteúdos
+        </Typography>
+      </Box>
+      <List>
         <ListItemButton onClick={() => navigate('/adm/meditacoes')}>
-          <ListItemIcon>
-            <EventNote />
-          </ListItemIcon>
+          <ListItemIcon><MenuBook /></ListItemIcon>
           <ListItemText primary="Meditações" />
         </ListItemButton>
-
         <ListItemButton onClick={() => navigate('/adm/documentos')}>
-          <ListItemIcon>
-            <EventNote />
-          </ListItemIcon>
+          <ListItemIcon><Description /></ListItemIcon>
           <ListItemText primary="Documentos" />
         </ListItemButton>
-
-        <ListItemButton onClick={() => navigate('/adm/comentarios')}>
-          <ListItemIcon>
-            <EventNote />
-          </ListItemIcon>
-          <ListItemText primary="Comentários" />
-        </ListItemButton>
-
         <ListItemButton onClick={() => navigate('/adm/informativos')}>
-          <ListItemIcon>
-            <EventNote />
-          </ListItemIcon>
+          <ListItemIcon><Notifications /></ListItemIcon>
           <ListItemText primary="Informativos" />
         </ListItemButton>
+      </List>
 
+      <Divider />
+      <Box sx={{ px: 2, py: 1 }}>
+        <Typography variant="caption" fontWeight="bold" color="text.secondary">
+          Administração
+        </Typography>
+      </Box>
+      <List>
+        <ListItemButton onClick={() => navigate('/adm/comentarios')}>
+          <ListItemIcon><Comment /></ListItemIcon>
+          <ListItemText primary="Comentários" />
+        </ListItemButton>
         <ListItemButton onClick={() => navigate('/adm/contatos')}>
-          <ListItemIcon>
-            <EventNote />
-          </ListItemIcon>
+          <ListItemIcon><ContactMail /></ListItemIcon>
           <ListItemText primary="Contatos" />
         </ListItemButton>
-
         <ListItemButton onClick={() => navigate('/adm/criar-pagina')}>
-          <ListItemIcon>
-            <AddBox />
-          </ListItemIcon>
+          <ListItemIcon><AddBox /></ListItemIcon>
           <ListItemText primary="Criar Página" />
         </ListItemButton>
       </List>
@@ -123,7 +129,7 @@ const AdminLayout: React.FC = () => {
     >
       {isMobile && (
         <AppBar position="fixed" color="inherit" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
-          <Toolbar >
+          <Toolbar>
             <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{ mr: 2 }}>
               <MenuIcon />
             </IconButton>
@@ -152,7 +158,6 @@ const AdminLayout: React.FC = () => {
         {drawerContent}
       </Drawer>
 
-      {/* Main Content */}
       <Box
         component="main"
         sx={{
