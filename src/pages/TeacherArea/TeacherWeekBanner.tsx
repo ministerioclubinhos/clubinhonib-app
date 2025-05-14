@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { Box, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { sharedBannerStyles } from './SharedBannerStyles';
 import { MediaTargetType } from 'store/slices/types';
 
 const TeacherWeekBanner: React.FC = () => {
@@ -11,19 +10,24 @@ const TeacherWeekBanner: React.FC = () => {
   const currentWeekRoute = routes.find(
     (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.current === true
   );
-  if (!currentWeekRoute) return null;
 
   if (!currentWeekRoute) {
     return (
       <Box
         sx={{
-          ...sharedBannerStyles,
-          background: 'linear-gradient(to bottom right, #0073E6 0%, #dceeff 100%)',
-          color: '#fff',
+          width: '100%',
+          minHeight: { xs: '50vh', sm: '55vh', md: '30vh' },
           display: 'flex',
+          flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          minHeight: 200,
+          textAlign: 'center',
+          px: 0,
+          py: { xs: 0, md: 0 },
+          boxShadow: 'inset 0 0 80px rgba(0,0,0,0.1)',
+          borderRadius: 2,
+          background: 'linear-gradient(to bottom right, #0073E6 0%, #dceeff 100%)',
+          color: '#fff',
         }}
       >
         <Typography variant="h6" sx={{ textAlign: 'center' }}>
@@ -36,7 +40,17 @@ const TeacherWeekBanner: React.FC = () => {
   return (
     <Box
       sx={{
-        ...sharedBannerStyles,
+        width: '100%',
+        minHeight: { xs: '50vh', sm: '55vh', md: '30vh' },
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+        px: 0,
+        py: { xs: 0, md: 0 },
+        boxShadow: 'inset 0 0 80px rgba(0,0,0,0.1)',
+        borderRadius: 2,
         background: 'linear-gradient(to bottom right, #0073E6 0%, #dceeff 100%)',
         color: '#fff',
       }}

@@ -53,9 +53,9 @@ const TeacherArea: React.FC = () => {
   const bannerStyles = {
     flex: {
       xs: '1 1 100%',
-      md: activeBanners === 1 ? '1 1 100%' : '1 1 48%',
+      md: activeBanners === 1 ? '1 1 100%' : '1 1 50%',
     },
-    maxWidth: { xs: '100%', md: activeBanners === 1 ? '100%' : '48%' },
+    maxWidth: { xs: '100%', md: activeBanners === 1 ? '100%' : '50%' },
     mb: { xs: 2, md: 0 },
   };
 
