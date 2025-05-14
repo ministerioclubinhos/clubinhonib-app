@@ -7,7 +7,6 @@ import {
   useTheme,
   CircularProgress,
 } from '@mui/material';
-import { sharedBannerStyles } from './SharedBannerStyles';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
 import { AppDispatch, RootState } from 'store/slices';
 import { useDispatch, useSelector } from 'react-redux';
@@ -41,10 +40,10 @@ export default function TeacherMeditationBanner() {
       route.path.toLowerCase().includes(weekdayName.toLowerCase())
   );
 
-  if (!meditationDay) return null;  
+  if (!meditationDay) return null;
 
   const handleOpenPreview = async () => {
-    if (!meditationDay) return;  
+    if (!meditationDay) return;
 
     try {
       setLoading(true);
@@ -72,7 +71,17 @@ export default function TeacherMeditationBanner() {
     <>
       <Box
         sx={{
-          ...sharedBannerStyles,
+          width: '100%',
+          minHeight: { xs: '50vh', sm: '55vh', md: '30vh' },
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          textAlign: 'center',
+          px: 0,
+          py: { xs: 0, md: 0 },
+          boxShadow: 'inset 0 0 80px rgba(0,0,0,0.1)',
+          borderRadius: 2,
           background: 'linear-gradient(to bottom right, #00796b 0%, #004d40 100%)',
           color: '#e0f2f1',
         }}

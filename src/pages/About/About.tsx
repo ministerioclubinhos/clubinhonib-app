@@ -78,7 +78,7 @@ const About: React.FC = () => {
       >
         <Section
           title="Quem Somos"
-          content="O Ministério de Clubinho Bíblico é um programa evangelístico infantil, composto por pessoas que decidiram fazer de Jesus o Senhor de suas vidas, com metodologia e ensinamentos que nasceram na, estes servos do Senhor Jesus, formam uma equipe de professores que detém um vasto conhecimento no ensino voltado para evangelismo infantil, que de maneira singular estão espalhados em escolas, abrigos, praças e principalmente nas residências dos membros da Nova Igreja Batista."
+          content="O Ministério de Clubinho Bíblico é um programa evangelístico infantil, composto por pessoas que decidiram fazer de Jesus o Senhor de suas vidas, com metodologia e ensinamentos que nasceram na missão de anunciar o evangelho, estes servos do Senhor Jesus, formam uma equipe de professores que detém um vasto conhecimento no ensino voltado para evangelismo infantil, que de maneira singular estão espalhados em escolas, abrigos, praças e principalmente nas residências dos membros da Nova Igreja Batista."
           isMain
         />
 
