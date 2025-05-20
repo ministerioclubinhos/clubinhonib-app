@@ -18,9 +18,12 @@ import { MediaTargetType } from 'store/slices/types';
 const WeekMaterialsList = () => {
     const routes = useSelector((state: RootState) => state.routes.routes);
     const loading = useSelector((state: RootState) => state.routes.loading);
-    const weekMaterialsRoutes = routes.filter(
-        (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.public
-    );
+    const weekMaterialsRoutes = routes
+        .filter(
+            (route) =>
+                route.entityType === MediaTargetType.WeekMaterialsPage && route.public
+        )
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
     const [filter, setFilter] = useState('');
     const [filteredRoutes, setFilteredRoutes] = useState(weekMaterialsRoutes);
