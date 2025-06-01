@@ -6,7 +6,7 @@ export interface WeekMaterialPageData {
   id: string;
   title: string;
   subtitle: string;
-  currentWeek?: boolean;
+  currentWeek: boolean;
   description: string;
   createdAt: string;
   updatedAt: string;

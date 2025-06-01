@@ -22,6 +22,7 @@ import WeekAudios from './WeekAudios';
 import WeekImages from './WeekImages';
 import api from '@/config/axiosConfig';
 import { MediaItem, MediaType, MediaUploadType } from 'store/slices/types';
+import { current } from '@reduxjs/toolkit';
 
 interface WeekMaterialPageCreatorProps {
   fromTemplatePage?: boolean;
@@ -68,6 +69,8 @@ export default function WeekMaterialPageCreator({
   const [pageTitle, setPageTitle] = useState('');
   const [pageSubtitle, setPageSubtitle] = useState('');
   const [pageDescription, setPageDescription] = useState('');
+
+  const [pageCurrentWeek, setPageCurrentWeek] = useState(false);
   const [tab, setTab] = useState(0);
 
   const [videos, setVideos] = useState<MediaItem[]>([]);
@@ -106,6 +109,7 @@ export default function WeekMaterialPageCreator({
       setPageTitle(weekMaterialSData.title);
       setPageSubtitle(weekMaterialSData.subtitle);
       setPageDescription(weekMaterialSData.description);
+      setPageCurrentWeek(weekMaterialSData.currentWeek);
       setVideos(weekMaterialSData.videos);
       setDocuments(weekMaterialSData.documents);
       setImages(weekMaterialSData.images);
@@ -140,8 +144,6 @@ export default function WeekMaterialPageCreator({
       const processedDocs = documents.map((d, i) => buildFileItem(d, i, 'document', formData));
       const processedImgs = images.map((i, n) => buildFileItem(i, n, 'image', formData));
       const processedAudios = audios.map((a, x) => buildFileItem(a, x, 'audio', formData));
-      console.log("processedVideos: ", processedVideos);
-
 
       const mapItem = (item: MediaItem & { fileField?: string }, type: MediaType) => ({
         ...(item.id && { id: item.id }),
@@ -169,6 +171,7 @@ export default function WeekMaterialPageCreator({
         pageTitle,
         pageSubtitle,
         pageDescription,
+        currentWeek: pageCurrentWeek,
         videos: processedVideos.map((v) => mapItem(v, MediaType.VIDEO)),
         documents: processedDocs.map((d) => mapItem(d, MediaType.DOCUMENT)),
         images: processedImgs.map((i) => mapItem(i, MediaType.IMAGE)),
