@@ -10,8 +10,9 @@ import {
   Stack,
   useMediaQuery,
   useTheme,
+  Tooltip
 } from '@mui/material';
-import { Visibility, Delete } from '@mui/icons-material';
+import { Visibility, Delete, Public, Lock } from '@mui/icons-material';
 import { WeekMaterialPageData } from 'store/slices/week-material/weekMaterialSlice';
 
 interface Props {
@@ -56,6 +57,13 @@ export default function WeekMaterialCard({
           position: 'relative',
         }}
       >
+        <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
+          <Tooltip title={material.route.public ? 'Público' : 'Privado'}>
+            <IconButton size="small" disabled>
+              {material.route.public ? <Public color="success" /> : <Lock color="error" />}
+            </IconButton>
+          </Tooltip>
+        </Box>
         <IconButton
           size="small"
           onClick={onDelete}
