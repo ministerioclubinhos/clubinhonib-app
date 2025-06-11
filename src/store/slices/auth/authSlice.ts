@@ -61,7 +61,6 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
           Authorization: `Bearer ${token}`,
         },
       });
-      log('[Auth] Usuário carregado com sucesso via /auth/me:', response.data);
       return response.data;
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Erro ao buscar usuário';
@@ -85,7 +84,6 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       if (user) state.user = user;
       state.error = null;
-      log('[AuthSlice] Login realizado com sucesso:', { user });
     },
     logout: (state) => {
       state.accessToken = null;
@@ -93,7 +91,6 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.error = null;
-      log('[AuthSlice] Logout realizado.');
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;

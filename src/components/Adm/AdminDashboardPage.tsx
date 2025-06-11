@@ -24,6 +24,11 @@ const cardData = [
     description: 'Organize e edite galerias de imagens do site.',
     icon: <PhotoLibrary fontSize="large" color="primary" />,
     path: '/adm/paginas-fotos',
+  },  {
+    title: 'Páginas de Fotos dos Clubinhos',
+    description: 'Organize e edite galerias de fotos dos clubinhos.',
+    icon: <PhotoLibrary fontSize="large" color="primary" />,
+    path: '/adm/paginas-fotos-clubinhos',
   },
   {
     title: 'Páginas de Vídeos',

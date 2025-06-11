@@ -23,7 +23,8 @@ const WeekMaterialsList = () => {
             (route) =>
                 route.entityType === MediaTargetType.WeekMaterialsPage && route.public
         )
-        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
 
     const [filter, setFilter] = useState('');
     const [filteredRoutes, setFilteredRoutes] = useState(weekMaterialsRoutes);
@@ -64,11 +65,10 @@ const WeekMaterialsList = () => {
                 padding: 4,
                 backgroundColor: '#f5f5f5',
                 minHeight: '100vh',
-                marginTop: { xs: 4, md: 8 }, // mobile: 2, desktop: 4
-                marginBottom: { xs: 2, md: 4 } // mobile: 2, desktop: 4
+                marginTop: { xs: 4, md: 8 },
+                marginBottom: { xs: 2, md: 4 }
             }}
         >
-
             <Typography
                 variant="h4"
                 align="center"
@@ -132,7 +132,7 @@ const WeekMaterialsList = () => {
                             <CardMedia
                                 component="img"
                                 height="140"
-                                image={route.image ?? undefined} // Correção aplicada aqui
+                                image={route.image ?? undefined}
                                 alt={route.title}
                             />
                             <CardContent>

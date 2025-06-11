@@ -113,25 +113,52 @@ const TeacherArea: React.FC = () => {
         )}
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1, mb: 4 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexWrap: { xs: 'wrap', md: 'nowrap' },
+          gap: 2,
+          mt: 1,
+          mb: 4,
+        }}
+      >
         <Button
           variant="contained"
           color="primary"
           component={Link}
           to="/lista-materias-semanais"
           sx={{
-            px: { xs: 1, md: 4 },
-            py: { xs: 1, md: 1.5 },
+            px: { xs: 2, md: 4 },
+            py: { xs: 1.2, md: 1.5 },
             fontWeight: 'bold',
-            fontSize: { xs: '0.75rem', md: '1rem' },
+            fontSize: { xs: '0.8rem', md: '1rem' },
             width: { xs: '100%', md: 'auto' },
-            height: { xs: 40, md: 48 },
+            height: { xs: 42, md: 48 },
           }}
         >
           Ver Lista de Materiais Semanais
         </Button>
 
+        <Button
+          variant="contained"
+          color="success"
+          component={Link}
+          to="/imagens-clubinho"
+          sx={{
+            px: { xs: 2, md: 4 },
+            py: { xs: 1.2, md: 1.5 },
+            fontWeight: 'bold',
+            fontSize: { xs: '0.8rem', md: '1rem' },
+            width: { xs: '100%', md: 'auto' },
+            height: { xs: 42, md: 48 },
+          }}
+        >
+          Envie fotos do seu Clubinho
+        </Button>
       </Box>
+
+
 
       <Paper
         elevation={2}
