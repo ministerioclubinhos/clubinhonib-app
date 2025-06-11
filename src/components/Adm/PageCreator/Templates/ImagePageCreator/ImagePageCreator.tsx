@@ -17,9 +17,10 @@ import {
   FormControlLabel,
   Switch,
 } from '@mui/material';
-import { ImagePageData, SectionData } from '@/store/slices/image/imageSlice';
+import { ImagePageData } from '@/store/slices/image/imageSlice';
 import ImageSection from './ImageSection';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
+import { SectionData } from '@/store/slices/image-section/imageSectionSlice';
 
 interface ImageProps {
   fromTemplatePage?: boolean;

@@ -41,6 +41,8 @@ import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/I
 import WeekMaterialsList from 'pages/TeacherArea/WeekMaterialsList';
 import InformativeBannerListPage from 'components/Adm/PageInformative/InformativeBannerListPage';
 import ContactList from 'components/Adm/PageContact/ContactList';
+import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
+import ImageSectionListPage from './components/Adm/PageImageSection/ImageSectionListPage';
 
 const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatchType>();
@@ -86,6 +88,7 @@ const App: React.FC = () => {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/area-do-professor" element={<TeacherArea />} />
+            <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
             <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
           </Route>
 
@@ -96,10 +99,11 @@ const App: React.FC = () => {
               <Route path="comentarios" element={<CommentsListPage />} />
               <Route path="documentos" element={<DocumentList />} />
               <Route path="informativos" element={<InformativeBannerListPage />} />
-              
+
               <Route path="contatos" element={<ContactList />} />
               <Route path="paginas-materiais-semanais" element={<WeekMaterialListPage />} />
               <Route path="paginas-fotos" element={<ImagePageListPage />} />
+              <Route path="paginas-fotos-clubinhos" element={<ImageSectionListPage />} />
               <Route path="paginas-videos" element={<VideoPageListPage />} />
               <Route path="paginas-ideias" element={<IdeasPageListPage />} />
               <Route path="criar-pagina" element={<SelecPageTemplate />} />
@@ -119,11 +123,11 @@ const App: React.FC = () => {
                 path="editar-pagina-semana"
                 element={<WeekMaterialPageCreator fromTemplatePage={false} />}
               />
-
               <Route
                 path="editar-pagina-ideias"
                 element={<IdeasMaterialPageCreator fromTemplatePage={false} />}
               />
+              <Route path="editar-imagens-clubinho" element={<ImageSectionPage isEditMode={true} />} />
             </Route>
           </Route>
 
