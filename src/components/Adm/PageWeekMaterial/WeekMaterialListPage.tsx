@@ -39,8 +39,11 @@ export default function WeekMaterialListPage() {
     setLoading(true);
     try {
       const response = await api.get('/week-material-pages');
-      setWeekMaterials(response.data);
-      setFilteredMaterials(response.data);
+      const orderedData = [...response.data].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setWeekMaterials(orderedData);
+      setFilteredMaterials(orderedData);
     } catch (err) {
       setError('Erro ao buscar materiais semanais');
     } finally {

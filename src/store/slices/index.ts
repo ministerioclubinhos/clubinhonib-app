@@ -3,6 +3,8 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
 import imageReducer from './image/imageSlice';
+import imageSectionReducer from './image-section/imageSectionSlice';
+
 import authReducer from './auth/authSlice';
 import routesReducer from './route/routeSlice';
 import videoReducer from './video/videoSlice';
@@ -13,7 +15,7 @@ import commentsReducer from './comment/commentsSlice';
 import documentReducer from './documents/documentSlice';
 import ideasReducer from './ideas/ideasSlice';
 import informativeBannerReducer from './informative/informativeBannerSlice';
-
+import imageSectionPaginationReducer from './image-section-pagination/imageSectionPaginationSlice';
 
 const authPersistConfig = {
   key: 'auth',
@@ -24,6 +26,7 @@ const authPersistConfig = {
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
   image: imageReducer,
+  imageSection: imageSectionReducer,
   routes: routesReducer,
   video: videoReducer,
   meditation: meditationReducer,
@@ -32,7 +35,8 @@ const rootReducer = combineReducers({
   comments: commentsReducer,
   document: documentReducer,
   ideas: ideasReducer,
-  informativeBanner: informativeBannerReducer, // 👈 registra o reducer aqui
+  informativeBanner: informativeBannerReducer,
+  imageSectionPagination: imageSectionPaginationReducer,
 });
 
 export const store = configureStore({

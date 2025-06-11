@@ -22,7 +22,6 @@ apiAxios.interceptors.request.use(
 
     if (token && config.headers) {
       config.headers['Authorization'] = `Bearer ${token}`;
-      console.log('[Axios][Request] Token incluído no header');
     } else {
       console.warn('[Axios][Request] Nenhum token encontrado no Redux');
     }

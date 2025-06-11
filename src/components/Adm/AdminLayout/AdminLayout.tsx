@@ -63,6 +63,10 @@ const AdminLayout: React.FC = () => {
           <ListItemIcon><PhotoLibrary /></ListItemIcon>
           <ListItemText primary="Páginas de fotos" />
         </ListItemButton>
+        <ListItemButton onClick={() => navigate('/adm/paginas-fotos-clubinhos')}>
+          <ListItemIcon><PhotoLibrary /></ListItemIcon>
+          <ListItemText primary="Fotos dos clubinhos" />
+        </ListItemButton>
         <ListItemButton onClick={() => navigate('/adm/paginas-videos')}>
           <ListItemIcon><VideoLibrary /></ListItemIcon>
           <ListItemText primary="Páginas de vídeos" />
