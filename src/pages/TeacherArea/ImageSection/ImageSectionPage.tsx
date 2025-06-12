@@ -142,9 +142,24 @@ export default function ImageSectionPage({ isEditMode }: ImageSectionPageProps) 
   };
 
   return (
-    <Container sx={{ mt: 10, minWidth: '90%' }}>
-      <Typography variant="h4" fontWeight="bold" mb={3} textAlign="center">
-        {isEditMode ? 'Editar imagens e publicar' : 'Adicione Imagens do seu Clubinho'}
+    <Container sx={{ mt: 10, mb: 10, minWidth: '90%' }}>
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        mb={3}
+        textAlign="center"
+        sx={{
+          fontSize: {
+            xs: '1.2rem',
+            sm: '2rem',
+            md: '2.4rem',
+          },
+          lineHeight: 1.3,
+        }}
+      >
+        {isEditMode
+          ? 'Editar imagens e publicar'
+          : 'Envie imagens do seu Clubinho'}
       </Typography>
 
       <LoadingSpinner open={isSaving} aria-label="Salvando a seção" />
@@ -157,7 +172,7 @@ export default function ImageSectionPage({ isEditMode }: ImageSectionPageProps) 
       />
 
       <ImageSectionEditor
-      isEditMode={isEditMode}
+        isEditMode={isEditMode}
         initialCaption={sectionData?.caption || ''}
         initialDescription={sectionData?.description || ''}
         initialIsPublic={sectionData?.public ?? true}
