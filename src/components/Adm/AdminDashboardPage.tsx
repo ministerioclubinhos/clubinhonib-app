@@ -10,7 +10,8 @@ import {
   Campaign,
   ContactPhone,
   Lightbulb,
-} from '@mui/icons-material';import { useNavigate } from 'react-router-dom';
+  RateReview,
+} from '@mui/icons-material'; import { useNavigate } from 'react-router-dom';
 
 const cardData = [
   {
@@ -24,7 +25,7 @@ const cardData = [
     description: 'Organize e edite galerias de imagens do site.',
     icon: <PhotoLibrary fontSize="large" color="primary" />,
     path: '/adm/paginas-fotos',
-  },  {
+  }, {
     title: 'Páginas de Fotos dos Clubinhos',
     description: 'Organize e edite galerias de fotos dos clubinhos.',
     icon: <PhotoLibrary fontSize="large" color="primary" />,
@@ -71,6 +72,12 @@ const cardData = [
     description: 'Gerencie contatos enviados para o clubinho.',
     icon: <ContactPhone fontSize="large" color="primary" />,
     path: '/adm/contatos',
+  },
+  {
+    title: 'Feedbacks',
+    description: 'Gerencie feedbacks enviados para o clubinho.',
+    icon: <RateReview fontSize="large" color="primary" />,
+    path: '/adm/feedbacks',
   },
   {
     title: 'Criar Página',
