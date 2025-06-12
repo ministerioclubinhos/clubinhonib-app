@@ -119,8 +119,8 @@ const ContactList: React.FC = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         sx={{
           mb: 4,
-          maxWidth: { xs: '100%', md: '60%' }, // ← 100% no mobile, 60% no desktop
-          mx: 'auto', // centraliza horizontalmente
+          maxWidth: { xs: '100%', md: '60%' },
+          mx: 'auto',
         }}
         size={isMobile ? 'small' : 'medium'}
       />

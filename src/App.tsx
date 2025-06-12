@@ -43,6 +43,8 @@ import InformativeBannerListPage from 'components/Adm/PageInformative/Informativ
 import ContactList from 'components/Adm/PageContact/ContactList';
 import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
 import ImageSectionListPage from './components/Adm/PageImageSection/ImageSectionListPage';
+import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
+import FeedbackList from './components/Adm/PageSiteFeedBack/FeedbackList';
 
 const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatchType>();
@@ -90,6 +92,7 @@ const App: React.FC = () => {
             <Route path="/area-do-professor" element={<TeacherArea />} />
             <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
             <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
+            <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
           </Route>
 
           <Route element={<ProtectedRoute requiredRole="admin" />}>
@@ -99,6 +102,7 @@ const App: React.FC = () => {
               <Route path="comentarios" element={<CommentsListPage />} />
               <Route path="documentos" element={<DocumentList />} />
               <Route path="informativos" element={<InformativeBannerListPage />} />
+              <Route path="feedbacks" element={<FeedbackList />} />
 
               <Route path="contatos" element={<ContactList />} />
               <Route path="paginas-materiais-semanais" element={<WeekMaterialListPage />} />

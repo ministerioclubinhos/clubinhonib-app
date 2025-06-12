@@ -26,8 +26,8 @@ export enum MediaTargetType {
   IdeasSection = 'IdeasSection',
   IdeasPage = 'IdeasPage',
   Document = 'Document',
-  Event='Event',  
-  Informative='Informative'
+  Event = 'Event',
+  Informative = 'Informative'
 }
 
 export interface MediaItem {
@@ -47,3 +47,30 @@ export interface MediaItem {
   fieldKey?: string;
   fileField?: string;
 }
+
+export enum FeedbackCategory {
+  CONTENT = 'content',
+  APPEARANCE = 'appearance',
+  USABILITY = 'usability',
+  BROKEN_FEATURE = 'broken_feature',
+  MISSING_FEATURE = 'missing_feature',
+  PERFORMANCE = 'performance',
+  MOBILE_EXPERIENCE = 'mobile_experience',
+  SUGGESTION = 'suggestion',
+  COMPLAINT = 'complaint',
+  OTHER = 'other',
+}
+
+export const FeedbackCategoryLabels: Record<FeedbackCategory, string> = {
+  [FeedbackCategory.CONTENT]: 'Conteúdo do site (textos, informações, erros)',
+  [FeedbackCategory.APPEARANCE]: 'Aparência e organização do site',
+  [FeedbackCategory.USABILITY]: 'Facilidade de uso / navegação',
+  [FeedbackCategory.BROKEN_FEATURE]: 'Algo não está funcionando como deveria',
+  [FeedbackCategory.MISSING_FEATURE]: 'Falta alguma funcionalidade importante',
+  [FeedbackCategory.PERFORMANCE]: 'Velocidade ou desempenho do site',
+  [FeedbackCategory.MOBILE_EXPERIENCE]: 'Problemas no celular ou tablet',
+  [FeedbackCategory.SUGGESTION]: 'Sugestão de melhoria ou ideia',
+  [FeedbackCategory.COMPLAINT]: 'Reclamação ou insatisfação',
+  [FeedbackCategory.OTHER]: 'Outro tipo de feedback',
+};
+

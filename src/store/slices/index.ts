@@ -4,7 +4,6 @@ import storage from 'redux-persist/lib/storage';
 
 import imageReducer from './image/imageSlice';
 import imageSectionReducer from './image-section/imageSectionSlice';
-
 import authReducer from './auth/authSlice';
 import routesReducer from './route/routeSlice';
 import videoReducer from './video/videoSlice';
@@ -16,6 +15,7 @@ import documentReducer from './documents/documentSlice';
 import ideasReducer from './ideas/ideasSlice';
 import informativeBannerReducer from './informative/informativeBannerSlice';
 import imageSectionPaginationReducer from './image-section-pagination/imageSectionPaginationSlice';
+import feedbackReducer from './feedback/feedbackSlice';
 
 const authPersistConfig = {
   key: 'auth',
@@ -37,6 +37,7 @@ const rootReducer = combineReducers({
   ideas: ideasReducer,
   informativeBanner: informativeBannerReducer,
   imageSectionPagination: imageSectionPaginationReducer,
+  feedback: feedbackReducer,
 });
 
 export const store = configureStore({

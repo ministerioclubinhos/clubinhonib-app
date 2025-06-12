@@ -27,6 +27,7 @@ import {
   Comment,
   Notifications,
   ContactMail,
+  RateReview,
 } from '@mui/icons-material';
 
 const drawerWidth = 240;
@@ -95,6 +96,12 @@ const AdminLayout: React.FC = () => {
         <ListItemButton onClick={() => navigate('/adm/informativos')}>
           <ListItemIcon><Notifications /></ListItemIcon>
           <ListItemText primary="Informativos" />
+        </ListItemButton>
+        <ListItemButton onClick={() => navigate('/adm/feedbacks')}>
+          <ListItemIcon>
+            <RateReview />
+          </ListItemIcon>
+          <ListItemText primary="Feedbacks" />
         </ListItemButton>
       </List>
 
