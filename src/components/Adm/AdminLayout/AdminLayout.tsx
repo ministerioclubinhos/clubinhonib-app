@@ -43,7 +43,7 @@ const AdminLayout: React.FC = () => {
   const drawerContent = (
     <>
       <Toolbar />
-      <Box sx={{ px: 2, py: 1 }}>
+      <Box sx={{ pb: 2, pt: 1, py: 1 }}>
         <Typography variant="subtitle1" fontWeight="bold">
           Painel Admin
         </Typography>
@@ -64,7 +64,7 @@ const AdminLayout: React.FC = () => {
           <ListItemIcon><PhotoLibrary /></ListItemIcon>
           <ListItemText primary="Páginas de fotos" />
         </ListItemButton>
-        <ListItemButton onClick={() => navigate('/adm/paginas-fotos-clubinhos')}>
+        <ListItemButton onClick={() => navigate('/adm/fotos-clubinhos')}>
           <ListItemIcon><PhotoLibrary /></ListItemIcon>
           <ListItemText primary="Fotos dos clubinhos" />
         </ListItemButton>
@@ -97,12 +97,6 @@ const AdminLayout: React.FC = () => {
           <ListItemIcon><Notifications /></ListItemIcon>
           <ListItemText primary="Informativos" />
         </ListItemButton>
-        <ListItemButton onClick={() => navigate('/adm/feedbacks')}>
-          <ListItemIcon>
-            <RateReview />
-          </ListItemIcon>
-          <ListItemText primary="Feedbacks" />
-        </ListItemButton>
       </List>
 
       <Divider />
@@ -112,6 +106,12 @@ const AdminLayout: React.FC = () => {
         </Typography>
       </Box>
       <List>
+        <ListItemButton onClick={() => navigate('/adm/feedbacks')}>
+          <ListItemIcon>
+            <RateReview />
+          </ListItemIcon>
+          <ListItemText primary="Feedbacks" />
+        </ListItemButton>
         <ListItemButton onClick={() => navigate('/adm/comentarios')}>
           <ListItemIcon><Comment /></ListItemIcon>
           <ListItemText primary="Comentários" />
@@ -136,6 +136,7 @@ const AdminLayout: React.FC = () => {
         maxWidth: '100vw',
         overflowX: 'hidden',
         minHeight: '100vh',
+        mb: 16,
       }}
     >
       {isMobile && (
@@ -163,6 +164,9 @@ const AdminLayout: React.FC = () => {
             width: drawerWidth,
             boxSizing: 'border-box',
             mt: isMobile ? 0 : 8,
+            overflowY: 'auto',
+            height: isMobile ? '100vh' : 'calc(100vh - 64px)',
+            zIndex: isMobile ? 1300 : 'auto',
           },
         }}
       >
