@@ -84,7 +84,7 @@ const App: React.FC = () => {
           <Route path="/sobre" element={<About />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/eventos" element={<Event />} />
-          <Route path="/feed-clubinho" element={<PageGalleryView />} />
+          <Route path="/feed-clubinho" element={<PageGalleryView feed={true} />} />
           <Route path="/login" element={<Login />} />
           <Route path="*" element={<Home />} />
 
@@ -107,7 +107,7 @@ const App: React.FC = () => {
               <Route path="contatos" element={<ContactList />} />
               <Route path="paginas-materiais-semanais" element={<WeekMaterialListPage />} />
               <Route path="paginas-fotos" element={<ImagePageListPage />} />
-              <Route path="paginas-fotos-clubinhos" element={<ImageSectionListPage />} />
+              <Route path="fotos-clubinhos" element={<ImageSectionListPage />} />
               <Route path="paginas-videos" element={<VideoPageListPage />} />
               <Route path="paginas-ideias" element={<IdeasPageListPage />} />
               <Route path="criar-pagina" element={<SelecPageTemplate />} />

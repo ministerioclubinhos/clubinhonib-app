@@ -11,9 +11,24 @@ import {
   ContactPhone,
   Lightbulb,
   RateReview,
-} from '@mui/icons-material'; import { useNavigate } from 'react-router-dom';
+} from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import * as JSX from 'react';
 
-const cardData = [
+interface CardData {
+  title: string;
+  description: string;
+  icon: React.ReactElement;
+  path: string;
+}
+
+const cardData: CardData[] = [
+  {
+    title: 'Criar Página',
+    description: 'Adicione novas páginas de conteúdo ao site.',
+    icon: <AddBox fontSize="large" color="primary" />,
+    path: '/adm/criar-pagina',
+  },
   {
     title: 'Páginas de Materiais',
     description: 'Gerencie conteúdos como textos, PDFs e links úteis.',
@@ -25,11 +40,12 @@ const cardData = [
     description: 'Organize e edite galerias de imagens do site.',
     icon: <PhotoLibrary fontSize="large" color="primary" />,
     path: '/adm/paginas-fotos',
-  }, {
-    title: 'Páginas de Fotos dos Clubinhos',
+  },
+  {
+    title: 'Fotos dos Clubinhos',
     description: 'Organize e edite galerias de fotos dos clubinhos.',
     icon: <PhotoLibrary fontSize="large" color="primary" />,
-    path: '/adm/paginas-fotos-clubinhos',
+    path: '/adm/fotos-clubinhos',
   },
   {
     title: 'Páginas de Vídeos',
@@ -79,14 +95,8 @@ const cardData = [
     icon: <RateReview fontSize="large" color="primary" />,
     path: '/adm/feedbacks',
   },
-  {
-    title: 'Criar Página',
-    description: 'Adicione novas páginas de conteúdo ao site.',
-    icon: <AddBox fontSize="large" color="primary" />,
-    path: '/adm/criar-pagina',
-  },
-];
 
+];
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -133,7 +143,12 @@ export default function AdminDashboardPage() {
                   {card.description}
                 </Typography>
               </Box>
-              <Button variant="contained" fullWidth onClick={() => navigate(card.path)}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => navigate(card.path)}
+                aria-label={`Acessar ${card.title}`}
+              >
                 Acessar
               </Button>
             </Paper>

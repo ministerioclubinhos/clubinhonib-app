@@ -128,7 +128,7 @@ export default function ImageSectionPage({ isEditMode }: ImageSectionPageProps) 
 
       await saveSection(formData);
 
-      navigate(isEditMode ? '/adm/paginas-fotos-clubinhos' : '/area-do-professor');
+      navigate(isEditMode ? '/adm/fotos-clubinhos' : '/area-do-professor');
     } catch (error) {
       console.error('Erro ao salvar a seção:', error);
       showError('Falha ao salvar a seção. Tente novamente.');

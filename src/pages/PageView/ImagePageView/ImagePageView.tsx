@@ -23,13 +23,16 @@ import { RoleUser } from 'store/slices/auth/authSlice';
 import SectionImagePageView from './SectionImagePageView';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ButtonSection from './../../TeacherArea/FofinhoButton';
+
 import { setSectionData, appendSections, updatePagination, PaginatedSectionResponse } from '@/store/slices/image-section-pagination/imageSectionPaginationSlice';
 
 interface PageSectionProps {
   idToFetch?: string;
+  feed?: boolean;
 }
 
-export default function PageSectionView({ idToFetch }: PageSectionProps) {
+export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -72,7 +75,7 @@ export default function PageSectionView({ idToFetch }: PageSectionProps) {
           setLoadingMore(true);
         }
 
-        const sectionId = idToFetch ?? defaultSectionId;
+        const sectionId = feed ? defaultSectionId : idToFetch;
         if (!sectionId) throw new Error('Nenhum ID de seção fornecido.');
 
         const { data } = await api.get<PaginatedSectionResponse>(
@@ -191,7 +194,7 @@ export default function PageSectionView({ idToFetch }: PageSectionProps) {
         >
           {section.description}
         </Typography>
-
+        {feed && isUserLogged && <ButtonSection references={['photos']} />}
         {isAdmin && (
           <Box
             sx={{
@@ -215,7 +218,7 @@ export default function PageSectionView({ idToFetch }: PageSectionProps) {
               </Fab>
             </Tooltip>
 
-            {idToFetch !== defaultSectionId && (
+            {!feed && (
               <Tooltip title="Excluir Página" placement="right">
                 <Fab
                   color="error"
