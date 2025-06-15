@@ -14,6 +14,8 @@ import {
 } from '@mui/material';
 import { RootState } from 'store/slices';
 import { MediaTargetType } from 'store/slices/types';
+import ButtonSection from './FofinhoButton';
+
 
 const WeekMaterialsList = () => {
     const routes = useSelector((state: RootState) => state.routes.routes);
@@ -93,24 +95,12 @@ const WeekMaterialsList = () => {
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                     sx={{
-                        width: { xs: '100%', md: '90%' },
+                        width: { xs: '100%', md: '80%' },
                         height: { xs: 48, md: 56 },
                     }}
                 />
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    component={Link}
-                    to="/area-do-professor"
-                    sx={{
-                        width: { xs: '100%', sm: '10%' },
-                        height: { xs: 40, sm: 56 },
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        px: { sm: 3 },
-                    }}
-                >
-                    Área do Professor
-                </Button>
+                <ButtonSection references={['teacherArea']} />
+
             </Box>
 
 

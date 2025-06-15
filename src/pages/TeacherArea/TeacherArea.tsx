@@ -29,7 +29,6 @@ import { MediaTargetType } from 'store/slices/types';
 import InformativeBanner from './InformativeBanner';
 import ButtonSection from './FofinhoButton';
 
-// Define interfaces for types
 interface Route {
   entityType: string;
   current?: boolean;
@@ -49,7 +48,6 @@ interface TeacherContentProps {
   userName?: string;
 }
 
-// Componente para os banners de semana e meditação
 const BannerSection: React.FC<BannerSectionProps> = ({ showWeekBanner, showMeditationBanner }) => {
   const activeBanners = [showWeekBanner, showMeditationBanner].filter(Boolean).length;
 
@@ -92,7 +90,6 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showWeekBanner, showMedit
   );
 };
 
-// Componente para a seção de motivação
 const MotivationSection: React.FC<MotivationSectionProps> = ({ motivationText }) => (
   <Paper
     elevation={2}
@@ -124,7 +121,6 @@ const MotivationSection: React.FC<MotivationSectionProps> = ({ motivationText })
   </Paper>
 );
 
-// Componente para a área do professor
 const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => (
   <Box>
     <Box textAlign="center" mb={4}>
@@ -266,7 +262,7 @@ const TeacherArea: React.FC = () => {
     >
       <InformativeBanner />
       <BannerSection showWeekBanner={showWeekBanner} showMeditationBanner={showMeditationBanner} />
-      <ButtonSection />
+      <ButtonSection references={['materials', 'photos','rate', 'events','help']} />
       <MotivationSection motivationText={motivacaoEvangelismo} />
       <Paper
         elevation={4}
