@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, Stack } from '@mui/material';
@@ -65,7 +65,7 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
       {isAdmin && renderLink('/adm', 'Administração')}
 
       {isAuthenticated ? (
-        <>
+        <Fragment>
           {renderLink('/area-do-professor', 'Área do Professor')}
           <Button
             onClick={handleLogout}
@@ -75,7 +75,7 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
           >
             Sair
           </Button>
-        </>
+        </Fragment>
       ) : (
         renderLink('/login', 'Área do Professor')
       )}

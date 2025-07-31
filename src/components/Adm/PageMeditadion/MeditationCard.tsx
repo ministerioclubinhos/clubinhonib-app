@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import {
   Box,
   Button,
@@ -51,7 +51,7 @@ export default function MeditationCard({ meditation, onDelete, onDayClick }: Pro
   };
 
   return (
-    <>
+    <Fragment>
       <Card
         sx={{
           flex: 1,
@@ -148,6 +148,6 @@ export default function MeditationCard({ meditation, onDelete, onDayClick }: Pro
         onClose={() => setOpen(false)}
         media={{ ...meditation.media, url: previewUrl }}
       />
-    </>
+    </Fragment>
   );
 }

@@ -15,7 +15,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { validateMediaURL } from 'utils/validateMediaURL';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
 
@@ -145,7 +145,7 @@ export default function WeekAudios({ audios, setAudios }: Props) {
         </Grid>
 
         {newAudio.uploadType === MediaUploadType.LINK && (
-          <>
+          <Fragment>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Origem</InputLabel>
@@ -176,7 +176,7 @@ export default function WeekAudios({ audios, setAudios }: Props) {
                 helperText={errors.url ? 'URL inválida ou obrigatória' : ''}
               />
             </Grid>
-          </>
+          </Fragment>
         )}
 
         {newAudio.uploadType === MediaUploadType.UPLOAD && (

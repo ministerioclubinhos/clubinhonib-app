@@ -16,6 +16,7 @@ import {
 import { ContentCopy, Close } from '@mui/icons-material';
 import { VideoPageData } from 'store/slices/video/videoSlice';
 import { MediaItem, MediaUploadType } from 'store/slices/types';
+import { Fragment } from 'react/jsx-runtime';
 
 interface VideoPageDetailsModalProps {
   page: VideoPageData | null;
@@ -110,7 +111,7 @@ export default function VideoPageDetailsModal({ page, open, onClose }: VideoPage
             </Paper>
 
             {page.videos.length > 0 && (
-              <>
+              <Fragment>
                 <Divider sx={{ my: 2 }} />
                 <Paper elevation={2} sx={{ p: 3, borderRadius: 2, bgcolor: '#fff' }}>
                   <Typography
@@ -194,7 +195,7 @@ export default function VideoPageDetailsModal({ page, open, onClose }: VideoPage
                     ))}
                   </Grid>
                 </Paper>
-              </>
+              </Fragment>
             )}
           </Stack>
         )}

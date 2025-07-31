@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import {
   Box,
   Typography,
@@ -204,7 +204,7 @@ const Eventos: React.FC = () => {
               Ver Detalhes
             </Button>
           ) : (
-            <>
+            <Fragment>
               <Box>
                 <Tooltip title="Editar">
                   <IconButton onClick={() => handleEditEvent(evento)}>
@@ -226,7 +226,7 @@ const Eventos: React.FC = () => {
               >
                 Ver Detalhes
               </Button>
-            </>
+            </Fragment>
           )}
         </CardActions>
       </Card>
@@ -292,7 +292,7 @@ const Eventos: React.FC = () => {
   const naoTemEventos = !eventos.length;
 
   return (
-    <>
+    <Fragment>
       {naoTemEventos && (
         <Box
           display="flex"
@@ -376,7 +376,7 @@ const Eventos: React.FC = () => {
                 </Button>
               )}
               {!isMobile && editMode && (
-                <>
+                <Fragment>
                   <Button
                     variant="contained"
                     color="primary"
@@ -403,7 +403,7 @@ const Eventos: React.FC = () => {
                   >
                     Cancelar
                   </Button>
-                </>
+                </Fragment>
               )}
               {leftoverAnteriores.length > 0 && (
                 <Button
@@ -448,7 +448,7 @@ const Eventos: React.FC = () => {
                   </Fab>
                 </Tooltip>
               ) : (
-                <>
+                <Fragment>
                   <Tooltip title="Adicionar Evento">
                     <Fab
                       color="primary"
@@ -469,7 +469,7 @@ const Eventos: React.FC = () => {
                       <CloseIcon />
                     </Fab>
                   </Tooltip>
-                </>
+                </Fragment>
               )}
             </Box>
           )}
@@ -488,7 +488,7 @@ const Eventos: React.FC = () => {
           >
             <Grid container spacing={4} justifyContent="center" sx={{ mt: 1, mb: 1 }}>
               {eventoHoje ? (
-                <>
+                <Fragment>
                   {eventoAnterior && (
                     <Grid item xs={12} md={4}>
                       <Typography
@@ -529,9 +529,9 @@ const Eventos: React.FC = () => {
                       {renderCard(eventoProximo)}
                     </Grid>
                   )}
-                </>
+                </Fragment>
               ) : (
-                <>
+                <Fragment>
                   {eventoAnterior && (
                     <Grid item xs={12} md={4}>
                       <Typography
@@ -574,7 +574,7 @@ const Eventos: React.FC = () => {
                       {renderCard(eventoPosterior)}
                     </Grid>
                   )}
-                </>
+                </Fragment>
               )}
             </Grid>
           </Box>
@@ -691,7 +691,7 @@ const Eventos: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Fragment>
   );
 };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { Box, Typography, Button } from '@mui/material';
@@ -82,7 +82,7 @@ const TeacherWeekBanner: React.FC = () => {
         </Typography>
 
         {currentWeekRoute.subtitle && (
-          <>
+          <Fragment>
             <Typography
               variant="h6"
               gutterBottom
@@ -103,7 +103,7 @@ const TeacherWeekBanner: React.FC = () => {
             >
               {currentWeekRoute.subtitle}
             </Typography>
-          </>
+          </Fragment>
         )}
 
         <Button

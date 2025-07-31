@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import {
   Box,
   Typography,
@@ -68,7 +68,7 @@ export default function TeacherMeditationBanner() {
   }
 
   return (
-    <>
+    <Fragment>
       <Box
         sx={{
           width: '100%',
@@ -110,7 +110,7 @@ export default function TeacherMeditationBanner() {
         </Typography>
 
         {meditationDay ? (
-          <>
+          <Fragment>
             <Typography
               variant="subtitle1"
               sx={{
@@ -130,7 +130,7 @@ export default function TeacherMeditationBanner() {
             >
               Versículo de hoje: “{meditationDay?.description}”
             </Typography>
-          </>
+          </Fragment>
         ) : (
           <Typography
             variant="body1"
@@ -169,6 +169,6 @@ export default function TeacherMeditationBanner() {
         media={currentMeditation?.media || null}
         title={currentMeditation?.topic || ''}
       />
-    </>
+    </Fragment>
   );
 }

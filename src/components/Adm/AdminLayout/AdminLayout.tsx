@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import {
   AppBar,
@@ -41,7 +41,7 @@ const AdminLayout: React.FC = () => {
   const toggleDrawer = () => setMobileOpen(!mobileOpen);
 
   const drawerContent = (
-    <>
+    <Fragment>
       <Toolbar />
       <Box sx={{ pb: 2, pt: 1, py: 1 }}>
         <Typography variant="subtitle1" fontWeight="bold">
@@ -125,7 +125,7 @@ const AdminLayout: React.FC = () => {
           <ListItemText primary="Criar Página" />
         </ListItemButton>
       </List>
-    </>
+    </Fragment>
   );
 
   return (

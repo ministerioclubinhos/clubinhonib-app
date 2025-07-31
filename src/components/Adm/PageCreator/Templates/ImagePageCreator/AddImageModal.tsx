@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -113,7 +113,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
         </FormControl>
 
         {mode === MediaUploadType.UPLOAD && (
-          <>
+          <Fragment>
             <Button variant="outlined" component="label" fullWidth sx={{ mt: 1 }}>
               Upload de imagens
               <input
@@ -153,11 +153,11 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                 ))}
               </Box>
             )}
-          </>
+          </Fragment>
         )}
 
         {mode === MediaUploadType.LINK && (
-          <>
+          <Fragment>
             <FormControl fullWidth margin="normal">
               <InputLabel>Plataforma</InputLabel>
               <Select
@@ -179,7 +179,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
               onChange={(e) => setUrlInput(e.target.value)}
               margin="normal"
             />
-          </>
+          </Fragment>
         )}
       </DialogContent>
 

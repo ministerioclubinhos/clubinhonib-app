@@ -11,6 +11,17 @@ interface User {
   email: string;
   name: string;
   role: RoleUser;
+  active?: boolean;
+  commonUser?: boolean;
+  phone?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  completed?: boolean;
+}
+
+interface GoogleUser {
+  name: string;
+  email: string;
 }
 
 export interface LoginResponse {
@@ -27,6 +38,7 @@ interface AuthState {
   user: User | null;
   loadingUser: boolean;
   error: string | null;
+  googleUser: GoogleUser | null;
 }
 
 const initialState: AuthState = {
@@ -36,6 +48,7 @@ const initialState: AuthState = {
   user: null,
   loadingUser: false,
   error: null,
+  googleUser: null,
 };
 
 const log = (message: string, ...args: any[]) => {
@@ -90,10 +103,18 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.user = null;
+      state.googleUser = null;
       state.error = null;
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
+    },
+
+    setGoogleUser: (state, action: PayloadAction<GoogleUser>) => {
+      state.googleUser = action.payload;
+    },
+    clearGoogleUser: (state) => {
+      state.googleUser = null;
     },
   },
   extraReducers: (builder) => {
@@ -119,5 +140,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { login, logout, setError } = authSlice.actions;
+export const { login, logout, setError, setGoogleUser, clearGoogleUser } = authSlice.actions;
 export default authSlice.reducer;
