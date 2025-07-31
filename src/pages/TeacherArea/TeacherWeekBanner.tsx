@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { Box, Typography, Button } from '@mui/material';
@@ -7,6 +7,7 @@ import { MediaTargetType } from 'store/slices/types';
 
 const TeacherWeekBanner: React.FC = () => {
   const routes = useSelector((state: RootState) => state.routes.routes);
+  const { user } = useSelector((state: RootState) => state.auth);
   const currentWeekRoute = routes.find(
     (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.current === true
   );
@@ -64,7 +65,7 @@ const TeacherWeekBanner: React.FC = () => {
             fontSize: { xs: '1.2rem', md: '1.5rem' },
           }}
         >
-          Olá Professor, estamos na:
+          Olá {user?.name || 'Professor'}, estamos na:
         </Typography>
 
         <Typography
@@ -82,7 +83,7 @@ const TeacherWeekBanner: React.FC = () => {
         </Typography>
 
         {currentWeekRoute.subtitle && (
-          <>
+          <Fragment>
             <Typography
               variant="h6"
               gutterBottom
@@ -103,7 +104,7 @@ const TeacherWeekBanner: React.FC = () => {
             >
               {currentWeekRoute.subtitle}
             </Typography>
-          </>
+          </Fragment>
         )}
 
         <Button

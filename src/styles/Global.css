@@ -1,13 +1,10 @@
 :root {
-  --cor-primaria: #81d742; /* Verde predominante (Navbar e Footer) */
-  --cor-secundaria: #0073E6; /* Azul para títulos e botões */
-  --cor-destaque: #D71920; /* Vermelho para destaques */
-  --cor-complementar: #FFAA00; /* Amarelo vibrante */
-  --cor-texto: #333; /* Cinza escuro para melhor leitura */
-  --cor-branca: #ffffff; /* Branco */
+  --cor-secundaria: #0073E6;
+  --cor-destaque: #D71920;
+  --cor-complementar: #FFAA00;
+  --cor-texto: #333;
+  --cor-branca: #ffffff;
 }
-
-
 
 * {
   margin: 0;

@@ -1,7 +1,10 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, CircularProgress } from '@mui/material';
+
+import './App.css';
+import './styles/Global.css';
 
 import Navbar from './components/NavBar/Navbar';
 import Footer from './components/Footer/Footer';
@@ -16,7 +19,6 @@ import Login from './pages/Login/Login';
 import TeacherArea from './pages/TeacherArea/TeacherArea';
 import PageGalleryView from './pages/PageView/ImagePageView/ImagePageView';
 
-import MeditationListPage from './components/Adm/PageMeditadion/MeditationListPage';
 import MeditationPageCreator from './components/Adm/PageCreator/Templates/MeditationPageCreator/MeditationPageCreator';
 import ImagePageCreator from './components/Adm/PageCreator/Templates/ImagePageCreator/ImagePageCreator';
 import VideoPageCreator from './components/Adm/PageCreator/Templates/VideoPageCreator/VideoPageCreator';
@@ -26,27 +28,38 @@ import SelecPageTemplate from './components/Adm/PageCreator/SelectPageTemplate/S
 import AdminDashboardPage from './components/Adm/AdminDashboardPage';
 import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 
-import { fetchRoutes, RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
-import { fetchCurrentUser } from './store/slices/auth/authSlice';
-import { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
+import { fetchRoutes } from './store/slices/route/routeSlice';
+import { fetchCurrentUser, RoleUser } from './store/slices/auth/authSlice';
 
-import './styles/Global.css';
-import WeekMaterialListPage from 'components/Adm/PageWeekMaterial/WeekMaterialListPage';
-import ImagePageListPage from 'components/Adm/PageImage/ImagePageListPage';
-import VideoPageListPage from 'components/Adm/PageVideos/VideoPageListPage';
-import CommentsListPage from 'components/Adm/PageComments/CommentsListPage';
-import DocumentList from 'components/Adm/PageDocuments/DocumentList';
-import IdeasPageListPage from 'components/Adm/PageIdeasMaterial/IdeasPageListPage';
+import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
+import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
+
 import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
 import WeekMaterialsList from 'pages/TeacherArea/WeekMaterialsList';
-import InformativeBannerListPage from 'components/Adm/PageInformative/InformativeBannerListPage';
-import ContactList from 'components/Adm/PageContact/ContactList';
-import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
-import ImageSectionListPage from './components/Adm/PageImageSection/ImageSectionListPage';
-import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
-import FeedbackList from './components/Adm/PageSiteFeedBack/FeedbackList';
 
-const App: React.FC = () => {
+import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
+import Register from './pages/Register/Register';
+import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
+import CoordinatorProfilesManager from './features/coordinators/CoordinatorProfilesManager';
+import TeacherProfilesManager from './features/teachers/TeacherProfilesManager';
+import ClubsManager from './features/clubs/ClubsManager';
+import CommentsPage from './features/comments/CommentsPage';
+import DocumentList from './features/documents/DocumentList';
+import ContactList from './features/contacts/ContactList';
+import ImagePageListPage from './features/image-pages/ImagePageListPage';
+import IdeasPageListPage from './features/ideas-pages/IdeasPageListPage';
+import MeditationListPage from './features/meditations/MeditationListPage';
+import InformativeBannerListPage from './features/informatives/InformativeBannerListPage';
+import WeekMaterialListPage from './features/week-materials/WeekMaterialListPage';
+import FeedbackList from './features/feedback/FeedbackList';
+import ImageSectionListPage from './features/image-sections/pages/ImageSectionListPage';
+import VideoPageListPage from './features/video-pages/VideoPageListPage';
+import UsersListPage from './features/users/UsersListPage';
+import ChildrenManager from './features/children/ChildrenManager';
+import ChildrenBrowserPage from './features/pagela-teacher/ChildrenBrowserPage';
+import ChildPagelasPage from './features/pagela-teacher/ChildPagelasPage';
+
+function App() {
   const dispatch = useDispatch<AppDispatchType>();
   const dynamicRoutes = useSelector((state: RootStateType) => state.routes.routes);
   const { loadingUser, accessToken } = useSelector((state: RootStateType) => state.auth);
@@ -84,8 +97,11 @@ const App: React.FC = () => {
           <Route path="/sobre" element={<About />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/eventos" element={<Event />} />
-          <Route path="/feed-clubinho" element={<PageGalleryView feed={true} />} />
+          <Route path="/feed-clubinho" element={<PageGalleryView feed />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
+          <Route path="/cadastrar" element={<Register commonUser />} />
+
           <Route path="*" element={<Home />} />
 
           <Route element={<ProtectedRoute />}>
@@ -93,13 +109,15 @@ const App: React.FC = () => {
             <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
             <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
             <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
+            <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
+            <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
           </Route>
 
-          <Route element={<ProtectedRoute requiredRole="admin" />}>
+          <Route element={<ProtectedRoute requiredRole={[RoleUser.ADMIN, RoleUser.COORDINATOR]}/>}>
             <Route path="/adm" element={<AdminLayout />}>
               <Route index element={<AdminDashboardPage />} />
               <Route path="meditacoes" element={<MeditationListPage />} />
-              <Route path="comentarios" element={<CommentsListPage />} />
+              <Route path="comentarios" element={<CommentsPage />} />
               <Route path="documentos" element={<DocumentList />} />
               <Route path="informativos" element={<InformativeBannerListPage />} />
               <Route path="feedbacks" element={<FeedbackList />} />
@@ -111,27 +129,17 @@ const App: React.FC = () => {
               <Route path="paginas-videos" element={<VideoPageListPage />} />
               <Route path="paginas-ideias" element={<IdeasPageListPage />} />
               <Route path="criar-pagina" element={<SelecPageTemplate />} />
-              <Route
-                path="editar-meditacao"
-                element={<MeditationPageCreator fromTemplatePage={false} />}
-              />
-              <Route
-                path="editar-pagina-imagens"
-                element={<ImagePageCreator fromTemplatePage={false} />}
-              />
-              <Route
-                path="editar-pagina-videos"
-                element={<VideoPageCreator fromTemplatePage={false} />}
-              />
-              <Route
-                path="editar-pagina-semana"
-                element={<WeekMaterialPageCreator fromTemplatePage={false} />}
-              />
-              <Route
-                path="editar-pagina-ideias"
-                element={<IdeasMaterialPageCreator fromTemplatePage={false} />}
-              />
-              <Route path="editar-imagens-clubinho" element={<ImageSectionPage isEditMode={true} />} />
+              <Route path="usuarios" element={<UsersListPage />} />
+              <Route path="coordenadores" element={<CoordinatorProfilesManager />} />
+              <Route path="professores" element={<TeacherProfilesManager />} />
+              <Route path="criancas" element={<ChildrenManager />} />
+              <Route path="clubinhos" element={<ClubsManager />} />
+              <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
+              <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
+              <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
+              <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
+              <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
+              <Route path="editar-imagens-clubinho" element={<ImageSectionPage isEditMode />} />
             </Route>
           </Route>
 
@@ -147,6 +155,6 @@ const App: React.FC = () => {
       <Footer />
     </BrowserRouter>
   );
-};
+}
 
 export default App;

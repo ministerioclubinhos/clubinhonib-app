@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import {
   Box,
   TextField,
@@ -21,7 +21,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from 'store/slices';
 import { fetchRoutes } from 'store/slices/route/routeSlice';
 import { clearIdeasData, IdeasSection } from 'store/slices/ideas/ideasSlice';
-import api from 'config/axiosConfig';
+import api from '@/config/axiosConfig';
 import { MediaUploadType } from 'store/slices/types';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 import { IdeasMaterialSection } from './IdeasMaterialSection';
@@ -215,7 +215,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
       </Paper>
 
       {sections.length > 0 && (
-        <>
+        <Fragment>
           <Typography variant="h5" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
             Seções
           </Typography>
@@ -247,7 +247,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
               </Box>
             </Accordion>
           ))}
-        </>
+        </Fragment>
       )}
 
       <Box sx={{ textAlign: 'center', mt: 4 }}>

@@ -1,0 +1,32 @@
+import React from 'react';
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography,
+} from '@mui/material';
+import { ImagePageData } from 'store/slices/image/imageSlice';
+
+type Props = {
+  open: boolean;
+  page: ImagePageData | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+};
+
+export default function DeleteConfirmDialog({ open, page, onCancel, onConfirm }: Props) {
+  return (
+    <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth>
+      <DialogTitle>Confirmar Exclusão</DialogTitle>
+      <DialogContent>
+        <Typography>
+          Tem certeza que deseja excluir a página{' '}
+          <strong>{page?.title || 'Sem Título'}</strong>?
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onCancel}>Cancelar</Button>
+        <Button color="error" variant="contained" onClick={onConfirm}>
+          Excluir
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

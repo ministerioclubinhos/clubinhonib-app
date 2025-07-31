@@ -1,10 +1,16 @@
 import React from 'react';
-import { Box, Typography, IconButton, Link, Stack, useTheme, useMediaQuery } from '@mui/material';
 import {
-  FaFacebook as FacebookIcon,
-  FaInstagram as InstagramIcon,
-  FaYoutube as YoutubeIcon,
-} from 'react-icons/fa6';
+  Box,
+  Typography,
+  IconButton,
+  Link,
+  Stack,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 
 const Footer: React.FC = () => {
   const theme = useTheme();
@@ -19,9 +25,8 @@ const Footer: React.FC = () => {
         px: 3,
         py: 4,
         textAlign: 'center',
-        zIndex: (theme) => theme.zIndex.drawer + 1,
-        position: 'relative',
         width: '100%',
+        mt: { xs: 0, md: 0 },
       }}
     >
       <Stack
@@ -57,7 +62,7 @@ const Footer: React.FC = () => {
             rel="noopener noreferrer"
             color="inherit"
           >
-            <FacebookIcon size={20} />
+            <FacebookIcon fontSize="small" />
           </IconButton>
           <IconButton
             component="a"
@@ -66,7 +71,7 @@ const Footer: React.FC = () => {
             rel="noopener noreferrer"
             color="inherit"
           >
-            <InstagramIcon size={20} />
+            <InstagramIcon fontSize="small" />
           </IconButton>
           <IconButton
             component="a"
@@ -75,7 +80,7 @@ const Footer: React.FC = () => {
             rel="noopener noreferrer"
             color="inherit"
           >
-            <YoutubeIcon size={20} />
+            <YouTubeIcon fontSize="small" />
           </IconButton>
         </Stack>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { clearImageData } from '@/store/slices/image/imageSlice';
 import {
@@ -10,13 +10,20 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
+  IconButton,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { ReactElement } from 'react';
 import VideoPageCreator from '@/components/Adm/PageCreator/Templates/VideoPageCreator/VideoPageCreator';
 import PhotoPageCreator from '@/components/Adm/PageCreator/Templates/ImagePageCreator/ImagePageCreator';
 import MeditationPageCreator from '@/components/Adm/PageCreator/Templates/MeditationPageCreator/MeditationPageCreator';
 import WeekMaterialPageCreator from '@/components/Adm/PageCreator/Templates/WeekMaterialPageCreator/WeekMaterialPageCreator';
 import { IdeasMaterialPageCreator } from '@/components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
+import BackHeader from '@/components/common/header/BackHeader';
 
 enum Options {
   WEEK_MATERIALS = 'Adicionar Materiais da Semana',
@@ -38,6 +45,10 @@ export default function SelecPageTemplate() {
   const [selectedOption, setSelectedOption] = useState<keyof typeof Options | ''>('');
   const dispatch = useDispatch();
 
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+
   const handleChange = (event: SelectChangeEvent) => {
     const selected = event.target.value as keyof typeof Options;
     setSelectedOption(selected);
@@ -51,8 +62,8 @@ export default function SelecPageTemplate() {
     <Box
       sx={{
         minHeight: '100vh',
-        px: 0,
-        py: { xs: 0, md: 8 },
+        px: { xs: 2, md: 4 },
+        pt: { xs: 0, md: 4 },
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -63,19 +74,7 @@ export default function SelecPageTemplate() {
         mb: 0,
       }}
     >
-
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        gutterBottom
-        sx={{
-          mt: { xs: 0, md: 0 },
-          mb: { xs: 1, md: 3 },
-          fontSize: { xs: '1.5rem', md: '2.4rem' },
-        }}
-      >
-        Escolha um Modelo
-      </Typography>
+      <BackHeader title="Criador de Páginas" />
 
       <Typography
         variant="subtitle1"

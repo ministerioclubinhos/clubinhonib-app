@@ -3,7 +3,8 @@ import apiAxios from '@/config/axiosConfig';
 
 export enum RoleUser {
   ADMIN = 'admin',
-  USER = 'user',
+  COORDINATOR = 'coordinator',
+  TEACHER = 'teacher',
 }
 
 interface User {
@@ -11,6 +12,17 @@ interface User {
   email: string;
   name: string;
   role: RoleUser;
+  active?: boolean;
+  commonUser?: boolean;
+  phone?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  completed?: boolean;
+}
+
+interface GoogleUser {
+  name: string;
+  email: string;
 }
 
 export interface LoginResponse {
@@ -27,6 +39,7 @@ interface AuthState {
   user: User | null;
   loadingUser: boolean;
   error: string | null;
+  googleUser: GoogleUser | null;
 }
 
 const initialState: AuthState = {
@@ -36,11 +49,15 @@ const initialState: AuthState = {
   user: null,
   loadingUser: false,
   error: null,
+  googleUser: null,
 };
 
+const IS_DEV = import.meta.env.DEV === true;
+const DEBUG_AUTH = import.meta.env.VITE_DEBUG_AUTH === 'true';
+
 const log = (message: string, ...args: any[]) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(message, ...args);
+  if (IS_DEV || DEBUG_AUTH) {
+    console.debug(message, ...args);
   }
 };
 
@@ -57,13 +74,11 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
 
     try {
       const response = await apiAxios.get<User>('/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erro ao buscar usuário';
+      const errorMessage = error?.response?.data?.message || 'Erro ao buscar usuário';
       log('[Auth] Erro ao buscar usuário:', errorMessage);
       return rejectWithValue(errorMessage);
     }
@@ -90,10 +105,17 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.user = null;
+      state.googleUser = null;
       state.error = null;
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
+    },
+    setGoogleUser: (state, action: PayloadAction<GoogleUser>) => {
+      state.googleUser = action.payload;
+    },
+    clearGoogleUser: (state) => {
+      state.googleUser = null;
     },
   },
   extraReducers: (builder) => {
@@ -114,10 +136,10 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.accessToken = null;
         state.refreshToken = null;
-        state.error = action.payload || 'Erro desconhecido';
+        state.error = (action.payload as string) || 'Erro desconhecido';
       });
   },
 });
 
-export const { login, logout, setError } = authSlice.actions;
+export const { login, logout, setError, setGoogleUser, clearGoogleUser } = authSlice.actions;
 export default authSlice.reducer;

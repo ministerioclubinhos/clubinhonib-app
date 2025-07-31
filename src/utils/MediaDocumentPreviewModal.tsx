@@ -28,7 +28,7 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
     if (open && media && isMobile) {
       const url = getMediaPreviewUrl(media);
       window.open(url, '_blank');
-      onClose(); // fecha o modal imediatamente
+      onClose();
     }
   }, [open, media, isMobile, onClose]);
 

@@ -52,10 +52,9 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
   const [showAll, setShowAll] = useState(false);
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isUserLogged =
-    isAuthenticated && (user?.role === RoleUser.ADMIN || user?.role === RoleUser.USER);
+ 
 
-  if (!isPublic && !isUserLogged) return null;
+  if (!isPublic) return null;
   if (!mediaItems || mediaItems.length === 0) return null;
 
   const created = createdAt ? formatDateTime(createdAt) : null;

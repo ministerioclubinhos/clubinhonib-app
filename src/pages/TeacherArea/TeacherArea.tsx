@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import {
   Container,
   Typography,
@@ -73,7 +73,7 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showWeekBanner, showMedit
           </Box>
         </Grid>
       ) : (
-        <>
+        <Fragment>
           {showWeekBanner && (
             <Grid item xs={12} md={activeBanners === 1 ? 12 : 6}>
               <TeacherWeekBanner />
@@ -84,7 +84,7 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showWeekBanner, showMedit
               <TeacherMeditationBanner />
             </Grid>
           )}
-        </>
+        </Fragment>
       )}
     </Grid>
   );
@@ -262,7 +262,7 @@ const TeacherArea: React.FC = () => {
     >
       <InformativeBanner />
       <BannerSection showWeekBanner={showWeekBanner} showMeditationBanner={showMeditationBanner} />
-      <ButtonSection references={['materials', 'photos','rate', 'events','help']} />
+      <ButtonSection references={['materials','childrenArea', 'photos','rate', 'events','help']} />
       <MotivationSection motivationText={motivacaoEvangelismo} />
       <Paper
         elevation={4}

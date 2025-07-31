@@ -1,9 +1,10 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+// src/components/NavLinks.tsx
+import React, { Fragment } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, Stack } from '@mui/material';
 import { RootState } from '@/store/slices';
-import { logout } from '@/store/slices/auth/authSlice';
+import { logout, RoleUser } from '@/store/slices/auth/authSlice';
 import api from '@/config/axiosConfig';
 
 interface Props {
@@ -13,10 +14,13 @@ interface Props {
 
 const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = isAuthenticated && user?.role === 'admin';
+  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN;
+  const isTeacher = isAuthenticated && user?.role === RoleUser.TEACHER;
+  const isCoordinator = isAuthenticated && user?.role === RoleUser.COORDINATOR;
 
   const handleClick = () => closeMenu?.();
 
@@ -32,50 +36,61 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
     }
   };
 
-  const renderLink = (to: string, label: string) => (
-    <Button
-      key={to}
-      onClick={() => {
-        navigate(to);
-        handleClick();
-      }}
-      sx={{
-        color: isMobile ? '#fff' : 'inherit',
-        fontWeight: 'bold',
-        justifyContent: isMobile ? 'flex-start' : 'center',
-      }}
-    >
-      {label}
-    </Button>
-  );
+  const renderLink = (to: string, label: string) => {
+    const active = location.pathname === to || location.pathname.startsWith(to + '/');
+    return (
+      <Button
+        key={to}
+        onClick={() => {
+          navigate(to);
+          handleClick();
+        }}
+        variant={active ? 'contained' : 'text'}
+        color={active ? 'success' : 'inherit'}
+        fullWidth={!!isMobile}
+        sx={{
+          justifyContent: isMobile ? 'flex-start' : 'center',
+          fontWeight: 'bold',
+          ...(isMobile ? { color: '#fff' } : {}),
+          ...(active && !isMobile ? { boxShadow: 'none' } : null),
+          minHeight: 44,
+          textTransform: 'none',
+          maxWidth: '100%',
+        }}
+      >
+        {label}
+      </Button>
+    );
+  };
 
   return (
     <Stack
       direction={isMobile ? 'column' : 'row'}
-      spacing={isMobile ? 2 : 4}
-      alignItems={isMobile ? 'flex-start' : 'center'}
-      sx={{ width: '100%' }}
+      spacing={isMobile ? 1.5 : 4}
+      alignItems={isMobile ? 'stretch' : 'center'}
+      mt={isMobile ? 6 : 0}
+      sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}
     >
       {renderLink('/', 'Início')}
       {renderLink('/feed-clubinho', 'Feed Clubinho')}
       {renderLink('/sobre', 'Sobre')}
       {renderLink('/eventos', 'Eventos')}
       {renderLink('/contato', 'Contato')}
-
-      {isAdmin && renderLink('/adm', 'Administração')}
-
       {isAuthenticated ? (
-        <>
+        <Fragment>
           {renderLink('/area-do-professor', 'Área do Professor')}
+          {renderLink('/area-das-criancas', 'Área das crianças')}
+          {(isAdmin || isCoordinator) && renderLink('/adm', 'Administração')}
           <Button
             onClick={handleLogout}
             variant="contained"
             color="error"
-            sx={{ fontWeight: 'bold' }}
+            fullWidth={!!isMobile}
+            sx={{ fontWeight: 'bold', minHeight: 44, textTransform: 'none', maxWidth: '100%' }}
           >
             Sair
           </Button>
-        </>
+        </Fragment>
       ) : (
         renderLink('/login', 'Área do Professor')
       )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import {
   Card as MuiCard,
   CardMedia,
@@ -39,7 +39,7 @@ const Card: React.FC<CardProps> = ({ title, description, image, link, type }) =>
   };
 
   return (
-    <>
+    <Fragment>
       <MuiCard
         onClick={handleClick}
         sx={{
@@ -110,7 +110,7 @@ const Card: React.FC<CardProps> = ({ title, description, image, link, type }) =>
           )}
         </DialogContent>
       </Dialog>
-    </>
+    </Fragment>
   );
 };
 
