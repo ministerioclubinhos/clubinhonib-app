@@ -14,7 +14,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { MediaPlatform, MediaUploadType } from 'store/slices/types';
 
 interface MediaManagerProps {
@@ -74,7 +74,7 @@ export default function MediaManager({
           </FormControl>
 
           {uploadType === MediaUploadType.LINK && (
-            <>
+            <Fragment>
               <TextField
                 fullWidth
                 label="Insira o link"
@@ -97,7 +97,7 @@ export default function MediaManager({
                   <MenuItem value={MediaPlatform.DROPBOX}>Dropbox</MenuItem>
                 </Select>
               </FormControl>
-            </>
+            </Fragment>
           )}
 
           {uploadType === MediaUploadType.UPLOAD && (

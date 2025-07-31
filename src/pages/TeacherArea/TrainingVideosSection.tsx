@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import {
   Box,
   Typography,
@@ -79,7 +79,7 @@ const TrainingVideosSection: React.FC = () => {
       />
 
       {videosToDisplay.length > 0 ? (
-        <>
+        <Fragment>
           <Grid container spacing={3}>
             {videosToDisplay.map((video) => (
               <Grid item xs={12} sm={6} md={3} key={video.id}>
@@ -137,7 +137,7 @@ const TrainingVideosSection: React.FC = () => {
               </Button>
             </Box>
           )}
-        </>
+        </Fragment>
       ) : (
         <Typography variant="body2" color="text.secondary" textAlign="center">
           Nenhum vídeo encontrado.

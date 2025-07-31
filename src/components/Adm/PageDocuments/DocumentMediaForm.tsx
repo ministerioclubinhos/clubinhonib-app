@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Grid, TextField, FormControl, InputLabel, Select, MenuItem, Button } from '@mui/material';
 import { MediaUploadType, MediaPlatform } from 'store/slices/types';
 
@@ -32,7 +32,7 @@ const DocumentMediaForm: React.FC<Props> = ({
   setFile,
 }) => {
   return (
-    <>
+    <Fragment>
       <Grid item xs={12} sm={6}>
         <TextField
           fullWidth
@@ -67,7 +67,7 @@ const DocumentMediaForm: React.FC<Props> = ({
       </Grid>
 
       {uploadType === MediaUploadType.LINK && (
-        <>
+        <Fragment>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -92,7 +92,7 @@ const DocumentMediaForm: React.FC<Props> = ({
               </Select>
             </FormControl>
           </Grid>
-        </>
+        </Fragment>
       )}
 
       {uploadType === MediaUploadType.UPLOAD && (
@@ -111,7 +111,7 @@ const DocumentMediaForm: React.FC<Props> = ({
           </Button>
         </Grid>
       )}
-    </>
+    </Fragment>
   );
 };
 

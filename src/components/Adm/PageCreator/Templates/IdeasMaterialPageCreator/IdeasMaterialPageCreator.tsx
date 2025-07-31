@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import {
   Box,
   TextField,
@@ -215,7 +215,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
       </Paper>
 
       {sections.length > 0 && (
-        <>
+        <Fragment>
           <Typography variant="h5" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
             Seções
           </Typography>
@@ -247,7 +247,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
               </Box>
             </Accordion>
           ))}
-        </>
+        </Fragment>
       )}
 
       <Box sx={{ textAlign: 'center', mt: 4 }}>

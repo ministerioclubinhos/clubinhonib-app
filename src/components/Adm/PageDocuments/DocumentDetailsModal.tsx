@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -22,7 +22,7 @@ interface DocumentDetailsModalProps {
 }
 
 const DetailField = ({ label, value }: { label: string; value: string }) => (
-  <>
+  <Fragment>
     <Box display="flex" alignItems="center" py={1.2}>
       <Typography
         variant="body2"
@@ -47,7 +47,7 @@ const DetailField = ({ label, value }: { label: string; value: string }) => (
       </Typography>
     </Box>
     <Divider />
-  </>
+  </Fragment>
 );
 
 const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({ open, onClose, document }) => {

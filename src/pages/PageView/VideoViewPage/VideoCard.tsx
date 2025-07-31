@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Card, Typography, Box, Modal, Fade } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { motion } from 'framer-motion';
@@ -22,7 +22,7 @@ const VideoCard = ({ video }: Props) => {
       : undefined;
 
   return (
-    <>
+    <Fragment>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -101,7 +101,7 @@ const VideoCard = ({ video }: Props) => {
           </Box>
         </Fade>
       </Modal>
-    </>
+    </Fragment>
   );
 };
 

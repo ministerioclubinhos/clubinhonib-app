@@ -45,6 +45,7 @@ import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage'
 import ImageSectionListPage from './components/Adm/PageImageSection/ImageSectionListPage';
 import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
 import FeedbackList from './components/Adm/PageSiteFeedBack/FeedbackList';
+import Register from './pages/Register/Register';
 
 const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatchType>();
@@ -86,6 +87,9 @@ const App: React.FC = () => {
           <Route path="/eventos" element={<Event />} />
           <Route path="/feed-clubinho" element={<PageGalleryView feed={true} />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
+          <Route path="/cadastrar" element={<Register commonUser={true} />} />
+
           <Route path="*" element={<Home />} />
 
           <Route element={<ProtectedRoute />}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Box, TextField, Button, Grid, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -197,7 +197,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ isEditing, onSuccess }) => 
         )}
 
         {showMediaForm && (
-          <>
+          <Fragment>
             <Grid item xs={12} display="flex" justifyContent="space-between" alignItems="center">
               <Box component="h3" fontSize="1.25rem" fontWeight="bold">
                 Mídia do Documento
@@ -221,7 +221,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ isEditing, onSuccess }) => 
               file={file}
               setFile={setFile}
             />
-          </>
+          </Fragment>
         )}
 
         <Grid item xs={12}>
