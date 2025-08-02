@@ -23,14 +23,12 @@ interface WeekMaterialState {
   error: string | null;
 }
 
-// Estado inicial
 const initialState: WeekMaterialState = {
   weekMaterialSData: null,
   loading: false,
   error: null,
 };
 
-// Slice
 const studyMaterialSlice = createSlice({
   name: 'studyMaterial',
   initialState,
