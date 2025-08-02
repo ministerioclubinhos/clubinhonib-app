@@ -293,25 +293,43 @@ const SpecialFamilyDayPage: React.FC = () => {
           </Box>
 
           {data.images.length > 0 && (
-            <Box sx={{ mb: 6 }}>
-              <Grid container spacing={4} alignItems="center" justifyContent="center">
-                <Grid item xs={12} md={5}>
+            <Box
+              sx={{
+                mb: 6,
+                minHeight: { xs: 400, md: 550 },
+              }}
+            >
+              <Grid
+                container
+                spacing={4}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Grid item xs={12} md={7}>
                   <Typography
                     variant="h4"
                     fontWeight="bold"
-                    sx={{ mb: 2, textAlign: { xs: "center", md: "left" }, color: theme.palette.primary.main }}
+                    sx={{
+                      mb: 2,
+                      textAlign: { xs: "center", md: "left" },
+                      color: theme.palette.primary.main,
+                    }}
                   >
                     Momentos Especiais
                   </Typography>
                   <Typography
                     variant="body1"
-                    sx={{ fontSize: "1.1rem", color: "#555", textAlign: { xs: "center", md: "left" } }}
+                    sx={{
+                      fontSize: "1.1rem",
+                      color: "#555",
+                      textAlign: { xs: "center", md: "left" },
+                    }}
                   >
                     {data.description}
                   </Typography>
                 </Grid>
 
-                <Grid item xs={12} md={7}>
+                <Grid item xs={12} md={4}>
                   <Slider
                     dots
                     infinite
@@ -332,7 +350,6 @@ const SpecialFamilyDayPage: React.FC = () => {
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "center",
-                          px: 2,
                         }}
                       >
                         <img
@@ -340,7 +357,7 @@ const SpecialFamilyDayPage: React.FC = () => {
                           alt={img.title}
                           style={{
                             maxWidth: "100%",
-                            maxHeight: "400px",
+                            maxHeight: "450px",
                             borderRadius: "12px",
                             objectFit: "cover",
                             boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
