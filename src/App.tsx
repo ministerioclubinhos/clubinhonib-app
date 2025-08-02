@@ -45,6 +45,7 @@ import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage'
 import ImageSectionListPage from './components/Adm/PageImageSection/ImageSectionListPage';
 import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
 import FeedbackList from './components/Adm/PageSiteFeedBack/FeedbackList';
+import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
 
 const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatchType>();
@@ -86,6 +87,7 @@ const App: React.FC = () => {
           <Route path="/eventos" element={<Event />} />
           <Route path="/feed-clubinho" element={<PageGalleryView feed={true} />} />
           <Route path="/login" element={<Login />} />
+
           <Route path="*" element={<Home />} />
 
           <Route element={<ProtectedRoute />}>
@@ -93,6 +95,7 @@ const App: React.FC = () => {
             <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
             <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
             <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
+            <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} />
           </Route>
 
           <Route element={<ProtectedRoute requiredRole="admin" />}>
