@@ -22,9 +22,8 @@ import MediaDocumentPreviewModal from "@/utils/MediaDocumentPreviewModal";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { motion } from "framer-motion"; // Para animações
+import { motion } from "framer-motion";
 
-// Ícones da programação
 import BadgeIcon from "@mui/icons-material/Badge";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -62,6 +61,70 @@ const programIcons = [
   <RestaurantIcon sx={{ color: "#FF6F00", fontSize: 32 }} />,
   <CardGiftcardIcon sx={{ color: "#FF6F00", fontSize: 32 }} />,
 ];
+
+const NextArrow = (props: any) => {
+  const { onClick } = props;
+  return (
+    <Box
+      onClick={onClick}
+      sx={{
+        position: "absolute",
+        top: "50%",
+        right: 20,
+        transform: "translateY(-50%)",
+        width: 48,
+        height: 48,
+        borderRadius: "50%",
+        backgroundColor: "rgba(255,255,255,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+        "&:hover": {
+          backgroundColor: "rgba(255,255,255,0.95)",
+          transform: "translateY(-50%) scale(1.1)"
+        },
+        zIndex: 2
+      }}
+    >
+      <Typography sx={{ fontSize: "2rem", fontWeight: "bold", color: "#388E3C" }}>›</Typography>
+    </Box>
+  );
+};
+
+const PrevArrow = (props: any) => {
+  const { onClick } = props;
+  return (
+    <Box
+      onClick={onClick}
+      sx={{
+        position: "absolute",
+        top: "50%",
+        left: 20,
+        transform: "translateY(-50%)",
+        width: 48,
+        height: 48,
+        borderRadius: "50%",
+        backgroundColor: "rgba(255,255,255,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+        "&:hover": {
+          backgroundColor: "rgba(255,255,255,0.95)",
+          transform: "translateY(-50%) scale(1.1)"
+        },
+        zIndex: 2
+      }}
+    >
+      <Typography sx={{ fontSize: "2rem", fontWeight: "bold", color: "#388E3C" }}>‹</Typography>
+    </Box>
+  );
+};
 
 const SpecialFamilyDayPage: React.FC = () => {
   const [data, setData] = useState<WeekMaterialPageData | null>(null);
@@ -184,7 +247,7 @@ const SpecialFamilyDayPage: React.FC = () => {
             </Typography>
             <Typography
               variant="body1"
-              sx={{ mx: "auto", maxWidth: 800, fontSize: "1.1rem", color: "#555" }}
+              sx={{ mx: "auto", maxWidth: "80%", fontSize: "1.1rem", color: "#555" }}
             >
               {data.subtitle}
             </Typography>
@@ -247,6 +310,7 @@ const SpecialFamilyDayPage: React.FC = () => {
                     {data.description}
                   </Typography>
                 </Grid>
+
                 <Grid item xs={12} md={7}>
                   <Slider
                     dots
@@ -255,10 +319,10 @@ const SpecialFamilyDayPage: React.FC = () => {
                     slidesToShow={1}
                     slidesToScroll={1}
                     autoplay
-                    autoplaySpeed={3000}
+                    autoplaySpeed={2000}
                     arrows
-                    nextArrow={<Box sx={{ color: theme.palette.primary.main }} />}
-                    prevArrow={<Box sx={{ color: theme.palette.primary.main }} />}
+                    nextArrow={<NextArrow />}
+                    prevArrow={<PrevArrow />}
                   >
                     {data.images.map((img) => (
                       <Box
