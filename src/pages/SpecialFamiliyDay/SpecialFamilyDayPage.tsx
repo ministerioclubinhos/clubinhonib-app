@@ -34,12 +34,13 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
+import WeekVideoPlayer from "../PageView/WeekMaterialViewPage/WeekVideoPlayerView";
 
 const theme = createTheme({
   palette: {
     primary: { main: "#388E3C" },
     secondary: { main: "#FF6F00" },
-    background: { default: "#F5F6F5" }
+    background: { default: "#F5F6F5" },
   },
   typography: {
     fontFamily: "'Roboto', sans-serif",
@@ -84,9 +85,9 @@ const NextArrow = (props: any) => {
         transition: "all 0.3s ease",
         "&:hover": {
           backgroundColor: "rgba(255,255,255,0.95)",
-          transform: "translateY(-50%) scale(1.1)"
+          transform: "translateY(-50%) scale(1.1)",
         },
-        zIndex: 2
+        zIndex: 2,
       }}
     >
       <Typography sx={{ fontSize: "2rem", fontWeight: "bold", color: "#388E3C" }}>›</Typography>
@@ -116,9 +117,9 @@ const PrevArrow = (props: any) => {
         transition: "all 0.3s ease",
         "&:hover": {
           backgroundColor: "rgba(255,255,255,0.95)",
-          transform: "translateY(-50%) scale(1.1)"
+          transform: "translateY(-50%) scale(1.1)",
         },
-        zIndex: 2
+        zIndex: 2,
       }}
     >
       <Typography sx={{ fontSize: "2rem", fontWeight: "bold", color: "#388E3C" }}>‹</Typography>
@@ -132,12 +133,13 @@ const SpecialFamilyDayPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
+  const defaultSectionId = process.env.REACT_APP_SPECIAL_FAMILY_DAY_ID;
 
   useEffect(() => {
     async function fetchData() {
       try {
         const response = await api.get<WeekMaterialPageData>(
-          "/week-material-pages/a2f9913a-e123-46b2-b6f4-a4138686042f"
+          `/week-material-pages/${defaultSectionId}`
         );
         setData(response.data);
       } catch {
@@ -183,7 +185,7 @@ const SpecialFamilyDayPage: React.FC = () => {
             overflow: "hidden",
           }}
         >
-          <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
+          <Container maxWidth="lg" sx={{ width: "95%", px: { xs: 2, sm: 4 } }}>
             <Typography
               variant="h2"
               component="h1"
@@ -192,7 +194,7 @@ const SpecialFamilyDayPage: React.FC = () => {
                 color: "#fff",
                 textShadow: "2px 2px 8px rgba(0,0,0,0.4)",
                 mb: 2,
-                fontSize: { xs: "2.5rem", sm: "3.5rem", md: "4.5rem" },
+                fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
               }}
             >
               {data.title}
@@ -201,14 +203,14 @@ const SpecialFamilyDayPage: React.FC = () => {
               variant="h5"
               component="h2"
               fontWeight={500}
-              sx={{ color: "#E8F5E9", fontSize: { xs: "1.25rem", sm: "1.75rem" } }}
+              sx={{ color: "#E8F5E9", fontSize: { xs: "1rem", sm: "1.5rem" } }}
             >
               Família um projeto de Deus
             </Typography>
           </Container>
         </Box>
 
-        <Container maxWidth={false} sx={{ maxWidth: "90%", py: 4 }}>
+        <Container maxWidth={false} sx={{ width: "95%", py: 4 }}>
           <Grid container spacing={3} justifyContent="center">
             {[
               { icon: <CalendarMonthIcon />, label: "Data", value: "09/08/2025", color: "#FF8A65" },
@@ -242,19 +244,35 @@ const SpecialFamilyDayPage: React.FC = () => {
           </Grid>
 
           <Box textAlign="center" sx={{ my: 6 }}>
-            <Typography variant="h4" fontWeight="bold" color={theme.palette.primary.main} sx={{ mb: 2 }}>
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              color={theme.palette.primary.main}
+              sx={{ mb: 2, fontSize: { xs: "1.3rem", sm: "2rem" } }}
+            >
               O que vai acontecer?
             </Typography>
             <Typography
               variant="body1"
-              sx={{ mx: "auto", maxWidth: "80%", fontSize: "1.1rem", color: "#555" }}
+              sx={{
+                mx: "auto",
+                minWidth: { xs: "95%", md: "80%" },
+                fontSize: { xs: "0.9rem", sm: "1.1rem" },
+                color: "#555"
+              }}
             >
               {data.subtitle}
             </Typography>
           </Box>
 
           <Box sx={{ mb: 6 }}>
-            <Typography variant="h4" fontWeight="bold" textAlign="center" color={theme.palette.primary.main} sx={{ mb: 4 }}>
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              textAlign="center"
+              color={theme.palette.primary.main}
+              sx={{ mb: 4, fontSize: { xs: "1.3rem", sm: "2rem" } }}
+            >
               Programação do Dia
             </Typography>
             <Grid container spacing={3} justifyContent="center">
@@ -293,18 +311,8 @@ const SpecialFamilyDayPage: React.FC = () => {
           </Box>
 
           {data.images.length > 0 && (
-            <Box
-              sx={{
-                mb: 6,
-                minHeight: { xs: 400, md: 550 },
-              }}
-            >
-              <Grid
-                container
-                spacing={4}
-                alignItems="center"
-                justifyContent="center"
-              >
+            <Box sx={{ mb: 6, minHeight: { xs: 400, md: 550 } }}>
+              <Grid container spacing={4} alignItems="center" justifyContent="center">
                 <Grid item xs={12} md={7}>
                   <Typography
                     variant="h4"
@@ -313,6 +321,7 @@ const SpecialFamilyDayPage: React.FC = () => {
                       mb: 2,
                       textAlign: { xs: "center", md: "left" },
                       color: theme.palette.primary.main,
+                      fontSize: { xs: "1.3rem", sm: "2rem" },
                     }}
                   >
                     Momentos Especiais
@@ -320,7 +329,7 @@ const SpecialFamilyDayPage: React.FC = () => {
                   <Typography
                     variant="body1"
                     sx={{
-                      fontSize: "1.1rem",
+                      fontSize: { xs: "0.9rem", sm: "1.1rem" },
                       color: "#555",
                       textAlign: { xs: "center", md: "left" },
                     }}
@@ -346,10 +355,10 @@ const SpecialFamilyDayPage: React.FC = () => {
                       <Box
                         key={img.id}
                         sx={{
-                          position: "relative",
                           display: "flex",
-                          justifyContent: "center",
+                          flexDirection: "column",
                           alignItems: "center",
+                          px: 2,
                         }}
                       >
                         <img
@@ -361,22 +370,37 @@ const SpecialFamilyDayPage: React.FC = () => {
                             borderRadius: "12px",
                             objectFit: "cover",
                             boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                            marginBottom: "10px",
                           }}
                         />
+
+                        {/* Título 
                         <Typography
-                          variant="caption"
+                          variant="subtitle1"
                           sx={{
-                            position: "absolute",
-                            bottom: 10,
-                            color: "#fff",
-                            backgroundColor: "rgba(0,0,0,0.6)",
-                            px: 2,
-                            py: 1,
-                            borderRadius: 2,
+                            fontWeight: "bold",
+                            textAlign: "center",
+                            fontSize: { xs: "1rem", sm: "1.1rem" },
+                            color: theme.palette.primary.main,
+                            mb: 0.5,
                           }}
                         >
                           {img.title}
-                        </Typography>
+                        </Typography>*/}
+
+                        {img.description && (
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              textAlign: "center",
+                              fontSize: { xs: "0.85rem", sm: "0.95rem" },
+                              color: "#555",
+                              maxWidth: "90%",
+                            }}
+                          >
+                            {img.description}
+                          </Typography>
+                        )}
                       </Box>
                     ))}
                   </Slider>
@@ -386,20 +410,21 @@ const SpecialFamilyDayPage: React.FC = () => {
           )}
 
           {data.videos.length > 0 && (
-            <Box sx={{ mb: 6 }}>
-              <Typography variant="h4" fontWeight="bold" textAlign="center" color={theme.palette.primary.main} sx={{ mb: 3 }}>
+            <Box sx={{ mb: 6, width: "95%", mx: "auto" }}>
+              <Typography
+                variant="h4"
+                fontWeight="bold"
+                textAlign="center"
+                color={theme.palette.primary.main}
+                sx={{ mb: 3, fontSize: { xs: "1.5rem", sm: "2rem" } }}
+              >
                 Vídeos Especiais
               </Typography>
+
               <Grid container spacing={3} justifyContent="center">
                 {data.videos.map((video) => (
                   <Grid key={video.id} item xs={12} sm={6} md={4}>
-                    <Card sx={{ borderRadius: 3, overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
-                      <video controls width="100%" style={{ borderRadius: "8px 8px 0 0" }} src={video.url} />
-                      <Box sx={{ p: 2 }}>
-                        <Typography variant="h6" fontWeight="bold">{video.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">{video.description}</Typography>
-                      </Box>
-                    </Card>
+                    <WeekVideoPlayer video={video} />
                   </Grid>
                 ))}
               </Grid>
@@ -408,13 +433,26 @@ const SpecialFamilyDayPage: React.FC = () => {
 
           {data.documents.length > 0 && (
             <Box sx={{ mb: 6 }}>
-              <Typography variant="h4" fontWeight="bold" textAlign="center" color={theme.palette.primary.main} sx={{ mb: 3 }}>
+              <Typography
+                variant="h4"
+                fontWeight="bold"
+                textAlign="center"
+                color={theme.palette.primary.main}
+                sx={{ mb: 3, fontSize: { xs: "1.3rem", sm: "2rem" } }}
+              >
                 Materiais para Download
               </Typography>
               <Grid container spacing={3}>
                 {data.documents.map((doc) => (
                   <Grid key={doc.id} item xs={12} sm={6} md={4}>
-                    <Card sx={{ p: 3, textAlign: "center", borderRadius: 3, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+                    <Card
+                      sx={{
+                        p: 3,
+                        textAlign: "center",
+                        borderRadius: 3,
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+                      }}
+                    >
                       <Typography variant="h6" fontWeight="bold">{doc.title}</Typography>
                       <Typography variant="body2" color="text.secondary">{doc.description}</Typography>
                       <Box sx={{ mt: 2, display: "flex", justifyContent: "center", gap: 1 }}>
@@ -428,7 +466,12 @@ const SpecialFamilyDayPage: React.FC = () => {
                         >
                           Visualizar
                         </Button>
-                        <Button variant="contained" color="secondary" href={doc.url} target="_blank">
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          href={doc.url}
+                          target="_blank"
+                        >
                           Baixar
                         </Button>
                       </Box>
@@ -444,7 +487,15 @@ const SpecialFamilyDayPage: React.FC = () => {
             variant="h6"
             textAlign="center"
             fontStyle="italic"
-            sx={{ color: theme.palette.primary.main, maxWidth: 800, mx: "auto", p: 2, backgroundColor: "#E8F5E9", borderRadius: 2 }}
+            sx={{
+              color: theme.palette.primary.main,
+              maxWidth: 800,
+              mx: "auto",
+              p: 2,
+              backgroundColor: "#E8F5E9",
+              borderRadius: 2,
+              fontSize: { xs: "0.9rem", sm: "1rem" },
+            }}
           >
             “Eu e minha casa serviremos ao Senhor.” – Josué 24:15
           </Typography>
