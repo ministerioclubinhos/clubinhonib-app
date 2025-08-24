@@ -95,7 +95,7 @@ const App: React.FC = () => {
             <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
             <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
             <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
-            <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} />
+            {/* <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} /> */}
           </Route>
 
           <Route element={<ProtectedRoute requiredRole="admin" />}>

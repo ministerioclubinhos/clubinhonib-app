@@ -236,7 +236,7 @@ const TeacherArea: React.FC = () => {
   return (
     <Container maxWidth={false} sx={{ width: '100%', mt: 10, mb: 8, px: { xs: 2, md: 4 }, bgcolor: '#f5f7fa' }}>
       <InformativeBanner />
-      <SpecialFamilyCallout />
+      {/* <SpecialFamilyCallout /> */}
       <BannerSection showWeekBanner={showWeek} showMeditationBanner={showMeditation} />
       <ButtonSection references={['materials', 'photos', 'rate', 'events', 'help']} />
       <MotivationSection motivationText={motivacao} />
