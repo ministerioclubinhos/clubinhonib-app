@@ -36,10 +36,10 @@ import type { RootState as RootStateType, AppDispatch as AppDispatchType } from 
 
 import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
 import WeekMaterialsList from 'pages/TeacherArea/WeekMaterialsList';
-
-import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
-import Register from './pages/Register/Register';
 import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
+import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
+
+// -- Área ADM (features)
 import CoordinatorProfilesManager from './features/coordinators/CoordinatorProfilesManager';
 import TeacherProfilesManager from './features/teachers/TeacherProfilesManager';
 import ClubsManager from './features/clubs/ClubsManager';
@@ -56,8 +56,14 @@ import ImageSectionListPage from './features/image-sections/pages/ImageSectionLi
 import VideoPageListPage from './features/video-pages/VideoPageListPage';
 import UsersListPage from './features/users/UsersListPage';
 import ChildrenManager from './features/children/ChildrenManager';
+
+// -- Área das crianças
 import ChildrenBrowserPage from './features/pagela-teacher/ChildrenBrowserPage';
 import ChildPagelasPage from './features/pagela-teacher/ChildPagelasPage';
+
+// -- Rotas extras
+import Register from './pages/Register/Register';
+// import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage'; // Descomentear quando usar
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
@@ -93,6 +99,7 @@ function App() {
       <Navbar />
       <div className="mainContainer">
         <Routes>
+          {/* Públicas */}
           <Route path="/" element={<Home />} />
           <Route path="/sobre" element={<About />} />
           <Route path="/contato" element={<Contact />} />
@@ -101,9 +108,9 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
           <Route path="/cadastrar" element={<Register commonUser />} />
-
           <Route path="*" element={<Home />} />
 
+          {/* Protegidas: usuário autenticado */}
           <Route element={<ProtectedRoute />}>
             <Route path="/area-do-professor" element={<TeacherArea />} />
             <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
@@ -111,9 +118,11 @@ function App() {
             <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
             <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
             <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
+            {/* <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} /> */}
           </Route>
 
-          <Route element={<ProtectedRoute requiredRole={[RoleUser.ADMIN, RoleUser.COORDINATOR]}/>}>
+          {/* Protegidas: Admin/Coord */}
+          <Route element={<ProtectedRoute requiredRole={[RoleUser.ADMIN, RoleUser.COORDINATOR]} />}>
             <Route path="/adm" element={<AdminLayout />}>
               <Route index element={<AdminDashboardPage />} />
               <Route path="meditacoes" element={<MeditationListPage />} />
@@ -121,7 +130,6 @@ function App() {
               <Route path="documentos" element={<DocumentList />} />
               <Route path="informativos" element={<InformativeBannerListPage />} />
               <Route path="feedbacks" element={<FeedbackList />} />
-
               <Route path="contatos" element={<ContactList />} />
               <Route path="paginas-materiais-semanais" element={<WeekMaterialListPage />} />
               <Route path="paginas-fotos" element={<ImagePageListPage />} />
@@ -134,6 +142,8 @@ function App() {
               <Route path="professores" element={<TeacherProfilesManager />} />
               <Route path="criancas" element={<ChildrenManager />} />
               <Route path="clubinhos" element={<ClubsManager />} />
+
+              {/* Editores (template=false = edição) */}
               <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
               <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
               <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
@@ -143,6 +153,7 @@ function App() {
             </Route>
           </Route>
 
+          {/* Rotas dinâmicas vindas do backend */}
           {dynamicRoutes.map((route: DynamicRouteType) => (
             <Route
               key={route.id}
