@@ -88,7 +88,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN;
   const isUserLogged = isAuthenticated;
-  const defaultSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID as string | undefined;
+  const defaultSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID;
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastSectionRef = useCallback(

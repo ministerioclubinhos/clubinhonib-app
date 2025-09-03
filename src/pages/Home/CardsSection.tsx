@@ -27,7 +27,7 @@ const CardsSection: React.FC = () => {
   const [cards, setCards] = useState<any[]>([]);
 
   useEffect(() => {
-    const feedImageGalleryId = process.env.VITE_FEED_MINISTERIO_ID ?? '';
+    const feedImageGalleryId =  import.meta.env.VITE_FEED_MINISTERIO_ID;
     const filteredCards = routes.filter(
       (card) =>
         card.public &&
