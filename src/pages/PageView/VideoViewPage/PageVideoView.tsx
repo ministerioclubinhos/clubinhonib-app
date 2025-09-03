@@ -40,7 +40,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
 
   const videoData = useSelector((state: RootState) => state.video.videoData);
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = isAuthenticated && user?.role === 'admin';
+  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN ;
 
   useEffect(() => {
     const fetchData = async () => {

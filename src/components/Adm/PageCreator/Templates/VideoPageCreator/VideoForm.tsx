@@ -9,7 +9,7 @@ import {
   Typography,
   CircularProgress,
 } from '@mui/material';
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, Fragment, SetStateAction } from 'react';
 import { MediaItem, MediaPlatform, MediaUploadType } from 'store/slices/types';
 
 interface VideoFormProps {
@@ -39,7 +39,7 @@ export default function VideoForm({
   uploadProgress,
 }: VideoFormProps) {
   return (
-    <>
+    <Fragment>
       <Typography variant="h6" mb={2} fontWeight="medium">
         {isEditing ? 'Editar Vídeo' : 'Adicionar Novo Vídeo'}
       </Typography>
@@ -167,6 +167,6 @@ export default function VideoForm({
           </Button>
         </Grid>
       </Grid>
-    </>
+    </Fragment>
   );
 }

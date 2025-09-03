@@ -30,6 +30,7 @@ import WeekAudioPlayerView from './WeekAudioPlayerView';
 import WeekVideoPlayerView from './WeekVideoPlayerView';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 import { MediaItem } from 'store/slices/types';
+import { RoleUser } from '@/store/slices/auth/authSlice';
 
 interface WeekMaterialsPageViewProps {
   idToFetch: string;
@@ -74,7 +75,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
   const dispatch: AppDispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = isAuthenticated && user?.role === 'admin';
+  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN ;
 
   useEffect(() => {
     const fetchData = async () => {

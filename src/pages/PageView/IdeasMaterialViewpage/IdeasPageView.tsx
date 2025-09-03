@@ -26,6 +26,7 @@ import IdeasDocumentViewer from './IdeasDocumentViewer';
 import IdeasImageGalleryView from './IdeasImageGalleryView';
 import IdeasVideoPlayerView from './IdeasVideoPlayerView';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import { RoleUser } from '@/store/slices/auth/authSlice';
 
 interface IdeasPageViewProps {
   idToFetch: string;
@@ -45,7 +46,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
   const dispatch: AppDispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = isAuthenticated && user?.role === 'admin';
+  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN ;
 
   useEffect(() => {
     const fetchData = async () => {

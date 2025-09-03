@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import {
   Box,
   TextField,
@@ -155,7 +155,7 @@ export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
           </FormControl>
         </Grid>
         {tempVideo.uploadType === MediaUploadType.LINK && (
-          <>
+          <Fragment>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Plataforma</InputLabel>
@@ -186,7 +186,7 @@ export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
                 helperText={errors.url ? 'URL inválida ou obrigatória' : ''}
               />
             </Grid>
-          </>
+          </Fragment>
         )}
         {tempVideo.uploadType === MediaUploadType.UPLOAD && (
           <Grid item xs={12}>

@@ -74,3 +74,62 @@ export const FeedbackCategoryLabels: Record<FeedbackCategory, string> = {
   [FeedbackCategory.OTHER]: 'Outro tipo de feedback',
 };
 
+
+
+// src/types/domain.ts
+export type Weekday =
+  | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+
+export type Address = {
+  id?: string;
+  street: string;
+  number?: string;
+  district: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  complement?: string;
+  latitude?: number;
+  longitude?: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type Club = {
+  id: string;
+  number: number;
+  weekday: Weekday;
+  address: Address;
+  coordinator?: CoordinatorProfile | null;
+  teachers?: TeacherProfile[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CoordinatorProfile = {
+  id: string;
+  user: { id: string; name?: string; email?: string };
+  clubs?: Club[];
+  teachers?: TeacherProfile[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TeacherProfile = {
+  id: string;
+  user: { id: string; name?: string; email?: string };
+  club?: { id: string; number: number } | null;
+  coordinator?: { id: string } | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const weekdayOptions: { value: Weekday; label: string }[] = [
+  { value: "monday", label: "Segunda" },
+  { value: "tuesday", label: "Terça" },
+  { value: "wednesday", label: "Quarta" },
+  { value: "thursday", label: "Quinta" },
+  { value: "friday", label: "Sexta" },
+  { value: "saturday", label: "Sábado" },
+  { value: "sunday", label: "Domingo" },
+];

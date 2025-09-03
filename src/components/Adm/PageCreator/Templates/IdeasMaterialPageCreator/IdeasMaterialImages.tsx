@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import {
   Box,
   TextField,
@@ -157,7 +157,7 @@ export function IdeasMaterialImages({ images, setImages }: ImagesProps) {
           </FormControl>
         </Grid>
         {tempImg.uploadType === 'link' && (
-          <>
+          <Fragment>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Plataforma</InputLabel>
@@ -187,7 +187,7 @@ export function IdeasMaterialImages({ images, setImages }: ImagesProps) {
                 helperText={errors.url ? 'URL inválida ou obrigatória' : ''}
               />
             </Grid>
-          </>
+          </Fragment>
         )}
         {tempImg.uploadType === MediaUploadType.UPLOAD && (
           <Grid item xs={12}>

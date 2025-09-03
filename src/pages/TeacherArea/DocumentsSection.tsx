@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import {
   Box,
   Typography,
@@ -98,7 +98,7 @@ const DocumentsSection: React.FC = () => {
           {error}
         </Typography>
       ) : documentRoutes.length > 0 ? (
-        <>
+        <Fragment>
           <Grid container spacing={3}>
             {displayedRoutes.map((route) => (
               <Grid item xs={12} sm={6} md={3} key={route.id}>
@@ -153,7 +153,7 @@ const DocumentsSection: React.FC = () => {
               </Button>
             </Box>
           )}
-        </>
+        </Fragment>
       ) : (
         <Typography
           variant="body2"

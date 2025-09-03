@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import {
   Box,
   Typography,
@@ -39,6 +39,7 @@ import api from '@/config/axiosConfig';
 import { setEvents } from '@/store/slices/events/eventsSlice';
 import EventDetailsModal from './EventDetailsModal';
 import EventFormModal from './EventFormModal';
+import { RoleUser } from '@/store/slices/auth/authSlice';
 
 dayjs.locale('pt-br');
 
@@ -71,7 +72,7 @@ const Eventos: React.FC = () => {
   const dispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = isAuthenticated && user?.role === 'admin';
+  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN;
 
   const hoje = dayjs();
   const [eventos, setEventos] = useState<any[]>([]);
@@ -204,7 +205,7 @@ const Eventos: React.FC = () => {
               Ver Detalhes
             </Button>
           ) : (
-            <>
+            <Fragment>
               <Box>
                 <Tooltip title="Editar">
                   <IconButton onClick={() => handleEditEvent(evento)}>
@@ -226,7 +227,7 @@ const Eventos: React.FC = () => {
               >
                 Ver Detalhes
               </Button>
-            </>
+            </Fragment>
           )}
         </CardActions>
       </Card>
@@ -283,7 +284,16 @@ const Eventos: React.FC = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="60vh">
+      <Box
+        sx={{
+          minHeight: 'calc(100vh - var(--app-header-h, 64px) - var(--app-footer-h, 88px))',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pb: { xs: '72px', md: '96px' },
+          px: { xs: '5px', md: 4 },
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -292,357 +302,371 @@ const Eventos: React.FC = () => {
   const naoTemEventos = !eventos.length;
 
   return (
-    <>
-      {naoTemEventos && (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          flexDirection="column"
-          minHeight="50vh"
-          gap={2}
-          sx={{ px: 2 }}
-        >
-          <Typography
-            variant="h6"
-            color="text.secondary"
-            gutterBottom
-            sx={{ fontFamily: 'Roboto, sans-serif' }}
-          >
-            Nenhum evento encontrado
-          </Typography>
-          {isAdmin && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              color="primary"
-              onClick={handleAddNewEvent}
-              sx={{ boxShadow: '0 4px 6px rgba(0,0,0,0.1)', fontFamily: 'Roboto, sans-serif' }}
-            >
-              Adicionar Evento
-            </Button>
-          )}
-        </Box>
-      )}
-
-      {!naoTemEventos && (
-        <Box sx={{ mt: { xs: 10, md: 11 }, mb: { xs: 5, md: 6 }, px: { xs: 0, md: 4 } }}>
+    <Fragment>
+      {/* WRAPPER: garante altura mínima da página e “empurra” o footer */}
+      <Box
+        sx={{
+          minHeight: 'calc(100vh - var(--app-header-h, 64px) - var(--app-footer-h, 88px))',
+          pt: { xs: 10, md: 11 },
+          pb: { xs: '72px', md: '96px' },  // espaço para o footer
+          px: { xs: '5px', md: 4 },        // padding horizontal menor no mobile
+        }}
+      >
+        {naoTemEventos && (
           <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
-              justifyContent: { xs: 'center', md: 'space-between' },
-              alignItems: { xs: 'center', md: 'center' },
-              textAlign: { xs: 'center', md: 'left' },
-              mb: { xs: 1, md: 1 },
-              gap: { xs: 2, md: 0 },
-            }}
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            flexDirection="column"
+            minHeight="50vh"
+            gap={2}
+            sx={{ px: 2 }}
           >
-            <Box>
-              <Typography
-                variant="h4"
-                fontWeight="bold"
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: { xs: 'center', md: 'flex-start' },
-                  fontFamily: 'Roboto, sans-serif',
-                }}
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              gutterBottom
+              sx={{ fontFamily: 'Roboto, sans-serif' }}
+            >
+              Nenhum evento encontrado
+            </Typography>
+            {isAdmin && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                color="primary"
+                onClick={handleAddNewEvent}
+                sx={{ boxShadow: '0 4px 6px rgba(0,0,0,0.1)', fontFamily: 'Roboto, sans-serif' }}
               >
-                <CalendarTodayIcon color="primary" /> Eventos
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                color="text.secondary"
-                sx={{ fontFamily: 'Roboto, sans-serif' }}
-              >
-                Participe das atividades e encontros do Clubinho!
-              </Typography>
-            </Box>
-            <Box textAlign={{ xs: 'center', md: 'right' }}>
-              {!isMobile && isAdmin && !editMode && (
-                <Button
-                  variant="contained"
-                  color="warning"
-                  startIcon={<EditCalendarIcon />}
-                  onClick={handleEnterEditMode}
-                  sx={{
-                    mb: 1,
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                    fontFamily: 'Roboto, sans-serif',
-                  }}
-                >
-                  Editar Página
-                </Button>
-              )}
-              {!isMobile && editMode && (
-                <>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddIcon />}
-                    onClick={handleAddNewEvent}
-                    sx={{
-                      mr: 2,
-                      mb: 1,
-                      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                      fontFamily: 'Roboto, sans-serif',
-                    }}
-                  >
-                    Adicionar Evento
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="inherit"
-                    onClick={handleCancelEditMode}
-                    sx={{
-                      mb: 1,
-                      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                      fontFamily: 'Roboto, sans-serif',
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                </>
-              )}
-              {leftoverAnteriores.length > 0 && (
-                <Button
-                  variant="text"
-                  color="secondary"
-                  onClick={() => setMostrarAntigos(!mostrarAntigos)}
-                  sx={{
-                    fontWeight: 'bold',
-                    display: 'block',
-                    mt: 1,
-                    mb: 0,
-                    fontFamily: 'Roboto, sans-serif',
-                  }}
-                >
-                  {mostrarAntigos ? 'Esconder Eventos Antigos' : 'Ver Eventos Antigos'}
-                </Button>
-              )}
-            </Box>
+                Adicionar Evento
+              </Button>
+            )}
           </Box>
+        )}
 
-          {isMobile && isAdmin && (
+        {!naoTemEventos && (
+          <Box sx={{ mt: { xs: 0, md: 0 }, mb: { xs: 0, md: 0 } }}>
+            {/* Header da página */}
             <Box
               sx={{
-                position: 'fixed',
-                bottom: 16,
-                right: 16,
                 display: 'flex',
-                flexDirection: 'column',
-                gap: 1,
-                zIndex: 1000,
+                flexDirection: { xs: 'column', md: 'row' },
+                justifyContent: { xs: 'center', md: 'space-between' },
+                alignItems: { xs: 'center', md: 'center' },
+                textAlign: { xs: 'center', md: 'left' },
+                mb: { xs: 1, md: 1 },
+                gap: { xs: 2, md: 0 },
               }}
             >
-              {!editMode ? (
-                <Tooltip title="Editar Página">
-                  <Fab
+              <Box>
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: { xs: 'center', md: 'flex-start' },
+                    fontFamily: 'Roboto, sans-serif',
+                  }}
+                >
+                  <CalendarTodayIcon color="primary" /> Eventos
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  sx={{ fontFamily: 'Roboto, sans-serif' }}
+                >
+                  Participe das atividades e encontros do Clubinho!
+                </Typography>
+              </Box>
+              <Box textAlign={{ xs: 'center', md: 'right' }}>
+                {!isMobile && isAdmin && !editMode && (
+                  <Button
+                    variant="contained"
                     color="warning"
-                    aria-label="editar"
+                    startIcon={<EditCalendarIcon />}
                     onClick={handleEnterEditMode}
-                    sx={{ boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
+                    sx={{
+                      mb: 1,
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                      fontFamily: 'Roboto, sans-serif',
+                    }}
                   >
-                    <EditCalendarIcon />
-                  </Fab>
-                </Tooltip>
-              ) : (
-                <>
-                  <Tooltip title="Adicionar Evento">
-                    <Fab
+                    Editar Página
+                  </Button>
+                )}
+                {!isMobile && editMode && (
+                  <Fragment>
+                    <Button
+                      variant="contained"
                       color="primary"
-                      aria-label="adicionar"
+                      startIcon={<AddIcon />}
                       onClick={handleAddNewEvent}
-                      sx={{ boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
+                      sx={{
+                        mr: 2,
+                        mb: 1,
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        fontFamily: 'Roboto, sans-serif',
+                      }}
                     >
-                      <AddIcon />
-                    </Fab>
-                  </Tooltip>
-                  <Tooltip title="Cancelar">
-                    <Fab
-                      color="default"
-                      aria-label="cancelar"
+                      Adicionar Evento
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="inherit"
                       onClick={handleCancelEditMode}
+                      sx={{
+                        mb: 1,
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        fontFamily: 'Roboto, sans-serif',
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  </Fragment>
+                )}
+                {leftoverAnteriores.length > 0 && (
+                  <Button
+                    variant="text"
+                    color="secondary"
+                    onClick={() => setMostrarAntigos(!mostrarAntigos)}
+                    sx={{
+                      fontWeight: 'bold',
+                      display: 'block',
+                      mt: 1,
+                      mb: 0,
+                      fontFamily: 'Roboto, sans-serif',
+                    }}
+                  >
+                    {mostrarAntigos ? 'Esconder Eventos Antigos' : 'Ver Eventos Antigos'}
+                  </Button>
+                )}
+              </Box>
+            </Box>
+
+            {/* FABs no mobile */}
+            {isMobile && isAdmin && (
+              <Box
+                sx={{
+                  position: 'fixed',
+                  bottom: 16,
+                  right: 16,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                  zIndex: 1000,
+                }}
+              >
+                {!editMode ? (
+                  <Tooltip title="Editar Página">
+                    <Fab
+                      color="warning"
+                      aria-label="editar"
+                      onClick={handleEnterEditMode}
                       sx={{ boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
                     >
-                      <CloseIcon />
+                      <EditCalendarIcon />
                     </Fab>
                   </Tooltip>
-                </>
-              )}
+                ) : (
+                  <Fragment>
+                    <Tooltip title="Adicionar Evento">
+                      <Fab
+                        color="primary"
+                        aria-label="adicionar"
+                        onClick={handleAddNewEvent}
+                        sx={{ boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
+                      >
+                        <AddIcon />
+                      </Fab>
+                    </Tooltip>
+                    <Tooltip title="Cancelar">
+                      <Fab
+                        color="default"
+                        aria-label="cancelar"
+                        onClick={handleCancelEditMode}
+                        sx={{ boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
+                      >
+                        <CloseIcon />
+                      </Fab>
+                    </Tooltip>
+                  </Fragment>
+                )}
+              </Box>
+            )}
+
+            {/* Bloco principal */}
+            <Box
+              sx={{
+                mt: { xs: 1, md: 3 },
+                mb: { xs: 4, md: 4 },
+                pt: { xs: 1, md: 2 },
+                pb: { xs: 3, md: 3 },
+                px: { xs: 2, md: 4 },
+                backgroundColor: '#f5f5f5',
+                borderRadius: 3,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+              }}
+            >
+              <Grid container spacing={4} justifyContent="center" sx={{ mt: 1, mb: 1 }}>
+                {eventoHoje ? (
+                  <Fragment>
+                    {eventoAnterior && (
+                      <Grid item xs={12} md={4}>
+                        <Typography
+                          variant="subtitle1"
+                          textAlign="center"
+                          fontWeight="bold"
+                          mb={1}
+                          sx={{ fontFamily: 'Roboto, sans-serif' }}
+                        >
+                          Evento Anterior
+                        </Typography>
+                        {renderCard(eventoAnterior)}
+                      </Grid>
+                    )}
+                    <Grid item xs={12} md={4} sx={{ order: { xs: -1, md: 0 } }}>
+                      <Typography
+                        variant="subtitle1"
+                        textAlign="center"
+                        fontWeight="bold"
+                        mb={1}
+                        sx={{ fontFamily: 'Roboto, sans-serif' }}
+                      >
+                        Evento de Hoje
+                      </Typography>
+                      {renderCard(eventoHoje)}
+                    </Grid>
+                    {eventoProximo && (
+                      <Grid item xs={12} md={4}>
+                        <Typography
+                          variant="subtitle1"
+                          textAlign="center"
+                          fontWeight="bold"
+                          mb={1}
+                          sx={{ fontFamily: 'Roboto, sans-serif' }}
+                        >
+                          Próximo Evento
+                        </Typography>
+                        {renderCard(eventoProximo)}
+                      </Grid>
+                    )}
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    {eventoAnterior && (
+                      <Grid item xs={12} md={4}>
+                        <Typography
+                          variant="subtitle1"
+                          textAlign="center"
+                          fontWeight="bold"
+                          mb={1}
+                          sx={{ fontFamily: 'Roboto, sans-serif' }}
+                        >
+                          Evento Anterior
+                        </Typography>
+                        {renderCard(eventoAnterior)}
+                      </Grid>
+                    )}
+                    {eventoProximo && (
+                      <Grid item xs={12} md={4}>
+                        <Typography
+                          variant="subtitle1"
+                          textAlign="center"
+                          fontWeight="bold"
+                          mb={1}
+                          sx={{ fontFamily: 'Roboto, sans-serif' }}
+                        >
+                          Próximo Evento
+                        </Typography>
+                        {renderCard(eventoProximo)}
+                      </Grid>
+                    )}
+                    {eventoPosterior && (
+                      <Grid item xs={12} md={4}>
+                        <Typography
+                          variant="subtitle1"
+                          textAlign="center"
+                          fontWeight="bold"
+                          mb={1}
+                          sx={{ fontFamily: 'Roboto, sans-serif' }}
+                        >
+                          Evento Posterior
+                        </Typography>
+                        {renderCard(eventoPosterior)}
+                      </Grid>
+                    )}
+                  </Fragment>
+                )}
+              </Grid>
             </Box>
-          )}
 
-          <Box
-            sx={{
-              mt: { xs: 1, md: 3 },
-              mb: { xs: 4, md: 4 },
-              pt: { xs: 1, md: 2 },
-              pb: { xs: 6, md: 3 },
-              px: { xs: 2, md: 4 },
-              backgroundColor: '#f5f5f5',
-              borderRadius: 3,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-            }}
-          >
-            <Grid container spacing={4} justifyContent="center" sx={{ mt: 1, mb: 1 }}>
-              {eventoHoje ? (
-                <>
-                  {eventoAnterior && (
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        textAlign="center"
-                        fontWeight="bold"
-                        mb={1}
-                        sx={{ fontFamily: 'Roboto, sans-serif' }}
-                      >
-                        Evento Anterior
-                      </Typography>
-                      {renderCard(eventoAnterior)}
-                    </Grid>
-                  )}
-                  <Grid item xs={12} md={4} sx={{ order: { xs: -1, md: 0 } }}>
-                    <Typography
-                      variant="subtitle1"
-                      textAlign="center"
-                      fontWeight="bold"
-                      mb={1}
-                      sx={{ fontFamily: 'Roboto, sans-serif' }}
-                    >
-                      Evento de Hoje
-                    </Typography>
-                    {renderCard(eventoHoje)}
+            {leftoverFuturos.length > 0 && (
+              <Accordion
+                defaultExpanded
+                sx={{
+                  mb: 6,
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                  borderRadius: 2,
+                }}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    color="text.secondary"
+                    sx={{ fontFamily: 'Roboto, sans-serif' }}
+                  >
+                    Próximos Eventos
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={4} justifyContent="center">
+                    {leftoverFuturos.map((evento) => (
+                      <Grid item xs={12} sm={6} md={4} key={evento.id}>
+                        {renderCard(evento)}
+                      </Grid>
+                    ))}
                   </Grid>
-                  {eventoProximo && (
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        textAlign="center"
-                        fontWeight="bold"
-                        mb={1}
-                        sx={{ fontFamily: 'Roboto, sans-serif' }}
-                      >
-                        Próximo Evento
-                      </Typography>
-                      {renderCard(eventoProximo)}
-                    </Grid>
-                  )}
-                </>
-              ) : (
-                <>
-                  {eventoAnterior && (
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        textAlign="center"
-                        fontWeight="bold"
-                        mb={1}
-                        sx={{ fontFamily: 'Roboto, sans-serif' }}
-                      >
-                        Evento Anterior
-                      </Typography>
-                      {renderCard(eventoAnterior)}
-                    </Grid>
-                  )}
-                  {eventoProximo && (
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        textAlign="center"
-                        fontWeight="bold"
-                        mb={1}
-                        sx={{ fontFamily: 'Roboto, sans-serif' }}
-                      >
-                        Próximo Evento
-                      </Typography>
-                      {renderCard(eventoProximo)}
-                    </Grid>
-                  )}
-                  {eventoPosterior && (
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        textAlign="center"
-                        fontWeight="bold"
-                        mb={1}
-                        sx={{ fontFamily: 'Roboto, sans-serif' }}
-                      >
-                        Evento Posterior
-                      </Typography>
-                      {renderCard(eventoPosterior)}
-                    </Grid>
-                  )}
-                </>
-              )}
-            </Grid>
+                </AccordionDetails>
+              </Accordion>
+            )}
+
+            {mostrarAntigos && leftoverAnteriores.length > 0 && (
+              <Accordion
+                ref={eventosAntigosRef}
+                sx={{
+                  mb: 6,
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                  borderRadius: 2,
+                }}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    color="text.secondary"
+                    sx={{ fontFamily: 'Roboto, sans-serif' }}
+                  >
+                    Eventos Anteriores
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={4} justifyContent="center">
+                    {leftoverAnteriores.map((evento) => (
+                      <Grid item xs={12} sm={6} md={4} key={evento.id}>
+                        {renderCard(evento)}
+                      </Grid>
+                    ))}
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+            )}
           </Box>
+        )}
+      </Box>
 
-          {leftoverFuturos.length > 0 && (
-            <Accordion
-              defaultExpanded
-              sx={{
-                mb: 6,
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                borderRadius: 2,
-              }}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography
-                  variant="h6"
-                  fontWeight="bold"
-                  color="text.secondary"
-                  sx={{ fontFamily: 'Roboto, sans-serif' }}
-                >
-                  Próximos Eventos
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Grid container spacing={4} justifyContent="center">
-                  {leftoverFuturos.map((evento) => (
-                    <Grid item xs={12} sm={6} md={4} key={evento.id}>
-                      {renderCard(evento)}
-                    </Grid>
-                  ))}
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
-          )}
-
-          {mostrarAntigos && leftoverAnteriores.length > 0 && (
-            <Accordion
-              ref={eventosAntigosRef}
-              sx={{
-                mb: 6,
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                borderRadius: 2,
-              }}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography
-                  variant="h6"
-                  fontWeight="bold"
-                  color="text.secondary"
-                  sx={{ fontFamily: 'Roboto, sans-serif' }}
-                >
-                  Eventos Anteriores
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Grid container spacing={4} justifyContent="center">
-                  {leftoverAnteriores.map((evento) => (
-                    <Grid item xs={12} sm={6} md={4} key={evento.id}>
-                      {renderCard(evento)}
-                    </Grid>
-                  ))}
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
-          )}
-        </Box>
-      )}
-
+      {/* Modais */}
       {eventoSelecionado && (
         <EventDetailsModal
           open={!!eventoSelecionado}
@@ -691,7 +715,7 @@ const Eventos: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Fragment>
   );
 };
 

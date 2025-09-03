@@ -133,7 +133,7 @@ const SpecialFamilyDayPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
-  const defaultSectionId = process.env.REACT_APP_SPECIAL_FAMILY_DAY_ID;
+  const defaultSectionId = (import.meta as any).env?.VITE_SPECIAL_FAMILY_DAY_ID as string | undefined;
 
   useEffect(() => {
     async function fetchData() {

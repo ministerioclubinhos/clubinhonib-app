@@ -1,26 +1,39 @@
-import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState as RootStateType } from '@/store/slices';
-import { Box, CircularProgress, Typography } from '@mui/material';
+// src/routes/ProtectedRoute.tsx
+import React from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState as RootStateType } from "@/store/slices";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import { RoleUser } from "@/store/slices/auth/authSlice";
 
 interface ProtectedRouteProps {
-  requiredRole?: string | string[];
+  /** Uma role ou várias roles permitidas */
+  requiredRole?: RoleUser | RoleUser[];
+  /** Para onde redirecionar quando negar acesso (default: "/") */
+  redirectTo?: string;
+  /** Se true, ADMIN passa mesmo que não esteja em requiredRole (default: true) */
+  adminBypass?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  requiredRole,
+  redirectTo = "/",
+  adminBypass = true,
+}) => {
   const location = useLocation();
-  const { isAuthenticated, user, loadingUser } = useSelector((state: RootStateType) => state.auth);
+  const { isAuthenticated, user, loadingUser } = useSelector(
+    (state: RootStateType) => state.auth
+  );
 
   if (loadingUser) {
     return (
       <Box
         sx={{
-          height: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
           gap: 2,
         }}
       >
@@ -38,10 +51,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole }) => {
 
   if (requiredRole) {
     const rolesArray = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-    const userRole = user?.role;
+    const userRole = user?.role as RoleUser | undefined;
+
+    // ADMIN pode tudo (se habilitado)
+    if (adminBypass && userRole === RoleUser.ADMIN) {
+      return <Outlet />;
+    }
 
     if (!userRole || !rolesArray.includes(userRole)) {
-      return <Navigate to="/" state={{ error: 'Acesso negado' }} replace />;
+      return <Navigate to={redirectTo} state={{ error: "Acesso negado" }} replace />;
     }
   }
 
