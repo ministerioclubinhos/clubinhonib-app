@@ -100,7 +100,7 @@ export default function ChildPagelasPage() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        pt: { xs: 2, md: 4 }, // padding-top responsivo; removemos mt
+        pt: { xs: 8, md: 4 }, // padding-top responsivo; removemos mt
         minHeight: "100vh",
         bgcolor: "#f6f7f9",
       }}
