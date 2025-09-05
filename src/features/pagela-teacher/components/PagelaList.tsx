@@ -14,18 +14,30 @@ import {
   Button,
   useMediaQuery,
   useTheme,
+  Paper,
 } from "@mui/material";
 import AllInclusiveIcon from "@mui/icons-material/AllInclusive";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PagelaCard from "./PagelaCard";
 import type { Pagela } from "../types";
+import type { Tri } from "../hooks";
 
-type Tri = "any" | "yes" | "no";
+type FiltersProps = {
+  year?: number;
+  week?: number;
+  presentQ: Tri;
+  medQ: Tri;
+  verseQ: Tri;
+  setYear: (v?: number) => void;
+  setWeek: (v?: number) => void;
+  setPresentQ: (v: Tri) => void;
+  setMedQ: (v: Tri) => void;
+  setVerseQ: (v: Tri) => void;
+  clearFilters: () => void;
+};
 
-const matchTri = (value: boolean, tri: Tri) =>
-  tri === "any" ? true : tri === "yes" ? value : !value;
+const DEBOUNCE_MS = 450;
 
 export default function PagelaList({
   rows,
@@ -33,6 +45,7 @@ export default function PagelaList({
   page,
   limit,
   setPage,
+  filters,
   onEdit,
   onDelete,
 }: {
@@ -41,123 +54,165 @@ export default function PagelaList({
   page: number;
   limit: number;
   setPage: (p: number) => void;
+  filters: FiltersProps;
   onEdit: (r: Pagela) => void;
-  onDelete: (r: Pagela) => void;
+  onDelete: (r: Pagela) => Promise<void>;
 }) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // --- filtros de front ---
-  const [yearQ, setYearQ] = React.useState<number | "any">("any");
-  const [weekQ, setWeekQ] = React.useState<number | "">("");
-  const [fPresent, setFPresent] = React.useState<Tri>("any");
-  const [fMed, setFMed] = React.useState<Tri>("any");
-  const [fVerse, setFVerse] = React.useState<Tri>("any");
-
-  // anos únicos presentes nesta lista (dinâmico)
-  const years = React.useMemo(() => {
-    const s = new Set<number>();
-    rows.forEach((r) => s.add(r.year));
-    return Array.from(s).sort((a, b) => b - a);
-  }, [rows]);
-
   const hasAny =
-    yearQ !== "any" || weekQ !== "" || fPresent !== "any" || fMed !== "any" || fVerse !== "any";
+    filters.year !== undefined ||
+    filters.week !== undefined ||
+    filters.presentQ !== "any" ||
+    filters.medQ !== "any" ||
+    filters.verseQ !== "any";
 
-  const filteredRows = React.useMemo(() => {
-    return rows.filter((r) => {
-      const yearOk = yearQ === "any" || r.year === yearQ;
-      const weekOk = weekQ === "" || r.week === Number(weekQ);
-      const presentOk = matchTri(!!r.present, fPresent);
-      const medOk = matchTri(!!r.didMeditation, fMed);
-      const verseOk = matchTri(!!r.recitedVerse, fVerse);
-      return yearOk && weekOk && presentOk && medOk && verseOk;
-    });
-  }, [rows, yearQ, weekQ, fPresent, fMed, fVerse]);
+  /* ---------- inputs locais (string) p/ digitação livre ---------- */
+  const [yearText, setYearText] = React.useState<string>(filters.year?.toString() ?? "");
+  const [weekText, setWeekText] = React.useState<string>(filters.week?.toString() ?? "");
 
-  // paginação do servidor (inalterada)
-  const pages = Math.max(1, Math.ceil(total / limit));
+  // sincronia quando filtros mudam externamente (ex.: limpar)
+  React.useEffect(() => {
+    setYearText(filters.year?.toString() ?? "");
+  }, [filters.year]);
 
-  if (!rows.length) {
-    return (
-      <Typography variant="body2" color="text.secondary">
-        Sem registros para a busca.
-      </Typography>
-    );
+  React.useEffect(() => {
+    setWeekText(filters.week?.toString() ?? "");
+  }, [filters.week]);
+
+  /* ---------- aplicadores imediatos (blur/enter) ---------- */
+  const applyYearFromText = React.useCallback(() => {
+    const raw = yearText.trim();
+    if (raw === "") {
+      if (filters.year !== undefined) filters.setYear(undefined);
+      return;
     }
+    const digits = raw.replace(/\D+/g, "");
+    if (!digits) return;
+    const n = Math.floor(Number(digits));
+    if (!Number.isFinite(n)) return;
+    const clamped = Math.max(2000, Math.min(9999, n));
+    if (clamped !== filters.year) filters.setYear(clamped);
+    setYearText(String(clamped)); // normaliza visualmente
+  }, [yearText, filters.year, filters.setYear]);
+
+  const applyWeekFromText = React.useCallback(() => {
+    const raw = weekText.trim();
+    if (raw === "") {
+      if (filters.week !== undefined) filters.setWeek(undefined);
+      return;
+    }
+    const digits = raw.replace(/\D+/g, "");
+    if (!digits) return;
+    const n = Math.floor(Number(digits));
+    if (!Number.isFinite(n)) return;
+    const clamped = Math.max(1, Math.min(53, n));
+    if (clamped !== filters.week) filters.setWeek(clamped);
+    setWeekText(String(clamped));
+  }, [weekText, filters.week, filters.setWeek]);
+
+  /* ---------- DEBOUNCE (aplica sozinho após parar de digitar) ---------- */
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      const raw = yearText.trim();
+      if (raw === "") {
+        if (filters.year !== undefined) filters.setYear(undefined);
+        return;
+      }
+      const digits = raw.replace(/\D+/g, "");
+      // só aplica automático quando tiver 4 dígitos (evita várias requisições)
+      if (digits.length !== 4) return;
+      const n = Number(digits);
+      if (!Number.isFinite(n)) return;
+      const clamped = Math.max(2000, Math.min(9999, Math.floor(n)));
+      if (clamped !== filters.year) filters.setYear(clamped);
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [yearText, filters.year, filters.setYear]);
+
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      const raw = weekText.trim();
+      if (raw === "") {
+        if (filters.week !== undefined) filters.setWeek(undefined);
+        return;
+      }
+      const digits = raw.replace(/\D+/g, "");
+      if (digits.length < 1) return; // nada a fazer
+      const n = Number(digits);
+      if (!Number.isFinite(n)) return;
+      const clamped = Math.max(1, Math.min(53, Math.floor(n)));
+      if (clamped !== filters.week) filters.setWeek(clamped);
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [weekText, filters.week, filters.setWeek]);
+
+  /* ---------- handlers de digitação ---------- */
+  const handleYearChange = (v: string) => {
+    const digits = v.replace(/\D+/g, "").slice(0, 4);
+    setYearText(digits);
+  };
+  const handleWeekChange = (v: string) => {
+    const digits = v.replace(/\D+/g, "").slice(0, 2);
+    setWeekText(digits);
+  };
+
+  const onKeyDownApply =
+    (apply: () => void) =>
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") apply();
+    };
 
   return (
     <Stack spacing={1.75}>
-      {/* Barra de filtros — responsiva e compacta */}
+      {/* Barra de filtros — SEMPRE visível */}
       <Box
         sx={{
           display: "grid",
           gap: 1,
-          pt: 1, // espaço pro label flutuante não ser cortado
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(5, minmax(140px, 1fr))", // Ano + Semana + 3 selects
-          },
+          pt: 1,
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(5, minmax(140px, 1fr))" },
           alignItems: "center",
           overflowX: "auto",
           pb: 0.5,
         }}
       >
-        {/* Ano (select dinâmico) */}
-        <FormControl
-          size="small"
+        {/* Ano (texto com debounce) */}
+        <TextField
+          label="Ano"
           margin="dense"
+          size="small"
+          type="text"
+          value={yearText}
+          onChange={(e) => handleYearChange(e.target.value)}
+          onBlur={applyYearFromText}
+          onKeyDown={onKeyDownApply(applyYearFromText)}
+          inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 4 }}
           fullWidth
-          sx={{ minWidth: 0, width: "100%" }}
-        >
-          <InputLabel>Ano</InputLabel>
-          <Select
-            label="Ano"
-            value={yearQ}
-            onChange={(e) => setYearQ(e.target.value as number | "any")}
-          >
-            <MenuItem value="any">
-              <AllInclusiveIcon fontSize="small" style={{ marginRight: 8 }} />
-              Todos
-            </MenuItem>
-            {years.map((y) => (
-              <MenuItem key={y} value={y}>
-                <CalendarMonthIcon fontSize="small" style={{ marginRight: 8 }} />
-                {y}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        />
 
-        {/* Semana (número) */}
+        {/* Semana (texto com debounce) */}
         <TextField
           label="Semana"
           margin="dense"
           size="small"
-          type="number"
-          value={weekQ}
-          onChange={(e) => {
-            const v = e.target.value;
-            if (v === "") return setWeekQ("");
-            const n = Number(v);
-            setWeekQ(Number.isFinite(n) ? Math.max(1, Math.min(53, n)) : "");
-          }}
-          inputProps={{ min: 1, max: 53, inputMode: "numeric", pattern: "[0-9]*" }}
+          type="text"
+          value={weekText}
+          onChange={(e) => handleWeekChange(e.target.value)}
+          onBlur={applyWeekFromText}
+          onKeyDown={onKeyDownApply(applyWeekFromText)}
+          inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 2 }}
           sx={{ width: { xs: "100%", sm: "100%" } }}
         />
 
         {/* Presença */}
-        <FormControl
-          size="small"
-          margin="dense"
-          fullWidth
-          sx={{ minWidth: 0, width: "100%" }}
-        >
+        <FormControl size="small" margin="dense" fullWidth sx={{ minWidth: 0 }}>
           <InputLabel>Presença</InputLabel>
           <Select
             label="Presença"
-            value={fPresent}
-            onChange={(e) => setFPresent(e.target.value as Tri)}
+            value={filters.presentQ}
+            onChange={(e) => filters.setPresentQ(e.target.value as Tri)}
           >
             <MenuItem value="any">
               <AllInclusiveIcon fontSize="small" style={{ marginRight: 8 }} />
@@ -175,17 +230,12 @@ export default function PagelaList({
         </FormControl>
 
         {/* Meditação */}
-        <FormControl
-          size="small"
-          margin="dense"
-          fullWidth
-          sx={{ minWidth: 0, width: "100%" }}
-        >
+        <FormControl size="small" margin="dense" fullWidth sx={{ minWidth: 0 }}>
           <InputLabel>Meditação</InputLabel>
           <Select
             label="Meditação"
-            value={fMed}
-            onChange={(e) => setFMed(e.target.value as Tri)}
+            value={filters.medQ}
+            onChange={(e) => filters.setMedQ(e.target.value as Tri)}
           >
             <MenuItem value="any">
               <AllInclusiveIcon fontSize="small" style={{ marginRight: 8 }} />
@@ -203,17 +253,12 @@ export default function PagelaList({
         </FormControl>
 
         {/* Versículo */}
-        <FormControl
-          size="small"
-          margin="dense"
-          fullWidth
-          sx={{ minWidth: 0, width: "100%" }}
-        >
+        <FormControl size="small" margin="dense" fullWidth sx={{ minWidth: 0 }}>
           <InputLabel>Versículo</InputLabel>
           <Select
             label="Versículo"
-            value={fVerse}
-            onChange={(e) => setFVerse(e.target.value as Tri)}
+            value={filters.verseQ}
+            onChange={(e) => filters.setVerseQ(e.target.value as Tri)}
           >
             <MenuItem value="any">
               <AllInclusiveIcon fontSize="small" style={{ marginRight: 8 }} />
@@ -230,22 +275,14 @@ export default function PagelaList({
           </Select>
         </FormControl>
 
-        {/* Botão limpar — linha própria no xs, à direita no sm+ */}
-        <Box
-          sx={{
-            gridColumn: { xs: "1 / -1", sm: "auto" },
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
+        {/* Limpar */}
+        <Box sx={{ gridColumn: { xs: "1 / -1", sm: "auto" }, display: "flex", justifyContent: "flex-end" }}>
           {hasAny && (
             <Button
               onClick={() => {
-                setYearQ("any");
-                setWeekQ("");
-                setFPresent("any");
-                setFMed("any");
-                setFVerse("any");
+                filters.clearFilters();
+                setYearText("");
+                setWeekText("");
               }}
               size="small"
               variant="text"
@@ -257,26 +294,25 @@ export default function PagelaList({
         </Box>
       </Box>
 
-      {/* Lista */}
-      <Grid container spacing={{ xs: 1, sm: 1.25, md: 1.5 }}>
-        {filteredRows.map((r) => (
-          <Grid key={r.id} item xs={12} sm={6} md={4} lg={4}>
-            <PagelaCard row={r} onEdit={onEdit} onDelete={onDelete} />
-          </Grid>
-        ))}
-        {filteredRows.length === 0 && (
-          <Grid item xs={12}>
-            <Typography variant="body2" color="text.secondary">
-              Nenhum item corresponde aos filtros aplicados nesta página.
-            </Typography>
-          </Grid>
-        )}
-      </Grid>
+      {/* Lista OU vazio */}
+      {rows.length > 0 ? (
+        <Grid container spacing={{ xs: 1, sm: 1.25, md: 1.5 }}>
+          {rows.map((r) => (
+            <Grid key={r.id} item xs={12} sm={6} md={4} lg={4}>
+              <PagelaCard row={r} onEdit={onEdit} onDelete={onDelete} />
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, textAlign: "center", color: "text.secondary" }}>
+          <Typography variant="body2">Sem registros para a busca.</Typography>
+        </Paper>
+      )}
 
       {/* Paginação do servidor */}
       <Stack direction="row" justifyContent="center">
         <Pagination
-          count={pages}
+          count={Math.max(1, Math.ceil(total / limit))}
           page={page}
           onChange={(_, p) => setPage(p)}
           size={isXs ? "small" : "medium"}

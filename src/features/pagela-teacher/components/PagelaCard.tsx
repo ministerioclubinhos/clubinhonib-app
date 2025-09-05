@@ -19,8 +19,8 @@ import SpaIcon from "@mui/icons-material/Spa";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import type { Pagela } from "../types";
 import { toLabelWeek } from "../utils";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
-/** Formata YYYY-MM-DD para "31 de agosto de 2025" (seguro contra fuso) */
 function formatPtBrDate(iso: string | null | undefined) {
   if (!iso) return "—";
   const [y, m, d] = iso.split("-").map(Number);
@@ -41,12 +41,14 @@ export default function PagelaCard({
 }: {
   row: Pagela;
   onEdit: (r: Pagela) => void;
-  onDelete: (r: Pagela) => void;
+  onDelete: (r: Pagela) => Promise<void>;
 }) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Estilo para forçar 3 colunas no mobile
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+
   const chipMobileSx = {
     width: "100%",
     px: 0.5,
@@ -65,7 +67,6 @@ export default function PagelaCard({
 
   const Chips = () =>
     isXs ? (
-      // MOBILE: 3 chips lado a lado, cada um com 33%
       <Box
         sx={{
           display: "grid",
@@ -83,7 +84,6 @@ export default function PagelaCard({
             sx={chipMobileSx}
           />
         </Tooltip>
-
         <Tooltip title="Meditação">
           <Chip
             size="small"
@@ -93,7 +93,6 @@ export default function PagelaCard({
             sx={chipMobileSx}
           />
         </Tooltip>
-
         <Tooltip title="Versículo">
           <Chip
             size="small"
@@ -105,7 +104,6 @@ export default function PagelaCard({
         </Tooltip>
       </Box>
     ) : (
-      // DESKTOP: layout original com labels completos
       <Stack direction="row" spacing={0.75} flexWrap="wrap">
         <Chip
           size="small"
@@ -131,91 +129,106 @@ export default function PagelaCard({
       </Stack>
     );
 
+  const weekTitle = toLabelWeek(row.year, row.week);
+
   return (
-    <Card
-      variant="outlined"
-      sx={{
-        borderRadius: 4,
-        height: "100%",
-        overflow: "hidden",
-        transition: "transform .12s ease, box-shadow .12s ease",
-        "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
-      }}
-    >
-      {/* Faixa superior fofinha */}
-      <Box
+    <>
+      <Card
+        variant="outlined"
         sx={{
-          height: 6,
-          background:
-            "linear-gradient(90deg, #a0e3a2 0%, #b8d6ff 50%, #ffb8e6 100%)",
+          borderRadius: 4,
+          height: "100%",
+          overflow: "hidden",
+          transition: "transform .12s ease, box-shadow .12s ease",
+          "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
+        }}
+      >
+        <Box
+          sx={{
+            height: 6,
+            background:
+              "linear-gradient(90deg, #a0e3a2 0%, #b8d6ff 50%, #ffb8e6 100%)",
+          }}
+        />
+        <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
+          <Stack spacing={1.25}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography
+                fontWeight={900}
+                sx={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: 1,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+                title={weekTitle}
+              >
+                {weekTitle}
+              </Typography>
+
+              <Stack direction="row" spacing={0.5}>
+                <Tooltip title="Editar">
+                  <IconButton
+                    size="small"
+                    onClick={() => onEdit(row)}
+                    aria-label="Editar pagela"
+                  >
+                    <Edit fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Excluir">
+                  <IconButton
+                    size="small"
+                    onClick={() => setConfirmOpen(true)}
+                    aria-label="Excluir pagela"
+                  >
+                    <Delete fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+            </Stack>
+
+            <Stack
+              direction="row"
+              spacing={0.75}
+              alignItems="center"
+              sx={{ color: "text.secondary" }}
+            >
+              <EventNote fontSize="small" />
+              <Typography variant="caption">
+                Registro: {formatPtBrDate(row.referenceDate)}
+              </Typography>
+            </Stack>
+
+            <Divider />
+
+            <Chips />
+
+            {row.notes && (
+              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                {row.notes}
+              </Typography>
+            )}
+          </Stack>
+        </CardContent>
+      </Card>
+
+      <DeleteConfirmDialog
+        open={confirmOpen}
+        title={weekTitle}
+        confirmText="Tem certeza que deseja excluir a pagela da semana:"
+        onClose={() => (busy ? null : setConfirmOpen(false))}
+        onConfirm={async () => {
+          if (busy) return;
+          try {
+            setBusy(true);
+            await onDelete(row);
+            setConfirmOpen(false);
+          } finally {
+            setBusy(false);
+          }
         }}
       />
-
-      <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
-        <Stack spacing={1.25}>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Typography
-              fontWeight={900}
-              sx={{
-                display: "-webkit-box",
-                WebkitLineClamp: 1,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-              title={toLabelWeek(row.year, row.week)}
-            >
-              {toLabelWeek(row.year, row.week)}
-            </Typography>
-
-            <Stack direction="row" spacing={0.5}>
-              <Tooltip title="Editar">
-                <IconButton
-                  size="small"
-                  onClick={() => onEdit(row)}
-                  aria-label="Editar pagela"
-                >
-                  <Edit fontSize="inherit" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Excluir">
-                <IconButton
-                  size="small"
-                  onClick={() => onDelete(row)}
-                  aria-label="Excluir pagela"
-                >
-                  <Delete fontSize="inherit" />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          </Stack>
-
-          <Stack
-            direction="row"
-            spacing={0.75}
-            alignItems="center"
-            sx={{ color: "text.secondary" }}
-          >
-            <EventNote fontSize="small" />
-            <Typography variant="caption">
-              Registro: {formatPtBrDate(row.referenceDate)}
-            </Typography>
-          </Stack>
-
-          <Divider />
-
-          <Chips />
-
-          {row.notes && (
-            <Typography variant="body2" sx={{ mt: 0.5 }}>
-              {row.notes}
-            </Typography>
-          )}
-        </Stack>
-      </CardContent>
-    </Card>
+    </>
   );
 }

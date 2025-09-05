@@ -1,5 +1,5 @@
 // src/features/pagela-teacher/components/PagelaQuickForm.tsx
-import React from "react";
+import * as React from "react";
 import {
   Box,
   Button,
@@ -7,6 +7,7 @@ import {
   CardContent,
   Divider,
   FormControlLabel,
+  IconButton,
   Stack,
   Switch,
   TextField,
@@ -14,7 +15,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { Save } from "@mui/icons-material";
+import { Close, Save } from "@mui/icons-material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SpaIcon from "@mui/icons-material/Spa";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
@@ -24,191 +25,233 @@ import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from "../types"
 import { todayISO } from "../utils";
 
 type Props = {
-  current?: Pagela | null;
-  childId?: string;
-  year: number;
-  week: number;
+  /** Quando presente, começa em modo edição com essa pagela */
+  initial?: Pagela | null;
+  /** Necessário para criar */
+  childId: string;
+  /** Mantidos por compatibilidade; ignorados quando initial não existe */
+  defaultYear: number;
+  defaultWeek: number;
   teacherProfileId?: string | null;
+
+  /** Procura uma pagela existente para (year, week) deste child */
+  findPagela: (year: number, week: number) => Pagela | null;
+
   onCreate: (payload: CreatePagelaPayload) => Promise<void>;
   onUpdate: (id: string, payload: UpdatePagelaPayload) => Promise<void>;
+  onClose?: () => void;
 };
 
 export default function PagelaQuickForm({
-  current,
+  initial,
   childId,
-  year,
-  week,
+  defaultYear, // ignorado
+  defaultWeek, // ignorado
   teacherProfileId,
+  findPagela,
   onCreate,
   onUpdate,
+  onClose,
 }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [present, setPresent] = React.useState(current?.present ?? false);
-  const [med, setMed] = React.useState(current?.didMeditation ?? false);
-  const [verse, setVerse] = React.useState(current?.recitedVerse ?? false);
-  const [notes, setNotes] = React.useState(current?.notes ?? "");
-  const [refDate, setRefDate] = React.useState(current?.referenceDate ?? todayISO());
+  // --- inputs livres (string) para ano/semana (sem pré-preenchimento) ---
+  const [yearText, setYearText] = React.useState<string>("");
+  const [weekText, setWeekText] = React.useState<string>("");
 
+  // --- modo: edição/criação + id atual ---
+  const [editing, setEditing] = React.useState<boolean>(!!initial?.id);
+  const [currentId, setCurrentId] = React.useState<string | null>(initial?.id ?? null);
+
+  // --- campos da pagela ---
+  const [present, setPresent] = React.useState<boolean>(initial?.present ?? false);
+  const [med, setMed] = React.useState<boolean>(initial?.didMeditation ?? false);
+  const [verse, setVerse] = React.useState<boolean>(initial?.recitedVerse ?? false);
+  const [notes, setNotes] = React.useState<string>(initial?.notes ?? "");
+
+  // carregar quando trocar 'initial'
   React.useEffect(() => {
-    setPresent(current?.present ?? false);
-    setMed(current?.didMeditation ?? false);
-    setVerse(current?.recitedVerse ?? false);
-    setNotes(current?.notes ?? "");
-    setRefDate(current?.referenceDate ?? todayISO());
-  }, [current]);
+    if (initial?.id) {
+      setEditing(true);
+      setCurrentId(initial.id);
+      setYearText(String(initial.year ?? ""));
+      setWeekText(String(initial.week ?? ""));
+      setPresent(!!initial.present);
+      setMed(!!initial.didMeditation);
+      setVerse(!!initial.recitedVerse);
+      setNotes(initial.notes ?? "");
+    } else {
+      // sem initial => form vazio (criação)
+      setEditing(false);
+      setCurrentId(null);
+      setYearText("");
+      setWeekText("");
+      // mantém switches/notes (caso usuário já esteja digitando)
+    }
+  }, [initial]);
 
-  const canSave = !!childId && !!week;
+  // parse helpers (só válidos se dentro do range)
+  const parsedYear = React.useMemo(() => {
+    if (!yearText.trim()) return undefined;
+    const n = Number(yearText);
+    if (!Number.isFinite(n)) return undefined;
+    if (n < 2000 || n > 9999) return undefined;
+    return Math.floor(n);
+  }, [yearText]);
+
+  const parsedWeek = React.useMemo(() => {
+    if (!weekText.trim()) return undefined;
+    const n = Number(weekText);
+    if (!Number.isFinite(n)) return undefined;
+    if (n < 1 || n > 53) return undefined;
+    return Math.floor(n);
+  }, [weekText]);
+
+  // quando o usuário define ano/semana válidos, checar se existe pagela:
+  React.useEffect(() => {
+    if (parsedYear && parsedWeek) {
+      const found = findPagela(parsedYear, parsedWeek);
+      if (found) {
+        // vira edição e carrega a pagela encontrada
+        setEditing(true);
+        setCurrentId(found.id);
+        setYearText(String(found.year));
+        setWeekText(String(found.week));
+        setPresent(!!found.present);
+        setMed(!!found.didMeditation);
+        setVerse(!!found.recitedVerse);
+        setNotes(found.notes ?? "");
+      } else {
+        // criação; mantém os campos atuais
+        setEditing(false);
+        setCurrentId(null);
+      }
+    } else {
+      // inputs ainda incompletos => criação (pendente)
+      setEditing(false);
+      setCurrentId(null);
+    }
+  }, [parsedYear, parsedWeek, findPagela]);
+
+  const canSave = !!childId && parsedYear !== undefined && parsedWeek !== undefined;
 
   const handleSave = async () => {
     if (!canSave) return;
-    if (current?.id) {
-      await onUpdate(current.id, {
-        referenceDate: refDate,
-        year,
-        week,
-        present,
-        didMeditation: med,
-        recitedVerse: verse,
-        notes,
-        teacherProfileId: teacherProfileId ?? null,
-      });
+
+    const payloadCommon = {
+      referenceDate: todayISO(), // SEM input — sempre hoje
+      year: parsedYear!,
+      week: parsedWeek!,
+      present,
+      didMeditation: med,
+      recitedVerse: verse,
+      notes,
+      teacherProfileId: teacherProfileId ?? null,
+    };
+
+    if (editing && currentId) {
+      await onUpdate(currentId, payloadCommon);
     } else {
       await onCreate({
-        childId: childId!,
-        teacherProfileId: teacherProfileId ?? null,
-        referenceDate: refDate,
-        year,
-        week,
-        present,
-        didMeditation: med,
-        recitedVerse: verse,
-        notes,
+        childId,
+        ...payloadCommon,
       });
     }
+
+    if (isXs && onClose) onClose();
   };
+
+  // Aparência: cores diferentes para criar/editar
+  const headerBg = editing
+    ? "linear-gradient(135deg, #FFE8B3 0%, #FFD480 50%, #FFC266 100%)" // EDITANDO
+    : "linear-gradient(135deg, #b8f1d7 0%, #b8d6ff 50%, #ffc7ec 100%)"; // CRIANDO
+
+  const headerTitle = editing ? "Editando pagela" : "Criando pagela";
+  const footerMsg = editing
+    ? "ao salvar, você ATUALIZA o registro existente"
+    : "ao salvar, você CRIA um novo registro";
+
+  const yearWeekLabel = `Ano: ${parsedYear ?? "--"} • Semana: ${parsedWeek ?? "--"}`;
 
   return (
     <Card
       variant="outlined"
       sx={{
-        borderRadius: 4,
+        borderRadius: { xs: "24px 24px 0 0", sm: 4 },
         overflow: "hidden",
         borderColor: "divider",
         transition: "box-shadow .12s ease, transform .12s ease",
-        "&:hover": { boxShadow: 4, transform: "translateY(-1px)" },
+        "&:hover": { boxShadow: 4, transform: { sm: "translateY(-1px)" } },
       }}
     >
-      {/* cabeçalho pastel fofinho */}
+      {/* Cabeçalho com feedback de modo (Criando/Editando) e botão X no mobile */}
       <Box
         sx={{
           position: "relative",
-          height: { xs: 72, sm: 84 },
-          background:
-            "linear-gradient(135deg, #b8f1d7 0%, #b8d6ff 50%, #ffc7ec 100%)",
+          height: { xs: 64, sm: 84 },
+          background: headerBg,
         }}
       >
-        {/* bolhinhas decorativas */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: -10,
-            left: -18,
-            width: 90,
-            height: 90,
-            borderRadius: "50%",
-            opacity: 0.15,
-            bgcolor: "#69d1b6",
-            filter: "blur(2px)",
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: -16,
-            right: -12,
-            width: 80,
-            height: 80,
-            borderRadius: "50%",
-            opacity: 0.15,
-            bgcolor: "#ffbde6",
-            filter: "blur(1px)",
-          }}
-        />
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ height: "100%", px: { xs: 1.25, sm: 2 } }}
-        >
+        {/* bolhinhas */}
+        <Box sx={{ position: "absolute", top: -10, left: -18, width: 90, height: 90, borderRadius: "50%", opacity: 0.15, bgcolor: "#000", filter: "blur(2px)" }} />
+        <Box sx={{ position: "absolute", bottom: -16, right: -12, width: 80, height: 80, borderRadius: "50%", opacity: 0.12, bgcolor: "#000", filter: "blur(1px)" }} />
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ height: "100%", px: { xs: 1.25, sm: 2 } }}>
           <Stack spacing={0}>
-            <Typography
-              variant="subtitle2"
-              sx={{ color: "text.primary", opacity: 0.8, fontWeight: 700 }}
-            >
-              {current ? "Editar Pagela" : "Nova Pagela"}
+            <Typography variant="subtitle2" sx={{ color: "text.primary", opacity: 0.9, fontWeight: 800 }}>
+              {headerTitle}
             </Typography>
             <Stack direction="row" spacing={0.75} alignItems="center">
-              <CalendarMonthIcon fontSize="small" sx={{ opacity: 0.8 }} />
+              <CalendarMonthIcon fontSize="small" sx={{ opacity: 0.9 }} />
               <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                Ano: {year} • Semana: {week}
+                {yearWeekLabel}
               </Typography>
             </Stack>
           </Stack>
 
-          <Stack direction="row" spacing={0.75} alignItems="center">
-            <MiniChip
-              active={present}
-              icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
-              label={present ? "Presente" : "Ausente"}
-            />
-            <MiniChip
-              active={med}
-              icon={<SpaIcon sx={{ fontSize: 14 }} />}
-              label="Meditação"
-            />
-            <MiniChip
-              active={verse}
-              icon={<MenuBookIcon sx={{ fontSize: 14 }} />}
-              label="Versículo"
-            />
-          </Stack>
+          {isXs && (
+            <IconButton
+              size="small"
+              onClick={onClose}
+              aria-label="Fechar"
+              sx={{ bgcolor: "rgba(255,255,255,.85)", "&:hover": { bgcolor: "rgba(255,255,255,.95)" } }}
+            >
+              <Close fontSize="small" />
+            </IconButton>
+          )}
         </Stack>
       </Box>
 
       <CardContent sx={{ p: { xs: 1.5, md: 2.25 } }}>
         <Stack spacing={1.25}>
-          {/* linhas com ícone + switch (label à esquerda) */}
-          <RowSwitch
-            icon={<CheckCircleIcon />}
-            label="Presença"
-            checked={present}
-            onChange={setPresent}
-          />
-          <RowSwitch
-            icon={<SpaIcon />}
-            label="Fez meditação"
-            checked={med}
-            onChange={setMed}
-          />
-          <RowSwitch
-            icon={<MenuBookIcon />}
-            label="Recitou o versículo"
-            checked={verse}
-            onChange={setVerse}
-          />
+          {/* Ano / Semana (sem pré-preencher; texto livre) */}
+          <Stack direction="row" spacing={1}>
+            <TextField
+              label="Ano"
+              size="small"
+              type="text"
+              value={yearText}
+              onChange={(e) => setYearText(e.target.value.replace(/\D+/g, "").slice(0, 4))}
+              sx={{ width: 120 }}
+              inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 4 }}
+            />
+            <TextField
+              label="Semana"
+              size="small"
+              type="text"
+              value={weekText}
+              onChange={(e) => setWeekText(e.target.value.replace(/\D+/g, "").slice(0, 2))}
+              sx={{ width: 140 }}
+              inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 2 }}
+            />
+          </Stack>
+
+          {/* switches */}
+          <RowSwitch icon={<CheckCircleIcon />} label="Presença" checked={present} onChange={setPresent} />
+          <RowSwitch icon={<SpaIcon />} label="Fez meditação" checked={med} onChange={setMed} />
+          <RowSwitch icon={<MenuBookIcon />} label="Recitou o versículo" checked={verse} onChange={setVerse} />
 
           <Divider sx={{ my: 0.5 }} />
-
-          <TextField
-            label="Data do registro (YYYY-MM-DD)"
-            size="small"
-            fullWidth
-            value={refDate}
-            onChange={(e) => setRefDate(e.target.value)}
-            helperText="Pode ser diferente da semana alvo."
-          />
 
           <TextField
             label="Observações"
@@ -220,40 +263,23 @@ export default function PagelaQuickForm({
             fullWidth
           />
 
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: { xs: "stretch", sm: "flex-end" },
-              mt: 0.5,
-            }}
-          >
+          {/* botão salvar */}
+          <Box sx={{ display: "flex", justifyContent: { xs: "stretch", sm: "flex-end" }, mt: 0.5 }}>
             <Button
               onClick={handleSave}
               disabled={!canSave}
               variant="contained"
               startIcon={<Save />}
-              sx={{
-                borderRadius: 999,
-                px: 2.25,
-                py: 0.75,
-                fontWeight: 800,
-                width: { xs: "100%", sm: "auto" },
-              }}
+              sx={{ borderRadius: 999, px: 2.25, py: 0.75, fontWeight: 800, width: { xs: "100%", sm: "auto" } }}
             >
               Salvar
             </Button>
           </Box>
 
-          {/* rodapé fofo */}
-          <Stack
-            direction="row"
-            spacing={0.5}
-            alignItems="center"
-            justifyContent="center"
-            sx={{ color: "text.secondary", mt: 0.25 }}
-          >
-            <Typography variant="caption" sx={{ fontWeight: 600 }}>
-              toque em salvar para guardar seu registro
+          {/* rodapé */}
+          <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center" sx={{ color: "text.secondary", mt: 0.25 }}>
+            <Typography variant="caption" sx={{ fontWeight: 700 }}>
+              {footerMsg}
             </Typography>
             <FavoriteIcon fontSize="inherit" sx={{ opacity: 0.6 }} />
           </Stack>
@@ -264,7 +290,6 @@ export default function PagelaQuickForm({
 }
 
 /* ----------------------- helpers visuais ----------------------- */
-
 function RowSwitch({
   icon,
   label,
@@ -286,46 +311,7 @@ function RowSwitch({
         </Stack>
       }
       labelPlacement="start"
-      sx={{
-        m: 0,
-        px: 1,
-        py: 0.5,
-        borderRadius: 2,
-        justifyContent: "space-between",
-        bgcolor: "action.hover",
-      }}
+      sx={{ m: 0, px: 1, py: 0.5, borderRadius: 2, justifyContent: "space-between", bgcolor: "action.hover" }}
     />
-  );
-}
-
-function MiniChip({
-  active,
-  icon,
-  label,
-}: {
-  active: boolean;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <Box
-      sx={{
-        px: 1,
-        py: 0.25,
-        borderRadius: 2,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 0.5,
-        fontSize: 11,
-        fontWeight: 800,
-        bgcolor: active ? "success.light" : "rgba(255,255,255,.6)",
-        color: active ? "success.contrastText" : "text.secondary",
-        border: active ? "1px solid rgba(0,0,0,0.06)" : "1px solid rgba(0,0,0,0.04)",
-        backdropFilter: "blur(2px)",
-      }}
-    >
-      <Box sx={{ "& svg": { fontSize: 14 } }}>{icon}</Box>
-      {label}
-    </Box>
   );
 }

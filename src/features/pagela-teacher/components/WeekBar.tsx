@@ -1,18 +1,17 @@
-// src/features/pagela-teacher/components/WeekBar.tsx
 import * as React from "react";
 import {
   Box,
   Button,
   ButtonGroup,
   IconButton,
-  TextField,
   Tooltip,
   useMediaQuery,
   useTheme,
+  Chip,
   Stack,
 } from "@mui/material";
 import { ChevronLeft, ChevronRight, Today } from "@mui/icons-material";
-import { clampWeek } from "../utils";
+import { toLabelWeek } from "../utils";
 
 type Props = {
   year: number;
@@ -30,24 +29,11 @@ export default function WeekBar({ year, week, onChange, goCurrent }: Props) {
   const inc = () =>
     onChange(week < 53 ? { year, week: week + 1 } : { year: year + 1, week: 1 });
 
+  const label = toLabelWeek ? toLabelWeek(year, week) : `Ano ${year} • Semana ${week}`;
+
   if (isXs) {
-    // ===== MOBILE =====
     return (
       <Stack spacing={1}>
-        {/* 1ª linha: ANO (100%) */}
-        <TextField
-          size="small"
-          label="Ano"
-          type="number"
-          value={year}
-          onChange={(e) =>
-            onChange({ year: Number(e.target.value || year), week })
-          }
-          fullWidth
-          sx={{ maxWidth: 200 }}
-        />
-
-        {/* 2ª linha: setas + SEMANA */}
         <Box
           sx={{
             display: "flex",
@@ -74,26 +60,17 @@ export default function WeekBar({ year, week, onChange, goCurrent }: Props) {
             </Tooltip>
           </Box>
 
-          <TextField
+          <Chip
             size="small"
-            label="Semana"
-            type="number"
-            value={week}
-            onChange={(e) =>
-              onChange({
-                year,
-                week: clampWeek(Number(e.target.value || week)),
-              })
-            }
-            inputProps={{ min: 1, max: 53, inputMode: "numeric", pattern: "[0-9]*" }}
-            sx={{ width: 120 }}
+            color="default"
+            label={label}
+            sx={{ fontWeight: 700, maxWidth: "60%", "& .MuiChip-label": { px: 1 } }}
           />
         </Box>
       </Stack>
     );
   }
 
-  // ===== DESKTOP =====
   return (
     <Box
       sx={{
@@ -118,29 +95,11 @@ export default function WeekBar({ year, week, onChange, goCurrent }: Props) {
         </Button>
       </ButtonGroup>
 
-      <TextField
+      <Chip
         size="small"
-        label="Ano"
-        type="number"
-        value={year}
-        onChange={(e) =>
-          onChange({ year: Number(e.target.value || year), week })
-        }
-        sx={{ width: 110 }}
-      />
-      <TextField
-        size="small"
-        label="Semana"
-        type="number"
-        value={week}
-        onChange={(e) =>
-          onChange({
-            year,
-            week: clampWeek(Number(e.target.value || week)),
-          })
-        }
-        inputProps={{ min: 1, max: 53 }}
-        sx={{ width: 120 }}
+        color="default"
+        label={label}
+        sx={{ fontWeight: 700, "& .MuiChip-label": { px: 1 } }}
       />
     </Box>
   );

@@ -15,14 +15,14 @@ import {
   Avatar,
   Chip,
   Stack,
+  Fab,
+  SwipeableDrawer,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
-import { ArrowBack, FamilyRestroom, Phone } from "@mui/icons-material";
-import { getISOWeekYear } from "./utils";
+import { ArrowBack, FamilyRestroom, Phone, Add } from "@mui/icons-material";
 import { useChildrenBrowser, useChildPagelas } from "./hooks";
-import WeekBar from "./components/WeekBar";
-import PagelaQuickCard from "./components/PagelaQuickCard";
 import PagelaList from "./components/PagelaList";
+import PagelaQuickForm from "./components/PagelaQuickForm";
 import type { ChildSimpleResponseDto } from "../children/types";
 import type { Pagela } from "./types";
 
@@ -45,12 +45,8 @@ export default function ChildPagelasPage() {
   const { childId = "" } = useParams();
   const nav = useNavigate();
   const loc = useLocation() as { state?: { child?: ChildSimpleResponseDto } };
-  const iso = React.useMemo(() => getISOWeekYear(new Date()), []);
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const [year, setYear] = React.useState(iso.year);
-  const [week, setWeek] = React.useState(iso.week);
 
   // lista/cache local das crianças
   const { byId, loading: loadingChildren, error: cError, setError: setCErr, onChangeQ } =
@@ -66,13 +62,8 @@ export default function ChildPagelasPage() {
     [child, childId]
   );
 
-  const { filters, list, actions } = useChildPagelas(childId, { year, week });
-  React.useEffect(() => {
-    filters.setYear(year);
-    filters.setWeek(week);
-    list.setPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [year, week]);
+  // hook de lista/CRUD (sem empurrar ano/semana iniciais)
+  const { filters, list, actions } = useChildPagelas(childId);
 
   const [snack, setSnack] = React.useState({
     open: false,
@@ -86,10 +77,28 @@ export default function ChildPagelasPage() {
     setSnack((s) => ({ ...s, open: false }));
   };
 
-  const currentOfWeek: Pagela | null = React.useMemo(
-    () => list.rows.find((r) => r.childId === childId && r.year === year && r.week === week) ?? null,
-    [list.rows, childId, year, week]
+  /* ---------------- form state ---------------- */
+  // No desktop o form fica sempre visível; começa sem 'initial' (modo criação em branco)
+  // No mobile o form abre num bottom sheet quando criar/editar
+  const [sheetOpen, setSheetOpen] = React.useState(false);
+  const [formInitial, setFormInitial] = React.useState<Pagela | null>(null);
+
+  // util para o formulário saber se existe pagela para (year, week) carregada na lista
+  const findPagela = React.useCallback(
+    (y: number, w: number) =>
+      list.rows.find((r) => r.childId === childId && r.year === y && r.week === w) ?? null,
+    [list.rows, childId]
   );
+
+  const openCreate = () => {
+    setFormInitial(null);
+    setSheetOpen(true);
+  };
+  const openEdit = (p: Pagela) => {
+    setFormInitial(p);
+    setSheetOpen(true);
+  };
+  const closeSheet = () => setSheetOpen(false);
 
   const initials = React.useMemo(() => {
     const parts = (child?.name || "").trim().split(/\s+/).slice(0, 2);
@@ -100,12 +109,13 @@ export default function ChildPagelasPage() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        pt: { xs: 8, md: 4 }, // padding-top responsivo; removemos mt
+        pt: { xs: 8, md: 10 },
+        pb: 4,
         minHeight: "100vh",
         bgcolor: "#f6f7f9",
       }}
     >
-      {/* HERO com gradiente e avatar — mobile: 4 linhas; desktop: layout atual */}
+      {/* HERO (mobile com 4 linhas; desktop mantém layout atual) */}
       <Paper
         elevation={0}
         sx={{
@@ -119,184 +129,149 @@ export default function ChildPagelasPage() {
           background: `linear-gradient(135deg, ${colors.soft} 0%, ${colors.solid} 100%)`,
         }}
       >
-        {/* decorações leves */}
+        {/* bolhas decorativas */}
         <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-          <Box sx={{ position: "absolute", top: -12, left: -12, width: 96, height: 96, borderRadius: "50%", bgcolor: "rgba(255,255,255,.3)", filter: "blur(2px)" }} />
-          <Box sx={{ position: "absolute", bottom: -14, right: -14, width: 120, height: 120, borderRadius: "50%", bgcolor: "rgba(255,255,255,.18)", filter: "blur(1px)" }} />
+          <Box sx={{ position: "absolute", top: -24, left: -24, width: 130, height: 130, borderRadius: "50%", bgcolor: "rgba(255,255,255,.28)", filter: "blur(3px)" }} />
+          <Box sx={{ position: "absolute", bottom: -28, right: -28, width: 160, height: 160, borderRadius: "50%", bgcolor: "rgba(255,255,255,.18)", filter: "blur(2px)" }} />
         </Box>
 
-        <Grid container spacing={{ xs: 1.5, md: 2 }} alignItems="center" sx={{ position: "relative", zIndex: 1 }}>
-          {isXs ? (
-            <>
-              {/* 1) seta esquerda + avatar direita — APENAS MOBILE */}
-              <Grid item xs={12}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => nav(-1)}
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      bgcolor: "background.paper",
-                      boxShadow: 1,
-                      "&:hover": { bgcolor: "background.paper" },
-                    }}
-                    aria-label="Voltar"
-                  >
-                    <ArrowBack />
-                  </IconButton>
-
-                  <Avatar
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      border: "3px solid",
-                      borderColor: "background.paper",
-                      bgcolor: colors.solid,
-                      fontWeight: 900,
-                    }}
-                  >
-                    {initials || "?"}
-                  </Avatar>
-                </Box>
-              </Grid>
-
-              {/* 2) nome da criança */}
-              <Grid item xs={12}>
-                <Typography
-                  variant="h6"
-                  fontWeight={900}
+        {isXs ? (
+          /* ===== MOBILE ===== */
+          <Box sx={{ position: "relative", zIndex: 1 }}>
+            <Stack spacing={0.75}>
+              {/* 1ª linha: back left + avatar right */}
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <IconButton
+                  size="small"
+                  onClick={() => nav(-1)}
+                  aria-label="Voltar"
                   sx={{
-                    color: "#143a2b",
-                    lineHeight: 1.15,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
+                    width: 40,
+                    height: 40,
+                    bgcolor: "background.paper",
+                    boxShadow: 2,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    "&:hover": { bgcolor: "background.paper" },
                   }}
                 >
-                  Pagela do(a) {child?.name || "Criança"}
+                  <ArrowBack />
+                </IconButton>
+
+                <Avatar
+                  sx={{
+                    width: 52,
+                    height: 52,
+                    border: "3px solid",
+                    borderColor: "background.paper",
+                    bgcolor: colors.solid,
+                    fontWeight: 900,
+                    flex: "0 0 auto",
+                  }}
+                >
+                  {initials || "?"}
+                </Avatar>
+              </Box>
+
+              {/* 2ª linha: nome da criança */}
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 900,
+                  lineHeight: 1.15,
+                  color: "#143a2b",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 1,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+                title={child?.name}
+              >
+                {child?.name || "Criança"}
+              </Typography>
+
+              {/* 3ª linha: responsável */}
+              <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.75)" }}>
+                <FamilyRestroom fontSize="small" />
+                <Typography variant="body2" noWrap title={child?.guardianName || "—"}>
+                  {child?.guardianName || "—"}
                 </Typography>
-              </Grid>
+              </Stack>
 
-              {/* 3) responsável */}
-              <Grid item xs={12}>
-                <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.72)" }}>
-                  <FamilyRestroom fontSize="small" />
-                  <Typography variant="body2" noWrap>
-                    {child?.guardianName || "—"}
-                  </Typography>
-                </Stack>
-              </Grid>
+              {/* 4ª linha: telefone */}
+              <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.75)" }}>
+                <Phone fontSize="small" />
+                <Typography variant="body2" noWrap title={child?.guardianPhone || "—"}>
+                  {child?.guardianPhone || "—"}
+                </Typography>
+              </Stack>
 
-              {/* 4) telefone */}
-              <Grid item xs={12}>
-                <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.72)" }}>
-                  <Phone fontSize="small" />
-                  <Typography variant="body2" noWrap>
-                    {child?.guardianPhone || "—"}
-                  </Typography>
-                </Stack>
-              </Grid>
-
-              {/* WeekBar abaixo no mobile */}
-              <Grid item xs={12} sx={{ mt: 0.5 }}>
-                <Box
+              {/* opcional: chip clubinho */}
+              {child?.clubId && (
+                <Chip
+                  size="small"
+                  color="success"
+                  label="Clubinho"
+                  sx={{ fontWeight: 800, height: 22, alignSelf: "flex-start", "& .MuiChip-label": { px: 0.75 } }}
+                />
+              )}
+            </Stack>
+          </Box>
+        ) : (
+          /* ===== DESKTOP ===== */
+          <Grid container spacing={{ xs: 1.5, md: 2 }} alignItems="center" sx={{ position: "relative", zIndex: 1 }}>
+            <Grid item xs>
+              <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
+                <Avatar
                   sx={{
-                    p: 1.25,
-                    borderRadius: 2,
-                    bgcolor: "rgba(255,255,255,.65)",
-                    backdropFilter: "saturate(140%) blur(4px)",
-                    border: "1px solid",
-                    borderColor: "divider",
+                    width: 52,
+                    height: 52,
+                    border: "3px solid",
+                    borderColor: "background.paper",
+                    bgcolor: colors.solid,
+                    fontWeight: 900,
                   }}
                 >
-                  <WeekBar
-                    year={year}
-                    week={week}
-                    onChange={(n) => {
-                      setYear(n.year);
-                      setWeek(n.week);
-                    }}
-                    goCurrent={() => {
-                      setYear(iso.year);
-                      setWeek(iso.week);
-                    }}
-                  />
-                </Box>
-              </Grid>
-            </>
-          ) : (
-            /* DESKTOP: sem botão de voltar aqui */
-            <>
-              <Grid item xs>
-                <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
-                  <Avatar
+                  {initials || "?"}
+                </Avatar>
+
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={900}
                     sx={{
-                      width: 52,
-                      height: 52,
-                      border: "3px solid",
-                      borderColor: "background.paper",
-                      bgcolor: colors.solid,
-                      fontWeight: 900,
+                      color: "#143a2b",
+                      lineHeight: 1.1,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 1,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
                     }}
                   >
-                    {initials || "?"}
-                  </Avatar>
+                    Pagela do(a) {child?.name || "Criança"}
+                  </Typography>
 
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography
-                      variant="h6"
-                      fontWeight={900}
-                      sx={{
-                        color: "#143a2b",
-                        lineHeight: 1.1,
-                        display: "-webkit-box",
-                        WebkitLineClamp: 1,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      Pagela do(a) {child?.name || "Criança"}
-                    </Typography>
-
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ color: "rgba(0,0,0,.72)", flexWrap: "wrap" }}>
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <FamilyRestroom fontSize="small" />
-                        <Typography variant="body2" noWrap>{child?.guardianName || "—"}</Typography>
-                      </Stack>
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Phone fontSize="small" />
-                        <Typography variant="body2" noWrap>{child?.guardianPhone || "—"}</Typography>
-                      </Stack>
-                      {child?.clubId && <Chip size="small" color="success" label="Clubinho" sx={{ fontWeight: 700 }} />}
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{ color: "rgba(0,0,0,.72)", flexWrap: "wrap" }}
+                  >
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <FamilyRestroom fontSize="small" />
+                      <Typography variant="body2" noWrap>{child?.guardianName || "—"}</Typography>
                     </Stack>
-                  </Box>
-                </Stack>
-              </Grid>
-
-              <Grid item xs={12} md={5}>
-                <Box
-                  sx={{
-                    p: 1,
-                    borderRadius: 2,
-                    bgcolor: "rgba(255,255,255,.65)",
-                    backdropFilter: "saturate(140%) blur(4px)",
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                >
-                  <WeekBar
-                    year={year}
-                    week={week}
-                    onChange={(n) => { setYear(n.year); setWeek(n.week); }}
-                    goCurrent={() => { setYear(iso.year); setWeek(iso.week); }}
-                  />
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Phone fontSize="small" />
+                      <Typography variant="body2" noWrap>{child?.guardianPhone || "—"}</Typography>
+                    </Stack>
+                    {child?.clubId && <Chip size="small" color="success" label="Clubinho" sx={{ fontWeight: 700 }} />}
+                  </Stack>
                 </Box>
-              </Grid>
-            </>
-          )}
-        </Grid>
+              </Stack>
+            </Grid>
+          </Grid>
+        )}
       </Paper>
 
       {(list.error || cError) && (
@@ -313,31 +288,35 @@ export default function ChildPagelasPage() {
       )}
 
       <Grid container spacing={{ xs: 1.5, md: 2.5 }}>
+        {/* ESQUERDA: DESKTOP mostra o FORM direto (vazio/sem defaults); MOBILE não mostra aqui */}
         <Grid item xs={12} lg={5}>
           {(list.loading && !list.rows.length) || loadingChildren ? (
             <Box textAlign="center" my={4}>
               <CircularProgress />
             </Box>
           ) : child ? (
-            <PagelaQuickCard
-              childName={child.name}
-              current={currentOfWeek}
-              childId={childId}
-              year={year}
-              week={week}
-              teacherProfileId={TEACHER_PROFILE_ID}
-              onCreate={async (p) => {
-                await actions.create(p);
-                showSnack("Pagela salva!");
-              }}
-              onUpdate={async (id, p) => {
-                await actions.update(id, p);
-                showSnack("Pagela atualizada!");
-              }}
-            />
+            isXs ? null : (
+              <PagelaQuickForm
+                initial={formInitial}           // null => começa vazio
+                childId={childId}
+                defaultYear={0}                 // ignorado pelo form (mantido por tipagem)
+                defaultWeek={0}                 // idem
+                teacherProfileId={TEACHER_PROFILE_ID}
+                findPagela={findPagela}
+                onCreate={async (p) => {
+                  await actions.create(p);
+                  showSnack("Pagela salva!");
+                }}
+                onUpdate={async (id, p) => {
+                  await actions.update(id, p);
+                  showSnack("Pagela atualizada!");
+                }}
+              />
+            )
           ) : null}
         </Grid>
 
+        {/* DIREITA: lista */}
         <Grid item xs={12} lg={7}>
           <Paper
             sx={{
@@ -356,9 +335,14 @@ export default function ChildPagelasPage() {
               page={list.page}
               limit={list.limit}
               setPage={list.setPage}
+              filters={filters}
               onEdit={(row) => {
-                setYear(row.year);
-                setWeek(row.week);
+                // desktop: carrega no form à esquerda; mobile: abre sheet
+                if (isXs) {
+                  openEdit(row);
+                } else {
+                  setFormInitial(row);
+                }
               }}
               onDelete={async (row) => {
                 await actions.remove(row.id);
@@ -368,6 +352,55 @@ export default function ChildPagelasPage() {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* FAB "Criar" — só no mobile */}
+      {isXs && (
+        <Fab
+          color="primary"
+          aria-label="Criar pagela"
+          onClick={openCreate}
+          sx={{ position: "fixed", bottom: 88, right: 16, zIndex: 1100 }}
+        >
+          <Add />
+        </Fab>
+      )}
+
+      {/* Bottom sheet (mobile) */}
+      {isXs && (
+        <SwipeableDrawer
+          anchor="bottom"
+          open={sheetOpen}
+          onOpen={() => setSheetOpen(true)}
+          onClose={closeSheet}
+          disableSwipeToOpen={false}
+          ModalProps={{ keepMounted: true }}
+          PaperProps={{
+            sx: { height: "86vh", borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+          }}
+        >
+          <Box sx={{ p: 1.25, pb: 2, height: "100%", overflow: "auto" }}>
+            <PagelaQuickForm
+              initial={formInitial}            // null => criar; objeto => editar
+              childId={childId}
+              defaultYear={0}                  // ignorado pelo form
+              defaultWeek={0}                  // ignorado pelo form
+              teacherProfileId={TEACHER_PROFILE_ID}
+              findPagela={findPagela}
+              onCreate={async (p) => {
+                await actions.create(p);
+                showSnack("Pagela salva!");
+                closeSheet();
+              }}
+              onUpdate={async (id, p) => {
+                await actions.update(id, p);
+                showSnack("Pagela atualizada!");
+                closeSheet();
+              }}
+              onClose={closeSheet}
+            />
+          </Box>
+        </SwipeableDrawer>
+      )}
 
       <Snackbar
         open={snack.open}
