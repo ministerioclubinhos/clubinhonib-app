@@ -1,4 +1,3 @@
-// src/features/pagela-teacher/ChildPagelasPage.tsx
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -26,7 +25,6 @@ import PagelaQuickForm from "./components/PagelaQuickForm";
 import type { ChildSimpleResponseDto } from "../children/types";
 import type { Pagela } from "./types";
 
-/** mesmas faixas do ChildCard: F rosa/lilás, M azul/teal */
 function genderPastel(seed: string, gender?: string) {
   const hash = Array.from(seed).reduce((a, ch) => (a * 33 + ch.charCodeAt(0)) % 1000, 7);
   const t = hash / 1000;
@@ -48,12 +46,10 @@ export default function ChildPagelasPage() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // lista/cache local das crianças
   const { byId, loading: loadingChildren, error: cError, setError: setCErr, onChangeQ } =
     useChildrenBrowser();
   React.useEffect(() => {
     if (!loc.state?.child && !byId.get(childId)) onChangeQ("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childId]);
 
   const child = loc.state?.child || byId.get(childId) || null;
@@ -62,7 +58,6 @@ export default function ChildPagelasPage() {
     [child, childId]
   );
 
-  // hook de lista/CRUD (sem empurrar ano/semana iniciais)
   const { filters, list, actions } = useChildPagelas(childId);
 
   const [snack, setSnack] = React.useState({
@@ -77,13 +72,9 @@ export default function ChildPagelasPage() {
     setSnack((s) => ({ ...s, open: false }));
   };
 
-  /* ---------------- form state ---------------- */
-  // No desktop o form fica sempre visível; começa sem 'initial' (modo criação em branco)
-  // No mobile o form abre num bottom sheet quando criar/editar
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [formInitial, setFormInitial] = React.useState<Pagela | null>(null);
 
-  // util para o formulário saber se existe pagela para (year, week) carregada na lista
   const findPagela = React.useCallback(
     (y: number, w: number) =>
       list.rows.find((r) => r.childId === childId && r.year === y && r.week === w) ?? null,
@@ -115,7 +106,6 @@ export default function ChildPagelasPage() {
         bgcolor: "#f6f7f9",
       }}
     >
-      {/* HERO (mobile com 4 linhas; desktop mantém layout atual) */}
       <Paper
         elevation={0}
         sx={{
@@ -129,17 +119,14 @@ export default function ChildPagelasPage() {
           background: `linear-gradient(135deg, ${colors.soft} 0%, ${colors.solid} 100%)`,
         }}
       >
-        {/* bolhas decorativas */}
         <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
           <Box sx={{ position: "absolute", top: -24, left: -24, width: 130, height: 130, borderRadius: "50%", bgcolor: "rgba(255,255,255,.28)", filter: "blur(3px)" }} />
           <Box sx={{ position: "absolute", bottom: -28, right: -28, width: 160, height: 160, borderRadius: "50%", bgcolor: "rgba(255,255,255,.18)", filter: "blur(2px)" }} />
         </Box>
 
         {isXs ? (
-          /* ===== MOBILE ===== */
           <Box sx={{ position: "relative", zIndex: 1 }}>
             <Stack spacing={0.75}>
-              {/* 1ª linha: back left + avatar right */}
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <IconButton
                   size="small"
@@ -173,7 +160,6 @@ export default function ChildPagelasPage() {
                 </Avatar>
               </Box>
 
-              {/* 2ª linha: nome da criança */}
               <Typography
                 variant="subtitle1"
                 sx={{
@@ -190,7 +176,6 @@ export default function ChildPagelasPage() {
                 {child?.name || "Criança"}
               </Typography>
 
-              {/* 3ª linha: responsável */}
               <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.75)" }}>
                 <FamilyRestroom fontSize="small" />
                 <Typography variant="body2" noWrap title={child?.guardianName || "—"}>
@@ -198,7 +183,6 @@ export default function ChildPagelasPage() {
                 </Typography>
               </Stack>
 
-              {/* 4ª linha: telefone */}
               <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.75)" }}>
                 <Phone fontSize="small" />
                 <Typography variant="body2" noWrap title={child?.guardianPhone || "—"}>
@@ -206,7 +190,6 @@ export default function ChildPagelasPage() {
                 </Typography>
               </Stack>
 
-              {/* opcional: chip clubinho */}
               {child?.clubId && (
                 <Chip
                   size="small"
@@ -218,7 +201,6 @@ export default function ChildPagelasPage() {
             </Stack>
           </Box>
         ) : (
-          /* ===== DESKTOP ===== */
           <Grid container spacing={{ xs: 1.5, md: 2 }} alignItems="center" sx={{ position: "relative", zIndex: 1 }}>
             <Grid item xs>
               <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
@@ -288,7 +270,6 @@ export default function ChildPagelasPage() {
       )}
 
       <Grid container spacing={{ xs: 1.5, md: 2.5 }}>
-        {/* ESQUERDA: DESKTOP mostra o FORM direto (vazio/sem defaults); MOBILE não mostra aqui */}
         <Grid item xs={12} lg={5}>
           {(list.loading && !list.rows.length) || loadingChildren ? (
             <Box textAlign="center" my={4}>
@@ -297,10 +278,10 @@ export default function ChildPagelasPage() {
           ) : child ? (
             isXs ? null : (
               <PagelaQuickForm
-                initial={formInitial}           // null => começa vazio
+                initial={formInitial}
                 childId={childId}
-                defaultYear={0}                 // ignorado pelo form (mantido por tipagem)
-                defaultWeek={0}                 // idem
+                defaultYear={0}
+                defaultWeek={0}
                 teacherProfileId={TEACHER_PROFILE_ID}
                 findPagela={findPagela}
                 onCreate={async (p) => {
@@ -316,7 +297,6 @@ export default function ChildPagelasPage() {
           ) : null}
         </Grid>
 
-        {/* DIREITA: lista */}
         <Grid item xs={12} lg={7}>
           <Paper
             sx={{
@@ -337,7 +317,6 @@ export default function ChildPagelasPage() {
               setPage={list.setPage}
               filters={filters}
               onEdit={(row) => {
-                // desktop: carrega no form à esquerda; mobile: abre sheet
                 if (isXs) {
                   openEdit(row);
                 } else {
@@ -353,7 +332,6 @@ export default function ChildPagelasPage() {
         </Grid>
       </Grid>
 
-      {/* FAB "Criar" — só no mobile */}
       {isXs && (
         <Fab
           color="primary"
@@ -365,7 +343,6 @@ export default function ChildPagelasPage() {
         </Fab>
       )}
 
-      {/* Bottom sheet (mobile) */}
       {isXs && (
         <SwipeableDrawer
           anchor="bottom"
@@ -380,10 +357,10 @@ export default function ChildPagelasPage() {
         >
           <Box sx={{ p: 1.25, pb: 2, height: "100%", overflow: "auto" }}>
             <PagelaQuickForm
-              initial={formInitial}            // null => criar; objeto => editar
+              initial={formInitial}
               childId={childId}
-              defaultYear={0}                  // ignorado pelo form
-              defaultWeek={0}                  // ignorado pelo form
+              defaultYear={0}
+              defaultWeek={0}
               teacherProfileId={TEACHER_PROFILE_ID}
               findPagela={findPagela}
               onCreate={async (p) => {

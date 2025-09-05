@@ -1,4 +1,3 @@
-// src/layouts/AdminLayout.tsx
 import React, { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -96,6 +95,7 @@ function AdminLayout() {
         title: "Clubinho",
         items: [
           { label: "Clubinhos", to: "/adm/clubinhos", icon: <Groups /> },
+          { label: "Pagelas", to: "/adm/pagelas", icon: <Groups /> },
           { label: "Usuários", to: "/adm/usuarios", icon: <Group /> },
           { label: "Professores", to: "/adm/professores", icon: <School /> },
           { label: "Coordenadores", to: "/adm/coordenadores", icon: <SupervisorAccount /> },
@@ -115,11 +115,11 @@ function AdminLayout() {
     []
   );
 
-  // ADMIN vê tudo; COORDINATOR vê: Crianças, Professores, Clubinhos
   const coordinatorAllowed = new Set<string>([
     "/adm/criancas",
     "/adm/professores",
     "/adm/clubinhos",
+    "/adm/pagelas",
   ]);
 
   const canSeeItem = (item: NavItem): boolean => {
@@ -148,6 +148,7 @@ function AdminLayout() {
     if (
       path.startsWith("/adm/usuarios") ||
       path.startsWith("/adm/clubinhos") ||
+      path.startsWith("/adm/pagelas") ||
       path.startsWith("/adm/professores") ||
       path.startsWith("/adm/coordenadores") ||
       path.startsWith("/adm/criancas")

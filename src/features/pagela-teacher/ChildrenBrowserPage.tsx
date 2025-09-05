@@ -21,7 +21,6 @@ export default function ChildrenBrowserPage() {
 
   const { items, loading, error, setError, refetch } = useChildrenBrowser();
 
-  // filtro front
   const [query, setQuery] = React.useState("");
 
   const filteredItems = React.useMemo(() => {
@@ -34,11 +33,7 @@ export default function ChildrenBrowserPage() {
       return name.includes(s) || gname.includes(s) || gphone.includes(s);
     });
   }, [items, query]);
-
-  // criar
   const [creating, setCreating] = React.useState<CreateChildForm | null>(null);
-
-  // editar
   const [editing, setEditing] = React.useState<EditChildForm | null>(null);
 
   const {
@@ -73,10 +68,9 @@ export default function ChildrenBrowserPage() {
       await createChild(payload, 1, 12);
       setCreating(null);
       setDialogError("");
-    } catch {}
+    } catch { }
   };
 
-  // abrir edição (busca os dados completos do backend)
   const openEdit = async (childId: string) => {
     try {
       const full: ChildResponseDto = await apiFetchChild(childId);
@@ -91,14 +85,14 @@ export default function ChildrenBrowserPage() {
         clubId: (full as any)?.club?.id ?? null,
         address: full.address
           ? {
-              street: full.address.street ?? "",
-              number: (full.address as any).number ?? "",
-              district: full.address.district ?? "",
-              city: full.address.city ?? "",
-              state: full.address.state ?? "",
-              postalCode: full.address.postalCode ?? "",
-              complement: (full.address as any).complement ?? "",
-            }
+            street: full.address.street ?? "",
+            number: (full.address as any).number ?? "",
+            district: full.address.district ?? "",
+            city: full.address.city ?? "",
+            state: full.address.state ?? "",
+            postalCode: full.address.postalCode ?? "",
+            complement: (full.address as any).complement ?? "",
+          }
           : { street: "", number: "", district: "", city: "", state: "", postalCode: "", complement: "" } as any,
       });
       setDialogError("");
@@ -114,7 +108,7 @@ export default function ChildrenBrowserPage() {
       await updateChild(id, rest, 1, 12);
       setEditing(null);
       setDialogError("");
-    } catch {}
+    } catch { }
   };
 
   React.useEffect(() => {
@@ -125,12 +119,12 @@ export default function ChildrenBrowserPage() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        pt: { xs: 8, md: 4 }, // padding-top responsivo (removemos o mt)
+        pt: { xs: 10, md: 10 },
+        pb: { xs: 6, md: 10 },
         minHeight: "100vh",
         bgcolor: "#f6f7f9"
       }}
     >
-      {/* Título + ação (com arrow só no mobile) */}
       <Box
         sx={{
           mb: 2,
@@ -142,7 +136,6 @@ export default function ChildrenBrowserPage() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-          {/* Arrow apenas no mobile */}
           {isXs && (
             <Tooltip title="Voltar">
               <IconButton
@@ -188,7 +181,6 @@ export default function ChildrenBrowserPage() {
         </Button>
       </Box>
 
-      {/* FAB no mobile */}
       <Fab
         color="primary"
         aria-label="Adicionar criança"
@@ -244,14 +236,13 @@ export default function ChildrenBrowserPage() {
               <ChildCard
                 child={child}
                 onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
-                onEdit={(c) => openEdit(c.id)} // habilita edição
+                onEdit={(c) => openEdit(c.id)}
               />
             </Grid>
           ))}
         </Grid>
       )}
 
-      {/* Dialog de criação */}
       <ChildFormDialog
         mode="create"
         open={!!creating}
@@ -266,7 +257,6 @@ export default function ChildrenBrowserPage() {
         loading={dialogLoading}
       />
 
-      {/* Dialog de edição */}
       <ChildFormDialog
         mode="edit"
         open={!!editing}

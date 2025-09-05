@@ -56,14 +56,10 @@ import ImageSectionListPage from './features/image-sections/pages/ImageSectionLi
 import VideoPageListPage from './features/video-pages/VideoPageListPage';
 import UsersListPage from './features/users/UsersListPage';
 import ChildrenManager from './features/children/ChildrenManager';
-
-// -- Área das crianças
 import ChildrenBrowserPage from './features/pagela-teacher/ChildrenBrowserPage';
 import ChildPagelasPage from './features/pagela-teacher/ChildPagelasPage';
-
-// -- Rotas extras
 import Register from './pages/Register/Register';
-// import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage'; // Descomentear quando usar
+import PagelaClubsRoot from './features/pagela-clubs';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
@@ -99,7 +95,6 @@ function App() {
       <Navbar />
       <div className="mainContainer">
         <Routes>
-          {/* Públicas */}
           <Route path="/" element={<Home />} />
           <Route path="/sobre" element={<About />} />
           <Route path="/contato" element={<Contact />} />
@@ -110,7 +105,6 @@ function App() {
           <Route path="/cadastrar" element={<Register commonUser />} />
           <Route path="*" element={<Home />} />
 
-          {/* Protegidas: usuário autenticado */}
           <Route element={<ProtectedRoute />}>
             <Route path="/area-do-professor" element={<TeacherArea />} />
             <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
@@ -121,7 +115,6 @@ function App() {
             {/* <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} /> */}
           </Route>
 
-          {/* Protegidas: Admin/Coord */}
           <Route element={<ProtectedRoute requiredRole={[RoleUser.ADMIN, RoleUser.COORDINATOR]} />}>
             <Route path="/adm" element={<AdminLayout />}>
               <Route index element={<AdminDashboardPage />} />
@@ -142,8 +135,8 @@ function App() {
               <Route path="professores" element={<TeacherProfilesManager />} />
               <Route path="criancas" element={<ChildrenManager />} />
               <Route path="clubinhos" element={<ClubsManager />} />
+              <Route path="pagelas" element={<PagelaClubsRoot  />} />
 
-              {/* Editores (template=false = edição) */}
               <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
               <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
               <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
@@ -153,7 +146,6 @@ function App() {
             </Route>
           </Route>
 
-          {/* Rotas dinâmicas vindas do backend */}
           {dynamicRoutes.map((route: DynamicRouteType) => (
             <Route
               key={route.id}

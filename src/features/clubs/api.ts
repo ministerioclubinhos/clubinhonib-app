@@ -83,28 +83,25 @@ export async function apiGetTeacherProfile(userId: string) {
   const { data } = await api.get<{ id: string; user: UserPublicDto; club?: { id: string; number?: number } | null }>(`/teacher-profiles/${userId}`);
   return data;
 }
-// GET /coordinator-profiles  -> CoordinatorOption[]
+
 export async function apiLoadCoordinatorOptions() {
   const { data } = await api.get<CoordinatorProfile[]>("/coordinator-profiles");
-  // name = user.name || user.email || id
   return data.map((c) => ({
-    coordinatorProfileId: c.coordinatorProfileId,
+    coordinatorProfileId: c.id,
     name: c.user?.name,
   })) as CoordinatorOption[];
 }
 
-// GET /teacher-profiles -> TeacherOption[]
 export async function apiLoadTeacherOptions() {
   const { data } = await api.get<TeacherProfile[]>("/teacher-profiles");
   return data.map((t) => ({
-    teacherProfileId: t.teacherProfileId,
-    name: t.user?.name ?? t.user?.email ?? t.teacherProfileId,
+    teacherProfileId: t.id,
+    name: t.user?.name ?? t.user?.email ?? t.id,
     assignedClub: t.club?.number ?? null,
     vinculado: t.vinculado,
   })) as TeacherOption[];
 }
 
-// modelos retornados pelo back
 export type TeacherSimpleApi = {
   teacherProfileId: string;
   name: string;

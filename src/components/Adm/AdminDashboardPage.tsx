@@ -1,4 +1,3 @@
-// src/pages/AdminDashboardPage.tsx
 import type { ReactElement } from "react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +40,6 @@ import {
   ChevronRight,
 } from "@mui/icons-material";
 
-// 👇 imports adicionados
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { RoleUser } from "@/store/slices/auth/authSlice";
@@ -57,27 +55,24 @@ interface CardData {
 }
 
 const cardData: CardData[] = [
-  // Conteúdos
   { title: "Criar Página", description: "Adicione novas páginas de conteúdo ao site.", icon: <NoteAdd fontSize="large" color="primary" />, path: "/adm/criar-pagina", section: "conteudos" },
   { title: "Meditações", description: "Crie, edite e visualize meditações semanais.", icon: <MenuBook fontSize="large" color="primary" />, path: "/adm/meditacoes", section: "conteudos" },
   { title: "Documentos", description: "Gerencie documentos para professores.", icon: <Description fontSize="large" color="primary" />, path: "/adm/documentos", section: "conteudos" },
   { title: "Informativos", description: "Gerencie banners informativos do site.", icon: <Campaign fontSize="large" color="primary" />, path: "/adm/informativos", section: "conteudos" },
 
-  // Páginas
   { title: "Páginas de Materiais", description: "Gerencie conteúdos semanais.", icon: <EventNote fontSize="large" color="primary" />, path: "/adm/paginas-materiais-semanais", section: "pages" },
   { title: "Páginas de Fotos", description: "Organize e edite galerias de imagens do site.", icon: <PhotoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-fotos", section: "pages" },
   { title: "Fotos dos Clubinhos", description: "Organize e edite galerias de fotos dos clubinhos.", icon: <Collections fontSize="large" color="primary" />, path: "/adm/fotos-clubinhos", section: "pages" },
   { title: "Páginas de Vídeos", description: "Adicione vídeos ou links do YouTube para o site.", icon: <VideoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-videos", section: "pages" },
   { title: "Páginas de Ideias", description: "Gerencie páginas de ideias para professores.", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/paginas-ideias", section: "pages" },
 
-  // Clubinho
   { title: "Usuários", description: "Gerencie usuários do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/usuarios", section: "clubinho" },
   { title: "Professores", description: "Gerencie professores do clubinho.", icon: <School fontSize="large" color="primary" />, path: "/adm/professores", section: "clubinho" },
   { title: "Coordenadores", description: "Gerencie coordenadores do clubinho.", icon: <SupervisorAccount fontSize="large" color="primary" />, path: "/adm/coordenadores", section: "clubinho" },
   { title: "Crianças", description: "Gerencie crianças do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/criancas", section: "clubinho" },
   { title: "Clubinhos", description: "Gerencie clubinhos.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/clubinhos", section: "clubinho" },
+  { title: "Pagelas", description: "Gerencie pagelas.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/pagelas", section: "clubinho" },
 
-  // Operacional
   { title: "Comentários", description: "Gerencie comentários dos usuários.", icon: <Comment fontSize="large" color="primary" />, path: "/adm/comentarios", section: "operacional" },
   { title: "Contatos", description: "Gerencie contatos enviados para o clubinho.", icon: <ContactPhone fontSize="large" color="primary" />, path: "/adm/contatos", section: "operacional" },
   { title: "Feedbacks", description: "Gerencie feedbacks enviados para o clubinho.", icon: <RateReview fontSize="large" color="primary" />, path: "/adm/feedbacks", section: "operacional" },
@@ -97,14 +92,10 @@ export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
-  // 👇 auth + role
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const role = user?.role;
   const isAdmin = !!isAuthenticated && role === RoleUser.ADMIN;
   const isCoordinator = !!isAuthenticated && role === RoleUser.COORDINATOR;
-
-  // 👉 modo simples quando COORDINATOR (sem busca/filtros/menus)
   const isSimpleMode = isCoordinator && !isAdmin;
 
   const [query, setQuery] = React.useState("");
@@ -120,12 +111,11 @@ export default function AdminDashboardPage() {
   }, [isMobile]);
 
   const normalizedQuery = query.trim().toLowerCase();
-
-  // 👇 regra de visibilidade (ADMIN tudo; COORDINATOR: Crianças, Professores e Clubinhos)
   const coordinatorAllowed = new Set<string>([
     "/adm/criancas",
     "/adm/professores",
     "/adm/clubinhos",
+    "/adm/pagelas",
   ]);
 
   const canSeeCard = (card: CardData): boolean => {
@@ -136,7 +126,6 @@ export default function AdminDashboardPage() {
 
   const visibleCards = React.useMemo(
     () => cardData.filter(canSeeCard),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isAdmin, isCoordinator]
   );
 
@@ -164,12 +153,10 @@ export default function AdminDashboardPage() {
     0;
 
   const MobileList: React.FC = () => {
-    // lista achatada para modo simples (sem cabeçalhos de seção)
     const allFiltered = order.flatMap((sec) => grouped[sec]);
 
     return (
       <Box sx={{ width: "100%", px: 2, pb: 8 }}>
-        {/* Header sticky com busca + botões responsivos (ESCONDIDO no modo simples) */}
         {!isSimpleMode && (
           <Box
             sx={{
@@ -230,7 +217,6 @@ export default function AdminDashboardPage() {
           </Box>
         )}
 
-        {/* Listas por seção (com cabeçalhos) — só quando NÃO é modo simples */}
         {!isSimpleMode &&
           order.map((sec) =>
             grouped[sec].length ? (
@@ -274,7 +260,6 @@ export default function AdminDashboardPage() {
             ) : null
           )}
 
-        {/* Lista única — modo simples */}
         {isSimpleMode && (
           <>
             <List dense sx={{ mt: 2 }}>
@@ -353,7 +338,6 @@ export default function AdminDashboardPage() {
           Bem-vindo(a), {greetName} 👋
         </Typography>
 
-        {/* Controles desktop — ESCONDIDOS no modo simples */}
         {!isSimpleMode && (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.25, alignItems: "center", mb: 3 }}>
             <TextField

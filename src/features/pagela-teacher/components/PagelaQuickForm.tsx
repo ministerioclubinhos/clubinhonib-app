@@ -21,6 +21,7 @@ import SpaIcon from "@mui/icons-material/Spa";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import { useSelector } from "react-redux";
 import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from "../types";
 import { todayISO } from "../utils";
 
@@ -32,6 +33,7 @@ type Props = {
   /** Mantidos por compatibilidade; ignorados quando initial não existe */
   defaultYear: number;
   defaultWeek: number;
+  /** (legacy) fallback caso Redux não tenha teacherProfile */
   teacherProfileId?: string | null;
 
   /** Procura uma pagela existente para (year, week) deste child */
@@ -47,7 +49,7 @@ export default function PagelaQuickForm({
   childId,
   defaultYear, // ignorado
   defaultWeek, // ignorado
-  teacherProfileId,
+  teacherProfileId, // usado apenas como fallback
   findPagela,
   onCreate,
   onUpdate,
@@ -56,21 +58,23 @@ export default function PagelaQuickForm({
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // --- inputs livres (string) para ano/semana (sem pré-preenchimento) ---
+  const teacherProfileIdFromRedux = useSelector(
+    (s: any) => s?.auth?.user?.teacherProfile?.id ?? null
+  ) as string | null;
+
+  const effectiveTeacherProfileId = teacherProfileIdFromRedux ?? teacherProfileId ?? null;
+
   const [yearText, setYearText] = React.useState<string>("");
   const [weekText, setWeekText] = React.useState<string>("");
 
-  // --- modo: edição/criação + id atual ---
   const [editing, setEditing] = React.useState<boolean>(!!initial?.id);
   const [currentId, setCurrentId] = React.useState<string | null>(initial?.id ?? null);
 
-  // --- campos da pagela ---
   const [present, setPresent] = React.useState<boolean>(initial?.present ?? false);
   const [med, setMed] = React.useState<boolean>(initial?.didMeditation ?? false);
   const [verse, setVerse] = React.useState<boolean>(initial?.recitedVerse ?? false);
   const [notes, setNotes] = React.useState<string>(initial?.notes ?? "");
 
-  // carregar quando trocar 'initial'
   React.useEffect(() => {
     if (initial?.id) {
       setEditing(true);
@@ -82,16 +86,13 @@ export default function PagelaQuickForm({
       setVerse(!!initial.recitedVerse);
       setNotes(initial.notes ?? "");
     } else {
-      // sem initial => form vazio (criação)
       setEditing(false);
       setCurrentId(null);
       setYearText("");
       setWeekText("");
-      // mantém switches/notes (caso usuário já esteja digitando)
     }
   }, [initial]);
 
-  // parse helpers (só válidos se dentro do range)
   const parsedYear = React.useMemo(() => {
     if (!yearText.trim()) return undefined;
     const n = Number(yearText);
@@ -108,12 +109,10 @@ export default function PagelaQuickForm({
     return Math.floor(n);
   }, [weekText]);
 
-  // quando o usuário define ano/semana válidos, checar se existe pagela:
   React.useEffect(() => {
     if (parsedYear && parsedWeek) {
       const found = findPagela(parsedYear, parsedWeek);
       if (found) {
-        // vira edição e carrega a pagela encontrada
         setEditing(true);
         setCurrentId(found.id);
         setYearText(String(found.year));
@@ -123,12 +122,10 @@ export default function PagelaQuickForm({
         setVerse(!!found.recitedVerse);
         setNotes(found.notes ?? "");
       } else {
-        // criação; mantém os campos atuais
         setEditing(false);
         setCurrentId(null);
       }
     } else {
-      // inputs ainda incompletos => criação (pendente)
       setEditing(false);
       setCurrentId(null);
     }
@@ -140,14 +137,14 @@ export default function PagelaQuickForm({
     if (!canSave) return;
 
     const payloadCommon = {
-      referenceDate: todayISO(), // SEM input — sempre hoje
+      referenceDate: todayISO(),
       year: parsedYear!,
       week: parsedWeek!,
       present,
       didMeditation: med,
       recitedVerse: verse,
       notes,
-      teacherProfileId: teacherProfileId ?? null,
+      teacherProfileId: effectiveTeacherProfileId,
     };
 
     if (editing && currentId) {
@@ -162,10 +159,9 @@ export default function PagelaQuickForm({
     if (isXs && onClose) onClose();
   };
 
-  // Aparência: cores diferentes para criar/editar
   const headerBg = editing
-    ? "linear-gradient(135deg, #FFE8B3 0%, #FFD480 50%, #FFC266 100%)" // EDITANDO
-    : "linear-gradient(135deg, #b8f1d7 0%, #b8d6ff 50%, #ffc7ec 100%)"; // CRIANDO
+    ? "linear-gradient(135deg, #FFE8B3 0%, #FFD480 50%, #FFC266 100%)" 
+    : "linear-gradient(135deg, #b8f1d7 0%, #b8d6ff 50%, #ffc7ec 100%)"; 
 
   const headerTitle = editing ? "Editando pagela" : "Criando pagela";
   const footerMsg = editing
@@ -185,7 +181,6 @@ export default function PagelaQuickForm({
         "&:hover": { boxShadow: 4, transform: { sm: "translateY(-1px)" } },
       }}
     >
-      {/* Cabeçalho com feedback de modo (Criando/Editando) e botão X no mobile */}
       <Box
         sx={{
           position: "relative",
@@ -194,9 +189,38 @@ export default function PagelaQuickForm({
         }}
       >
         {/* bolhinhas */}
-        <Box sx={{ position: "absolute", top: -10, left: -18, width: 90, height: 90, borderRadius: "50%", opacity: 0.15, bgcolor: "#000", filter: "blur(2px)" }} />
-        <Box sx={{ position: "absolute", bottom: -16, right: -12, width: 80, height: 80, borderRadius: "50%", opacity: 0.12, bgcolor: "#000", filter: "blur(1px)" }} />
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ height: "100%", px: { xs: 1.25, sm: 2 } }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: -10,
+            left: -18,
+            width: 90,
+            height: 90,
+            borderRadius: "50%",
+            opacity: 0.15,
+            bgcolor: "#000",
+            filter: "blur(2px)",
+          }}
+        />
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: -16,
+            right: -12,
+            width: 80,
+            height: 80,
+            borderRadius: "50%",
+            opacity: 0.12,
+            bgcolor: "#000",
+            filter: "blur(1px)",
+          }}
+        />
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ height: "100%", px: { xs: 1.25, sm: 2 } }}
+        >
           <Stack spacing={0}>
             <Typography variant="subtitle2" sx={{ color: "text.primary", opacity: 0.9, fontWeight: 800 }}>
               {headerTitle}
@@ -224,7 +248,6 @@ export default function PagelaQuickForm({
 
       <CardContent sx={{ p: { xs: 1.5, md: 2.25 } }}>
         <Stack spacing={1.25}>
-          {/* Ano / Semana (sem pré-preencher; texto livre) */}
           <Stack direction="row" spacing={1}>
             <TextField
               label="Ano"
@@ -246,7 +269,6 @@ export default function PagelaQuickForm({
             />
           </Stack>
 
-          {/* switches */}
           <RowSwitch icon={<CheckCircleIcon />} label="Presença" checked={present} onChange={setPresent} />
           <RowSwitch icon={<SpaIcon />} label="Fez meditação" checked={med} onChange={setMed} />
           <RowSwitch icon={<MenuBookIcon />} label="Recitou o versículo" checked={verse} onChange={setVerse} />
@@ -263,7 +285,6 @@ export default function PagelaQuickForm({
             fullWidth
           />
 
-          {/* botão salvar */}
           <Box sx={{ display: "flex", justifyContent: { xs: "stretch", sm: "flex-end" }, mt: 0.5 }}>
             <Button
               onClick={handleSave}
@@ -276,8 +297,13 @@ export default function PagelaQuickForm({
             </Button>
           </Box>
 
-          {/* rodapé */}
-          <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center" sx={{ color: "text.secondary", mt: 0.25 }}>
+          <Stack
+            direction="row"
+            spacing={0.5}
+            alignItems="center"
+            justifyContent="center"
+            sx={{ color: "text.secondary", mt: 0.25 }}
+          >
             <Typography variant="caption" sx={{ fontWeight: 700 }}>
               {footerMsg}
             </Typography>
@@ -289,7 +315,6 @@ export default function PagelaQuickForm({
   );
 }
 
-/* ----------------------- helpers visuais ----------------------- */
 function RowSwitch({
   icon,
   label,
@@ -311,7 +336,14 @@ function RowSwitch({
         </Stack>
       }
       labelPlacement="start"
-      sx={{ m: 0, px: 1, py: 0.5, borderRadius: 2, justifyContent: "space-between", bgcolor: "action.hover" }}
+      sx={{
+        m: 0,
+        px: 1,
+        py: 0.5,
+        borderRadius: 2,
+        justifyContent: "space-between",
+        bgcolor: "action.hover",
+      }}
     />
   );
 }

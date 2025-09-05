@@ -54,7 +54,6 @@ export default function ClubAutocomplete({
       const safe = Array.isArray(items) ? items : [];
       setOptions(safe);
 
-      // ✅ Pré-seleção automática quando houver exatamente 1 opção
       if (safe.length === 1 && !value) {
         onChange(safe[0].id, safe[0]);
       }
@@ -76,7 +75,7 @@ export default function ClubAutocomplete({
         value={selected}
         disabled={disabled}
         loading={loading}
-        onOpen={load} // lazy se não tiver fetchOnMount
+        onOpen={load}
         onChange={(_, opt) => onChange(opt ? opt.id : null, opt ?? null)}
         isOptionEqualToValue={(o, v) => o.id === v.id}
         getOptionLabel={(o) => o?.detalhe ?? ""}

@@ -7,6 +7,24 @@ export enum RoleUser {
   TEACHER = 'teacher',
 }
 
+interface ClubLite {
+  id: string;
+  number: number;
+  weekday: string;
+}
+
+interface TeacherProfileLite {
+  id: string;
+  active: boolean;
+  club: ClubLite | null;
+}
+
+interface CoordinatorProfileLite {
+  id: string;
+  active: boolean;
+  clubs: ClubLite[];
+}
+
 interface User {
   id: string;
   email: string;
@@ -18,6 +36,8 @@ interface User {
   createdAt?: string;
   updatedAt?: string;
   completed?: boolean;
+  teacherProfile?: TeacherProfileLite | null;
+  coordinatorProfile?: CoordinatorProfileLite | null;
 }
 
 interface GoogleUser {
