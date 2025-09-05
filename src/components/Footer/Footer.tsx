@@ -26,7 +26,8 @@ const Footer: React.FC = () => {
         py: 4,
         textAlign: 'center',
         width: '100%',
-        mt: { xs: 0, md: 0 },
+        // 👇 chave do sticky-flex
+        mt: 'auto',
       }}
     >
       <Stack
@@ -39,47 +40,21 @@ const Footer: React.FC = () => {
       >
         {/* Navegação */}
         <Stack direction="row" spacing={3} justifyContent="center" flexWrap="wrap">
-          <Link href="/" underline="hover" color="inherit" fontWeight="medium">
-            Início
-          </Link>
-          <Link href="/sobre" underline="hover" color="inherit" fontWeight="medium">
-            Sobre
-          </Link>
-          <Link href="/eventos" underline="hover" color="inherit" fontWeight="medium">
-            Eventos
-          </Link>
-          <Link href="/contato" underline="hover" color="inherit" fontWeight="medium">
-            Contato
-          </Link>
+          <Link href="/" underline="hover" color="inherit" fontWeight="medium">Início</Link>
+          <Link href="/sobre" underline="hover" color="inherit" fontWeight="medium">Sobre</Link>
+          <Link href="/eventos" underline="hover" color="inherit" fontWeight="medium">Eventos</Link>
+          <Link href="/contato" underline="hover" color="inherit" fontWeight="medium">Contato</Link>
         </Stack>
 
         {/* Redes sociais */}
         <Stack direction="row" spacing={2} justifyContent="center">
-          <IconButton
-            component="a"
-            href="https://facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            color="inherit"
-          >
+          <IconButton component="a" href="https://facebook.com" target="_blank" rel="noopener noreferrer" color="inherit">
             <FacebookIcon fontSize="small" />
           </IconButton>
-          <IconButton
-            component="a"
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            color="inherit"
-          >
+          <IconButton component="a" href="https://instagram.com" target="_blank" rel="noopener noreferrer" color="inherit">
             <InstagramIcon fontSize="small" />
           </IconButton>
-          <IconButton
-            component="a"
-            href="https://youtube.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            color="inherit"
-          >
+          <IconButton component="a" href="https://youtube.com" target="_blank" rel="noopener noreferrer" color="inherit">
             <YouTubeIcon fontSize="small" />
           </IconButton>
         </Stack>

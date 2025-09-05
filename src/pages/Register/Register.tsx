@@ -22,6 +22,7 @@ import { IMaskInput } from 'react-imask';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 
+
 interface RegisterProps {
   commonUser: boolean;
 }
@@ -40,9 +41,7 @@ const getSchema = (commonUser: boolean) =>
       confirmEmail: Yup.string()
         .oneOf([Yup.ref('email')], 'Os emails não coincidem')
         .required('Confirme o email'),
-      password: Yup.string()
-        .min(6, 'Senha deve ter pelo menos 6 caracteres')
-        .required('Senha obrigatória'),
+      password: Yup.string().min(6, 'Senha deve ter pelo menos 6 caracteres').required('Senha obrigatória'),
       confirmPassword: Yup.string()
         .oneOf([Yup.ref('password')], 'As senhas não coincidem')
         .required('Confirme a senha'),
@@ -65,7 +64,7 @@ interface FormData {
   phone: string;
   password?: string;
   confirmPassword?: string;
-  role: RoleChoice; // 'teacher' | 'coordinator' | ''
+  role: RoleChoice;
 }
 
 const Register: React.FC<RegisterProps> = ({ commonUser }) => {
@@ -91,7 +90,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
       phone: '',
       password: '',
       confirmPassword: '',
-      role: '', 
+      role: '',
     },
   });
 
@@ -114,7 +113,6 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
         email: data.email,
         phone: data.phone,
         password: commonUser ? data.password : undefined,
-        // envia a role se selecionada (teacher/coordinator)
         role: data.role || undefined,
       });
       setSuccess(true);
@@ -130,211 +128,240 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 16 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2, boxShadow: 3, backgroundColor: '#fff' }}>
-        <Typography variant="h5" component="h1" gutterBottom align="center">
-          {commonUser ? 'Cadastro de Usuário' : 'Completar Cadastro'}
-        </Typography>
-
-        {globalError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {globalError}
-          </Alert>
-        )}
-
-        {success ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4, gap: 3 }}>
-            <Alert
-              severity="success"
-              sx={{
-                fontSize: isMobile ? '1rem' : '1.3rem',
-                fontWeight: 'bold',
-                p: isMobile ? 2 : 3,
-                textAlign: 'center',
-                borderRadius: 2,
-                boxShadow: 4,
-                backgroundColor: '#d4edda',
-                color: '#155724',
-              }}
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Box component="main" sx={{ flex: '1 0 auto' }}>
+        <Container
+          maxWidth="sm"
+          sx={{
+            pt: { xs: 15, md: 15 },
+            pb: { xs: 5, md: 0 },
+          }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              p: { xs: 2.25, md: 4 },
+              borderRadius: 2,
+              backgroundColor: '#fff',
+            }}
+          >
+            <Typography
+              variant={isMobile ? 'h6' : 'h5'}
+              component="h1"
+              gutterBottom
+              align="center"
+              sx={{ fontWeight: 700 }}
             >
-              Cadastro concluído com sucesso! <br />
-              Aguarde a aprovação do seu cadastro. <br />
-              Você será notificado pelo WhatsApp.
-            </Alert>
+              {commonUser ? 'Cadastro de Usuário' : 'Completar Cadastro'}
+            </Typography>
 
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate('/login')}
-              sx={{ mt: 2, px: 4, py: 1.5, fontWeight: 'bold' }}
-            >
-              Voltar para Login
-            </Button>
-          </Box>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} noValidate>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Nome"
-                  fullWidth
-                  margin="normal"
-                  error={!!errors.name}
-                  helperText={errors.name?.message}
-                />
-              )}
-            />
+            {globalError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {globalError}
+              </Alert>
+            )}
 
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Email"
-                  type="email"
-                  fullWidth
-                  margin="normal"
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
-                  slotProps={{
-                    input: {
-                      readOnly: !commonUser,
-                    },
+            {success ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3, gap: 3 }}>
+                <Alert
+                  severity="success"
+                  sx={{
+                    fontSize: isMobile ? '1rem' : '1.1rem',
+                    fontWeight: 'bold',
+                    p: { xs: 2, md: 2.5 },
+                    textAlign: 'center',
+                    borderRadius: 2,
+                    boxShadow: 2,
                   }}
-                />
-              )}
-            />
+                >
+                  Cadastro concluído com sucesso! <br />
+                  Aguarde a aprovação do seu cadastro. <br />
+                  Você será notificado pelo WhatsApp.
+                </Alert>
 
-            {commonUser && (
-              <Controller
-                name="confirmEmail"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Confirmar Email"
-                    type="email"
-                    fullWidth
-                    margin="normal"
-                    error={!!errors.confirmEmail}
-                    helperText={errors.confirmEmail?.message}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => navigate('/login')}
+                  sx={{ mt: 1, px: 4, py: 1.25, fontWeight: 'bold' }}
+                >
+                  Voltar para Login
+                </Button>
+              </Box>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                <Controller
+                  name="name"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Nome"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="email"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Email"
+                      type="email"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.email}
+                      helperText={errors.email?.message}
+                      slotProps={{
+                        input: {
+                          readOnly: !commonUser,
+                        },
+                      }}
+                    />
+                  )}
+                />
+
+                {commonUser && (
+                  <Controller
+                    name="confirmEmail"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Confirmar Email"
+                        type="email"
+                        fullWidth
+                        margin="normal"
+                        error={!!errors.confirmEmail}
+                        helperText={errors.confirmEmail?.message}
+                      />
+                    )}
                   />
                 )}
-              />
-            )}
 
-            <Controller
-              name="phone"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Telefone"
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Telefone"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.phone}
+                      helperText={errors.phone?.message}
+                      slotProps={{
+                        input: {
+                          inputComponent: PhoneMask as any,
+                        },
+                      }}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="role"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      select
+                      label="Você é"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.role}
+                      helperText={errors.role?.message || 'Informe se você é Professor ou Coordenador'}
+                    >
+                      <MenuItem value="">
+                        <em>Selecione</em>
+                      </MenuItem>
+                      <MenuItem value="teacher">Professor</MenuItem>
+                      <MenuItem value="coordinator">Coordenador</MenuItem>
+                    </TextField>
+                  )}
+                />
+
+                {commonUser && (
+                  <Fragment>
+                    <Controller
+                      name="password"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Senha"
+                          type="password"
+                          fullWidth
+                          margin="normal"
+                          error={!!errors.password}
+                          helperText={errors.password?.message}
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      name="confirmPassword"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Confirmar Senha"
+                          type="password"
+                          fullWidth
+                          margin="normal"
+                          error={!!errors.confirmPassword}
+                          helperText={errors.confirmPassword?.message}
+                        />
+                      )}
+                    />
+                  </Fragment>
+                )}
+
+                <Button
+                  type="submit"
+                  variant="contained"
                   fullWidth
-                  margin="normal"
-                  error={!!errors.phone}
-                  helperText={errors.phone?.message}
-                  slotProps={{
-                    input: {
-                      inputComponent: PhoneMask as any,
-                    },
+                  disabled={loading}
+                  sx={{
+                    mt: { xs: 2, md: 3 },
+                    py: { xs: 1.5, md: 1 },       // mais alto no mobile
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 'bold',
                   }}
-                />
-              )}
-            />
-
-            {/* Select Professor/Coordenador */}
-            <Controller
-              name="role"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  label="Você é"
-                  fullWidth
-                  margin="normal"
-                  error={!!errors.role}
-                  helperText={errors.role?.message || 'Informe se você é Professor ou Coordenador'}
                 >
-                  <MenuItem value="">
-                    <em>Selecione</em>
-                  </MenuItem>
-                  <MenuItem value="teacher">Professor</MenuItem>
-                  <MenuItem value="coordinator">Coordenador</MenuItem>
-                </TextField>
-              )}
-            />
-
-            {commonUser && (
-              <Fragment>
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Senha"
-                      type="password"
-                      fullWidth
-                      margin="normal"
-                      error={!!errors.password}
-                      helperText={errors.password?.message}
-                    />
+                  {loading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : commonUser ? (
+                    'Cadastrar'
+                  ) : (
+                    'Completar Cadastro'
                   )}
-                />
+                </Button>
 
-                <Controller
-                  name="confirmPassword"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Confirmar Senha"
-                      type="password"
-                      fullWidth
-                      margin="normal"
-                      error={!!errors.confirmPassword}
-                      helperText={errors.confirmPassword?.message}
-                    />
-                  )}
-                />
-              </Fragment>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => navigate('/login')}
+                  sx={{
+                    mt: { xs: 2, md: 2.5 },
+                    py: { xs: 1.4, md: 1 },
+                    fontSize: { xs: '0.9rem', md: '1rem' },
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Já tem conta?
+                </Button>
+              </form>
             )}
-
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              size={isMobile ? 'medium' : 'large'}
-              disabled={loading}
-              sx={{ mt: 2 }}
-            >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : commonUser ? (
-                'Cadastrar'
-              ) : (
-                'Completar Cadastro'
-              )}
-            </Button>
-
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={() => navigate('/login')}
-              sx={{ mt: 3, fontWeight: 'bold' }}
-            >
-              Já tem conta? Voltar para Login
-            </Button>
-          </form>
-        )}
-      </Paper>
-    </Container>
+          </Paper>
+        </Container>
+      </Box>
+    </Box>
   );
 };
 

@@ -146,15 +146,14 @@ const Login: React.FC = () => {
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
-      {/* WRAPPER que ocupa a tela e reserva espaço p/ o footer fixo */}
       <Box
         sx={{
           minHeight: 'calc(100vh - var(--app-header-h, 64px))',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'center',
-          pt: { xs: 12, md: 20 },             // topo menor no mobile
-          pb: { xs: '50px', md: '96px' },    // menos espaço no mobile
+          pt: { xs: 20, md: 20 },
+          pb: { xs: '50px', md: '96px' },
           px: { xs: 1, md: 2 },
         }}
       >
