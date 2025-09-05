@@ -1,42 +1,58 @@
-:root {
-  --cor-secundaria: #0073E6;
+/* -------- Base/Reset ÚNICO -------- */
+:root { 
+  --cor-primaria: #2c3e50;
+  --cor-secundaria: #0073E6;     /* mantive sua var do Global */
   --cor-destaque: #D71920;
   --cor-complementar: #FFAA00;
+  --cor-fundo: #f5f5f5;
   --cor-texto: #333;
   --cor-branca: #ffffff;
 }
 
+/* reset básico */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--cor-primaria);
-  color: var(--cor-texto);
-  text-align: center;
+/* >>> ESSENCIAL para sticky footer e AppBar fixo <<< */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
+/* Body base neutro (sem centralizar texto globalmente!) */
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto);
+  line-height: 1.4;
+}
+
+/* Tipografia básica (sem center global) */
 h1 {
   font-size: 2.5rem;
   font-weight: bold;
   color: var(--cor-secundaria);
 }
-
 h2 {
   font-size: 2rem;
   color: var(--cor-secundaria);
 }
-
 p {
-  font-size: 1.2rem;
+  font-size: 1rem;
   line-height: 1.6;
-  max-width: 800px;
-  margin: auto;
 }
 
+/* Links genéricos */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Botão genérico (se não estiver usando MUI Button) */
 button {
   background-color: var(--cor-destaque);
   color: var(--cor-branca);
@@ -47,7 +63,14 @@ button {
   border-radius: 5px;
   transition: 0.3s;
 }
-
 button:hover {
   background-color: var(--cor-complementar);
+}
+
+/* Container principal para “empurrar” footer quando necessário */
+.mainContainer {
+  min-width: 0;          /* evita estourar largura por grids/imagens */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;        /* cresce para ocupar a área disponível */
 }

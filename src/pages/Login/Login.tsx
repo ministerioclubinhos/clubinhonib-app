@@ -152,9 +152,9 @@ const Login: React.FC = () => {
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'center',
-          pt: { xs: 20, md: 20 },
-          pb: { xs: '50px', md: '96px' },
-          px: { xs: 1, md: 2 },
+          pt: { xs: 10, md: 15 },
+          pb: { xs: 0, md: 0 },
+          px: 2,
         }}
       >
         <Container maxWidth="sm" disableGutters sx={{ width: '100%', maxWidth: 560 }}>
@@ -221,13 +221,13 @@ const Login: React.FC = () => {
               onClick={() => navigate('/cadastrar')}
               sx={{ mt: 3, fontWeight: 'bold' }}
             >
-              Não tem conta? Cadastre-se
+              Cadastre-se
             </Button>
           </Paper>
         </Container>
       </Box>
     </GoogleOAuthProvider>
-  );
+  );  
 };
 
 export default Login;

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Toolbar } from '@mui/material';
 
 import './App.css';
 import './styles/Global.css';
@@ -92,70 +92,82 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Navbar />
-      <div className="mainContainer">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/sobre" element={<About />} />
-          <Route path="/contato" element={<Contact />} />
-          <Route path="/eventos" element={<Event />} />
-          <Route path="/feed-clubinho" element={<PageGalleryView feed />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
-          <Route path="/cadastrar" element={<Register commonUser />} />
-          <Route path="*" element={<Home />} />
+      {/* Wrapper flex vertical ocupando a tela toda */}
+      <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {/* Header fixo */}
+        <Navbar />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/area-do-professor" element={<TeacherArea />} />
-            <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
-            <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
-            <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
-            <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
-            <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
-            {/* <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} /> */}
-          </Route>
+        {/* Main: cresce para empurrar o footer (sticky). 
+            A <Toolbar /> logo abaixo compensa a altura do AppBar fixo automaticamente. */}
+        <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Toolbar />
+          {/* seu container de páginas */}
+          <Box className="mainContainer" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/sobre" element={<About />} />
+              <Route path="/contato" element={<Contact />} />
+              <Route path="/eventos" element={<Event />} />
+              <Route path="/feed-clubinho" element={<PageGalleryView feed />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
+              <Route path="/cadastrar" element={<Register commonUser />} />
+              <Route path="*" element={<Home />} />
 
-          <Route element={<ProtectedRoute requiredRole={[RoleUser.ADMIN, RoleUser.COORDINATOR]} />}>
-            <Route path="/adm" element={<AdminLayout />}>
-              <Route index element={<AdminDashboardPage />} />
-              <Route path="meditacoes" element={<MeditationListPage />} />
-              <Route path="comentarios" element={<CommentsPage />} />
-              <Route path="documentos" element={<DocumentList />} />
-              <Route path="informativos" element={<InformativeBannerListPage />} />
-              <Route path="feedbacks" element={<FeedbackList />} />
-              <Route path="contatos" element={<ContactList />} />
-              <Route path="paginas-materiais-semanais" element={<WeekMaterialListPage />} />
-              <Route path="paginas-fotos" element={<ImagePageListPage />} />
-              <Route path="fotos-clubinhos" element={<ImageSectionListPage />} />
-              <Route path="paginas-videos" element={<VideoPageListPage />} />
-              <Route path="paginas-ideias" element={<IdeasPageListPage />} />
-              <Route path="criar-pagina" element={<SelecPageTemplate />} />
-              <Route path="usuarios" element={<UsersListPage />} />
-              <Route path="coordenadores" element={<CoordinatorProfilesManager />} />
-              <Route path="professores" element={<TeacherProfilesManager />} />
-              <Route path="criancas" element={<ChildrenManager />} />
-              <Route path="clubinhos" element={<ClubsManager />} />
-              <Route path="pagelas" element={<PagelaClubsRoot  />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/area-do-professor" element={<TeacherArea />} />
+                <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
+                <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
+                <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
+                <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
+                <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
+              </Route>
 
-              <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
-              <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
-              <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
-              <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
-              <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
-              <Route path="editar-imagens-clubinho" element={<ImageSectionPage isEditMode />} />
-            </Route>
-          </Route>
+              <Route element={<ProtectedRoute requiredRole={[RoleUser.ADMIN, RoleUser.COORDINATOR]} />}>
+                <Route path="/adm" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboardPage />} />
+                  <Route path="meditacoes" element={<MeditationListPage />} />
+                  <Route path="comentarios" element={<CommentsPage />} />
+                  <Route path="documentos" element={<DocumentList />} />
+                  <Route path="informativos" element={<InformativeBannerListPage />} />
+                  <Route path="feedbacks" element={<FeedbackList />} />
+                  <Route path="contatos" element={<ContactList />} />
+                  <Route path="paginas-materiais-semanais" element={<WeekMaterialListPage />} />
+                  <Route path="paginas-fotos" element={<ImagePageListPage />} />
+                  <Route path="fotos-clubinhos" element={<ImageSectionListPage />} />
+                  <Route path="paginas-videos" element={<VideoPageListPage />} />
+                  <Route path="paginas-ideias" element={<IdeasPageListPage />} />
+                  <Route path="criar-pagina" element={<SelecPageTemplate />} />
+                  <Route path="usuarios" element={<UsersListPage />} />
+                  <Route path="coordenadores" element={<CoordinatorProfilesManager />} />
+                  <Route path="professores" element={<TeacherProfilesManager />} />
+                  <Route path="criancas" element={<ChildrenManager />} />
+                  <Route path="clubinhos" element={<ClubsManager />} />
+                  <Route path="pagelas" element={<PagelaClubsRoot />} />
 
-          {dynamicRoutes.map((route: DynamicRouteType) => (
-            <Route
-              key={route.id}
-              path={`/${route.path}`}
-              element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
-            />
-          ))}
-        </Routes>
-      </div>
-      <Footer />
+                  <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-imagens-clubinho" element={<ImageSectionPage isEditMode />} />
+                </Route>
+              </Route>
+
+              {dynamicRoutes.map((route: DynamicRouteType) => (
+                <Route
+                  key={route.id}
+                  path={`/${route.path}`}
+                  element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
+                />
+              ))}
+            </Routes>
+          </Box>
+        </Box>
+
+        {/* Footer sticky (só gruda se o conteúdo não preencher a tela) */}
+        <Footer />
+      </Box>
     </BrowserRouter>
   );
 }

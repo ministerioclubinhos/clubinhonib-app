@@ -156,7 +156,7 @@ export default function AdminDashboardPage() {
     const allFiltered = order.flatMap((sec) => grouped[sec]);
 
     return (
-      <Box sx={{ width: "100%", px: 2, pb: 8 }}>
+      <Box sx={{ width: "100%", px: 2, pb: 8, mt: 0, pt: 0 }}>
         {!isSimpleMode && (
           <Box
             sx={{
@@ -164,7 +164,8 @@ export default function AdminDashboardPage() {
               top: 0,
               zIndex: 1,
               bgcolor: "background.paper",
-              pt: 2,
+              pt: 0,
+
               pb: 1.25,
               borderBottom: 1,
               borderColor: "divider",

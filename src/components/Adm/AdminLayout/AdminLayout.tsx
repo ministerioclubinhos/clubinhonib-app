@@ -40,7 +40,6 @@ import {
   ExpandMore,
 } from "@mui/icons-material";
 
-// 👇 imports adicionados
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { RoleUser } from "@/store/slices/auth/authSlice";
@@ -58,7 +57,6 @@ function AdminLayout() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  // 👇 estado de auth
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const isAdmin = !!isAuthenticated && user?.role === RoleUser.ADMIN;
   const isCoordinator = !!isAuthenticated && user?.role === RoleUser.COORDINATOR;
@@ -66,6 +64,13 @@ function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("tudo");
   const toggleDrawer = () => setMobileOpen((v) => !v);
+
+  const HEADER_H = 64; 
+  const FOOTER_H = 88; 
+  const cssVars = {
+    "--app-header-h": `${HEADER_H}px`,
+    "--app-footer-h": `${FOOTER_H}px`,
+  } as React.CSSProperties;
 
   const allSections = useMemo<Section[]>(
     () => [
@@ -300,6 +305,7 @@ function AdminLayout() {
 
   return (
     <Box
+      style={cssVars}
       sx={{
         display: "flex",
         width: "100%",
@@ -334,10 +340,13 @@ function AdminLayout() {
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
-            mt: isMobile ? 0 : 8,
-            overflowY: "auto",
-            height: isMobile ? "100vh" : "calc(100vh - 64px)",
-            zIndex: isMobile ? 1300 : "auto",
+            mt: isMobile ? 0 : `${HEADER_H}px`,
+            height: isMobile
+              ? "100vh"
+              : `calc(100vh - var(--app-header-h))`,
+            pb: isMobile ? 0 : "var(--app-footer-h)",
+            zIndex: isMobile ? 1300 : 1000,
+            borderRight: `1px solid ${theme.palette.divider}`,
           },
         }}
       >
@@ -350,10 +359,11 @@ function AdminLayout() {
           flexGrow: 1,
           width: "100%",
           px: { xs: 0, md: 4 },
-          py: { xs: 4, md: 6 },
-          mt: isMobile ? 8 : 0,
+          py: { xs: 0, md: 6 },
+          mt: isMobile ? 2 : 0,
           bgcolor: "#f5f7fa",
-          minHeight: "100vh",
+          minHeight: `calc(100vh - var(--app-header-h))`,
+          pb: { xs: "var(--app-footer-h)", md: "var(--app-footer-h)" },
         }}
       >
         {isMobile && <Toolbar sx={{ minHeight: 0, p: 0 }} />}

@@ -16,7 +16,6 @@ import * as Yup from 'yup';
 import { IMaskInput } from 'react-imask';
 import api from '@/config/axiosConfig';
 
-// Máscara de telefone usando react-imask
 const PhoneMask = forwardRef<HTMLInputElement, any>(function PhoneMask(props, ref) {
   return (
     <IMaskInput
@@ -108,7 +107,6 @@ const Contact: React.FC = () => {
       alignItems="center"
       minHeight="calc(100vh - 128px)"
       px={{ xs: 2, sm: 3, md: 4 }}
-      mt={{ xs: 7, md: 5 }}
       sx={{
         background: 'linear-gradient(135deg, white 0%, #007bff 100%)',
         width: '100%',
@@ -143,7 +141,7 @@ const Contact: React.FC = () => {
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <Controller
-            name="nome"
+            name="name"
             control={control}
             render={({ field }) => (
               <TextField

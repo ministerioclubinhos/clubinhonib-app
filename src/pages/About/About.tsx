@@ -50,7 +50,7 @@ const About: React.FC = () => {
       alignItems="center"
       minHeight="calc(100vh - 128px)"
       px={{ xs: 2, sm: 3, md: 4 }}
-      mt={{ xs: 7, md: 5 }}
+      mt={{ xs: 0, md: 0 }}
       sx={{
         background: 'linear-gradient(135deg, white 0%, #007bff 100%)',
         fontFamily: "'Roboto', sans-serif",

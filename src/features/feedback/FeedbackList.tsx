@@ -70,10 +70,7 @@ const FeedbackList: React.FC = () => {
   };
 
   return (
-    <Box sx={{
-      px: { xs: 2, sm: 2, md: 4 },
-      py: { xs: 0, md: 4 }, mx: "auto"
-    }}>
+    <Box sx={{ px: { xs: 2, sm: 2, md: 4 }, }}>
       <BackHeader title="Feedbacks Recebidos" />
 
       <TextField
