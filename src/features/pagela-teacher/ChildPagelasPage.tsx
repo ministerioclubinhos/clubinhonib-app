@@ -100,7 +100,7 @@ export default function ChildPagelasPage() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        pt: { xs: 8, md: 10 },
+        pt: { xs: 3, md: 10 },
         pb: 4,
         minHeight: "100vh",
         bgcolor: "#f6f7f9",
