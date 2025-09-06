@@ -1,106 +1,51 @@
-import { Fragment, useState } from 'react';
-import { Card, Typography, Box, Modal, Fade } from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { motion } from 'framer-motion';
-import VideoPlayer from './VideoPlayer';
-import { MediaItem, MediaUploadType, MediaPlatform } from 'store/slices/types';
+import { Fragment, useState, useMemo } from "react";
+import { Card, Typography, Box, Dialog, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { motion } from "framer-motion";
+import VideoPlayer from "./VideoPlayer";
+import { MediaItem, MediaUploadType } from "@/store/slices/types";
+import { getPreferredThumb } from "@/utils/video";
 
-interface Props {
-  video: MediaItem;
-}
+interface Props { video: MediaItem }
 
 const VideoCard = ({ video }: Props) => {
   const [open, setOpen] = useState(false);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  const videoId = video.url?.split('v=')[1]?.split('&')[0];
-  const thumbnailUrl =
-    video.platformType === MediaPlatform.YOUTUBE && videoId
-      ? `https://img.youtube.com/vi/${videoId}/0.jpg`
-      : undefined;
+  const thumb = useMemo(() => getPreferredThumb(video), [video]);
 
   return (
     <Fragment>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card
-          sx={{
-            p: 2,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-            borderRadius: 3,
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            '&:hover': {
-              transform: 'translateY(-5px)',
-              boxShadow: '0 6px 25px rgba(0,0,0,0.15)',
-            },
-            cursor: 'pointer',
-          }}
-          onClick={handleOpen}
-        >
-          <Box sx={{ position: 'relative' }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <Card onClick={() => setOpen(true)} sx={{ p: 2, borderRadius: 3, cursor: 'pointer', boxShadow: (t) => t.shadows[4], transition: 'transform .25s, box-shadow .25s', '&:hover': { transform: 'translateY(-4px)', boxShadow: (t) => t.shadows[8] } }}>
+          <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden' }}>
             {video.uploadType === MediaUploadType.UPLOAD && video.url ? (
-              <video src={video.url} style={{ width: '100%', borderRadius: 3 }} muted />
-            ) : video.uploadType === MediaUploadType.LINK &&
-              video.platformType === MediaPlatform.YOUTUBE &&
-              thumbnailUrl ? (
-              <img
-                src={thumbnailUrl}
-                alt={video.title}
-                style={{ width: '100%', borderRadius: 3 }}
-              />
+              <video src={video.url} muted playsInline style={{ width: '100%', display: 'block' }} />
+            ) : thumb ? (
+              <img src={thumb} alt={video.title} style={{ width: '100%', display: 'block' }} />
             ) : (
-              <Box sx={{ bgcolor: '#e0e0e0', height: 150, borderRadius: 3 }} />
+              <Box sx={{ bgcolor: 'action.hover', height: 180 }} />
             )}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'rgba(0,0,0,0.3)',
-                borderRadius: 3,
-              }}
-            >
+            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(180deg, rgba(0,0,0,.0) 0%, rgba(0,0,0,.35) 100%)' }}>
               <PlayArrowIcon sx={{ fontSize: 48, color: '#fff' }} />
             </Box>
           </Box>
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            {video.title}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {video.description}
-          </Typography>
+          <Typography variant="h6" fontWeight={700} sx={{ mt: 1.5, lineHeight: 1.3 }}>{video.title}</Typography>
+          {video.description && (
+            <Typography variant="body2" color="text.secondary">{video.description}</Typography>
+          )}
         </Card>
       </motion.div>
 
-      <Modal open={open} onClose={handleClose} closeAfterTransition>
-        <Fade in={open}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: { xs: '90%', sm: '70%', md: '50%' },
-              bgcolor: 'background.paper',
-              boxShadow: 24,
-              p: 4,
-              borderRadius: 3,
-            }}
-          >
-            <VideoPlayer video={video} />
-          </Box>
-        </Fade>
-      </Modal>
+      <Dialog fullWidth maxWidth="md" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 3 } }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
+          <IconButton onClick={() => setOpen(false)} aria-label="Fechar">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <Box sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
+          <VideoPlayer video={video} />
+        </Box>
+      </Dialog>
     </Fragment>
   );
 };

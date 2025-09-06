@@ -1,4 +1,3 @@
-// src/features/pagela-teacher/components/PagelaList.tsx
 import * as React from "react";
 import {
   Grid,
@@ -68,11 +67,9 @@ export default function PagelaList({
     filters.medQ !== "any" ||
     filters.verseQ !== "any";
 
-  /* ---------- inputs locais (string) p/ digitação livre ---------- */
   const [yearText, setYearText] = React.useState<string>(filters.year?.toString() ?? "");
   const [weekText, setWeekText] = React.useState<string>(filters.week?.toString() ?? "");
 
-  // sincronia quando filtros mudam externamente (ex.: limpar)
   React.useEffect(() => {
     setYearText(filters.year?.toString() ?? "");
   }, [filters.year]);
@@ -81,7 +78,6 @@ export default function PagelaList({
     setWeekText(filters.week?.toString() ?? "");
   }, [filters.week]);
 
-  /* ---------- aplicadores imediatos (blur/enter) ---------- */
   const applyYearFromText = React.useCallback(() => {
     const raw = yearText.trim();
     if (raw === "") {
@@ -94,7 +90,7 @@ export default function PagelaList({
     if (!Number.isFinite(n)) return;
     const clamped = Math.max(2000, Math.min(9999, n));
     if (clamped !== filters.year) filters.setYear(clamped);
-    setYearText(String(clamped)); // normaliza visualmente
+    setYearText(String(clamped)); 
   }, [yearText, filters.year, filters.setYear]);
 
   const applyWeekFromText = React.useCallback(() => {
@@ -112,7 +108,6 @@ export default function PagelaList({
     setWeekText(String(clamped));
   }, [weekText, filters.week, filters.setWeek]);
 
-  /* ---------- DEBOUNCE (aplica sozinho após parar de digitar) ---------- */
   React.useEffect(() => {
     const t = setTimeout(() => {
       const raw = yearText.trim();
@@ -121,7 +116,6 @@ export default function PagelaList({
         return;
       }
       const digits = raw.replace(/\D+/g, "");
-      // só aplica automático quando tiver 4 dígitos (evita várias requisições)
       if (digits.length !== 4) return;
       const n = Number(digits);
       if (!Number.isFinite(n)) return;
@@ -139,7 +133,7 @@ export default function PagelaList({
         return;
       }
       const digits = raw.replace(/\D+/g, "");
-      if (digits.length < 1) return; // nada a fazer
+      if (digits.length < 1) return; 
       const n = Number(digits);
       if (!Number.isFinite(n)) return;
       const clamped = Math.max(1, Math.min(53, Math.floor(n)));
@@ -148,7 +142,6 @@ export default function PagelaList({
     return () => clearTimeout(t);
   }, [weekText, filters.week, filters.setWeek]);
 
-  /* ---------- handlers de digitação ---------- */
   const handleYearChange = (v: string) => {
     const digits = v.replace(/\D+/g, "").slice(0, 4);
     setYearText(digits);
@@ -166,7 +159,6 @@ export default function PagelaList({
 
   return (
     <Stack spacing={1.75}>
-      {/* Barra de filtros — SEMPRE visível */}
       <Box
         sx={{
           display: "grid",
@@ -178,7 +170,6 @@ export default function PagelaList({
           pb: 0.5,
         }}
       >
-        {/* Ano (texto com debounce) */}
         <TextField
           label="Ano"
           margin="dense"

@@ -39,7 +39,6 @@ export function useIdeasSearch(pages: IdeasPageData[]) {
     return pages.filter(p => p.title.toLowerCase().includes(term));
   }, [pages, searchTerm]);
 
-  // debounce visual
   useEffect(() => {
     setIsFiltering(true);
     const t = setTimeout(() => setIsFiltering(false), 250);

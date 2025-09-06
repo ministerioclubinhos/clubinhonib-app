@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Box,
-  Typography,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { Box } from "@mui/material";
 import { useMediaQuery, useTheme } from "@mui/material";
 
 import { CommentData } from "store/slices/comment/commentsSlice";
@@ -17,8 +10,9 @@ import EditCommentDialog, { EditState } from "./components/EditCommentDialog";
 import CommentDetailsModal from "./components/CommentDetailsModal";
 import ConfirmDialog from "@/components/common/modal/ConfirmDialog";
 import BackHeader from "@/components/common/header/BackHeader";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
-export default function CommentsPage() {
+export default function CommentsManager() {
   const { comments, loading, error, setError, fetchComments } = useCommentsData();
   const { filtered, search, onSearchChange, status, setStatus, isFiltering } = useCommentsFilter(comments);
   const { actionLoading, actionError, setActionError, publish, remove, update } = useCommentActions(fetchComments);
@@ -32,8 +26,6 @@ export default function CommentsPage() {
   const [editErrors, setEditErrors] = React.useState({ comment: false, clubinho: false, neighborhood: false });
 
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
 
   const openEdit = (c: CommentData) => {
     setToEdit(c);
@@ -81,21 +73,17 @@ export default function CommentsPage() {
         onAskDelete={(c) => setToDelete(c)}
       />
 
-      {/* Confirm Delete */}
-      <ConfirmDialog
+      <DeleteConfirmDialog
         open={!!toDelete}
-        title="Confirmar Exclusão"
-        content={<>Tem certeza que deseja excluir o comentário de <strong>{toDelete?.name || "Sem Nome"}</strong>?</>}
-        confirmText="Excluir"
-        confirmColor="error"
+        title={toDelete?.name || "Sem Nome"}
         onClose={() => setToDelete(null)}
         onConfirm={async () => {
           if (!toDelete) return;
-          await remove(toDelete); // sua action que retorna Promise
+          await remove(toDelete);
+          setToDelete(null);
         }}
       />
-
-      {/* Confirm Publish */}
+      
       <ConfirmDialog
         open={!!toPublish}
         title="Confirmar Publicação"
@@ -111,7 +99,6 @@ export default function CommentsPage() {
         }}
       />
 
-      {/* Edit */}
       <EditCommentDialog
         open={!!toEdit}
         value={editValue}
@@ -123,7 +110,6 @@ export default function CommentsPage() {
         onSave={onSaveEdit}
       />
 
-      {/* Details */}
       <CommentDetailsModal
         comment={selected}
         open={!!selected}

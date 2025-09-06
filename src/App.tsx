@@ -39,27 +39,26 @@ import WeekMaterialsList from 'pages/TeacherArea/WeekMaterialsList';
 import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
 import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
 
-// -- Área ADM (features)
 import CoordinatorProfilesManager from './features/coordinators/CoordinatorProfilesManager';
 import TeacherProfilesManager from './features/teachers/TeacherProfilesManager';
 import ClubsManager from './features/clubs/ClubsManager';
-import CommentsPage from './features/comments/CommentsPage';
-import DocumentList from './features/documents/DocumentList';
-import ContactList from './features/contacts/ContactList';
-import ImagePageListPage from './features/image-pages/ImagePageListPage';
-import IdeasPageListPage from './features/ideas-pages/IdeasPageListPage';
-import MeditationListPage from './features/meditations/MeditationListPage';
-import InformativeBannerListPage from './features/informatives/InformativeBannerListPage';
-import WeekMaterialListPage from './features/week-materials/WeekMaterialListPage';
-import FeedbackList from './features/feedback/FeedbackList';
-import ImageSectionListPage from './features/image-sections/pages/ImageSectionListPage';
-import VideoPageListPage from './features/video-pages/VideoPageListPage';
-import UsersListPage from './features/users/UsersListPage';
+import ContactsManager from './features/contacts/ContactsManager';
+import MeditationManager from './features/meditations/MeditationManager';
 import ChildrenManager from './features/children/ChildrenManager';
 import ChildrenBrowserPage from './features/pagela-teacher/ChildrenBrowserPage';
 import ChildPagelasPage from './features/pagela-teacher/ChildPagelasPage';
 import Register from './pages/Register/Register';
-import PagelaClubsRoot from './features/pagela-clubs';
+import PagelaClubsManager from './features/pagela-clubs/PagelaClubsManager';
+import CommentsManager from './features/comments/CommentsManager';
+import FeedbackManager from './features/feedback/FeedbackManager';
+import UsersManager from './features/users/UsersManager';
+import InformativeBannerLManager from './features/informatives/InformativeBannerLManager';
+import ImageSectionManager from './features/image-sections/ImageSectionManager';
+import ImagePageManager from './features/image-pages/ImagePageManager';
+import DocumentsManager from './features/documents/DocumentsManager';
+import IdeasManager from './features/ideas-pages/IdeasManager';
+import VideosManager from './features/video-pages/VideosManager';
+import WeekMaterialManager from './features/week-materials/WeekMaterialManager';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
@@ -92,16 +91,11 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Wrapper flex vertical ocupando a tela toda */}
       <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        {/* Header fixo */}
         <Navbar />
 
-        {/* Main: cresce para empurrar o footer (sticky). 
-            A <Toolbar /> logo abaixo compensa a altura do AppBar fixo automaticamente. */}
         <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Toolbar />
-          {/* seu container de páginas */}
           <Box className="mainContainer" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -126,24 +120,24 @@ function App() {
               <Route element={<ProtectedRoute requiredRole={[RoleUser.ADMIN, RoleUser.COORDINATOR]} />}>
                 <Route path="/adm" element={<AdminLayout />}>
                   <Route index element={<AdminDashboardPage />} />
-                  <Route path="meditacoes" element={<MeditationListPage />} />
-                  <Route path="comentarios" element={<CommentsPage />} />
-                  <Route path="documentos" element={<DocumentList />} />
-                  <Route path="informativos" element={<InformativeBannerListPage />} />
-                  <Route path="feedbacks" element={<FeedbackList />} />
-                  <Route path="contatos" element={<ContactList />} />
-                  <Route path="paginas-materiais-semanais" element={<WeekMaterialListPage />} />
-                  <Route path="paginas-fotos" element={<ImagePageListPage />} />
-                  <Route path="fotos-clubinhos" element={<ImageSectionListPage />} />
-                  <Route path="paginas-videos" element={<VideoPageListPage />} />
-                  <Route path="paginas-ideias" element={<IdeasPageListPage />} />
+                  <Route path="meditacoes" element={<MeditationManager />} />
+                  <Route path="comentarios" element={<CommentsManager />} />
+                  <Route path="documentos" element={<DocumentsManager />} />
+                  <Route path="informativos" element={<InformativeBannerLManager />} />
+                  <Route path="feedbacks" element={<FeedbackManager />} />
+                  <Route path="contatos" element={<ContactsManager />} />
+                  <Route path="paginas-materiais-semanais" element={<WeekMaterialManager />} />
+                  <Route path="paginas-fotos" element={<ImagePageManager />} />
+                  <Route path="fotos-clubinhos" element={<ImageSectionManager />} />
+                  <Route path="paginas-videos" element={<VideosManager />} />
+                  <Route path="paginas-ideias" element={<IdeasManager />} />
                   <Route path="criar-pagina" element={<SelecPageTemplate />} />
-                  <Route path="usuarios" element={<UsersListPage />} />
+                  <Route path="usuarios" element={<UsersManager />} />
                   <Route path="coordenadores" element={<CoordinatorProfilesManager />} />
                   <Route path="professores" element={<TeacherProfilesManager />} />
                   <Route path="criancas" element={<ChildrenManager />} />
                   <Route path="clubinhos" element={<ClubsManager />} />
-                  <Route path="pagelas" element={<PagelaClubsRoot />} />
+                  <Route path="pagelas" element={<PagelaClubsManager />} />
 
                   <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
                   <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
@@ -164,8 +158,6 @@ function App() {
             </Routes>
           </Box>
         </Box>
-
-        {/* Footer sticky (só gruda se o conteúdo não preencher a tela) */}
         <Footer />
       </Box>
     </BrowserRouter>

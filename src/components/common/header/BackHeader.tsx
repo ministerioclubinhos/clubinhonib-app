@@ -13,9 +13,15 @@ import { useNavigate } from "react-router-dom";
 
 type BackHeaderProps = {
   title: string;
+  mobileFontSize?: string | number; // 👈 nova prop opcional
+  desktopFontSize?: string | number; // 👈 extra se quiser também controlar desktop
 };
 
-const BackHeader: React.FC<BackHeaderProps> = ({ title }) => {
+const BackHeader: React.FC<BackHeaderProps> = ({
+  title,
+  mobileFontSize,
+  desktopFontSize,
+}) => {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -47,7 +53,11 @@ const BackHeader: React.FC<BackHeaderProps> = ({ title }) => {
       <Typography
         variant="h6"
         fontWeight={700}
-        sx={{ color: "#1a3c34", flex: 1 }}
+        sx={{
+          color: "#1a3c34",
+          flex: 1,
+          fontSize: mobileFontSize ?? undefined, // 👈 usa o valor passado ou mantém padrão do `h6`
+        }}
       >
         {title}
       </Typography>
@@ -57,7 +67,11 @@ const BackHeader: React.FC<BackHeaderProps> = ({ title }) => {
       variant="h4"
       fontWeight={700}
       textAlign="center"
-      sx={{ mb: 3, color: "#1a3c34" }}
+      sx={{
+        mb: 3,
+        color: "#1a3c34",
+        fontSize: desktopFontSize ?? undefined, // 👈 usa se vier
+      }}
     >
       {title}
     </Typography>

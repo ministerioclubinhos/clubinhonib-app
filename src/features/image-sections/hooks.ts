@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { SectionData } from '@/store/slices/image-section/imageSectionSlice';
 import { listImageSections } from './api';
 
@@ -25,7 +25,6 @@ export function useImageSections() {
     }
   }, []);
 
-  // filtro com debounce
   useEffect(() => {
     setIsFiltering(true);
     const t = setTimeout(() => {

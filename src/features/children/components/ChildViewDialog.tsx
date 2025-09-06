@@ -1,4 +1,3 @@
-// src/modules/children/components/ChildViewDialog.tsx
 import React from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Paper, Typography, Box, Chip, Skeleton } from "@mui/material";
 import { ChildResponseDto } from "../types";

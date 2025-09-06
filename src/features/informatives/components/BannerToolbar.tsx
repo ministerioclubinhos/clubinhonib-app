@@ -2,9 +2,7 @@ import React from 'react';
 import { Box, Button, Tooltip, Fab, useMediaQuery, useTheme } from '@mui/material';
 import { Add } from '@mui/icons-material';
 
-type Props = {
-  onCreate: () => void;
-};
+type Props = { onCreate: () => void };
 
 export default function BannerToolbar({ onCreate }: Props) {
   const theme = useTheme();
@@ -17,12 +15,7 @@ export default function BannerToolbar({ onCreate }: Props) {
           color="primary"
           aria-label="Criar Banner"
           onClick={onCreate}
-          sx={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            zIndex: 1100,
-          }}
+          sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1100 }}
         >
           <Add />
         </Fab>
@@ -31,16 +24,13 @@ export default function BannerToolbar({ onCreate }: Props) {
   }
 
   return (
-    <Box display="flex" justifyContent="flex-end" mb={2}>
+    <Box display="flex" justifyContent="flex-end">
       <Tooltip title="Criar Banner">
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={onCreate}
-          sx={{
-            fontSize: '1rem',
-            py: 1,
-          }}
+          sx={{ fontSize: '0.95rem', py: 1.1, px: 2.2, borderRadius: 2 }}
         >
           Criar Banner
         </Button>

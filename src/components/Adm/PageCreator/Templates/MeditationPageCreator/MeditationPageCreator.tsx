@@ -173,11 +173,11 @@ export default function MeditationPageCreator({ fromTemplatePage }: Props) {
 
       fromTemplatePage
         ? await api.post('/meditations', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          })
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
         : await api.patch(`/meditations/${meditationData?.id}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
 
       await dispatch(fetchRoutes());
       setSnackbar({ open: true, message: 'Meditação salva com sucesso!', severity: 'success' });
@@ -194,17 +194,8 @@ export default function MeditationPageCreator({ fromTemplatePage }: Props) {
   };
 
   return (
-    <Box
-      sx={{
-        maxWidth: '95%',
-        mt: { xs: 0, md: 4 },
-        mb: { xs: 0, md: 0 },
-        pt: { xs: 2, md: 0 },
-        pb: { xs: 0, md: 2 },
-        px: 0,
-      }}
-    >
-      <Typography variant="h4" mb={3} fontWeight="bold" textAlign="center">
+    <Box    >
+      <Typography variant="h4" mb={3} fontWeight="bold" textAlign="center" sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }}>
         {fromTemplatePage ? 'Criar Meditação da Semana' : 'Editar Meditação'}
       </Typography>
 

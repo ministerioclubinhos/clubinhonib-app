@@ -1,6 +1,17 @@
 import React from 'react';
-import { Box, Button, Card, CardContent, IconButton, Typography } from '@mui/material';
-import { Delete, Visibility } from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardActions,
+  IconButton,
+  Typography,
+  Tooltip,
+  useMediaQuery,
+} from '@mui/material';
+import { Delete, Visibility, Image as ImageIcon, Edit as EditIcon } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import { ImagePageData } from 'store/slices/image/imageSlice';
 import { truncate } from '../utils';
 
@@ -12,37 +23,79 @@ type Props = {
 };
 
 export default function ImagePageCard({ page, onDelete, onEdit, onViewDetails }: Props) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const preview = page.sections?.[0]?.mediaItems?.[0]?.url;
+
   return (
     <Card
+      variant="outlined"
       sx={{
-        flex: 1,
-        borderRadius: 3,
-        boxShadow: 3,
-        p: 2,
-        bgcolor: '#fff',
-        border: '1px solid #e0e0e0',
-        position: 'relative',
+        borderRadius: 2,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
+        width: '100%',
+        transition: 'transform .2s, box-shadow .2s',
+        '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 },
       }}
     >
-      <IconButton
-        size="small"
-        onClick={() => onDelete(page)}
-        sx={{ position: 'absolute', top: 8, right: 8, color: '#d32f2f' }}
-        title="Excluir Página"
+      {/* Thumb 16:9 */}
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '16 / 9',
+          bgcolor: 'grey.100',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          borderTopLeftRadius: 8,
+          borderTopRightRadius: 8,
+        }}
       >
-        <Delete fontSize="small" />
-      </IconButton>
+        {preview ? (
+          <img
+            src={preview}
+            alt={page.title || 'Miniatura'}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <ImageIcon fontSize="large" color="disabled" />
+        )}
 
-      <CardContent>
+        <Tooltip title="Excluir página">
+          <IconButton
+            size="small"
+            onClick={() => onDelete(page)}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              bgcolor: 'rgba(255,255,255,0.9)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,1)' },
+              color: '#d32f2f',
+            }}
+            aria-label="Excluir página"
+          >
+            <Delete fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      <CardContent sx={{ flexGrow: 1, pb: 1.5 }}>
         <Typography
-          variant="h6"
-          fontWeight="bold"
-          textAlign="center"
+          variant="subtitle1"
+          fontWeight={700}
+          sx={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textAlign: 'center',
+          }}
+          title={page.title || 'Sem Título'}
           gutterBottom
-          sx={{ fontSize: { xs: '1rem', md: '1.4rem' } }}
         >
           {page.title || 'Sem Título'}
         </Typography>
@@ -50,8 +103,14 @@ export default function ImagePageCard({ page, onDelete, onEdit, onViewDetails }:
         <Typography
           variant="body2"
           color="text.secondary"
-          textAlign="center"
-          sx={{ fontSize: { xs: '.85rem', md: '1rem' }, mb: 1 }}
+          sx={{
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textAlign: 'center',
+          }}
+          title={page.description}
         >
           {truncate(page.description)}
         </Typography>
@@ -61,26 +120,42 @@ export default function ImagePageCard({ page, onDelete, onEdit, onViewDetails }:
           color={page.public ? 'success.main' : 'text.secondary'}
           textAlign="center"
           display="block"
-          mb={2}
+          mt={1}
         >
           {page.public ? 'Pública' : 'Privada'}
         </Typography>
-
-        <Box textAlign="center">
-          <Button
-            variant="contained"
-            startIcon={<Visibility />}
-            onClick={() => onViewDetails(page)}
-            sx={{ mb: 1 }}
-            fullWidth
-          >
-            Ver Detalhes
-          </Button>
-          <Button variant="outlined" onClick={() => onEdit(page)} fullWidth>
-            Editar
-          </Button>
-        </Box>
       </CardContent>
+
+      <CardActions
+        sx={{
+          p: 2,
+          pt: 0,
+          gap: 1,
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'center',
+        }}
+      >
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<Visibility />}
+          onClick={() => onViewDetails(page)}
+          sx={{ flex: 1, minWidth: 120 }}
+          fullWidth={isMobile}
+        >
+          Ver detalhes
+        </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<EditIcon />}
+          onClick={() => onEdit(page)}
+          sx={{ flex: 1, minWidth: 120 }}
+          fullWidth={isMobile}
+        >
+          Editar
+        </Button>
+      </CardActions>
     </Card>
   );
 }

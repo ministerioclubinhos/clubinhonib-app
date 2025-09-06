@@ -1,6 +1,26 @@
 import { Fragment, useState } from 'react';
-import { Box, Button, Card, CardContent, IconButton, Paper, Stack, Typography } from '@mui/material';
-import { Delete, PictureAsPdf, Visibility } from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardActions,
+  IconButton,
+  Paper,
+  Stack,
+  Typography,
+  Tooltip,
+  useMediaQuery,
+  Collapse,
+} from '@mui/material';
+import {
+  Delete,
+  PictureAsPdf,
+  Visibility,
+  Edit as EditIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+} from '@mui/icons-material';
 import {
   MeditationData, DayItem, WeekDay, WeekDayLabel, setMeditationData,
 } from '@/store/slices/meditation/meditationSlice';
@@ -9,18 +29,31 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/slices';
 import { getMediaPreviewUrl } from 'utils/getMediaPreviewUrl';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
+import { useTheme } from '@mui/material/styles';
 
 interface Props {
   meditation: MeditationData;
   onDelete: (meditation: MeditationData) => void;
   onDayClick: (day: DayItem) => void;
-  formatDate: (iso: string) => string; // injetado do hook utils
+  formatDate: (iso: string) => string;
+  isExpandedMobile: boolean;
+  onToggleExpandMobile: () => void;
 }
 
-export default function MeditationCard({ meditation, onDelete, onDayClick, formatDate }: Props) {
+export default function MeditationCard({
+  meditation,
+  onDelete,
+  onDayClick,
+  formatDate,
+  isExpandedMobile,
+  onToggleExpandMobile,
+}: Props) {
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const previewUrl = getMediaPreviewUrl(meditation.media);
 
@@ -29,80 +62,151 @@ export default function MeditationCard({ meditation, onDelete, onDayClick, forma
     navigate('/adm/editar-meditacao');
   };
 
+  const showExpanded = !isMobile || isExpandedMobile;
+
   return (
     <Fragment>
       <Card
+        variant="outlined"
         sx={{
-          flex: 1,
-          borderRadius: 3,
-          boxShadow: 3,
-          p: 2,
-          bgcolor: '#fff',
-          border: '1px solid #e0e0e0',
+          borderRadius: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          transition: 'transform .2s, box-shadow .2s',
+          '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 },
           position: 'relative',
         }}
       >
-        <IconButton
-          size="small"
-          onClick={() => onDelete(meditation)}
-          sx={{ position: 'absolute', top: 8, right: 8, color: '#d32f2f' }}
-          title="Excluir Meditação"
-        >
-          <Delete fontSize="small" />
-        </IconButton>
+        <Tooltip title="Excluir meditação">
+          <IconButton
+            size="small"
+            onClick={() => onDelete(meditation)}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              bgcolor: 'rgba(255,255,255,0.9)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,1)' },
+              color: '#d32f2f',
+              zIndex: 2,
+            }}
+            aria-label="Excluir meditação"
+          >
+            <Delete fontSize="small" />
+          </IconButton>
+        </Tooltip>
 
-        <CardContent>
+        <CardContent sx={{ flexGrow: 1, pb: 1.5 }}>
           <Typography
-            variant="h6"
-            fontWeight="bold"
-            textAlign="center"
+            variant="subtitle1"
+            fontWeight={700}
+            sx={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textAlign: 'center',
+              mt: 0.5,
+            }}
+            title={meditation.topic}
             gutterBottom
-            sx={{ mt: { xs: 0, md: 2 }, mb: { xs: 1, md: 2 }, fontSize: { xs: '1rem', md: '1.5rem' } }}
           >
             {meditation.topic}
           </Typography>
 
-          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ fontSize: { xs: '.8rem', md: '1rem' } }}>
-            {formatDate(meditation.startDate)} - {formatDate(meditation.endDate)}
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            {formatDate(meditation.startDate)} — {formatDate(meditation.endDate)}
           </Typography>
 
-          <Typography fontWeight="bold" mt={2} mb={1}>Dias:</Typography>
-          <Stack spacing={1}>
-            {meditation.days.map((day) => (
-              <Paper
-                key={day.id}
-                elevation={0}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  p: 1.2,
-                  px: 2,
-                  border: '1px solid #dcdcdc',
-                  borderRadius: 2,
-                  bgcolor: '#fafafa',
-                }}
+          {/* Header "Dias (N)" com toggle (mobile-only) */}
+          <Stack direction="row" alignItems="center" justifyContent="space-between" mt={2} mb={1}>
+            <Typography fontWeight="bold">
+              Dias ({meditation.days.length})
+            </Typography>
+
+            {isMobile && (
+              <IconButton
+                size="small"
+                onClick={onToggleExpandMobile}
+                aria-label={showExpanded ? 'Recolher dias' : 'Expandir dias'}
+                aria-expanded={showExpanded}
               >
-                <Typography fontWeight="medium">{WeekDayLabel[day.day as WeekDay]}</Typography>
-                <IconButton size="small" onClick={() => onDayClick(day)} sx={{ color: '#616161' }}>
-                  <Visibility fontSize="small" />
-                </IconButton>
-              </Paper>
-            ))}
+                {showExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </IconButton>
+            )}
           </Stack>
 
-          {meditation.media?.url && (
-            <Box textAlign="center" mt={2}>
-              <Button startIcon={<PictureAsPdf />} variant="text" size="small" onClick={() => setOpen(true)}>
-                Ver Material
-              </Button>
-            </Box>
-          )}
+          <Collapse in={showExpanded} timeout="auto" unmountOnExit>
+            <Stack spacing={1}>
+              {meditation.days.map((day) => (
+                <Paper
+                  key={day.id}
+                  elevation={0}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    p: 1.2,
+                    px: 2,
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 2,
+                    bgcolor: '#fafafa',
+                  }}
+                >
+                  <Typography fontWeight="medium">
+                    {WeekDayLabel[day.day as WeekDay]}
+                  </Typography>
+                  <Tooltip title="Ver detalhes do dia">
+                    <IconButton
+                      size="small"
+                      onClick={() => onDayClick(day)}
+                      sx={{ color: 'text.secondary' }}
+                    >
+                      <Visibility fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Paper>
+              ))}
+            </Stack>
 
-          <Box textAlign="center" mt={3}>
-            <Button variant="outlined" onClick={handleEdit} fullWidth>Editar</Button>
-          </Box>
+            {/* Material (PDF) */}
+            {meditation.media?.url && (
+              <Box textAlign="center" mt={2}>
+                <Button
+                  startIcon={<PictureAsPdf />}
+                  variant="text"
+                  size="small"
+                  onClick={() => setOpen(true)}
+                >
+                  Ver Material
+                </Button>
+              </Box>
+            )}
+          </Collapse>
         </CardContent>
+
+        <Collapse in={showExpanded} timeout="auto" unmountOnExit>
+          <CardActions
+            sx={{
+              p: 2,
+              pt: 0,
+              gap: 1,
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'stretch' : 'center',
+            }}
+          >
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={handleEdit}
+              sx={{ flex: 1, minWidth: 120 }}
+              fullWidth={isMobile}
+            >
+              Editar
+            </Button>
+          </CardActions>
+        </Collapse>
       </Card>
 
       <MediaDocumentPreviewModal

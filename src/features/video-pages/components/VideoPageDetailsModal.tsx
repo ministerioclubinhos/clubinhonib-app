@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Stack,
-  Button, IconButton, Divider, Paper, Grid
+  Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions,
+  Stack, Button, IconButton, Divider, Paper, Grid
 } from '@mui/material';
 import { ContentCopy, Close } from '@mui/icons-material';
 import { Fragment } from 'react/jsx-runtime';
@@ -34,9 +34,7 @@ export default function VideoPageDetailsModal({ page, open, onClose }: VideoPage
       }}
     >
       <Box sx={{ position: 'relative' }}>
-        <DialogTitle
-          sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', color: '#333', p: 2 }}
-        >
+        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', color: '#333', p: 2 }}>
           Detalhes da Página de Vídeos
         </DialogTitle>
         <IconButton
@@ -135,7 +133,7 @@ export default function VideoPageDetailsModal({ page, open, onClose }: VideoPage
                                 onClick={() => handleCopyUrl(video.url!)}
                                 title="Copiar URL"
                                 aria-label="Copiar URL"
-                                sx={{ color: '#1976d2' }}
+                                sx={{ color: 'primary.main' }}
                               >
                                 <ContentCopy fontSize="small" />
                               </IconButton>

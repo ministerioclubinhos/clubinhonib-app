@@ -61,6 +61,6 @@ export function useInformativeBanners() {
     error,
     setError,
     fetchBanners,
-    setBanners,  // expõe caso queira otimizar localmente após criar/editar
+    setBanners,
   };
 }

@@ -1,4 +1,3 @@
-// src/modules/children/api.ts
 import api from "@/config/axiosConfig";
 import { ChildResponseDto, Paginated, CreateChildForm, EditChildForm, ChildFilters, ChildSort, ChildSimpleResponseDto } from "./types";
 

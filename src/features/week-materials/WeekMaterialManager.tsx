@@ -21,12 +21,12 @@ import { fetchRoutes } from '@/store/slices/route/routeSlice';
 
 import { useWeekMaterials } from './hooks';
 import WeekMaterialDetailsModal from './components/WeekMaterialDetailsModal';
-import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import SetCurrentWeekConfirmDialog from './components/SetCurrentWeekConfirmDialog';
 import WeekMaterialCard from './components/WeekMaterialCard';
 import BackHeader from '@/components/common/header/BackHeader';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
-export default function WeekMaterialListPage() {
+export default function WeekMaterialManager() {
   const { filtered, search, setSearch, loading, isFiltering, error, setError, fetchAll, remove, markAsCurrent } =
     useWeekMaterials();
 
@@ -64,7 +64,6 @@ export default function WeekMaterialListPage() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        pt: { xs: 0, md: 4 },
         bgcolor: '#f5f7fa',
         minHeight: '100vh',
       }}

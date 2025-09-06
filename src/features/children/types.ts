@@ -1,4 +1,3 @@
-// src/modules/children/types.ts
 export type ChildListItemDto = {
   id: string;
   name: string;
@@ -10,11 +9,11 @@ export type ChildListItemDto = {
 export type ChildResponseDto = {
   id: string;
   name: string;
-  gender: "M" | "F";            // ← novo
+  gender: "M" | "F";
   guardianName: string;
   guardianPhone: string;
-  birthDate: string;            // 'YYYY-MM-DD'
-  joinedAt: string | null;      // 'YYYY-MM-DD' | null
+  birthDate: string;
+  joinedAt: string | null;
   club: { id: string; number: number; weekday?: string } | null;
   address: {
     id: string;
@@ -72,11 +71,11 @@ export type ChildSort =
 
 export type CreateChildForm = {
   name: string;
-  gender: "M" | "F";           // ← novo
+  gender: "M" | "F";
   guardianName: string;
   guardianPhone: string;
-  birthDate: string;           // YYYY-MM-DD
-  joinedAt?: string | null;    // YYYY-MM-DD | null
+  birthDate: string;
+  joinedAt?: string | null;
   clubId?: string | null;
   address?: {
     street: string;

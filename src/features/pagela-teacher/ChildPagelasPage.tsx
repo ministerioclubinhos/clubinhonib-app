@@ -100,8 +100,8 @@ export default function ChildPagelasPage() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        pt: { xs: 3, md: 10 },
-        pb: 4,
+        pt: { xs: 3, md: 5 },
+        pb: 6,
         minHeight: "100vh",
         bgcolor: "#f6f7f9",
       }}
@@ -201,7 +201,31 @@ export default function ChildPagelasPage() {
             </Stack>
           </Box>
         ) : (
-          <Grid container spacing={{ xs: 1.5, md: 2 }} alignItems="center" sx={{ position: "relative", zIndex: 1 }}>
+          <Grid
+            container
+            spacing={{ xs: 1.5, md: 2 }}
+            alignItems="center"
+            sx={{ position: "relative", zIndex: 1 }}
+          >
+            <Grid item>
+              <IconButton
+                size="small"
+                onClick={() => nav(-1)}
+                aria-label="Voltar"
+                sx={{
+                  width: 40,
+                  height: 40,
+                  bgcolor: "background.paper",
+                  boxShadow: 2,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  "&:hover": { bgcolor: "background.paper" },
+                }}
+              >
+                <ArrowBack />
+              </IconButton>
+            </Grid>
+
             <Grid item xs>
               <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
                 <Avatar
@@ -212,6 +236,7 @@ export default function ChildPagelasPage() {
                     borderColor: "background.paper",
                     bgcolor: colors.solid,
                     fontWeight: 900,
+                    flexShrink: 0,
                   }}
                 >
                   {initials || "?"}
@@ -220,7 +245,6 @@ export default function ChildPagelasPage() {
                 <Box sx={{ minWidth: 0 }}>
                   <Typography
                     variant="h6"
-                    fontWeight={900}
                     sx={{
                       color: "#143a2b",
                       lineHeight: 1.1,
@@ -228,9 +252,13 @@ export default function ChildPagelasPage() {
                       WebkitLineClamp: 1,
                       WebkitBoxOrient: "vertical",
                       overflow: "hidden",
+                      fontWeight: 700,
                     }}
                   >
-                    Pagela do(a) {child?.name || "Criança"}
+                    Pagela {((child as any)?.gender === "F" ? "da" : "do")}{" "}
+                    <Box component="span" sx={{ fontWeight: 900 }}>
+                      {child?.name || "Criança"}
+                    </Box>
                   </Typography>
 
                   <Stack
@@ -241,18 +269,30 @@ export default function ChildPagelasPage() {
                   >
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       <FamilyRestroom fontSize="small" />
-                      <Typography variant="body2" noWrap>{child?.guardianName || "—"}</Typography>
+                      <Typography variant="body2" noWrap>
+                        {child?.guardianName || "—"}
+                      </Typography>
                     </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       <Phone fontSize="small" />
-                      <Typography variant="body2" noWrap>{child?.guardianPhone || "—"}</Typography>
+                      <Typography variant="body2" noWrap>
+                        {child?.guardianPhone || "—"}
+                      </Typography>
                     </Stack>
-                    {child?.clubId && <Chip size="small" color="success" label="Clubinho" sx={{ fontWeight: 700 }} />}
+                    {child?.clubId && (
+                      <Chip
+                        size="small"
+                        color="success"
+                        label="Clubinho"
+                        sx={{ fontWeight: 700 }}
+                      />
+                    )}
                   </Stack>
                 </Box>
               </Stack>
             </Grid>
           </Grid>
+
         )}
       </Paper>
 
@@ -280,6 +320,8 @@ export default function ChildPagelasPage() {
               <PagelaQuickForm
                 initial={formInitial}
                 childId={childId}
+                childName={child?.name || ""}
+                childGender={child?.gender || ""}
                 defaultYear={0}
                 defaultWeek={0}
                 teacherProfileId={TEACHER_PROFILE_ID}
@@ -359,6 +401,8 @@ export default function ChildPagelasPage() {
             <PagelaQuickForm
               initial={formInitial}
               childId={childId}
+              childName={child?.name || ""}
+              childGender={child?.gender || ""}
               defaultYear={0}
               defaultWeek={0}
               teacherProfileId={TEACHER_PROFILE_ID}

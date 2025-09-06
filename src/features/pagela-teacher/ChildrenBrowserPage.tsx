@@ -1,4 +1,3 @@
-// src/features/pagela-teacher/ChildrenBrowserPage.tsx
 import * as React from "react";
 import {
   Box, Alert, Grid, Paper, TextField, InputAdornment,
@@ -119,7 +118,7 @@ export default function ChildrenBrowserPage() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        pt: { xs: 2, md: 10 },
+        pt: { xs: 2, md: 4 },
         pb: { xs: 6, md: 10 },
         minHeight: "100vh",
         bgcolor: "#f6f7f9"

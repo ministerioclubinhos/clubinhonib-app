@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Box,
-  Typography,
   Grid,
   Snackbar,
   Alert,
@@ -9,35 +8,22 @@ import {
   TextField,
   useTheme,
   useMediaQuery,
-  IconButton,
-  Tooltip,
 } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
 import FeedbackCard from "./components/FeedbackCard";
 import FeedbackDetailsModal from "./components/FeedbackDetailsModal";
-import FeedbackDeleteConfirmModal from "./components/FeedbackDeleteConfirmModal";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 import { useFeedbackList, useFeedbackMutations, useFeedbackSearch } from "./hooks";
 import { FeedbackData } from "@/store/slices/feedback/feedbackSlice";
 import BackHeader from "@/components/common/header/BackHeader";
 
-const FeedbackList: React.FC = () => {
+const FeedbackManager: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
-
-  // dados e busca
   const { items, loading, error, setError, refresh } = useFeedbackList();
   const { search, setSearch, filtered } = useFeedbackSearch(items);
-
-  // mutações (delete / markRead)
   const { mLoading, mError, setMError, deleteOne, markAsRead } = useFeedbackMutations(refresh);
-
-  // seleção / confirmação
   const [selected, setSelected] = React.useState<FeedbackData | null>(null);
   const [toDelete, setToDelete] = React.useState<FeedbackData | null>(null);
-
-  // snackbar
   const [snackbar, setSnackbar] = React.useState({
     open: false,
     message: "",
@@ -50,7 +36,7 @@ const FeedbackList: React.FC = () => {
   const handleDelete = async () => {
     if (!toDelete) return;
     try {
-      await deleteOne(toDelete.id || '');
+      await deleteOne(toDelete.id || "");
       showSnackbar("Feedback excluído com sucesso", "success");
     } catch {
       showSnackbar("Erro ao excluir feedback", "error");
@@ -62,7 +48,7 @@ const FeedbackList: React.FC = () => {
   const handleMarkAsRead = async () => {
     if (!selected) return;
     try {
-      await markAsRead(selected.id || '');
+      await markAsRead(selected.id || "");
       showSnackbar("Feedback marcado como lido", "success");
     } catch {
       showSnackbar("Erro ao marcar como lido", "error");
@@ -70,7 +56,7 @@ const FeedbackList: React.FC = () => {
   };
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 2, md: 4 }, }}>
+    <Box sx={{ px: { xs: 2, sm: 2, md: 4 } }}>
       <BackHeader title="Feedbacks Recebidos" />
 
       <TextField
@@ -83,7 +69,9 @@ const FeedbackList: React.FC = () => {
       />
 
       {(loading || mLoading) && !items.length ? (
-        <Box display="flex" justifyContent="center" mt={6}><CircularProgress /></Box>
+        <Box display="flex" justifyContent="center" mt={6}>
+          <CircularProgress />
+        </Box>
       ) : (
         <Grid container spacing={3}>
           {filtered.map((feedback) => (
@@ -98,7 +86,6 @@ const FeedbackList: React.FC = () => {
         </Grid>
       )}
 
-      {/* Modais */}
       <FeedbackDetailsModal
         feedback={selected}
         onClose={() => setSelected(null)}
@@ -109,13 +96,13 @@ const FeedbackList: React.FC = () => {
         }}
       />
 
-      <FeedbackDeleteConfirmModal
-        feedback={toDelete}
+      <DeleteConfirmDialog
+        open={!!toDelete}
+        title={toDelete?.name || ""}
         onClose={() => setToDelete(null)}
         onConfirm={handleDelete}
       />
 
-      {/* Erros globais */}
       {(error || mError) && (
         <Box mt={2}>
           <Alert
@@ -144,4 +131,4 @@ const FeedbackList: React.FC = () => {
   );
 };
 
-export default FeedbackList;
+export default FeedbackManager;

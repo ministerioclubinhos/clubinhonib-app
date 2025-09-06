@@ -1,27 +1,28 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Box, Typography, Button, Paper, Grid, Stack, Snackbar, Alert,
-  Dialog, DialogTitle, DialogContent, IconButton, TextField, CircularProgress,
-  Tooltip, useMediaQuery, useTheme, Fab
+  Box, Button, Paper, Grid, Stack, Snackbar, Alert,
+  Dialog, DialogTitle, DialogContent, IconButton, TextField,
+  CircularProgress, Tooltip, useMediaQuery, useTheme, Fab
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useDispatch } from 'react-redux';
 import { clearDocumentData, clearMedia, setDocumentData, setMedia } from 'store/slices/documents/documentSlice';
 import { AppDispatch } from 'store/slices';
 import { useNavigate } from 'react-router-dom';
+
 import DocumentForm from './components/DocumentForm';
 import DocumentCard from './components/DocumentCard';
 import DocumentDetailsModal from './components/DocumentDetailsModal';
 import DocumentPreviewModal from './components/DocumentPreviewModal';
 import DocumentViewModal from './components/DocumentViewModal';
-import DocumentDeleteConfirmModal from './components/DocumentDeleteConfirmModal';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
+
 import { DocumentItem } from './types';
 import { deleteDocument, listDocuments } from './api';
 import BackHeader from '@/components/common/header/BackHeader';
 
-const DocumentList: React.FC = () => {
+const DocumentsManager: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -39,7 +40,11 @@ const DocumentList: React.FC = () => {
   const [viewModalOpen, setViewModalOpen] = useState<DocumentItem | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState<Pick<DocumentItem, 'id' | 'name'> | null>(null);
 
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error'
+  });
 
   const fetchDocuments = async () => {
     try {
@@ -120,7 +125,6 @@ const DocumentList: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
 
-          {/* Botão Desktop/Tablet — escondido no mobile */}
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -132,19 +136,13 @@ const DocumentList: React.FC = () => {
         </Stack>
       </Paper>
 
-      {/* FAB Mobile — aparece apenas no mobile */}
       {isXs && (
         <Tooltip title="Novo Documento">
           <Fab
             color="primary"
             aria-label="Novo Documento"
             onClick={handleCreate}
-            sx={{
-              position: 'fixed',
-              right: 24,
-              bottom: 24,
-              zIndex: 1200,
-            }}
+            sx={{ position: 'fixed', right: 24, bottom: 24, zIndex: 1200 }}
           >
             <AddIcon />
           </Fab>
@@ -184,9 +182,9 @@ const DocumentList: React.FC = () => {
       <DocumentPreviewModal open={!!previewModalOpen} document={previewModalOpen} onClose={() => setPreviewModalOpen(null)} />
       <DocumentViewModal open={!!viewModalOpen} document={viewModalOpen} onClose={() => setViewModalOpen(null)} />
 
-      <DocumentDeleteConfirmModal
+      <DeleteConfirmDialog
         open={!!deleteModalOpen}
-        document={deleteModalOpen}
+        title={deleteModalOpen?.name}
         onClose={() => setDeleteModalOpen(null)}
         onConfirm={handleConfirmDelete}
       />
@@ -198,4 +196,4 @@ const DocumentList: React.FC = () => {
   );
 };
 
-export default DocumentList;
+export default DocumentsManager;

@@ -1,10 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Stack,
-  Button, IconButton, Divider, Paper, Grid,
+  Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions,
+  Stack, Button, IconButton, Divider, Paper, Grid, useMediaQuery
 } from '@mui/material';
 import { Close, ContentCopy } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import { ImagePageData } from 'store/slices/image/imageSlice';
 import { copyToClipboard, fmtDate } from '../utils';
 
@@ -16,6 +17,8 @@ type Props = {
 
 export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <Dialog
@@ -33,12 +36,21 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
         },
       }}
     >
-      <DialogTitle sx={{ fontSize: '1.5rem', color: '#333', p: '5px 16px', textAlign: 'center', position: 'relative' }}>
+      <DialogTitle
+        sx={{
+          fontSize: '1.5rem',
+          color: '#333',
+          p: '5px 16px',
+          textAlign: 'center',
+          position: 'relative',
+        }}
+      >
         Detalhes da Página de Imagens
         <IconButton
           onClick={onClose}
           size="small"
           sx={{ position: 'absolute', top: 8, right: 8, color: '#777' }}
+          aria-label="Fechar"
         >
           <Close />
         </IconButton>
@@ -51,7 +63,7 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
               <Typography variant="h6" fontWeight="bold" color="primary" textAlign="center" mb={2}>
                 Informações Gerais
               </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'left', width: '100%', mt: 4 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 4 }}>
                 <Grid container spacing={2} sx={{ maxWidth: 800, width: '100%', px: { xs: 2, md: 0 } }}>
                   <Grid item xs={12} md={6}>
                     <Typography variant="body1" sx={{ color: '#333', wordBreak: 'break-word' }}>
@@ -64,17 +76,17 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body1" sx={{ color: '#333', wordBreak: 'break-word' }}>
+                    <Typography variant="body1" sx={{ color: '#333' }}>
                       <strong>Visibilidade:</strong> {page.public ? 'Pública' : 'Privada'}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body1" sx={{ color: '#333', wordBreak: 'break-word' }}>
+                    <Typography variant="body1" sx={{ color: '#333' }}>
                       <strong>Criado em:</strong> {fmtDate(page.createdAt)}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body1" sx={{ color: '#333', wordBreak: 'break-word' }}>
+                    <Typography variant="body1" sx={{ color: '#333' }}>
                       <strong>Atualizado em:</strong> {fmtDate(page.updatedAt)}
                     </Typography>
                   </Grid>
@@ -102,7 +114,7 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
                           </Typography>
 
                           <Stack spacing={1.5}>
-                            <Typography variant="body1" sx={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                            <Typography variant="body1" sx={{ color: '#333', whiteSpace: 'pre-wrap' }}>
                               <strong>Descrição:</strong> {section.description || 'Sem Descrição'}
                             </Typography>
                             <Typography variant="body1" sx={{ color: '#333' }}>
@@ -130,7 +142,7 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
                                     <Typography variant="body1" sx={{ color: '#333', wordBreak: 'break-word' }}>
                                       <strong>Título:</strong> {item.title || item.originalName || 'Sem Título'}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: '#555', mt: 0.5, wordBreak: 'break-word' }}>
+                                    <Typography variant="body2" sx={{ color: '#555', mt: 0.5, whiteSpace: 'pre-wrap' }}>
                                       <strong>Descrição:</strong> {item.description || 'Sem Descrição'}
                                     </Typography>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 1, flexWrap: 'wrap' }}>
@@ -162,15 +174,29 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
         )}
       </DialogContent>
 
-      <DialogActions sx={{ justifyContent: 'center', p: '5px' }}>
-        <Button variant="outlined" onClick={onClose} sx={{ minWidth: 100 }}>
+      <DialogActions
+        sx={{
+          p: { xs: 2, sm: 2.5 },
+          gap: 1,
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Button
+          variant="outlined"
+          onClick={onClose}
+          sx={{ minWidth: 120 }}
+          fullWidth={isMobile}
+        >
           Fechar
         </Button>
         <Button
           variant="contained"
           onClick={() => page && navigate(`/${page.route?.path}`)}
           disabled={!page || !page.route}
-          sx={{ minWidth: 100, ml: 2 }}
+          sx={{ minWidth: 120 }}
+          fullWidth={isMobile}
         >
           Acessar Página
         </Button>

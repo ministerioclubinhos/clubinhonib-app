@@ -1,25 +1,19 @@
-// src/modules/clubs/ClubsManager.tsx
 import React, { useCallback, useState } from "react";
-import { Alert, Box, CircularProgress, Typography, IconButton, Tooltip } from "@mui/material";
+import { Alert, Box, CircularProgress } from "@mui/material";
 import { useTheme, useMediaQuery } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-
 import ClubsToolbar from "./components/ClubsToolbar";
 import ClubsTable from "./components/ClubsTable";
 import ClubViewDialog from "./components/ClubViewDialog";
 import ClubFormDialog from "./components/ClubFormDialog";
-import ClubDeleteDialog from "./components/ClubDeleteDialog";
 import { useClubDetails, useClubMutations, useClubs, useOptions } from "./hooks";
 import { ClubResponseDto, CreateClubForm, EditClubForm, Weekday, ClubFilters, ClubSort } from "./types";
 import { apiFetchClubs } from "./api";
 import BackHeader from "@/components/common/header/BackHeader";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
 export default function ClubsManager() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
-
   const [filters, setFilters] = useState<ClubFilters>({
     addressSearchString: "",
     userSearchString: "",
@@ -34,23 +28,15 @@ export default function ClubsManager() {
     useClubs(pageIndex, pageSize, sorting, filters);
 
   const doRefresh = useCallback(() => { fetchPage(); }, [fetchPage]);
-
-  // detalhes
   const { viewing, setViewing, loading: viewingLoading, fetchClub } = useClubDetails();
   const handleOpenView = (club: ClubResponseDto) => { setViewing(club); fetchClub(club.id); };
-
-  // combos (inclui reloadOptions)
   const { coordinators, teachers, reloadOptions } = useOptions();
-
-  // mutations
   const { dialogLoading, dialogError, setDialogError, createClub, updateClub, deleteClub } =
     useClubMutations(async (page, limit) => {
-      // sempre refetch mantendo o contexto atual
       await apiFetchClubs({ page, limit, filters, sort: sorting });
-      await fetchPage(); // garante estado sincronizado
+      await fetchPage();
     });
 
-  // util: sanitiza arrays de ids (remove null/undefined/"" e duplicados)
   const sanitizeIds = (arr?: Array<string | null | undefined>) =>
     Array.from(
       new Set(
@@ -58,7 +44,6 @@ export default function ClubsManager() {
       )
     );
 
-  // criar
   const [creating, setCreating] = useState<CreateClubForm | null>(null);
   const openCreate = () => setCreating({
     number: 0,
@@ -77,12 +62,11 @@ export default function ClubsManager() {
     if (payload.coordinatorProfileId === undefined || payload.coordinatorProfileId === null) {
       delete (payload as any).coordinatorProfileId;
     }
-    await reloadOptions(); // atualiza listas antes de criar (garante consistência)
+    await reloadOptions();
     await createClub(payload, pageIndex + 1, pageSize, filters, sorting);
     setCreating(null);
   };
 
-  // editar
   const [editing, setEditing] = useState<EditClubForm | null>(null);
   const startEdit = (c: ClubResponseDto) => {
     setEditing({
@@ -108,7 +92,6 @@ export default function ClubsManager() {
     setEditing(null);
   };
 
-  // excluir
   const [confirmDelete, setConfirmDelete] = useState<ClubResponseDto | null>(null);
   const askDelete = (c: ClubResponseDto) => setConfirmDelete(c);
   const submitDelete = async () => {
@@ -153,7 +136,6 @@ export default function ClubsManager() {
         onAskDelete={askDelete}
       />
 
-      {/* View */}
       <ClubViewDialog
         open={!!viewing}
         loading={viewingLoading}
@@ -161,7 +143,6 @@ export default function ClubsManager() {
         onClose={() => setViewing(null)}
       />
 
-      {/* Create */}
       <ClubFormDialog
         mode="create"
         open={!!creating}
@@ -175,7 +156,6 @@ export default function ClubsManager() {
         teacherOptions={teachers}
       />
 
-      {/* Edit */}
       <ClubFormDialog
         mode="edit"
         open={!!editing}
@@ -189,13 +169,10 @@ export default function ClubsManager() {
         teacherOptions={teachers}
       />
 
-      {/* Delete */}
-      <ClubDeleteDialog
+      <DeleteConfirmDialog
         open={!!confirmDelete}
-        clubNumber={confirmDelete?.number}
-        loading={dialogLoading}
-        error={dialogError}
-        onCancel={() => { setConfirmDelete(null); setDialogError(""); }}
+        title={confirmDelete ? `#${confirmDelete.number}` : ""}
+        onClose={() => { setConfirmDelete(null); setDialogError(""); }}
         onConfirm={submitDelete}
       />
     </Box>

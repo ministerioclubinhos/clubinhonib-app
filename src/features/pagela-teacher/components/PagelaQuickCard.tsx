@@ -13,7 +13,6 @@ import {
   useMediaQuery,
   useTheme,
   Chip,
-  Tooltip,
 } from "@mui/material";
 import {
   Save,
@@ -69,7 +68,6 @@ export default function PagelaQuickCard({
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isNew = !current?.id;
 
-  // estados para DESKTOP (mantém edição inline)
   const [present, setPresent] = React.useState(current?.present ?? false);
   const [med, setMed] = React.useState(current?.didMeditation ?? false);
   const [verse, setVerse] = React.useState(current?.recitedVerse ?? false);
@@ -152,7 +150,6 @@ export default function PagelaQuickCard({
 
   return (
     <Card sx={{ borderRadius: 4, overflow: "hidden", boxShadow: "0 10px 26px rgba(0,0,0,.08)", borderLeft: `8px solid ${accent}`, bgcolor: alpha(accent, theme.palette.mode === "light" ? 0.06 : 0.12) }}>
-      {/* Cabeçalho */}
       <Box sx={{ px: { xs: 1.5, md: 2.25 }, py: 1, bgcolor: alpha(accent, 0.12), borderBottom: "1px solid", borderColor: alpha(accent, 0.28) }}>
         {isXs ? (
           <Stack direction="row" spacing={1} alignItems="flex-start">

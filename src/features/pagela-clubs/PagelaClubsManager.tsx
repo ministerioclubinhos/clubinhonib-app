@@ -26,10 +26,11 @@ import { ChildrenPanel } from "./components/ChildrenPanel";
 
 import type { ClubResponseDto } from "@/features/clubs/types";
 import type { ChildResponseDto } from "@/features/children/types";
+import BackHeader from "@/components/common/header/BackHeader";
 
 type MobileStep = "clubs" | "children" | "pagelas";
 
-export default function PagelaClubsRoot() {
+export default function PagelaClubsManager() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -37,7 +38,6 @@ export default function PagelaClubsRoot() {
   const [selectedChild, setSelectedChild] = useState<ChildResponseDto | null>(null);
   const [mobileStep, setMobileStep] = useState<MobileStep>("clubs");
 
-  // Sincroniza passo (somente mobile)
   useEffect(() => {
     if (!isMobile) return;
     if (!selectedClub) setMobileStep("clubs");
@@ -59,35 +59,41 @@ export default function PagelaClubsRoot() {
   return (
     <Box
       sx={{
-        pt: { xs: 0, md: 6 },
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        minHeight: 0, // 🔑 permite que os filhos com flex:1 usem 100% sem estourar
+        minHeight: 0,
       }}
     >
       <AppBar position="static" color="default" elevation={0}>
         <Toolbar sx={{ gap: 2 }}>
-          {isMobile && mobileStep !== "clubs" && (
-            <IconButton aria-label="voltar" onClick={handleBack} edge="start">
-              <ArrowBackIcon />
-            </IconButton>
-          )}
-          <BookmarksIcon />
-          <Typography
-            component="h1"
-            sx={{
-              flexGrow: 1,
-              fontWeight: 700,
-              lineHeight: 1.2,
-              fontSize: { xs: "1rem", sm: "1.125rem", md: "1.25rem" },
-              letterSpacing: { xs: 0.2, md: 0.3 },
-            }}
-          >
-            Clubinhos ▸ Crianças ▸ Pagelas
-          </Typography>
+          {isMobile && mobileStep !== "clubs" ? (
+            <>
+              <IconButton aria-label="voltar" onClick={handleBack} edge="start">
+                <ArrowBackIcon />
+              </IconButton>
 
-          {/* Breadcrumbs só no desktop */}
+              <Typography
+                component="h1"
+                sx={{
+                  flexGrow: 1,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                  fontSize: { xs: "1rem", sm: "1.125rem", md: "1.25rem" },
+                  letterSpacing: { xs: 0.2, md: 0.3 },
+                }}
+              >
+                Clubinhos ▸ Crianças ▸ Pagelas
+              </Typography>
+            </>
+          ) : (
+            <>
+              {isMobile && (
+                <BackHeader title="Clubinhos▸Crianças▸Pagelas" mobileFontSize="1rem" />
+              )}
+            </>
+          )}
+
           {!isMobile && (
             <Breadcrumbs separator={<ChevronRightIcon fontSize="small" />} aria-label="breadcrumb" maxItems={3}>
               <MuiLink
@@ -113,22 +119,20 @@ export default function PagelaClubsRoot() {
       <Box
         sx={{
           flex: 1,
-          minHeight: 0, // 🔑 evita overflow vertical
+          minHeight: 0,
           overflow: "hidden",
           p: 2,
         }}
       >
-        {/* DESKTOP: três colunas responsivas (sem overflow) */}
         {!isMobile && (
           <Grid
             container
             spacing={2}
             sx={{
               height: "100%",
-              minHeight: 0, // 🔑 necessário para que os itens calculem altura
+              minHeight: 0,
             }}
           >
-            {/* Coluna: Clubes */}
             <Grid item xs={12} md={4} sx={{ height: "100%", minHeight: 0 }}>
               <Card sx={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
                 <CardContent
@@ -138,11 +142,10 @@ export default function PagelaClubsRoot() {
                     flexDirection: "column",
                     gap: 2,
                     p: 2,
-                    minHeight: 0, // 🔑
+                    minHeight: 0,
                   }}
                 >
                   <SectionHeader context="clubs" title="Clubinhos" subtitle="Selecione um clubinho para ver as crianças" />
-                  {/* Wrapper que dá altura para o painel ocupar e rolar internamente */}
                   <Box sx={{ flex: 1, minHeight: 0 }}>
                     <ClubsPanel
                       onSelect={(club) => {
@@ -156,7 +159,6 @@ export default function PagelaClubsRoot() {
               </Card>
             </Grid>
 
-            {/* Coluna: Crianças */}
             <Grid item xs={12} md={4} sx={{ height: "100%", minHeight: 0 }}>
               <Card sx={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
                 <CardContent
@@ -185,7 +187,6 @@ export default function PagelaClubsRoot() {
               </Card>
             </Grid>
 
-            {/* Coluna: Pagelas */}
             <Grid item xs={12} md={4} sx={{ height: "100%", minHeight: 0 }}>
               <Card sx={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
                 <CardContent
@@ -195,7 +196,7 @@ export default function PagelaClubsRoot() {
                     flexDirection: "column",
                     gap: 2,
                     p: 2,
-                    minHeight: 0, // 🔑 evita que o conteúdo "estoure" e permite rolagem interna
+                    minHeight: 0,
                   }}
                 >
                   <SectionHeader
@@ -212,12 +213,11 @@ export default function PagelaClubsRoot() {
           </Grid>
         )}
 
-        {/* MOBILE: 1 painel por vez */}
         {isMobile && (
           <Stack spacing={2} sx={{ height: "100%", minHeight: 0 }}>
             {mobileStep === "clubs" && (
               <Card sx={{ flex: 1, overflow: "hidden", minHeight: 0, display: "flex" }}>
-                <CardContent sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 2, minHeight: 0 }}>
+                <CardContent sx={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", gap: 2, minHeight: 0 }}>
                   <SectionHeader context="clubs" title="Clubinhos" subtitle="Toque em um clubinho para avançar" />
                   <Box sx={{ flex: 1, minHeight: 0 }}>
                     <ClubsPanel
@@ -235,7 +235,7 @@ export default function PagelaClubsRoot() {
 
             {mobileStep === "children" && (
               <Card sx={{ flex: 1, overflow: "hidden", minHeight: 0, display: "flex" }}>
-                <CardContent sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 2, minHeight: 0 }}>
+                <CardContent sx={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", gap: 2, minHeight: 0 }}>
                   <SectionHeader
                     context="children"
                     title="Crianças"
@@ -257,7 +257,7 @@ export default function PagelaClubsRoot() {
 
             {mobileStep === "pagelas" && (
               <Card sx={{ flex: 1, overflow: "hidden", minHeight: 0, display: "flex" }}>
-                <CardContent sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 2, minHeight: 0 }}>
+                <CardContent sx={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", gap: 2, minHeight: 0 }}>
                   <SectionHeader context="pagelas" title="Pagelas" subtitle={selectedChild ? selectedChild.name : undefined} />
                   <Box sx={{ flex: 1, minHeight: 0 }}>
                     <PagelasPanel child={selectedChild} />

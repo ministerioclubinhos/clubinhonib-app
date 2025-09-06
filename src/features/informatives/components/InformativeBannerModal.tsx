@@ -20,7 +20,7 @@ import { createBannerApi, updateBannerApi } from '../api';
 interface InformativeBannerModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: () => Promise<void>; // mantém contrato existente
+  onSave: () => Promise<void>;
   initialData?: InformativeBannerData | null;
 }
 
@@ -70,7 +70,6 @@ export default function InformativeBannerModal({
         await createBannerApi(payload);
       }
 
-      // mantém comportamento atual do app
       await dispatch(fetchRoutes());
       await onSave();
 

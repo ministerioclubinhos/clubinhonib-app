@@ -1,4 +1,3 @@
-// Mantém seu axios base existente
 import api from '@/config/axiosConfig';
 import { DocumentItem } from './types';
 

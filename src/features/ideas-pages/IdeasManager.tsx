@@ -6,13 +6,7 @@ import {
   CircularProgress,
   Alert,
   Button,
-  IconButton,
-  Tooltip,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 import { IdeasPageData } from 'store/slices/ideas/ideasSlice';
@@ -22,18 +16,13 @@ import IdeasToolbar from './components/IdeasToolbar';
 import { useIdeasMutations, useIdeasPages, useIdeasSearch } from './hooks';
 import BackHeader from '@/components/common/header/BackHeader';
 
-export default function IdeasPageListPage() {
+export default function IdeasManager() {
   const { pages, loading, error, setError, fetchPages } = useIdeasPages();
   const { filtered, searchTerm, setSearchTerm, isFiltering } = useIdeasSearch(pages);
   const { mutError, setMutError, deletePage } = useIdeasMutations(fetchPages);
 
   const [pageToDelete, setPageToDelete] = React.useState<IdeasPageData | null>(null);
   const [selectedPage, setSelectedPage] = React.useState<IdeasPageData | null>(null);
-
-  const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
-  const navigate = useNavigate();
-
   const handleDeleteConfirm = async () => {
     if (!pageToDelete) return;
     try {
@@ -41,7 +30,6 @@ export default function IdeasPageListPage() {
       setError(null);
       setMutError(null);
     } catch {
-      // erro já tratado em hook
     } finally {
       setPageToDelete(null);
     }
@@ -53,7 +41,6 @@ export default function IdeasPageListPage() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        pt: { xs: 0, md: 4 },
         bgcolor: '#f5f7fa',
         minHeight: '100vh',
       }}
@@ -109,7 +96,6 @@ export default function IdeasPageListPage() {
         title={pageToDelete?.title}
         onClose={() => setPageToDelete(null)}
         onConfirm={handleDeleteConfirm}
-        confirmText="Tem certeza que deseja excluir esta página?"
       />
     </Box>
   );

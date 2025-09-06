@@ -10,13 +10,8 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
-  IconButton,
-  Tooltip,
-  useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import { ReactElement } from 'react';
 import VideoPageCreator from '@/components/Adm/PageCreator/Templates/VideoPageCreator/VideoPageCreator';
 import PhotoPageCreator from '@/components/Adm/PageCreator/Templates/ImagePageCreator/ImagePageCreator';
@@ -45,9 +40,7 @@ export default function SelecPageTemplate() {
   const [selectedOption, setSelectedOption] = useState<keyof typeof Options | ''>('');
   const dispatch = useDispatch();
 
-  const navigate = useNavigate();
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleChange = (event: SelectChangeEvent) => {
     const selected = event.target.value as keyof typeof Options;
@@ -62,16 +55,13 @@ export default function SelecPageTemplate() {
     <Box
       sx={{
         minHeight: '100vh',
-        px: { xs: 2, md: 4 },
-        pt: { xs: 0, md: 4 },
+        px: { xs: 1, md: 0 },
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
         bgcolor: 'linear-gradient(to bottom, #f4f4f4, #e8e8e8)',
         textAlign: 'center',
-        mt: 0,
-        mb: 0,
       }}
     >
       <BackHeader title="Criador de Páginas" />
@@ -79,7 +69,7 @@ export default function SelecPageTemplate() {
       <Typography
         variant="subtitle1"
         color="text.secondary"
-        sx={{ mt: { xs: 0, md: 0 }, mb: { xs: 2, md: 3 }, fontSize: { xs: '1rem', md: '1.5rem' } }}
+        sx={{  mb: { xs: 2, md: 3 }, fontSize: { xs: '1rem', md: '1.5rem' } }}
       >
         Selecione um modelo abaixo para visualizar e criar um novo conteúdo.
       </Typography>
@@ -106,10 +96,8 @@ export default function SelecPageTemplate() {
       <Paper
         elevation={3}
         sx={{
-          width: '95%',
-          maxWidth: '95%',
+           width: '100%',
           p: 1,
-          mt: 2,
           transition: 'all 0.3s ease-in-out',
           opacity: selectedOption ? 1 : 0.5,
         }}

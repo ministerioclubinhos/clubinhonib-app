@@ -1,36 +1,21 @@
 import React from "react";
-import {
-  Box,
-  Typography,
-  Snackbar,
-  Alert,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Box, Snackbar, Alert } from "@mui/material";
 import { useTheme, useMediaQuery } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-
 import { useContacts, useContactMutations, useContactSearch } from "./hooks";
 import ContactToolbar from "./components/ContactToolbar";
 import ContactGrid from "./components/ContactGrid";
 import ContactDetailsModal from "./components/ContactDetailsModal";
-import ContactDeleteConfirmModal from "./components/ContactDeleteConfirmModal";
-import { Contact, SnackbarKind } from "./types";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 import BackHeader from "@/components/common/header/BackHeader";
+import { Contact, SnackbarKind } from "./types";
 
-export default function ContactList() {
+export default function ContactsManager() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
-
-  // data
   const { contacts, loading, error, setError, fetchContacts } = useContacts();
   const { searchTerm, setSearchTerm, filtered } = useContactSearch(contacts);
   const { busy, error: mError, setError: setMError, remove, markAsRead } =
     useContactMutations(fetchContacts);
 
-  // ui
   const [selected, setSelected] = React.useState<Contact | null>(null);
   const [toDelete, setToDelete] = React.useState<Contact | null>(null);
   const [snackbar, setSnackbar] = React.useState({
@@ -65,10 +50,7 @@ export default function ContactList() {
   };
 
   return (
-    <Box sx={{
-      px: { xs: 2, sm: 2, md: 4 },
-      py: { xs: 0, md: 4 }, mx: "auto"
-    }}>
+    <Box sx={{ px: { xs: 2, sm: 2, md: 4 } }}>
       <BackHeader title="Gerenciar Contatos" />
 
       <ContactToolbar
@@ -94,13 +76,13 @@ export default function ContactList() {
         }}
       />
 
-      <ContactDeleteConfirmModal
-        contact={toDelete}
+      <DeleteConfirmDialog
+        open={!!toDelete}
+        title={toDelete?.name || ""}
         onClose={() => setToDelete(null)}
         onConfirm={handleDelete}
       />
 
-      {/* errors from data/mutations */}
       {!loading && error && (
         <Snackbar open autoHideDuration={4000} onClose={() => setError("")}>
           <Alert severity="error" variant="filled">
@@ -116,7 +98,6 @@ export default function ContactList() {
         </Snackbar>
       )}
 
-      {/* feedback */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

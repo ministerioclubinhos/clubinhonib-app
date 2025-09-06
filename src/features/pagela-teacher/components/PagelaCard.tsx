@@ -216,7 +216,6 @@ export default function PagelaCard({
       <DeleteConfirmDialog
         open={confirmOpen}
         title={weekTitle}
-        confirmText="Tem certeza que deseja excluir a pagela da semana:"
         onClose={() => (busy ? null : setConfirmOpen(false))}
         onConfirm={async () => {
           if (busy) return;

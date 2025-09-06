@@ -2,7 +2,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography,
   Stack, Paper, Grid, Box, useMediaQuery
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+  import { useTheme } from '@mui/material/styles';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -14,7 +14,7 @@ import { formatDatePtBr } from '../utils';
 
 const StyledSlider = styled(Slider)(({ theme }) => ({
   '.slick-prev, .slick-next': {
-    zIndex: 1000,
+    zIndex: 10,
     width: 40,
     height: 40,
     backgroundColor: theme.palette.grey[800],
@@ -47,40 +47,41 @@ export default function ImagePageDetailsModal({ section, open, onClose }: Props)
 
   const carouselSettings = {
     dots: true,
-    infinite: section?.mediaItems?.length ? section.mediaItems.length > 1 : false,
+    infinite: (section?.mediaItems?.length ?? 0) > 1,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
     arrows: true,
-    adaptiveHeight: true,
-    prevArrow: <Button aria-label="Imagem anterior" />,
-    nextArrow: <Button aria-label="Próxima imagem" />,
+    adaptiveHeight: false,
   };
+  const aspect = isMobile ? '16 / 10' : '16 / 9';
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       fullWidth
-      maxWidth={isMobile ? false : 'lg'}
-      sx={{ '& .MuiDialog-paper': { width: isMobile ? '98%' : '60%', maxWidth: '100%' } }}
+      maxWidth="lg"
       aria-labelledby="dialog-title"
+      sx={{ '& .MuiDialog-paper': { borderRadius: 3 } }}
     >
       <DialogTitle id="dialog-title">Detalhes das imagens</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ pb: 1 }}>
         {section ? (
-          <Stack spacing={3} mt={1}>
-            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 } }}>
+          <Stack spacing={3} mt={0.5}>
+            <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
               <Typography variant="h6" gutterBottom color="primary">Informações Gerais</Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <Stack spacing={2}>
+                  <Stack spacing={1}>
                     <Typography variant="body1"><strong>Legenda:</strong> {section.caption || 'Não informado'}</Typography>
-                    <Typography variant="body1"><strong>Descrição:</strong> {section.description || 'Não informado'}</Typography>
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                      <strong>Descrição:</strong> {section.description || 'Não informado'}
+                    </Typography>
                   </Stack>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Stack spacing={2}>
+                  <Stack spacing={1}>
                     <Typography variant="body1"><strong>Criado em:</strong> {formatDatePtBr(section.createdAt)}</Typography>
                     <Typography variant="body1"><strong>Atualizado em:</strong> {formatDatePtBr(section.updatedAt)}</Typography>
                   </Stack>
@@ -88,41 +89,51 @@ export default function ImagePageDetailsModal({ section, open, onClose }: Props)
               </Grid>
             </Paper>
 
-            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 } }}>
+            <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
               <Typography variant="h6" gutterBottom color="primary">Galeria de Imagens</Typography>
-              {section.mediaItems?.length ? (
-                <StyledSlider {...(carouselSettings as any)}>
-                  {section.mediaItems.map((item) => (
-                    <Box key={item.id} sx={{ textAlign: 'center', px: { xs: 1, sm: 2 }, py: { xs: 2, sm: 4 } }}>
-                      <img
-                        src={item.url}
-                        alt={item.originalName}
-                        style={{
-                          width: '100%',
-                          maxHeight: isMobile ? 300 : 500,
-                          objectFit: 'contain',
-                          borderRadius: 8,
-                        }}
-                      />
-                    </Box>
-                  ))}
-                </StyledSlider>
+              {(section.mediaItems?.length ?? 0) > 0 ? (
+                <Box
+                  sx={{
+                    position: 'relative',
+                    width: '100%',
+                    aspectRatio: aspect, // mantém área estável
+                    bgcolor: 'background.default',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <StyledSlider {...(carouselSettings as any)}>
+                    {section.mediaItems!.map((item) => (
+                      <Box key={item.id} sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img
+                          src={item.url}
+                          alt={item.originalName}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                          }}
+                        />
+                      </Box>
+                    ))}
+                  </StyledSlider>
+                </Box>
               ) : (
-                <Typography variant="body1" color="text.secondary">Nenhuma imagem disponível.</Typography>
+                <Typography variant="body2" color="text.secondary">Nenhuma imagem disponível.</Typography>
               )}
             </Paper>
           </Stack>
         ) : (
-          <Typography variant="body1" color="text.secondary">Nenhuma seção selecionada.</Typography>
+          <Typography variant="body2" color="text.secondary">Nenhuma seção selecionada.</Typography>
         )}
       </DialogContent>
 
       <DialogActions
         sx={{
           flexDirection: isMobile ? 'column' : 'row',
-          gap: isMobile ? 1 : 2,
+          gap: isMobile ? 1 : 1.5,
           alignItems: isMobile ? 'stretch' : 'center',
-          p: { xs: 2, sm: 3 },
+          p: { xs: 2, sm: 2.5 },
         }}
       >
         {section && (
@@ -138,7 +149,7 @@ export default function ImagePageDetailsModal({ section, open, onClose }: Props)
         )}
         <Button
           onClick={onClose}
-          variant="contained"
+          variant="outlined"
           color="primary"
           aria-label="Fechar modal"
           sx={{ width: isMobile ? '100%' : 'auto' }}

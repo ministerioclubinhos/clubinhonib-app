@@ -1,4 +1,3 @@
-// src/features/pagela-teacher/components/PagelaQuickForm.tsx
 import * as React from "react";
 import {
   Box,
@@ -26,17 +25,14 @@ import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from "../types"
 import { todayISO } from "../utils";
 
 type Props = {
-  /** Quando presente, começa em modo edição com essa pagela */
   initial?: Pagela | null;
-  /** Necessário para criar */
   childId: string;
-  /** Mantidos por compatibilidade; ignorados quando initial não existe */
+  childName: string;
+  childGender: string;
   defaultYear: number;
   defaultWeek: number;
-  /** (legacy) fallback caso Redux não tenha teacherProfile */
   teacherProfileId?: string | null;
 
-  /** Procura uma pagela existente para (year, week) deste child */
   findPagela: (year: number, week: number) => Pagela | null;
 
   onCreate: (payload: CreatePagelaPayload) => Promise<void>;
@@ -47,9 +43,10 @@ type Props = {
 export default function PagelaQuickForm({
   initial,
   childId,
-  defaultYear, // ignorado
-  defaultWeek, // ignorado
-  teacherProfileId, // usado apenas como fallback
+  childName,
+  childGender,
+
+  teacherProfileId,
   findPagela,
   onCreate,
   onUpdate,
@@ -160,15 +157,17 @@ export default function PagelaQuickForm({
   };
 
   const headerBg = editing
-    ? "linear-gradient(135deg, #FFE8B3 0%, #FFD480 50%, #FFC266 100%)" 
-    : "linear-gradient(135deg, #b8f1d7 0%, #b8d6ff 50%, #ffc7ec 100%)"; 
+    ? "linear-gradient(135deg, #FFE8B3 0%, #FFD480 50%, #FFC266 100%)"
+    : "linear-gradient(135deg, #b8f1d7 0%, #b8d6ff 50%, #ffc7ec 100%)";
 
-  const headerTitle = editing ? "Editando pagela" : "Criando pagela";
+  const headerTitle = editing ? "Editando" : "Criando";
   const footerMsg = editing
     ? "ao salvar, você ATUALIZA o registro existente"
     : "ao salvar, você CRIA um novo registro";
 
   const yearWeekLabel = `Ano: ${parsedYear ?? "--"} • Semana: ${parsedWeek ?? "--"}`;
+
+  const article = childGender === "F" ? "a" : "o";
 
   return (
     <Card
@@ -188,7 +187,6 @@ export default function PagelaQuickForm({
           background: headerBg,
         }}
       >
-        {/* bolhinhas */}
         <Box
           sx={{
             position: "absolute",
@@ -223,8 +221,9 @@ export default function PagelaQuickForm({
         >
           <Stack spacing={0}>
             <Typography variant="subtitle2" sx={{ color: "text.primary", opacity: 0.9, fontWeight: 800 }}>
-              {headerTitle}
+              {headerTitle} para {article} <strong>{childName || "—"}</strong>
             </Typography>
+
             <Stack direction="row" spacing={0.75} alignItems="center">
               <CalendarMonthIcon fontSize="small" sx={{ opacity: 0.9 }} />
               <Typography variant="caption" sx={{ fontWeight: 700 }}>

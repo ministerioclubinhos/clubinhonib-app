@@ -1,7 +1,18 @@
-import { Box, Button, Card, CardContent, IconButton, Typography } from '@mui/material';
-import { Delete, Visibility } from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardActions,
+  IconButton,
+  Typography,
+  Tooltip,
+  useMediaQuery,
+} from '@mui/material';
+import { Delete, Visibility, Image as ImageIcon, Edit as EditIcon } from '@mui/icons-material';
 import { SectionData } from '@/store/slices/image-section/imageSectionSlice';
 import { truncate } from '../utils';
+import { useTheme } from '@mui/material/styles';
 
 interface Props {
   section: SectionData;
@@ -11,38 +22,77 @@ interface Props {
 }
 
 export default function ImagePageCard({ section, onDelete, onEdit, onViewDetails }: Props) {
+  const preview = section.mediaItems?.[0]?.url;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <Card
+      variant="outlined"
       sx={{
-        flex: 1,
-        borderRadius: 3,
-        boxShadow: 3,
-        p: 2,
-        bgcolor: '#fff',
-        border: '1px solid #e0e0e0',
-        position: 'relative',
+        borderRadius: 2,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
+        width: '100%',
+        transition: 'transform .2s, box-shadow .2s',
+        '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 },
       }}
     >
-      <IconButton
-        size="small"
-        onClick={() => onDelete(section)}
-        sx={{ position: 'absolute', top: 8, right: 8, color: '#d32f2f' }}
-        title="Excluir Seção"
-        aria-label="Excluir seção"
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '16 / 9',
+          bgcolor: 'grey.100',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          borderTopLeftRadius: 8,
+          borderTopRightRadius: 8,
+        }}
       >
-        <Delete fontSize="small" />
-      </IconButton>
+        {preview ? (
+          <img
+            src={preview}
+            alt={section.caption || 'Miniatura'}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <ImageIcon fontSize="large" color="disabled" />
+        )}
 
-      <CardContent>
+        <Tooltip title="Excluir seção">
+          <IconButton
+            size="small"
+            onClick={() => onDelete(section)}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              bgcolor: 'rgba(255,255,255,0.9)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,1)' },
+              color: '#d32f2f',
+            }}
+            aria-label="Excluir seção"
+          >
+            <Delete fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      <CardContent sx={{ flexGrow: 1, pb: 1.5 }}>
         <Typography
-          variant="h6"
-          fontWeight="bold"
-          textAlign="center"
+          variant="subtitle1"
+          fontWeight={700}
+          sx={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+          title={section.caption || 'Sem Título'}
           gutterBottom
-          sx={{ fontSize: { xs: '1rem', md: '1.4rem' } }}
         >
           {section.caption || 'Sem Título'}
         </Typography>
@@ -50,27 +100,48 @@ export default function ImagePageCard({ section, onDelete, onEdit, onViewDetails
         <Typography
           variant="body2"
           color="text.secondary"
-          textAlign="center"
-          sx={{ fontSize: { xs: '.85rem', md: '1rem' }, mb: 1 }}
+          sx={{
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+          title={section.description}
         >
           {truncate(section.description)}
         </Typography>
-
-        <Box textAlign="center">
-          <Button
-            variant="contained"
-            startIcon={<Visibility />}
-            onClick={() => onViewDetails(section)}
-            sx={{ mb: 1 }}
-            fullWidth
-          >
-            Ver Detalhes
-          </Button>
-          <Button variant="outlined" onClick={() => onEdit(section)} fullWidth>
-            Editar e publicar
-          </Button>
-        </Box>
       </CardContent>
+
+      <CardActions
+        sx={{
+          p: 2,
+          pt: 0,
+          gap: 1,
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'center',
+        }}
+      >
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<Visibility />}
+          onClick={() => onViewDetails(section)}
+          sx={{ flex: 1, minWidth: 120 }}
+          fullWidth={isMobile}
+        >
+          Ver detalhes
+        </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<EditIcon />}
+          onClick={() => onEdit(section)}
+          sx={{ flex: 1, minWidth: 120 }}
+          fullWidth={isMobile}
+        >
+          Editar e publicar
+        </Button>
+      </CardActions>
     </Card>
   );
 }

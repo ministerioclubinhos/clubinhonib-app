@@ -98,7 +98,6 @@ export function ClubsPanel({
 
     return (
         <Stack sx={{ height: "100%" }} spacing={2}>
-            {/* Busca */}
             <TextField
                 size="small"
                 placeholder="Endereço / nº do clubinho.."

@@ -25,8 +25,8 @@ import { setIdeasData, IdeasPageData } from 'store/slices/ideas/ideasSlice';
 import IdeasDocumentViewer from './IdeasDocumentViewer';
 import IdeasImageGalleryView from './IdeasImageGalleryView';
 import IdeasVideoPlayerView from './IdeasVideoPlayerView';
-import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 import { RoleUser } from '@/store/slices/auth/authSlice';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 interface IdeasPageViewProps {
   idToFetch: string;
@@ -46,7 +46,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
   const dispatch: AppDispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN ;
+  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -544,13 +544,17 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
           </Box>
         </Zoom>
       )}
-
-      <DeleteConfirmationDialog
+      <DeleteConfirmDialog
         open={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
-        onConfirm={handleDeletePage}
-        isDeleting={isDeleting}
+        title={ideasPage.title}
+        onClose={() => !isDeleting && setDeleteConfirmOpen(false)}
+        onConfirm={async () => {
+          if (isDeleting) return;
+          await handleDeletePage();
+        }}
+        loading={isDeleting}
       />
+
     </Box>
   );
 }

@@ -1,11 +1,12 @@
-import { Typography, Box } from '@mui/material';
-import { MediaItem, MediaUploadType, MediaPlatform } from 'store/slices/types';
+import { Typography, Box } from "@mui/material";
+import { MediaItem, MediaUploadType, MediaPlatform } from "@/store/slices/types";
+import { getYouTubeId } from "@/utils/video";
 
 const VideoPlayer = ({ video }: { video: MediaItem }) => {
   if (video.uploadType === MediaUploadType.UPLOAD && video.url) {
     return (
-      <Box sx={{ borderRadius: 3, overflow: 'hidden' }}>
-        <video controls style={{ width: '100%', display: 'block' }}>
+      <Box sx={{ borderRadius: 2, overflow: 'hidden' }}>
+        <video controls playsInline style={{ width: '100%', display: 'block' }}>
           <source src={video.url} />
           Seu navegador não suporta vídeo.
         </video>
@@ -18,34 +19,31 @@ const VideoPlayer = ({ video }: { video: MediaItem }) => {
 
     switch (video.platformType) {
       case MediaPlatform.YOUTUBE: {
-        const videoId = video.url.split('v=')[1]?.split('&')[0];
-        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        const id = getYouTubeId(video.url);
+        embedUrl = id ? `https://www.youtube.com/embed/${id}` : '';
         break;
       }
-
       case MediaPlatform.GOOGLE_DRIVE: {
-        const fileIdMatch = video.url.match(/\/d\/(.*?)(\/|$)/);
-        const fileId = fileIdMatch?.[1];
+        const fileId = video.url.match(/\/d\/([\w-]+)/)?.[1];
         embedUrl = fileId ? `https://drive.google.com/file/d/${fileId}/preview` : '';
         break;
       }
-
       case MediaPlatform.ONEDRIVE:
       case MediaPlatform.DROPBOX:
       case MediaPlatform.ANY: {
-        embedUrl = video.url;
+        embedUrl = video.url; // fallback genérico
         break;
       }
-
       default:
         embedUrl = '';
     }
 
     return embedUrl ? (
-      <Box sx={{ borderRadius: 3, overflow: 'hidden' }}>
+      <Box sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <iframe
           src={embedUrl}
           title={video.title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
           style={{ width: '100%', aspectRatio: '16/9', border: 0 }}
         />

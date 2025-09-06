@@ -7,11 +7,6 @@ import {
   Typography,
   Alert,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
   Tooltip,
   Fab,
   Skeleton,
@@ -33,6 +28,7 @@ import {
   updatePagination,
   PaginatedSectionResponse,
 } from '@/store/slices/image-section-pagination/imageSectionPaginationSlice';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 interface PageSectionProps {
   idToFetch?: string;
@@ -103,7 +99,6 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
     [loadingMore, hasMore]
   );
 
-  // ✅ NENHUM hook depois dos returns:
   const visibleSections = useMemo(
     () => (section?.sections ?? []).filter((s) => s.public || isUserLogged),
     [section?.sections, isUserLogged]
@@ -279,18 +274,12 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
         )}
       </Box>
 
-      <Dialog open={deleteConfirmOpen} onClose={() => !isDeleting && setDeleteConfirmOpen(false)}>
-        <DialogTitle>Confirmar exclusão</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Tem certeza que deseja excluir esta página de seção? Esta ação não pode ser desfeita.</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)} disabled={isDeleting}>Cancelar</Button>
-          <Button onClick={handleDelete} color="error" autoFocus disabled={isDeleting} startIcon={isDeleting && <CircularProgress size={20} />}>
-            {isDeleting ? 'Excluindo...' : 'Confirmar Exclusão'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteConfirmDialog
+        open={deleteConfirmOpen}
+        title={section.title}
+        onClose={() => !isDeleting && setDeleteConfirmOpen(false)}
+        onConfirm={handleDelete}
+      />
     </Container>
   );
 }

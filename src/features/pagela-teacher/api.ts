@@ -1,8 +1,6 @@
-// src/features/pagela-teacher/api.ts
 import api from "@/config/axiosConfig";
 import type { PageDto, Pagela, CreatePagelaPayload, UpdatePagelaPayload } from "./types";
 
-/* Pagelas */
 export async function apiListPagelasPaginated(
   params: {
     childId: string;
@@ -14,7 +12,7 @@ export async function apiListPagelasPaginated(
     page?: number;
     limit?: number;
   },
-  options?: { signal?: AbortSignal } // <-- permite cancelar em voo
+  options?: { signal?: AbortSignal }
 ) {
   const { data } = await api.get<PageDto<Pagela>>("/pagelas/paginated", {
     params,

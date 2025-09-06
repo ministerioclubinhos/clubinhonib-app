@@ -1,4 +1,3 @@
-// src/features/pagela-teacher/hooks.ts
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   CreatePagelaPayload,
@@ -14,12 +13,10 @@ import {
 import { apiFetchChildSimple } from "@/features/children/api";
 import type { ChildSimpleResponseDto } from "../children/types";
 
-/* ===== util tri-state ===== */
 export type Tri = "any" | "yes" | "no";
 const triToBoolString = (t: Tri): "true" | "false" | undefined =>
   t === "yes" ? "true" : t === "no" ? "false" : undefined;
 
-/* ===== debounce helper (simples) ===== */
 function useDebouncedValue<T>(value: T, delay = 250) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -29,7 +26,6 @@ function useDebouncedValue<T>(value: T, delay = 250) {
   return debounced;
 }
 
-/* ===== Crianças (busca) ===== */
 export function useChildrenBrowser() {
   const [q, setQ] = useState("");
   const [items, setItems] = useState<ChildSimpleResponseDto[]>([]);
@@ -69,27 +65,21 @@ export function useChildrenBrowser() {
   return { q, onChangeQ, items, byId, loading, error, setError: setChildrenError, refetch };
 }
 
-/* ===== Pagelas (list/CRUD) ===== */
 export function useChildPagelas(
   childId: string | null | undefined,
   initial?: { year?: number; week?: number }
 ) {
-  // filtros
   const [year, setYearState] = useState<number | undefined>(initial?.year);
   const [week, setWeekState] = useState<number | undefined>(initial?.week);
   const [presentQ, setPresentQState] = useState<Tri>("any");
   const [medQ, setMedQState] = useState<Tri>("any");
   const [verseQ, setVerseQState] = useState<Tri>("any");
-
-  // lista
   const [rows, setRows] = useState<Pagela[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(12);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
-
-  // setters que resetam página (batched pelo React)
   const setYear = useCallback((v?: number) => { setYearState(v); setPage(1); }, []);
   const setWeek = useCallback((v?: number) => { setWeekState(v); setPage(1); }, []);
   const setPresentQ = useCallback((v: Tri) => { setPresentQState(v); setPage(1); }, []);
@@ -104,7 +94,6 @@ export function useChildPagelas(
     setVerseQ("any");
   }, [setYear, setWeek, setPresentQ, setMedQ, setVerseQ]);
 
-  /** ==== QUERY COMPOSED & DEBOUNCED ==== */
   type Query = {
     childId: string;
     year?: number;
@@ -128,15 +117,10 @@ export function useChildPagelas(
       page,
       limit,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childId, year, week, presentQ, medQ, verseQ, page, limit]);
 
   const debouncedQuery = useDebouncedValue(query, 250);
-
-  // dedupe: evita chamar API duas vezes com a mesma query (ex.: StrictMode)
   const lastKeyRef = useRef<string>("");
-
-  // cancelamento em voo
   const abortRef = useRef<AbortController | null>(null);
 
   const doFetch = useCallback(
@@ -147,10 +131,9 @@ export function useChildPagelas(
         return;
       }
       const key = JSON.stringify(q);
-      if (!force && key === lastKeyRef.current) return; // dedupe
+      if (!force && key === lastKeyRef.current) return;
       lastKeyRef.current = key;
 
-      // aborta anterior
       abortRef.current?.abort();
       const ctrl = new AbortController();
       abortRef.current = ctrl;
@@ -162,7 +145,6 @@ export function useChildPagelas(
         setRows(data.items || []);
         setTotal(data.total || 0);
       } catch (e: any) {
-        // se foi abortada, ignora
         if (e?.name !== "CanceledError" && e?.name !== "AbortError") {
           setError(e?.response?.data?.message || e?.message || "Erro ao listar pagelas");
         }
@@ -171,22 +153,18 @@ export function useChildPagelas(
         setLoading(false);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
-  // roda quando a query (debounced) muda → UMA chamada só
   useEffect(() => {
     void doFetch(false, debouncedQuery);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQuery]);
 
-  // CRUD (mantidos; usam force=true para garantir atualização do total)
   const create = useCallback(
     async (payload: CreatePagelaPayload) => {
       const res = await apiCreatePagela(payload);
-      setRows((prev) => [res, ...prev]); // otimista
-      await doFetch(true); // garante contagem/ordem
+      setRows((prev) => [res, ...prev]);
+      await doFetch(true);
     },
     [doFetch]
   );

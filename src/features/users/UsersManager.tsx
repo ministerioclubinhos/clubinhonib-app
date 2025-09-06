@@ -1,14 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Typography,
-  Alert,
-  CircularProgress,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Box, Alert, CircularProgress, } from "@mui/material";
 import { useTheme, useMediaQuery } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 import UsersToolbar from "./components/UsersToolbar";
@@ -16,18 +8,15 @@ import UsersTable from "./components/UsersTable";
 import UserViewDialog from "./components/UserViewDialog";
 import UserCreateDialog from "./components/UserCreateDialog";
 import UserEditDialog from "./components/UserEditDialog";
-import UserDeleteDialog from "./components/UserDeleteDialog";
 import { CreateUserForm, SortParam, UserFilters, UserRow } from "./types";
 import { useUserMutations, useUsers } from "./hooks";
 import { RoleUser } from "@/store/slices/auth/authSlice";
 import BackHeader from "@/components/common/header/BackHeader";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
-export default function UsersListPage() {
+export default function UsersManager() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
-
-  // server-side pagination/sort/filters
   const [pageSize, setPageSize] = React.useState<number>(12);
   const [pageIndex, setPageIndex] = React.useState<number>(0);
   const [sorting, setSorting] = React.useState<SortParam>({
@@ -60,13 +49,10 @@ export default function UsersListPage() {
     deleteUser,
   } = useUserMutations(fetchPage);
 
-  // dialogs state
   const [viewing, setViewing] = React.useState<UserRow | null>(null);
   const [editing, setEditing] = React.useState<Partial<UserRow> | null>(null);
   const [creating, setCreating] = React.useState<CreateUserForm | null>(null);
   const [confirmDelete, setConfirmDelete] = React.useState<UserRow | null>(null);
-
-  // actions
   const onCreateConfirm = async () => {
     if (!creating) return;
     if (creating.password !== (creating.confirmPassword || "")) {
@@ -188,12 +174,10 @@ export default function UsersListPage() {
         onConfirm={onEditConfirm}
       />
 
-      <UserDeleteDialog
+      <DeleteConfirmDialog
         open={!!confirmDelete}
-        user={confirmDelete}
-        loading={dialogLoading}
-        error={dialogError}
-        onCancel={() => setConfirmDelete(null)}
+        title={confirmDelete?.name || "Usuário"}
+        onClose={() => setConfirmDelete(null)}
         onConfirm={onDeleteConfirm}
       />
     </Box>

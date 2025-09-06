@@ -1,26 +1,20 @@
 import React from "react";
 import {
   Box,
-  Typography,
   Alert,
   CircularProgress,
   useMediaQuery,
   useTheme,
   Snackbar,
-  IconButton,
-  Tooltip,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import type { SortingState } from "@tanstack/react-table";
-import { ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-
 import CoordinatorToolbar from "./components/CoordinatorToolbar";
 import CoordinatorTable from "./components/CoordinatorTable";
 import CoordinatorCards from "./components/CoordinatorCards";
 import CoordinatorViewDialog from "./components/CoordinatorViewDialog";
 import CoordinatorLinkDialog from "./components/CoordinatorLinkDialog";
-
 import {
   useCoordinatorMutations,
   useCoordinatorProfiles,
@@ -32,16 +26,12 @@ import BackHeader from "@/components/common/header/BackHeader";
 export default function CoordinatorProfilesManager() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
-
-  // paginação + ordenação (server-side)
   const [pageSize, setPageSize] = React.useState<number>(12);
   const [pageIndex, setPageIndex] = React.useState<number>(0);
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "updatedAt", desc: true },
   ]);
 
-  // filtros (server-side)
   const [filters, setFilters] = React.useState<CoordinatorFilters>({
     searchString: "",
     active: "all",
@@ -49,7 +39,6 @@ export default function CoordinatorProfilesManager() {
     clubNumber: "",
   });
 
-  // lista paginada
   const { rows, total, loading, error, setError, fetchPage, refreshOne } =
     useCoordinatorProfiles(pageIndex, pageSize, sorting, filters);
 
@@ -57,7 +46,6 @@ export default function CoordinatorProfilesManager() {
     fetchPage();
   }, [fetchPage]);
 
-  // índice de clubs por número (para vincular/desvincular rapidamente)
   const {
     byNumber,
     loading: clubsLoading,
@@ -65,7 +53,6 @@ export default function CoordinatorProfilesManager() {
     refresh: refreshClubs,
   } = useClubsIndex();
 
-  // snackbar
   const [snack, setSnack] = React.useState<{
     open: boolean;
     message: string;
@@ -84,7 +71,6 @@ export default function CoordinatorProfilesManager() {
     setSnack((s) => ({ ...s, open: false }));
   };
 
-  // dialogs
   const [viewing, setViewing] = React.useState<CoordinatorProfile | null>(null);
   const [linking, setLinking] = React.useState<CoordinatorProfile | null>(null);
   const [linkNumber, setLinkNumber] = React.useState<string>("");
@@ -98,7 +84,6 @@ export default function CoordinatorProfilesManager() {
     unassignClub,
   } = useCoordinatorMutations(fetchPage, refreshOne);
 
-  // centraliza "fechar e limpar" o diálogo de vínculo
   const closeLinkDialog = React.useCallback(() => {
     setLinking(null);
     setDialogError("");
@@ -117,9 +102,8 @@ export default function CoordinatorProfilesManager() {
     try {
       const msg = await assignClub(linking.id, club.id);
       showSnack(msg || "Club atribuído ao coordenador com sucesso", "success");
-      closeLinkDialog(); // fecha modal após sucesso
+      closeLinkDialog(); 
     } catch {
-      // erro já tratado no dialogError; opcionalmente exiba snackbar de erro
       showSnack("Falha ao vincular clubinho", "error");
     }
   };
@@ -135,7 +119,7 @@ export default function CoordinatorProfilesManager() {
     try {
       const msg = await unassignClub(linking.id, club.id);
       showSnack(msg || "Club removido do coordenador com sucesso", "success");
-      closeLinkDialog(); // fecha modal após sucesso
+      closeLinkDialog();
     } catch {
       showSnack("Falha ao desvincular clubinho", "error");
     }
@@ -232,7 +216,6 @@ export default function CoordinatorProfilesManager() {
         onClose={closeLinkDialog}
       />
 
-      {/* Snackbar global de feedback */}
       <Snackbar
         open={snack.open}
         autoHideDuration={3500}
