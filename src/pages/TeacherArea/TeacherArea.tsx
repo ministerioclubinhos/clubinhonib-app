@@ -100,7 +100,7 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showWeekBanner, showMedit
   const activeCount = [showWeekBanner, showMeditationBanner].filter(Boolean).length;
 
   return (
-    <Grid container spacing={2} sx={{ mb: 6, mt: 3, justifyContent: 'space-between' }}>
+    <Grid container spacing={2} sx={{ mb: 6, mt: 0,pt:0, justifyContent: 'space-between' }}>
       {activeCount === 0 ? (
         <Grid item xs={12}>
           <Paper elevation={2} sx={{ p: 3, textAlign: 'center' }}>
