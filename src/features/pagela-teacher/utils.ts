@@ -18,3 +18,4 @@ export function getISOWeekYear(date: Date) {
   const week = Math.ceil((((+d - +yearStart) / 86400000) + 1) / 7);
   return { year, week };
 }
+

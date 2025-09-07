@@ -31,6 +31,14 @@ export type ChildResponseDto = {
   updatedAt: string;
 };
 
+export type AcceptedChristShortDto = {
+  id: string;
+  decision: "ACCEPTED" | "RECONCILED" | null;
+  createdAt: string;
+  updatedAt: string;
+  notes?: string | null;
+};
+
 export type ChildSimpleResponseDto = {
   id: string;
   name: string;
@@ -38,7 +46,9 @@ export type ChildSimpleResponseDto = {
   guardianPhone: string;
   gender: string;
   clubId: string;
+  acceptedChrists: AcceptedChristShortDto[];
 };
+
 
 export type Paginated<T> = {
   data: T[];

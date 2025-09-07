@@ -236,6 +236,7 @@ export default function ChildrenBrowserPage() {
                 child={child}
                 onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
                 onEdit={(c) => openEdit(c.id)}
+                 onRefresh={refetch}
               />
             </Grid>
           ))}

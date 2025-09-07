@@ -34,3 +34,12 @@ export async function apiUpdatePagela(id: string, payload: UpdatePagelaPayload) 
 export async function apiDeletePagela(id: string) {
   await api.delete(`/pagelas/${id}`);
 }
+
+export async function apiCreateAcceptedChrist(payload: {
+  childId: string;
+  decision: "ACCEPTED" | "RECONCILED";
+  notes?: string | null;
+}) {
+  const { data } = await api.post("/accepted-christs", payload);
+  return data;
+}
