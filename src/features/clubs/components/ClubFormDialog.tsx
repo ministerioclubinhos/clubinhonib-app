@@ -1,4 +1,3 @@
-// src/modules/clubs/components/ClubFormDialog.tsx
 import React from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider,
@@ -12,6 +11,8 @@ import {
   CoordinatorOption, CreateClubForm, EditClubForm, TeacherOption,
   Weekday, WEEKDAYS
 } from "../types";
+import { useSelector } from "react-redux";
+import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
 type Props = {
   mode: "create" | "edit";
@@ -30,6 +31,8 @@ export default function ClubFormDialog({
   mode, open, value, onChange, onCancel, onSubmit,
   error, loading, coordinatorOptions, teacherOptions,
 }: Props) {
+
+  const isAdmin = useSelector(selectIsAdmin);
   const isCreate = mode === "create";
   if (!value) return null;
 
@@ -42,14 +45,27 @@ export default function ClubFormDialog({
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
+
+
         <Grid container spacing={2}>
-          <Grid item xs={12} md={3}>
-            <TextField
-              label="Número" type="number" fullWidth
-              value={(value as any).number ?? 0}
-              onChange={(e) => onChange({ ...value, number: Number(e.target.value) } as any)}
-            />
-          </Grid>
+          {isAdmin && (
+            <Grid item xs={12} md={3}>
+              <TextField
+                label="Número"
+                type="text"
+                fullWidth
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                value={(value as any).number ?? ""}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const onlyDigits = raw.replace(/\D/g, "");
+                  const parsed = onlyDigits ? Number(onlyDigits) : undefined;
+                  onChange({ ...value, number: parsed } as any);
+                }}
+              />
+            </Grid>
+          )}
+
 
           <Grid item xs={12} md={5}>
             <FormControl fullWidth>
@@ -65,14 +81,15 @@ export default function ClubFormDialog({
               </Select>
             </FormControl>
           </Grid>
-
-          <Grid item xs={12} md={4}>
-            <CoordinatorSelect
-              value={coord}
-              options={coordinatorOptions}
-              onChange={(val) => onChange({ ...value, coordinatorProfileId: val } as any)}
-            />
-          </Grid>
+          {isAdmin && (
+            <Grid item xs={12} md={4}>
+              <CoordinatorSelect
+                value={coord}
+                options={coordinatorOptions}
+                onChange={(val) => onChange({ ...value, coordinatorProfileId: val } as any)}
+              />
+            </Grid>
+          )}
 
           <Grid item xs={12}><Divider /></Grid>
 

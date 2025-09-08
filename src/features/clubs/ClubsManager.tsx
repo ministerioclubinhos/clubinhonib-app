@@ -10,8 +10,11 @@ import { ClubResponseDto, CreateClubForm, EditClubForm, Weekday, ClubFilters, Cl
 import { apiFetchClubs } from "./api";
 import BackHeader from "@/components/common/header/BackHeader";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import { useSelector } from "react-redux";
+import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
 export default function ClubsManager() {
+   const isAdmin = useSelector(selectIsAdmin);
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const [filters, setFilters] = useState<ClubFilters>({
@@ -123,6 +126,7 @@ export default function ClubsManager() {
       {error && !loading && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>{error}</Alert>}
 
       <ClubsTable
+        isAdmin={isAdmin}
         rows={rows}
         total={total}
         pageIndex={pageIndex}

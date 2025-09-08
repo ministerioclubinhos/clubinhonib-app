@@ -1,4 +1,3 @@
-// src/modules/clubs/components/ClubsTable.tsx
 import React, { useMemo } from "react";
 import {
   Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -14,8 +13,8 @@ import Tooltip from "@mui/material/Tooltip";
 import { ClubResponseDto, WEEKDAYS } from "../types";
 import { fmtDate } from "../utils";
 import ClubsCards from "./ClubsCards";
-
 type Props = {
+  isAdmin: boolean;
   rows: ClubResponseDto[];
   total: number;
   pageIndex: number;
@@ -29,16 +28,15 @@ type Props = {
   onAskDelete: (club: ClubResponseDto) => void;
 };
 
-/** --- WRAPPER RESPONSIVO: no XS renderiza cards, no restante tabela desktop --- */
 export default function ClubsTable(props: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
   return isXs ? <ClubsCards {...props} /> : <ClubsTableDesktop {...props} />;
 }
 
-/** --- TABELA DESKTOP --- */
 function ClubsTableDesktop(props: Props) {
   const {
+    isAdmin,
     rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
     sorting, setSorting, onOpenView, onStartEdit, onAskDelete,
   } = props;
@@ -97,19 +95,19 @@ function ClubsTableDesktop(props: Props) {
       },
       ...(isMdUp
         ? ([
-            {
-              accessorKey: "createdAt",
-              header: "Criado em",
-              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
-              meta: { width: 170 },
-            },
-            {
-              accessorKey: "updatedAt",
-              header: "Atualizado em",
-              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
-              meta: { width: 170 },
-            },
-          ] as ColumnDef<ClubResponseDto>[])
+          {
+            accessorKey: "createdAt",
+            header: "Criado em",
+            cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
+            meta: { width: 170 },
+          },
+          {
+            accessorKey: "updatedAt",
+            header: "Atualizado em",
+            cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
+            meta: { width: 170 },
+          },
+        ] as ColumnDef<ClubResponseDto>[])
         : []),
       {
         id: "actions",
@@ -127,11 +125,14 @@ function ClubsTableDesktop(props: Props) {
                 <Edit fontSize="inherit" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Excluir">
-              <IconButton size={isXs ? "small" : "medium"} color="error" onClick={() => onAskDelete(row.original)}>
-                <Delete fontSize="inherit" />
-              </IconButton>
-            </Tooltip>
+            {isAdmin && (
+              <Tooltip title="Excluir">
+                <IconButton size={isXs ? "small" : "medium"} color="error" onClick={() => onAskDelete(row.original)}>
+                  <Delete fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            )}
+
           </Box>
         ),
         meta: { width: isXs ? 120 : 150 },

@@ -1,4 +1,3 @@
-// src/modules/clubs/components/ClubsCards.tsx
 import React, { useMemo, useState } from "react";
 import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
@@ -15,6 +14,7 @@ import { SortingState } from "@tanstack/react-table";
 import { ClubResponseDto, WEEKDAYS } from "../types";
 
 type Props = {
+  isAdmin: boolean;
   rows: ClubResponseDto[];
   total: number;
   pageIndex: number;
@@ -31,7 +31,6 @@ type Props = {
 const weekdayLabel = (v?: string | null) =>
   WEEKDAYS.find((w) => w.value === v)?.label ?? (v ?? "—");
 
-// 👉 apenas data (pt-BR) sem hora
 const fmtDateOnly = (iso?: string | null) => {
   if (!iso) return "—";
   const d = new Date(iso);
@@ -40,11 +39,7 @@ const fmtDateOnly = (iso?: string | null) => {
 };
 
 export default function ClubsCards(props: Props) {
-  const {
-    rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
-    sorting, setSorting, onOpenView, onStartEdit, onAskDelete
-  } = props;
-
+  const { isAdmin, rows, total, pageIndex, pageSize, setPageIndex, setPageSize, sorting, setSorting, onOpenView, onStartEdit, onAskDelete } = props;
   const [open, setOpen] = useState<Set<string>>(new Set());
   const toggle = (id: string) =>
     setOpen((prev) => {
@@ -69,7 +64,6 @@ export default function ClubsCards(props: Props) {
 
   return (
     <Box sx={{ px: { xs: 0, sm: 1 }, py: 0 }}>
-      {/* Ordenação compacta */}
       <Stack
         direction="row"
         spacing={1}
@@ -114,7 +108,6 @@ export default function ClubsCards(props: Props) {
                   bgcolor: "background.paper",
                 }}
               >
-                {/* Cabeçalho */}
                 <Stack
                   direction="row"
                   alignItems="center"
@@ -125,7 +118,6 @@ export default function ClubsCards(props: Props) {
                     gap: 1.25,
                   }}
                 >
-                  {/* medalhão */}
                   <Box
                     sx={{
                       width: 38, height: 38, borderRadius: "50%",
@@ -138,7 +130,6 @@ export default function ClubsCards(props: Props) {
                     {c.number}
                   </Box>
 
-                  {/* dia da semana */}
                   <Stack direction="row" spacing={0.75} alignItems="center">
                     <CalendarMonthOutlined sx={{ fontSize: 18, color: "text.secondary" }} />
                     <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
@@ -148,7 +139,6 @@ export default function ClubsCards(props: Props) {
 
                   <Box sx={{ flex: 1 }} />
 
-                  {/* expandir */}
                   <ButtonBase
                     onClick={() => toggle(c.id)}
                     aria-label={expanded ? "Recolher" : "Expandir"}
@@ -175,7 +165,6 @@ export default function ClubsCards(props: Props) {
                   </ButtonBase>
                 </Stack>
 
-                {/* Coordenador */}
                 <Stack
                   direction="row"
                   spacing={1}
@@ -195,7 +184,6 @@ export default function ClubsCards(props: Props) {
                   </Typography>
                 </Stack>
 
-                {/* Resumo quando fechado */}
                 {!expanded && (
                   <Stack
                     direction="row"
@@ -220,12 +208,10 @@ export default function ClubsCards(props: Props) {
                   </Stack>
                 )}
 
-                {/* Expandido */}
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                   <Divider sx={{ my: 0.25 }} />
                   <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
                     <Grid container spacing={{ xs: 1, sm: 1.5 }}>
-                      {/* Professores */}
                       <Grid item xs={12}>
                         <Stack spacing={0.75}>
                           <Stack direction="row" spacing={0.75} alignItems="center">
@@ -250,7 +236,6 @@ export default function ClubsCards(props: Props) {
                         </Stack>
                       </Grid>
 
-                      {/* Endereço */}
                       {c.address && (
                         <>
                           <Grid item xs={12}><Divider light sx={{ my: 0.5 }} /></Grid>
@@ -278,7 +263,6 @@ export default function ClubsCards(props: Props) {
                         </>
                       )}
 
-                      {/* Datas (sem hora) + meta */}
                       <Grid item xs={12}>
                         <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
                           <Chip size="small" variant="outlined" label={`Criado: ${fmtDateOnly(c.createdAt)}`} />
@@ -290,7 +274,6 @@ export default function ClubsCards(props: Props) {
                   </CardContent>
                 </Collapse>
 
-                {/* Rodapé de ações */}
                 <Box
                   sx={{
                     display: "flex",
@@ -311,11 +294,13 @@ export default function ClubsCards(props: Props) {
                       <Edit fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Excluir">
-                    <IconButton size="small" color="error" onClick={() => onAskDelete(c)}>
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  {isAdmin && (
+                    <Tooltip title="Excluir">
+                      <IconButton size="small" color="error" onClick={() => onAskDelete(c)}>
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </Box>
               </Card>
             </Grid>

@@ -1,4 +1,6 @@
-import React, { Fragment, useState } from 'react';
+// src/pages/TeacherArea/TrainingVideosSection.tsx
+
+import React, { useState, Fragment, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -16,9 +18,9 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
-import { RootState } from '@/store/slices';
-import { RouteData } from 'store/slices/route/routeSlice';
-import { MediaTargetType } from 'store/slices/types';
+
+import { selectVideoRoutes } from '@/store/selectors/routeSelectors';
+import { RouteData } from '@/store/slices/route/routeSlice';
 
 const TrainingVideosSection: React.FC = () => {
   const navigate = useNavigate();
@@ -28,14 +30,17 @@ const TrainingVideosSection: React.FC = () => {
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState(false);
 
-  const videos: RouteData[] = useSelector((state: RootState) =>
-    state.routes.routes.filter((route) => route.entityType === MediaTargetType.VideosPage)
-  );
+  const videos: RouteData[] = useSelector(selectVideoRoutes);
 
-  const filteredVideos = videos.filter((video) =>
-    video.title.toLowerCase().includes(search.toLowerCase()) ||
-    video.subtitle?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredVideos = useMemo(() => {
+    const term = search.toLowerCase().trim();
+    if (!term) return videos;
+    return videos.filter(
+      (video) =>
+        video.title.toLowerCase().includes(term) ||
+        video.subtitle?.toLowerCase().includes(term)
+    );
+  }, [videos, search]);
 
   const visibleCount = isMobile ? 2 : 4;
   const videosToDisplay = expanded ? filteredVideos : filteredVideos.slice(0, visibleCount);
@@ -113,7 +118,12 @@ const TrainingVideosSection: React.FC = () => {
                       }}
                     />
                     <CardContent>
-                      <Typography variant="subtitle1" fontWeight="bold" color="#424242" gutterBottom>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        color="#424242"
+                        gutterBottom
+                      >
                         {video.title}
                       </Typography>
                       <Typography variant="body2" color="#616161" noWrap>

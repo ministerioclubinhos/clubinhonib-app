@@ -1,16 +1,10 @@
-// src/modules/teachers/TeacherProfilesManager.tsx
 import React from "react";
 import {
   Box,
-  Typography,
   Alert,
   CircularProgress,
-  IconButton,
-  Tooltip,
 } from "@mui/material";
 import { useTheme, useMediaQuery } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
 
 import TeacherToolbar from "./components/TeacherToolbar";
 import TeacherTable from "./components/TeacherTable";
@@ -22,7 +16,6 @@ import { useClubsIndex, useTeacherMutations, useTeacherProfiles } from "./hooks"
 import { TeacherProfile } from "./types";
 import BackHeader from "@/components/common/header/BackHeader";
 
-// mesmo shape usado pelo TeacherToolbar
 export type TeacherFilters = {
   q?: string;
   active?: boolean;
@@ -33,14 +26,10 @@ export type TeacherFilters = {
 export default function TeacherProfilesManager() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
-
-  // paginação/ordenação (server-side)
   const [pageSize, setPageSize] = React.useState<number>(12);
   const [pageIndex, setPageIndex] = React.useState<number>(0);
   const [sorting, setSorting] = React.useState([{ id: "updatedAt", desc: true }]);
 
-  // filtros (server-side) — no mesmo padrão do ClubsToolbar
   const [filters, setFilters] = React.useState<TeacherFilters>({
     q: "",
     active: undefined,
@@ -48,7 +37,6 @@ export default function TeacherProfilesManager() {
     clubNumber: undefined,
   });
 
-  // lista (server-side) usando filtros
   const { rows, total, loading, error, setError, fetchPage, refreshOne } =
     useTeacherProfiles(pageIndex, pageSize, sorting as any, {
       q: filters.q || undefined,
@@ -62,7 +50,6 @@ export default function TeacherProfilesManager() {
     fetchPage();
   }, [fetchPage]);
 
-  // índice de clubs (para digitar número e mapear para UUID)
   const {
     byNumber,
     loading: clubsLoading,
@@ -70,15 +57,10 @@ export default function TeacherProfilesManager() {
     refresh: refreshClubs,
   } = useClubsIndex();
 
-  // mutations (assign/unassign) por teacherId + clubId
   const { dialogLoading, dialogError, setDialogError, setClub, clearClub } =
     useTeacherMutations(fetchPage, refreshOne);
-
-  // dialogs
   const [viewing, setViewing] = React.useState<TeacherProfile | null>(null);
   const [editing, setEditing] = React.useState<TeacherProfile | null>(null);
-
-  // ações
   const onSetClub = async (
     teacher: TeacherProfile | null,
     clubNumberInput: number
@@ -98,7 +80,6 @@ export default function TeacherProfilesManager() {
       setEditing((e) => (e ? { ...e, club: null } : e));
   };
 
-  // ao alterar filtros via toolbar, zerar página e deixar hook refazer o fetch
   const handleFiltersChange = React.useCallback(
     (updater: (prev: TeacherFilters) => TeacherFilters) => {
       setFilters((prev) => {
@@ -110,7 +91,6 @@ export default function TeacherProfilesManager() {
     []
   );
 
-  // corrige página quando total muda (ex.: filtro resulta em 0 itens)
   React.useEffect(() => {
     const lastPage = Math.max(0, Math.ceil(total / pageSize) - 1);
     if (pageIndex > lastPage) setPageIndex(lastPage);
@@ -187,14 +167,12 @@ export default function TeacherProfilesManager() {
         />
       )}
 
-      {/* View */}
       <TeacherViewDialog
         open={!!viewing}
         teacher={viewing}
         onClose={() => setViewing(null)}
       />
 
-      {/* Edit vinculação de Clube */}
       <TeacherEditDialog
         open={!!editing}
         teacher={editing}

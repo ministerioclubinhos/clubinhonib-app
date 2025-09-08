@@ -8,6 +8,8 @@ import { ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, SortingS
 import { Visibility, Link as LinkIcon, LinkOff } from "@mui/icons-material";
 import { TeacherProfile } from "../types";
 import { fmtDate } from "../utils";
+import { useSelector } from "react-redux";
+import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
 type Props = {
   rows: TeacherProfile[];
@@ -27,6 +29,7 @@ export default function TeacherTable({
   rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
   sorting, setSorting, onView, onEditLinks, onClearClub,
 }: Props) {
+  const isAdmin = useSelector(selectIsAdmin);
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
@@ -90,11 +93,13 @@ export default function TeacherTable({
               <LinkIcon fontSize="inherit" />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Desvincular clube">
-            <IconButton size={isXs ? "small" : "medium"} onClick={() => onClearClub(row.original.id)}>
-              <LinkOff fontSize="inherit" />
-            </IconButton>
-          </Tooltip>
+          {isAdmin && (
+            <Tooltip title="Desvincular clube">
+              <IconButton size={isXs ? "small" : "medium"} onClick={() => onClearClub(row.original.id)}>
+                <LinkOff fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
       ),
       meta: { width: isXs ? 160 : 200 },

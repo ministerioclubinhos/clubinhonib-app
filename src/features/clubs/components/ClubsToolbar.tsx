@@ -1,4 +1,3 @@
-// src/modules/clubs/components/ClubsToolbar.tsx
 import React from "react";
 import {
   Button,
@@ -13,7 +12,9 @@ import {
   Typography,
 } from "@mui/material";
 import { Add, Refresh, CleaningServices } from "@mui/icons-material";
+import { useSelector } from "react-redux";
 import { ClubFilters } from "../types";
+import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
 type Props = {
   filters: ClubFilters;
@@ -30,6 +31,8 @@ export default function ClubsToolbar({
   onRefreshClick,
   isXs,
 }: Props) {
+ const isAdmin = useSelector(selectIsAdmin);
+
   const handleChange = <K extends keyof ClubFilters>(
     key: K,
     value: ClubFilters[K]
@@ -63,7 +66,6 @@ export default function ClubsToolbar({
       </Typography>
 
       <Grid container spacing={{ xs: 1.5, md: 2 }} alignItems="center">
-        {/* Club (número ou dia da semana) */}
         <Grid item xs={12} md={4}>
           <TextField
             fullWidth
@@ -75,7 +77,6 @@ export default function ClubsToolbar({
           />
         </Grid>
 
-        {/* Busca em Usuários */}
         <Grid item xs={12} md={4}>
           <TextField
             fullWidth
@@ -87,7 +88,6 @@ export default function ClubsToolbar({
           />
         </Grid>
 
-        {/* Busca em Endereço */}
         <Grid item xs={12} md={4}>
           <TextField
             fullWidth
@@ -99,12 +99,10 @@ export default function ClubsToolbar({
           />
         </Grid>
 
-        {/* Ações */}
         <Grid item xs={12}>
           {isXs ? (
             <>
-              <Box sx={{ height: 64 }} /> {/* espaçador pro FAB */}
-
+              <Box sx={{ height: 64 }} />
               <Box
                 sx={{
                   position: "fixed",
@@ -135,15 +133,17 @@ export default function ClubsToolbar({
                     </Fab>
                   </Tooltip>
 
-                  <Tooltip title="Criar Clubinho">
-                    <Fab
-                      color="primary"
-                      aria-label="Criar Clubinho"
-                      onClick={onCreateClick}
-                    >
-                      <Add />
-                    </Fab>
-                  </Tooltip>
+                  {isAdmin && (
+                    <Tooltip title="Criar Clubinho">
+                      <Fab
+                        color="primary"
+                        aria-label="Criar Clubinho"
+                        onClick={onCreateClick}
+                      >
+                        <Add />
+                      </Fab>
+                    </Tooltip>
+                  )}
                 </Stack>
               </Box>
             </>
@@ -169,13 +169,15 @@ export default function ClubsToolbar({
                 </IconButton>
               </Tooltip>
 
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={onCreateClick}
-              >
-                Criar
-              </Button>
+              {isAdmin && (
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={onCreateClick}
+                >
+                  Criar
+                </Button>
+              )}
             </Stack>
           )}
         </Grid>

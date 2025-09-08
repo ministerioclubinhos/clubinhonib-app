@@ -6,6 +6,9 @@ import {
 } from "@mui/material";
 import { Search, PersonAdd, ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/slices";
+
 import { useChildrenBrowser } from "./hooks";
 import ChildCard from "./components/ChildCard";
 import { CreateChildForm, EditChildForm, ChildResponseDto } from "../children/types";
@@ -17,11 +20,17 @@ export default function ChildrenBrowserPage() {
   const nav = useNavigate();
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const club = useSelector((state: RootState) => state.auth.user?.teacherProfile?.club);
 
-  const { items, loading, error, setError, refetch } = useChildrenBrowser();
+  const {
+    items,
+    loading,
+    error,
+    setError,
+    refetch,
+  } = club ? useChildrenBrowser() : { items: [], loading: false, error: "", setError: () => { }, refetch: () => { } };
 
   const [query, setQuery] = React.useState("");
-
   const filteredItems = React.useMemo(() => {
     const s = query.trim().toLowerCase();
     if (!s) return items;
@@ -32,6 +41,7 @@ export default function ChildrenBrowserPage() {
       return name.includes(s) || gname.includes(s) || gphone.includes(s);
     });
   }, [items, query]);
+
   const [creating, setCreating] = React.useState<CreateChildForm | null>(null);
   const [editing, setEditing] = React.useState<EditChildForm | null>(null);
 
@@ -119,7 +129,6 @@ export default function ChildrenBrowserPage() {
       sx={{
         px: { xs: 2, md: 4 },
         pt: { xs: 2, md: 4 },
-        pb: { xs: 6, md: 10 },
         minHeight: "100vh",
         bgcolor: "#f6f7f9"
       }}
@@ -161,86 +170,106 @@ export default function ChildrenBrowserPage() {
             Área das crianças
           </Typography>
 
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: { xs: "none", md: "block" } }}
-          >
-            Toque em uma criança para abrir suas pagelas
-          </Typography>
+          {club && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ display: { xs: "none", md: "block" } }}
+            >
+              Toque em uma criança para abrir suas pagelas
+            </Typography>
+
+          )}
         </Box>
 
-        <Button
-          onClick={openCreate}
-          startIcon={<PersonAdd />}
-          variant="contained"
-          sx={{ display: { xs: "none", md: "inline-flex" } }}
-        >
-          Adicionar criança
-        </Button>
+        {club && (
+          <Button
+            onClick={openCreate}
+            startIcon={<PersonAdd />}
+            variant="contained"
+            sx={{ display: { xs: "none", md: "inline-flex" } }}
+          >
+            Adicionar criança
+          </Button>
+        )}
       </Box>
 
-      <Fab
-        color="primary"
-        aria-label="Adicionar criança"
-        onClick={openCreate}
-        sx={{
-          position: "fixed",
-          bottom: 24,
-          right: 24,
-          display: { xs: "flex", md: "none" },
-          zIndex: 10,
-        }}
-      >
-        <PersonAdd />
-      </Fab>
-
-      <Paper
-        elevation={0}
-        sx={{ p: 2, mb: 2, borderRadius: 3, border: "1px solid", borderColor: "divider" }}
-      >
-        <Typography variant="h6" fontWeight={900} sx={{ mb: 1, color: "#143a2b" }}>
-          Selecionar Criança
-        </Typography>
-        <TextField
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          size="small"
-          fullWidth
-          placeholder="Buscar por nome ou telefone do responsável…"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
+      {club && (
+        <Fab
+          color="primary"
+          aria-label="Adicionar criança"
+          onClick={openCreate}
+          sx={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            display: { xs: "flex", md: "none" },
+            zIndex: 10,
           }}
-        />
-      </Paper>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
-          {error}
-        </Alert>
+        >
+          <PersonAdd />
+        </Fab>
       )}
 
-      {loading && !items.length ? (
-        <Box textAlign="center" my={6}>
-          <CircularProgress />
-        </Box>
+      {!club ? (
+        <Alert severity="warning" sx={{ mt: 4 }}>
+          <Typography fontWeight="bold">
+            Você não está vinculado a nenhum clubinho.
+          </Typography>
+          <Typography>
+            Entre em contato com <strong>seu Coordenador</strong> ou envie uma mensagem para  <strong>(92) 99127-4881</strong> ou <strong>(92) 98155-3139</strong>.
+          </Typography>
+        </Alert>
       ) : (
-        <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
-          {filteredItems.map((child) => (
-            <Grid key={child.id} item xs={12} sm={6} md={4} lg={3} xl={2.4 as any}>
-              <ChildCard
-                child={child}
-                onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
-                onEdit={(c) => openEdit(c.id)}
-                 onRefresh={refetch}
-              />
+        <>
+          <Paper
+            elevation={0}
+            sx={{ p: 2, mb: 2, borderRadius: 3, border: "1px solid", borderColor: "divider" }}
+          >
+            <Typography variant="h6" fontWeight={900} sx={{ mb: 1, color: "#143a2b" }}>
+              Selecionar Criança
+            </Typography>
+            <TextField
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              size="small"
+              fullWidth
+              placeholder="Buscar por nome ou telefone do responsável…"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Paper>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+              {error}
+            </Alert>
+          )}
+
+          {loading && !items.length ? (
+            <Box textAlign="center" my={6}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
+              {filteredItems.map((child) => (
+                <Grid key={child.id} item xs={12} sm={6} md={4} lg={3} xl={2.4 as any}>
+                  <ChildCard
+                    child={child}
+                    onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
+                    onEdit={(c) => openEdit(c.id)}
+                    onRefresh={refetch}
+                  />
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
+          )}
+        </>
       )}
 
       <ChildFormDialog
