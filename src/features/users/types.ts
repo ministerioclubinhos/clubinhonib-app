@@ -22,6 +22,18 @@ export type CreateUserForm = {
   role: RoleUser
 };
 
+
+export type UpadateUserForm = {
+  name: string;
+  role: RoleUser;
+  phone: string;
+  active: boolean;
+  completed: boolean;
+  commonUser: boolean;
+  password: string;
+  confirmPassword?: string;
+};
+
 export type UsersPage = {
   items: UserRow[];
   meta?: { total?: number };

@@ -1,4 +1,3 @@
-// UserCreateDialog.tsx
 import React from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid,
@@ -18,18 +17,25 @@ type Props = {
   onConfirm: () => void;
 };
 
+const roleLabels: Record<RoleUser, string> = {
+  [RoleUser.COORDINATOR]: "Coordenador",
+  [RoleUser.TEACHER]: "Professor",
+  [RoleUser.ADMIN]: "Administrador", 
+};
+
 export default function UserCreateDialog({
   open, value, onChange, loading, error, onCancel, onConfirm,
 }: Props) {
   if (!value) return null;
 
-  const roleOptions = Object.values(RoleUser);
+  const roleOptions = [RoleUser.COORDINATOR, RoleUser.TEACHER];
 
   return (
     <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
       <DialogTitle>Criar Usuário</DialogTitle>
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
         <Grid container spacing={{ xs: 1.5, md: 2 }} sx={{ mt: 1 }}>
           <Grid item xs={12} md={6}>
             <TextField
@@ -74,14 +80,14 @@ export default function UserCreateDialog({
               <InputLabel>Papel</InputLabel>
               <Select
                 label="Papel"
-                value={value.role ?? RoleUser.USER}
+                value={value.role ?? RoleUser.TEACHER}
                 onChange={(e) =>
                   onChange({ ...value, role: e.target.value as RoleUser })
                 }
               >
                 {roleOptions.map((role) => (
                   <MenuItem key={role} value={role}>
-                    {role}
+                    {roleLabels[role]}
                   </MenuItem>
                 ))}
               </Select>

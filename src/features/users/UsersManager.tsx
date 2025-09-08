@@ -1,14 +1,25 @@
 import React from "react";
-import { Box, Alert, CircularProgress, } from "@mui/material";
+import {
+  Box,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
 import { useTheme, useMediaQuery } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 
 import UsersToolbar from "./components/UsersToolbar";
 import UsersTable from "./components/UsersTable";
 import UserViewDialog from "./components/UserViewDialog";
 import UserCreateDialog from "./components/UserCreateDialog";
 import UserEditDialog from "./components/UserEditDialog";
-import { CreateUserForm, SortParam, UserFilters, UserRow } from "./types";
+
+import {
+  CreateUserForm,
+  SortParam,
+  UserFilters,
+  UserRow,
+  UpadateUserForm,
+} from "./types";
+
 import { useUserMutations, useUsers } from "./hooks";
 import { RoleUser } from "@/store/slices/auth/authSlice";
 import BackHeader from "@/components/common/header/BackHeader";
@@ -17,8 +28,9 @@ import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 export default function UsersManager() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const [pageSize, setPageSize] = React.useState<number>(12);
-  const [pageIndex, setPageIndex] = React.useState<number>(0);
+
+  const [pageSize, setPageSize] = React.useState(12);
+  const [pageIndex, setPageIndex] = React.useState(0);
   const [sorting, setSorting] = React.useState<SortParam>({
     id: "updatedAt",
     desc: true,
@@ -30,12 +42,15 @@ export default function UsersManager() {
     onlyCompleted: false,
   });
 
-  const { rows, total, loading, error, setError, fetchPage } = useUsers(
-    pageIndex,
-    pageSize,
-    sorting,
-    filters
-  );
+  const {
+    rows,
+    total,
+    loading,
+    error,
+    setError,
+    fetchPage,
+  } = useUsers(pageIndex, pageSize, sorting, filters);
+
   const doRefresh = React.useCallback(() => {
     fetchPage();
   }, [fetchPage]);
@@ -50,9 +65,10 @@ export default function UsersManager() {
   } = useUserMutations(fetchPage);
 
   const [viewing, setViewing] = React.useState<UserRow | null>(null);
-  const [editing, setEditing] = React.useState<Partial<UserRow> | null>(null);
+  const [editing, setEditing] = React.useState<(UpadateUserForm & { id: string; confirmPassword?: string }) | null>(null);
   const [creating, setCreating] = React.useState<CreateUserForm | null>(null);
   const [confirmDelete, setConfirmDelete] = React.useState<UserRow | null>(null);
+
   const onCreateConfirm = async () => {
     if (!creating) return;
     if (creating.password !== (creating.confirmPassword || "")) {
@@ -65,15 +81,13 @@ export default function UsersManager() {
 
   const onEditConfirm = async () => {
     if (!editing?.id) return;
-    const payload: Partial<UserRow> = {
-      name: editing.name,
-      phone: editing.phone,
-      role: editing.role,
-      active: !!editing.active,
-      completed: !!editing.completed,
-      commonUser: !!editing.commonUser,
-    };
-    await updateUser(editing.id, payload);
+    if (editing.password && editing.password !== editing.confirmPassword) {
+      setDialogError("As senhas não coincidem.");
+      return;
+    }
+
+    const { confirmPassword, id, ...payload } = editing;
+    await updateUser(id, payload);
     setEditing(null);
   };
 
@@ -83,22 +97,21 @@ export default function UsersManager() {
     setConfirmDelete(null);
   };
 
-  React.useEffect(() => {
-    doRefresh();
-  }, [doRefresh]);
-
   return (
-    <Box sx={{
-      px: { xs: 2, md: 4 },
-      pt: { xs: 0, md: 4 },
-      minHeight: "100vh", bgcolor: "#f9fafb"
-    }}>
+    <Box
+      sx={{
+        px: { xs: 2, md: 4 },
+        pt: { xs: 0, md: 4 },
+        minHeight: "100vh",
+        bgcolor: "#f9fafb",
+      }}
+    >
       <BackHeader title="Gerenciador de Usuários" />
 
       <UsersToolbar
         filters={filters}
-        onChange={(updater) => {
-          setFilters(updater);
+        onChange={(next) => {
+          setFilters(next);
           setPageIndex(0);
         }}
         onCreate={() =>
@@ -120,6 +133,7 @@ export default function UsersManager() {
           <CircularProgress />
         </Box>
       )}
+
       {error && !loading && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
           {error}
@@ -137,9 +151,21 @@ export default function UsersManager() {
         setSorting={(s) =>
           setSorting(Array.isArray(s) ? s[0] ?? null : (s as any))
         }
-        onView={(u) => setViewing(u)}
-        onEdit={(u) => setEditing(u)}
-        onDelete={(u) => setConfirmDelete(u)}
+        onView={(user) => setViewing(user)}
+        onEdit={(user) =>
+          setEditing({
+            id: user.id,
+            name: user.name,
+            phone: user.phone,
+            role: user.role,
+            active: user.active,
+            completed: user.completed,
+            commonUser: user.commonUser,
+            password: "",
+            confirmPassword: "",
+          })
+        }
+        onDelete={(user) => setConfirmDelete(user)}
       />
 
       <UserViewDialog
@@ -164,7 +190,7 @@ export default function UsersManager() {
       <UserEditDialog
         open={!!editing}
         value={editing}
-        onChange={(v) => setEditing(v)}
+        onChange={(v) => setEditing((prev) => (prev ? { ...prev, ...v } : null))}
         loading={dialogLoading}
         error={dialogError}
         onCancel={() => {

@@ -1,6 +1,5 @@
-// api.ts
 import api from "@/config/axiosConfig";
-import { CreateUserForm, UsersPage, UserRow } from "./types";
+import { CreateUserForm, UsersPage, UserRow, UpadateUserForm } from "./types";
 
 export async function apiListUsers(params: {
   page: number;
@@ -11,35 +10,79 @@ export async function apiListUsers(params: {
   completed?: boolean;
   sort?: string;
   order?: "ASC" | "DESC";
-}) {
+}): Promise<UsersPage> {
+  const {
+    page,
+    limit,
+    q,
+    role,
+    active,
+    completed,
+    sort = "updatedAt",
+    order = "DESC",
+  } = params;
+
   const { data } = await api.get<UsersPage>("/users", {
     params: {
-      page: params.page,
-      limit: params.limit,
-      q: params.q || undefined,
-      role: params.role && params.role !== "all" ? params.role : undefined,
-      active: params.active ? "true" : undefined,
-      completed: params.completed ? "true" : undefined,
-      sort: params.sort || "updatedAt",
-      order: params.order || "DESC",
+      page,
+      limit,
+      q: q || undefined,
+      role: role && role !== "all" ? role : undefined,
+      active: active ? "true" : undefined,
+      completed: completed ? "true" : undefined,
+      sort,
+      order,
     },
   });
+
   return data;
 }
 
-export async function apiCreateUser(payload: Omit<CreateUserForm, "confirmPassword">) {
+export async function apiCreateUser(
+  payload: Omit<CreateUserForm, "confirmPassword">
+): Promise<UserRow> {
   const { name, email, password, phone, role } = payload;
+
   const { data } = await api.post<UserRow>("/users", {
-    name, email, password, phone, role,
+    name,
+    email,
+    password,
+    phone,
+    role,
   });
+
   return data;
 }
 
-export async function apiUpdateUser(id: string, payload: Partial<UserRow>) {
-  const { data } = await api.put<UserRow>(`/users/${id}`, payload);
+export async function apiUpdateUser(
+  id: string,
+  payload: UpadateUserForm
+): Promise<UserRow> {
+  console.log(payload);
+  
+  const {
+    name,
+    role,
+    phone,
+    active,
+    completed,
+    commonUser,
+    password,
+  } = payload;  
+
+  const { data } = await api.put<UserRow>(`/users/${id}`, {
+    name,
+    role,
+    phone,
+    active,
+    completed,
+    commonUser,
+    password,
+  });
+
   return data;
 }
 
-export async function apiDeleteUser(id: string) {
+export async function apiDeleteUser(id: string): Promise<void> {
   await api.delete(`/users/${id}`);
 }
