@@ -1,4 +1,3 @@
-// src/modules/users/components/UsersCards.tsx
 import React, { useMemo, useState } from "react";
 import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
@@ -29,6 +28,12 @@ type Props = {
   onDelete: (u: UserRow) => void;
 };
 
+const roleLabels: Record<RoleUser, string> = {
+  [RoleUser.ADMIN]: "Administrador",
+  [RoleUser.COORDINATOR]: "Coordenador",
+  [RoleUser.TEACHER]: "Professor",
+};
+
 export default function UsersCards(props: Props) {
   const {
     rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
@@ -57,13 +62,16 @@ export default function UsersCards(props: Props) {
     { id: "createdAt", label: "Criado em" },
   ]), []);
 
-  const roleChipColor = (role?: string) =>
-    (String(role).toLowerCase() === RoleUser.ADMIN ? "secondary" : "default") as
-      | "default" | "primary" | "secondary" | "success" | "error" | "info" | "warning";
+  const roleChipColor = (role?: string) => {
+    switch (role) {
+      case RoleUser.COORDINATOR: return "primary";
+      case RoleUser.TEACHER: return "success";
+      default: return "default";
+    }
+  };
 
   return (
     <Box sx={{ px: { xs: 0, sm: 1 }, py: 0 }}>
-      {/* Ordenação compacta */}
       <Stack direction="row" spacing={0.75} sx={{ mb: 1, px: { xs: 0, sm: .5 } }} alignItems="center" justifyContent="flex-end">
         <FormControl size="small" sx={{ minWidth: { xs: 140, sm: 180 } }}>
           <InputLabel>Ordenar por</InputLabel>
@@ -91,15 +99,18 @@ export default function UsersCards(props: Props) {
               <Card
                 variant="outlined"
                 sx={{
-                  borderRadius: 2,
+                  borderRadius: 3,
                   overflow: "hidden",
-                  transition: "box-shadow .12s ease, transform .12s ease",
-                  "&:hover": { boxShadow: 2, transform: "translateY(-1px)" },
+                  transition: "box-shadow .15s ease, transform .15s ease",
+                  "&:hover": { boxShadow: 3, transform: "translateY(-2px)" },
                 }}
               >
-                {/* Topo: role + expandir */}
-                <Stack direction="row" alignItems="center" sx={{ px: { xs: 1, sm: 1.25 }, pt: .75, pb: .25 }}>
-                  <Chip size="small" color={roleChipColor(u.role)} label={u.role || "user"} variant="outlined" />
+                <Stack direction="row" alignItems="center" sx={{ px: 1.25, pt: 1, pb: .5 }}>
+                  <Chip
+                    size="small"
+                    color={roleChipColor(u.role)}
+                    label={roleLabels[u.role as RoleUser] || "Usuário"}
+                  />
                   <Box sx={{ flex: 1 }} />
                   <Tooltip title={expanded ? "Recolher" : "Expandir"}>
                     <IconButton
@@ -113,7 +124,7 @@ export default function UsersCards(props: Props) {
                         width: 32, height: 32,
                         borderRadius: "50%",
                         transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                        transition: "transform .15s ease",
+                        transition: "transform .2s ease",
                       }}
                     >
                       <ExpandMoreIcon fontSize="small" />
@@ -121,9 +132,8 @@ export default function UsersCards(props: Props) {
                   </Tooltip>
                 </Stack>
 
-                {/* Nome + email */}
-                <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: .5 }}>
-                  <Typography variant="subtitle1" fontWeight={800} noWrap title={u.name}>
+                <Box sx={{ px: 1.25, pb: .5 }}>
+                  <Typography variant="subtitle1" fontWeight={700} noWrap title={u.name}>
                     {u.name || "—"}
                   </Typography>
                   <Stack direction="row" spacing={0.5} alignItems="center">
@@ -134,9 +144,8 @@ export default function UsersCards(props: Props) {
                   </Stack>
                 </Box>
 
-                {/* Resumo chips */}
                 {!expanded && (
-                  <Stack direction="row" spacing={.5} alignItems="center" flexWrap="wrap" sx={{ px: { xs: 1, sm: 1.25 }, pb: .75 }}>
+                  <Stack direction="row" spacing={.5} alignItems="center" flexWrap="wrap" sx={{ px: 1.25, pb: .75 }}>
                     <Chip size="small" variant="outlined" label={`Ativo: ${u.active ? "Sim" : "Não"}`} color={u.active ? "success" : "default"} />
                     <Chip size="small" variant="outlined" label={`Completo: ${u.completed ? "Sim" : "Não"}`} color={u.completed ? "success" : "default"} />
                     {u.phone && (
@@ -152,11 +161,10 @@ export default function UsersCards(props: Props) {
                   </Stack>
                 )}
 
-                {/* Expandido */}
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                   <Divider />
-                  <CardContent sx={{ p: { xs: 1, sm: 1.25 } }}>
-                    <Grid container spacing={{ xs: .75, sm: 1.25 }}>
+                  <CardContent sx={{ p: 1.25 }}>
+                    <Grid container spacing={1.25}>
                       <Grid item xs={12} sm={6}>
                         <Stack spacing={0.25}>
                           <Stack direction="row" spacing={0.5} alignItems="center">
@@ -175,21 +183,38 @@ export default function UsersCards(props: Props) {
                           <Typography variant="body2">{fmtDate(String(u.updatedAt))}</Typography>
                         </Stack>
                       </Grid>
-
                       <Grid item xs={12}>
-                        <Stack direction="row" spacing={.5} flexWrap="wrap">
-                          <Chip size="small" label={`Papel: ${u.role || "user"}`} color={roleChipColor(u.role)} variant="outlined" />
-                          <Chip size="small" label={`Ativo: ${u.active ? "Sim" : "Não"}`} color={u.active ? "success" : "default"} />
-                          <Chip size="small" label={`Completo: ${u.completed ? "Sim" : "Não"}`} color={u.completed ? "success" : "default"} />
+                        <Stack
+                          direction="row"
+                          flexWrap="wrap"
+                          spacing={1}
+                          rowGap={1}
+                        >
+                          <Chip
+                            size="small"
+                            label={`Papel: ${roleLabels[u.role as RoleUser] || "Usuário"}`}
+                            color={roleChipColor(u.role)}
+                            variant="outlined"
+                          />
+                          <Chip
+                            size="small"
+                            label={`Ativo: ${u.active ? "Sim" : "Não"}`}
+                            color={u.active ? "success" : "default"}
+                          />
+                          <Chip
+                            size="small"
+                            label={`Completo: ${u.completed ? "Sim" : "Não"}`}
+                            color={u.completed ? "success" : "default"}
+                          />
                           {u.phone && <Chip size="small" label={u.phone} variant="outlined" />}
                         </Stack>
                       </Grid>
+
                     </Grid>
                   </CardContent>
                 </Collapse>
 
-                {/* Rodapé: ações */}
-                <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5, px: { xs: 1, sm: 1.25 }, pb: 1, pt: 0.25 }}>
+                <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5, px: 1.25, pb: 1 }}>
                   <Tooltip title="Visualizar"><IconButton size="small" onClick={() => onView(u)}><Visibility fontSize="small" /></IconButton></Tooltip>
                   <Tooltip title="Editar"><IconButton size="small" onClick={() => onEdit(u)}><Edit fontSize="small" /></IconButton></Tooltip>
                   <Tooltip title="Excluir"><IconButton size="small" color="error" onClick={() => onDelete(u)}><Delete fontSize="small" /></IconButton></Tooltip>

@@ -1,7 +1,20 @@
 import React from "react";
 import {
-  Box, Button, IconButton, Tooltip, Grid, TextField,
-  FormControl, InputLabel, Select, MenuItem, Switch, FormControlLabel, Paper, Fab
+  Box,
+  Button,
+  IconButton,
+  Tooltip,
+  Grid,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Switch,
+  FormControlLabel,
+  FormGroup,
+  Paper,
+  Fab,
 } from "@mui/material";
 import { Add, Refresh } from "@mui/icons-material";
 import { UserFilters } from "../types";
@@ -15,6 +28,12 @@ type Props = {
   isXs?: boolean;
 };
 
+const roleLabels: Record<RoleUser, string> = {
+  [RoleUser.COORDINATOR]: "Coordenador",
+  [RoleUser.TEACHER]: "Professor",
+  [RoleUser.ADMIN]: "Administrador",
+};
+
 export default function UsersToolbar({
   filters,
   onChange,
@@ -22,7 +41,7 @@ export default function UsersToolbar({
   onRefresh,
   isXs,
 }: Props) {
-  const roleOptions = ["all", ...Object.values(RoleUser)] as const;
+  const roleOptions = ["all", RoleUser.COORDINATOR, RoleUser.TEACHER] as const;
 
   return (
     <Paper sx={{ p: { xs: 1.5, md: 2 }, mb: 2 }}>
@@ -33,7 +52,9 @@ export default function UsersToolbar({
             size="small"
             label="Buscar (nome, e-mail, telefone, papel)"
             value={filters.q}
-            onChange={(e) => onChange((prev) => ({ ...prev, q: e.target.value }))}
+            onChange={(e) =>
+              onChange((prev) => ({ ...prev, q: e.target.value }))
+            }
           />
         </Grid>
 
@@ -51,53 +72,59 @@ export default function UsersToolbar({
               }
             >
               <MenuItem value="all">Todos</MenuItem>
-              {Object.values(RoleUser).map((role) => (
-                <MenuItem key={role} value={role}>
-                  {role}
-                </MenuItem>
-              ))}
+              {roleOptions
+                .filter((role) => role !== "all")
+                .map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {roleLabels[role]}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
         </Grid>
 
-        <Grid item xs={12} md={3}>
-          <Box
-            sx={{
-              display: "flex",
-              gap: { xs: 1, md: 2 },
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={filters.onlyActive}
-                  onChange={(e) =>
-                    onChange((p) => ({ ...p, onlyActive: e.target.checked }))
-                  }
-                />
-              }
-              label="Somente ativos"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={filters.onlyCompleted}
-                  onChange={(e) =>
-                    onChange((p) => ({ ...p, onlyCompleted: e.target.checked }))
-                  }
-                />
-              }
-              label="Somente completos"
-            />
-          </Box>
-        </Grid>
+<Grid item xs={12} md={3}>
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: { xs: "column", md: "row" }, // coluna no mobile, linha no desktop
+      gap: { xs: 1, md: 3 },
+      alignItems: { xs: "flex-start", md: "center" },
+    }}
+  >
+    <Tooltip title="Exibe apenas usuários que estão ativos no sistema">
+      <FormControlLabel
+        control={
+          <Switch
+            checked={filters.onlyActive}
+            onChange={(e) =>
+              onChange((p) => ({ ...p, onlyActive: e.target.checked }))
+            }
+          />
+        }
+        label="Apenas ativos"
+      />
+    </Tooltip>
 
-        {/* Ações */}
+    <Tooltip title="Exibe apenas usuários que concluíram o cadastro">
+      <FormControlLabel
+        control={
+          <Switch
+            checked={filters.onlyCompleted}
+            onChange={(e) =>
+              onChange((p) => ({ ...p, onlyCompleted: e.target.checked }))
+            }
+          />
+        }
+        label="Apenas completos"
+      />
+    </Tooltip>
+  </Box>
+</Grid>
+
+
         <Grid item xs={12} md={2}>
           {isXs ? (
-            // MOBILE: FABs flutuantes com respiro e safe-area
             <>
               <Fab
                 color="primary"
@@ -130,7 +157,6 @@ export default function UsersToolbar({
               </Fab>
             </>
           ) : (
-            // DESKTOP: layout tradicional
             <Box
               sx={{
                 display: "flex",
@@ -145,7 +171,11 @@ export default function UsersToolbar({
                 </IconButton>
               </Tooltip>
               <Tooltip title="Criar Usuário">
-                <Button variant="contained" startIcon={<Add />} onClick={onCreate}>
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={onCreate}
+                >
                   Criar
                 </Button>
               </Tooltip>
