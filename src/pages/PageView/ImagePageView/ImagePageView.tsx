@@ -6,7 +6,6 @@ import {
   Container,
   Typography,
   Alert,
-  Button,
   Tooltip,
   Fab,
   Skeleton,
@@ -56,7 +55,10 @@ function SectionSkeleton() {
           <Skeleton variant="text" width={220} />
         </Box>
       </Box>
-      <Skeleton variant="rectangular" sx={{ width: '100%', height: { xs: 200, sm: 400, md: 600 }, borderRadius: 2 }} />
+      <Skeleton
+        variant="rectangular"
+        sx={{ width: '100%', height: { xs: 200, sm: 400, md: 600 }, borderRadius: 2 }}
+      />
       <Grid container spacing={1} mt={1} justifyContent="center">
         {[...Array(6)].map((_, i) => (
           <Grid item xs={4} sm={2} md={2} key={i}>
@@ -71,8 +73,8 @@ function SectionSkeleton() {
 export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [loading, setLoading] = useState(false);          // primeiro carregamento (página 1)
+  const [loadingMore, setLoadingMore] = useState(false);  // carregamentos subsequentes
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -83,9 +85,9 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   const section = useSelector((state: RootState) => state.imageSectionPagination.section);
 
   const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN;
-  const isUserLogged = isAuthenticated;
   const defaultSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID;
 
+  // Intersection Observer para infinite scroll
   const observer = useRef<IntersectionObserver | null>(null);
   const lastSectionRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -99,14 +101,14 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
     [loadingMore, hasMore]
   );
 
-  const visibleSections = useMemo(
-    () => (section?.sections ?? []).filter((s) => s.public || isUserLogged),
-    [section?.sections, isUserLogged]
-  );
+  const sectionsList = useMemo(() => section?.sections ?? [], [section?.sections]);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchSectionData = async () => {
       try {
+        setError(null);
         if (page === 1) setLoading(true);
         else setLoadingMore(true);
 
@@ -114,7 +116,8 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
         if (!sectionId) throw new Error('Nenhum ID de seção fornecido.');
 
         const { data } = await api.get<PaginatedSectionResponse>(
-          `/image-pages/${sectionId}/sections?page=${page}&limit=2`
+          `/image-pages/${sectionId}/sections?page=${page}&limit=2`,
+          { signal: controller.signal }
         );
 
         if (page === 1) {
@@ -125,9 +128,11 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
         }
 
         setHasMore(data.page * data.limit < data.total);
-      } catch (err) {
-        console.error('Erro ao carregar a seção:', err);
-        setError('Erro ao carregar a seção. Tente novamente mais tarde.');
+      } catch (err: any) {
+        if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+          console.error('Erro ao carregar a seção:', err);
+          setError('Erro ao carregar a seção. Tente novamente mais tarde.');
+        }
       } finally {
         if (page === 1) setLoading(false);
         else setLoadingMore(false);
@@ -135,6 +140,8 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
     };
 
     fetchSectionData();
+
+    return () => controller.abort();
   }, [page, idToFetch, defaultSectionId, dispatch, feed]);
 
   const handleDelete = async () => {
@@ -153,12 +160,12 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
     }
   };
 
-  if (loading) {
+  if (loading && page === 1) {
     return (
       <Container sx={{ mt: 10, maxWidth: '95% !important', p: 0 }}>
-        <Box display="flex" flexDirection="column" alignItems="center" mt={5}>
-          <CircularProgress />
-          <Typography mt={2}>Carregando...</Typography>
+        <Box display="flex" flexDirection="column" gap={3}>
+          <SectionSkeleton />
+          <SectionSkeleton />
         </Box>
       </Container>
     );
@@ -169,16 +176,6 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
       <Container sx={{ mt: 10, maxWidth: '95% !important', p: 0 }}>
         <Alert severity="error" sx={{ mt: 4 }}>
           {error ?? 'Dados não encontrados.'}
-        </Alert>
-      </Container>
-    );
-  }
-
-  if (!section.public && !isUserLogged) {
-    return (
-      <Container sx={{ mt: 10, maxWidth: '95% !important', p: 0 }}>
-        <Alert severity="warning" sx={{ mt: 4 }}>
-          Esta página não está disponível publicamente.
         </Alert>
       </Container>
     );
@@ -201,11 +198,15 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
           {section.title}
         </Typography>
 
-        <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1, textAlign: 'justify', maxWidth: '1000px' }}>
+        <Typography
+          variant="subtitle1"
+          color="text.secondary"
+          sx={{ mt: 1, textAlign: 'justify', maxWidth: '1000px' }}
+        >
           {section.description}
         </Typography>
 
-        {feed && isUserLogged && <ButtonSection references={['photos']} />}
+        {feed && isAuthenticated && <ButtonSection references={['photos']} />}
 
         {isAdmin && (
           <Box
@@ -220,14 +221,24 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
             }}
           >
             <Tooltip title="Editar Página" placement="right">
-              <Fab color="warning" size="medium" onClick={() => navigate('/adm/editar-pagina-imagens')} disabled={isDeleting}>
+              <Fab
+                color="warning"
+                size="medium"
+                onClick={() => navigate('/adm/editar-pagina-imagens')}
+                disabled={isDeleting}
+              >
                 <EditIcon />
               </Fab>
             </Tooltip>
 
             {!feed && (
               <Tooltip title="Excluir Página" placement="right">
-                <Fab color="error" size="medium" onClick={() => setDeleteConfirmOpen(true)} disabled={isDeleting}>
+                <Fab
+                  color="error"
+                  size="medium"
+                  onClick={() => setDeleteConfirmOpen(true)}
+                  disabled={isDeleting}
+                >
                   <DeleteIcon />
                 </Fab>
               </Tooltip>
@@ -237,7 +248,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
       </Box>
 
       <Box display="flex" flexDirection="column" gap={4}>
-        {visibleSections.length === 0 ? (
+        {sectionsList.length === 0 ? (
           <>
             <SectionSkeleton />
             {hasMore && (
@@ -245,16 +256,21 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
                 ref={lastSectionRef}
                 sx={{ height: 50, display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}
               >
-                {loadingMore ? <CircularProgress size={30} /> : <Typography variant="body2" color="text.secondary">Carregue mais</Typography>}
+                {loadingMore ? (
+                  <CircularProgress size={30} />
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Carregue mais
+                  </Typography>
+                )}
               </Box>
             )}
           </>
         ) : (
           <>
-            {visibleSections.map((sectionItem) => (
+            {sectionsList.map((sectionItem) => (
               <SectionImagePageView
                 key={sectionItem.id}
-                public={sectionItem.public}
                 mediaItems={sectionItem.mediaItems}
                 caption={sectionItem.caption}
                 description={sectionItem.description}
@@ -262,12 +278,19 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
                 updatedAt={sectionItem.updatedAt || ''}
               />
             ))}
+
             {hasMore && (
               <Box
                 ref={lastSectionRef}
                 sx={{ height: 50, display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 4 }}
               >
-                {loadingMore ? <CircularProgress size={30} /> : <Typography variant="body2" color="text.secondary">Carregue mais</Typography>}
+                {loadingMore ? (
+                  <CircularProgress size={30} />
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Carregue mais
+                  </Typography>
+                )}
               </Box>
             )}
           </>
