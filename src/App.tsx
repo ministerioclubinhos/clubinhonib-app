@@ -29,7 +29,7 @@ import AdminDashboardPage from './components/Adm/AdminDashboardPage';
 import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 
 import { fetchRoutes } from './store/slices/route/routeSlice';
-import { fetchCurrentUser, RoleUser } from './store/slices/auth/authSlice';
+import { RoleUser, initAuth } from './store/slices/auth/authSlice';
 
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
@@ -63,16 +63,14 @@ import WeekMaterialManager from './features/week-materials/WeekMaterialManager';
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
   const dynamicRoutes = useSelector((state: RootStateType) => state.routes.routes);
-  const { loadingUser, accessToken } = useSelector((state: RootStateType) => state.auth);
+  const { initialized, loadingUser } = useSelector((state: RootStateType) => state.auth);
 
   useEffect(() => {
     dispatch(fetchRoutes());
-    if (accessToken) {
-      dispatch(fetchCurrentUser());
-    }
-  }, [dispatch, accessToken]);
+    dispatch(initAuth());
+  }, [dispatch]);
 
-  if (loadingUser) {
+  if (!initialized || loadingUser) {
     return (
       <Box
         sx={{

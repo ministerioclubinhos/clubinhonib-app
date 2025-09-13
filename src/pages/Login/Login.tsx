@@ -18,10 +18,38 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 import api from '@/config/axiosConfig';
 import { RootState as RootStateType, AppDispatch as AppDispatchType } from '@/store/slices';
-import { login, LoginResponse, RoleUser, setGoogleUser } from '@/store/slices/auth/authSlice';
+import {
+  login,
+  LoginResponse,
+  RoleUser,
+  setGoogleUser,
+  fetchCurrentUser,
+} from '@/store/slices/auth/authSlice';
 
 const log = (message: string, ...args: any[]) => {
   if (import.meta.env.DEV) console.log(message, ...args);
+};
+
+const mapLoginError = (err: unknown): string => {
+  if (axios.isAxiosError(err)) {
+    const status = err.response?.status;
+    const raw = (err.response?.data as any)?.message;
+    const serverMsg = Array.isArray(raw) ? raw.join(' ') : String(raw ?? '');
+
+    if (status === 401 ) {
+      return 'Email ou senha inválidos.';
+    }
+
+    if (/user.*inactive|blocked|disabled/i.test(serverMsg)) {
+      return 'Usuário inativo ou sem permissão.';
+    }
+
+    if (serverMsg) return serverMsg;
+
+    return 'Erro inesperado. Tente novamente mais tarde';
+  }
+
+  return 'Erro inesperado. Tente novamente mais tarde.';
 };
 
 const Login: React.FC = () => {
@@ -39,7 +67,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const redirectPath = user?.role === RoleUser.ADMIN ? '/adm' : '/area-do-professor';
+      const redirectPath = user?.role === RoleUser.ADMIN || user?.role === RoleUser.COORDINATOR ? '/adm' : '/area-do-professor';
       navigate(redirectPath);
     }
   }, [isAuthenticated, user, navigate]);
@@ -47,6 +75,17 @@ const Login: React.FC = () => {
   const isFormValid = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email) && password.length >= 6;
+  };
+
+  const bootstrapAfterLogin = async (accessToken: string) => {
+    try {
+      api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    } catch {}
+    try {
+      await dispatch(fetchCurrentUser()).unwrap();
+    } catch (e) {
+      log('[Login] fetchCurrentUser falhou após login:', e);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +103,7 @@ const Login: React.FC = () => {
     try {
       const response = await api.post<LoginResponse>('/auth/login', { email, password });
       if (response.data.user.active === false) {
-        setErrorMessage('Usuário não validado, entre em contato com 92981553139.');
+        setErrorMessage('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
         return;
       }
       const { accessToken, refreshToken, user: responseUser } = response.data;
@@ -75,19 +114,14 @@ const Login: React.FC = () => {
       };
 
       dispatch(login({ accessToken, refreshToken, user: mappedUser }));
+      await bootstrapAfterLogin(accessToken);
 
       const redirectPath = mappedUser.role === RoleUser.ADMIN ? '/adm' : '/area-do-professor';
       navigate(redirectPath);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const message =
-          (error.response?.data as any)?.message || 'Erro ao fazer login. Verifique suas credenciais.';
-        setErrorMessage(message);
-        log('[Login] Erro Axios:', error.response?.data || error.message);
-      } else {
-        setErrorMessage('Erro inesperado. Tente novamente mais tarde.');
-        log('[Login] Erro inesperado:', error);
-      }
+      const msg = mapLoginError(error);
+      setErrorMessage(msg);
+      log('[Login] Erro no login:', error);
     } finally {
       setLoading(false);
     }
@@ -103,7 +137,7 @@ const Login: React.FC = () => {
       const res = await api.post('/auth/google', { token: credential });
 
       if (res.data.active === false) {
-        setErrorMessage('Usuário não validado, entre em contato com 92981553139.');
+        setErrorMessage('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
         return;
       }
 
@@ -122,18 +156,14 @@ const Login: React.FC = () => {
       };
 
       dispatch(login({ accessToken, refreshToken, user: mappedUser }));
+      await bootstrapAfterLogin(accessToken);
 
       const redirectPath = mappedUser.role === RoleUser.ADMIN ? '/adm' : '/area-do-professor';
       navigate(redirectPath);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const message = (error.response?.data as any)?.message || 'Erro ao fazer login com Google.';
-        setErrorMessage(message);
-        log('[Login] Erro Axios com Google:', error.response?.data || error.message);
-      } else {
-        setErrorMessage('Erro inesperado ao fazer login com Google.');
-        log('[Login] Erro inesperado com Google:', error);
-      }
+      const msg = mapLoginError(error);
+      setErrorMessage(msg);
+      log('[Login] Erro no login Google:', error);
     } finally {
       setLoading(false);
     }
@@ -172,7 +202,12 @@ const Login: React.FC = () => {
               </Alert>
             )}
 
-            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              noValidate
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            >
               <TextField
                 fullWidth
                 type="email"
@@ -227,7 +262,7 @@ const Login: React.FC = () => {
         </Container>
       </Box>
     </GoogleOAuthProvider>
-  );  
+  );
 };
 
 export default Login;

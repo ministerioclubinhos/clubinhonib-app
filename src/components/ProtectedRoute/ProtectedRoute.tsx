@@ -1,4 +1,3 @@
-// src/routes/ProtectedRoute.tsx
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -7,11 +6,8 @@ import { Box, CircularProgress, Typography } from "@mui/material";
 import { RoleUser } from "@/store/slices/auth/authSlice";
 
 interface ProtectedRouteProps {
-  /** Uma role ou várias roles permitidas */
   requiredRole?: RoleUser | RoleUser[];
-  /** Para onde redirecionar quando negar acesso (default: "/") */
   redirectTo?: string;
-  /** Se true, ADMIN passa mesmo que não esteja em requiredRole (default: true) */
   adminBypass?: boolean;
 }
 
@@ -21,11 +17,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   adminBypass = true,
 }) => {
   const location = useLocation();
-  const { isAuthenticated, user, loadingUser } = useSelector(
+  const { isAuthenticated, user, loadingUser, initialized, accessToken } = useSelector(
     (state: RootStateType) => state.auth
   );
 
-  if (loadingUser) {
+  if (!initialized || loadingUser || (accessToken && !user)) {
     return (
       <Box
         sx={{
@@ -53,7 +49,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     const rolesArray = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
     const userRole = user?.role as RoleUser | undefined;
 
-    // ADMIN pode tudo (se habilitado)
     if (adminBypass && userRole === RoleUser.ADMIN) {
       return <Outlet />;
     }

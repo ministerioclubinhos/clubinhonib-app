@@ -58,6 +58,7 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   loadingUser: boolean;
+  initialized: boolean;
   error: string | null;
   googleUser: GoogleUser | null;
 }
@@ -68,6 +69,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
   loadingUser: false,
+  initialized: false,
   error: null,
   googleUser: null,
 };
@@ -76,10 +78,10 @@ const IS_DEV = import.meta.env.DEV === true;
 const DEBUG_AUTH = import.meta.env.VITE_DEBUG_AUTH === 'true';
 
 const log = (message: string, ...args: any[]) => {
-  if (IS_DEV || DEBUG_AUTH) {
-    console.debug(message, ...args);
-  }
+  if (IS_DEV || DEBUG_AUTH) console.debug(message, ...args);
 };
+
+const clean = (s: string) => s.replace(/^"|"$/g, '');
 
 export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: string }>(
   'auth/fetchCurrentUser',
@@ -105,6 +107,30 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
   }
 );
 
+export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
+  'auth/initAuth',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const rawAccess = localStorage.getItem('accessToken');
+      const rawRefresh = localStorage.getItem('refreshToken');
+
+      if (rawAccess && rawRefresh) {
+        const accessToken = clean(rawAccess);
+        const refreshToken = clean(rawRefresh);
+        dispatch(login({ accessToken, refreshToken }));
+
+        try {
+          await dispatch(fetchCurrentUser()).unwrap();
+        } catch (e) {
+          dispatch(logout());
+        }
+      }
+    } catch (e: any) {
+      return rejectWithValue('Falha ao inicializar auth');
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -114,11 +140,15 @@ const authSlice = createSlice({
       action: PayloadAction<{ accessToken: string; refreshToken: string; user?: User }>
     ) => {
       const { accessToken, refreshToken, user } = action.payload;
-      state.accessToken = accessToken.replace(/^"|"$/g, '');
-      state.refreshToken = refreshToken.replace(/^"|"$/g, '');
+      state.accessToken = clean(accessToken);
+      state.refreshToken = clean(refreshToken);
       state.isAuthenticated = true;
       if (user) state.user = user;
       state.error = null;
+      try {
+        localStorage.setItem('accessToken', state.accessToken!);
+        localStorage.setItem('refreshToken', state.refreshToken!);
+      } catch { }
     },
     logout: (state) => {
       state.accessToken = null;
@@ -127,6 +157,11 @@ const authSlice = createSlice({
       state.user = null;
       state.googleUser = null;
       state.error = null;
+      state.initialized = true;
+      try {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+      } catch { }
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
@@ -140,6 +175,20 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(initAuth.pending, (state) => {
+        state.loadingUser = true;
+        state.initialized = false;
+      })
+      .addCase(initAuth.fulfilled, (state) => {
+        state.loadingUser = false;
+        state.initialized = true;
+      })
+      .addCase(initAuth.rejected, (state, action) => {
+        state.loadingUser = false;
+        state.initialized = true;
+        state.error = (action.payload as string) || 'Falha ao inicializar auth';
+      })
+
       .addCase(fetchCurrentUser.pending, (state) => {
         state.loadingUser = true;
         state.error = null;
@@ -157,6 +206,10 @@ const authSlice = createSlice({
         state.accessToken = null;
         state.refreshToken = null;
         state.error = (action.payload as string) || 'Erro desconhecido';
+        try {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        } catch { }
       });
   },
 });
