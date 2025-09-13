@@ -32,6 +32,11 @@ export default function ClubFormDialog({
   error, loading, coordinatorOptions, teacherOptions,
 }: Props) {
 
+  const teachersKey = React.useMemo(
+  () => (teacherOptions ?? []).map(t => `${t.teacherProfileId}:${t.vinculado?1:0}`).join("|"),
+  [teacherOptions]
+);
+
   const isAdmin = useSelector(selectIsAdmin);
   const isCreate = mode === "create";
   if (!value) return null;
@@ -107,11 +112,12 @@ export default function ClubFormDialog({
             <Typography variant="subtitle1" fontWeight={700}>Professores</Typography>
           </Grid>
           <Grid item xs={12}>
-            <TeachersSelect
-              value={teachers}
-              options={teacherOptions}
-              onChange={(ids) => onChange({ ...value, teacherProfileIds: ids } as any)}
-            />
+<TeachersSelect
+  key={teachersKey}
+  value={teachers}
+  options={teacherOptions}
+  onChange={(ids) => onChange({ ...value, teacherProfileIds: ids } as any)}
+/>
           </Grid>
         </Grid>
 

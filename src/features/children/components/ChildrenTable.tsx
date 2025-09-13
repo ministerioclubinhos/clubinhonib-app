@@ -1,4 +1,3 @@
-// src/modules/children/components/ChildrenTable.tsx
 import React, { useMemo } from "react";
 import {
   Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -44,6 +43,10 @@ function ChildrenTableDesktop(props: Props) {
     rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
     sorting, setSorting, onOpenView, onStartEdit, onAskDelete,
   } = props;
+  
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
 
   const columns = useMemo<ColumnDef<ChildResponseDto>[]>(() => ([
     {
@@ -140,7 +143,7 @@ function ChildrenTableDesktop(props: Props) {
   return (
     <Paper>
       <TableContainer>
-        <Table size="medium" stickyHeader>
+        <Table size={isXs ? "small" : "medium"} stickyHeader>
           <TableHead>
             {table.getHeaderGroups().map(hg => (
               <TableRow key={hg.id}>

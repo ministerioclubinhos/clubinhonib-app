@@ -22,12 +22,12 @@ export default function ChildViewDialog({ open, loading, child, onClose }: Props
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}><L label="Nome" value={child.name} /></Grid>
             <Grid item xs={12} md={3}><L label="Nascimento" value={child.birthDate} /></Grid>
-            <Grid item xs={12} md={3}><L label="No clube desde" value={child.joinedAt ?? "—"} /></Grid>
+            <Grid item xs={12} md={3}><L label="No Clubinho desde" value={child.joinedAt ?? "—"} /></Grid>
 
             <Grid item xs={12} md={6}><L label="Responsável" value={child.guardianName} /></Grid>
             <Grid item xs={12} md={6}><L label="Telefone" value={child.guardianPhone} /></Grid>
 
-            <Grid item xs={12} md={6}><L label="Clube" value={child.club ? `#${child.club.number}` : <Chip size="small" label="—" />} /></Grid>
+            <Grid item xs={12} md={6}><L label="Clubinho" value={child.club ? `#${child.club.number}` : <Chip size="small" label="—" />} /></Grid>
 
             <Grid item xs={12}>
               <Paper variant="outlined" sx={{ p: 2 }}>

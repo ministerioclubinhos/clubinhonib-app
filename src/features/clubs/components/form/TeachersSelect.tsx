@@ -1,4 +1,3 @@
-// src/modules/clubs/components/form/TeachersSelect.tsx
 import React, { useMemo, useState, useCallback } from "react";
 import {
   FormControl,
@@ -27,13 +26,22 @@ export default function TeachersSelect({
 }: Props) {
   const [open, setOpen] = useState(false);
 
+  // Fingerprint captura mudanças relevantes mesmo com o mesmo array/objetos por referência
+  const fingerprint = useMemo(
+    () => (options ?? [])
+      .map(o => `${o.teacherProfileId}:${o.vinculado ? 1 : 0}`)
+      .join("|"),
+    [options]
+  );
+
   // Mostrar apenas não vinculados, exceto os já selecionados (edição)
   const visibleOptions = useMemo(
     () =>
       (options ?? []).filter(
         (opt) => !opt.vinculado || value.includes(opt.teacherProfileId)
       ),
-    [options, value]
+    // ⚠️ depende do fingerprint em vez de options diretamente
+    [fingerprint, value]
   );
 
   // Mantém o Select imune a null/undefined/""

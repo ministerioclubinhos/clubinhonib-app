@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  Box,
-  Alert,
-  CircularProgress,
-} from "@mui/material";
+import { Box, Alert, CircularProgress } from "@mui/material";
 import { useTheme, useMediaQuery } from "@mui/material";
 
 import TeacherToolbar from "./components/TeacherToolbar";
@@ -26,6 +22,7 @@ export type TeacherFilters = {
 export default function TeacherProfilesManager() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [pageSize, setPageSize] = React.useState<number>(12);
   const [pageIndex, setPageIndex] = React.useState<number>(0);
   const [sorting, setSorting] = React.useState([{ id: "updatedAt", desc: true }]);
@@ -59,33 +56,49 @@ export default function TeacherProfilesManager() {
 
   const { dialogLoading, dialogError, setDialogError, setClub, clearClub } =
     useTeacherMutations(fetchPage, refreshOne);
+
   const [viewing, setViewing] = React.useState<TeacherProfile | null>(null);
   const [editing, setEditing] = React.useState<TeacherProfile | null>(null);
-  const onSetClub = async (
-    teacher: TeacherProfile | null,
-    clubNumberInput: number
-  ) => {
-    if (!teacher || !clubNumberInput) return;
-    const club = byNumber.get(clubNumberInput);
-    if (!club) {
-      setDialogError("Clube não encontrado pelo número informado.");
-      return;
-    }
-    await setClub(teacher.id, club.id);
-  };
 
-  const onClearClub = async (teacherId: string) => {
-    await clearClub(teacherId);
-    if (editing?.id === teacherId)
-      setEditing((e) => (e ? { ...e, club: null } : e));
-  };
+  const onSetClub = React.useCallback(
+    async (teacher: TeacherProfile | null, clubNumberInput: number) => {
+      if (!teacher || !clubNumberInput) return;
+      const club = byNumber.get(clubNumberInput);
+      if (!club) {
+        setDialogError("Clubinho não encontrado pelo número informado.");
+        return;
+      }
+      try {
+        await setClub(teacher.id, club.id);
+        // fechar modal e atualizar listas
+        setEditing(null);
+        setDialogError("");
+        await Promise.all([fetchPage(), refreshClubs()]);
+      } catch {
+        // mantém o modal aberto e exibe o erro já setado por setClub()
+      }
+    },
+    [byNumber, setClub, fetchPage, refreshClubs, setDialogError]
+  );
+
+  const onClearClub = React.useCallback(
+    async (teacherId: string) => {
+      try {
+        await clearClub(teacherId);
+        // fechar modal (se era o mesmo teacher) e atualizar listas
+        setEditing((e) => (e?.id === teacherId ? null : e));
+        setDialogError("");
+        await Promise.all([fetchPage(), refreshClubs()]);
+      } catch {
+        // mantém o modal aberto e exibe o erro já setado por clearClub()
+      }
+    },
+    [clearClub, fetchPage, refreshClubs, setDialogError]
+  );
 
   const handleFiltersChange = React.useCallback(
     (updater: (prev: TeacherFilters) => TeacherFilters) => {
-      setFilters((prev) => {
-        const next = updater(prev);
-        return next;
-      });
+      setFilters((prev) => updater(prev));
       setPageIndex(0);
     },
     []
@@ -103,10 +116,10 @@ export default function TeacherProfilesManager() {
   return (
     <Box
       sx={{
-        px: { xs: 2, md: 4 },
-        pt: { xs: 0, md: 4 },
+        px: { xs: 2, md: 0 },
+        py: { xs: 0, md: 0 },
         minHeight: "100vh",
-        bgcolor: "#f9fafb",
+        bgcolor: "#f9fafb"
       }}
     >
       <BackHeader title="Gerenciador de Professores" />

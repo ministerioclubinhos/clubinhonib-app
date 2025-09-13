@@ -88,13 +88,13 @@ export default function TeacherTable({
               <Visibility fontSize="inherit" />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Vincular / Alterar clube">
+          <Tooltip title="Vincular / Alterar Clubinho">
             <IconButton size={isXs ? "small" : "medium"} onClick={() => onEditLinks(row.original)}>
               <LinkIcon fontSize="inherit" />
             </IconButton>
           </Tooltip>
           {isAdmin && (
-            <Tooltip title="Desvincular clube">
+            <Tooltip title="Desvincular Clubinho">
               <IconButton size={isXs ? "small" : "medium"} onClick={() => onClearClub(row.original.id)}>
                 <LinkOff fontSize="inherit" />
               </IconButton>

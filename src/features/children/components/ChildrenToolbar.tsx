@@ -216,10 +216,10 @@ export default function ChildrenToolbar({ filters, onChange, onCreateClick, onRe
           />
         </Grid>
 
-        {/* No clube */}
+        {/* No Clubinho */}
         <Grid item xs={12} md={3}>
           <DateFilterInput
-            label="No clube"
+            label="No Clubinho"
             from={filters.joinedFrom}
             to={filters.joinedTo}
             onChange={(from, to) => onChange(prev => ({ ...prev, joinedFrom: from, joinedTo: to }))}

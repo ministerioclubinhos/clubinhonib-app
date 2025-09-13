@@ -105,7 +105,7 @@ export function ChildrenPanel({
   }, [fetchChildren]);
 
   if (!club) {
-    return <PlaceholderCard title="Escolha um clube" subtitle="Clique em um clube para ver suas crianças." />;
+    return <PlaceholderCard title="Escolha um Clubinho" subtitle="Clique em um Clubinho para ver suas crianças." />;
   }
 
   return (
@@ -146,7 +146,7 @@ export function ChildrenPanel({
           {!loading && error && <Alert severity="error">{error}</Alert>}
 
           {!loading && !error && rows.length === 0 && (
-            <EmptyState title="Sem crianças neste clube" subtitle="Cadastre crianças ou escolha outro clube." />
+            <EmptyState title="Sem crianças neste Clubinho" subtitle="Cadastre crianças ou escolha outro Clubinho." />
           )}
 
           {!loading && !error && rows.map((c) => {

@@ -87,7 +87,7 @@ export default function CoordinatorToolbar({
           <TextField
             fullWidth
             size="small"
-            label="Nº do Clube"
+            label="Nº do Clubinho"
             type="number"
             value={filters.clubNumber ?? ""}
             onChange={(e) => handleClubNumber(e.target.value)}

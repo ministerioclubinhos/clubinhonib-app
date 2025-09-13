@@ -116,7 +116,7 @@ export function useTeacherMutations(
   const setClub = useCallback(async (teacherId: string, clubId: string) => {
     setDialogLoading(true); setDialogError("");
     try { await apiAssignTeacherToClub(teacherId, clubId); await refreshOne(teacherId); }
-    catch (err: any) { setDialogError(err?.response?.data?.message || err.message || "Erro ao vincular clube"); throw err; }
+    catch (err: any) { setDialogError(err?.response?.data?.message || err.message || "Erro ao vincular Clubinho"); throw err; }
     finally { setDialogLoading(false); }
   }, [refreshOne]);
 
@@ -126,11 +126,11 @@ export function useTeacherMutations(
       // endpoint exige clubId: buscamos o atual
       const current = await apiGetTeacher(teacherId);
       const currentClubId = current?.club?.id;
-      if (!currentClubId) return; // já está sem clube
+      if (!currentClubId) return; // já está sem Clubinho
       await apiUnassignTeacherFromClub(teacherId, currentClubId);
       await refreshOne(teacherId);
     } catch (err: any) {
-      setDialogError(err?.response?.data?.message || err.message || "Erro ao desvincular clube");
+      setDialogError(err?.response?.data?.message || err.message || "Erro ao desvincular Clubinho");
       throw err;
     } finally { setDialogLoading(false); }
   }, [refreshOne]);

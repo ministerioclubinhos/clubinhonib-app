@@ -42,7 +42,7 @@ export default function CoordinatorLinkDialog({
 
             <Grid item xs={12} md={6}>
               <TextField
-                label="Número do Clube para Vincular"
+                label="Número do Clubinho para Vincular"
                 type="number"
                 fullWidth
                 value={linkNumber}
@@ -55,7 +55,7 @@ export default function CoordinatorLinkDialog({
 
             <Grid item xs={12} md={6}>
               <TextField
-                label="Número do Clube para Remover"
+                label="Número do Clubinho para Remover"
                 type="number"
                 fullWidth
                 value={unlinkNumber}

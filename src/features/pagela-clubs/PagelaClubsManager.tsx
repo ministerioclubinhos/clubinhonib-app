@@ -1,4 +1,3 @@
-// src/features/pagela-clubs/index.tsx
 import React, { useEffect, useState } from "react";
 import {
   Box,

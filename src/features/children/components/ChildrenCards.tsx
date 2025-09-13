@@ -45,7 +45,7 @@ const ageFrom = (birth?: string | null) => {
   return y < 0 ? null : y;
 };
 
-// tempo de clube
+// tempo de Clubinho
 const tenureFrom = (joined?: string | null) => {
   if (!joined) return null;
   const j = new Date(joined);
@@ -137,7 +137,7 @@ export default function ChildrenCards(props: Props) {
                   bgcolor: "background.paper",
                 }}
               >
-                {/* Cabeçalho: clube + expand */}
+                {/* Cabeçalho: Clubinho + expand */}
                 <Stack
                   direction="row"
                   alignItems="center"

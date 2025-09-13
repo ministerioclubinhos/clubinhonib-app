@@ -1,4 +1,3 @@
-// src/modules/teachers/components/TeacherEditDialog.tsx
 import React from "react";
 import {
   Dialog,
@@ -53,7 +52,7 @@ export default function TeacherEditDialog({
     setLocalErr("");
     const v = Number(clubInput);
     if (!clubInput || Number.isNaN(v) || v <= 0) {
-      setLocalErr("Informe um número de clube válido (maior que zero).");
+      setLocalErr("Informe um número de Clubinho válido (maior que zero).");
       return;
     }
     onSetClub(v);
@@ -71,7 +70,7 @@ export default function TeacherEditDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Vincular / Desvincular Clube</DialogTitle>
+      <DialogTitle>Vincular / Desvincular Clubinho</DialogTitle>
 
       <DialogContent
         dividers
@@ -94,14 +93,14 @@ export default function TeacherEditDialog({
                 {teacher.user?.name || teacher.user?.email || "—"}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Clube atual: <strong>{currentClubLabel}</strong>
+                Clubinho atual: <strong>{currentClubLabel}</strong>
               </Typography>
             </Grid>
 
             {/* Campo + Ações */}
             <Grid item xs={12} md={8}>
               <TextField
-                label="Número do Clube"
+                label="Número do Clubinho"
                 type="number"
                 size="small"
                 fullWidth
@@ -118,7 +117,7 @@ export default function TeacherEditDialog({
                 helperText={
                   teacher?.club?.number
                     ? `Digite um novo número para alterar o vínculo`
-                    : `Digite o número do clube para vincular`
+                    : `Digite o número do Clubinho para vincular`
                 }
               />
             </Grid>

@@ -54,7 +54,7 @@ export default function TeacherViewDialog({ open, teacher, onClose }: Props) {
             <Grid item xs={12} md={6}>
               <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  Clube:
+                  Clubinho:
                 </Typography>
                 {teacher.club?.number != null ? (
                   <Chip size="small" color="primary" label={clubNumber} />

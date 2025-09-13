@@ -1,4 +1,3 @@
-// src/modules/clubs/components/form/CoordinatorSelect.tsx
 import React from "react";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { CoordinatorOption } from "../../types";

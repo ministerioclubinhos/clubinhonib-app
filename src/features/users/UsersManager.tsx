@@ -100,8 +100,8 @@ export default function UsersManager() {
   return (
     <Box
       sx={{
-        px: { xs: 2, md: 4 },
-        pt: { xs: 0, md: 4 },
+        px: { xs: 2, md: 0 },
+        py: { xs: 0, md: 0 },
         minHeight: "100vh",
         bgcolor: "#f9fafb",
       }}

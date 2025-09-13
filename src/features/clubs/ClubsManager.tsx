@@ -6,7 +6,14 @@ import ClubsTable from "./components/ClubsTable";
 import ClubViewDialog from "./components/ClubViewDialog";
 import ClubFormDialog from "./components/ClubFormDialog";
 import { useClubDetails, useClubMutations, useClubs, useOptions } from "./hooks";
-import { ClubResponseDto, CreateClubForm, EditClubForm, Weekday, ClubFilters, ClubSort } from "./types";
+import {
+  ClubResponseDto,
+  CreateClubForm,
+  EditClubForm,
+  Weekday,
+  ClubFilters,
+  ClubSort,
+} from "./types";
 import { apiFetchClubs } from "./api";
 import BackHeader from "@/components/common/header/BackHeader";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
@@ -14,9 +21,10 @@ import { useSelector } from "react-redux";
 import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
 export default function ClubsManager() {
-   const isAdmin = useSelector(selectIsAdmin);
+  const isAdmin = useSelector(selectIsAdmin);
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [filters, setFilters] = useState<ClubFilters>({
     addressSearchString: "",
     userSearchString: "",
@@ -30,47 +38,80 @@ export default function ClubsManager() {
   const { rows, total, loading, error, setError, fetchPage } =
     useClubs(pageIndex, pageSize, sorting, filters);
 
-  const doRefresh = useCallback(() => { fetchPage(); }, [fetchPage]);
+  const doRefresh = useCallback(() => {
+    fetchPage();
+  }, [fetchPage]);
+
   const { viewing, setViewing, loading: viewingLoading, fetchClub } = useClubDetails();
-  const handleOpenView = (club: ClubResponseDto) => { setViewing(club); fetchClub(club.id); };
+  const handleOpenView = (club: ClubResponseDto) => {
+    setViewing(club);
+    fetchClub(club.id);
+  };
+
   const { coordinators, teachers, reloadOptions } = useOptions();
-  const { dialogLoading, dialogError, setDialogError, createClub, updateClub, deleteClub } =
-    useClubMutations(async (page, limit) => {
-      await apiFetchClubs({ page, limit, filters, sort: sorting });
-      await fetchPage();
-    });
+
+  const {
+    dialogLoading,
+    dialogError,
+    setDialogError,
+    createClub,
+    updateClub,
+    deleteClub,
+  } = useClubMutations(async (page, limit) => {
+    await apiFetchClubs({ page, limit, filters, sort: sorting });
+    await fetchPage();
+  });
 
   const sanitizeIds = (arr?: Array<string | null | undefined>) =>
     Array.from(
       new Set(
-        (arr ?? []).filter((v): v is string => typeof v === "string" && v.trim() !== "")
+        (arr ?? []).filter(
+          (v): v is string => typeof v === "string" && v.trim() !== ""
+        )
       )
     );
 
   const [creating, setCreating] = useState<CreateClubForm | null>(null);
-  const openCreate = () => setCreating({
-    number: 0,
-    weekday: "saturday" as Weekday,
-    address: { street: "", district: "", city: "", state: "", postalCode: "" } as any,
-    coordinatorProfileId: null,
-    teacherProfileIds: [],
-  });
+
+  const openCreate = () =>
+    setCreating({
+      number: 0,
+      weekday: "saturday" as Weekday,
+      address: {
+        street: "",
+        district: "",
+        city: "",
+        state: "",
+        postalCode: "",
+      } as any,
+      coordinatorProfileId: null,
+      teacherProfileIds: [],
+    });
+
   const submitCreate = async () => {
     if (!creating) return;
+
     const payload: CreateClubForm = {
       ...creating,
       teacherProfileIds: sanitizeIds(creating.teacherProfileIds),
     };
+
     if (!payload.teacherProfileIds?.length) delete (payload as any).teacherProfileIds;
-    if (payload.coordinatorProfileId === undefined || payload.coordinatorProfileId === null) {
+
+    if (
+      payload.coordinatorProfileId === undefined ||
+      payload.coordinatorProfileId === null
+    ) {
       delete (payload as any).coordinatorProfileId;
     }
-    await reloadOptions();
+
     await createClub(payload, pageIndex + 1, pageSize, filters, sorting);
+    await reloadOptions(); 
     setCreating(null);
   };
 
   const [editing, setEditing] = useState<EditClubForm | null>(null);
+
   const startEdit = (c: ClubResponseDto) => {
     setEditing({
       id: c.id,
@@ -81,49 +122,78 @@ export default function ClubsManager() {
       teacherProfileIds: (c.teachers ?? []).map((t) => t.id),
     });
   };
+
   const submitEdit = async () => {
     if (!editing) return;
+
     const { id, ...rest } = editing;
-    const payload = {
+    const teacherIds = sanitizeIds(rest.teacherProfileIds) ?? [];
+
+    const payload: Omit<EditClubForm, "id"> & { teacherProfileIds: string[] } = {
       ...rest,
-      teacherProfileIds: sanitizeIds(rest.teacherProfileIds),
-    } as Omit<EditClubForm, "id">;
-    if (Array.isArray(payload.teacherProfileIds) && !payload.teacherProfileIds.length) {
-      delete (payload as any).teacherProfileIds;
+      teacherProfileIds: teacherIds,
+    };
+
+    if (rest.coordinatorProfileId === undefined) {
+      delete (payload as any).coordinatorProfileId;
     }
+
     await updateClub(id, payload, pageIndex + 1, pageSize, filters, sorting);
+    await reloadOptions(); 
     setEditing(null);
   };
 
+ 
   const [confirmDelete, setConfirmDelete] = useState<ClubResponseDto | null>(null);
   const askDelete = (c: ClubResponseDto) => setConfirmDelete(c);
+
   const submitDelete = async () => {
     if (!confirmDelete) return;
     await deleteClub(confirmDelete.id, pageIndex + 1, pageSize, filters, sorting);
+    await reloadOptions(); 
     setConfirmDelete(null);
   };
 
-  React.useEffect(() => { doRefresh(); }, [doRefresh]);
+  React.useEffect(() => {
+    doRefresh();
+  }, [doRefresh]);
 
   return (
-    <Box sx={{
-      px: { xs: 2, sm: 2, md: 4 },
-      py: { xs: 0, md: 4 }, minHeight: "100vh", bgcolor: "#f9fafb"
-    }}>
+    <Box
+      sx={{
+        px: { xs: 2, md: 0 },
+        py: { xs: 0, md: 0 },
+        minHeight: "100vh",
+        bgcolor: "#f9fafb",
+      }}
+    >
       <BackHeader title="Gerenciar Clubinhos" />
 
       <ClubsToolbar
         filters={filters}
-        onChange={(updater) => { setFilters(updater); setPageIndex(0); }}
+        onChange={(updater) => {
+          setFilters(updater);
+          setPageIndex(0);
+        }}
         onCreateClick={openCreate}
         onRefreshClick={doRefresh}
         isXs={isXs}
       />
 
       {loading && !rows.length && (
-        <Box textAlign="center" my={6}><CircularProgress /></Box>
+        <Box textAlign="center" my={6}>
+          <CircularProgress />
+        </Box>
       )}
-      {error && !loading && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>{error}</Alert>}
+      {error && !loading && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
+          onClose={() => setError("")}
+        >
+          {error}
+        </Alert>
+      )}
 
       <ClubsTable
         isAdmin={isAdmin}
@@ -133,8 +203,10 @@ export default function ClubsManager() {
         pageSize={pageSize}
         setPageIndex={setPageIndex}
         setPageSize={setPageSize}
-        sorting={sorting ? [sorting] as any : []}
-        setSorting={(s) => setSorting(Array.isArray(s) ? (s[0] ?? null) : (s as any))}
+        sorting={sorting ? ([sorting] as any) : []}
+        setSorting={(s) =>
+          setSorting(Array.isArray(s) ? (s[0] ?? null) : (s as any))
+        }
         onOpenView={handleOpenView}
         onStartEdit={startEdit}
         onAskDelete={askDelete}
@@ -152,7 +224,10 @@ export default function ClubsManager() {
         open={!!creating}
         value={creating}
         onChange={(v) => setCreating(v as CreateClubForm)}
-        onCancel={() => { setCreating(null); setDialogError(""); }}
+        onCancel={() => {
+          setCreating(null);
+          setDialogError("");
+        }}
         onSubmit={submitCreate}
         error={dialogError}
         loading={dialogLoading}
@@ -165,7 +240,10 @@ export default function ClubsManager() {
         open={!!editing}
         value={editing}
         onChange={(v) => setEditing(v as EditClubForm)}
-        onCancel={() => { setEditing(null); setDialogError(""); }}
+        onCancel={() => {
+          setEditing(null);
+          setDialogError("");
+        }}
         onSubmit={submitEdit}
         error={dialogError}
         loading={dialogLoading}
@@ -176,7 +254,10 @@ export default function ClubsManager() {
       <DeleteConfirmDialog
         open={!!confirmDelete}
         title={confirmDelete ? `#${confirmDelete.number}` : ""}
-        onClose={() => { setConfirmDelete(null); setDialogError(""); }}
+        onClose={() => {
+          setConfirmDelete(null);
+          setDialogError("");
+        }}
         onConfirm={submitDelete}
       />
     </Box>

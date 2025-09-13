@@ -56,7 +56,7 @@ export async function apiUnassignClub(
   return data;
 }
 
-/** opcional: mover clube */
+/** opcional: mover Clubinho */
 export async function apiMoveClub(
   fromCoordinatorId: string,
   clubId: string,

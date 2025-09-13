@@ -144,10 +144,10 @@ export default function ChildrenManager() {
   return (
     <Box
       sx={{
-        px: { xs: 2, sm: 2, md: 4 },
-        py: { xs: 0, md: 4 },
+        px: { xs: 2, md: 0 },
+        py: { xs: 0, md: 0 },
         minHeight: "100vh",
-        bgcolor: "#f9fafb",
+        bgcolor: "#f9fafb"
       }}
     >
       <BackHeader title="Gerenciar Crianças" />

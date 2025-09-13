@@ -125,7 +125,7 @@ export default function ClubsCards(props: Props) {
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontWeight: 800, fontSize: 14, boxShadow: 1, flex: "0 0 auto",
                     }}
-                    aria-label={`Clube número ${c.number}`}
+                    aria-label={`Clubinho número ${c.number}`}
                   >
                     {c.number}
                   </Box>

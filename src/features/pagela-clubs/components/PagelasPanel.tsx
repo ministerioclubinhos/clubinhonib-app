@@ -91,7 +91,7 @@ export function PagelasPanel({ child }: { child: ChildResponseDto | null }) {
     <Stack sx={{ height: "100%" }} spacing={2}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
         <Chip label={`Total: ${total}`} color="info" variant="outlined" />
-        <Chip label={`Clube #${child?.club?.number ?? "-"}`} color="secondary" variant="outlined" />
+        <Chip label={`Clubinho #${child?.club?.number ?? "-"}`} color="secondary" variant="outlined" />
       </Box>
 
       <Box sx={{ flex: 1, overflow: "auto", pr: 1 }}>

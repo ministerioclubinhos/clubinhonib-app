@@ -1,4 +1,3 @@
-// src/modules/teachers/components/TeacherToolbar.tsx
 import React from "react";
 import {
   Button,
@@ -57,7 +56,6 @@ export default function TeacherToolbar({
   return (
     <Paper sx={{ p: { xs: 1.5, md: 2 }, mb: 2 }}>
       <Grid container spacing={{ xs: 1.5, md: 2 }} alignItems="center">
-        {/* Busca principal */}
         <Grid item xs={12} md={4}>
           <TextField
             fullWidth
@@ -69,30 +67,28 @@ export default function TeacherToolbar({
           />
         </Grid>
 
-        {/* Filtro: com clube */}
         <Grid item xs={12} md={3}>
           <TextField
             select
             fullWidth
             size="small"
-            label="Com clube?"
+            label="Com Clubinho?"
             value={
               filters.hasClub === undefined ? "" : filters.hasClub ? "true" : "false"
             }
             onChange={(e) => handleHasClubChange(e.target.value)}
           >
             <MenuItem value="">Todos</MenuItem>
-            <MenuItem value="true">Somente com clube</MenuItem>
-            <MenuItem value="false">Somente sem clube</MenuItem>
+            <MenuItem value="true">Somente com Clubinho</MenuItem>
+            <MenuItem value="false">Somente sem Clubinho</MenuItem>
           </TextField>
         </Grid>
 
-        {/* Filtro: número do clube */}
         <Grid item xs={12} md={2}>
           <TextField
             fullWidth
             size="small"
-            label="Nº do clube"
+            label="Nº do Clubinho"
             type="number"
             value={filters.clubNumber ?? ""}
             onChange={(e) => handleClubNumberChange(e.target.value)}
@@ -100,10 +96,8 @@ export default function TeacherToolbar({
           />
         </Grid>
 
-        {/* Ações responsivas */}
         <Grid item xs={12} md={3}>
           {isXs ? (
-            // MOBILE: FABs flutuantes (Limpar acima, Recarregar abaixo) com safe-area e bom espaçamento
             <>
               <Fab
                 color="secondary"
@@ -136,7 +130,6 @@ export default function TeacherToolbar({
               </Fab>
             </>
           ) : (
-            // DESKTOP: layout original
             <Stack
               direction="row"
               spacing={1.5}

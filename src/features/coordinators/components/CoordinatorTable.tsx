@@ -1,4 +1,3 @@
-// src/modules/coordinator-profiles/components/CoordinatorTable.tsx
 import React, { useMemo } from "react";
 import {
   Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -119,7 +118,7 @@ export default function CoordinatorTable({
     onSortingChange: (u) => {
       const next = typeof u === "function" ? u(sorting) : u;
       setSorting(next);
-      setPageIndex(0); // refetch com novo sort
+      setPageIndex(0);
     },
     onPaginationChange: (u) => {
       const next = typeof u === "function" ? u({ pageIndex, pageSize }) : u;

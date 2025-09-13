@@ -35,7 +35,6 @@ type Props = {
   onClose: () => void;
 };
 
-/** Bloco de info com altura padronizada para alinhar colunas */
 const Info: React.FC<{
   icon?: React.ReactNode;
   label: string;

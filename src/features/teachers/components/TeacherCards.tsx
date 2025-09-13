@@ -1,4 +1,3 @@
-// src/modules/teachers/components/TeacherCards.tsx
 import React, { useMemo, useState } from "react";
 import {
   Box,
@@ -71,7 +70,7 @@ export default function TeacherCards({
   const sortOptions = useMemo(
     () => [
       { id: "teacher", label: "Nome" },
-      { id: "club", label: "Nº do clube" },
+      { id: "club", label: "Nº do Clubinho" },
       { id: "updatedAt", label: "Atualizado em" },
       { id: "createdAt", label: "Criado em" },
     ],
@@ -85,7 +84,6 @@ export default function TeacherCards({
 
   return (
     <Box sx={{ px: 0, py: 0 }}>
-      {/* Controle de ordenação (server-side) */}
       <Stack
         direction="row"
         spacing={0.75}
@@ -134,7 +132,6 @@ export default function TeacherCards({
                   "&:hover": { boxShadow: 2, transform: "translateY(-1px)" },
                 }}
               >
-                {/* Cabeçalho + expandir */}
                 <Stack
                   direction="row"
                   alignItems="center"
@@ -171,7 +168,6 @@ export default function TeacherCards({
                   </Tooltip>
                 </Stack>
 
-                {/* Sub-infos curtas */}
                 <Stack
                   direction="row"
                   spacing={0.5}
@@ -182,7 +178,7 @@ export default function TeacherCards({
                     size="small"
                     variant="outlined"
                     color={club ? "primary" : "default"}
-                    label={club ? `Clube #${club.number ?? "?"}` : "Sem clube"}
+                    label={club ? `Clubinho #${club.number ?? "?"}` : "Sem Clubinho"}
                   />
                   <Chip
                     size="small"
@@ -202,7 +198,6 @@ export default function TeacherCards({
                   />
                 </Stack>
 
-                {/* Expandido */}
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                   <Divider />
                   <CardContent sx={{ p: 1.25 }}>
@@ -248,7 +243,6 @@ export default function TeacherCards({
                   </CardContent>
                 </Collapse>
 
-                {/* Ações */}
                 <Box
                   sx={{
                     display: "flex",
@@ -264,12 +258,12 @@ export default function TeacherCards({
                       <Visibility fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Vincular / Alterar clube">
+                  <Tooltip title="Vincular / Alterar Clubinho">
                     <IconButton size="small" onClick={() => onEditLinks(t)}>
                       <LinkIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Desvincular clube">
+                  <Tooltip title="Desvincular Clubinho">
                     <IconButton size="small" onClick={() => onClearClub(t.id)}>
                       <LinkOffIcon fontSize="small" />
                     </IconButton>

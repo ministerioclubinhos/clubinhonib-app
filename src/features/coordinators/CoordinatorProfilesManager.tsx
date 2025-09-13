@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import type { SortingState } from "@tanstack/react-table";
-import { useNavigate } from "react-router-dom";
 import CoordinatorToolbar from "./components/CoordinatorToolbar";
 import CoordinatorTable from "./components/CoordinatorTable";
 import CoordinatorCards from "./components/CoordinatorCards";
@@ -102,7 +101,7 @@ export default function CoordinatorProfilesManager() {
     try {
       const msg = await assignClub(linking.id, club.id);
       showSnack(msg || "Club atribuído ao coordenador com sucesso", "success");
-      closeLinkDialog(); 
+      closeLinkDialog();
     } catch {
       showSnack("Falha ao vincular clubinho", "error");
     }
@@ -133,11 +132,14 @@ export default function CoordinatorProfilesManager() {
   }, [refreshClubs]);
 
   return (
-    <Box sx={{
-      px: { xs: 2, sm: 2, md: 4 },
-      py: { xs: 0, md: 4 },
-      minHeight: "100vh", bgcolor: "#f9fafb"
-    }}>
+    <Box
+      sx={{
+        px: { xs: 2, md: 0 },
+        py: { xs: 0, md: 0 },
+        minHeight: "100vh",
+        bgcolor: "#f9fafb"
+      }}
+    >
       <BackHeader title="Gerenciar Coordenadores" />
       <CoordinatorToolbar
         filters={filters}
