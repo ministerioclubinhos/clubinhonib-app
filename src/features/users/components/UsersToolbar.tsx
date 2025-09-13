@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { Add, Refresh } from "@mui/icons-material";
 import { UserFilters } from "../types";
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 
 type Props = {
   filters: UserFilters;
@@ -28,10 +28,10 @@ type Props = {
   isXs?: boolean;
 };
 
-const roleLabels: Record<RoleUser, string> = {
-  [RoleUser.COORDINATOR]: "Coordenador",
-  [RoleUser.TEACHER]: "Professor",
-  [RoleUser.ADMIN]: "Administrador",
+const roleLabels: Record<UserRole, string> = {
+  [UserRole.COORDINATOR]: "Coordenador",
+  [UserRole.TEACHER]: "Professor",
+  [UserRole.ADMIN]: "Administrador",
 };
 
 export default function UsersToolbar({
@@ -41,7 +41,7 @@ export default function UsersToolbar({
   onRefresh,
   isXs,
 }: Props) {
-  const roleOptions = ["all", RoleUser.COORDINATOR, RoleUser.TEACHER] as const;
+  const roleOptions = ["all", UserRole.COORDINATOR, UserRole.TEACHER] as const;
 
   return (
     <Paper sx={{ p: { xs: 1.5, md: 2 }, mb: 2 }}>

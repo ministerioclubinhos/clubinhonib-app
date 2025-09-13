@@ -21,7 +21,7 @@ import { RootState as RootStateType, AppDispatch as AppDispatchType } from '@/st
 import {
   login,
   LoginResponse,
-  RoleUser,
+  UserRole,
   setGoogleUser,
   fetchCurrentUser,
 } from '@/store/slices/auth/authSlice';
@@ -67,7 +67,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const redirectPath = user?.role === RoleUser.ADMIN || user?.role === RoleUser.COORDINATOR ? '/adm' : '/area-do-professor';
+      const redirectPath = user?.role === UserRole.ADMIN || user?.role === UserRole.COORDINATOR ? '/adm' : '/area-do-professor';
       navigate(redirectPath);
     }
   }, [isAuthenticated, user, navigate]);
@@ -110,13 +110,13 @@ const Login: React.FC = () => {
 
       const mappedUser = {
         ...responseUser,
-        role: responseUser.role === RoleUser.ADMIN ? RoleUser.ADMIN : RoleUser.TEACHER,
+        role: responseUser.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.TEACHER,
       };
 
       dispatch(login({ accessToken, refreshToken, user: mappedUser }));
       await bootstrapAfterLogin(accessToken);
 
-      const redirectPath = mappedUser.role === RoleUser.ADMIN ? '/adm' : '/area-do-professor';
+      const redirectPath = mappedUser.role === UserRole.ADMIN ? '/adm' : '/area-do-professor';
       navigate(redirectPath);
     } catch (error) {
       const msg = mapLoginError(error);
@@ -152,13 +152,13 @@ const Login: React.FC = () => {
       const { accessToken, refreshToken, user: responseUser } = res.data;
       const mappedUser = {
         ...responseUser,
-        role: responseUser.role === RoleUser.ADMIN ? RoleUser.ADMIN : RoleUser.TEACHER,
+        role: responseUser.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.TEACHER,
       };
 
       dispatch(login({ accessToken, refreshToken, user: mappedUser }));
       await bootstrapAfterLogin(accessToken);
 
-      const redirectPath = mappedUser.role === RoleUser.ADMIN ? '/adm' : '/area-do-professor';
+      const redirectPath = mappedUser.role === UserRole.ADMIN ? '/adm' : '/area-do-professor';
       navigate(redirectPath);
     } catch (error) {
       const msg = mapLoginError(error);

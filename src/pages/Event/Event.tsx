@@ -38,7 +38,7 @@ import api from '@/config/axiosConfig';
 import { setEvents } from '@/store/slices/events/eventsSlice';
 import EventDetailsModal from './EventDetailsModal';
 import EventFormModal from './EventFormModal';
-import { RoleUser } from '@/store/slices/auth/authSlice';
+import { UserRole } from '@/store/slices/auth/authSlice';
 
 dayjs.locale('pt-br');
 
@@ -71,7 +71,7 @@ const Eventos: React.FC = () => {
   const dispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN;
+  const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
 
   const hoje = dayjs();
   const [eventos, setEventos] = useState<any[]>([]);

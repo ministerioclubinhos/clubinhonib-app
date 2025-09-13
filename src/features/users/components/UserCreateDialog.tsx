@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { CreateUserForm } from "../types";
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 
 type Props = {
   open: boolean;
@@ -17,10 +17,10 @@ type Props = {
   onConfirm: () => void;
 };
 
-const roleLabels: Record<RoleUser, string> = {
-  [RoleUser.COORDINATOR]: "Coordenador",
-  [RoleUser.TEACHER]: "Professor",
-  [RoleUser.ADMIN]: "Administrador", 
+const roleLabels: Record<UserRole, string> = {
+  [UserRole.COORDINATOR]: "Coordenador",
+  [UserRole.TEACHER]: "Professor",
+  [UserRole.ADMIN]: "Administrador", 
 };
 
 export default function UserCreateDialog({
@@ -28,7 +28,7 @@ export default function UserCreateDialog({
 }: Props) {
   if (!value) return null;
 
-  const roleOptions = [RoleUser.COORDINATOR, RoleUser.TEACHER];
+  const roleOptions = [UserRole.COORDINATOR, UserRole.TEACHER];
 
   return (
     <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
@@ -80,9 +80,9 @@ export default function UserCreateDialog({
               <InputLabel>Papel</InputLabel>
               <Select
                 label="Papel"
-                value={value.role ?? RoleUser.TEACHER}
+                value={value.role ?? UserRole.TEACHER}
                 onChange={(e) =>
-                  onChange({ ...value, role: e.target.value as RoleUser })
+                  onChange({ ...value, role: e.target.value as UserRole })
                 }
               >
                 {roleOptions.map((role) => (

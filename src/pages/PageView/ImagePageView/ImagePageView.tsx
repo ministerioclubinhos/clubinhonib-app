@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import api from '@/config/axiosConfig';
 import { RootState, AppDispatch } from '@/store/slices';
 import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import { RoleUser } from 'store/slices/auth/authSlice';
+import { UserRole } from 'store/slices/auth/authSlice';
 import SectionImagePageView from './SectionImagePageView';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -73,8 +73,8 @@ function SectionSkeleton() {
 export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);          // primeiro carregamento (página 1)
-  const [loadingMore, setLoadingMore] = useState(false);  // carregamentos subsequentes
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -84,10 +84,9 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const section = useSelector((state: RootState) => state.imageSectionPagination.section);
 
-  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN;
+  const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
   const defaultSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID;
 
-  // Intersection Observer para infinite scroll
   const observer = useRef<IntersectionObserver | null>(null);
   const lastSectionRef = useCallback(
     (node: HTMLDivElement | null) => {

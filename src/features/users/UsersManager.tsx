@@ -21,7 +21,7 @@ import {
 } from "./types";
 
 import { useUserMutations, useUsers } from "./hooks";
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 import BackHeader from "@/components/common/header/BackHeader";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
@@ -121,7 +121,7 @@ export default function UsersManager() {
             password: "",
             confirmPassword: "",
             phone: "",
-            role: RoleUser.TEACHER,
+            role: UserRole.TEACHER,
           })
         }
         onRefresh={doRefresh}

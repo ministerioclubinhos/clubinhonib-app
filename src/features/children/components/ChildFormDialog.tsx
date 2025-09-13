@@ -5,7 +5,7 @@ import {
   FormControl, InputLabel, Select, MenuItem, Stack, Skeleton, Box, FormHelperText
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 import { CreateChildForm, EditChildForm } from "../types";
 import { apiFetchSimpleClubs } from "@/features/clubs/api";
 import ClubAutocomplete from "@/features/clubs/components/form/ClubAutocomplete";
@@ -29,7 +29,7 @@ export default function ChildFormDialog({
   if (!value) return null;
 
   const user = useSelector((state: RootState) => state.auth.user);
-  const isTeacher = user?.role === RoleUser.TEACHER;
+  const isTeacher = user?.role === UserRole.TEACHER;
   const teacherClub = user?.teacherProfile?.club ?? null;
   const teacherClubId = teacherClub?.id ?? null;
 

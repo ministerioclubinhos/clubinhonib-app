@@ -1,4 +1,4 @@
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 
 export type Weekday =
   | "monday" | "tuesday" | "wednesday" | "thursday"
@@ -19,7 +19,7 @@ export type UserPublicDto = {
   name?: string;
   email?: string;
   phone?: string;
-  role: RoleUser;
+  role: UserRole;
   active: boolean;
   completed: boolean;
   commonUser: boolean;

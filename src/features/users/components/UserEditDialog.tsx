@@ -5,7 +5,7 @@ import {
   FormControlLabel, Switch
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 import { UpadateUserForm } from "../types";
 
 type Props = {
@@ -18,10 +18,10 @@ type Props = {
   onConfirm: () => void;
 };
 
-const roleLabels: Record<RoleUser, string> = {
-  [RoleUser.COORDINATOR]: "Coordenador",
-  [RoleUser.TEACHER]: "Professor",
-  [RoleUser.ADMIN]: "Administrador",
+const roleLabels: Record<UserRole, string> = {
+  [UserRole.COORDINATOR]: "Coordenador",
+  [UserRole.TEACHER]: "Professor",
+  [UserRole.ADMIN]: "Administrador",
 };
 
 export default function UserEditDialog({
@@ -31,7 +31,7 @@ export default function UserEditDialog({
 
   if (!value) return null;
 
-  const roleOptions = [RoleUser.COORDINATOR, RoleUser.TEACHER];
+  const roleOptions = [UserRole.COORDINATOR, UserRole.TEACHER];
 
   const senhaInvalida =
     editPassword &&
@@ -61,7 +61,7 @@ export default function UserEditDialog({
                 label="Papel"
                 value={value.role}
                 onChange={(e) =>
-                  onChange({ ...value, role: e.target.value as RoleUser })
+                  onChange({ ...value, role: e.target.value as UserRole })
                 }
               >
                 {roleOptions.map((role) => (

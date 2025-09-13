@@ -1,4 +1,4 @@
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 
 export type UserRow = {
   id: string;
@@ -10,7 +10,7 @@ export type UserRow = {
   active: boolean;
   completed: boolean;
   commonUser: boolean;
-  role: RoleUser;
+  role: UserRole;
 };
 
 export type CreateUserForm = {
@@ -19,13 +19,13 @@ export type CreateUserForm = {
   password: string;
   confirmPassword?: string;
   phone?: string;
-  role: RoleUser
+  role: UserRole
 };
 
 
 export type UpadateUserForm = {
   name: string;
-  role: RoleUser;
+  role: UserRole;
   phone: string;
   active: boolean;
   completed: boolean;
@@ -41,7 +41,7 @@ export type UsersPage = {
 
 export type UserFilters = {
   q: string;
-  role: "all" | RoleUser | string;
+  role: "all" | UserRole | string;
   onlyActive: boolean;
   onlyCompleted: boolean;
 };

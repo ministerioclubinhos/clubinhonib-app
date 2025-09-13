@@ -3,10 +3,10 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState as RootStateType } from "@/store/slices";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 
 interface ProtectedRouteProps {
-  requiredRole?: RoleUser | RoleUser[];
+  requiredRole?: UserRole | UserRole[];
   redirectTo?: string;
   adminBypass?: boolean;
 }
@@ -47,9 +47,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (requiredRole) {
     const rolesArray = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-    const userRole = user?.role as RoleUser | undefined;
+    const userRole = user?.role as UserRole | undefined;
 
-    if (adminBypass && userRole === RoleUser.ADMIN) {
+    if (adminBypass && userRole === UserRole.ADMIN) {
       return <Outlet />;
     }
 

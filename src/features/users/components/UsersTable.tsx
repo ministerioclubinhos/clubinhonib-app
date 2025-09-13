@@ -29,7 +29,7 @@ import {
 import { Visibility, Edit, Delete } from "@mui/icons-material";
 import { UserRow } from "../types";
 import { fmtDate } from "@/utils/dates";
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 import UsersCards from "./UsersCards";
 
 type Props = {
@@ -46,11 +46,10 @@ type Props = {
   onDelete: (u: UserRow) => void;
 };
 
-// 🔹 labels traduzidos
-const roleLabels: Record<RoleUser, string> = {
-  [RoleUser.ADMIN]: "Administrador",
-  [RoleUser.COORDINATOR]: "Coordenador",
-  [RoleUser.TEACHER]: "Professor",
+const roleLabels: Record<UserRole, string> = {
+  [UserRole.ADMIN]: "Administrador",
+  [UserRole.COORDINATOR]: "Coordenador",
+  [UserRole.TEACHER]: "Professor",
 };
 
 export default function UsersTable(props: Props) {
@@ -101,14 +100,14 @@ function UsersTableDesktop({
         accessorKey: "role",
         header: "Papel",
         cell: ({ getValue }) => {
-          const role = getValue() as RoleUser;
+          const role = getValue() as UserRole;
           return (
             <Chip
               size="small"
               label={roleLabels[role] ?? role}
               variant="outlined"
               color={
-                role === RoleUser.ADMIN ? "secondary" : "default"
+                role === UserRole.ADMIN ? "secondary" : "default"
               }
             />
           );

@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../slices';
 import { MediaTargetType } from '../slices/types';
-import { RoleUser } from '../slices/auth/authSlice';
+import { UserRole } from '../slices/auth/authSlice';
 
 export const selectVideoRoutes = createSelector(
   [(state: RootState) => state.routes.routes],
@@ -10,16 +10,16 @@ export const selectVideoRoutes = createSelector(
 
 export const selectIsAdmin = createSelector(
   [(state: RootState) => state.auth],
-  (auth) => auth.isAuthenticated && auth.user?.role === RoleUser.ADMIN
+  (auth) => auth.isAuthenticated && auth.user?.role === UserRole.ADMIN
 );
 
 export const selectIsTeacher = createSelector(
   [(state: RootState) => state.auth],
-  (auth) => auth.isAuthenticated && auth.user?.role === RoleUser.TEACHER
+  (auth) => auth.isAuthenticated && auth.user?.role === UserRole.TEACHER
 );
 
 export const selectIsCoordinator = createSelector(
   [(state: RootState) => state.auth],
-  (auth) => auth.isAuthenticated && auth.user?.role === RoleUser.COORDINATOR
+  (auth) => auth.isAuthenticated && auth.user?.role === UserRole.COORDINATOR
 );
 

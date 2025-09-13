@@ -29,7 +29,7 @@ import AdminDashboardPage from './components/Adm/AdminDashboardPage';
 import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 
 import { fetchRoutes } from './store/slices/route/routeSlice';
-import { RoleUser, initAuth } from './store/slices/auth/authSlice';
+import { UserRole, initAuth } from './store/slices/auth/authSlice';
 
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
@@ -115,7 +115,7 @@ function App() {
                 <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
               </Route>
 
-              <Route element={<ProtectedRoute requiredRole={[RoleUser.ADMIN, RoleUser.COORDINATOR]} />}>
+              <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>
                 <Route path="/adm" element={<AdminLayout />}>
                   <Route index element={<AdminDashboardPage />} />
                   <Route path="meditacoes" element={<MeditationManager />} />

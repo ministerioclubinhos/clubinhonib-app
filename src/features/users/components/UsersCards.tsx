@@ -12,7 +12,7 @@ import {
 import { SortingState } from "@tanstack/react-table";
 import { UserRow } from "../types";
 import { fmtDate } from "@/utils/dates";
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 
 type Props = {
   rows: UserRow[];
@@ -28,10 +28,10 @@ type Props = {
   onDelete: (u: UserRow) => void;
 };
 
-const roleLabels: Record<RoleUser, string> = {
-  [RoleUser.ADMIN]: "Administrador",
-  [RoleUser.COORDINATOR]: "Coordenador",
-  [RoleUser.TEACHER]: "Professor",
+const roleLabels: Record<UserRole, string> = {
+  [UserRole.ADMIN]: "Administrador",
+  [UserRole.COORDINATOR]: "Coordenador",
+  [UserRole.TEACHER]: "Professor",
 };
 
 export default function UsersCards(props: Props) {
@@ -64,8 +64,8 @@ export default function UsersCards(props: Props) {
 
   const roleChipColor = (role?: string) => {
     switch (role) {
-      case RoleUser.COORDINATOR: return "primary";
-      case RoleUser.TEACHER: return "success";
+      case UserRole.COORDINATOR: return "primary";
+      case UserRole.TEACHER: return "success";
       default: return "default";
     }
   };
@@ -109,7 +109,7 @@ export default function UsersCards(props: Props) {
                   <Chip
                     size="small"
                     color={roleChipColor(u.role)}
-                    label={roleLabels[u.role as RoleUser] || "Usuário"}
+                    label={roleLabels[u.role as UserRole] || "Usuário"}
                   />
                   <Box sx={{ flex: 1 }} />
                   <Tooltip title={expanded ? "Recolher" : "Expandir"}>
@@ -192,7 +192,7 @@ export default function UsersCards(props: Props) {
                         >
                           <Chip
                             size="small"
-                            label={`Papel: ${roleLabels[u.role as RoleUser] || "Usuário"}`}
+                            label={`Papel: ${roleLabels[u.role as UserRole] || "Usuário"}`}
                             color={roleChipColor(u.role)}
                             variant="outlined"
                           />

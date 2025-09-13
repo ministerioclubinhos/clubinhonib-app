@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import apiAxios from '@/config/axiosConfig';
 
-export enum RoleUser {
+export enum UserRole {
   ADMIN = 'admin',
   COORDINATOR = 'coordinator',
   TEACHER = 'teacher',
@@ -29,7 +29,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  role: RoleUser;
+  role: UserRole;
   active?: boolean;
   commonUser?: boolean;
   phone?: string;

@@ -42,7 +42,7 @@ import {
 
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
-import { RoleUser } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/store/slices/auth/authSlice";
 
 type SectionId = "all" | "pages" | "conteudos" | "clubinho" | "operacional";
 
@@ -94,8 +94,8 @@ export default function AdminDashboardPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const role = user?.role;
-  const isAdmin = !!isAuthenticated && role === RoleUser.ADMIN;
-  const isCoordinator = !!isAuthenticated && role === RoleUser.COORDINATOR;
+  const isAdmin = !!isAuthenticated && role === UserRole.ADMIN;
+  const isCoordinator = !!isAuthenticated && role === UserRole.COORDINATOR;
   const isSimpleMode = isCoordinator && !isAdmin;
 
   const [query, setQuery] = React.useState("");

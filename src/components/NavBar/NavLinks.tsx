@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, Stack } from '@mui/material';
 import { RootState } from '@/store/slices';
-import { logout, RoleUser } from '@/store/slices/auth/authSlice';
+import { logout, UserRole } from '@/store/slices/auth/authSlice';
 import api from '@/config/axiosConfig';
 
 interface Props {
@@ -17,9 +17,9 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
   const dispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = isAuthenticated && user?.role === RoleUser.ADMIN;
-  const isTeacher = isAuthenticated && user?.role === RoleUser.TEACHER;
-  const isCoordinator = isAuthenticated && user?.role === RoleUser.COORDINATOR;
+  const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
+  const isTeacher = isAuthenticated && user?.role === UserRole.TEACHER;
+  const isCoordinator = isAuthenticated && user?.role === UserRole.COORDINATOR;
 
   const handleClick = () => closeMenu?.();
 
