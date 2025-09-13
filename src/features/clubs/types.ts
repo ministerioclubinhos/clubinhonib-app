@@ -1,5 +1,3 @@
-// Tipos compartilhados entre componentes e hooks
-
 import { RoleUser } from "@/store/slices/auth/authSlice";
 
 export type Weekday =
@@ -27,7 +25,6 @@ export type UserPublicDto = {
   commonUser: boolean;
 };
 
-// Perfis completos (vindos do back) — usados nas respostas de Club
 export type CoordinatorMiniDto = { id: string; user: UserPublicDto };
 export type TeacherMiniDto = { id: string; user: UserPublicDto };
 
@@ -48,6 +45,7 @@ export type ClubSimpleResponseDto = {
   id: string;
   number: number;
   weekday: Weekday;
+  time?: string | null;
   address: AddressResponseDto;
   createdAt: string;
   updatedAt: string;
@@ -57,6 +55,7 @@ export type ClubResponseDto = {
   id: string;
   number: number;
   weekday: Weekday;
+  time?: string | null;
   address: AddressResponseDto;
   coordinator?: CoordinatorMiniDto | null;
   teachers: TeacherMiniDto[];
@@ -64,12 +63,10 @@ export type ClubResponseDto = {
   updatedAt: string;
 };
 
-
 export type SimpleClubResponseDto = {
   id: string,
   detalhe: string,
   coordinator: boolean
-
 };
 
 export type Paginated<T> = {
@@ -80,10 +77,10 @@ export type Paginated<T> = {
   pageCount: number;
 };
 
-// Forms
 export type CreateClubForm = {
   number: number;
   weekday: Weekday;
+  time?: string | null;
   address: Partial<AddressResponseDto> & {
     street: string; district: string; city: string; state: string; postalCode: string;
   };
@@ -92,8 +89,6 @@ export type CreateClubForm = {
 };
 
 export type EditClubForm = Partial<CreateClubForm> & { id: string };
-
-// Combos e filtros
 export type UserLite = { id: string; name?: string; email?: string };
 
 export type ClubFilters = {
@@ -103,10 +98,8 @@ export type ClubFilters = {
 };
 
 export type ClubSort =
-  | { id: "number" | "weekday" | "createdAt" | "updatedAt" | "city" | "state"; desc: boolean }
+  | { id: "number" | "weekday" | "time" | "createdAt" | "updatedAt" | "city" | "state"; desc: boolean }
   | null;
-
 
 export type CoordinatorOption = { coordinatorProfileId: string; name: string };
 export type TeacherOption = { teacherProfileId: string; name: string, vinculado: boolean };
-

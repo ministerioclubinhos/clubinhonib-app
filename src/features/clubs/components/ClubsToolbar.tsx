@@ -31,7 +31,7 @@ export default function ClubsToolbar({
   onRefreshClick,
   isXs,
 }: Props) {
- const isAdmin = useSelector(selectIsAdmin);
+  const isAdmin = useSelector(selectIsAdmin);
 
   const handleChange = <K extends keyof ClubFilters>(
     key: K,
@@ -73,7 +73,7 @@ export default function ClubsToolbar({
             label="Clubinho"
             value={filters.clubSearchString ?? ""}
             onChange={(e) => handleChange("clubSearchString", e.target.value)}
-            placeholder="Número ou dia"
+            placeholder="Número, dia ou horário (ex.: 14:30)"
           />
         </Grid>
 

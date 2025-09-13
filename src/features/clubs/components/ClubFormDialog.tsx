@@ -33,9 +33,9 @@ export default function ClubFormDialog({
 }: Props) {
 
   const teachersKey = React.useMemo(
-  () => (teacherOptions ?? []).map(t => `${t.teacherProfileId}:${t.vinculado?1:0}`).join("|"),
-  [teacherOptions]
-);
+    () => (teacherOptions ?? []).map(t => `${t.teacherProfileId}:${t.vinculado ? 1 : 0}`).join("|"),
+    [teacherOptions]
+  );
 
   const isAdmin = useSelector(selectIsAdmin);
   const isCreate = mode === "create";
@@ -43,14 +43,13 @@ export default function ClubFormDialog({
 
   const teachers = (value as any).teacherProfileIds ?? [];
   const coord = (value as any).coordinatorProfileId ?? null;
+  const time = (value as any).time ?? "";
 
   return (
     <Dialog open={open} onClose={onCancel} maxWidth="md" fullWidth>
       <DialogTitle>{isCreate ? "Criar Clubinho" : "Editar Clubinho"}</DialogTitle>
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-
 
         <Grid container spacing={2}>
           {isAdmin && (
@@ -71,7 +70,6 @@ export default function ClubFormDialog({
             </Grid>
           )}
 
-
           <Grid item xs={12} md={5}>
             <FormControl fullWidth>
               <InputLabel>Dia da semana</InputLabel>
@@ -86,6 +84,22 @@ export default function ClubFormDialog({
               </Select>
             </FormControl>
           </Grid>
+
+          <Grid item xs={12} md={4}>
+            <TextField
+              label="Horário"
+              type="time"
+              fullWidth
+              inputProps={{ step: 60 }}
+              value={time}
+              onChange={(e) => {
+                const v = e.target.value;
+                onChange({ ...value, time: v } as any);
+              }}
+              helperText="0:00 a 23:59"
+            />
+          </Grid>
+
           {isAdmin && (
             <Grid item xs={12} md={4}>
               <CoordinatorSelect
@@ -112,12 +126,12 @@ export default function ClubFormDialog({
             <Typography variant="subtitle1" fontWeight={700}>Professores</Typography>
           </Grid>
           <Grid item xs={12}>
-<TeachersSelect
-  key={teachersKey}
-  value={teachers}
-  options={teacherOptions}
-  onChange={(ids) => onChange({ ...value, teacherProfileIds: ids } as any)}
-/>
+            <TeachersSelect
+              key={teachersKey}
+              value={teachers}
+              options={teacherOptions}
+              onChange={(ids) => onChange({ ...value, teacherProfileIds: ids } as any)}
+            />
           </Grid>
         </Grid>
 

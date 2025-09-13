@@ -72,11 +72,11 @@ export default function ClubsManager() {
     );
 
   const [creating, setCreating] = useState<CreateClubForm | null>(null);
-
   const openCreate = () =>
     setCreating({
       number: 0,
       weekday: "saturday" as Weekday,
+      time: null,
       address: {
         street: "",
         district: "",
@@ -105,8 +105,10 @@ export default function ClubsManager() {
       delete (payload as any).coordinatorProfileId;
     }
 
+    if (payload.time === "") delete (payload as any).time;
+
     await createClub(payload, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions(); 
+    await reloadOptions();
     setCreating(null);
   };
 
@@ -117,6 +119,7 @@ export default function ClubsManager() {
       id: c.id,
       number: c.number,
       weekday: c.weekday,
+      time: c.time ?? null,
       address: c.address,
       coordinatorProfileId: c.coordinator?.id ?? null,
       teacherProfileIds: (c.teachers ?? []).map((t) => t.id),
@@ -134,23 +137,26 @@ export default function ClubsManager() {
       teacherProfileIds: teacherIds,
     };
 
+    if ((payload as any).time === "") {
+      (payload as any).time = null;
+    }
+
     if (rest.coordinatorProfileId === undefined) {
       delete (payload as any).coordinatorProfileId;
     }
 
     await updateClub(id, payload, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions(); 
+    await reloadOptions();
     setEditing(null);
   };
 
- 
   const [confirmDelete, setConfirmDelete] = useState<ClubResponseDto | null>(null);
   const askDelete = (c: ClubResponseDto) => setConfirmDelete(c);
 
   const submitDelete = async () => {
     if (!confirmDelete) return;
     await deleteClub(confirmDelete.id, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions(); 
+    await reloadOptions();
     setConfirmDelete(null);
   };
 
@@ -186,11 +192,7 @@ export default function ClubsManager() {
         </Box>
       )}
       {error && !loading && (
-        <Alert
-          severity="error"
-          sx={{ mb: 2 }}
-          onClose={() => setError("")}
-        >
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
           {error}
         </Alert>
       )}

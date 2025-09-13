@@ -8,7 +8,7 @@ import {
   Visibility, Edit, Delete, SwapVert,
   ExpandMore as ExpandMoreIcon,
   CalendarMonthOutlined, LocationOnOutlined,
-  SupervisorAccount, Group as GroupIcon
+  SupervisorAccount, Group as GroupIcon, AccessTime as AccessTimeIcon
 } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
 import { ClubResponseDto, WEEKDAYS } from "../types";
@@ -58,6 +58,7 @@ export default function ClubsCards(props: Props) {
   const sortOptions = useMemo(() => ([
     { id: "number", label: "Número" },
     { id: "weekday", label: "Dia da semana" },
+    { id: "time", label: "Horário" }, // novo
     { id: "updatedAt", label: "Atualizado em" },
     { id: "createdAt", label: "Criado em" },
   ]), []);
@@ -137,6 +138,15 @@ export default function ClubsCards(props: Props) {
                     </Typography>
                   </Stack>
 
+                  {c.time && (
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <AccessTimeIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        {c.time}
+                      </Typography>
+                    </Stack>
+                  )}
+
                   <Box sx={{ flex: 1 }} />
 
                   <ButtonBase
@@ -199,6 +209,14 @@ export default function ClubsCards(props: Props) {
                       label={`Profs: ${teachers.length || 0}`}
                       sx={{ fontWeight: 700 }}
                     />
+                    {c.time && (
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        icon={<AccessTimeIcon sx={{ fontSize: 16 }} />}
+                        label={c.time}
+                      />
+                    )}
                     <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 0.25 }}>
                       <LocationOnOutlined sx={{ fontSize: 18, color: "text.secondary" }} />
                       <Typography variant="caption" color="text.secondary">
@@ -268,6 +286,7 @@ export default function ClubsCards(props: Props) {
                           <Chip size="small" variant="outlined" label={`Criado: ${fmtDateOnly(c.createdAt)}`} />
                           <Chip size="small" variant="outlined" label={`Atualizado: ${fmtDateOnly(c.updatedAt)}`} />
                           <Chip size="small" variant="outlined" label={`Dia do Clubinho: ${weekdayLabel(c.weekday)}`} />
+                          <Chip size="small" variant="outlined" label={`Horário: ${c.time || "—"}`} />
                         </Stack>
                       </Grid>
                     </Grid>

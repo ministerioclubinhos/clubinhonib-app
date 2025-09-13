@@ -135,12 +135,6 @@ export function useClubMutations(
   return { dialogLoading, dialogError, setDialogError, createClub, updateClub, deleteClub };
 }
 
-/**
- * Opções de Coordenadores/Professores:
- * - Coordenadores: todos (vinculados ou não).
- * - Professores: retornamos todos; o componente TeachersSelect filtra exibindo apenas os não vinculados,
- *   mantendo visíveis os já selecionados em modo de edição.
- */
 export function useOptions() {
   const [coordinators, setCoordinators] = useState<CoordinatorOption[]>([]);
   const [teachers, setTeachers] = useState<TeacherOption[]>([]);

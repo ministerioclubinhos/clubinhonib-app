@@ -24,6 +24,7 @@ import {
   LocationCityOutlined,
   MapOutlined,
   LocalPostOfficeOutlined,
+  AccessTime as AccessTimeIcon,
 } from "@mui/icons-material";
 import { ClubResponseDto, WEEKDAYS } from "../types";
 import { fmtDate } from "../utils";
@@ -87,6 +88,14 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
           label={weekdayLabel}
         />
       )}
+      {club?.time ? (
+        <Chip
+          size="small"
+          variant="outlined"
+          icon={<AccessTimeIcon sx={{ fontSize: 16 }} />}
+          label={club.time}
+        />
+      ) : null}
     </Box>
   );
 
@@ -106,9 +115,8 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
 
         {club && (
           <Stack spacing={2.5}>
-            {/* Cabeçalho (ajustado p/ alinhamento à esquerda e alturas homogêneas) */}
             <Grid container spacing={2} alignItems="stretch">
-              <Grid item xs={12} md={4} sx={{ display: "flex" }}>
+              <Grid item xs={12} md={3} sx={{ display: "flex" }}>
                 <Box sx={{ flex: 1, textAlign: "left" }}>
                   <Info
                     icon={<NumbersOutlined fontSize="small" />}
@@ -117,7 +125,7 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                   />
                 </Box>
               </Grid>
-              <Grid item xs={12} md={4} sx={{ display: "flex" }}>
+              <Grid item xs={12} md={3} sx={{ display: "flex" }}>
                 <Box sx={{ flex: 1, textAlign: "left" }}>
                   <Info
                     icon={<CalendarToday fontSize="small" />}
@@ -126,7 +134,16 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                   />
                 </Box>
               </Grid>
-              <Grid item xs={12} md={4} sx={{ display: "flex" }}>
+              <Grid item xs={12} md={3} sx={{ display: "flex" }}>
+                <Box sx={{ flex: 1, textAlign: "left" }}>
+                  <Info
+                    icon={<AccessTimeIcon fontSize="small" />}
+                    label="Horário"
+                    value={club.time || "—"}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={3} sx={{ display: "flex" }}>
                 <Box sx={{ flex: 1, textAlign: "left" }}>
                   <Info
                     icon={<UpdateIcon fontSize="small" />}
@@ -139,7 +156,6 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
 
             <Divider />
 
-            {/* Endereço (ajustado p/ alinhamento à esquerda) */}
             <Paper variant="outlined" sx={{ p: 2 }}>
               <Typography
                 variant="subtitle2"
@@ -157,9 +173,8 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                       label="Rua / Nº"
                       value={
                         address?.street
-                          ? `${address.street}${
-                              address?.number ? `, ${address.number}` : ""
-                            }`
+                          ? `${address.street}${address?.number ? `, ${address.number}` : ""
+                          }`
                           : "—"
                       }
                     />
@@ -229,7 +244,6 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
               </Box>
             </Paper>
 
-            {/* Professores */}
             <Paper variant="outlined" sx={{ p: 2 }}>
               <Typography
                 variant="subtitle2"

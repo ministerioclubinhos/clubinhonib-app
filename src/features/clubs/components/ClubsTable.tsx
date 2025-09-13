@@ -7,12 +7,13 @@ import {
   ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel,
   SortingState, useReactTable
 } from "@tanstack/react-table";
-import { Visibility, Edit, Delete } from "@mui/icons-material";
+import { Visibility, Edit, Delete, AccessTime } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import { ClubResponseDto, WEEKDAYS } from "../types";
 import { fmtDate } from "../utils";
 import ClubsCards from "./ClubsCards";
+
 type Props = {
   isAdmin: boolean;
   rows: ClubResponseDto[];
@@ -64,6 +65,20 @@ function ClubsTableDesktop(props: Props) {
         meta: { width: 150 },
       },
       {
+        accessorKey: "time",
+        header: "Horário",
+        cell: ({ row }) => {
+          const t = row.original.time;
+          return (
+            <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+              <AccessTime fontSize="inherit" sx={{ fontSize: 16, color: "text.secondary" }} />
+              <Typography>{t || "—"}</Typography>
+            </Box>
+          );
+        },
+        meta: { width: 120 },
+      },
+      {
         id: "coordinator",
         header: "Coordenador",
         cell: ({ row }) => {
@@ -95,19 +110,19 @@ function ClubsTableDesktop(props: Props) {
       },
       ...(isMdUp
         ? ([
-          {
-            accessorKey: "createdAt",
-            header: "Criado em",
-            cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
-            meta: { width: 170 },
-          },
-          {
-            accessorKey: "updatedAt",
-            header: "Atualizado em",
-            cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
-            meta: { width: 170 },
-          },
-        ] as ColumnDef<ClubResponseDto>[])
+            {
+              accessorKey: "createdAt",
+              header: "Criado em",
+              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
+              meta: { width: 170 },
+            },
+            {
+              accessorKey: "updatedAt",
+              header: "Atualizado em",
+              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
+              meta: { width: 170 },
+            },
+          ] as ColumnDef<ClubResponseDto>[])
         : []),
       {
         id: "actions",
@@ -132,7 +147,6 @@ function ClubsTableDesktop(props: Props) {
                 </IconButton>
               </Tooltip>
             )}
-
           </Box>
         ),
         meta: { width: isXs ? 120 : 150 },

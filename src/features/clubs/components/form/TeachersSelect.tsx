@@ -13,7 +13,7 @@ import { TeacherOption } from "../../types";
 
 type Props = {
   value: string[];
-  options: TeacherOption[]; // { teacherProfileId: string; name: string; vinculado?: boolean }
+  options: TeacherOption[];
   onChange: (ids: string[]) => void;
   name?: string;
 };
@@ -26,7 +26,6 @@ export default function TeachersSelect({
 }: Props) {
   const [open, setOpen] = useState(false);
 
-  // Fingerprint captura mudanças relevantes mesmo com o mesmo array/objetos por referência
   const fingerprint = useMemo(
     () => (options ?? [])
       .map(o => `${o.teacherProfileId}:${o.vinculado ? 1 : 0}`)
@@ -34,17 +33,14 @@ export default function TeachersSelect({
     [options]
   );
 
-  // Mostrar apenas não vinculados, exceto os já selecionados (edição)
   const visibleOptions = useMemo(
     () =>
       (options ?? []).filter(
         (opt) => !opt.vinculado || value.includes(opt.teacherProfileId)
       ),
-    // ⚠️ depende do fingerprint em vez de options diretamente
     [fingerprint, value]
   );
 
-  // Mantém o Select imune a null/undefined/""
   const safeValue = useMemo(
     () =>
       Array.from(
@@ -108,7 +104,6 @@ export default function TeachersSelect({
           );
         })}
 
-        {/* “OK” não-selecionável para fechar o menu */}
         <ListSubheader disableSticky sx={{ m: 0, p: 0 }}>
           <Typography
             variant="caption"

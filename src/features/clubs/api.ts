@@ -9,8 +9,6 @@ import {
 import { CoordinatorProfile } from "../coordinators/types";
 import { TeacherProfile } from "../teachers/types";
 
-// src/modules/clubs/api.ts (função apiFetchClubs)
-
 export async function apiFetchClubs(args: {
   page: number;
   limit: number;
@@ -41,7 +39,6 @@ export async function apiFetchClubs(args: {
   return data;
 }
 
-
 export async function apiFetchClub(id: string) {
   const { data } = await api.get<ClubResponseDto>(`/clubs/${id}`);
   return data;
@@ -66,7 +63,6 @@ export async function apiDeleteClub(id: string) {
   await api.delete(`/clubs/${id}`);
 }
 
-// Options (coordinators / teachers) — inalterado
 export async function apiListUsersByRole(role: "coordinator" | "teacher", limit = 500) {
   const { data } = await api.get<{ items: { id: string; name?: string; email?: string }[] }>("/users", {
     params: { role, page: 1, limit, sort: "name", order: "ASC" },
@@ -123,4 +119,3 @@ export async function apiListCoordinatorsSimple(): Promise<CoordinatorSimpleApi[
   const { data } = await api.get<CoordinatorSimpleApi[]>("/coordinator-profiles/simple");
   return data;
 }
-
