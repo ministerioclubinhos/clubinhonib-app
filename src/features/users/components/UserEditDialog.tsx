@@ -10,8 +10,8 @@ import { UpadateUserForm } from "../types";
 
 type Props = {
   open: boolean;
-  value: (UpadateUserForm & { confirmPassword?: string }) | null;
-  onChange: (v: UpadateUserForm & { confirmPassword?: string }) => void;
+  value: (UpadateUserForm & { confirmPassword?: string; editPassword?: boolean }) | null;
+  onChange: (v: UpadateUserForm & { confirmPassword?: string; editPassword?: boolean }) => void;
   loading: boolean;
   error: string;
   onCancel: () => void;
@@ -27,14 +27,13 @@ const roleLabels: Record<UserRole, string> = {
 export default function UserEditDialog({
   open, value, onChange, loading, error, onCancel, onConfirm,
 }: Props) {
-  const [editPassword, setEditPassword] = React.useState(false);
-
   if (!value) return null;
 
   const roleOptions = [UserRole.COORDINATOR, UserRole.TEACHER];
 
+  const editingPassword = !!value.editPassword;
   const senhaInvalida =
-    editPassword &&
+    editingPassword &&
     (!!value.password || !!value.confirmPassword) &&
     value.password !== value.confirmPassword;
 
@@ -60,9 +59,7 @@ export default function UserEditDialog({
               <Select
                 label="Papel"
                 value={value.role}
-                onChange={(e) =>
-                  onChange({ ...value, role: e.target.value as UserRole })
-                }
+                onChange={(e) => onChange({ ...value, role: e.target.value as UserRole })}
               >
                 {roleOptions.map((role) => (
                   <MenuItem key={role} value={role}>
@@ -87,9 +84,7 @@ export default function UserEditDialog({
               control={
                 <Switch
                   checked={value.active}
-                  onChange={(e) =>
-                    onChange({ ...value, active: e.target.checked })
-                  }
+                  onChange={(e) => onChange({ ...value, active: e.target.checked })}
                 />
               }
               label="Ativo"
@@ -101,9 +96,7 @@ export default function UserEditDialog({
               control={
                 <Switch
                   checked={value.completed}
-                  onChange={(e) =>
-                    onChange({ ...value, completed: e.target.checked })
-                  }
+                  onChange={(e) => onChange({ ...value, completed: e.target.checked })}
                 />
               }
               label="Cadastro completo"
@@ -114,12 +107,15 @@ export default function UserEditDialog({
             <FormControlLabel
               control={
                 <Switch
-                  checked={editPassword}
+                  checked={editingPassword}
                   onChange={(e) => {
-                    setEditPassword(e.target.checked);
-                    if (!e.target.checked) {
-                      onChange({ ...value, password: "", confirmPassword: "" });
-                    }
+                    const checked = e.target.checked;
+                    onChange({
+                      ...value,
+                      editPassword: checked,
+                      password: checked ? value.password : "",
+                      confirmPassword: checked ? value.confirmPassword : "",
+                    });
                   }}
                 />
               }
@@ -127,7 +123,7 @@ export default function UserEditDialog({
             />
           </Grid>
 
-          {editPassword && (
+          {editingPassword && (
             <>
               <Grid item xs={12} md={6}>
                 <TextField
@@ -135,24 +131,18 @@ export default function UserEditDialog({
                   label="Nova Senha"
                   type="password"
                   value={value.password}
-                  onChange={(e) =>
-                    onChange({ ...value, password: e.target.value })
-                  }
+                  onChange={(e) => onChange({ ...value, password: e.target.value })}
                 />
               </Grid>
-
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Confirmar Senha"
                   type="password"
                   value={value.confirmPassword ?? ""}
-                  onChange={(e) =>
-                    onChange({ ...value, confirmPassword: e.target.value })
-                  }
+                  onChange={(e) => onChange({ ...value, confirmPassword: e.target.value })}
                 />
               </Grid>
-
               {senhaInvalida && (
                 <Grid item xs={12}>
                   <Alert severity="error">As senhas não coincidem.</Alert>
@@ -170,14 +160,8 @@ export default function UserEditDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onCancel} sx={{ color: "text.secondary" }}>
-          Cancelar
-        </Button>
-        <Button
-          variant="contained"
-          onClick={onConfirm}
-          disabled={loading || senhaInvalida}
-        >
+        <Button onClick={onCancel} sx={{ color: "text.secondary" }}>Cancelar</Button>
+        <Button variant="contained" onClick={onConfirm} disabled={loading || senhaInvalida}>
           Salvar
         </Button>
       </DialogActions>
