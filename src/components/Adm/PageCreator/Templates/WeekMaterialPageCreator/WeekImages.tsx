@@ -16,7 +16,7 @@ import {
   DialogActions,
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { validateMediaURL } from 'utils/validateMediaURL';
 import { MediaItem, MediaType, MediaUploadType, MediaPlatform } from 'store/slices/types';
 
@@ -151,7 +151,7 @@ export default function WeekImages({ images, setImages }: Props) {
         </Grid>
 
         {newImg.uploadType === MediaUploadType.LINK && (
-          <>
+          <Fragment>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Plataforma</InputLabel>
@@ -182,7 +182,7 @@ export default function WeekImages({ images, setImages }: Props) {
                 helperText={errors.url ? 'URL inválida ou obrigatória' : ''}
               />
             </Grid>
-          </>
+          </Fragment>
         )}
 
         {newImg.uploadType === MediaUploadType.UPLOAD && (

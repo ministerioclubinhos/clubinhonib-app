@@ -255,7 +255,7 @@ const Home: React.FC = () => {
                       p: 4,
                       textAlign: 'center',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      bgcolor: '#FFFFFF', // Branco
+                      bgcolor: '#FFFFFF',
                     }}
                   >
                     <Typography variant="body1" color="#757575" sx={{ mb: 3 }}>
@@ -286,7 +286,7 @@ const Home: React.FC = () => {
           </Typography>
           <Typography
             variant="h6"
-            color="#757575" // Cinza médio
+            color="#757575"
             mb={4}
             sx={{ maxWidth: '600px', mx: 'auto', fontSize: { xs: '1rem', md: '1.5rem' } }}
           >

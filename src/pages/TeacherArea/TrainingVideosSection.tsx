@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -16,9 +16,9 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
-import { RootState } from '@/store/slices';
-import { RouteData } from 'store/slices/route/routeSlice';
-import { MediaTargetType } from 'store/slices/types';
+
+import { selectVideoRoutes } from '@/store/selectors/routeSelectors';
+import { RouteData } from '@/store/slices/route/routeSlice';
 
 const TrainingVideosSection: React.FC = () => {
   const navigate = useNavigate();
@@ -28,14 +28,17 @@ const TrainingVideosSection: React.FC = () => {
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState(false);
 
-  const videos: RouteData[] = useSelector((state: RootState) =>
-    state.routes.routes.filter((route) => route.entityType === MediaTargetType.VideosPage)
-  );
+  const videos: RouteData[] = useSelector(selectVideoRoutes);
 
-  const filteredVideos = videos.filter((video) =>
-    video.title.toLowerCase().includes(search.toLowerCase()) ||
-    video.subtitle?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredVideos = useMemo(() => {
+    const term = search.toLowerCase().trim();
+    if (!term) return videos;
+    return videos.filter(
+      (video) =>
+        video.title.toLowerCase().includes(term) ||
+        video.subtitle?.toLowerCase().includes(term)
+    );
+  }, [videos, search]);
 
   const visibleCount = isMobile ? 2 : 4;
   const videosToDisplay = expanded ? filteredVideos : filteredVideos.slice(0, visibleCount);
@@ -79,7 +82,7 @@ const TrainingVideosSection: React.FC = () => {
       />
 
       {videosToDisplay.length > 0 ? (
-        <>
+        <Fragment>
           <Grid container spacing={3}>
             {videosToDisplay.map((video) => (
               <Grid item xs={12} sm={6} md={3} key={video.id}>
@@ -113,7 +116,12 @@ const TrainingVideosSection: React.FC = () => {
                       }}
                     />
                     <CardContent>
-                      <Typography variant="subtitle1" fontWeight="bold" color="#424242" gutterBottom>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        color="#424242"
+                        gutterBottom
+                      >
                         {video.title}
                       </Typography>
                       <Typography variant="body2" color="#616161" noWrap>
@@ -137,7 +145,7 @@ const TrainingVideosSection: React.FC = () => {
               </Button>
             </Box>
           )}
-        </>
+        </Fragment>
       ) : (
         <Typography variant="body2" color="text.secondary" textAlign="center">
           Nenhum vídeo encontrado.

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { forwardRef } from 'react';
 import {
   Box,
   TextField,
@@ -10,238 +10,89 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
+import { IMaskInput } from 'react-imask';
 import api from '@/config/axiosConfig';
 
-const formatPhone = (value: string) => {
-  const cleaned = value.replace(/\D/g, '').slice(0, 11);
-  const match = cleaned.match(/^(\d{0,2})(\d{0,5})(\d{0,4})$/);
+const PhoneMask = forwardRef<HTMLInputElement, any>(function PhoneMask(props, ref) {
+  return (
+    <IMaskInput
+      {...props}
+      mask="(00) 00000-0000"
+      definitions={{
+        '0': /[0-9]/,
+      }}
+      inputRef={ref}
+      overwrite
+    />
+  );
+});
 
-  if (!match) return value;
+const schema = Yup.object().shape({
+  name: Yup.string()
+    .required('Nome é obrigatório')
+    .min(2, 'Nome deve ter pelo menos 2 caracteres')
+    .matches(/^[A-Za-zÀ-ÿ\s]+$/, 'Nome deve conter apenas letras'),
+  email: Yup.string()
+    .required('Email é obrigatório')
+    .email('Email inválido'),
+  telefone: Yup.string()
+    .required('Telefone é obrigatório')
+    .test('valid-phone', 'Telefone inválido (ex.: (11) 91234-5678)', (val) => {
+      const digits = val?.replace(/\D/g, '');
+      return digits?.length === 10 || digits?.length === 11;
+    }),
+  mensagem: Yup.string()
+    .required('Mensagem é obrigatória')
+    .min(10, 'Mensagem deve ter pelo menos 10 caracteres'),
+});
 
-  const [, ddd, prefixo, sufixo] = match;
-  if (ddd && prefixo && sufixo) return `(${ddd}) ${prefixo}-${sufixo}`;
-  if (ddd && prefixo) return `(${ddd}) ${prefixo}`;
-  if (ddd) return `(${ddd}`;
-  return '';
-};
+interface ContactFormData {
+  name: string;
+  email: string;
+  telefone: string;
+  mensagem: string;
+}
 
 const Contact: React.FC = () => {
-  const [form, setForm] = useState({
-    nome: '',
-    email: '',
-    telefone: '',
-    mensagem: '',
-  });
-
-  // Interface para erros com mensagens específicas
-  interface FormErrors {
-    nome: { hasError: boolean; message: string };
-    email: { hasError: boolean; message: string };
-    telefone: { hasError: boolean; message: string };
-    mensagem: { hasError: boolean; message: string };
-  }
-
-  const [errors, setErrors] = useState<FormErrors>({
-    nome: { hasError: false, message: '' },
-    email: { hasError: false, message: '' },
-    telefone: { hasError: false, message: '' },
-    mensagem: { hasError: false, message: '' },
-  });
-
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Regex para validações
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const telefoneRegex = /^\(\d{2}\)\s[9]?\d{4}-\d{4}$/;
-  const nomeRegex = /^[A-Za-zÀ-ÿ\s]+$/;
+  const [loading, setLoading] = React.useState(false);
+  const [submitted, setSubmitted] = React.useState(false);
+  const [globalError, setGlobalError] = React.useState<string | null>(null);
 
-  const validDDDs = [
-    '11',
-    '12',
-    '13',
-    '14',
-    '15',
-    '16',
-    '17',
-    '18',
-    '19',
-    '21',
-    '22',
-    '24',
-    '27',
-    '28',
-    '31',
-    '32',
-    '33',
-    '34',
-    '35',
-    '37',
-    '38',
-    '41',
-    '42',
-    '43',
-    '44',
-    '45',
-    '46',
-    '47',
-    '48',
-    '49',
-    '51',
-    '53',
-    '54',
-    '55',
-    '61',
-    '62',
-    '63',
-    '64',
-    '65',
-    '66',
-    '67',
-    '68',
-    '69',
-    '71',
-    '73',
-    '74',
-    '75',
-    '77',
-    '79',
-    '81',
-    '82',
-    '83',
-    '84',
-    '85',
-    '86',
-    '87',
-    '88',
-    '89',
-    '91',
-    '92',
-    '93',
-    '94',
-    '95',
-    '96',
-    '97',
-    '98',
-    '99',
-  ];
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContactFormData>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+      email: '',
+      telefone: '',
+      mensagem: '',
+    },
+  });
 
-  const validateField = (name: keyof typeof form, value: string) => {
-    let error: { hasError: boolean; message: string } = { hasError: false, message: '' };
-
-    switch (name) {
-      case 'nome':
-        if (value.trim() === '') {
-          error = { hasError: true, message: 'Nome é obrigatório.' };
-        } else if (value.trim().length < 2) {
-          error = { hasError: true, message: 'Nome deve ter pelo menos 2 caracteres.' };
-        } else if (!nomeRegex.test(value)) {
-          error = { hasError: true, message: 'Nome deve conter apenas letras.' };
-        }
-        break;
-
-      case 'email':
-        if (value.trim() === '') {
-          error = { hasError: true, message: 'Email é obrigatório.' };
-        } else if (!emailRegex.test(value)) {
-          if (!value.includes('@')) {
-            error = { hasError: true, message: "Email deve conter '@'." };
-          } else if (!value.includes('.')) {
-            error = { hasError: true, message: 'Email deve conter um domínio (ex.: .com).' };
-          } else {
-            error = { hasError: true, message: 'Email inválido.' };
-          }
-        }
-        break;
-
-      case 'telefone':
-        if (value.trim() === '') {
-          error = { hasError: true, message: 'Telefone é obrigatório.' };
-        } else if (!telefoneRegex.test(value)) {
-          error = { hasError: true, message: 'Telefone inválido (ex.: (11) 91234-5678).' };
-        } else {
-          const ddd = value.slice(1, 3); // Extrai o DDD
-          if (!validDDDs.includes(ddd)) {
-            error = { hasError: true, message: 'DDD inválido.' };
-          }
-        }
-        break;
-
-      case 'mensagem':
-        if (value.trim() === '') {
-          error = { hasError: true, message: 'Mensagem é obrigatória.' };
-        } else if (value.trim().length < 10) {
-          error = { hasError: true, message: 'Mensagem deve ter pelo menos 10 caracteres.' };
-        }
-        break;
-
-      default:
-        break;
-    }
-
-    return error;
-  };
-
-  // Validação completa do formulário
-  const validateForm = () => {
-    const newErrors: FormErrors = {
-      nome: validateField('nome', form.nome),
-      email: validateField('email', form.email),
-      telefone: validateField('telefone', form.telefone),
-      mensagem: validateField('mensagem', form.mensagem),
-    };
-
-    setErrors(newErrors);
-    return !Object.values(newErrors).some((err) => err.hasError);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    const formattedValue = name === 'telefone' ? formatPhone(value) : value;
-
-    setForm((prevForm) => ({ ...prevForm, [name]: formattedValue }));
-
-    const error = validateField(name as keyof typeof form, formattedValue);
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: error,
-    }));
-
-    setSubmitted(false);
-    setError(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
+  const onSubmit = async (data: ContactFormData) => {
     setLoading(true);
-    setSubmitted(false);
-    setError(false);
-
+    setGlobalError(null);
     try {
       await api.post('/contact', {
-        name: form.nome,
-        email: form.email,
-        phone: form.telefone,
-        message: form.mensagem,
+        name: data.name,
+        email: data.email,
+        phone: data.telefone,
+        message: data.mensagem,
       });
-
       setSubmitted(true);
-      setForm({ nome: '', email: '', telefone: '', mensagem: '' });
-      setErrors({
-        nome: { hasError: false, message: '' },
-        email: { hasError: false, message: '' },
-        telefone: { hasError: false, message: '' },
-        mensagem: { hasError: false, message: '' },
-      });
-    } catch (err) {
-      setError(true);
-      console.error('Erro ao enviar contato:', err);
+      reset();
+    } catch (error) {
+      setGlobalError('Erro ao enviar a mensagem. Tente novamente mais tarde.');
     } finally {
       setLoading(false);
     }
@@ -255,11 +106,8 @@ const Contact: React.FC = () => {
       alignItems="center"
       minHeight="calc(100vh - 128px)"
       px={{ xs: 2, sm: 3, md: 4 }}
-      mt={{ xs: 7, md: 5 }}
-      mb={0}
       sx={{
         background: 'linear-gradient(135deg, white 0%, #007bff 100%)',
-        fontFamily: "'Roboto', sans-serif",
         width: '100%',
       }}
     >
@@ -267,115 +115,96 @@ const Contact: React.FC = () => {
         elevation={6}
         sx={{
           p: { xs: 2, sm: 3, md: 4 },
-          mt: { xs: 4, md: 6 },
-          mb: { xs: 2, md: 4 },
-          width: '100%',
-          maxWidth: { xs: '100%', sm: 700 },
+          maxWidth: 700,
           borderRadius: 3,
-          transition: 'transform 0.3s ease-in-out',
-          '&:hover': {
-            transform: 'translateY(-4px)',
-          },
-          minHeight: '70%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
+          width: '100%',
         }}
-        role="region"
-        aria-label="Formulário de Contato do Clubinho NIB"
       >
-        <Typography
-          variant="h4"
-          fontWeight="bold"
-          gutterBottom
-          textAlign="center"
-          sx={{
-            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
-          }}
-        >
+        <Typography variant="h4" textAlign="center" fontWeight="bold" gutterBottom>
           Fale Conosco
         </Typography>
-        <Typography
-          variant="subtitle1"
-          gutterBottom
-          textAlign="center"
-          sx={{
-            fontSize: { xs: '0.9rem', sm: '1rem' },
-          }}
-        >
+        <Typography variant="subtitle1" textAlign="center" gutterBottom>
           Entre em contato para saber mais informações.
         </Typography>
 
+        {globalError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {globalError}
+          </Alert>
+        )}
         {submitted && (
           <Alert severity="success" sx={{ mb: 2 }}>
             Mensagem enviada com sucesso!
           </Alert>
         )}
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            Ocorreu um erro ao enviar sua mensagem. Tente novamente mais tarde.
-          </Alert>
-        )}
-
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <TextField
-            label="Nome"
-            name="nome"
-            value={form.nome}
-            onChange={handleChange}
-            fullWidth
-            required
-            margin="normal"
-            error={errors.nome.hasError}
-            helperText={errors.nome.message}
-            id="nome-input"
-            aria-describedby="nome-helper-text"
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Nome"
+                fullWidth
+                margin="normal"
+                error={!!errors.name}
+                helperText={errors.name?.message}
+              />
+            )}
           />
 
-          <TextField
-            label="Email"
+          <Controller
             name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            fullWidth
-            required
-            margin="normal"
-            error={errors.email.hasError}
-            helperText={errors.email.message}
-            id="email-input"
-            aria-describedby="email-helper-text"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Email"
+                type="email"
+                fullWidth
+                margin="normal"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+              />
+            )}
           />
 
-          <TextField
-            label="Telefone"
+          <Controller
             name="telefone"
-            value={form.telefone}
-            onChange={handleChange}
-            fullWidth
-            required
-            margin="normal"
-            error={errors.telefone.hasError}
-            helperText={errors.telefone.message}
-            id="telefone-input"
-            aria-describedby="telefone-helper-text"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Telefone"
+                fullWidth
+                margin="normal"
+                error={!!errors.telefone}
+                helperText={errors.telefone?.message}
+                slotProps={{
+                  input: {
+                    inputComponent: PhoneMask as any,
+                  },
+                }}
+              />
+            )}
           />
 
-          <TextField
-            label="Mensagem"
+          <Controller
             name="mensagem"
-            value={form.mensagem}
-            onChange={handleChange}
-            fullWidth
-            required
-            multiline
-            rows={4}
-            margin="normal"
-            error={errors.mensagem.hasError}
-            helperText={errors.mensagem.message}
-            id="mensagem-input"
-            aria-describedby="mensagem-helper-text"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Mensagem"
+                fullWidth
+                margin="normal"
+                multiline
+                rows={4}
+                error={!!errors.mensagem}
+                helperText={errors.mensagem?.message}
+              />
+            )}
           />
 
           <Button

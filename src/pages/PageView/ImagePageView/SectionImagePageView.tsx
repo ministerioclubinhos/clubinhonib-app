@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, Grid, Modal, IconButton, Tooltip } from '@mui/material';
+import { Box, Typography, Paper, Grid, Modal, IconButton, Tooltip, Skeleton } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import CloseIcon from '@mui/icons-material/Close';
 import DriveIcon from '@mui/icons-material/Google';
 import CloudIcon from '@mui/icons-material/CloudQueue';
 import FolderIcon from '@mui/icons-material/Folder';
-import { useSelector } from 'react-redux';
-import { RootState } from 'store/slices';
-import { RoleUser } from 'store/slices/auth/authSlice';
 import { MediaPlatform, MediaItem } from 'store/slices/types';
 import { getMediaPreviewUrl } from 'utils/getMediaPreviewUrl';
 import 'swiper/css';
@@ -17,7 +14,7 @@ import 'swiper/css/pagination';
 import type { SectionData } from 'store/slices/image/imageSlice';
 import { motion } from 'framer-motion';
 
-export interface SectionItemProps extends Omit<SectionData, 'id'> {}
+export interface SectionItemProps extends Omit<SectionData, 'id' | 'public'> {}
 
 const formatDateTime = (value: string | Date) => {
   const date = new Date(value);
@@ -39,23 +36,52 @@ const getPlatformIcon = (platform?: MediaPlatform | string) => {
   }
 };
 
+const ImageWithSkeleton: React.FC<{ src: string; alt: string; sx?: any; onClick?: () => void }> = ({
+  src,
+  alt,
+  sx,
+  onClick,
+}) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <Box sx={{ position: 'relative' }}>
+      {!loaded && (
+        <Skeleton
+          variant="rectangular"
+          sx={{
+            ...sx,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+      )}
+      <Box
+        component="img"
+        src={src}
+        alt={alt}
+        onLoad={() => setLoaded(true)}
+        onClick={onClick}
+        sx={{
+          ...sx,
+          visibility: loaded ? 'visible' : 'hidden',
+        }}
+      />
+    </Box>
+  );
+};
+
 const SectionImagePageView: React.FC<SectionItemProps> = ({
   caption,
   description,
   mediaItems,
   createdAt,
   updatedAt,
-  public: isPublic,
 }) => {
   const [openModal, setOpenModal] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
   const [showAll, setShowAll] = useState(false);
 
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isUserLogged =
-    isAuthenticated && (user?.role === RoleUser.ADMIN || user?.role === RoleUser.USER);
-
-  if (!isPublic && !isUserLogged) return null;
   if (!mediaItems || mediaItems.length === 0) return null;
 
   const created = createdAt ? formatDateTime(createdAt) : null;
@@ -67,6 +93,8 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
   };
 
   const thumbnails = showAll ? mediaItems.slice(1) : mediaItems.slice(1, 7);
+
+  const heroSrc = getMediaPreviewUrl(mediaItems[0] as MediaItem);
 
   return (
     <Paper
@@ -118,10 +146,10 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
       </Box>
 
       <Box mt={2}>
-        <Box
-          component="img"
-          src={getMediaPreviewUrl(mediaItems[0] as MediaItem)}
+        <ImageWithSkeleton
+          src={heroSrc}
           alt={mediaItems[0].title || 'Imagem destaque'}
+          onClick={() => handleImageClick(0)}
           sx={{
             width: '100%',
             height: 'auto',
@@ -136,55 +164,56 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
               boxShadow: 4,
             },
           }}
-          onClick={() => handleImageClick(0)}
         />
       </Box>
 
       <Grid container spacing={1} mt={1} justifyContent="center">
-        {thumbnails.map((item, index) => (
-          <Grid item xs={4} sm={2} md={2} key={item.id || index}>
-            {item.url && (
-              <Tooltip title={item.title ?? 'Imagem'} arrow>
-                <Box
-                  sx={{
-                    position: 'relative',
-                    borderRadius: 1,
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease',
-                    '&:hover': { transform: 'scale(1.05)' },
-                  }}
-                  onClick={() => handleImageClick(index + 1)}
-                >
+        {thumbnails.map((item, index) => {
+          const thumbSrc = getMediaPreviewUrl(item as MediaItem);
+          return (
+            <Grid item xs={4} sm={2} md={2} key={item.id || index}>
+              {item.url && (
+                <Tooltip title={item.title ?? 'Imagem'} arrow>
                   <Box
-                    component="img"
-                    src={getMediaPreviewUrl(item as MediaItem)}
-                    alt={item.title || `Miniatura ${index + 1}`}
                     sx={{
-                      width: '100%',
-                      height: 80,
-                      objectFit: 'cover',
+                      position: 'relative',
                       borderRadius: 1,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s ease',
+                      '&:hover': { transform: 'scale(1.05)' },
                     }}
-                  />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 4,
-                      right: 4,
-                      color: 'white',
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      borderRadius: '50%',
-                      p: 0.5,
-                    }}
+                    onClick={() => handleImageClick(index + 1)}
                   >
-                    {getPlatformIcon(item.platformType)}
+                    <ImageWithSkeleton
+                      src={thumbSrc}
+                      alt={item.title || `Miniatura ${index + 1}`}
+                      sx={{
+                        width: '100%',
+                        height: 80,
+                        objectFit: 'cover',
+                        borderRadius: 1,
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 4,
+                        color: 'white',
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        borderRadius: '50%',
+                        p: 0.5,
+                      }}
+                    >
+                      {getPlatformIcon(item.platformType)}
+                    </Box>
                   </Box>
-                </Box>
-              </Tooltip>
-            )}
-          </Grid>
-        ))}
+                </Tooltip>
+              )}
+            </Grid>
+          );
+        })}
       </Grid>
 
       {mediaItems.length > 7 && (
@@ -232,6 +261,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
           <IconButton
             onClick={() => setOpenModal(false)}
             sx={{ position: 'absolute', top: 20, right: 20, color: '#fff' }}
+            aria-label="Fechar visualização"
           >
             <CloseIcon fontSize="large" />
           </IconButton>
@@ -243,21 +273,23 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
             initialSlide={startIndex}
             style={{ width: '90%', maxWidth: 900 }}
           >
-            {mediaItems.map((media, index) => (
-              <SwiperSlide key={media.id || index}>
-                <Box
-                  component="img"
-                  src={getMediaPreviewUrl(media as MediaItem)}
-                  alt={media.title || `Slide ${index + 1}`}
-                  sx={{
-                    width: '100%',
-                    maxHeight: '80vh',
-                    objectFit: 'contain',
-                    borderRadius: 2,
-                  }}
-                />
-              </SwiperSlide>
-            ))}
+            {mediaItems.map((media, index) => {
+              const slideSrc = getMediaPreviewUrl(media as MediaItem);
+              return (
+                <SwiperSlide key={media.id || index}>
+                  <ImageWithSkeleton
+                    src={slideSrc}
+                    alt={media.title || `Slide ${index + 1}`}
+                    sx={{
+                      width: '100%',
+                      maxHeight: '80vh',
+                      objectFit: 'contain',
+                      borderRadius: 2,
+                    }}
+                  />
+                </SwiperSlide>
+              );
+            })}
           </Swiper>
         </Box>
       </Modal>

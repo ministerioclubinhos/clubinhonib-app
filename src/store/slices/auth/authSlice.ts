@@ -1,16 +1,48 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import apiAxios from '@/config/axiosConfig';
 
-export enum RoleUser {
+export enum UserRole {
   ADMIN = 'admin',
-  USER = 'user',
+  COORDINATOR = 'coordinator',
+  TEACHER = 'teacher',
+}
+
+interface ClubLite {
+  id: string;
+  number: number;
+  weekday: string;
+}
+
+interface TeacherProfileLite {
+  id: string;
+  active: boolean;
+  club: ClubLite | null;
+}
+
+interface CoordinatorProfileLite {
+  id: string;
+  active: boolean;
+  clubs: ClubLite[];
 }
 
 interface User {
   id: string;
   email: string;
   name: string;
-  role: RoleUser;
+  role: UserRole;
+  active?: boolean;
+  commonUser?: boolean;
+  phone?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  completed?: boolean;
+  teacherProfile?: TeacherProfileLite | null;
+  coordinatorProfile?: CoordinatorProfileLite | null;
+}
+
+interface GoogleUser {
+  name: string;
+  email: string;
 }
 
 export interface LoginResponse {
@@ -26,7 +58,9 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   loadingUser: boolean;
+  initialized: boolean;
   error: string | null;
+  googleUser: GoogleUser | null;
 }
 
 const initialState: AuthState = {
@@ -35,14 +69,19 @@ const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
   loadingUser: false,
+  initialized: false,
   error: null,
+  googleUser: null,
 };
 
+const IS_DEV = import.meta.env.DEV === true;
+const DEBUG_AUTH = import.meta.env.VITE_DEBUG_AUTH === 'true';
+
 const log = (message: string, ...args: any[]) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(message, ...args);
-  }
+  if (IS_DEV || DEBUG_AUTH) console.debug(message, ...args);
 };
+
+const clean = (s: string) => s.replace(/^"|"$/g, '');
 
 export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: string }>(
   'auth/fetchCurrentUser',
@@ -57,15 +96,37 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
 
     try {
       const response = await apiAxios.get<User>('/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erro ao buscar usuário';
+      const errorMessage = error?.response?.data?.message || 'Erro ao buscar usuário';
       log('[Auth] Erro ao buscar usuário:', errorMessage);
       return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
+  'auth/initAuth',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const rawAccess = localStorage.getItem('accessToken');
+      const rawRefresh = localStorage.getItem('refreshToken');
+
+      if (rawAccess && rawRefresh) {
+        const accessToken = clean(rawAccess);
+        const refreshToken = clean(rawRefresh);
+        dispatch(login({ accessToken, refreshToken }));
+
+        try {
+          await dispatch(fetchCurrentUser()).unwrap();
+        } catch (e) {
+          dispatch(logout());
+        }
+      }
+    } catch (e: any) {
+      return rejectWithValue('Falha ao inicializar auth');
     }
   }
 );
@@ -79,25 +140,55 @@ const authSlice = createSlice({
       action: PayloadAction<{ accessToken: string; refreshToken: string; user?: User }>
     ) => {
       const { accessToken, refreshToken, user } = action.payload;
-      state.accessToken = accessToken.replace(/^"|"$/g, '');
-      state.refreshToken = refreshToken.replace(/^"|"$/g, '');
+      state.accessToken = clean(accessToken);
+      state.refreshToken = clean(refreshToken);
       state.isAuthenticated = true;
       if (user) state.user = user;
       state.error = null;
+      try {
+        localStorage.setItem('accessToken', state.accessToken!);
+        localStorage.setItem('refreshToken', state.refreshToken!);
+      } catch { }
     },
     logout: (state) => {
       state.accessToken = null;
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.user = null;
+      state.googleUser = null;
       state.error = null;
+      state.initialized = true;
+      try {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+      } catch { }
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
+    setGoogleUser: (state, action: PayloadAction<GoogleUser>) => {
+      state.googleUser = action.payload;
+    },
+    clearGoogleUser: (state) => {
+      state.googleUser = null;
+    },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(initAuth.pending, (state) => {
+        state.loadingUser = true;
+        state.initialized = false;
+      })
+      .addCase(initAuth.fulfilled, (state) => {
+        state.loadingUser = false;
+        state.initialized = true;
+      })
+      .addCase(initAuth.rejected, (state, action) => {
+        state.loadingUser = false;
+        state.initialized = true;
+        state.error = (action.payload as string) || 'Falha ao inicializar auth';
+      })
+
       .addCase(fetchCurrentUser.pending, (state) => {
         state.loadingUser = true;
         state.error = null;
@@ -114,10 +205,14 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.accessToken = null;
         state.refreshToken = null;
-        state.error = action.payload || 'Erro desconhecido';
+        state.error = (action.payload as string) || 'Erro desconhecido';
+        try {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        } catch { }
       });
   },
 });
 
-export const { login, logout, setError } = authSlice.actions;
+export const { login, logout, setError, setGoogleUser, clearGoogleUser } = authSlice.actions;
 export default authSlice.reducer;

@@ -22,7 +22,6 @@ import WeekAudios from './WeekAudios';
 import WeekImages from './WeekImages';
 import api from '@/config/axiosConfig';
 import { MediaItem, MediaType, MediaUploadType } from 'store/slices/types';
-import { current } from '@reduxjs/toolkit';
 
 interface WeekMaterialPageCreatorProps {
   fromTemplatePage?: boolean;
@@ -217,9 +216,6 @@ export default function WeekMaterialPageCreator({
         px: { xs: 0, md: 4 },
         py: { xs: 0, md: 5 },
         mt: { xs: 0, md: 5 },
-        mb: { xs: 0, md: 0 },
-        width: '98%',
-        mx: 'auto',
       }}
     >
 
@@ -228,7 +224,7 @@ export default function WeekMaterialPageCreator({
         mb={3}
         fontWeight="bold"
         textAlign="center"
-        sx={{ mt: { xs: 0, md: 0 }, mb: { xs: 1, md: 3 }, fontSize: { xs: '1.5rem', md: '2rem' } }}
+        sx={{ mb: { xs: 1, md: 3 }, fontSize: { xs: '1.5rem', md: '2rem' } }}
       >
         {fromTemplatePage ? 'Adicionar Semana' : 'Editar Semana'}
       </Typography>

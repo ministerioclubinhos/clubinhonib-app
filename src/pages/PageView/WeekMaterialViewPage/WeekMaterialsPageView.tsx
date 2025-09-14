@@ -28,8 +28,9 @@ import WeekDocumentViewer from './WeekDocumentViewer';
 import WeekImageGalleryView from './WeekImageGalleryView';
 import WeekAudioPlayerView from './WeekAudioPlayerView';
 import WeekVideoPlayerView from './WeekVideoPlayerView';
-import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 import { MediaItem } from 'store/slices/types';
+import { UserRole } from '@/store/slices/auth/authSlice';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 interface WeekMaterialsPageViewProps {
   idToFetch: string;
@@ -74,7 +75,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
   const dispatch: AppDispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = isAuthenticated && user?.role === 'admin';
+  const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -367,12 +368,17 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
           </Zoom>
         )}
 
-        <DeleteConfirmationDialog
+        <DeleteConfirmDialog
           open={deleteConfirmOpen}
-          onClose={() => setDeleteConfirmOpen(false)}
-          onConfirm={handleDeletePage}
-          isDeleting={isDeleting}
+          title={studyMaterials.title}
+          onClose={() => !isDeleting && setDeleteConfirmOpen(false)}
+          onConfirm={async () => {
+            if (isDeleting) return;
+            await handleDeletePage();
+          }}
+          loading={isDeleting}
         />
+
       </Container>
     </Box>
   );

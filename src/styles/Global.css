@@ -1,13 +1,12 @@
 :root {
-  --cor-primaria: #81d742; /* Verde predominante (Navbar e Footer) */
-  --cor-secundaria: #0073E6; /* Azul para títulos e botões */
-  --cor-destaque: #D71920; /* Vermelho para destaques */
-  --cor-complementar: #FFAA00; /* Amarelo vibrante */
-  --cor-texto: #333; /* Cinza escuro para melhor leitura */
-  --cor-branca: #ffffff; /* Branco */
+  --cor-primaria: #2c3e50;
+  --cor-secundaria: #0073E6;
+  --cor-destaque: #D71920;
+  --cor-complementar: #FFAA00;
+  --cor-fundo: #f5f5f5;
+  --cor-texto: #333;
+  --cor-branca: #ffffff;
 }
-
-
 
 * {
   margin: 0;
@@ -15,11 +14,19 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--cor-primaria);
+  font-family: 'Poppins', Arial, sans-serif;
+  background-color: var(--cor-fundo);
   color: var(--cor-texto);
-  text-align: center;
+  line-height: 1.4;
 }
 
 h1 {
@@ -34,10 +41,13 @@ h2 {
 }
 
 p {
-  font-size: 1.2rem;
+  font-size: 1rem;
   line-height: 1.6;
-  max-width: 800px;
-  margin: auto;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
 button {
@@ -53,4 +63,11 @@ button {
 
 button:hover {
   background-color: var(--cor-complementar);
+}
+
+.mainContainer {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
 }

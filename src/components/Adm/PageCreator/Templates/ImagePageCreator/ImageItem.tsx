@@ -12,13 +12,11 @@ interface ImageItemProps {
   onRemoveMedia: (index: number) => void;
 }
 
-// Google Drive thumbnail otimizada
 const getGoogleDriveThumbnailUrl = (url: string): string | null => {
   const match = url.match(/\/d\/(.*?)\//);
   return match ? `https://drive.google.com/thumbnail?id=${match[1]}` : null;
 };
 
-// URL de preview inteligente com base na plataforma
 const getPreviewUrl = (media: MediaItem): string => {
   if (media.uploadType === MediaUploadType.UPLOAD && media.file) {
     return URL.createObjectURL(media.file);

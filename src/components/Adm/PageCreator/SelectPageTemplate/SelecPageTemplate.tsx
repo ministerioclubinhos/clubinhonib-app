@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { clearImageData } from '@/store/slices/image/imageSlice';
 import {
@@ -10,6 +10,7 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
+  useTheme,
 } from '@mui/material';
 import { ReactElement } from 'react';
 import VideoPageCreator from '@/components/Adm/PageCreator/Templates/VideoPageCreator/VideoPageCreator';
@@ -17,6 +18,7 @@ import PhotoPageCreator from '@/components/Adm/PageCreator/Templates/ImagePageCr
 import MeditationPageCreator from '@/components/Adm/PageCreator/Templates/MeditationPageCreator/MeditationPageCreator';
 import WeekMaterialPageCreator from '@/components/Adm/PageCreator/Templates/WeekMaterialPageCreator/WeekMaterialPageCreator';
 import { IdeasMaterialPageCreator } from '@/components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
+import BackHeader from '@/components/common/header/BackHeader';
 
 enum Options {
   WEEK_MATERIALS = 'Adicionar Materiais da Semana',
@@ -38,6 +40,8 @@ export default function SelecPageTemplate() {
   const [selectedOption, setSelectedOption] = useState<keyof typeof Options | ''>('');
   const dispatch = useDispatch();
 
+  const theme = useTheme();
+
   const handleChange = (event: SelectChangeEvent) => {
     const selected = event.target.value as keyof typeof Options;
     setSelectedOption(selected);
@@ -51,36 +55,21 @@ export default function SelecPageTemplate() {
     <Box
       sx={{
         minHeight: '100vh',
-        px: 0,
-        py: { xs: 0, md: 8 },
+        px: { xs: 1, md: 0 },
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
         bgcolor: 'linear-gradient(to bottom, #f4f4f4, #e8e8e8)',
         textAlign: 'center',
-        mt: 0,
-        mb: 0,
       }}
     >
-
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        gutterBottom
-        sx={{
-          mt: { xs: 0, md: 0 },
-          mb: { xs: 1, md: 3 },
-          fontSize: { xs: '1.5rem', md: '2.4rem' },
-        }}
-      >
-        Escolha um Modelo
-      </Typography>
+      <BackHeader title="Criador de Páginas" />
 
       <Typography
         variant="subtitle1"
         color="text.secondary"
-        sx={{ mt: { xs: 0, md: 0 }, mb: { xs: 2, md: 3 }, fontSize: { xs: '1rem', md: '1.5rem' } }}
+        sx={{  mb: { xs: 2, md: 3 }, fontSize: { xs: '1rem', md: '1.5rem' } }}
       >
         Selecione um modelo abaixo para visualizar e criar um novo conteúdo.
       </Typography>
@@ -107,10 +96,8 @@ export default function SelecPageTemplate() {
       <Paper
         elevation={3}
         sx={{
-          width: '95%',
-          maxWidth: '95%',
+           width: '100%',
           p: 1,
-          mt: 2,
           transition: 'all 0.3s ease-in-out',
           opacity: selectedOption ? 1 : 0.5,
         }}

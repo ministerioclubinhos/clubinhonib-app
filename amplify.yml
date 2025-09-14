@@ -3,12 +3,24 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci
+        # Garante Node 20 no container do Amplify
+        - echo "Using Node $(node -v) before nvm..."
+        - nvm install 20
+        - nvm use 20
+        - node -v
+        - corepack enable || true
+
+        # Instala deps (usa npm ci se houver package-lock)
+        - if [ -f package-lock.json ]; then npm ci; else npm i; fi
+
+        # Gera .env para o Vite a partir das vars do Amplify Console (com override por branch)
+        - printf "VITE_API_URL=%s\nVITE_FEED_MINISTERIO_ID=%s\nVITE_GOOGLE_CLIENT_ID=%s\nVITE_SPECIAL_FAMILY_DAY_ID=%s\n" \
+            "$VITE_API_URL" "$VITE_FEED_MINISTERIO_ID" "$VITE_GOOGLE_CLIENT_ID" "$VITE_SPECIAL_FAMILY_DAY_ID" > .env
     build:
       commands:
         - npm run build
   artifacts:
-    baseDirectory: build
+    baseDirectory: dist
     files:
       - '**/*'
   cache:

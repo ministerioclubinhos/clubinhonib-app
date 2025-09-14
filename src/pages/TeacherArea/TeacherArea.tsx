@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import {
   Container,
   Typography,
@@ -34,7 +34,7 @@ const SpecialFamilyCallout: React.FC = () => {
     <Box
       component="section"
       sx={{
-        background: "linear-gradient(135deg, #66BB6A 0%, #388E3C 100%)",
+        background: 'linear-gradient(135deg, #66BB6A 0%, #388E3C 100%)',
         borderRadius: 4,
         boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
         display: 'flex',
@@ -83,12 +83,6 @@ const SpecialFamilyCallout: React.FC = () => {
   );
 };
 
-interface Route {
-  entityType: string;
-  current?: boolean;
-  path: string;
-}
-
 interface BannerSectionProps {
   showWeekBanner: boolean;
   showMeditationBanner: boolean;
@@ -104,8 +98,9 @@ interface TeacherContentProps {
 
 const BannerSection: React.FC<BannerSectionProps> = ({ showWeekBanner, showMeditationBanner }) => {
   const activeCount = [showWeekBanner, showMeditationBanner].filter(Boolean).length;
+
   return (
-    <Grid container spacing={2} sx={{ mb: 6, mt: 3, justifyContent: 'space-between' }}>
+    <Grid container spacing={2} sx={{ mb: 6, mt: 0,pt:0, justifyContent: 'space-between' }}>
       {activeCount === 0 ? (
         <Grid item xs={12}>
           <Paper elevation={2} sx={{ p: 3, textAlign: 'center' }}>
@@ -118,7 +113,7 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showWeekBanner, showMedit
           </Paper>
         </Grid>
       ) : (
-        <>
+        <Fragment>
           {showWeekBanner && (
             <Grid item xs={12} md={activeCount === 1 ? 12 : 6}>
               <TeacherWeekBanner />
@@ -129,7 +124,7 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showWeekBanner, showMedit
               <TeacherMeditationBanner />
             </Grid>
           )}
-        </>
+        </Fragment>
       )}
     </Grid>
   );
@@ -138,13 +133,28 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showWeekBanner, showMedit
 const MotivationSection: React.FC<MotivationSectionProps> = ({ motivationText }) => (
   <Paper
     elevation={2}
-    sx={{ backgroundColor: '#e3f2fd', p: { xs: 2, md: 3 }, mb: 5, borderLeft: '6px solid #2196f3', borderRadius: 2 }}
+    sx={{
+      backgroundColor: '#e3f2fd',
+      p: { xs: 2, md: 3 },
+      mb: 5,
+      borderLeft: '6px solid #2196f3',
+      borderRadius: 2,
+    }}
   >
     <Box maxWidth="800px" mx="auto" textAlign="center">
-      <Typography variant="h6" fontWeight="bold" color="#2196f3" gutterBottom sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }}>
+      <Typography
+        variant="h6"
+        fontWeight="bold"
+        color="#2196f3"
+        gutterBottom
+        sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }}
+      >
         ✨ Motivação para Evangelizar
       </Typography>
-      <Typography variant="body1" sx={{ fontSize: { xs: '0.95rem', md: '1.1rem' }, color: '#424242' }}>
+      <Typography
+        variant="body1"
+        sx={{ fontSize: { xs: '0.95rem', md: '1.1rem' }, color: '#424242' }}
+      >
         {motivationText}
       </Typography>
     </Box>
@@ -154,11 +164,22 @@ const MotivationSection: React.FC<MotivationSectionProps> = ({ motivationText })
 const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => (
   <Box>
     <Box textAlign="center" mb={4}>
-      <Typography variant="h6" color="#616161" gutterBottom sx={{ fontSize: { xs: '1.1rem', md: '1.4rem' } }}>
+      <Typography
+        variant="h6"
+        color="#616161"
+        gutterBottom
+        sx={{ fontSize: { xs: '1.1rem', md: '1.4rem' } }}
+      >
         Olá, {userName || 'Professor'}!
       </Typography>
-      <Typography variant="body1" color="#757575" gutterBottom sx={{ maxWidth: '800px', mx: 'auto', fontSize: { xs: '0.95rem', md: '1.1rem' } }}>
-        Bem-vindo à sua central de apoio pedagógico. Explore recursos atualizados semanalmente e enriqueça suas aulas!
+      <Typography
+        variant="body1"
+        color="#757575"
+        gutterBottom
+        sx={{ maxWidth: '800px', mx: 'auto', fontSize: { xs: '0.95rem', md: '1.1rem' } }}
+      >
+        Bem-vindo à sua central de apoio pedagógico. Explore recursos atualizados semanalmente e enriqueça
+        suas aulas!
       </Typography>
     </Box>
 
@@ -194,15 +215,25 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => (
       ].map((section, idx) => (
         <Grid key={idx} item xs={12} sm={6} md={4}>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-            <Card sx={{ borderLeft: `5px solid ${section.icon.props.sx.color}`, height: '100%', boxShadow: 2 }}>
+            <Card
+              sx={{
+                borderLeft: `5px solid ${section.icon.props.sx.color}`,
+                height: '100%',
+                boxShadow: 2,
+              }}
+            >
               <CardContent>
                 <Box display="flex" alignItems="center" mb={2}>
                   {section.icon}
-                  <Typography variant="h6" fontWeight="bold" color="#424242">{section.title}</Typography>
+                  <Typography variant="h6" fontWeight="bold" color="#424242">
+                    {section.title}
+                  </Typography>
                 </Box>
                 <Box component="ul" sx={{ pl: 2, m: 0 }}>
-                  {section.items.map((item, idy) => (
-                    <li key={idy}><Typography variant="body2">{item}</Typography></li>
+                  {section.items.map((item: string, idy: number) => (
+                    <li key={idy}>
+                      <Typography variant="body2">{item}</Typography>
+                    </li>
                   ))}
                 </Box>
               </CardContent>
@@ -212,44 +243,91 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => (
       ))}
     </Grid>
 
-    <Box mt={6}><DocumentsSection /></Box>
-    <Box mt={6}><IdeasGallerySection /></Box>
-    <Box mt={6}><TrainingVideosSection /></Box>
-    <Box mt={6}><CommentsSection /></Box>
+    <Box mt={6}>
+      <DocumentsSection />
+    </Box>
+    <Box mt={6}>
+      <IdeasGallerySection />
+    </Box>
+    <Box mt={6}>
+      <TrainingVideosSection />
+    </Box>
+    <Box mt={6}>
+      <CommentsSection />
+    </Box>
   </Box>
 );
 
 const TeacherArea: React.FC = () => {
-  const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const routes = useSelector((state: RootState) => state.routes.routes);
   const [loading, setLoading] = React.useState<boolean>(true);
 
-  React.useEffect(() => { const timer = setTimeout(() => setLoading(false), 500); return () => clearTimeout(timer); }, []);
+  React.useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const today = new Date();
   const weekday = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-  const showWeek = routes.some(r => r.entityType === MediaTargetType.WeekMaterialsPage && r.current);
-  const showMeditation = routes.some(r => r.entityType === 'MeditationDay' && r.path.toLowerCase().includes(weekday));
-  const motivacao = '💬 Que tal aproveitar esta semana para compartilhar o amor de Jesus com alguém da sua comunidade?';
+
+  const showWeek = routes.some(
+    (r) => r.entityType === MediaTargetType.WeekMaterialsPage && r.current
+  );
+  const showMeditation = routes.some(
+    (r) => r.entityType === 'MeditationDay' && r.path.toLowerCase().includes(weekday)
+  );
+
+  const motivacao =
+    '💬 Que tal aproveitar esta semana para compartilhar o amor de Jesus com alguém da sua comunidade?';
 
   return (
-    <Container maxWidth={false} sx={{ width: '100%', mt: 10, mb: 8, px: { xs: 2, md: 4 }, bgcolor: '#f5f7fa' }}>
+    <Container
+      maxWidth={false}
+      sx={{ width: '100%', mt: 3, mb: 8, px: { xs: 2, md: 4 }, bgcolor: '#f5f7fa' }}
+    >
       <InformativeBanner />
+
       {/* <SpecialFamilyCallout /> */}
+
       <BannerSection showWeekBanner={showWeek} showMeditationBanner={showMeditation} />
-      <ButtonSection references={['materials', 'photos', 'rate', 'events', 'help']} />
+
+      <ButtonSection references={['materials', 'childrenArea', 'photos', 'rate', 'events', 'help']} />
+
       <MotivationSection motivationText={motivacao} />
-      <Paper elevation={4} sx={{ p: { xs: 2, md: 5 }, borderRadius: 3, background: 'linear-gradient(135deg,#fff,#f9f9f9)' }}>
-        <Typography variant="h4" fontWeight="bold" color="#424242" gutterBottom sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' } }}>
+
+      <Paper
+        elevation={4}
+        sx={{
+          p: { xs: 2, md: 5 },
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%)',
+        }}
+      >
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          color="#424242"
+          gutterBottom
+          sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' } }}
+        >
           Área do Professor
         </Typography>
+
         <Divider sx={{ my: 3, borderColor: '#e0e0e0' }} />
+
         {isAuthenticated ? (
-          loading ? <Box display="flex" justifyContent="center" py={4}><CircularProgress /></Box>
-            : <TeacherContent userName={user?.name} />
+          loading ? (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <TeacherContent userName={user?.name} />
+          )
         ) : (
-          <Typography variant="body1" color="#757575">Você precisa estar logado para acessar esta área.</Typography>
+          <Typography variant="body1" color="#757575">
+            Você precisa estar logado para acessar esta área.
+          </Typography>
         )}
       </Paper>
     </Container>

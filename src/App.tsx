@@ -1,7 +1,10 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Toolbar } from '@mui/material';
+
+import './App.css';
+import './styles/Global.css';
 
 import Navbar from './components/NavBar/Navbar';
 import Footer from './components/Footer/Footer';
@@ -16,7 +19,6 @@ import Login from './pages/Login/Login';
 import TeacherArea from './pages/TeacherArea/TeacherArea';
 import PageGalleryView from './pages/PageView/ImagePageView/ImagePageView';
 
-import MeditationListPage from './components/Adm/PageMeditadion/MeditationListPage';
 import MeditationPageCreator from './components/Adm/PageCreator/Templates/MeditationPageCreator/MeditationPageCreator';
 import ImagePageCreator from './components/Adm/PageCreator/Templates/ImagePageCreator/ImagePageCreator';
 import VideoPageCreator from './components/Adm/PageCreator/Templates/VideoPageCreator/VideoPageCreator';
@@ -26,40 +28,49 @@ import SelecPageTemplate from './components/Adm/PageCreator/SelectPageTemplate/S
 import AdminDashboardPage from './components/Adm/AdminDashboardPage';
 import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 
-import { fetchRoutes, RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
-import { fetchCurrentUser } from './store/slices/auth/authSlice';
-import { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
+import { fetchRoutes } from './store/slices/route/routeSlice';
+import { UserRole, initAuth } from './store/slices/auth/authSlice';
 
-import './styles/Global.css';
-import WeekMaterialListPage from 'components/Adm/PageWeekMaterial/WeekMaterialListPage';
-import ImagePageListPage from 'components/Adm/PageImage/ImagePageListPage';
-import VideoPageListPage from 'components/Adm/PageVideos/VideoPageListPage';
-import CommentsListPage from 'components/Adm/PageComments/CommentsListPage';
-import DocumentList from 'components/Adm/PageDocuments/DocumentList';
-import IdeasPageListPage from 'components/Adm/PageIdeasMaterial/IdeasPageListPage';
+import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
+import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
+
 import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
 import WeekMaterialsList from 'pages/TeacherArea/WeekMaterialsList';
-import InformativeBannerListPage from 'components/Adm/PageInformative/InformativeBannerListPage';
-import ContactList from 'components/Adm/PageContact/ContactList';
 import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
-import ImageSectionListPage from './components/Adm/PageImageSection/ImageSectionListPage';
 import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
-import FeedbackList from './components/Adm/PageSiteFeedBack/FeedbackList';
-import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
 
-const App: React.FC = () => {
+import CoordinatorProfilesManager from './features/coordinators/CoordinatorProfilesManager';
+import TeacherProfilesManager from './features/teachers/TeacherProfilesManager';
+import ClubsManager from './features/clubs/ClubsManager';
+import ContactsManager from './features/contacts/ContactsManager';
+import MeditationManager from './features/meditations/MeditationManager';
+import ChildrenManager from './features/children/ChildrenManager';
+import ChildrenBrowserPage from './features/pagela-teacher/ChildrenBrowserPage';
+import ChildPagelasPage from './features/pagela-teacher/ChildPagelasPage';
+import Register from './pages/Register/Register';
+import PagelaClubsManager from './features/pagela-clubs/PagelaClubsManager';
+import CommentsManager from './features/comments/CommentsManager';
+import FeedbackManager from './features/feedback/FeedbackManager';
+import UsersManager from './features/users/UsersManager';
+import InformativeBannerLManager from './features/informatives/InformativeBannerLManager';
+import ImageSectionManager from './features/image-sections/ImageSectionManager';
+import ImagePageManager from './features/image-pages/ImagePageManager';
+import DocumentsManager from './features/documents/DocumentsManager';
+import IdeasManager from './features/ideas-pages/IdeasManager';
+import VideosManager from './features/video-pages/VideosManager';
+import WeekMaterialManager from './features/week-materials/WeekMaterialManager';
+
+function App() {
   const dispatch = useDispatch<AppDispatchType>();
   const dynamicRoutes = useSelector((state: RootStateType) => state.routes.routes);
-  const { loadingUser, accessToken } = useSelector((state: RootStateType) => state.auth);
+  const { initialized, loadingUser } = useSelector((state: RootStateType) => state.auth);
 
   useEffect(() => {
     dispatch(fetchRoutes());
-    if (accessToken) {
-      dispatch(fetchCurrentUser());
-    }
-  }, [dispatch, accessToken]);
+    dispatch(initAuth());
+  }, [dispatch]);
 
-  if (loadingUser) {
+  if (!initialized || loadingUser) {
     return (
       <Box
         sx={{
@@ -78,78 +89,77 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <Navbar />
-      <div className="mainContainer">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/sobre" element={<About />} />
-          <Route path="/contato" element={<Contact />} />
-          <Route path="/eventos" element={<Event />} />
-          <Route path="/feed-clubinho" element={<PageGalleryView feed={true} />} />
-          <Route path="/login" element={<Login />} />
+      <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Navbar />
 
-          <Route path="*" element={<Home />} />
+        <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Toolbar />
+          <Box className="mainContainer" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/sobre" element={<About />} />
+              <Route path="/contato" element={<Contact />} />
+              <Route path="/eventos" element={<Event />} />
+              <Route path="/feed-clubinho" element={<PageGalleryView feed />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
+              <Route path="/cadastrar" element={<Register commonUser />} />
+              <Route path="*" element={<Home />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/area-do-professor" element={<TeacherArea />} />
-            <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
-            <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
-            <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
-            {/* <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} /> */}
-          </Route>
+              <Route element={<ProtectedRoute />}>
+                <Route path="/area-do-professor" element={<TeacherArea />} />
+                <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
+                <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
+                <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
+                <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
+                <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
+              </Route>
 
-          <Route element={<ProtectedRoute requiredRole="admin" />}>
-            <Route path="/adm" element={<AdminLayout />}>
-              <Route index element={<AdminDashboardPage />} />
-              <Route path="meditacoes" element={<MeditationListPage />} />
-              <Route path="comentarios" element={<CommentsListPage />} />
-              <Route path="documentos" element={<DocumentList />} />
-              <Route path="informativos" element={<InformativeBannerListPage />} />
-              <Route path="feedbacks" element={<FeedbackList />} />
+              <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>
+                <Route path="/adm" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboardPage />} />
+                  <Route path="meditacoes" element={<MeditationManager />} />
+                  <Route path="comentarios" element={<CommentsManager />} />
+                  <Route path="documentos" element={<DocumentsManager />} />
+                  <Route path="informativos" element={<InformativeBannerLManager />} />
+                  <Route path="feedbacks" element={<FeedbackManager />} />
+                  <Route path="contatos" element={<ContactsManager />} />
+                  <Route path="paginas-materiais-semanais" element={<WeekMaterialManager />} />
+                  <Route path="paginas-fotos" element={<ImagePageManager />} />
+                  <Route path="fotos-clubinhos" element={<ImageSectionManager />} />
+                  <Route path="paginas-videos" element={<VideosManager />} />
+                  <Route path="paginas-ideias" element={<IdeasManager />} />
+                  <Route path="criar-pagina" element={<SelecPageTemplate />} />
+                  <Route path="usuarios" element={<UsersManager />} />
+                  <Route path="coordenadores" element={<CoordinatorProfilesManager />} />
+                  <Route path="professores" element={<TeacherProfilesManager />} />
+                  <Route path="criancas" element={<ChildrenManager />} />
+                  <Route path="clubinhos" element={<ClubsManager />} />
+                  <Route path="pagelas" element={<PagelaClubsManager />} />
 
-              <Route path="contatos" element={<ContactList />} />
-              <Route path="paginas-materiais-semanais" element={<WeekMaterialListPage />} />
-              <Route path="paginas-fotos" element={<ImagePageListPage />} />
-              <Route path="fotos-clubinhos" element={<ImageSectionListPage />} />
-              <Route path="paginas-videos" element={<VideoPageListPage />} />
-              <Route path="paginas-ideias" element={<IdeasPageListPage />} />
-              <Route path="criar-pagina" element={<SelecPageTemplate />} />
-              <Route
-                path="editar-meditacao"
-                element={<MeditationPageCreator fromTemplatePage={false} />}
-              />
-              <Route
-                path="editar-pagina-imagens"
-                element={<ImagePageCreator fromTemplatePage={false} />}
-              />
-              <Route
-                path="editar-pagina-videos"
-                element={<VideoPageCreator fromTemplatePage={false} />}
-              />
-              <Route
-                path="editar-pagina-semana"
-                element={<WeekMaterialPageCreator fromTemplatePage={false} />}
-              />
-              <Route
-                path="editar-pagina-ideias"
-                element={<IdeasMaterialPageCreator fromTemplatePage={false} />}
-              />
-              <Route path="editar-imagens-clubinho" element={<ImageSectionPage isEditMode={true} />} />
-            </Route>
-          </Route>
+                  <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
+                  <Route path="editar-imagens-clubinho" element={<ImageSectionPage isEditMode />} />
+                </Route>
+              </Route>
 
-          {dynamicRoutes.map((route: DynamicRouteType) => (
-            <Route
-              key={route.id}
-              path={`/${route.path}`}
-              element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
-            />
-          ))}
-        </Routes>
-      </div>
-      <Footer />
+              {dynamicRoutes.map((route: DynamicRouteType) => (
+                <Route
+                  key={route.id}
+                  path={`/${route.path}`}
+                  element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
+                />
+              ))}
+            </Routes>
+          </Box>
+        </Box>
+        <Footer />
+      </Box>
     </BrowserRouter>
   );
-};
+}
 
 export default App;

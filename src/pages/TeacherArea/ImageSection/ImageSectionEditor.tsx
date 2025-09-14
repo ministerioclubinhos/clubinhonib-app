@@ -172,7 +172,6 @@ export default function ImageSectionEditor({
         </Box>
       </Grid>
 
-      {/* Modal para adicionar imagens */}
       <AddImageModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

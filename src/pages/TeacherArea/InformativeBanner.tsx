@@ -100,7 +100,7 @@ const InformativeBanner: React.FC = () => {
             justifyContent: 'center',
             alignItems: 'center',
             width: '100%',
-            height: '100%', // Fill parent height
+            height: '100%', 
             textAlign: 'center',
             boxSizing: 'border-box',
           }}

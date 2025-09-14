@@ -133,7 +133,7 @@ const SpecialFamilyDayPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
-  const defaultSectionId = process.env.REACT_APP_SPECIAL_FAMILY_DAY_ID;
+  const defaultSectionId = import.meta.env.VITE_SPECIAL_FAMILY_DAY_ID || '';
 
   useEffect(() => {
     async function fetchData() {
@@ -373,20 +373,6 @@ const SpecialFamilyDayPage: React.FC = () => {
                             marginBottom: "10px",
                           }}
                         />
-
-                        {/* Título 
-                        <Typography
-                          variant="subtitle1"
-                          sx={{
-                            fontWeight: "bold",
-                            textAlign: "center",
-                            fontSize: { xs: "1rem", sm: "1.1rem" },
-                            color: theme.palette.primary.main,
-                            mb: 0.5,
-                          }}
-                        >
-                          {img.title}
-                        </Typography>*/}
 
                         {img.description && (
                           <Typography

@@ -20,14 +20,12 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
   const [urlInput, setUrlInput] = useState('');
   const [platformType, setPlatformType] = useState<MediaPlatform>(MediaPlatform.ANY);
 
-  // Gerar pré-visualizações para uploads
   useEffect(() => {
     const objectUrls = files.map(file => URL.createObjectURL(file));
     setPreviews(objectUrls);
     return () => objectUrls.forEach(url => URL.revokeObjectURL(url));
   }, [files]);
 
-  // Resetar estado ao fechar ou submeter
   const reset = () => {
     setFiles([]);
     setPreviews([]);
@@ -36,7 +34,6 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
     setTab(MediaUploadType.UPLOAD);
   };
 
-  // Processar envio
   const handleSubmit = () => {
     let medias: MediaItem[] = [];
 
@@ -45,8 +42,8 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
         uploadType: MediaUploadType.UPLOAD,
         mediaType: MediaType.IMAGE,
         isLocalFile: true,
-        url: '', // URL será preenchida pelo back-end após upload
-        file, // Arquivo enviado via FormData no componente pai
+        url: '', 
+        file, 
         originalName: file.name,
         size: file.size,
       } as MediaItem));
@@ -74,13 +71,11 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Adicionar Imagem</DialogTitle>
       <DialogContent>
-        {/* Tabs para alternar entre Upload e Link */}
         <Tabs value={tab} onChange={(_, newValue) => setTab(newValue)} centered sx={{ mb: 2 }}>
           <Tab label="Upload" value={MediaUploadType.UPLOAD} />
           <Tab label="Link" value={MediaUploadType.LINK} />
         </Tabs>
 
-        {/* Modo Upload */}
         {tab === MediaUploadType.UPLOAD && (
           <Box>
             <Button
