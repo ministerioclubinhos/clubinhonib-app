@@ -7,49 +7,77 @@ type Props = {
   onChange: (addr: Partial<AddressResponseDto>) => void;
 };
 
-export default function AddressFields({ value, onChange }: Props) {
+export default function AddressFields({ value = {}, onChange }: Props) {
+  const v = value || {};
+  const set = (key: keyof AddressResponseDto, val: string) =>
+    onChange({ ...v, [key]: val });
+
   return (
     <>
+      <Grid item xs={12} md={8}>
+        <TextField
+          label="Rua"
+          fullWidth
+          value={v.street ?? ""}
+          onChange={(e) => set("street", e.target.value)}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <TextField
+          label="Número"
+          fullWidth
+          value={v.number ?? ""}
+          onChange={(e) => set("number", e.target.value)}
+        />
+      </Grid>
+
       <Grid item xs={12} md={6}>
         <TextField
-          label="Rua" fullWidth
-          value={value.street ?? ""}
-          onChange={(e) => onChange({ ...value, street: e.target.value })}
+          label="Bairro"
+          fullWidth
+          value={v.district ?? ""}
+          onChange={(e) => set("district", e.target.value)}
         />
       </Grid>
-      <Grid item xs={12} md={3}>
+
+      <Grid item xs={12} md={6}>
         <TextField
-          label="Número" fullWidth
-          value={value.number ?? ""}
-          onChange={(e) => onChange({ ...value, number: e.target.value })}
+          label="Complemento"
+          fullWidth
+          placeholder="Bloco, apto, referência…"
+          value={v.complement ?? ""}
+          onChange={(e) => set("complement", e.target.value)}
         />
       </Grid>
-      <Grid item xs={12} md={3}>
+
+      <Grid item xs={12} md={6}>
         <TextField
-          label="Bairro" fullWidth
-          value={value.district ?? ""}
-          onChange={(e) => onChange({ ...value, district: e.target.value })}
+          label="Cidade"
+          fullWidth
+          value={v.city ?? ""}
+          onChange={(e) => set("city", e.target.value)}
         />
       </Grid>
+
+      <Grid item xs={12} md={2}>
+        <TextField
+          label="Estado"
+          fullWidth
+          inputProps={{ maxLength: 2 }}
+          placeholder="UF"
+          value={v.state ?? ""}
+          onChange={(e) => set("state", e.target.value.toUpperCase())}
+        />
+      </Grid>
+
       <Grid item xs={12} md={4}>
         <TextField
-          label="Cidade" fullWidth
-          value={value.city ?? ""}
-          onChange={(e) => onChange({ ...value, city: e.target.value })}
-        />
-      </Grid>
-      <Grid item xs={12} md={4}>
-        <TextField
-          label="Estado" fullWidth
-          value={value.state ?? ""}
-          onChange={(e) => onChange({ ...value, state: e.target.value })}
-        />
-      </Grid>
-      <Grid item xs={12} md={4}>
-        <TextField
-          label="CEP" fullWidth
-          value={value.postalCode ?? ""}
-          onChange={(e) => onChange({ ...value, postalCode: e.target.value })}
+          label="CEP"
+          fullWidth
+          placeholder="00000-000"
+          value={v.postalCode ?? ""}
+          onChange={(e) => set("postalCode", e.target.value)}
         />
       </Grid>
     </>

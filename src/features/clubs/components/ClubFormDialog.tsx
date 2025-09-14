@@ -1,7 +1,8 @@
 import React from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider,
-  Typography, Alert, TextField, MenuItem, FormControl, InputLabel, Select
+  Typography, Alert, TextField, FormControl, InputLabel, Select, MenuItem,
+  useTheme, useMediaQuery
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddressFields from "./form/AddressFields";
@@ -31,23 +32,44 @@ export default function ClubFormDialog({
   mode, open, value, onChange, onCancel, onSubmit,
   error, loading, coordinatorOptions, teacherOptions,
 }: Props) {
-
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const teachersKey = React.useMemo(
-    () => (teacherOptions ?? []).map(t => `${t.teacherProfileId}:${t.vinculado ? 1 : 0}`).join("|"),
+    () => (teacherOptions ?? [])
+      .map(t => `${t.teacherProfileId}:${t.vinculado ? 1 : 0}`)
+      .join("|"),
     [teacherOptions]
   );
-
   const isAdmin = useSelector(selectIsAdmin);
   const isCreate = mode === "create";
+
   if (!value) return null;
 
   const teachers = (value as any).teacherProfileIds ?? [];
   const coord = (value as any).coordinatorProfileId ?? null;
   const time = (value as any).time ?? "";
 
+  const numberValue =
+    isAdmin
+      ? (isCreate ? ((value as any).number ?? 0) : ((value as any).number ?? ""))
+      : undefined;
+
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          width: isXs ? "98vw" : undefined,
+          maxWidth: isXs ? "98vw" : undefined,
+          m: isXs ? 0 : undefined,
+        },
+      }}
+    >
       <DialogTitle>{isCreate ? "Criar Clubinho" : "Editar Clubinho"}</DialogTitle>
+
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
@@ -58,8 +80,8 @@ export default function ClubFormDialog({
                 label="Número"
                 type="text"
                 fullWidth
-                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                value={(value as any).number ?? ""}
+                inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                value={numberValue}
                 onChange={(e) => {
                   const raw = e.target.value;
                   const onlyDigits = raw.replace(/\D/g, "");
@@ -76,7 +98,9 @@ export default function ClubFormDialog({
               <Select
                 label="Dia da semana"
                 value={(value as any).weekday ?? "saturday"}
-                onChange={(e) => onChange({ ...value, weekday: e.target.value as Weekday } as any)}
+                onChange={(e) =>
+                  onChange({ ...value, weekday: e.target.value as Weekday } as any)
+                }
               >
                 {WEEKDAYS.map((w) => (
                   <MenuItem key={w.value} value={w.value}>{w.label}</MenuItem>
@@ -92,20 +116,19 @@ export default function ClubFormDialog({
               fullWidth
               inputProps={{ step: 60 }}
               value={time}
-              onChange={(e) => {
-                const v = e.target.value;
-                onChange({ ...value, time: v } as any);
-              }}
+              onChange={(e) => onChange({ ...value, time: e.target.value } as any)}
               helperText="0:00 a 23:59"
             />
           </Grid>
 
           {isAdmin && (
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={12}>
               <CoordinatorSelect
                 value={coord}
                 options={coordinatorOptions}
-                onChange={(val) => onChange({ ...value, coordinatorProfileId: val } as any)}
+                onChange={(val) =>
+                  onChange({ ...value, coordinatorProfileId: val } as any)
+                }
               />
             </Grid>
           )}
@@ -130,7 +153,9 @@ export default function ClubFormDialog({
               key={teachersKey}
               value={teachers}
               options={teacherOptions}
-              onChange={(ids) => onChange({ ...value, teacherProfileIds: ids } as any)}
+              onChange={(ids) =>
+                onChange({ ...value, teacherProfileIds: ids } as any)
+              }
             />
           </Grid>
         </Grid>
@@ -143,7 +168,9 @@ export default function ClubFormDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onCancel} sx={{ color: "text.secondary" }}>Cancelar</Button>
+        <Button onClick={onCancel} sx={{ color: "text.secondary" }}>
+          Cancelar
+        </Button>
         <Button variant="contained" onClick={onSubmit} disabled={loading}>
           {isCreate ? "Criar" : "Salvar"}
         </Button>
