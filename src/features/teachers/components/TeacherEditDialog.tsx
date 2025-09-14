@@ -84,7 +84,6 @@ export default function TeacherEditDialog({
 
         {!!teacher && (
           <Grid container spacing={2}>
-            {/* Identificação */}
             <Grid item xs={12}>
               <Typography
                 component="div"
@@ -97,7 +96,6 @@ export default function TeacherEditDialog({
               </Typography>
             </Grid>
 
-            {/* Campo + Ações */}
             <Grid item xs={12} md={8}>
               <TextField
                 label="Número do Clubinho"
@@ -148,7 +146,6 @@ export default function TeacherEditDialog({
           </Grid>
         )}
 
-        {/* Loading overlay discreto */}
         {loading && (
           <Box
             sx={{

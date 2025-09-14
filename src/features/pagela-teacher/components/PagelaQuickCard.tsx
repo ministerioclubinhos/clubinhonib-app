@@ -196,7 +196,6 @@ export default function PagelaQuickCard({
         )}
       </Box>
 
-      {/* CONTEÚDO */}
       <CardContent sx={{ p: { xs: 1.5, md: 2.25 } }}>
         <Card variant="outlined" sx={{ borderRadius: 3, boxShadow: "0 1px 0 rgba(0,0,0,.04)", "&:hover": { boxShadow: "0 6px 16px rgba(0,0,0,.06)" } }}>
           <CardContent sx={{ p: { xs: 1.5, md: 2.25 } }}>

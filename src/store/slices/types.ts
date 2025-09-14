@@ -74,9 +74,6 @@ export const FeedbackCategoryLabels: Record<FeedbackCategory, string> = {
   [FeedbackCategory.OTHER]: 'Outro tipo de feedback',
 };
 
-
-
-// src/types/domain.ts
 export type Weekday =
   | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
 

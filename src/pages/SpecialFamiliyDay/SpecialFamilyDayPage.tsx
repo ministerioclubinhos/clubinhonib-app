@@ -374,20 +374,6 @@ const SpecialFamilyDayPage: React.FC = () => {
                           }}
                         />
 
-                        {/* Título 
-                        <Typography
-                          variant="subtitle1"
-                          sx={{
-                            fontWeight: "bold",
-                            textAlign: "center",
-                            fontSize: { xs: "1rem", sm: "1.1rem" },
-                            color: theme.palette.primary.main,
-                            mb: 0.5,
-                          }}
-                        >
-                          {img.title}
-                        </Typography>*/}
-
                         {img.description && (
                           <Typography
                             variant="body2"

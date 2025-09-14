@@ -1,4 +1,3 @@
-// src/components/layout/Footer.tsx
 import React from "react";
 import {
   Box,
@@ -21,8 +20,8 @@ const Footer: React.FC = () => {
     <Box
       component="footer"
       sx={{
-        position: "relative",   // ← necessário para z-index
-        zIndex: 1220,           // ← pedido
+        position: "relative",
+        zIndex: 1220,
         backgroundColor: "#81d742",
         color: "white",
         px: { xs: 2, sm: 3 },

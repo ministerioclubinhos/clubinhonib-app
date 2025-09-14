@@ -1,4 +1,3 @@
-// src/components/common/ConfirmDialog.tsx
 import * as React from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
@@ -8,48 +7,24 @@ import CloseIcon from "@mui/icons-material/Close";
 
 export type ConfirmDialogProps = {
   open: boolean;
-
-  /** Título do diálogo */
   title?: React.ReactNode;
-
-  /** Conteúdo do corpo (texto ou nó React). Use para mensagens simples. */
   content?: React.ReactNode;
-
-  /** Alternativa ao `content` para render custom do corpo */
   children?: React.ReactNode;
-
-  /** Texto dos botões */
   confirmText?: string;
   cancelText?: string;
-
-  /** Aparência do botão confirmar */
   confirmColor?: "primary" | "secondary" | "success" | "error" | "warning" | "info" | "inherit";
   confirmVariant?: "contained" | "outlined" | "text";
   cancelVariant?: "text" | "outlined" | "contained";
-
-  /** Ações */
   onConfirm: () => void | Promise<unknown>;
   onClose: () => void;
-
-  /** Loading controlado externamente (opcional). Se omitido e `onConfirm` retornar Promise, ativa loading interno automático */
   loading?: boolean;
-
-  /** Fecha automaticamente após `onConfirm` (quando resolve). Padrão: true */
   autoCloseOnConfirm?: boolean;
-
-  /** Opções de fechamento */
   disableBackdropClose?: boolean;
   disableEscapeKeyDown?: boolean;
-
-  /** Layout */
   fullWidth?: boolean;
   maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
   showCloseIcon?: boolean;
-
-  /** Ícone opcional à esquerda do título */
   startAdornment?: React.ReactNode;
-
-  /** Estilos extras nos wrappers */
   titleSx?: any;
   contentSx?: any;
   actionsSx?: any;
@@ -67,7 +42,7 @@ export default function ConfirmDialog({
   cancelVariant = "text",
   onConfirm,
   onClose,
-  loading, // opcional (controlado)
+  loading,
   autoCloseOnConfirm = true,
   disableBackdropClose,
   disableEscapeKeyDown,
@@ -84,7 +59,7 @@ export default function ConfirmDialog({
   const isLoading = loading ?? internalLoading;
 
   const handleClose = (_: any, reason?: "backdropClick" | "escapeKeyDown") => {
-    if (isLoading) return; // evita fechar durante loading
+    if (isLoading) return; 
     if (disableBackdropClose && reason === "backdropClick") return;
     if (disableEscapeKeyDown && reason === "escapeKeyDown") return;
     onClose();
@@ -103,7 +78,6 @@ export default function ConfirmDialog({
         onClose();
       }
     } catch {
-      // mantém aberto para o caller tratar erro (mensagem externa)
       setInternalLoading(false);
     }
   };

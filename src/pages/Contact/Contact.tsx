@@ -30,7 +30,6 @@ const PhoneMask = forwardRef<HTMLInputElement, any>(function PhoneMask(props, re
   );
 });
 
-// Schema de validação sem DDD fixo
 const schema = Yup.object().shape({
   name: Yup.string()
     .required('Nome é obrigatório')

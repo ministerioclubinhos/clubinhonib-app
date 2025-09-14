@@ -288,7 +288,6 @@ const TeacherArea: React.FC = () => {
     >
       <InformativeBanner />
 
-      {/* Se quiser exibir o callout especial, descomente a linha abaixo */}
       {/* <SpecialFamilyCallout /> */}
 
       <BannerSection showWeekBanner={showWeek} showMeditationBanner={showMeditation} />

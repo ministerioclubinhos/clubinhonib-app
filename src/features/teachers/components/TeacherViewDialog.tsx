@@ -1,4 +1,3 @@
-// src/modules/teachers/components/TeacherViewDialog.tsx
 import React from "react";
 import {
   Dialog,
@@ -41,7 +40,6 @@ export default function TeacherViewDialog({ open, teacher, onClose }: Props) {
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
         {!!teacher && (
           <Grid container spacing={2}>
-            {/* Cabeçalho compacto responsivo */}
             <Grid item xs={12}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 {teacher.user.name || teacher.user.email || "—"}

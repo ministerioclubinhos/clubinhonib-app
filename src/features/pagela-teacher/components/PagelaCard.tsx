@@ -1,4 +1,3 @@
-// src/features/pagela-teacher/components/PagelaCard.tsx
 import * as React from "react";
 import {
   Card,

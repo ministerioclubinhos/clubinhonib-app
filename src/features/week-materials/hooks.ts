@@ -26,7 +26,6 @@ export function useWeekMaterials() {
     }
   }, []);
 
-  // filtro com debounce (300ms)
   useEffect(() => {
     setIsFiltering(true);
     if (debounceRef.current) window.clearTimeout(debounceRef.current);

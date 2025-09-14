@@ -124,7 +124,6 @@ export function ClubsPanel({
                 }}
             />
 
-            {/* Lista */}
             <Box sx={{ flex: 1, overflow: "auto", pr: 1 }}>
                 <Stack spacing={1}>
                     {loading &&

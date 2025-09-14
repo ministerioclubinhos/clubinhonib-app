@@ -1,4 +1,3 @@
-// src/modules/children/components/ChildrenToolbar.tsx
 import React from "react";
 import {
   Paper, Grid, TextField, Stack, Button, Tooltip, IconButton,
@@ -15,7 +14,6 @@ type Props = {
   isXs?: boolean;
 };
 
-/** Utils */
 const fmtBR = (d: string) =>
   d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "";
 
@@ -30,7 +28,6 @@ function summaryLabel(from?: string, to?: string) {
   return "";
 }
 
-/** Um input que permite “Data única” OU “Período” e devolve (from,to) em YYYY-MM-DD */
 function DateFilterInput(props: {
   label: string;
   from?: string;
@@ -41,14 +38,12 @@ function DateFilterInput(props: {
   const { label, from = "", to = "", onChange, disabled } = props;
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
 
-  // estado temporário do popover
   const [mode, setMode] = React.useState<"single" | "range">(
     from && to && from !== to ? "range" : "single"
   );
   const [tmpFrom, setTmpFrom] = React.useState(from);
   const [tmpTo, setTmpTo] = React.useState(to || from);
 
-  // abrir fecha
   const open = Boolean(anchorEl);
   const handleOpen = (e: React.MouseEvent<HTMLElement>) => {
     setTmpFrom(from);
@@ -58,7 +53,6 @@ function DateFilterInput(props: {
   };
   const handleClose = () => setAnchorEl(null);
 
-  // aplicar/limpar
   const handleApply = () => {
     if (mode === "single") {
       if (tmpFrom) onChange(tmpFrom, tmpFrom);
@@ -206,7 +200,6 @@ export default function ChildrenToolbar({ filters, onChange, onCreateClick, onRe
           />
         </Grid>
 
-        {/* Nascimento */}
         <Grid item xs={12} md={3}>
           <DateFilterInput
             label="Nascimento"
@@ -216,7 +209,6 @@ export default function ChildrenToolbar({ filters, onChange, onCreateClick, onRe
           />
         </Grid>
 
-        {/* No Clubinho */}
         <Grid item xs={12} md={3}>
           <DateFilterInput
             label="No Clubinho"
@@ -229,10 +221,7 @@ export default function ChildrenToolbar({ filters, onChange, onCreateClick, onRe
         <Grid item xs={12}>
           {isXs ? (
             <>
-              {/* Espaçador para os FABs não cobrirem o conteúdo logo abaixo */}
               <Box sx={{ height: 64 }} />
-
-              {/* FABs flutuantes (somente mobile) */}
               <Box
                 sx={{
                   position: "fixed",

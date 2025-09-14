@@ -115,7 +115,6 @@ const DocumentForm: React.FC<Props> = ({ isEditing, onSuccess }) => {
         await createDocument(formData);
       }
 
-      // mantém Redux como no seu fluxo atual
       dispatch(setDocumentData(documentDto));
       dispatch(setMedia(mediaDto));
       onSuccess();

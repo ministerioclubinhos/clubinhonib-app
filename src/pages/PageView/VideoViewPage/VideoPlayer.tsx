@@ -31,7 +31,7 @@ const VideoPlayer = ({ video }: { video: MediaItem }) => {
       case MediaPlatform.ONEDRIVE:
       case MediaPlatform.DROPBOX:
       case MediaPlatform.ANY: {
-        embedUrl = video.url; // fallback genérico
+        embedUrl = video.url;
         break;
       }
       default:

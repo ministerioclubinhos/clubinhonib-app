@@ -293,7 +293,7 @@ const Eventos: React.FC = () => {
             justifyContent: 'center',
             px: { xs: 1, md: 4 },
             pt: { xs: 8, md: 10 },
-            pb: { xs: 8, md: 10 }, // respiro para não colar no footer
+            pb: { xs: 8, md: 10 },
           }}
         >
           <CircularProgress />

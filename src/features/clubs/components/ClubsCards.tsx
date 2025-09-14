@@ -58,7 +58,7 @@ export default function ClubsCards(props: Props) {
   const sortOptions = useMemo(() => ([
     { id: "number", label: "Número" },
     { id: "weekday", label: "Dia da semana" },
-    { id: "time", label: "Horário" }, // novo
+    { id: "time", label: "Horário" },
     { id: "updatedAt", label: "Atualizado em" },
     { id: "createdAt", label: "Criado em" },
   ]), []);

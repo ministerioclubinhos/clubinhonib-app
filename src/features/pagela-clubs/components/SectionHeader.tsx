@@ -1,6 +1,3 @@
-// ──────────────────────────────────────────────────────────────────────────────
-// File: src/features/pagela-clubs/components/SectionHeader.tsx
-// ──────────────────────────────────────────────────────────────────────────────
 import React from "react";
 import { Stack, Avatar, Badge, Box, Typography } from "@mui/material";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";

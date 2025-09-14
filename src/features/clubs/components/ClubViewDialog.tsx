@@ -219,7 +219,6 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
               </Grid>
             </Paper>
 
-            {/* Coordenador */}
             <Paper variant="outlined" sx={{ p: 2 }}>
               <Typography
                 variant="subtitle2"

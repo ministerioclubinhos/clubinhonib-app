@@ -1,4 +1,3 @@
-// src/modules/coordinator-profiles/components/CoordinatorToolbar.tsx
 import React from "react";
 import {
   Paper,
@@ -97,7 +96,6 @@ export default function CoordinatorToolbar({
 
         <Grid item xs={12} md={4}>
           {isXs ? (
-            // MOBILE: FABs flutuantes (Limpar acima, Recarregar abaixo) com safe-area e espaçamento confortável
             <>
               <Fab
                 color="secondary"
@@ -130,7 +128,6 @@ export default function CoordinatorToolbar({
               </Fab>
             </>
           ) : (
-            // DESKTOP: layout tradicional
             <Stack direction="row" spacing={1.25} justifyContent="flex-end">
               <Button
                 variant="contained"

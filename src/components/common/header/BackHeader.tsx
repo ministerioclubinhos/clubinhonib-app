@@ -1,4 +1,3 @@
-// src/components/common/BackHeader.tsx
 import React from "react";
 import {
   Box,
@@ -13,8 +12,8 @@ import { useNavigate } from "react-router-dom";
 
 type BackHeaderProps = {
   title: string;
-  mobileFontSize?: string | number; // 👈 nova prop opcional
-  desktopFontSize?: string | number; // 👈 extra se quiser também controlar desktop
+  mobileFontSize?: string | number;
+  desktopFontSize?: string | number;
 };
 
 const BackHeader: React.FC<BackHeaderProps> = ({
@@ -56,7 +55,7 @@ const BackHeader: React.FC<BackHeaderProps> = ({
         sx={{
           color: "#1a3c34",
           flex: 1,
-          fontSize: mobileFontSize ?? undefined, // 👈 usa o valor passado ou mantém padrão do `h6`
+          fontSize: mobileFontSize ?? undefined,
         }}
       >
         {title}
@@ -70,7 +69,7 @@ const BackHeader: React.FC<BackHeaderProps> = ({
       sx={{
         mb: 3,
         color: "#1a3c34",
-        fontSize: desktopFontSize ?? undefined, // 👈 usa se vier
+        fontSize: desktopFontSize ?? undefined,
       }}
     >
       {title}

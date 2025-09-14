@@ -1,4 +1,3 @@
-// src/features/pagela-teacher/components/ChildSelector.tsx
 import * as React from "react";
 import {
   Autocomplete, Avatar, Box, CircularProgress, ListItem, ListItemAvatar,

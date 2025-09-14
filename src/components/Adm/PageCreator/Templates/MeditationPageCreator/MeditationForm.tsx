@@ -202,7 +202,6 @@ export default function MeditationForm({ days, onDaysChange }: Props) {
         ))}
       </Grid>
 
-      {/* Modal Preview */}
       <Dialog open={!!previewDay} onClose={() => setPreviewDay(null)} fullWidth maxWidth="sm">
         <DialogTitle>
           {previewDay
@@ -224,7 +223,6 @@ export default function MeditationForm({ days, onDaysChange }: Props) {
         </DialogActions>
       </Dialog>
 
-      {/* Modal Delete */}
       <Dialog
         open={deleteConfirm !== null}
         onClose={() => setDeleteConfirm(null)}

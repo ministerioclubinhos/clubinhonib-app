@@ -1,4 +1,3 @@
-// src/components/MobileNavigation.tsx
 import React, { useState } from 'react';
 import { Drawer, IconButton, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';

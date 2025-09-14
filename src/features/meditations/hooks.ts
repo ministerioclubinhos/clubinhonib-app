@@ -27,7 +27,6 @@ export function useMeditationsList() {
 
   useEffect(() => { load(); }, [load]);
 
-  // busca por tema (debounced)
   useEffect(() => {
     setFiltering(true);
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
@@ -66,6 +65,5 @@ export function useMeditationsList() {
   };
 }
 
-// helper para data amigável (opcional)
 export const formatPtBrDate = (dateStr: string): string =>
   new Date(dateStr).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });

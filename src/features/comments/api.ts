@@ -11,7 +11,6 @@ export async function apiDeleteComment(id: string) {
 }
 
 export async function apiPublishComment(c: CommentData) {
-  // mantém o comportamento atual: PUT com todos os campos + published=true
   await api.put(`/comments/${c.id}`, {
     name: c.name,
     comment: c.comment,
@@ -26,7 +25,7 @@ export async function apiUpdateComment(c: CommentData, payload: {
   comment: string;
   clubinho: string;
   neighborhood: string;
-  published?: boolean; // default true (como seu botão "Salvar e Publicar")
+  published?: boolean; 
 }) {
   await api.put(`/comments/${c.id}`, {
     name: payload.name,

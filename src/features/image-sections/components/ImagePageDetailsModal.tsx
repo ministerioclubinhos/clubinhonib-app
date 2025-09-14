@@ -96,7 +96,7 @@ export default function ImagePageDetailsModal({ section, open, onClose }: Props)
                   sx={{
                     position: 'relative',
                     width: '100%',
-                    aspectRatio: aspect, // mantém área estável
+                    aspectRatio: aspect, 
                     bgcolor: 'background.default',
                     borderRadius: 2,
                     overflow: 'hidden',

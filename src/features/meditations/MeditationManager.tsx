@@ -29,10 +29,7 @@ export default function MeditationManager() {
 
   const [selectedDay, setSelectedDay] = useState<DayItem | null>(null);
   const [meditationToDelete, setMeditationToDelete] = useState<MeditationData | null>(null);
-
-  // ✅ controla qual card está expandido no mobile (apenas um por vez)
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
   const isBusy = loading || filtering;
 
   return (
@@ -76,7 +73,6 @@ export default function MeditationManager() {
                     onDelete={setMeditationToDelete}
                     onDayClick={setSelectedDay}
                     formatDate={formatPtBrDate}
-                    // ✅ controle mobile: só um expandido por vez
                     isExpandedMobile={isExpandedMobile}
                     onToggleExpandMobile={() =>
                       setExpandedId((curr) => (curr === meditation.id ? null : meditation.id))

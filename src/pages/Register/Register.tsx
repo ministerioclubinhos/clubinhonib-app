@@ -329,7 +329,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
                   disabled={loading}
                   sx={{
                     mt: { xs: 2, md: 3 },
-                    py: { xs: 1.5, md: 1 },       // mais alto no mobile
+                    py: { xs: 1.5, md: 1 },
                     fontSize: { xs: '0.95rem', md: '1rem' },
                     fontWeight: 'bold',
                   }}

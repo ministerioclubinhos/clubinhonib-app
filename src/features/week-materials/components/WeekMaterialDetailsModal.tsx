@@ -13,7 +13,6 @@ interface WeekMaterialDetailsModalProps {
   material: WeekMaterialPageData | null;
   open: boolean;
   onClose: () => void;
-  // novos opcionais p/ deletar
   deletable?: boolean;
   onDelete?: () => Promise<void>;
 }
@@ -78,7 +77,6 @@ export default function WeekMaterialDetailsModal({
         <DialogContent sx={{ px: 2, py: 1 }}>
           {material && (
             <Stack spacing={4}>
-              {/* Info Gerais */}
               <Paper elevation={2} sx={{ p: 3, borderRadius: 2, bgcolor: '#fff' }}>
                 <Typography variant="h6" fontWeight="bold" color="primary" textAlign="center" mb={3}>
                   Informações Gerais

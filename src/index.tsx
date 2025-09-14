@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react'; // 👈 novo
-import { store, persistor } from './store/slices/index'; // 👈 precisa exportar `persistor` também
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from './store/slices/index';
 import App from './App';
 import './index.css';
 

@@ -12,7 +12,7 @@ import { Search, Clear } from '@mui/icons-material';
 type Props = {
   search: string;
   onSearchChange: (v: string) => void;
-  loading?: boolean; // isFiltering opcional para mostrar spinner
+  loading?: boolean;
 };
 
 export default function ImagePageToolbar({ search, onSearchChange, loading }: Props) {

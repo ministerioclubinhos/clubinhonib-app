@@ -117,7 +117,6 @@ const FeedbackManager: React.FC = () => {
         </Box>
       )}
 
-      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

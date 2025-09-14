@@ -183,7 +183,6 @@ export default function PagelaList({
           fullWidth
         />
 
-        {/* Semana (texto com debounce) */}
         <TextField
           label="Semana"
           margin="dense"
@@ -197,7 +196,6 @@ export default function PagelaList({
           sx={{ width: { xs: "100%", sm: "100%" } }}
         />
 
-        {/* Presença */}
         <FormControl size="small" margin="dense" fullWidth sx={{ minWidth: 0 }}>
           <InputLabel>Presença</InputLabel>
           <Select
@@ -220,7 +218,6 @@ export default function PagelaList({
           </Select>
         </FormControl>
 
-        {/* Meditação */}
         <FormControl size="small" margin="dense" fullWidth sx={{ minWidth: 0 }}>
           <InputLabel>Meditação</InputLabel>
           <Select
@@ -243,7 +240,6 @@ export default function PagelaList({
           </Select>
         </FormControl>
 
-        {/* Versículo */}
         <FormControl size="small" margin="dense" fullWidth sx={{ minWidth: 0 }}>
           <InputLabel>Versículo</InputLabel>
           <Select
@@ -266,7 +262,6 @@ export default function PagelaList({
           </Select>
         </FormControl>
 
-        {/* Limpar */}
         <Box sx={{ gridColumn: { xs: "1 / -1", sm: "auto" }, display: "flex", justifyContent: "flex-end" }}>
           {hasAny && (
             <Button
@@ -285,7 +280,6 @@ export default function PagelaList({
         </Box>
       </Box>
 
-      {/* Lista OU vazio */}
       {rows.length > 0 ? (
         <Grid container spacing={{ xs: 1, sm: 1.25, md: 1.5 }}>
           {rows.map((r) => (
@@ -300,7 +294,6 @@ export default function PagelaList({
         </Paper>
       )}
 
-      {/* Paginação do servidor */}
       <Stack direction="row" justifyContent="center">
         <Pagination
           count={Math.max(1, Math.ceil(total / limit))}

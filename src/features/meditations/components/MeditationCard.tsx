@@ -119,7 +119,6 @@ export default function MeditationCard({
             {formatDate(meditation.startDate)} — {formatDate(meditation.endDate)}
           </Typography>
 
-          {/* Header "Dias (N)" com toggle (mobile-only) */}
           <Stack direction="row" alignItems="center" justifyContent="space-between" mt={2} mb={1}>
             <Typography fontWeight="bold">
               Dias ({meditation.days.length})
@@ -170,7 +169,6 @@ export default function MeditationCard({
               ))}
             </Stack>
 
-            {/* Material (PDF) */}
             {meditation.media?.url && (
               <Box textAlign="center" mt={2}>
                 <Button

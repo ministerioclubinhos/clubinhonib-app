@@ -11,7 +11,6 @@ export async function copyToClipboard(text: string) {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    // fallback simples
     const ta = document.createElement('textarea');
     ta.value = text;
     ta.style.position = 'fixed';

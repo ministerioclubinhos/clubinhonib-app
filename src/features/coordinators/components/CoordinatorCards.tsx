@@ -86,7 +86,6 @@ export default function CoordinatorCards(props: Props) {
                   "&:hover": { boxShadow: 2, transform: "translateY(-1px)" },
                 }}
               >
-                {/* Cabeçalho + expandir */}
                 <Stack direction="row" alignItems="center" sx={{ px: 1.25, pt: .75, pb: .25 }}>
                   <Typography variant="subtitle1" fontWeight={800} sx={{ pr: 1, flex: 1, minWidth: 0 }}>
                     <span title={c.user?.name}>{c.user?.name || "—"}</span>
@@ -111,14 +110,12 @@ export default function CoordinatorCards(props: Props) {
                   </Tooltip>
                 </Stack>
 
-                {/* Sub-infos curtas */}
                 <Stack direction="row" spacing={.5} sx={{ px: 1.25, pb: .5 }} flexWrap="wrap">
                   <Chip size="small" variant="outlined" label={`Clubs: ${clubs.length}`} />
                   <Chip size="small" variant="outlined" label={`Profs.: ${totalTeachers}`} />
                   <Chip size="small" color={c.active ? "success" : "default"} label={c.active ? "Ativo" : "Inativo"} />
                 </Stack>
 
-                {/* Expandido */}
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                   <Divider />
                   <CardContent sx={{ p: 1.25 }}>
@@ -154,7 +151,6 @@ export default function CoordinatorCards(props: Props) {
                   </CardContent>
                 </Collapse>
 
-                {/* Ações */}
                 <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5, px: 1.25, pb: 1, pt: 0.25 }}>
                   <Tooltip title="Detalhes">
                     <IconButton size="small" onClick={() => onView(c)}>

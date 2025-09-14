@@ -70,12 +70,10 @@ export default function TeacherProfilesManager() {
       }
       try {
         await setClub(teacher.id, club.id);
-        // fechar modal e atualizar listas
         setEditing(null);
         setDialogError("");
         await Promise.all([fetchPage(), refreshClubs()]);
       } catch {
-        // mantém o modal aberto e exibe o erro já setado por setClub()
       }
     },
     [byNumber, setClub, fetchPage, refreshClubs, setDialogError]
@@ -85,12 +83,10 @@ export default function TeacherProfilesManager() {
     async (teacherId: string) => {
       try {
         await clearClub(teacherId);
-        // fechar modal (se era o mesmo teacher) e atualizar listas
         setEditing((e) => (e?.id === teacherId ? null : e));
         setDialogError("");
         await Promise.all([fetchPage(), refreshClubs()]);
       } catch {
-        // mantém o modal aberto e exibe o erro já setado por clearClub()
       }
     },
     [clearClub, fetchPage, refreshClubs, setDialogError]

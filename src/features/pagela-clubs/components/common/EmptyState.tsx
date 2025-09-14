@@ -1,6 +1,3 @@
-// ──────────────────────────────────────────────────────────────────────────────
-// File: src/features/pagela-clubs/components/common/EmptyState.tsx
-// ──────────────────────────────────────────────────────────────────────────────
 import React from "react";
 import { Card, Typography } from "@mui/material";
 

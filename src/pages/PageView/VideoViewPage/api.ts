@@ -1,19 +1,16 @@
 import api from "@/config/axiosConfig";
 import { MediaItem } from "@/store/slices/types";
- import type { VideoPageData } from "@/store/slices/video/videoSlice";
+import type { VideoPageData } from "@/store/slices/video/videoSlice";
 
 export interface GetVideoPageResponse {
   id: string;
   title: string;
   description?: string;
-  public?: boolean; // pode vir faltando do backend
-  videos: Array<MediaItem>; // ideal: tipar com MediaItem
+  public?: boolean;
+  videos: Array<MediaItem>;
 }
 
-/**
- * Adapter para converter a resposta da API no shape do Redux
- */
-export const toVideoPageData = (dto: GetVideoPageResponse)  : VideoPageData => ({
+export const toVideoPageData = (dto: GetVideoPageResponse): VideoPageData => ({
   id: dto.id,
   title: dto.title,
   description: dto.description ?? "",

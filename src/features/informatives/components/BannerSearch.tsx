@@ -5,7 +5,7 @@ import { Search, Clear } from '@mui/icons-material';
 type Props = {
   value: string;
   onChange: (v: string) => void;
-  loading?: boolean; // isFiltering
+  loading?: boolean; 
 };
 
 export default function BannerSearch({ value, onChange, loading }: Props) {

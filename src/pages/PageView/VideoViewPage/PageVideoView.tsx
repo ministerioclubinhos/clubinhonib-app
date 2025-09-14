@@ -50,7 +50,6 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
   return (
     <Box sx={{ bgcolor: (t) => t.palette.mode === 'dark' ? 'background.default' : '#f6f7fb', minHeight: '100vh', pt: { xs: 4, md: 8 }, pb: { xs: 6, md: 8 } }}>
       <Container maxWidth="lg">
-        {/* Hero */}
         <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, mb: 4, borderRadius: 3, background: (t) => t.palette.mode === 'dark' ? t.palette.background.paper : 'linear-gradient(180deg, #ffffff 0%, #f2f4f8 100%)', border: (t) => `1px solid ${t.palette.divider}` }}>
           <Typography variant="h3" fontWeight={800} sx={{ fontSize: { xs: '1.875rem', md: '2.75rem' }, mb: 1 }}>{videoData.title}</Typography>
           {videoData.description && (

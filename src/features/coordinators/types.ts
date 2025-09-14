@@ -1,7 +1,5 @@
-// src/modules/coordinator-profiles/types.ts
 export const TZ = "America/Manaus";
 
-/* ===== Tipos mínimos ===== */
 export type MinimalUser = {
   id: string;
   name?: string;
@@ -28,9 +26,8 @@ export type ClubWithTeachers = ClubSimple & {
   teachers?: MinimalTeacher[];
 };
 
-/* ===== DTO principal da lista/detalhe ===== */
 export type CoordinatorProfile = {
-  id: string; // padronizado como "id"
+  id: string;
   active?: boolean;
   user: MinimalUser;
   clubs?: ClubWithTeachers[];
@@ -38,7 +35,6 @@ export type CoordinatorProfile = {
   updatedAt?: string;
 };
 
-/* ===== Resposta paginada ===== */
 export type PageDto<T> = {
   items: T[];
   total: number;
@@ -46,10 +42,9 @@ export type PageDto<T> = {
   limit: number;
 };
 
-/* ===== Filtros de UI ===== */
 export type CoordinatorFilters = {
-  searchString: string;              // <— trocado de q -> searchString
+  searchString: string;
   active: "all" | "active" | "inactive";
   hasClubs: "all" | "yes" | "no";
-  clubNumber?: number | "";          // "" = limpar campo
+  clubNumber?: number | "";
 };

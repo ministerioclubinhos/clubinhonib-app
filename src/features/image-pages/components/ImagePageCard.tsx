@@ -39,7 +39,6 @@ export default function ImagePageCard({ page, onDelete, onEdit, onViewDetails }:
         '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 },
       }}
     >
-      {/* Thumb 16:9 */}
       <Box
         sx={{
           position: 'relative',

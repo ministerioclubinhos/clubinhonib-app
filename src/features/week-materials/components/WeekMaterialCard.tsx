@@ -44,7 +44,6 @@ export default function WeekMaterialCard({
           flexDirection: 'column',
         }}
       >
-        {/* Header compacto com status */}
         <Box
           sx={{
             display: 'flex',
@@ -57,7 +56,6 @@ export default function WeekMaterialCard({
             borderColor: 'divider',
           }}
         >
-          {/* status público/privado (sem Tooltip no mobile para não atrapalhar) */}
           {isMobile ? (
             <IconButton size="small" disabled>
               {isPublic ? <Public color="success" fontSize="small" /> : <Lock color="error" fontSize="small" />}
@@ -84,7 +82,6 @@ export default function WeekMaterialCard({
             {material.title}
           </Typography>
 
-          {/* Delete com alvo de toque maior no mobile */}
           <IconButton
             onClick={onDelete}
             aria-label="Excluir material"
@@ -99,7 +96,6 @@ export default function WeekMaterialCard({
         </Box>
 
         <CardContent sx={{ p: { xs: 1.5, sm: 2.5 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
-          {/* Título grande (desktop) vira subtítulo (mobile) — já temos no header */}
           {!isMobile && (
             <Typography
               variant="h6"
@@ -147,7 +143,6 @@ export default function WeekMaterialCard({
             </Typography>
           )}
 
-          {/* Ações sempre acessíveis; no mobile, empilhadas e fullWidth */}
           <Box mt={{ xs: 1.5, sm: 2.5 }}>
             <Stack
               direction={isMobile ? 'column' : 'row'}
@@ -177,7 +172,6 @@ export default function WeekMaterialCard({
 
           <Divider sx={{ my: { xs: 1.25, sm: 2 } }} />
 
-          {/* Rodapé com chip/ação contextual; fonte e espaçamento otimizados no mobile */}
           <Box textAlign="center">
             {material.currentWeek ? (
               <Chip

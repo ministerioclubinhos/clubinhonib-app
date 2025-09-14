@@ -1,4 +1,3 @@
-// src/modules/coordinator-profiles/hooks.ts
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   apiAssignClub,
@@ -15,15 +14,12 @@ import type {
 } from "./types";
 import type { SortingState } from "@tanstack/react-table";
 
-/* ===== Helpers de mapeamento ===== */
 function mapSortingToServer(sorting: SortingState) {
-  // UI usa ids: "user" | "createdAt" | "updatedAt"
-  // API espera:  "name" | "createdAt" | "updatedAt"
   const first = sorting?.[0];
   const sortId =
     first?.id === "user" ? "name"
-    : first?.id === "createdAt" ? "createdAt"
-    : "updatedAt";
+      : first?.id === "createdAt" ? "createdAt"
+        : "updatedAt";
   const order: "asc" | "desc" = first?.desc ? "desc" : "asc";
   return { sort: sortId as ListCoordinatorsParams["sort"], order };
 }
@@ -31,15 +27,15 @@ function mapSortingToServer(sorting: SortingState) {
 function mapFiltersToServer(filters: CoordinatorFilters) {
   const active =
     filters.active === "all" ? undefined
-    : filters.active === "active" ? true
-    : false;
+      : filters.active === "active" ? true
+        : false;
   const hasClubs =
     filters.hasClubs === "all" ? undefined
-    : filters.hasClubs === "yes" ? true
-    : false;
+      : filters.hasClubs === "yes" ? true
+        : false;
 
   return {
-    searchString: filters.searchString?.trim() || undefined,  // <— aqui
+    searchString: filters.searchString?.trim() || undefined,
     active,
     hasClubs,
     clubNumber:
@@ -49,7 +45,6 @@ function mapFiltersToServer(filters: CoordinatorFilters) {
   } as Omit<ListCoordinatorsParams, "page" | "limit" | "sort" | "order">;
 }
 
-/* ===== Listagem paginada (server-side) ===== */
 export function useCoordinatorProfiles(
   pageIndex: number,
   pageSize: number,
@@ -87,7 +82,6 @@ export function useCoordinatorProfiles(
 
   useEffect(() => { fetchPage(); }, [fetchPage]);
 
-  // Atualiza um item específico (se estiver na página atual)
   const refreshOne = useCallback(async (coordinatorId: string) => {
     try {
       const updated = await apiGetCoordinator(coordinatorId);
@@ -99,7 +93,6 @@ export function useCoordinatorProfiles(
         return next;
       });
     } catch {
-      // se 404, remove da página
       setRows((prev) => prev.filter((p) => p.id !== coordinatorId));
     }
   }, []);
@@ -107,7 +100,6 @@ export function useCoordinatorProfiles(
   return { rows, total, loading, error, setError, fetchPage, refreshOne };
 }
 
-/* ===== Ações de vinculação ===== */
 export function useCoordinatorMutations(
   refreshPage: () => Promise<void> | void,
   refreshOne: (coordinatorId: string) => Promise<void> | void
@@ -115,10 +107,7 @@ export function useCoordinatorMutations(
   const [dialogLoading, setDialogLoading] = useState(false);
   const [dialogError, setDialogError] = useState("");
 
-  /**
-   * Vincula um club ao coordenador.
-   * Retorna a mensagem de sucesso do backend (quando disponível).
-   */
+
   const assignClub = useCallback(
     async (coordinatorId: string, clubId: string): Promise<string> => {
       setDialogLoading(true); setDialogError("");
@@ -139,10 +128,6 @@ export function useCoordinatorMutations(
     [refreshOne, refreshPage]
   );
 
-  /**
-   * Desvincula um club do coordenador.
-   * Retorna a mensagem de sucesso do backend (quando disponível).
-   */
   const unassignClub = useCallback(
     async (coordinatorId: string, clubId: string): Promise<string> => {
       setDialogLoading(true); setDialogError("");
@@ -166,7 +151,6 @@ export function useCoordinatorMutations(
   return { dialogLoading, dialogError, setDialogError, assignClub, unassignClub };
 }
 
-/* ===== Índice de clubs simples ===== */
 export function useClubsIndex() {
   const [clubs, setClubs] = useState<ClubSimple[]>([]);
   const [loading, setLoading] = useState(false);

@@ -24,7 +24,7 @@ export type Page<T> = {
 };
 
 export type TeacherQuery = {
-  searchString?: string; // ou q
+  searchString?: string; 
   q?: string;
   active?: boolean;
   hasClub?: boolean;

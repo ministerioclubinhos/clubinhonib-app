@@ -167,7 +167,6 @@ const DocumentsManager: React.FC = () => {
         </Grid>
       )}
 
-      {/* Form Modal */}
       <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 2 }}>
           {isEditing ? 'Editar Documento' : 'Novo Documento'}

@@ -1,5 +1,3 @@
-// src/pages/TeacherArea/TrainingVideosSection.tsx
-
 import React, { useState, Fragment, useMemo } from 'react';
 import {
   Box,

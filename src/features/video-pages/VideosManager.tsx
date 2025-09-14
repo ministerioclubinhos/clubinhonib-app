@@ -48,10 +48,6 @@ export default function VideosManager() {
     severity: 'success',
   });
 
-  useEffect(() => {
-    // hook já busca dados; mantido por compatibilidade
-  }, []);
-
   const handleEdit = (page: VideoPageData) => {
     dispatch(setVideoData(page));
     navigate('/adm/editar-pagina-videos');

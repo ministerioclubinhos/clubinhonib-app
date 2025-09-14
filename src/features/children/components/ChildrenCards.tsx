@@ -1,4 +1,3 @@
-// src/modules/children/components/ChildrenCards.tsx
 import React, { useMemo, useState } from "react";
 import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
@@ -32,7 +31,6 @@ const fmtDateOnly = (d?: string | null) =>
 
 const gLabel = (g?: "M" | "F") => (g === "M" ? "Menino" : g === "F" ? "Menina" : "—");
 
-// idade (anos)
 const ageFrom = (birth?: string | null) => {
   if (!birth) return null;
   const b = new Date(birth);
@@ -45,7 +43,6 @@ const ageFrom = (birth?: string | null) => {
   return y < 0 ? null : y;
 };
 
-// tempo de Clubinho
 const tenureFrom = (joined?: string | null) => {
   if (!joined) return null;
   const j = new Date(joined);
@@ -92,7 +89,6 @@ export default function ChildrenCards(props: Props) {
 
   return (
     <Box sx={{ px: { xs: 0, sm: 1 }, py: 0 }}>
-      {/* Ordenação compacta */}
       <Stack
         direction="row"
         spacing={1}
@@ -137,7 +133,6 @@ export default function ChildrenCards(props: Props) {
                   bgcolor: "background.paper",
                 }}
               >
-                {/* Cabeçalho: Clubinho + expand */}
                 <Stack
                   direction="row"
                   alignItems="center"
@@ -177,7 +172,6 @@ export default function ChildrenCards(props: Props) {
                   </ButtonBase>
                 </Stack>
 
-                {/* Nome */}
                 <Typography
                   variant="subtitle1"
                   fontWeight={800}
@@ -194,7 +188,6 @@ export default function ChildrenCards(props: Props) {
                   {c.name}
                 </Typography>
 
-                {/* Resumo curto */}
                 <Stack spacing={0.75} sx={{ px: { xs: 1.25, sm: 1.5 }, pb: 1.25 }}>
                   <Stack direction="row" spacing={0.75} alignItems="baseline">
                     <Typography variant="caption" color="text.secondary" sx={{ minWidth: 92 }}>
@@ -236,11 +229,9 @@ export default function ChildrenCards(props: Props) {
                   )}
                 </Stack>
 
-                {/* Expandido */}
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                   <Divider sx={{ my: 0.25 }} />
                   <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
-                    {/* BLOCO RESUMO BONITO */}
                     <Box
                       sx={{
                         p: { xs: 1.25, sm: 1.5 },
@@ -252,7 +243,6 @@ export default function ChildrenCards(props: Props) {
                       }}
                     >
                       <Grid container spacing={{ xs: 1, sm: 1.5 }} alignItems="center">
-                        {/* Gênero centralizado */}
                         <Grid item xs={12} sm={4}>
                           <Stack alignItems="center" spacing={0.5}>
                             <Typography variant="caption" color="text.secondary">Gênero</Typography>
@@ -262,7 +252,6 @@ export default function ChildrenCards(props: Props) {
                           </Stack>
                         </Grid>
 
-                        {/* Nascimento */}
                         <Grid item xs={12} sm={4}>
                           <Stack spacing={0.25}>
                             <Stack direction="row" spacing={0.5} alignItems="center">
@@ -273,7 +262,6 @@ export default function ChildrenCards(props: Props) {
                           </Stack>
                         </Grid>
 
-                        {/* No clubinho desde */}
                         <Grid item xs={12} sm={4}>
                           <Stack spacing={0.25}>
                             <Stack direction="row" spacing={0.5} alignItems="center">
@@ -315,7 +303,6 @@ export default function ChildrenCards(props: Props) {
                         </>
                       )}
 
-                      {/* Chips finais */}
                       <Grid item xs={12}>
                         <Divider sx={{ my: 0.5 }} />
                         <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
@@ -328,7 +315,6 @@ export default function ChildrenCards(props: Props) {
                   </CardContent>
                 </Collapse>
 
-                {/* Rodapé: ações */}
                 <Box
                   sx={{
                     display: "flex",

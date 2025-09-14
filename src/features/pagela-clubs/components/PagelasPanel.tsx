@@ -1,6 +1,3 @@
-// ──────────────────────────────────────────────────────────────────────────────
-// File: src/features/pagela-clubs/components/PagelasPanel.tsx
-// ──────────────────────────────────────────────────────────────────────────────
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box, Stack, Typography, Chip, Skeleton, Alert, Card, CardContent, Avatar,
@@ -115,9 +112,7 @@ export function PagelasPanel({ child }: { child: ChildResponseDto | null }) {
             >
               <CardContent sx={{ p: isMobile ? 1 : 1.25 }}>
                 {isMobile ? (
-                  // ── MOBILE: 3 linhas ──
                   <Stack spacing={1}>
-                    {/* 1ª linha */}
                     <Stack
                       direction="row"
                       alignItems="center"
@@ -132,7 +127,6 @@ export function PagelasPanel({ child }: { child: ChildResponseDto | null }) {
                       </Typography>
                     </Stack>
 
-                    {/* 2ª linha: chips */}
                     <Stack direction="row" spacing={0.75}>
                       <Chip
                         size="small"
@@ -157,13 +151,11 @@ export function PagelasPanel({ child }: { child: ChildResponseDto | null }) {
                       />
                     </Stack>
 
-                    {/* 3ª linha: nota */}
                     {p.notes && p.notes.trim() !== "" && (
                       <Typography variant="body2">{p.notes}</Typography>
                     )}
                   </Stack>
                 ) : (
-                  // ── DESKTOP ──
                   <Stack
                     direction="row"
                     alignItems="center"

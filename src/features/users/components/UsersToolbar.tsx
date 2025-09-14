@@ -87,7 +87,7 @@ export default function UsersToolbar({
   <Box
     sx={{
       display: "flex",
-      flexDirection: { xs: "column", md: "row" }, // coluna no mobile, linha no desktop
+      flexDirection: { xs: "column", md: "row" }, 
       gap: { xs: 1, md: 3 },
       alignItems: { xs: "flex-start", md: "center" },
     }}

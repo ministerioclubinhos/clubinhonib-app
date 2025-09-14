@@ -1,6 +1,3 @@
-// ──────────────────────────────────────────────────────────────────────────────
-// File: src/features/pagela-clubs/components/common/PlaceholderCard.tsx
-// ──────────────────────────────────────────────────────────────────────────────
 import React from "react";
 import { Stack, Typography } from "@mui/material";
 
