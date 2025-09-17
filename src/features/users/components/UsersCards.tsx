@@ -7,12 +7,13 @@ import {
 import {
   Visibility, Edit, Delete, SwapVert,
   ExpandMore as ExpandMoreIcon,
-  PhoneIphone, AlternateEmail, AccessTime
+  PhoneIphone, AlternateEmail, AccessTime, WhatsApp
 } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
 import { UserRow } from "../types";
 import { fmtDate } from "@/utils/dates";
 import { UserRole } from "@/store/slices/auth/authSlice";
+import { buildWhatsappLink } from "../utils";
 
 type Props = {
   rows: UserRow[];
@@ -33,6 +34,8 @@ const roleLabels: Record<UserRole, string> = {
   [UserRole.COORDINATOR]: "Coordenador",
   [UserRole.TEACHER]: "Professor",
 };
+
+
 
 export default function UsersCards(props: Props) {
   const {
@@ -94,6 +97,8 @@ export default function UsersCards(props: Props) {
       <Grid container spacing={{ xs: .75, sm: 1 }}>
         {rows.map((u) => {
           const expanded = open.has(u.id);
+          const wa = buildWhatsappLink(u);
+
           return (
             <Grid item xs={12} key={u.id}>
               <Card
@@ -148,14 +153,17 @@ export default function UsersCards(props: Props) {
                   <Stack direction="row" spacing={.5} alignItems="center" flexWrap="wrap" sx={{ px: 1.25, pb: .75 }}>
                     <Chip size="small" variant="outlined" label={`Ativo: ${u.active ? "Sim" : "Não"}`} color={u.active ? "success" : "default"} />
                     <Chip size="small" variant="outlined" label={`Completo: ${u.completed ? "Sim" : "Não"}`} color={u.completed ? "success" : "default"} />
-                    {u.phone && (
+
+                    {(u.phone || wa) && (
                       <Stack direction="row" spacing={.5} alignItems="center" sx={{ ml: .25 }}>
                         <PhoneIphone sx={{ fontSize: 18, color: "text.secondary" }} />
-                        <Typography variant="caption" color="text.secondary">
-                          <a href={`tel:${u.phone}`} style={{ color: "inherit", textDecoration: "none" }}>
-                            {u.phone}
-                          </a>
-                        </Typography>
+                        {u.phone && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: "flex", alignItems: "center", gap: .25 }}>
+                            <a href={`tel:${u.phone}`} style={{ color: "inherit", textDecoration: "none" }}>
+                              {u.phone}
+                            </a>
+                          </Typography>
+                        )}
                       </Stack>
                     )}
                   </Stack>
@@ -184,40 +192,55 @@ export default function UsersCards(props: Props) {
                         </Stack>
                       </Grid>
                       <Grid item xs={12}>
-                        <Stack
-                          direction="row"
-                          flexWrap="wrap"
-                          spacing={1}
-                          rowGap={1}
-                        >
+                        <Stack direction="row" flexWrap="wrap" spacing={1} rowGap={1}>
                           <Chip
                             size="small"
                             label={`Papel: ${roleLabels[u.role as UserRole] || "Usuário"}`}
                             color={roleChipColor(u.role)}
                             variant="outlined"
                           />
-                          <Chip
-                            size="small"
-                            label={`Ativo: ${u.active ? "Sim" : "Não"}`}
-                            color={u.active ? "success" : "default"}
-                          />
-                          <Chip
-                            size="small"
-                            label={`Completo: ${u.completed ? "Sim" : "Não"}`}
-                            color={u.completed ? "success" : "default"}
-                          />
+                          <Chip size="small" label={`Ativo: ${u.active ? "Sim" : "Não"}`} color={u.active ? "success" : "default"} />
+                          <Chip size="small" label={`Completo: ${u.completed ? "Sim" : "Não"}`} color={u.completed ? "success" : "default"} />
                           {u.phone && <Chip size="small" label={u.phone} variant="outlined" />}
                         </Stack>
                       </Grid>
-
                     </Grid>
                   </CardContent>
                 </Collapse>
 
                 <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5, px: 1.25, pb: 1 }}>
-                  <Tooltip title="Visualizar"><IconButton size="small" onClick={() => onView(u)}><Visibility fontSize="small" /></IconButton></Tooltip>
-                  <Tooltip title="Editar"><IconButton size="small" onClick={() => onEdit(u)}><Edit fontSize="small" /></IconButton></Tooltip>
-                  <Tooltip title="Excluir"><IconButton size="small" color="error" onClick={() => onDelete(u)}><Delete fontSize="small" /></IconButton></Tooltip>
+                  <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
+                    <span>
+                      <IconButton
+                        size="small"
+                        color="success"
+                        component="a"
+                        href={wa || undefined}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        disabled={!wa}
+                        aria-label="abrir WhatsApp"
+                      >
+                        <WhatsApp fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+
+                  <Tooltip title="Visualizar">
+                    <IconButton size="small" onClick={() => onView(u)}>
+                      <Visibility fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Editar">
+                    <IconButton size="small" onClick={() => onEdit(u)}>
+                      <Edit fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Excluir">
+                    <IconButton size="small" color="error" onClick={() => onDelete(u)}>
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               </Card>
             </Grid>
