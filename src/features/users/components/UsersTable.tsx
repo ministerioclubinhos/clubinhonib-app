@@ -26,11 +26,12 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Visibility, Edit, Delete } from "@mui/icons-material";
+import { Visibility, Edit, Delete, WhatsApp } from "@mui/icons-material";
 import { UserRow } from "../types";
 import { fmtDate } from "@/utils/dates";
 import { UserRole } from "@/store/slices/auth/authSlice";
 import UsersCards from "./UsersCards";
+import { buildWhatsappLink } from "../utils";
 
 type Props = {
   rows: UserRow[];
@@ -51,6 +52,7 @@ const roleLabels: Record<UserRole, string> = {
   [UserRole.COORDINATOR]: "Coordenador",
   [UserRole.TEACHER]: "Professor",
 };
+
 
 export default function UsersTable(props: Props) {
   const theme = useTheme();
@@ -106,9 +108,7 @@ function UsersTableDesktop({
               size="small"
               label={roleLabels[role] ?? role}
               variant="outlined"
-              color={
-                role === UserRole.ADMIN ? "secondary" : "default"
-              }
+              color={role === UserRole.ADMIN ? "secondary" : "default"}
             />
           );
         },
@@ -141,10 +141,8 @@ function UsersTableDesktop({
       {
         accessorKey: "phone",
         header: "Telefone",
-        cell: ({ getValue }) => (
-          <Typography noWrap>{String(getValue() || "—")}</Typography>
-        ),
-        meta: { width: 150 },
+
+        meta: { width: 190 },
       },
       ...(isMdUp
         ? ([
@@ -166,26 +164,45 @@ function UsersTableDesktop({
         id: "actions",
         header: "Ações",
         enableSorting: false,
-        cell: ({ row }) => (
-          <Box sx={{ display: "flex", gap: 0.5 }}>
-            <Tooltip title="Detalhes">
-              <IconButton onClick={() => onView(row.original)}>
-                <Visibility />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Editar">
-              <IconButton onClick={() => onEdit(row.original)}>
-                <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Excluir">
-              <IconButton color="error" onClick={() => onDelete(row.original)}>
-                <Delete />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        ),
-        meta: { width: 150 },
+        cell: ({ row }) => {
+          const wa = buildWhatsappLink(row.original);
+          return (
+            <Box sx={{ display: "flex", gap: 0.5 }}>
+              <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
+                <span>
+                  <IconButton
+                    color="success"
+                    component="a"
+                    href={wa || undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    disabled={!wa}
+                    aria-label="abrir WhatsApp"
+                  >
+                    <WhatsApp />
+                  </IconButton>
+                </span>
+              </Tooltip>
+
+              <Tooltip title="Detalhes">
+                <IconButton onClick={() => onView(row.original)}>
+                  <Visibility />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Editar">
+                <IconButton onClick={() => onEdit(row.original)}>
+                  <Edit />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Excluir">
+                <IconButton color="error" onClick={() => onDelete(row.original)}>
+                  <Delete />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          );
+        },
+        meta: { width: 220 },
       },
     ];
   }, [isMdUp, onDelete, onEdit, onView]);
@@ -286,5 +303,32 @@ function UsersTableDesktop({
         labelRowsPerPage="Linhas por página"
       />
     </Paper>
+  );
+}
+
+function StackedPhoneWithWA({ user }: { user: UserRow }) {
+  const wa = buildWhatsappLink(user);
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+      <Typography noWrap title={user.phone || undefined} sx={{ mr: 0.25 }}>
+        {user.phone ? String(user.phone) : "—"}
+      </Typography>
+      <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
+        <span>
+          <IconButton
+            size="small"
+            color="success"
+            component="a"
+            href={wa || undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            disabled={!wa}
+            aria-label="abrir WhatsApp"
+          >
+            <WhatsApp fontSize="small" />
+          </IconButton>
+        </span>
+      </Tooltip>
+    </Box>
   );
 }
