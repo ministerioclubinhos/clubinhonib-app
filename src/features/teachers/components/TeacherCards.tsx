@@ -16,6 +16,11 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Paper,
+  Avatar,
+  Slide,
+  ButtonBase,
+  Link
 } from "@mui/material";
 import {
   Visibility,
@@ -23,10 +28,44 @@ import {
   LinkOff as LinkOffIcon,
   ExpandMore as ExpandMoreIcon,
   SwapVert,
+  ContentCopy,
+  Phone as PhoneIcon,
+  SchoolOutlined,
+  GroupOutlined,
+  PersonOutlined
 } from "@mui/icons-material";
 import type { SortingState } from "@tanstack/react-table";
 import type { TeacherProfile } from "../types";
-import { fmtDate } from "../utils";
+import { fmtDate } from "@/utils/dates";
+import { WEEKDAY_PT } from "@/features/pagela-clubs/utils";
+import type { Weekday } from "@/features/clubs/types";
+
+const initials = (name?: string) =>
+  (name || "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(s => s[0]?.toUpperCase())
+    .join("") || "T";
+
+function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
+  const copyToClipboard = (text?: string) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(String(text)).catch(() => {});
+  };
+  return (
+    <Tooltip title={title}>
+      <IconButton size="small" onClick={() => copyToClipboard(value)}>
+        <ContentCopy fontSize="inherit" />
+      </IconButton>
+    </Tooltip>
+  );
+}
+
+const translateWeekday = (weekday?: string): string => {
+  if (!weekday) return "—";
+  return WEEKDAY_PT[weekday as Weekday] || weekday;
+};
 
 type Props = {
   rows: TeacherProfile[];
@@ -115,159 +154,369 @@ export default function TeacherCards({
         </Tooltip>
       </Stack>
 
-      <Grid container spacing={0.75}>
+      <Grid container spacing={{ xs: 1, sm: 1.25 }}>
         {rows.map((t) => {
           const expanded = open.has(t.id);
           const club = t.club || null;
           const coordUser = club?.coordinator?.user || null;
 
           return (
-            <Grid item xs={12} key={t.id}>
+            <Grid item xs={12} key={t.id} sx={{ mb: { xs: 0.75, sm: 1 }, pb: { xs: 1, sm: 1.25 } }}>
               <Card
                 variant="outlined"
                 sx={{
-                  borderRadius: 2,
+                  borderRadius: 3,
                   overflow: "hidden",
-                  transition: "box-shadow .12s ease, transform .12s ease",
-                  "&:hover": { boxShadow: 2, transform: "translateY(-1px)" },
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": { 
+                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)", 
+                    transform: "translateY(-2px)",
+                    "& .teacher-avatar": {
+                      transform: "scale(1.1)",
+                    }
+                  },
+                  bgcolor: "background.paper",
+                  position: "relative",
+                  maxHeight: !expanded ? { xs: 150, sm: 150 } : "none",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 4,
+                    background: "linear-gradient(90deg, #ff9800 0%, #4caf50 100%)",
+                  }
                 }}
               >
                 <Stack
                   direction="row"
                   alignItems="center"
-                  sx={{ px: 1.25, pt: 0.75, pb: 0.25 }}
+                  sx={{
+                    px: { xs: 1, sm: 1.25 },
+                    pt: 1,
+                    pb: 0.5,
+                    gap: { xs: 0.75, sm: 1 },
+                    mt: 0.5, // Espaço para a barra colorida
+                  }}
                 >
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight={800}
-                    sx={{ pr: 1, flex: 1, minWidth: 0 }}
+                  <Avatar
+                    className="teacher-avatar"
+                    sx={{
+                      width: { xs: 40, sm: 48 }, 
+                      height: { xs: 40, sm: 48 },
+                      bgcolor: t.active ? "success.main" : "grey.500",
+                      color: "white",
+                      fontWeight: 800, 
+                      fontSize: { xs: 14, sm: 16 },
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      flexShrink: 0,
+                    }}
+                    aria-label={`Avatar do professor ${t.user?.name}`}
                   >
-                    <span title={t.user?.name}>
-                      {t.user?.name || t.user?.email || "—"}
-                    </span>
-                  </Typography>
+                    {initials(t.user?.name)}
+                  </Avatar>
 
-                  <Tooltip title={expanded ? "Recolher" : "Expandir"}>
-                    <IconButton
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      fontWeight={700} 
+                      noWrap 
+                      title={t.user?.name || t.user?.email}
+                      sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+                    >
+                      {t.user?.name || t.user?.email || "—"}
+                    </Typography>
+                    <Chip
                       size="small"
-                      onClick={() => toggle(t.id)}
-                      sx={{
-                        border: "1px solid",
-                        borderColor: "divider",
-                        bgcolor: "background.paper",
-                        "&:hover": { bgcolor: "action.hover" },
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                        transition: "transform .15s ease",
+                      color={t.active ? "success" : "default"}
+                      label={t.active ? "Ativo" : "Inativo"}
+                      sx={{ 
+                        fontSize: "0.7rem",
+                        height: 20,
+                        mt: 0.25
+                      }}
+                    />
+                  </Box>
+
+                  <ButtonBase
+                    onClick={() => toggle(t.id)}
+                    aria-label={expanded ? "Recolher" : "Expandir"}
+                    sx={{
+                      borderRadius: 2,
+                      px: { xs: 0.75, sm: 1 },
+                      py: 0.5,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      bgcolor: "background.paper",
+                      flexShrink: 0,
+                      "&:hover": { bgcolor: "action.hover" },
+                    }}
+                  >
+                    <Typography 
+                      variant="caption" 
+                      color="text.secondary" 
+                      sx={{ 
+                        fontWeight: 600,
+                        display: { xs: "none", sm: "block" }
                       }}
                     >
-                      <ExpandMoreIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                      {expanded ? "Recolher" : "Detalhes"}
+                    </Typography>
+                    <ExpandMoreIcon
+                      fontSize="small"
+                      sx={{ transition: "transform .15s ease", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                    />
+                  </ButtonBase>
                 </Stack>
 
-                <Stack
-                  direction="row"
-                  spacing={0.5}
-                  sx={{ px: 1.25, pb: 0.5 }}
-                  flexWrap="wrap"
+                <Box
+                  sx={{
+                    mx: { xs: 1, sm: 1.25 },
+                    mb: 0.5,
+                    p: { xs: 0.75, sm: 1 },
+                    borderRadius: 2,
+                    bgcolor: "grey.50",
+                    border: "1px solid",
+                    borderColor: "grey.200",
+                  }}
                 >
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    color={club ? "primary" : "default"}
-                    label={club ? `Clubinho #${club.number ?? "?"}` : "Sem Clubinho"}
-                  />
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    label={
-                      coordUser?.name
-                        ? `Coord.: ${coordUser.name}`
-                        : coordUser?.email
-                        ? `Coord.: ${coordUser.email}`
-                        : "Coord.: —"
-                    }
-                  />
-                  <Chip
-                    size="small"
-                    color={t.active ? "success" : "default"}
-                    label={t.active ? "Ativo" : "Inativo"}
-                  />
-                </Stack>
-
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
-                  <Divider />
-                  <CardContent sx={{ p: 1.25 }}>
-                    <Stack spacing={0.75}>
-                      <Typography variant="body2" color="text.secondary">
-                        {t.user?.email}
+                  <Stack direction="row" spacing={0.75} alignItems="center">
+                    <SchoolOutlined sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography 
+                        variant="body2"
+                        sx={{ 
+                          fontWeight: 600,
+                          color: "text.primary",
+                          whiteSpace: "nowrap", 
+                          overflow: "hidden", 
+                          textOverflow: "ellipsis"
+                        }}
+                        title={club ? `Clubinho #${club.number ?? "?"}` : "Sem Clubinho"}
+                      >
+                        {club ? `Clubinho #${club.number ?? "?"}` : "Sem Clubinho"}
                       </Typography>
-                      {(t.createdAt || t.updatedAt) && (
-                        <Typography variant="caption" color="text.secondary">
-                          Criado: {fmtDate(t.createdAt)} • Atualizado:{" "}
-                          {fmtDate(t.updatedAt)}
-                        </Typography>
-                      )}
+                    </Box>
+                  </Stack>
+                </Box>
 
-                      {club ? (
-                        <>
-                          <Divider light sx={{ my: 0.25 }} />
-                          <Stack
-                            direction="row"
-                            spacing={0.75}
-                            alignItems="center"
-                            flexWrap="wrap"
+                {!expanded && (
+                  <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: 0.75 }}>
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      alignItems="center"
+                      flexWrap="wrap"
+                      rowGap={0.25}
+                    >
+                      <Chip
+                        size="small"
+                        variant="filled"
+                        icon={<GroupOutlined sx={{ fontSize: 12 }} />}
+                        label={
+                          coordUser?.name
+                            ? coordUser.name
+                            : coordUser?.email
+                            ? coordUser.email
+                            : "Sem coordenador"
+                        }
+                        color="info"
+                        sx={{ 
+                          fontWeight: 600, 
+                          fontSize: "0.7rem",
+                          height: 20,
+                          "& .MuiChip-label": { px: 0.5 }
+                        }}
+                      />
+                      {coordUser?.phone && (
+                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
+                          <PhoneIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                          <Link 
+                            href={`tel:${coordUser.phone}`} 
+                            underline="hover"
+                            sx={{ 
+                              fontSize: "0.75rem",
+                              color: "text.secondary",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis"
+                            }}
                           >
-                            <Chip
-                              size="small"
-                              color="primary"
-                              label={`#${club.number ?? "?"}`}
-                            />
-                            <Typography variant="body2" sx={{ mr: 0.5 }}>
-                              {club.weekday || "—"}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ ml: 0.5 }}
-                            >
-                              {coordUser?.name || coordUser?.email || "Coord.: —"}
+                            {coordUser.phone}
+                          </Link>
+                          <CopyButton value={coordUser.phone} title="Copiar telefone" />
+                        </Stack>
+                      )}
+                    </Stack>
+                  </Box>
+                )}
+
+                <Slide direction="down" in={expanded} timeout={300}>
+                  <Box>
+                    <Divider sx={{ mx: { xs: 1, sm: 1.25 } }} />
+                    <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
+                      <Stack spacing={2}>
+                        {/* Informações do Professor */}
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            p: 1.25,
+                            borderRadius: 2,
+                            bgcolor: "grey.50",
+                            border: "1px solid",
+                            borderColor: "grey.200",
+                          }}
+                        >
+                          <Stack spacing={1}>
+                            <Stack direction="row" spacing={0.75} alignItems="center">
+                              <PersonOutlined fontSize="small" color="primary" />
+                              <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
+                                Informações do Professor
+                              </Typography>
+                            </Stack>
+                            <Typography variant="body2" color="text.secondary">
+                              {t.user?.email}
                             </Typography>
                           </Stack>
-                        </>
-                      ) : null}
-                    </Stack>
-                  </CardContent>
-                </Collapse>
+                        </Paper>
+
+                        {/* Clubinho */}
+                        {club && (
+                          <Paper
+                            variant="outlined"
+                            sx={{
+                              p: 1.25,
+                              borderRadius: 2,
+                              bgcolor: "grey.50",
+                              border: "1px solid",
+                              borderColor: "grey.200",
+                            }}
+                          >
+                            <Stack spacing={1}>
+                              <Stack direction="row" spacing={0.75} alignItems="center">
+                                <SchoolOutlined fontSize="small" color="primary" />
+                                <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
+                                  Clubinho #{club.number ?? "?"}
+                                </Typography>
+                              </Stack>
+                              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
+                                <Chip
+                                  size="small"
+                                  color="primary"
+                                  label={`#${club.number ?? "?"}`}
+                                  sx={{ fontWeight: 500 }}
+                                />
+                                <Chip
+                                  size="small"
+                                  variant="outlined"
+                                  label={translateWeekday(club.weekday)}
+                                  sx={{ fontWeight: 500 }}
+                                />
+                                <Chip
+                                  size="small"
+                                  variant="outlined"
+                                  label={coordUser?.name || coordUser?.email || "Sem coordenador"}
+                                  sx={{ fontWeight: 500 }}
+                                />
+                              </Stack>
+                            </Stack>
+                          </Paper>
+                        )}
+
+                        {/* Datas */}
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            p: 1.25,
+                            borderRadius: 2,
+                            bgcolor: "grey.50",
+                            border: "1px solid",
+                            borderColor: "grey.200",
+                          }}
+                        >
+                          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
+                            <Chip 
+                              size="small" 
+                              variant="outlined" 
+                              label={`Criado: ${fmtDate(t.createdAt)}`}
+                              color="default"
+                              sx={{ fontWeight: 500 }}
+                            />
+                            <Chip 
+                              size="small" 
+                              variant="outlined" 
+                              label={`Atualizado: ${fmtDate(t.updatedAt)}`}
+                              color="default"
+                              sx={{ fontWeight: 500 }}
+                            />
+                          </Stack>
+                        </Paper>
+                      </Stack>
+                    </CardContent>
+                  </Box>
+                </Slide>
 
                 <Box
                   sx={{
                     display: "flex",
-                    justifyContent: "flex-end",
-                    gap: 0.5,
-                    px: 1.25,
-                    pb: 1,
-                    pt: 0.25,
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 0.75,
+                    px: { xs: 1, sm: 1.25 },
+                    pb: { xs: 0.75, sm: 1 },
+                    pt: 0.75,
+                    bgcolor: "grey.50",
+                    borderTop: "1px solid",
+                    borderColor: "grey.200",
                   }}
                 >
-                  <Tooltip title="Detalhes">
-                    <IconButton size="small" onClick={() => onView(t)}>
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Vincular / Alterar Clubinho">
-                    <IconButton size="small" onClick={() => onEditLinks(t)}>
-                      <LinkIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Desvincular Clubinho">
-                    <IconButton size="small" onClick={() => onClearClub(t.id)}>
-                      <LinkOffIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    {t.user?.name || t.user?.email}
+                  </Typography>
+                  
+                  <Stack direction="row" spacing={0.5}>
+                    <Tooltip title="Visualizar detalhes">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => onView(t)}
+                        sx={{ 
+                          color: "primary.main",
+                          "&:hover": { bgcolor: "primary.50" }
+                        }}
+                      >
+                        <Visibility fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Vincular / Alterar Clubinho">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => onEditLinks(t)}
+                        sx={{ 
+                          color: "info.main",
+                          "&:hover": { bgcolor: "info.50" }
+                        }}
+                      >
+                        <LinkIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Desvincular Clubinho">
+                      <IconButton 
+                        size="small" 
+                        color="error" 
+                        onClick={() => onClearClub(t.id)}
+                        sx={{ 
+                          "&:hover": { bgcolor: "error.50" }
+                        }}
+                      >
+                        <LinkOffIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
                 </Box>
               </Card>
             </Grid>

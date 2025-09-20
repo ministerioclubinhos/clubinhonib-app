@@ -2,18 +2,20 @@ import React, { useMemo, useState } from "react";
 import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
   Typography, MenuItem, Select, FormControl, InputLabel,
-  Divider, TablePagination, Tooltip, Collapse
+  Divider, TablePagination, Tooltip, Collapse, Paper, Avatar,
+  Slide, ButtonBase, Link
 } from "@mui/material";
 import {
   Visibility, Edit, Delete, SwapVert,
   ExpandMore as ExpandMoreIcon,
-  PhoneIphone, AlternateEmail, AccessTime, WhatsApp
+  PhoneIphone, AlternateEmail, AccessTime, WhatsApp,
+  ContentCopy, Phone as PhoneIcon, Badge
 } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
 import { UserRow } from "../types";
 import { fmtDate } from "@/utils/dates";
 import { UserRole } from "@/store/slices/auth/authSlice";
-import { buildWhatsappLink } from "../utils";
+import { buildWhatsappLink } from "@/utils/whatsapp";
 
 type Props = {
   rows: UserRow[];
@@ -34,6 +36,28 @@ const roleLabels: Record<UserRole, string> = {
   [UserRole.COORDINATOR]: "Coordenador",
   [UserRole.TEACHER]: "Professor",
 };
+
+const initials = (name?: string) =>
+  (name || "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(s => s[0]?.toUpperCase())
+    .join("") || "U";
+
+function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
+  const copyToClipboard = (text?: string) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(String(text)).catch(() => {});
+  };
+  return (
+    <Tooltip title={title}>
+      <IconButton size="small" onClick={() => copyToClipboard(value)}>
+        <ContentCopy fontSize="inherit" />
+      </IconButton>
+    </Tooltip>
+  );
+}
 
 
 
@@ -94,119 +118,312 @@ export default function UsersCards(props: Props) {
         </Tooltip>
       </Stack>
 
-      <Grid container spacing={{ xs: .75, sm: 1 }}>
+      <Grid container spacing={{ xs: 1, sm: 1.25 }}>
         {rows.map((u) => {
           const expanded = open.has(u.id);
           const wa = buildWhatsappLink(u);
 
           return (
-            <Grid item xs={12} key={u.id}>
+            <Grid item xs={12} key={u.id} sx={{ mb: { xs: 0.75, sm: 1 }, pb: { xs: 1, sm: 1.25 } }}>
               <Card
                 variant="outlined"
                 sx={{
                   borderRadius: 3,
                   overflow: "hidden",
-                  transition: "box-shadow .15s ease, transform .15s ease",
-                  "&:hover": { boxShadow: 3, transform: "translateY(-2px)" },
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": { 
+                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)", 
+                    transform: "translateY(-2px)",
+                    "& .user-avatar": {
+                      transform: "scale(1.1)",
+                    }
+                  },
+                  bgcolor: "background.paper",
+                  position: "relative",
+                  maxHeight: !expanded ? { xs: 190, sm: 190 } : "none",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 4,
+                    background: "linear-gradient(90deg, #2196f3 0%, #4caf50 100%)",
+                  }
                 }}
               >
-                <Stack direction="row" alignItems="center" sx={{ px: 1.25, pt: 1, pb: .5 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  sx={{
+                    px: { xs: 1, sm: 1.25 },
+                    pt: 1,
+                    pb: 0.5,
+                    gap: { xs: 0.75, sm: 1 },
+                    mt: 0.5, // Espaço para a barra colorida
+                  }}
+                >
+                  <Avatar
+                    className="user-avatar"
+                    sx={{
+                      width: { xs: 40, sm: 48 }, 
+                      height: { xs: 40, sm: 48 },
+                      bgcolor: roleChipColor(u.role) === "primary" ? "primary.main" : 
+                               roleChipColor(u.role) === "success" ? "success.main" : "grey.500",
+                      color: "white",
+                      fontWeight: 800, 
+                      fontSize: { xs: 14, sm: 16 },
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      flexShrink: 0,
+                    }}
+                    aria-label={`Avatar do usuário ${u.name}`}
+                  >
+                    {initials(u.name)}
+                  </Avatar>
+
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      fontWeight={700} 
+                      noWrap 
+                      title={u.name}
+                      sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+                    >
+                      {u.name || "—"}
+                    </Typography>
                   <Chip
                     size="small"
                     color={roleChipColor(u.role)}
                     label={roleLabels[u.role as UserRole] || "Usuário"}
-                  />
-                  <Box sx={{ flex: 1 }} />
-                  <Tooltip title={expanded ? "Recolher" : "Expandir"}>
-                    <IconButton
-                      size="small"
+                      sx={{ 
+                        fontSize: "0.7rem",
+                        height: 20,
+                        mt: 0.25
+                      }}
+                    />
+                  </Box>
+
+                  <ButtonBase
                       onClick={() => toggle(u.id)}
+                    aria-label={expanded ? "Recolher" : "Expandir"}
                       sx={{
+                      borderRadius: 2,
+                      px: { xs: 0.75, sm: 1 },
+                      py: 0.5,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
                         border: "1px solid",
                         borderColor: "divider",
                         bgcolor: "background.paper",
+                      flexShrink: 0,
                         "&:hover": { bgcolor: "action.hover" },
-                        width: 32, height: 32,
-                        borderRadius: "50%",
-                        transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                        transition: "transform .2s ease",
+                    }}
+                  >
+                    <Typography 
+                      variant="caption" 
+                      color="text.secondary" 
+                      sx={{ 
+                        fontWeight: 600,
+                        display: { xs: "none", sm: "block" }
                       }}
                     >
-                      <ExpandMoreIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                      {expanded ? "Recolher" : "Detalhes"}
+                    </Typography>
+                    <ExpandMoreIcon
+                      fontSize="small"
+                      sx={{ transition: "transform .15s ease", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                    />
+                  </ButtonBase>
                 </Stack>
 
-                <Box sx={{ px: 1.25, pb: .5 }}>
-                  <Typography variant="subtitle1" fontWeight={700} noWrap title={u.name}>
-                    {u.name || "—"}
-                  </Typography>
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    <AlternateEmail sx={{ fontSize: 16, color: "text.secondary" }} />
-                    <Typography variant="body2" color="text.secondary" noWrap title={u.email}>
+                <Box
+                  sx={{
+                    mx: { xs: 1, sm: 1.25 },
+                    mb: 0.5,
+                    p: { xs: 0.75, sm: 1 },
+                    borderRadius: 2,
+                    bgcolor: "grey.50",
+                    border: "1px solid",
+                    borderColor: "grey.200",
+                  }}
+                >
+                  <Stack direction="row" spacing={0.75} alignItems="center">
+                    <AlternateEmail sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography 
+                        variant="body2"
+                        sx={{ 
+                          fontWeight: 600,
+                          color: "text.primary",
+                          whiteSpace: "nowrap", 
+                          overflow: "hidden", 
+                          textOverflow: "ellipsis"
+                        }}
+                        title={u.email}
+                      >
                       {u.email}
                     </Typography>
+                    </Box>
+                    <CopyButton value={u.email} title="Copiar e-mail" />
                   </Stack>
                 </Box>
 
                 {!expanded && (
-                  <Stack direction="row" spacing={.5} alignItems="center" flexWrap="wrap" sx={{ px: 1.25, pb: .75 }}>
-                    <Chip size="small" variant="outlined" label={`Ativo: ${u.active ? "Sim" : "Não"}`} color={u.active ? "success" : "default"} />
-                    <Chip size="small" variant="outlined" label={`Completo: ${u.completed ? "Sim" : "Não"}`} color={u.completed ? "success" : "default"} />
-
-                    {(u.phone || wa) && (
-                      <Stack direction="row" spacing={.5} alignItems="center" sx={{ ml: .25 }}>
-                        <PhoneIphone sx={{ fontSize: 18, color: "text.secondary" }} />
+                  <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: 0.75 }}>
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      alignItems="center"
+                      flexWrap="wrap"
+                      rowGap={0.25}
+                    >
+                      <Chip
+                        size="small"
+                        variant="filled"
+                        label={`Ativo: ${u.active ? "Sim" : "Não"}`}
+                        color={u.active ? "success" : "default"}
+                        sx={{ 
+                          fontWeight: 600, 
+                          fontSize: "0.7rem",
+                          height: 20,
+                          "& .MuiChip-label": { px: 0.5 }
+                        }}
+                      />
+                      <Chip
+                        size="small"
+                        variant="filled"
+                        label={`Completo: ${u.completed ? "Sim" : "Não"}`}
+                        color={u.completed ? "success" : "default"}
+                        sx={{ 
+                          fontWeight: 600, 
+                          fontSize: "0.7rem",
+                          height: 20,
+                          "& .MuiChip-label": { px: 0.5 }
+                        }}
+                      />
+                    </Stack>
+                    <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="space-between" sx={{ mt: 0.5 }}>
                         {u.phone && (
-                          <Typography variant="caption" color="text.secondary" sx={{ display: "flex", alignItems: "center", gap: .25 }}>
-                            <a href={`tel:${u.phone}`} style={{ color: "inherit", textDecoration: "none" }}>
+                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+                          <PhoneIphone sx={{ fontSize: 14, color: "text.secondary" }} />
+                          <Link 
+                            href={`tel:${u.phone}`} 
+                            underline="hover"
+                            sx={{ 
+                              fontSize: "0.75rem",
+                              color: "text.secondary",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis"
+                            }}
+                          >
                               {u.phone}
-                            </a>
-                          </Typography>
-                        )}
+                          </Link>
+                          <CopyButton value={u.phone} title="Copiar telefone" />
                       </Stack>
                     )}
+                      <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            color="success"
+                            component="a"
+                            href={wa || undefined}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            disabled={!wa}
+                            aria-label="abrir WhatsApp"
+                            sx={{ ml: 0.5 }}
+                          >
+                            <WhatsApp fontSize="large" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
                   </Stack>
+                  </Box>
                 )}
 
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
-                  <Divider />
-                  <CardContent sx={{ p: 1.25 }}>
-                    <Grid container spacing={1.25}>
-                      <Grid item xs={12} sm={6}>
-                        <Stack spacing={0.25}>
-                          <Stack direction="row" spacing={0.5} alignItems="center">
-                            <AccessTime fontSize="small" />
-                            <Typography variant="caption" color="text.secondary">Criado em</Typography>
+                <Slide direction="down" in={expanded} timeout={300}>
+                  <Box>
+                    <Divider sx={{ mx: { xs: 1, sm: 1.25 } }} />
+                    <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
+                      <Stack spacing={2}>
+                        {/* Datas */}
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            p: 1.25,
+                            borderRadius: 2,
+                            bgcolor: "grey.50",
+                            border: "1px solid",
+                            borderColor: "grey.200",
+                          }}
+                        >
+                          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
+                            <Chip 
+                              size="small" 
+                              variant="outlined" 
+                              label={`Criado: ${fmtDate(u.createdAt)}`}
+                              color="default"
+                              sx={{ fontWeight: 500 }}
+                            />
+                            <Chip 
+                              size="small" 
+                              variant="outlined" 
+                              label={`Atualizado: ${fmtDate(u.updatedAt)}`}
+                              color="default"
+                              sx={{ fontWeight: 500 }}
+                            />
                           </Stack>
-                          <Typography variant="body2">{fmtDate(String(u.createdAt))}</Typography>
-                        </Stack>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Stack spacing={0.25}>
-                          <Stack direction="row" spacing={0.5} alignItems="center">
-                            <AccessTime fontSize="small" />
-                            <Typography variant="caption" color="text.secondary">Atualizado em</Typography>
-                          </Stack>
-                          <Typography variant="body2">{fmtDate(String(u.updatedAt))}</Typography>
-                        </Stack>
-                      </Grid>
-                      <Grid item xs={12}>
+                        </Paper>
+
+                        {/* Informações adicionais */}
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            p: 1.25,
+                            borderRadius: 2,
+                            bgcolor: "grey.50",
+                            border: "1px solid",
+                            borderColor: "grey.200",
+                          }}
+                        >
                         <Stack direction="row" flexWrap="wrap" spacing={1} rowGap={1}>
                           <Chip
                             size="small"
                             label={`Papel: ${roleLabels[u.role as UserRole] || "Usuário"}`}
                             color={roleChipColor(u.role)}
                             variant="outlined"
-                          />
-                          <Chip size="small" label={`Ativo: ${u.active ? "Sim" : "Não"}`} color={u.active ? "success" : "default"} />
-                          <Chip size="small" label={`Completo: ${u.completed ? "Sim" : "Não"}`} color={u.completed ? "success" : "default"} />
-                          {u.phone && <Chip size="small" label={u.phone} variant="outlined" />}
+                              sx={{ fontWeight: 500 }}
+                            />
+                            <Chip 
+                              size="small" 
+                              label={`Ativo: ${u.active ? "Sim" : "Não"}`} 
+                              color={u.active ? "success" : "default"}
+                              sx={{ fontWeight: 500 }}
+                            />
+                            <Chip 
+                              size="small" 
+                              label={`Completo: ${u.completed ? "Sim" : "Não"}`} 
+                              color={u.completed ? "success" : "default"}
+                              sx={{ fontWeight: 500 }}
+                            />
+                            {u.phone && (
+                              <Chip 
+                                size="small" 
+                                label={u.phone} 
+                                variant="outlined"
+                                sx={{ fontWeight: 500 }}
+                              />
+                            )}
+                          </Stack>
+                        </Paper>
                         </Stack>
-                      </Grid>
-                    </Grid>
                   </CardContent>
-                </Collapse>
+                  </Box>
+                </Slide>
 
                 <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5, px: 1.25, pb: 1 }}>
                   <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
@@ -221,7 +438,7 @@ export default function UsersCards(props: Props) {
                         disabled={!wa}
                         aria-label="abrir WhatsApp"
                       >
-                        <WhatsApp fontSize="small" />
+                        <WhatsApp fontSize="large" />
                       </IconButton>
                     </span>
                   </Tooltip>

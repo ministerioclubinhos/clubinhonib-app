@@ -9,7 +9,7 @@ export interface SectionData {
   description: string;
   mediaItems: MediaItem[];
   createdAt?: Date | string;
-  updatedAt?: Date | string;
+  updatedAt?: Date ;
 }
 
 export interface ImagePageData {

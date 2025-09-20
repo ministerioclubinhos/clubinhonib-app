@@ -14,7 +14,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { TeacherProfile } from "../types";
-import { fmtDate } from "../utils";
+import { fmtDate } from "@/utils/dates";
 
 type Props = {
   open: boolean;

@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-table";
 import { Visibility, Link as LinkIcon } from "@mui/icons-material";
 import type { CoordinatorProfile } from "../types";
-import { fmtDate } from "../utils";
+import { fmtDate } from "@/utils/dates";
 
 type Props = {
   rows: CoordinatorProfile[];
@@ -76,13 +76,13 @@ export default function CoordinatorTable({
       {
         accessorKey: "createdAt",
         header: "Criado em",
-        cell: ({ getValue }) => <>{fmtDate(String(getValue()))}</>,
+        cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
         meta: { width: 170 },
       },
       {
         accessorKey: "updatedAt",
         header: "Atualizado em",
-        cell: ({ getValue }) => <>{fmtDate(String(getValue()))}</>,
+        cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
         meta: { width: 170 },
       },
     ] as ColumnDef<CoordinatorProfile>[]) : []),

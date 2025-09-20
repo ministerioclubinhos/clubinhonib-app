@@ -1,9 +1,9 @@
+import { fmtDate } from "@/utils/dates";
 import {
   Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Stack,
   Button, Paper, Grid
 } from "@mui/material";
 import { CommentData } from "store/slices/comment/commentsSlice";
-import { fmtDateBR } from "../utils";
 
 interface Props { comment: CommentData | null; open: boolean; onClose: () => void; }
 
@@ -43,10 +43,10 @@ export default function CommentDetailsModal({ comment, open, onClose }: Props) {
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body1"><strong>Criado em:</strong> {fmtDateBR(comment.createdAt)}</Typography>
+                    <Typography variant="body1"><strong>Criado em:</strong> {fmtDate(comment.createdAt)}</Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body1"><strong>Atualizado em:</strong> {fmtDateBR(comment.updatedAt)}</Typography>
+                    <Typography variant="body1"><strong>Atualizado em:</strong> {fmtDate(comment.updatedAt)}</Typography>
                   </Grid>
                   {comment.id && (
                     <Grid item xs={12} md={6}>
