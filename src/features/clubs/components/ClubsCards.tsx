@@ -2,13 +2,15 @@ import React, { useMemo, useState } from "react";
 import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
   Typography, MenuItem, Select, FormControl, InputLabel,
-  Divider, TablePagination, Tooltip, Collapse, ButtonBase
+  Divider, TablePagination, Tooltip, Collapse, ButtonBase,
+  Paper, Avatar, Fade, Slide
 } from "@mui/material";
 import {
   Visibility, Edit, Delete, SwapVert,
   ExpandMore as ExpandMoreIcon,
   CalendarMonthOutlined, LocationOnOutlined,
-  SupervisorAccount, Group as GroupIcon, AccessTime as AccessTimeIcon
+  SupervisorAccount, Group as GroupIcon, AccessTime as AccessTimeIcon,
+  Phone as PhoneIcon, WhatsApp, ContentCopy
 } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
 import { ClubResponseDto, WEEKDAYS } from "../types";
@@ -37,6 +39,28 @@ const fmtDateOnly = (iso?: string | null) => {
   if (isNaN(+d)) return "—";
   return d.toLocaleDateString("pt-BR");
 };
+
+const initials = (name?: string) =>
+  (name || "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(s => s[0]?.toUpperCase())
+    .join("") || "C";
+
+function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
+  const copyToClipboard = (text?: string) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(String(text)).catch(() => {});
+  };
+  return (
+    <Tooltip title={title}>
+      <IconButton size="small" onClick={() => copyToClipboard(value)}>
+        <ContentCopy fontSize="inherit" />
+      </IconButton>
+    </Tooltip>
+  );
+}
 
 export default function ClubsCards(props: Props) {
   const { isAdmin, rows, total, pageIndex, pageSize, setPageIndex, setPageSize, sorting, setSorting, onOpenView, onStartEdit, onAskDelete } = props;
@@ -104,57 +128,105 @@ export default function ClubsCards(props: Props) {
                 sx={{
                   borderRadius: 3,
                   overflow: "hidden",
-                  transition: "box-shadow .12s ease, transform .12s ease",
-                  "&:hover": { boxShadow: 3, transform: "translateY(-1px)" },
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": { 
+                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)", 
+                    transform: "translateY(-2px)",
+                    "& .club-avatar": {
+                      transform: "scale(1.1)",
+                    }
+                  },
                   bgcolor: "background.paper",
+                  position: "relative",
+                  maxHeight: !expanded ? { xs: 120, sm: 140 } : "none",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 4,
+                    background: "linear-gradient(90deg, #4caf50 0%, #2196f3 100%)",
+                  }
                 }}
               >
                 <Stack
                   direction="row"
                   alignItems="center"
                   sx={{
-                    px: { xs: 1.25, sm: 1.5 },
-                    pt: 1.25,
-                    pb: 0.75,
-                    gap: 1.25,
+                    px: { xs: 1, sm: 1.25 },
+                    pt: 1,
+                    pb: 0.5,
+                    gap: { xs: 0.75, sm: 1 },
+                    mt: 0.5, // Espaço para a barra colorida
                   }}
                 >
-                  <Box
+                  <Avatar
+                    className="club-avatar"
                     sx={{
-                      width: 38, height: 38, borderRadius: "50%",
-                      bgcolor: "primary.main", color: "primary.contrastText",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontWeight: 800, fontSize: 14, boxShadow: 1, flex: "0 0 auto",
+                      width: { xs: 40, sm: 48 }, 
+                      height: { xs: 40, sm: 48 },
+                      bgcolor: "success.main", 
+                      color: "success.contrastText",
+                      fontWeight: 800, 
+                      fontSize: { xs: 14, sm: 16 },
+                      boxShadow: "0 4px 12px rgba(76, 175, 80, 0.3)",
+                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      flexShrink: 0,
                     }}
                     aria-label={`Clubinho número ${c.number}`}
                   >
                     {c.number}
-                  </Box>
+                  </Avatar>
 
-                  <Stack direction="row" spacing={0.75} alignItems="center">
-                    <CalendarMonthOutlined sx={{ fontSize: 18, color: "text.secondary" }} />
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                  <Stack 
+                    direction="row" 
+                    spacing={0.5} 
+                    alignItems="center"
+                    sx={{ minWidth: 0, flex: 1 }}
+                  >
+                    <CalendarMonthOutlined sx={{ fontSize: 16, color: "text.secondary", flexShrink: 0 }} />
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary" 
+                      sx={{ 
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis"
+                      }}
+                    >
                       {weekdayLabel(c.weekday)}
                     </Typography>
                   </Stack>
 
                   {c.time && (
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <AccessTimeIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    <Stack 
+                      direction="row" 
+                      spacing={0.5} 
+                      alignItems="center"
+                      sx={{ minWidth: 0, flexShrink: 0 }}
+                    >
+                      <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ 
+                          fontWeight: 600,
+                          whiteSpace: "nowrap"
+                        }}
+                      >
                         {c.time}
                       </Typography>
                     </Stack>
                   )}
-
-                  <Box sx={{ flex: 1 }} />
 
                   <ButtonBase
                     onClick={() => toggle(c.id)}
                     aria-label={expanded ? "Recolher" : "Expandir"}
                     sx={{
                       borderRadius: 2,
-                      px: 1.25,
+                      px: { xs: 0.75, sm: 1 },
                       py: 0.5,
                       display: "flex",
                       alignItems: "center",
@@ -162,10 +234,18 @@ export default function ClubsCards(props: Props) {
                       border: "1px solid",
                       borderColor: "divider",
                       bgcolor: "background.paper",
+                      flexShrink: 0,
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    <Typography 
+                      variant="caption" 
+                      color="text.secondary" 
+                      sx={{ 
+                        fontWeight: 600,
+                        display: { xs: "none", sm: "block" }
+                      }}
+                    >
                       {expanded ? "Recolher" : "Detalhes"}
                     </Typography>
                     <ExpandMoreIcon
@@ -175,151 +255,297 @@ export default function ClubsCards(props: Props) {
                   </ButtonBase>
                 </Stack>
 
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                  sx={{ px: { xs: 1.25, sm: 1.5 }, pb: 1 }}
+                <Box
+                  sx={{
+                    mx: { xs: 1, sm: 1.25 },
+                    mb: 0.5,
+                    p: { xs: 0.75, sm: 1 },
+                    borderRadius: 2,
+                    bgcolor: "grey.50",
+                    border: "1px solid",
+                    borderColor: "grey.200",
+                  }}
                 >
-                  <SupervisorAccount sx={{ fontSize: 18, color: "text.secondary" }} />
-                  <Typography variant="caption" color="text.secondary" sx={{ minWidth: 90 }}>
-                    Coord.
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 600 }}
-                    title={coordName}
-                  >
-                    {coordName}
-                  </Typography>
-                </Stack>
-
-                {!expanded && (
                   <Stack
                     direction="row"
-                    spacing={1}
+                    spacing={0.75}
                     alignItems="center"
-                    flexWrap="wrap"
-                    sx={{ px: { xs: 1.25, sm: 1.5 }, pb: 1.25 }}
                   >
-                    <Chip
-                      size="small"
-                      variant="outlined"
-                      icon={<GroupIcon sx={{ fontSize: 16 }} />}
-                      label={`Profs: ${teachers.length || 0}`}
-                      sx={{ fontWeight: 700 }}
-                    />
-                    {c.time && (
+                    <SupervisorAccount sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography 
+                        variant="body2"
+                        sx={{ 
+                          fontWeight: 600,
+                          color: "text.primary",
+                          whiteSpace: "nowrap", 
+                          overflow: "hidden", 
+                          textOverflow: "ellipsis"
+                        }}
+                        title={coordName}
+                      >
+                        {coordName}
+                      </Typography>
+                    </Box>
+                    {c.coordinator?.user?.phone && (
+                      <Stack direction="row" spacing={0.25}>
+                        <Tooltip title="Ligar">
+                          <IconButton size="small" href={`tel:${c.coordinator.user.phone}`} sx={{ p: 0.5 }}>
+                            <PhoneIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <CopyButton value={c.coordinator.user.phone} title="Copiar telefone" />
+                      </Stack>
+                    )}
+                  </Stack>
+                </Box>
+
+                {!expanded && (
+                  <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: 0.75 }}>
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      alignItems="center"
+                      flexWrap="wrap"
+                      rowGap={0.25}
+                    >
+                      <Chip
+                        size="small"
+                        variant="filled"
+                        icon={<GroupIcon sx={{ fontSize: 12 }} />}
+                        label={`${teachers.length || 0}`}
+                        color="info"
+                        sx={{ 
+                          fontWeight: 600, 
+                          fontSize: "0.7rem",
+                          height: 20,
+                          "& .MuiChip-label": { px: 0.5 }
+                        }}
+                      />
+                      {c.time && (
+                        <Chip
+                          size="small"
+                          variant="filled"
+                          icon={<AccessTimeIcon sx={{ fontSize: 12 }} />}
+                          label={c.time}
+                          color="success"
+                          sx={{ 
+                            fontWeight: 600, 
+                            fontSize: "0.7rem",
+                            height: 20,
+                            "& .MuiChip-label": { px: 0.5 }
+                          }}
+                        />
+                      )}
                       <Chip
                         size="small"
                         variant="outlined"
-                        icon={<AccessTimeIcon sx={{ fontSize: 16 }} />}
-                        label={c.time}
+                        icon={<CalendarMonthOutlined sx={{ fontSize: 12 }} />}
+                        label={weekdayLabel(c.weekday)}
+                        sx={{ 
+                          fontWeight: 600, 
+                          fontSize: "0.7rem",
+                          height: 20,
+                          "& .MuiChip-label": { px: 0.5 }
+                        }}
                       />
-                    )}
-                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 0.25 }}>
-                      <LocationOnOutlined sx={{ fontSize: 18, color: "text.secondary" }} />
-                      <Typography variant="caption" color="text.secondary">
+                    </Stack>
+                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
+                      <LocationOnOutlined sx={{ fontSize: 14, color: "text.secondary" }} />
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary" 
+                        sx={{ 
+                          fontWeight: 500,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis"
+                        }}
+                      >
                         {addrPreview}
                       </Typography>
                     </Stack>
-                  </Stack>
+                  </Box>
                 )}
 
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
-                  <Divider sx={{ my: 0.25 }} />
-                  <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
-                    <Grid container spacing={{ xs: 1, sm: 1.5 }}>
-                      <Grid item xs={12}>
-                        <Stack spacing={0.75}>
-                          <Stack direction="row" spacing={0.75} alignItems="center">
-                            <GroupIcon fontSize="small" />
-                            <Typography variant="caption" color="text.secondary">Professores</Typography>
+                <Slide direction="down" in={expanded} timeout={300}>
+                  <Box>
+                    <Divider sx={{ mx: { xs: 1.5, sm: 2 } }} />
+                    <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                      <Stack spacing={2}>
+                        {/* Professores */}
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            p: 1.5,
+                            borderRadius: 2,
+                            bgcolor: "grey.50",
+                            border: "1px solid",
+                            borderColor: "grey.200",
+                          }}
+                        >
+                          <Stack spacing={1}>
+                            <Stack direction="row" spacing={0.75} alignItems="center">
+                              <GroupIcon fontSize="small" color="primary" />
+                              <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
+                                Professores ({teachers.length})
+                              </Typography>
+                            </Stack>
+
+                            {teachers.length ? (
+                              <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+                                {teachers.map((t) => (
+                                  <Chip
+                                    key={t.id}
+                                    size="small"
+                                    label={t.user?.name || t.user?.email || t.id}
+                                    variant="outlined"
+                                    color="primary"
+                                    sx={{ fontWeight: 500 }}
+                                  />
+                                ))}
+                              </Box>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                Nenhum professor vinculado.
+                              </Typography>
+                            )}
                           </Stack>
+                        </Paper>
 
-                          {teachers.length ? (
-                            <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
-                              {teachers.map((t) => (
-                                <Chip
-                                  key={t.id}
-                                  size="small"
-                                  label={t.user?.name || t.user?.email || t.id}
-                                  variant="outlined"
-                                />
-                              ))}
-                            </Box>
-                          ) : (
-                            <Typography variant="body2">Nenhum professor vinculado.</Typography>
-                          )}
-                        </Stack>
-                      </Grid>
-
-                      {c.address && (
-                        <>
-                          <Grid item xs={12}><Divider light sx={{ my: 0.5 }} /></Grid>
-                          <Grid item xs={12}>
-                            <Stack spacing={0.5}>
+                        {/* Endereço */}
+                        {c.address && (
+                          <Paper
+                            variant="outlined"
+                            sx={{
+                              p: 1.5,
+                              borderRadius: 2,
+                              bgcolor: "grey.50",
+                              border: "1px solid",
+                              borderColor: "grey.200",
+                            }}
+                          >
+                            <Stack spacing={1}>
                               <Stack direction="row" spacing={0.75} alignItems="center">
-                                <LocationOnOutlined fontSize="small" />
-                                <Typography variant="caption" color="text.secondary">Endereço</Typography>
+                                <LocationOnOutlined fontSize="small" color="primary" />
+                                <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
+                                  Endereço
+                                </Typography>
                               </Stack>
 
-                              <Typography variant="body2" sx={{ lineHeight: 1.35 }}>
-                                {c.address.street}{c.address.number ? `, ${c.address.number}` : ""} — {c.address.district}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.35 }}>
-                                {c.address.city} / {c.address.state}
-                                {c.address.postalCode ? ` — CEP ${c.address.postalCode}` : ""}
-                              </Typography>
-                              {c.address.complement && (
-                                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.35 }}>
-                                  Compl.: {c.address.complement}
+                              <Stack spacing={0.5}>
+                                <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4 }}>
+                                  {c.address.street}{c.address.number ? `, ${c.address.number}` : ""}
                                 </Typography>
-                              )}
+                                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+                                  {c.address.district} • {c.address.city} / {c.address.state}
+                                </Typography>
+                                {c.address.postalCode && (
+                                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+                                    CEP: {c.address.postalCode}
+                                  </Typography>
+                                )}
+                                {c.address.complement && (
+                                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+                                    Complemento: {c.address.complement}
+                                  </Typography>
+                                )}
+                              </Stack>
                             </Stack>
-                          </Grid>
-                        </>
-                      )}
+                          </Paper>
+                        )}
 
-                      <Grid item xs={12}>
-                        <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-                          <Chip size="small" variant="outlined" label={`Criado: ${fmtDateOnly(c.createdAt)}`} />
-                          <Chip size="small" variant="outlined" label={`Atualizado: ${fmtDateOnly(c.updatedAt)}`} />
-                          <Chip size="small" variant="outlined" label={`Dia do Clubinho: ${weekdayLabel(c.weekday)}`} />
-                          <Chip size="small" variant="outlined" label={`Horário: ${c.time || "—"}`} />
-                        </Stack>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                </Collapse>
+                        {/* Informações adicionais */}
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            p: 1.5,
+                            borderRadius: 2,
+                            bgcolor: "grey.50",
+                            border: "1px solid",
+                            borderColor: "grey.200",
+                          }}
+                        >
+                          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
+                            <Chip 
+                              size="small" 
+                              variant="outlined" 
+                              label={`Criado: ${fmtDateOnly(c.createdAt)}`}
+                              color="default"
+                              sx={{ fontWeight: 500 }}
+                            />
+                            <Chip 
+                              size="small" 
+                              variant="outlined" 
+                              label={`Atualizado: ${fmtDateOnly(c.updatedAt)}`}
+                              color="default"
+                              sx={{ fontWeight: 500 }}
+                            />
+                          </Stack>
+                        </Paper>
+                      </Stack>
+                    </CardContent>
+                  </Box>
+                </Slide>
 
                 <Box
                   sx={{
                     display: "flex",
-                    justifyContent: "flex-end",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                     gap: 0.75,
-                    px: { xs: 1.25, sm: 1.5 },
-                    pb: 1.25,
-                    pt: 0.25,
+                    px: { xs: 1, sm: 1.25 },
+                    pb: { xs: 0.75, sm: 1 },
+                    pt: 0.75,
+                    bgcolor: "grey.50",
+                    borderTop: "1px solid",
+                    borderColor: "grey.200",
                   }}
                 >
-                  <Tooltip title="Visualizar">
-                    <IconButton size="small" onClick={() => onOpenView(c)}>
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Editar">
-                    <IconButton size="small" onClick={() => onStartEdit(c)}>
-                      <Edit fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  {isAdmin && (
-                    <Tooltip title="Excluir">
-                      <IconButton size="small" color="error" onClick={() => onAskDelete(c)}>
-                        <Delete fontSize="small" />
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    Clubinho #{c.number}
+                  </Typography>
+                  
+                  <Stack direction="row" spacing={0.5}>
+                    <Tooltip title="Visualizar detalhes">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => onOpenView(c)}
+                        sx={{ 
+                          color: "primary.main",
+                          "&:hover": { bgcolor: "primary.50" }
+                        }}
+                      >
+                        <Visibility fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                  )}
+                    <Tooltip title="Editar clubinho">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => onStartEdit(c)}
+                        sx={{ 
+                          color: "info.main",
+                          "&:hover": { bgcolor: "info.50" }
+                        }}
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    {isAdmin && (
+                      <Tooltip title="Excluir clubinho">
+                        <IconButton 
+                          size="small" 
+                          color="error" 
+                          onClick={() => onAskDelete(c)}
+                          sx={{ 
+                            "&:hover": { bgcolor: "error.50" }
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Stack>
                 </Box>
               </Card>
             </Grid>

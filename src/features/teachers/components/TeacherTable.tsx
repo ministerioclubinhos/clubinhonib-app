@@ -7,7 +7,7 @@ import {
 import { ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, SortingState, useReactTable } from "@tanstack/react-table";
 import { Visibility, Link as LinkIcon, LinkOff } from "@mui/icons-material";
 import { TeacherProfile } from "../types";
-import { fmtDate } from "../utils";
+import { fmtDate } from "@/utils/dates";
 import { useSelector } from "react-redux";
 import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
@@ -67,13 +67,13 @@ export default function TeacherTable({
       {
         accessorKey: "createdAt",
         header: "Criado em",
-        cell: ({ getValue }) => <>{fmtDate(String(getValue()))}</>,
+        cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
         meta: { width: 170 },
       },
       {
         accessorKey: "updatedAt",
         header: "Atualizado em",
-        cell: ({ getValue }) => <>{fmtDate(String(getValue()))}</>,
+        cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
         meta: { width: 170 },
       },
     ] as ColumnDef<TeacherProfile>[]) : []),

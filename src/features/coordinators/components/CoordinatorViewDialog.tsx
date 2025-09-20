@@ -1,8 +1,8 @@
 import React from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider, Chip, Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { CoordinatorProfile } from "../types";
-import { fmtDate } from "../utils";
 import CircularProgress from "@mui/material/CircularProgress";
+import { fmtDate } from "@/utils/dates";
 
 type Props = {
   open: boolean;

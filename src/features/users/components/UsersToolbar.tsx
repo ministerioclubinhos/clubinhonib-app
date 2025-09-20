@@ -83,46 +83,45 @@ export default function UsersToolbar({
           </FormControl>
         </Grid>
 
-<Grid item xs={12} md={3}>
-  <Box
-    sx={{
-      display: "flex",
-      flexDirection: { xs: "column", md: "row" }, 
-      gap: { xs: 1, md: 3 },
-      alignItems: { xs: "flex-start", md: "center" },
-    }}
-  >
-    <Tooltip title="Exibe apenas usuários que estão ativos no sistema">
-      <FormControlLabel
-        control={
-          <Switch
-            checked={filters.onlyActive}
-            onChange={(e) =>
-              onChange((p) => ({ ...p, onlyActive: e.target.checked }))
-            }
-          />
-        }
-        label="Apenas ativos"
-      />
-    </Tooltip>
+        <Grid item xs={12} md={3}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              gap: { xs: 1, md: 3 },
+              alignItems: { xs: "flex-start", md: "center" },
+            }}
+          >
+            <Tooltip title="Exibe apenas usuários que estão ativos no sistema">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={filters.onlyActive}
+                    onChange={(e) =>
+                      onChange((p) => ({ ...p, onlyActive: e.target.checked }))
+                    }
+                  />
+                }
+                label="Apenas ativos"
+              />
+            </Tooltip>
 
-    <Tooltip title="Exibe apenas usuários que concluíram o cadastro">
-      <FormControlLabel
-        control={
-          <Switch
-            checked={filters.onlyCompleted}
-            onChange={(e) =>
-              onChange((p) => ({ ...p, onlyCompleted: e.target.checked }))
-            }
-          />
-        }
-        label="Apenas completos"
-      />
-    </Tooltip>
-  </Box>
-</Grid>
-
-
+            <Tooltip title="Exibe apenas usuários que concluíram o cadastro">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={filters.onlyCompleted}
+                    onChange={(e) =>
+                      onChange((p) => ({ ...p, onlyCompleted: e.target.checked }))
+                    }
+                  />
+                }
+                label="Apenas completos"
+              />
+            </Tooltip>
+          </Box>
+        </Grid>
+        
         <Grid item xs={12} md={2}>
           {isXs ? (
             <>

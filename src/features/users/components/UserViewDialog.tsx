@@ -29,9 +29,10 @@ import {
   ContentCopy,
   Phone as PhoneIcon,
 } from "@mui/icons-material";
-import { UserRow } from "../types";
-import { buildWhatsappLink, fmtDate, SENSITIVE_KEYS } from "../utils";
+import { SENSITIVE_KEYS, UserRow } from "../types";
 import { UserRole } from "@/store/slices/auth/authSlice";
+import { buildWhatsappLink } from "@/utils/whatsapp";
+import { fmtDate } from "@/utils/dates";
 
 type Props = { open: boolean; user: UserRow | null; onClose: () => void };
 

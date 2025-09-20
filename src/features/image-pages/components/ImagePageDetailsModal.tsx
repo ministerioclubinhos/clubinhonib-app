@@ -7,7 +7,8 @@ import {
 import { Close, ContentCopy } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { ImagePageData } from 'store/slices/image/imageSlice';
-import { copyToClipboard, fmtDate } from '../utils';
+import { copyToClipboard } from '../utils';
+import { fmtDate } from '@/utils/dates';
 
 type Props = {
   page: ImagePageData | null;
@@ -121,10 +122,10 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
                               <strong>Visibilidade:</strong> {section.public ? 'Pública' : 'Privada'}
                             </Typography>
                             <Typography variant="body1" sx={{ color: '#333' }}>
-                              <strong>Criado em:</strong> {fmtDate(section.createdAt)}
+                            <strong>Criado em:</strong> {fmtDate(section.createdAt)}
                             </Typography>
                             <Typography variant="body1" sx={{ color: '#333' }}>
-                              <strong>Atualizado em:</strong> {fmtDate(section.updatedAt)}
+                            <strong>Atualizado em:</strong> {fmtDate(section.updatedAt)}
                             </Typography>
                           </Stack>
 

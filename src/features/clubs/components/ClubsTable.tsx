@@ -11,7 +11,7 @@ import { Visibility, Edit, Delete, AccessTime } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import { ClubResponseDto, WEEKDAYS } from "../types";
-import { fmtDate } from "../utils";
+import { fmtDate } from "@/utils/dates";
 import ClubsCards from "./ClubsCards";
 
 type Props = {

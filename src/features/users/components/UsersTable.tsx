@@ -31,7 +31,7 @@ import { UserRow } from "../types";
 import { fmtDate } from "@/utils/dates";
 import { UserRole } from "@/store/slices/auth/authSlice";
 import UsersCards from "./UsersCards";
-import { buildWhatsappLink } from "../utils";
+import { buildWhatsappLink } from "@/utils/whatsapp";
 
 type Props = {
   rows: UserRow[];
@@ -149,13 +149,13 @@ function UsersTableDesktop({
             {
               accessorKey: "createdAt",
               header: "Criado em",
-              cell: ({ getValue }) => <>{fmtDate(String(getValue()))}</>,
+              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
               meta: { width: 170 },
             },
             {
               accessorKey: "updatedAt",
               header: "Atualizado em",
-              cell: ({ getValue }) => <>{fmtDate(String(getValue()))}</>,
+              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
               meta: { width: 170 },
             },
           ] as ColumnDef<UserRow>[])
