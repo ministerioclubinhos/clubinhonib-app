@@ -138,7 +138,7 @@ export default function ClubsCards(props: Props) {
                   },
                   bgcolor: "background.paper",
                   position: "relative",
-                  maxHeight: !expanded ? { xs: 120, sm: 140 } : "none",
+                  maxHeight: !expanded ? { xs: 160, sm: 140 } : "none",
                   "&::before": {
                     content: '""',
                     position: "absolute",
