@@ -129,6 +129,7 @@ export default function ChildrenBrowserPage() {
       sx={{
         px: { xs: 2, md: 4 },
         pt: { xs: 2, md: 4 },
+        pb: { xs: 2, md: 4 },
         minHeight: "100vh",
         bgcolor: "#f6f7f9"
       }}
