@@ -211,7 +211,7 @@ export function IdeasMaterialImages({ images, setImages }: ImagesProps) {
 
       <Grid container spacing={2} sx={{ mt: 3 }}>
         {images.map((img, index) => (
-          <Grid item xs={12} sm={6} key={index}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
             <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 2 }}>
               <Typography fontWeight="bold">{img.title}</Typography>
               <Typography variant="body2">{img.description}</Typography>

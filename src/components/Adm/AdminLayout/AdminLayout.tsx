@@ -81,6 +81,7 @@ function AdminLayout() {
           { label: "Materiais semanais", to: "/adm/paginas-materiais-semanais", icon: <EventNote /> },
           { label: "Páginas de fotos", to: "/adm/paginas-fotos", icon: <PhotoLibrary /> },
           { label: "Fotos dos clubinhos", to: "/adm/fotos-clubinhos", icon: <Collections /> },
+          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <Lightbulb /> },
           { label: "Páginas de vídeos", to: "/adm/paginas-videos", icon: <VideoLibrary /> },
           { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
         ],
