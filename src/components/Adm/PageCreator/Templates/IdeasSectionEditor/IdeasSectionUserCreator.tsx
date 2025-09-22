@@ -61,6 +61,25 @@ export function IdeasSectionUserCreator() {
       return;
     }
 
+    const validMedias = sectionData.medias.filter(media => {
+      if (media.uploadType === 'upload') {
+        return media.file && media.title.trim();
+      }
+      if (media.uploadType === 'link') {
+        return media.url && media.title.trim();
+      }
+      return false;
+    });
+
+    if (validMedias.length === 0) {
+      setSnackbar({
+        open: true,
+        message: 'Por favor, adicione pelo menos uma mídia (vídeo, imagem ou documento) para sua ideia',
+        severity: 'error',
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const formData = new FormData();
@@ -283,16 +302,45 @@ export function IdeasSectionUserCreator() {
 
           <Box sx={{
             display: 'flex',
-            justifyContent: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
             mt: 4,
             pt: 3,
             borderTop: '1px solid',
             borderColor: 'divider',
+            gap: 2,
           }}>
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              p: 2,
+              borderRadius: 2,
+              bgcolor: sectionData.medias.length > 0 ? 'success.50' : 'warning.50',
+              border: `1px solid ${sectionData.medias.length > 0 ? 'success.main' : 'warning.main'}`,
+              width: '100%',
+              maxWidth: 400,
+            }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: sectionData.medias.length > 0 ? 'success.main' : 'warning.main',
+                  fontWeight: 600,
+                  textAlign: 'center',
+                  flex: 1,
+                }}
+              >
+                {sectionData.medias.length > 0 
+                  ? `✅ ${sectionData.medias.length} mídia(s) adicionada(s)`
+                  : '⚠️ Adicione pelo menos uma mídia (vídeo, imagem ou documento)'
+                }
+              </Typography>
+            </Box>
+
             <Button
               variant="contained"
               onClick={handleShareIdea}
-              disabled={loading || !sectionData.title.trim() || !sectionData.description.trim()}
+              disabled={loading || !sectionData.title.trim() || !sectionData.description.trim() || sectionData.medias.length === 0}
               startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
               sx={{
                 px: { xs: 4, md: 6 },
@@ -315,6 +363,7 @@ export function IdeasSectionUserCreator() {
                 transition: 'all 0.3s ease',
                 width: { xs: '95%', md: 'auto' },
                 maxWidth: { xs: '300px', md: 'none' },
+                opacity: sectionData.medias.length === 0 ? 0.6 : 1,
               }}
             >
               {loading ? 'Compartilhando...' : '🚀 Compartilhar Ideia'}
