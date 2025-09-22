@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { RootState } from 'store/slices';
 import { MediaTargetType } from 'store/slices/types';
-import ButtonSection from './FofinhoButton';
+import { FofinhoButton } from '../Buttons';
 
 
 const WeekMaterialsList = () => {
@@ -99,7 +99,7 @@ const WeekMaterialsList = () => {
                         height: { xs: 48, md: 56 },
                     }}
                 />
-                <ButtonSection references={['teacherArea']} />
+                <FofinhoButton references={['teacherArea']} />
 
             </Box>
 

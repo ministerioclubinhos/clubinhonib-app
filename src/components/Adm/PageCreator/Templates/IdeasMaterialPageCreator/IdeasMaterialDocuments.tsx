@@ -20,6 +20,8 @@ import {
 import { Delete, Edit, Visibility } from '@mui/icons-material';
 import { validateMediaURL } from 'utils/validateMediaURL';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
+import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
+import { getMediaPreviewUrl } from 'utils/getMediaPreviewUrl';
 
 interface DocumentsProps {
   documents: MediaItem[];
@@ -40,6 +42,8 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
   const [errors, setErrors] = useState({ title: false, description: false, url: false });
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [openPreviewModal, setOpenPreviewModal] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState<MediaItem | null>(null);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,6 +111,21 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
       setItemToDelete(null);
     }
     setOpenDeleteDialog(false);
+  };
+
+  const handlePreview = (document: MediaItem) => {
+    setPreviewDocument(document);
+    setOpenPreviewModal(true);
+  };
+
+  const canPreview = (document: MediaItem): boolean => {
+    if (document.uploadType === MediaUploadType.UPLOAD || document.isLocalFile) {
+      return true;
+    }
+    if (document.uploadType === MediaUploadType.LINK) {
+      return document.platformType === MediaPlatform.GOOGLE_DRIVE;
+    }
+    return false;
   };
 
   return (
@@ -209,16 +228,55 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
         </Grid>
       </Grid>
 
-      <Grid container spacing={2} sx={{ mt: 3 }}>
+      <Grid container spacing={3} sx={{ mt: 3 }}>
         {documents.map((doc, index) => (
-          <Grid item xs={12} sm={6} key={index}>
-            <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 2 }}>
-              <Typography fontWeight="bold">{doc.title}</Typography>
-              <Typography variant="body2">{doc.description}</Typography>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                {doc.uploadType === MediaUploadType.UPLOAD && (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+            <Box sx={{ 
+              p: 3, 
+              border: '1px solid', 
+              borderColor: 'divider',
+              borderRadius: '16px',
+              bgcolor: 'background.paper',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                transform: 'translateY(-2px)',
+              },
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                <Box sx={{ 
+                  p: 1.5, 
+                  bgcolor: 'primary.light', 
+                  borderRadius: '12px',
+                  mr: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: '48px',
+                  height: '48px',
+                }}>
+                  <Typography sx={{ fontSize: '1.2rem' }}>📄</Typography>
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography fontWeight="bold" sx={{ mb: 1, fontSize: '1.1rem' }}>
+                    {doc.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ 
+                    mb: 1,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}>
+                    {doc.description}
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                {canPreview(doc) && (
                   <Tooltip title="Visualizar">
-                    <IconButton onClick={() => window.open(doc.url, '_blank')}>
+                    <IconButton onClick={() => handlePreview(doc)}>
                       <Visibility />
                     </IconButton>
                   </Tooltip>
@@ -253,6 +311,16 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
           </Button>
         </DialogActions>
       </Dialog>
+
+      <MediaDocumentPreviewModal
+        open={openPreviewModal}
+        onClose={() => {
+          setOpenPreviewModal(false);
+          setPreviewDocument(null);
+        }}
+        media={previewDocument}
+        title={previewDocument?.title}
+      />
     </Box>
   );
 }

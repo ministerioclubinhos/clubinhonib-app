@@ -16,7 +16,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-import { AddImageModal } from './AddImageModal';
+import { AddImageModal } from '../components/Modals';
 import { SectionData } from '@/store/slices/image-section/imageSectionSlice';
 import { MediaItem } from '@/store/slices/types';
 

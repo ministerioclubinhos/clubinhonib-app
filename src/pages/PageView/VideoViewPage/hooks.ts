@@ -14,6 +14,12 @@ export const useVideoPage = (idToFetch: string) => {
     const [isDeleting, setIsDeleting] = useState(false);
 
     const load = useCallback(async () => {
+        if (!idToFetch) {
+            setError("ID da página de vídeos não fornecido.");
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
             setError(null);
@@ -21,7 +27,7 @@ export const useVideoPage = (idToFetch: string) => {
             const data = toVideoPageData(dto);
             dispatch(setVideoData(data));
         } catch (e) {
-            console.error(e);
+            console.error("Erro ao carregar página de vídeos:", e);
             setError("Erro ao carregar a página de vídeos. Tente novamente mais tarde.");
         } finally {
             setLoading(false);

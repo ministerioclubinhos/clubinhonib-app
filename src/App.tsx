@@ -17,7 +17,7 @@ import Contact from './pages/Contact/Contact';
 import Event from './pages/Event/Event';
 import Login from './pages/Login/Login';
 import TeacherArea from './pages/TeacherArea/TeacherArea';
-import PageGalleryView from './pages/PageView/ImagePageView/ImagePageView';
+import ClubinhoFeedView from './pages/PageView/ClubinhoFeedView/ClubinhoFeedView';
 
 import MeditationPageCreator from './components/Adm/PageCreator/Templates/MeditationPageCreator/MeditationPageCreator';
 import ImagePageCreator from './components/Adm/PageCreator/Templates/ImagePageCreator/ImagePageCreator';
@@ -35,9 +35,9 @@ import type { RouteData as DynamicRouteType } from './store/slices/route/routeSl
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
 
 import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
-import WeekMaterialsList from 'pages/TeacherArea/WeekMaterialsList';
+import { WeekMaterialsList } from './pages/TeacherArea/components';
 import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
-import SiteFeedbackForm from './pages/TeacherArea/SiteFeedbackForm';
+import { SiteFeedbackForm } from './pages/TeacherArea/components';
 
 import CoordinatorProfilesManager from './features/coordinators/CoordinatorProfilesManager';
 import TeacherProfilesManager from './features/teachers/TeacherProfilesManager';
@@ -55,6 +55,8 @@ import UsersManager from './features/users/UsersManager';
 import InformativeBannerLManager from './features/informatives/InformativeBannerLManager';
 import ImageSectionManager from './features/image-sections/ImageSectionManager';
 import ImagePageManager from './features/image-pages/ImagePageManager';
+import IdeasSectionManager from './features/ideas-sections/IdeasSectionManager';
+import IdeasSectionPage from './pages/TeacherArea/IdeasSection/IdeasSectionPage';
 import DocumentsManager from './features/documents/DocumentsManager';
 import IdeasManager from './features/ideas-pages/IdeasManager';
 import VideosManager from './features/video-pages/VideosManager';
@@ -100,7 +102,7 @@ function App() {
               <Route path="/sobre" element={<About />} />
               <Route path="/contato" element={<Contact />} />
               <Route path="/eventos" element={<Event />} />
-              <Route path="/feed-clubinho" element={<PageGalleryView feed />} />
+              <Route path="/feed-clubinho" element={<ClubinhoFeedView feed />} />
               <Route path="/login" element={<Login />} />
               <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
               <Route path="/cadastrar" element={<Register commonUser />} />
@@ -113,6 +115,7 @@ function App() {
                 <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
                 <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
                 <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
+                <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
               </Route>
 
               <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>
@@ -143,6 +146,8 @@ function App() {
                   <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
                   <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
                   <Route path="editar-imagens-clubinho" element={<ImageSectionPage isEditMode />} />
+                  <Route path="ideias-compartilhadas" element={<IdeasSectionManager  />} />
+                  <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage  />} />
                 </Route>
               </Route>
 

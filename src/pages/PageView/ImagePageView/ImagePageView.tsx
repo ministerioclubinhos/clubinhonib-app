@@ -11,23 +11,28 @@ import {
   Skeleton,
   Paper,
   Grid,
+  IconButton,
+  useTheme,
+  useMediaQuery,
+  Chip,
+  Stack,
 } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '@/config/axiosConfig';
 import { RootState, AppDispatch } from '@/store/slices';
 import { fetchRoutes } from '@/store/slices/route/routeSlice';
 import { UserRole } from 'store/slices/auth/authSlice';
 import SectionImagePageView from './SectionImagePageView';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ButtonSection from './../../TeacherArea/FofinhoButton';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import { FofinhoButton } from './../../TeacherArea/components';
 import {
   setSectionData,
   appendSections,
   updatePagination,
   PaginatedSectionResponse,
 } from '@/store/slices/image-section-pagination/imageSectionPaginationSlice';
-import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 interface PageSectionProps {
   idToFetch?: string;
@@ -35,38 +40,88 @@ interface PageSectionProps {
 }
 
 function SectionSkeleton() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   return (
-    <Paper
-      elevation={2}
-      sx={{
-        p: { xs: 2, sm: 4 },
-        mt: { xs: 1, sm: 1 },
-        mb: { xs: 2, sm: 6 },
-        borderRadius: 4,
-        background: 'linear-gradient(145deg, #fafafa, #f0f0f0)',
-      }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
     >
-      <Box textAlign="center" mb={3}>
-        <Skeleton variant="text" width={220} height={32} sx={{ mx: 'auto' }} />
-        <Skeleton variant="text" width="60%" sx={{ mx: 'auto' }} />
-        <Skeleton variant="text" width="50%" sx={{ mx: 'auto' }} />
-        <Box mt={2} display="flex" flexDirection="column" alignItems={{ xs: 'center', md: 'flex-end' }}>
-          <Skeleton variant="text" width={180} />
-          <Skeleton variant="text" width={220} />
+      <Paper
+        elevation={3}
+        sx={{
+          p: { xs: 3, md: 4 },
+          mt: { xs: 2, md: 3 },
+          mb: { xs: 3, md: 4 },
+          borderRadius: { xs: 3, md: 4 },
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
+          border: `2px solid ${theme.palette.success.main}20`,
+        }}
+      >
+        <Box textAlign="center" mb={3}>
+          <Skeleton 
+            variant="text" 
+            width={220} 
+            height={isMobile ? 24 : 32} 
+            sx={{ 
+              mx: 'auto', 
+              borderRadius: 2,
+            }} 
+          />
+          <Skeleton 
+            variant="text" 
+            width="60%" 
+            sx={{ 
+              mx: 'auto', 
+              mt: 1,
+              borderRadius: 1,
+            }} 
+          />
+          <Skeleton 
+            variant="text" 
+            width="50%" 
+            sx={{ 
+              mx: 'auto', 
+              mt: 1,
+              borderRadius: 1,
+            }} 
+          />
+          <Box 
+            mt={2} 
+            display="flex" 
+            flexDirection="column" 
+            alignItems={{ xs: 'center', md: 'flex-end' }}
+          >
+            <Skeleton variant="text" width={180} sx={{ borderRadius: 1 }} />
+            <Skeleton variant="text" width={220} sx={{ borderRadius: 1 }} />
+          </Box>
         </Box>
-      </Box>
-      <Skeleton
-        variant="rectangular"
-        sx={{ width: '100%', height: { xs: 200, sm: 400, md: 600 }, borderRadius: 2 }}
-      />
-      <Grid container spacing={1} mt={1} justifyContent="center">
-        {[...Array(6)].map((_, i) => (
-          <Grid item xs={4} sm={2} md={2} key={i}>
-            <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 1 }} />
-          </Grid>
-        ))}
-      </Grid>
-    </Paper>
+        <Skeleton
+          variant="rectangular"
+          sx={{ 
+            width: '100%', 
+            height: isMobile ? 200 : 400, 
+            borderRadius: { xs: 2, md: 3 },
+            mb: 2,
+          }}
+        />
+        <Grid container spacing={1} justifyContent="center">
+          {[...Array(6)].map((_, i) => (
+            <Grid item xs={4} sm={2} md={2} key={i}>
+              <Skeleton 
+                variant="rectangular" 
+                height={isMobile ? 60 : 80} 
+                sx={{ 
+                  borderRadius: { xs: 2, md: 3 },
+                }} 
+              />
+            </Grid>
+          ))}
+        </Grid>
+      </Paper>
+    </motion.div>
   );
 }
 
@@ -75,12 +130,12 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const section = useSelector((state: RootState) => state.imageSectionPagination.section);
 
@@ -143,165 +198,282 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
     return () => controller.abort();
   }, [page, idToFetch, defaultSectionId, dispatch, feed]);
 
-  const handleDelete = async () => {
-    if (!section?.id) return;
-    try {
-      setIsDeleting(true);
-      await api.delete(`/image-pages/${section.id}`);
-      await dispatch(fetchRoutes());
-      navigate('/');
-    } catch (err) {
-      console.error('Erro ao excluir a seção:', err);
-      setError('Erro ao excluir a seção. Tente novamente mais tarde.');
-    } finally {
-      setIsDeleting(false);
-      setDeleteConfirmOpen(false);
-    }
+
+  const handleBack = () => {
+    navigate(-1);
   };
 
-  if (loading && page === 1) {
+  if (loading) {
     return (
-      <Container sx={{ mt: 10, maxWidth: '95% !important', p: 0 }}>
-        <Box display="flex" flexDirection="column" gap={3}>
-          <SectionSkeleton />
-          <SectionSkeleton />
-        </Box>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          {[...Array(2)].map((_, i) => (
+            <SectionSkeleton key={i} />
+          ))}
+        </motion.div>
       </Container>
     );
   }
 
-  if (error || !section) {
+  if (error) {
     return (
-      <Container sx={{ mt: 10, maxWidth: '95% !important', p: 0 }}>
-        <Alert severity="error" sx={{ mt: 4 }}>
-          {error ?? 'Dados não encontrados.'}
-        </Alert>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Alert 
+            severity="error" 
+            sx={{ 
+              borderRadius: { xs: 3, md: 4 }, 
+              boxShadow: 3,
+              fontSize: { xs: '0.9rem', md: '1rem' },
+              p: { xs: 2, md: 3 },
+            }}
+          >
+            {error}
+          </Alert>
+        </motion.div>
+      </Container>
+    );
+  }
+
+  if (!section) {
+    return (
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Paper
+            elevation={2}
+            sx={{
+              p: 6,
+              textAlign: 'center',
+              borderRadius: { xs: 3, md: 4 },
+            }}
+          >
+            <Typography 
+              variant="h5" 
+              color="text.secondary"
+              sx={{ 
+                fontSize: { xs: '1.3rem', md: '1.5rem' },
+                mb: 2,
+              }}
+            >
+              📸 Nenhuma página de imagens encontrada
+            </Typography>
+            <Typography color="text.secondary">
+              A página de imagens solicitada não existe ou foi removida.
+            </Typography>
+          </Paper>
+        </motion.div>
       </Container>
     );
   }
 
   return (
-    <Container sx={{ mt: 10, p: 0, maxWidth: '95% !important', overflowX: 'hidden' }}>
-      <Box
-        sx={{
-          textAlign: 'center',
-          mb: 5,
-          px: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          position: 'relative',
-        }}
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      {/* Header da Galeria */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
       >
-        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
-          {section.title}
-        </Typography>
-
-        <Typography
-          variant="subtitle1"
-          color="text.secondary"
-          sx={{ mt: 1, textAlign: 'justify', maxWidth: '1000px' }}
+        <Paper
+          elevation={3}
+          sx={{
+            p: { xs: 3, md: 4 },
+            mb: 4,
+            borderRadius: { xs: 3, md: 4 },
+            background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
         >
-          {section.description}
-        </Typography>
-
-        {feed && isAuthenticated && <ButtonSection references={['photos']} />}
-
-        {isAdmin && (
           <Box
             sx={{
-              position: 'fixed',
-              bottom: 20,
-              right: 20,
-              zIndex: 1300,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1,
+              position: 'absolute',
+              top: -50,
+              right: -50,
+              width: 200,
+              height: 200,
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '50%',
+              zIndex: 0,
             }}
-          >
-            <Tooltip title="Editar Página" placement="right">
-              <Fab
-                color="warning"
-                size="medium"
-                onClick={() => navigate('/adm/editar-pagina-imagens')}
-                disabled={isDeleting}
-              >
-                <EditIcon />
-              </Fab>
-            </Tooltip>
-
-            {!feed && (
-              <Tooltip title="Excluir Página" placement="right">
-                <Fab
-                  color="error"
-                  size="medium"
-                  onClick={() => setDeleteConfirmOpen(true)}
-                  disabled={isDeleting}
+          />
+          
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              mb={2}
+              flexWrap="wrap"
+              gap={2}
+            >
+              <Box display="flex" alignItems="center" gap={2}>
+                <IconButton
+                  onClick={handleBack}
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    color: 'white',
+                    '&:hover': {
+                      bgcolor: 'rgba(255,255,255,0.3)',
+                    },
+                  }}
                 >
-                  <DeleteIcon />
-                </Fab>
-              </Tooltip>
-            )}
-          </Box>
-        )}
-      </Box>
-
-      <Box display="flex" flexDirection="column" gap={4}>
-        {sectionsList.length === 0 ? (
-          <>
-            <SectionSkeleton />
-            {hasMore && (
-              <Box
-                ref={lastSectionRef}
-                sx={{ height: 50, display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}
-              >
-                {loadingMore ? (
-                  <CircularProgress size={30} />
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    Carregue mais
-                  </Typography>
-                )}
+                  <ArrowBackIcon />
+                </IconButton>
+                <PhotoLibraryIcon sx={{ fontSize: { xs: '2rem', md: '2.5rem' } }} />
               </Box>
+
+            </Box>
+
+            <Typography
+              variant="h3"
+              fontWeight="bold"
+              sx={{
+                fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
+                mb: 1,
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              }}
+            >
+              📸 {section.title}
+            </Typography>
+
+            {(section as any).subtitle && (
+              <Typography
+                variant="h5"
+                fontWeight="600"
+                sx={{
+                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
+                  mb: 2,
+                  opacity: 0.95,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                }}
+              >
+                {(section as any).subtitle}
+              </Typography>
             )}
-          </>
-        ) : (
-          <>
-            {sectionsList.map((sectionItem) => (
-              <SectionImagePageView
-                key={sectionItem.id}
-                mediaItems={sectionItem.mediaItems}
-                caption={sectionItem.caption}
-                description={sectionItem.description}
-                createdAt={sectionItem.createdAt || ''}
-                updatedAt={sectionItem.updatedAt || ''}
+
+            {section.description && (
+              <Typography
+                variant="h6"
+                sx={{
+                  fontSize: { xs: '1rem', md: '1.2rem' },
+                  opacity: 0.9,
+                  lineHeight: 1.6,
+                  maxWidth: '800px',
+                }}
+              >
+                {section.description}
+              </Typography>
+            )}
+
+            <Box
+              display="flex"
+              alignItems="center"
+              gap={2}
+              mt={3}
+              flexWrap="wrap"
+            >
+              <Chip
+                label={`${sectionsList.length} ${sectionsList.length === 1 ? 'Seção' : 'Seções'}`}
+                sx={{
+                  bgcolor: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  fontWeight: 'bold',
+                }}
               />
+            </Box>
+          </Box>
+        </Paper>
+      </motion.div>
+
+      {/* Seções da Galeria */}
+      <AnimatePresence>
+        {sectionsList.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            {sectionsList.map((sectionItem, index) => (
+              <motion.div
+                key={sectionItem.id}
+                ref={index === sectionsList.length - 1 ? lastSectionRef : null}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                style={{ 
+                  marginBottom: index < sectionsList.length - 1 ? theme.spacing(2) : 0 
+                }}
+              >
+                <SectionImagePageView 
+                  caption={sectionItem.caption}
+                  description={sectionItem.description}
+                  mediaItems={sectionItem.mediaItems}
+                  createdAt={sectionItem.createdAt ? new Date(sectionItem.createdAt) : undefined}
+                  updatedAt={sectionItem.updatedAt ? new Date(sectionItem.updatedAt) : undefined}
+                />
+              </motion.div>
             ))}
 
-            {hasMore && (
+            {loadingMore && (
               <Box
-                ref={lastSectionRef}
-                sx={{ height: 50, display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 4 }}
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                py={4}
               >
-                {loadingMore ? (
-                  <CircularProgress size={30} />
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    Carregue mais
-                  </Typography>
-                )}
+                <CircularProgress size={40} />
               </Box>
             )}
-          </>
-        )}
-      </Box>
 
-      <DeleteConfirmDialog
-        open={deleteConfirmOpen}
-        title={section.title}
-        onClose={() => !isDeleting && setDeleteConfirmOpen(false)}
-        onConfirm={handleDelete}
-      />
+            {feed && isAuthenticated && (
+              <Box mt={4}>
+                <FofinhoButton references={['photos']} />
+              </Box>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Paper
+              elevation={2}
+              sx={{
+                p: 6,
+                textAlign: 'center',
+                borderRadius: { xs: 3, md: 4 },
+              }}
+            >
+              <Typography
+                variant="h6"
+                color="text.secondary"
+                sx={{ mb: 2 }}
+              >
+                📸 Nenhuma seção disponível
+              </Typography>
+              <Typography color="text.secondary">
+                As seções de imagens ainda não foram publicadas.
+              </Typography>
+            </Paper>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </Container>
   );
 }

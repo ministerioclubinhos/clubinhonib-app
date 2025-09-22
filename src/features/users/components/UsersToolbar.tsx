@@ -133,7 +133,8 @@ export default function UsersToolbar({
                   position: "fixed",
                   bottom: "calc(env(safe-area-inset-bottom, 0px) + 96px)",
                   right: "calc(env(safe-area-inset-right, 0px) + 16px)",
-                  zIndex: 1200,
+                  zIndex: 9999,
+                  boxShadow: 6,
                 }}
               >
                 <Add />
@@ -146,9 +147,9 @@ export default function UsersToolbar({
                   position: "fixed",
                   bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
                   right: "calc(env(safe-area-inset-right, 0px) + 16px)",
-                  zIndex: 1200,
+                  zIndex: 9999,
                   bgcolor: "white",
-                  boxShadow: 3,
+                  boxShadow: 6,
                   "&:hover": { bgcolor: "grey.100" },
                 }}
               >

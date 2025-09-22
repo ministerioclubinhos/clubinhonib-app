@@ -62,7 +62,8 @@ const cardData: CardData[] = [
 
   { title: "Páginas de Materiais", description: "Gerencie conteúdos semanais.", icon: <EventNote fontSize="large" color="primary" />, path: "/adm/paginas-materiais-semanais", section: "pages" },
   { title: "Páginas de Fotos", description: "Organize e edite galerias de imagens do site.", icon: <PhotoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-fotos", section: "pages" },
-  { title: "Fotos dos Clubinhos", description: "Organize e edite galerias de fotos dos clubinhos.", icon: <Collections fontSize="large" color="primary" />, path: "/adm/fotos-clubinhos", section: "pages" },
+  { title: "Fotos dos Clubinhos", description: "Organize e edite galerias de fotos dos Clubinhos.", icon: <Collections fontSize="large" color="primary" />, path: "/adm/fotos-clubinhos", section: "pages" },
+  { title: "Ideias compartilhadas", description: "Gerencie Ideias compartilhadas pelos Clubinhos", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/ideias-compartilhadas", section: "pages" },
   { title: "Páginas de Vídeos", description: "Adicione vídeos ou links do YouTube para o site.", icon: <VideoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-videos", section: "pages" },
   { title: "Páginas de Ideias", description: "Gerencie páginas de ideias para professores.", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/paginas-ideias", section: "pages" },
 
@@ -74,8 +75,8 @@ const cardData: CardData[] = [
   { title: "Pagelas", description: "Gerencie pagelas.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/pagelas", section: "clubinho" },
 
   { title: "Comentários", description: "Gerencie comentários dos usuários.", icon: <Comment fontSize="large" color="primary" />, path: "/adm/comentarios", section: "operacional" },
-  { title: "Contatos", description: "Gerencie contatos enviados para o clubinho.", icon: <ContactPhone fontSize="large" color="primary" />, path: "/adm/contatos", section: "operacional" },
-  { title: "Feedbacks", description: "Gerencie feedbacks enviados para o clubinho.", icon: <RateReview fontSize="large" color="primary" />, path: "/adm/feedbacks", section: "operacional" },
+  { title: "Contatos", description: "Gerencie contatos enviados para o Clubinho.", icon: <ContactPhone fontSize="large" color="primary" />, path: "/adm/contatos", section: "operacional" },
+  { title: "Feedbacks", description: "Gerencie feedbacks enviados para o Clubinho.", icon: <RateReview fontSize="large" color="primary" />, path: "/adm/feedbacks", section: "operacional" },
 ];
 
 const sectionLabels: Record<SectionId, string> = {
