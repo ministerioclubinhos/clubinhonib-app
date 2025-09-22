@@ -16,6 +16,8 @@ import { UserRow } from "../types";
 import { fmtDate } from "@/utils/dates";
 import { UserRole } from "@/store/slices/auth/authSlice";
 import { buildWhatsappLink } from "@/utils/whatsapp";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/slices";
 
 type Props = {
   rows: UserRow[];
@@ -121,7 +123,8 @@ export default function UsersCards(props: Props) {
       <Grid container spacing={{ xs: 1, sm: 1.25 }}>
         {rows.map((u) => {
           const expanded = open.has(u.id);
-          const wa = buildWhatsappLink(u);
+          const { user } = useSelector((state: RootState) => state.auth);
+          const wa = buildWhatsappLink(u.name, user?.name, u.phone);
 
           return (
             <Grid item xs={12} key={u.id} sx={{ mb: { xs: 0.75, sm: 1 }, pb: { xs: 1, sm: 1.25 } }}>

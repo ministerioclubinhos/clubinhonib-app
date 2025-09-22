@@ -7,9 +7,12 @@ import {
 import {
   ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, SortingState, useReactTable
 } from "@tanstack/react-table";
-import { Visibility, Link as LinkIcon } from "@mui/icons-material";
+import { Visibility, Link as LinkIcon, WhatsApp } from "@mui/icons-material";
 import type { CoordinatorProfile } from "../types";
 import { fmtDate } from "@/utils/dates";
+import { buildWhatsappLink } from "@/utils/whatsapp";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/slices";
 
 type Props = {
   rows: CoordinatorProfile[];
@@ -90,20 +93,40 @@ export default function CoordinatorTable({
       id: "actions",
       header: "Ações",
       enableSorting: false,
-      cell: ({ row }) => (
-        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-          <Tooltip title="Detalhes">
-            <IconButton size={isXs ? "small" : "medium"} onClick={() => onView(row.original)}>
-              <Visibility fontSize="inherit" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Vincular/Desvincular clubinho">
-            <IconButton size={isXs ? "small" : "medium"} onClick={() => onLink(row.original)}>
-              <LinkIcon fontSize="inherit" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
+      cell: ({ row }) => {
+        const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+        const wa = buildWhatsappLink(row.original.user?.name, loggedUser?.name, row.original.user?.phone);
+
+        return (
+          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+            <Tooltip title="Detalhes">
+              <IconButton size={isXs ? "small" : "medium"} onClick={() => onView(row.original)}>
+                <Visibility fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+            {wa && (
+              <Tooltip title="WhatsApp">
+                <IconButton
+                  size={isXs ? "small" : "medium"}
+                  component="a"
+                  href={wa}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: "success.main" }}
+                >
+                  <WhatsApp fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            )}
+            <Tooltip title="Vincular/Desvincular clubinho">
+              <IconButton size={isXs ? "small" : "medium"} onClick={() => onLink(row.original)}>
+                <LinkIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        );
+      },
+      meta: { width: isXs ? 180 : 240 },
     },
   ], [isMdUp, isXs, onLink, onView]);
 

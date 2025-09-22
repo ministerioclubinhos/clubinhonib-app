@@ -1,21 +1,25 @@
-import { UserRow } from "@/features/users/types";
-
-export const TZ = "America/Manaus";
-export const SENSITIVE_KEYS = new Set(["password", "refreshToken"]);
-
-
-function justDigits(phone?: string | number | null) {
+// Função utilitária para extrair apenas dígitos de um telefone
+export function justDigits(phone?: string | number | null) {
   return phone ? String(phone).replace(/\D/g, "") : "";
 }
 
-function defaultWaMessage(u: UserRow) {
-  const nome = u?.name?.trim() || "tudo bem";
-  return `Olá, ${nome}! Podemos falar rapidamente?`;
+function buildWaMessage(userName?: string, adminName?: string) {
+  const name = userName?.trim() || "usuário";
+  const admin = adminName?.trim() || "administrador";
+
+  return `Olá ${name}!
+
+Sou ${admin}. Sou administrador do sistema clubinho.
+
+Gostaria de falar com você sobre uma coisa:
+
+`;
 }
 
-export function buildWhatsappLink(u: UserRow) {
-  const digits = justDigits(u.phone);
+export function buildWhatsappLink(userName?: string, adminName?: string, phone?: string) {
+  const digits = justDigits(phone);
   if (!digits) return null;
-  const text = encodeURIComponent(defaultWaMessage(u));
+  const text = encodeURIComponent(buildWaMessage(userName, adminName));
   return `https://wa.me/${digits}?text=${text}`;
 }
+

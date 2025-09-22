@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Box,
   Card,
@@ -32,40 +33,18 @@ import {
   Phone as PhoneIcon,
   SchoolOutlined,
   GroupOutlined,
-  PersonOutlined
+  PersonOutlined,
+  WhatsApp
 } from "@mui/icons-material";
 import type { SortingState } from "@tanstack/react-table";
 import type { TeacherProfile } from "../types";
 import { fmtDate } from "@/utils/dates";
-import { WEEKDAY_PT } from "@/features/pagela-clubs/utils";
-import type { Weekday } from "@/features/clubs/types";
+import { RootState } from "@/store/slices";
+import { buildWhatsappLink } from "@/utils/whatsapp";
+import { weekdayLabel } from "@/utils/dateUtils";
+import { CopyButton, initials } from "@/utils/components";
 
-const initials = (name?: string) =>
-  (name || "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(s => s[0]?.toUpperCase())
-    .join("") || "T";
 
-function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
-  const copyToClipboard = (text?: string) => {
-    if (!text) return;
-    navigator.clipboard?.writeText(String(text)).catch(() => {});
-  };
-  return (
-    <Tooltip title={title}>
-      <IconButton size="small" onClick={() => copyToClipboard(value)}>
-        <ContentCopy fontSize="inherit" />
-      </IconButton>
-    </Tooltip>
-  );
-}
-
-const translateWeekday = (weekday?: string): string => {
-  if (!weekday) return "—";
-  return WEEKDAY_PT[weekday as Weekday] || weekday;
-};
 
 type Props = {
   rows: TeacherProfile[];
@@ -159,6 +138,8 @@ export default function TeacherCards({
           const expanded = open.has(t.id);
           const club = t.club || null;
           const coordUser = club?.coordinator?.user || null;
+          const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+          const wa = buildWhatsappLink(t.user?.name, loggedUser?.name, t.user?.phone);
 
           return (
             <Grid item xs={12} key={t.id} sx={{ mb: { xs: 0.75, sm: 1 }, pb: { xs: 1, sm: 1.25 } }}>
@@ -168,8 +149,8 @@ export default function TeacherCards({
                   borderRadius: 3,
                   overflow: "hidden",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  "&:hover": { 
-                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)", 
+                  "&:hover": {
+                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
                     transform: "translateY(-2px)",
                     "& .teacher-avatar": {
                       transform: "scale(1.1)",
@@ -203,11 +184,11 @@ export default function TeacherCards({
                   <Avatar
                     className="teacher-avatar"
                     sx={{
-                      width: { xs: 40, sm: 48 }, 
+                      width: { xs: 40, sm: 48 },
                       height: { xs: 40, sm: 48 },
                       bgcolor: t.active ? "success.main" : "grey.500",
                       color: "white",
-                      fontWeight: 800, 
+                      fontWeight: 800,
                       fontSize: { xs: 14, sm: 16 },
                       boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
                       transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -219,10 +200,10 @@ export default function TeacherCards({
                   </Avatar>
 
                   <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography 
-                      variant="subtitle1" 
-                      fontWeight={700} 
-                      noWrap 
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight={700}
+                      noWrap
                       title={t.user?.name || t.user?.email}
                       sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                     >
@@ -232,7 +213,7 @@ export default function TeacherCards({
                       size="small"
                       color={t.active ? "success" : "default"}
                       label={t.active ? "Ativo" : "Inativo"}
-                      sx={{ 
+                      sx={{
                         fontSize: "0.7rem",
                         height: 20,
                         mt: 0.25
@@ -257,10 +238,10 @@ export default function TeacherCards({
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
-                    <Typography 
-                      variant="caption" 
-                      color="text.secondary" 
-                      sx={{ 
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
                         fontWeight: 600,
                         display: { xs: "none", sm: "block" }
                       }}
@@ -288,13 +269,13 @@ export default function TeacherCards({
                   <Stack direction="row" spacing={0.75} alignItems="center">
                     <SchoolOutlined sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
                     <Box sx={{ minWidth: 0, flex: 1 }}>
-                      <Typography 
+                      <Typography
                         variant="body2"
-                        sx={{ 
+                        sx={{
                           fontWeight: 600,
                           color: "text.primary",
-                          whiteSpace: "nowrap", 
-                          overflow: "hidden", 
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
                           textOverflow: "ellipsis"
                         }}
                         title={club ? `Clubinho #${club.number ?? "?"}` : "Sem Clubinho"}
@@ -322,12 +303,12 @@ export default function TeacherCards({
                           coordUser?.name
                             ? coordUser.name
                             : coordUser?.email
-                            ? coordUser.email
-                            : "Sem coordenador"
+                              ? coordUser.email
+                              : "Sem coordenador"
                         }
                         color="info"
-                        sx={{ 
-                          fontWeight: 600, 
+                        sx={{
+                          fontWeight: 600,
                           fontSize: "0.7rem",
                           height: 20,
                           "& .MuiChip-label": { px: 0.5 }
@@ -336,10 +317,10 @@ export default function TeacherCards({
                       {coordUser?.phone && (
                         <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
                           <PhoneIcon sx={{ fontSize: 14, color: "text.secondary" }} />
-                          <Link 
-                            href={`tel:${coordUser.phone}`} 
+                          <Link
+                            href={`tel:${coordUser.phone}`}
                             underline="hover"
-                            sx={{ 
+                            sx={{
                               fontSize: "0.75rem",
                               color: "text.secondary",
                               whiteSpace: "nowrap",
@@ -361,7 +342,6 @@ export default function TeacherCards({
                     <Divider sx={{ mx: { xs: 1, sm: 1.25 } }} />
                     <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
                       <Stack spacing={2}>
-                        {/* Informações do Professor */}
                         <Paper
                           variant="outlined"
                           sx={{
@@ -379,9 +359,34 @@ export default function TeacherCards({
                                 Informações do Professor
                               </Typography>
                             </Stack>
-                            <Typography variant="body2" color="text.secondary">
-                              {t.user?.email}
-                            </Typography>
+                            <Stack spacing={1}>
+                              <Typography variant="body2" color="text.secondary">
+                                {t.user?.email}
+                              </Typography>
+                              {t.user?.phone && (
+                                <Stack direction="row" spacing={0.5} alignItems="center">
+                                  <PhoneIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                                  <Typography variant="body2" color="text.secondary">
+                                    {t.user.phone}
+                                  </Typography>
+                                  <CopyButton value={t.user.phone} title="Copiar telefone" />
+                                  {wa && (
+                                    <Tooltip title="WhatsApp">
+                                      <IconButton
+                                        size="small"
+                                        component="a"
+                                        href={wa}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{ color: "success.main", p: 0.5 }}
+                                      >
+                                        <WhatsApp fontSize="small" />
+                                      </IconButton>
+                                    </Tooltip>
+                                  )}
+                                </Stack>
+                              )}
+                            </Stack>
                           </Stack>
                         </Paper>
 
@@ -414,7 +419,7 @@ export default function TeacherCards({
                                 <Chip
                                   size="small"
                                   variant="outlined"
-                                  label={translateWeekday(club.weekday)}
+                                  label={weekdayLabel(club.weekday)}
                                   sx={{ fontWeight: 500 }}
                                 />
                                 <Chip
@@ -428,7 +433,6 @@ export default function TeacherCards({
                           </Paper>
                         )}
 
-                        {/* Datas */}
                         <Paper
                           variant="outlined"
                           sx={{
@@ -440,16 +444,16 @@ export default function TeacherCards({
                           }}
                         >
                           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
-                            <Chip 
-                              size="small" 
-                              variant="outlined" 
+                            <Chip
+                              size="small"
+                              variant="outlined"
                               label={`Criado: ${fmtDate(t.createdAt)}`}
                               color="default"
                               sx={{ fontWeight: 500 }}
                             />
-                            <Chip 
-                              size="small" 
-                              variant="outlined" 
+                            <Chip
+                              size="small"
+                              variant="outlined"
                               label={`Atualizado: ${fmtDate(t.updatedAt)}`}
                               color="default"
                               sx={{ fontWeight: 500 }}
@@ -478,13 +482,13 @@ export default function TeacherCards({
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {t.user?.name || t.user?.email}
                   </Typography>
-                  
+
                   <Stack direction="row" spacing={0.5}>
                     <Tooltip title="Visualizar detalhes">
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => onView(t)}
-                        sx={{ 
+                        sx={{
                           color: "primary.main",
                           "&:hover": { bgcolor: "primary.50" }
                         }}
@@ -493,10 +497,10 @@ export default function TeacherCards({
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Vincular / Alterar Clubinho">
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => onEditLinks(t)}
-                        sx={{ 
+                        sx={{
                           color: "info.main",
                           "&:hover": { bgcolor: "info.50" }
                         }}
@@ -505,11 +509,11 @@ export default function TeacherCards({
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Desvincular Clubinho">
-                      <IconButton 
-                        size="small" 
-                        color="error" 
+                      <IconButton
+                        size="small"
+                        color="error"
                         onClick={() => onClearClub(t.id)}
-                        sx={{ 
+                        sx={{
                           "&:hover": { bgcolor: "error.50" }
                         }}
                       >

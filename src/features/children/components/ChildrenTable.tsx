@@ -27,9 +27,7 @@ type Props = {
   onAskDelete: (row: ChildResponseDto) => void;
 };
 
-const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString("pt-BR") : "—");
-const fmtDT = (s?: string) => (s ? new Date(s).toLocaleString("pt-BR") : "—");
-const gLabel = (g?: "M" | "F") => (g === "M" ? "Menino" : g === "F" ? "Menina" : "—");
+import { formatDate, gLabel } from "@/utils/dateUtils";
 
 export default function ChildrenTable(props: Props) {
   const theme = useTheme();
@@ -82,25 +80,25 @@ function ChildrenTableDesktop(props: Props) {
     {
       accessorKey: "birthDate",
       header: "Nascimento",
-      cell: ({ getValue }) => fmt(getValue() as any),
+      cell: ({ getValue }) => formatDate(getValue() as any),
       meta: { width: 140 },
     },
     {
       accessorKey: "joinedAt",
       header: "No clubinho desde",
-      cell: ({ getValue }) => fmt(getValue() as any),
+      cell: ({ getValue }) => formatDate(getValue() as any),
       meta: { width: 160 },
     },
     {
       accessorKey: "createdAt",
       header: "Criado em",
-      cell: ({ getValue }) => fmtDT(getValue() as any),
+      cell: ({ getValue }) => formatDate(getValue() as any, true),
       meta: { width: 180 },
     },
     {
       accessorKey: "updatedAt",
       header: "Atualizado em",
-      cell: ({ getValue }) => fmtDT(getValue() as any),
+      cell: ({ getValue }) => formatDate(getValue() as any, true),
       meta: { width: 180 },
     },
     {

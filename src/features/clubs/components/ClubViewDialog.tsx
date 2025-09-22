@@ -37,6 +37,7 @@ import {
 } from "@mui/icons-material";
 import { ClubResponseDto, WEEKDAYS } from "../types";
 import { fmtDate } from "@/utils/dates";
+import { CopyButton, initials } from "@/utils/components";
 
 type Props = {
   open: boolean;
@@ -45,19 +46,6 @@ type Props = {
   onClose: () => void;
 };
 
-function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
-  const copyToClipboard = (text?: string) => {
-    if (!text) return;
-    navigator.clipboard?.writeText(String(text)).catch(() => {});
-  };
-  return (
-    <Tooltip title={title}>
-      <IconButton size="small" onClick={() => copyToClipboard(value)}>
-        <ContentCopy fontSize="inherit" />
-      </IconButton>
-    </Tooltip>
-  );
-}
 
 function LineCard({
   icon,
@@ -83,13 +71,6 @@ function LineCard({
   );
 }
 
-const initials = (name?: string) =>
-  (name || "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(s => s[0]?.toUpperCase())
-    .join("") || "C";
 
 export default function ClubViewDialog({ open, loading, club, onClose }: Props) {
   const theme = useTheme();
@@ -200,7 +181,6 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
           </Typography>
         ) : (
           <Stack spacing={2}>
-            {/* Informações básicas */}
             <Grid container spacing={1.25}>
               <Grid item xs={12} sm={6}>
                 <LineCard icon={<NumbersOutlined fontSize="small" />} title="Número">
@@ -250,7 +230,6 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
               </Stack>
             </Paper>
 
-            {/* Endereço */}
             {address && (
               <Grid container spacing={1.25}>
                 <Grid item xs={12}>
@@ -272,7 +251,6 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
               </Grid>
             )}
 
-            {/* Coordenador */}
             <Grid container spacing={1.25}>
               <Grid item xs={12}>
                 <LineCard icon={<PersonOutline fontSize="small" />} title="Coordenador">
@@ -299,7 +277,6 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
               </Grid>
             </Grid>
 
-            {/* Professores */}
             <Grid container spacing={1.25}>
               <Grid item xs={12}>
                 <LineCard icon={<SchoolOutlined fontSize="small" />} title="Professores">
