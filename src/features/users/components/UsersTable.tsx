@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useSelector } from "react-redux";
 import {
   Paper,
   Table,
@@ -30,6 +31,7 @@ import { Visibility, Edit, Delete, WhatsApp } from "@mui/icons-material";
 import { UserRow } from "../types";
 import { fmtDate } from "@/utils/dates";
 import { UserRole } from "@/store/slices/auth/authSlice";
+import { RootState } from "@/store/slices";
 import UsersCards from "./UsersCards";
 import { buildWhatsappLink } from "@/utils/whatsapp";
 
@@ -165,7 +167,8 @@ function UsersTableDesktop({
         header: "Ações",
         enableSorting: false,
         cell: ({ row }) => {
-          const wa = buildWhatsappLink(row.original);
+          const { user } = useSelector((state: RootState) => state.auth);
+          const wa = buildWhatsappLink(row.original.name, user?.name, row.original.phone);
           return (
             <Box sx={{ display: "flex", gap: 0.5 }}>
               <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
@@ -307,7 +310,8 @@ function UsersTableDesktop({
 }
 
 function StackedPhoneWithWA({ user }: { user: UserRow }) {
-  const wa = buildWhatsappLink(user);
+  const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+  const wa = buildWhatsappLink(user.name, loggedUser?.name, user.phone);
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
       <Typography noWrap title={user.phone || undefined} sx={{ mr: 0.25 }}>

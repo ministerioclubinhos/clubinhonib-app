@@ -29,10 +29,14 @@ import {
   ContentCopy,
   Phone as PhoneIcon,
 } from "@mui/icons-material";
+import { useSelector } from "react-redux";
 import { SENSITIVE_KEYS, UserRow } from "../types";
 import { UserRole } from "@/store/slices/auth/authSlice";
 import { buildWhatsappLink } from "@/utils/whatsapp";
-import { fmtDate } from "@/utils/dates";
+import { formatDate } from "@/utils/dateUtils";
+import { roleChipColor, anchorProps, isCoreOrSensitive } from "@/utils/textUtils";
+import { initials, CopyButton } from "@/utils/components";
+import { RootState } from "@/store/slices";
 
 type Props = { open: boolean; user: UserRow | null; onClose: () => void };
 
@@ -42,60 +46,6 @@ const roleLabels: Record<UserRole, string> = {
   [UserRole.TEACHER]: "Professor",
 };
 
-function roleChipColor(role?: string) {
-  switch (role) {
-    case UserRole.ADMIN:
-      return "secondary";
-    case UserRole.COORDINATOR:
-      return "primary";
-    case UserRole.TEACHER:
-      return "success";
-    default:
-      return "default";
-  }
-}
-
-const anchorProps = (url?: string) =>
-  url
-    ? ({ component: "a" as const, href: url, target: "_blank", rel: "noopener noreferrer" })
-    : ({});
-
-const CORE_KEYS = new Set([
-  "id",
-  "name",
-  "email",
-  "phone",
-  "role",
-  "active",
-  "completed",
-  "commonUser",
-  "createdAt",
-  "updatedAt",
-]);
-
-const isCoreOrSensitive = (k: string) => CORE_KEYS.has(k) || SENSITIVE_KEYS.has(k);
-
-const initials = (name?: string) =>
-  (name || "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(s => s[0]?.toUpperCase())
-    .join("") || "U";
-
-function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
-  const copyToClipboard = (text?: string) => {
-    if (!text) return;
-    navigator.clipboard?.writeText(String(text)).catch(() => {});
-  };
-  return (
-    <Tooltip title={title}>
-      <IconButton size="small" onClick={() => copyToClipboard(value)}>
-        <ContentCopy fontSize="inherit" />
-      </IconButton>
-    </Tooltip>
-  );
-}
 
 function LineCard({
   icon,
@@ -125,7 +75,8 @@ export default function UserViewDialog({ open, user, onClose }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-const waLink = useMemo(() => (user ? buildWhatsappLink(user) ?? undefined : undefined), [user]);
+const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+const waLink = useMemo(() => (user ? buildWhatsappLink(user.name, loggedUser?.name, user.phone) ?? undefined : undefined), [user, loggedUser?.name]);
   const telLink = user?.phone ? `tel:${user.phone}` : undefined;
 
   return (
@@ -268,12 +219,12 @@ const waLink = useMemo(() => (user ? buildWhatsappLink(user) ?? undefined : unde
             <Grid container spacing={1.25}>
               <Grid item xs={12} sm={6}>
                 <LineCard icon={<AccessTime fontSize="small" />} title="Criado em">
-                  <Typography>{fmtDate(user.createdAt)}</Typography>
+                  <Typography>{formatDate(user.createdAt)}</Typography>
                 </LineCard>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <LineCard icon={<AccessTime fontSize="small" />} title="Atualizado em">
-                  <Typography>{fmtDate(user.updatedAt)}</Typography>
+                  <Typography>{formatDate(user.updatedAt)}</Typography>
                 </LineCard>
               </Grid>
             </Grid>

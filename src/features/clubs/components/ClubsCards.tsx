@@ -10,10 +10,12 @@ import {
   ExpandMore as ExpandMoreIcon,
   CalendarMonthOutlined, LocationOnOutlined,
   SupervisorAccount, Group as GroupIcon, AccessTime as AccessTimeIcon,
-  Phone as PhoneIcon, WhatsApp, ContentCopy
+  Phone as PhoneIcon,
 } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
-import { ClubResponseDto, WEEKDAYS } from "../types";
+import { ClubResponseDto } from "../types";
+import { formatDate, weekdayLabel } from "@/utils/dateUtils";
+import { CopyButton } from "@/utils/components";
 
 type Props = {
   isAdmin: boolean;
@@ -30,37 +32,6 @@ type Props = {
   onAskDelete: (club: ClubResponseDto) => void;
 };
 
-const weekdayLabel = (v?: string | null) =>
-  WEEKDAYS.find((w) => w.value === v)?.label ?? (v ?? "—");
-
-const fmtDateOnly = (iso?: string | null) => {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (isNaN(+d)) return "—";
-  return d.toLocaleDateString("pt-BR");
-};
-
-const initials = (name?: string) =>
-  (name || "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(s => s[0]?.toUpperCase())
-    .join("") || "C";
-
-function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
-  const copyToClipboard = (text?: string) => {
-    if (!text) return;
-    navigator.clipboard?.writeText(String(text)).catch(() => {});
-  };
-  return (
-    <Tooltip title={title}>
-      <IconButton size="small" onClick={() => copyToClipboard(value)}>
-        <ContentCopy fontSize="inherit" />
-      </IconButton>
-    </Tooltip>
-  );
-}
 
 export default function ClubsCards(props: Props) {
   const { isAdmin, rows, total, pageIndex, pageSize, setPageIndex, setPageSize, sorting, setSorting, onOpenView, onStartEdit, onAskDelete } = props;
@@ -470,14 +441,14 @@ export default function ClubsCards(props: Props) {
                             <Chip 
                               size="small" 
                               variant="outlined" 
-                              label={`Criado: ${fmtDateOnly(c.createdAt)}`}
+                              label={`Criado: ${formatDate(c.createdAt)}`}
                               color="default"
                               sx={{ fontWeight: 500 }}
                             />
                             <Chip 
                               size="small" 
                               variant="outlined" 
-                              label={`Atualizado: ${fmtDateOnly(c.updatedAt)}`}
+                              label={`Atualizado: ${formatDate(c.updatedAt)}`}
                               color="default"
                               sx={{ fontWeight: 500 }}
                             />

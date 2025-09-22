@@ -5,44 +5,14 @@ import {
   Divider, TablePagination, Tooltip, Collapse, ButtonBase,
   Paper, Avatar, Slide, Link
 } from "@mui/material";
-import {
-  Visibility, Edit, Delete, SwapVert,
-  CakeOutlined, CalendarMonthOutlined, PlaceOutlined,
-  ExpandMore as ExpandMoreIcon, LocationOnOutlined,
-  ContentCopy, Phone as PhoneIcon, ChildCare, PersonOutlined,
-  WhatsApp
-} from "@mui/icons-material";
+import { Visibility, Edit, Delete, SwapVert, CakeOutlined, PlaceOutlined, ExpandMore as ExpandMoreIcon, LocationOnOutlined, Phone as PhoneIcon, ChildCare, PersonOutlined, WhatsApp } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
 import { ChildResponseDto } from "../types";
-// Função para gerar link do WhatsApp com telefone
-const buildWhatsappLinkFromPhone = (phone?: string | null) => {
-  if (!phone) return null;
-  const digits = phone.replace(/\D/g, "");
-  if (!digits) return null;
-  return `https://wa.me/${digits}`;
-};
-
-const initials = (name?: string) =>
-  (name || "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(s => s[0]?.toUpperCase())
-    .join("") || "C";
-
-function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
-  const copyToClipboard = (text?: string) => {
-    if (!text) return;
-    navigator.clipboard?.writeText(String(text)).catch(() => {});
-  };
-  return (
-    <Tooltip title={title}>
-      <IconButton size="small" onClick={() => copyToClipboard(value)}>
-        <ContentCopy fontSize="inherit" />
-      </IconButton>
-    </Tooltip>
-  );
-}
+import { RootState } from "@/store/slices";
+import { useSelector } from "react-redux";
+import { buildWhatsappLink } from "@/utils/whatsapp";
+import { formatDate, gLabel, ageFrom, timeDifference } from "@/utils/dateUtils";
+import { CopyButton, initials } from "@/utils/components";
 
 type Props = {
   rows: ChildResponseDto[];
@@ -56,62 +26,6 @@ type Props = {
   onOpenView: (row: ChildResponseDto) => void;
   onStartEdit: (row: ChildResponseDto) => void;
   onAskDelete: (row: ChildResponseDto) => void;
-};
-
-const fmtDateOnly = (d?: string | null) =>
-  d ? new Date(d).toLocaleDateString("pt-BR") : "—";
-
-const gLabel = (g?: "M" | "F") => (g === "M" ? "Menino" : g === "F" ? "Menina" : "—");
-
-const ageFrom = (birth?: string | null) => {
-  if (!birth) return null;
-  const b = new Date(birth);
-  if (isNaN(+b)) return null;
-  const now = new Date();
-  let y = now.getFullYear() - b.getFullYear();
-  const m = now.getMonth() - b.getMonth();
-  const d = now.getDate() - b.getDate();
-  if (m < 0 || (m === 0 && d < 0)) y--;
-  return y < 0 ? null : y;
-};
-
-const ageDetailed = (birth?: string | null) => {
-  if (!birth) return null;
-  const b = new Date(birth);
-  if (isNaN(+b)) return null;
-  const now = new Date();
-  let years = now.getFullYear() - b.getFullYear();
-  let months = now.getMonth() - b.getMonth();
-  const days = now.getDate() - b.getDate();
-  
-  if (days < 0) months--;
-  if (months < 0) {
-    years--;
-    months += 12;
-  }
-  
-  if (years < 0) return null;
-  
-  if (years === 0 && months === 0) return "menos de 1 mês";
-  if (years === 0) return `${months} ${months === 1 ? 'mês' : 'meses'}`;
-  if (months === 0) return `${years} ${years === 1 ? 'ano' : 'anos'}`;
-  
-  return `${years} ${years === 1 ? 'ano' : 'anos'} e ${months} ${months === 1 ? 'mês' : 'meses'}`;
-};
-
-const tenureFrom = (joined?: string | null) => {
-  if (!joined) return null;
-  const j = new Date(joined);
-  if (isNaN(+j)) return null;
-  const now = new Date();
-  let months = (now.getFullYear() - j.getFullYear()) * 12 + (now.getMonth() - j.getMonth());
-  if (now.getDate() < j.getDate()) months -= 1;
-  const y = Math.max(0, Math.floor(months / 12));
-  const m = Math.max(0, months % 12);
-  if (!y && !m) return "menos de 1 mês";
-  if (!y) return `${m}m`;
-  if (!m) return `${y}a`;
-  return `${y}a ${m}m`;
 };
 
 export default function ChildrenCards(props: Props) {
@@ -174,10 +88,11 @@ export default function ChildrenCards(props: Props) {
         {rows.map((c) => {
           const expanded = open.has(c.id);
           const age = ageFrom(c.birthDate);
-          const ageDetailedText = ageDetailed(c.birthDate);
-          const tenure = tenureFrom(c.joinedAt);
+          const ageDetailedText = timeDifference(c.birthDate);
+          const tenure = timeDifference(c.joinedAt);
           const addrPreview = c.address ? `${c.address.city} / ${c.address.state}` : "—";
-          const wa = buildWhatsappLinkFromPhone(c.guardianPhone);
+          const { user } = useSelector((state: RootState) => state.auth);
+          const wa = buildWhatsappLink(c.name, user?.name, c.guardianPhone);
 
           return (
             <Grid item xs={12} key={c.id} sx={{ mb: { xs: 0.75, sm: 1 }, pb: { xs: 1, sm: 1.25 } }}>
@@ -187,8 +102,8 @@ export default function ChildrenCards(props: Props) {
                   borderRadius: 3,
                   overflow: "hidden",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  "&:hover": { 
-                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)", 
+                  "&:hover": {
+                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
                     transform: "translateY(-2px)",
                     "& .child-avatar": {
                       transform: "scale(1.1)",
@@ -216,17 +131,17 @@ export default function ChildrenCards(props: Props) {
                     pt: 1,
                     pb: 0.5,
                     gap: { xs: 0.75, sm: 1 },
-                    mt: 0.5, // Espaço para a barra colorida
+                    mt: 0.5,
                   }}
                 >
                   <Avatar
                     className="child-avatar"
                     sx={{
-                      width: { xs: 40, sm: 48 }, 
+                      width: { xs: 40, sm: 48 },
                       height: { xs: 40, sm: 48 },
                       bgcolor: c.club ? "primary.main" : "grey.500",
                       color: "white",
-                      fontWeight: 800, 
+                      fontWeight: 800,
                       fontSize: { xs: 14, sm: 16 },
                       boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
                       transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -238,21 +153,21 @@ export default function ChildrenCards(props: Props) {
                   </Avatar>
 
                   <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography 
-                      variant="subtitle1" 
-                      fontWeight={700} 
-                      noWrap 
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight={700}
+                      noWrap
                       title={c.name}
                       sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                     >
                       {c.name}
                     </Typography>
-                  <Chip
-                    size="small"
-                    color={c.club ? "primary" : "default"}
-                    variant={c.club ? "filled" : "outlined"}
-                    label={c.club ? `Clubinho #${c.club.number}` : "Sem clubinho"}
-                      sx={{ 
+                    <Chip
+                      size="small"
+                      color={c.club ? "primary" : "default"}
+                      variant={c.club ? "filled" : "outlined"}
+                      label={c.club ? `Clubinho #${c.club.number}` : "Sem clubinho"}
+                      sx={{
                         fontSize: "0.7rem",
                         height: 20,
                         mt: 0.25
@@ -277,10 +192,10 @@ export default function ChildrenCards(props: Props) {
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
-                    <Typography 
-                      variant="caption" 
-                      color="text.secondary" 
-                      sx={{ 
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
                         fontWeight: 600,
                         display: { xs: "none", sm: "block" }
                       }}
@@ -306,17 +221,16 @@ export default function ChildrenCards(props: Props) {
                   }}
                 >
                   <Stack spacing={0.75}>
-                    {/* Primeira linha: Nome do responsável */}
                     <Stack direction="row" spacing={0.75} alignItems="center">
                       <PersonOutlined sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
                       <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography 
+                        <Typography
                           variant="body2"
-                          sx={{ 
+                          sx={{
                             fontWeight: 600,
                             color: "text.primary",
-                            whiteSpace: "nowrap", 
-                            overflow: "hidden", 
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
                             textOverflow: "ellipsis"
                           }}
                           title={c.guardianName || "Sem responsável"}
@@ -325,8 +239,7 @@ export default function ChildrenCards(props: Props) {
                         </Typography>
                       </Box>
                     </Stack>
-                    
-                    {/* Segunda linha: Botões de ação */}
+
                     {c.guardianPhone && (
                       <Stack direction="row" spacing={0.5} justifyContent="flex-end">
                         <Tooltip title="Ligar">
@@ -357,7 +270,7 @@ export default function ChildrenCards(props: Props) {
                   </Stack>
                 </Box>
 
-                  {!expanded && (
+                {!expanded && (
                   <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: 0.75 }}>
                     <Stack
                       direction="row"
@@ -372,8 +285,8 @@ export default function ChildrenCards(props: Props) {
                           variant="filled"
                           label={gLabel(c.gender)}
                           color="info"
-                          sx={{ 
-                            fontWeight: 600, 
+                          sx={{
+                            fontWeight: 600,
                             fontSize: "0.7rem",
                             height: 20,
                             "& .MuiChip-label": { px: 0.5 }
@@ -386,8 +299,8 @@ export default function ChildrenCards(props: Props) {
                           variant="filled"
                           label={ageDetailedText}
                           color="success"
-                          sx={{ 
-                            fontWeight: 600, 
+                          sx={{
+                            fontWeight: 600,
                             fontSize: "0.7rem",
                             height: 20,
                             "& .MuiChip-label": { px: 0.5 }
@@ -400,21 +313,21 @@ export default function ChildrenCards(props: Props) {
                           variant="filled"
                           label={tenure}
                           color="warning"
-                          sx={{ 
-                            fontWeight: 600, 
+                          sx={{
+                            fontWeight: 600,
                             fontSize: "0.7rem",
                             height: 20,
                             "& .MuiChip-label": { px: 0.5 }
                           }}
                         />
                       )}
-                      </Stack>
+                    </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
                       <LocationOnOutlined sx={{ fontSize: 14, color: "text.secondary" }} />
-                      <Typography 
-                        variant="caption" 
-                        color="text.secondary" 
-                        sx={{ 
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
                           fontWeight: 500,
                           whiteSpace: "nowrap",
                           overflow: "hidden",
@@ -425,21 +338,20 @@ export default function ChildrenCards(props: Props) {
                       </Typography>
                     </Stack>
                   </Box>
-                  )}
+                )}
 
                 <Slide direction="down" in={expanded} timeout={300}>
                   <Box>
                     <Divider sx={{ mx: { xs: 1, sm: 1.25 } }} />
-                  <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
+                    <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
                       <Stack spacing={2}>
-                        {/* Informações da Criança */}
                         <Paper
                           variant="outlined"
-                      sx={{
+                          sx={{
                             p: 1.25,
-                        borderRadius: 2,
+                            borderRadius: 2,
                             bgcolor: "grey.50",
-                        border: "1px solid",
+                            border: "1px solid",
                             borderColor: "grey.200",
                           }}
                         >
@@ -448,31 +360,31 @@ export default function ChildrenCards(props: Props) {
                               <ChildCare fontSize="small" color="primary" />
                               <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
                                 Informações da Criança
-                            </Typography>
+                              </Typography>
                             </Stack>
                             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
                               {c.gender && (
-                                <Chip 
-                                  size="small" 
-                                  variant="outlined" 
+                                <Chip
+                                  size="small"
+                                  variant="outlined"
                                   label={gLabel(c.gender)}
                                   color="info"
                                   sx={{ fontWeight: 500 }}
                                 />
                               )}
                               {ageDetailedText && (
-                                <Chip 
-                                  size="small" 
-                                  variant="outlined" 
+                                <Chip
+                                  size="small"
+                                  variant="outlined"
                                   label={`Idade: ${ageDetailedText}`}
                                   color="success"
                                   sx={{ fontWeight: 500 }}
                                 />
                               )}
                               {tenure && (
-                                <Chip 
-                                  size="small" 
-                                  variant="outlined" 
+                                <Chip
+                                  size="small"
+                                  variant="outlined"
                                   label={`Tempo no clubinho: ${tenure}`}
                                   color="warning"
                                   sx={{ fontWeight: 500 }}
@@ -482,7 +394,6 @@ export default function ChildrenCards(props: Props) {
                           </Stack>
                         </Paper>
 
-                        {/* Datas */}
                         <Paper
                           variant="outlined"
                           sx={{
@@ -501,17 +412,17 @@ export default function ChildrenCards(props: Props) {
                               </Typography>
                             </Stack>
                             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
-                              <Chip 
-                                size="small" 
-                                variant="outlined" 
-                                label={`Nascimento: ${fmtDateOnly(c.birthDate)}`}
+                              <Chip
+                                size="small"
+                                variant="outlined"
+                                label={`Nascimento: ${formatDate(c.birthDate)}`}
                                 color="default"
                                 sx={{ fontWeight: 500 }}
                               />
-                              <Chip 
-                                size="small" 
-                                variant="outlined" 
-                                label={`No clubinho desde: ${fmtDateOnly(c.joinedAt)}`}
+                              <Chip
+                                size="small"
+                                variant="outlined"
+                                label={`No clubinho desde: ${formatDate(c.joinedAt)}`}
                                 color="default"
                                 sx={{ fontWeight: 500 }}
                               />
@@ -519,7 +430,6 @@ export default function ChildrenCards(props: Props) {
                           </Stack>
                         </Paper>
 
-                        {/* Endereço */}
                         {c.address && (
                           <Paper
                             variant="outlined"
@@ -538,29 +448,29 @@ export default function ChildrenCards(props: Props) {
                                   Endereço
                                 </Typography>
                               </Stack>
-                            <Stack spacing={0.5}>
+                              <Stack spacing={0.5}>
                                 <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4 }}>
                                   {c.address.street}{c.address.number ? `, ${c.address.number}` : ""}
-                              </Typography>
+                                </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
                                   {c.address.district} • {c.address.city} / {c.address.state}
                                 </Typography>
                                 {c.address.postalCode && (
                                   <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
                                     CEP: {c.address.postalCode}
-                              </Typography>
+                                  </Typography>
                                 )}
-                              {c.address.complement && (
+                                {c.address.complement && (
                                   <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
                                     Complemento: {c.address.complement}
-                                </Typography>
-                              )}
+                                  </Typography>
+                                )}
                               </Stack>
                             </Stack>
                           </Paper>
                         )}
-                        </Stack>
-                  </CardContent>
+                      </Stack>
+                    </CardContent>
                   </Box>
                 </Slide>
 
@@ -581,20 +491,20 @@ export default function ChildrenCards(props: Props) {
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {c.name}
                   </Typography>
-                  
+
                   <Stack direction="row" spacing={0.5}>
                     <Tooltip title="Visualizar detalhes">
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => onOpenView(c)}
-                        sx={{ 
+                        sx={{
                           color: "primary.main",
                           "&:hover": { bgcolor: "primary.50" }
                         }}
                       >
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                        <Visibility fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     {wa && (
                       <Tooltip title="WhatsApp">
                         <IconButton
@@ -611,29 +521,29 @@ export default function ChildrenCards(props: Props) {
                       </Tooltip>
                     )}
                     <Tooltip title="Editar criança">
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => onStartEdit(c)}
-                        sx={{ 
+                        sx={{
                           color: "info.main",
                           "&:hover": { bgcolor: "info.50" }
                         }}
                       >
-                      <Edit fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                        <Edit fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Excluir criança">
-                      <IconButton 
-                        size="small" 
-                        color="error" 
+                      <IconButton
+                        size="small"
+                        color="error"
                         onClick={() => onAskDelete(c)}
-                        sx={{ 
+                        sx={{
                           "&:hover": { bgcolor: "error.50" }
                         }}
                       >
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Stack>
                 </Box>
               </Card>

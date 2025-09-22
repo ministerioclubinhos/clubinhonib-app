@@ -1,45 +1,21 @@
 import React, { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
   Typography, Divider, TablePagination, Tooltip, Collapse, Select, MenuItem, FormControl, InputLabel,
   Paper, Avatar, Slide, ButtonBase, Link
 } from "@mui/material";
 import { 
-  Visibility, Link as LinkIcon, ExpandMore as ExpandMoreIcon, SwapVert,
-  ContentCopy, Phone as PhoneIcon, SupervisorAccount, GroupOutlined, SchoolOutlined
+  Visibility, Link as LinkIcon, ExpandMore as ExpandMoreIcon, SwapVert, Phone as PhoneIcon, SupervisorAccount, GroupOutlined, SchoolOutlined, WhatsApp
 } from "@mui/icons-material";
 import type { SortingState } from "@tanstack/react-table";
 import type { CoordinatorProfile } from "../types";
 import { fmtDate } from "@/utils/dates";
-import { WEEKDAY_PT } from "@/features/pagela-clubs/utils";
-import type { Weekday } from "@/features/clubs/types";
+import { RootState } from "@/store/slices";
+import { buildWhatsappLink } from "@/utils/whatsapp";
+import { weekdayLabel } from "@/utils/dateUtils";
+import { CopyButton, initials } from "@/utils/components";
 
-const initials = (name?: string) =>
-  (name || "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(s => s[0]?.toUpperCase())
-    .join("") || "C";
-
-function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
-  const copyToClipboard = (text?: string) => {
-    if (!text) return;
-    navigator.clipboard?.writeText(String(text)).catch(() => {});
-  };
-  return (
-    <Tooltip title={title}>
-      <IconButton size="small" onClick={() => copyToClipboard(value)}>
-        <ContentCopy fontSize="inherit" />
-      </IconButton>
-    </Tooltip>
-  );
-}
-
-const translateWeekday = (weekday?: string): string => {
-  if (!weekday) return "—";
-  return WEEKDAY_PT[weekday as Weekday] || weekday;
-};
 
 type Props = {
   rows: CoordinatorProfile[];
@@ -107,6 +83,8 @@ export default function CoordinatorCards(props: Props) {
           const expanded = open.has(c.id);
           const clubs = c.clubs ?? [];
           const totalTeachers = clubs.reduce((acc, cl) => acc + (cl.teachers?.length || 0), 0);
+          const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+          const wa = buildWhatsappLink({ id: c.id, name: c.user?.name, phone: c.user?.phone } as any, loggedUser?.name);
 
           return (
             <Grid item xs={12} key={c.id} sx={{ mb: { xs: 0.75, sm: 1 }, pb: { xs: 1, sm: 1.25 } }}>
@@ -145,7 +123,7 @@ export default function CoordinatorCards(props: Props) {
                     pt: 1,
                     pb: 0.5,
                     gap: { xs: 0.75, sm: 1 },
-                    mt: 0.5, // Espaço para a barra colorida
+                    mt: 0.5,
                   }}
                 >
                   <Avatar
@@ -254,6 +232,54 @@ export default function CoordinatorCards(props: Props) {
                   </Stack>
                 </Box>
 
+                {c.user?.phone && (
+                  <Box sx={{ 
+                    px: { xs: 1, sm: 1.25 }, 
+                    pb: 0.75,
+                    borderRadius: 2,
+                    bgcolor: "grey.50",
+                    border: "1px solid",
+                    borderColor: "grey.200",
+                    mt: 0.5,
+                  }}>
+                    <Stack direction="row" spacing={0.75} alignItems="center">
+                      <PhoneIcon sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography 
+                          variant="body2"
+                          sx={{ 
+                            fontWeight: 600,
+                            color: "text.primary",
+                            whiteSpace: "nowrap", 
+                            overflow: "hidden", 
+                            textOverflow: "ellipsis"
+                          }}
+                          title={c.user.phone}
+                        >
+                          {c.user.phone}
+                        </Typography>
+                      </Box>
+                      <Stack direction="row" spacing={0.5}>
+                        <CopyButton value={c.user.phone} title="Copiar telefone" />
+                        {wa && (
+                          <Tooltip title="WhatsApp">
+                            <IconButton
+                              size="small"
+                              component="a"
+                              href={wa}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{ color: "success.main" }}
+                            >
+                              <WhatsApp fontSize="inherit" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </Stack>
+                    </Stack>
+                  </Box>
+                )}
+
                 {!expanded && (
                   <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: 0.75 }}>
                     <Stack
@@ -327,7 +353,6 @@ export default function CoordinatorCards(props: Props) {
                           </Stack>
                         </Paper>
 
-                        {/* Clubinhos */}
                         <Paper
                           variant="outlined"
                           sx={{
@@ -365,7 +390,6 @@ export default function CoordinatorCards(props: Props) {
                                     }}
                                   >
                                     <Stack spacing={1}>
-                                      {/* Header do Clubinho */}
                                       <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" rowGap={0.5}>
                                         <Chip 
                                           size="small" 
@@ -376,7 +400,7 @@ export default function CoordinatorCards(props: Props) {
                                         <Chip 
                                           size="small" 
                                           variant="outlined" 
-                                          label={translateWeekday(cl.weekday)}
+                                          label={weekdayLabel(cl.weekday)}
                                           sx={{ fontWeight: 500, fontSize: "0.75rem" }}
                                         />
                                         <Chip 
@@ -388,7 +412,6 @@ export default function CoordinatorCards(props: Props) {
                                         />
                                       </Stack>
                                       
-                                      {/* Lista de Professores */}
                                       {(cl.teachers ?? []).length > 0 && (
                                         <Box>
                                           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5, display: "block" }}>
