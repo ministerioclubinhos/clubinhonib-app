@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Typography, Paper, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Button, Container, Typography, Paper, useTheme, useMediaQuery, IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { motion } from 'framer-motion';
 
 import api from '@/config/axiosConfig';
@@ -13,7 +14,6 @@ import { LoadingSpinner } from '../components/Modals';
 import { NotificationModal } from '../components/Modals';
 import ImageSectionEditor from './ImageSectionEditor';
 
-// Componente apenas para criação de novas galerias por usuários finais
 
 interface NotificationState {
   open: boolean;
@@ -36,7 +36,6 @@ export default function ImageSectionPage() {
   });
 
   useEffect(() => {
-    // Sempre limpa os dados para modo de criação
     dispatch(clearData());
   }, [dispatch]);
 
@@ -133,6 +132,10 @@ export default function ImageSectionPage() {
     dispatch(setData({ ...(sectionData || {}), ...updatedData } as SectionData));
   };
 
+  const handleBack = () => {
+    navigate('/area-do-professor');
+  };
+
   return (
     <Box
       sx={{
@@ -158,7 +161,33 @@ export default function ImageSectionPage() {
               border: '1px solid rgba(255, 255, 255, 0.2)',
             }}
           >
-            {/* Header com gradiente e ícone */}
+            <Box
+              sx={{
+                display: { xs: 'flex', sm: 'none' },
+                justifyContent: 'flex-start',
+                mb: 2,
+              }}
+            >
+              <IconButton
+                onClick={handleBack}
+                sx={{
+                  bgcolor: 'rgba(255, 255, 255, 0.9)',
+                  color: 'primary.main',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 1)',
+                    transform: 'scale(1.05)',
+                  },
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  width: 40,
+                  height: 40,
+                }}
+                aria-label="Voltar para área do professor"
+              >
+                <ArrowBackIcon fontSize="inherit" />
+              </IconButton>
+            </Box>
+
             <Box
               sx={{
                 textAlign: 'center',
@@ -167,6 +196,34 @@ export default function ImageSectionPage() {
                 overflow: 'hidden',
               }}
             >
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  zIndex: 10,
+                  display: { xs: 'none', sm: 'block' },
+                }}
+              >
+                <IconButton
+                  onClick={handleBack}
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.9)',
+                    color: 'primary.main',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 1)',
+                      transform: 'scale(1.05)',
+                    },
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    width: 44,
+                    height: 44,
+                  }}
+                  aria-label="Voltar para área do professor"
+                >
+                  <ArrowBackIcon fontSize="inherit" />
+                </IconButton>
+              </Box>
               <Box
                 sx={{
                   position: 'absolute',
@@ -181,35 +238,42 @@ export default function ImageSectionPage() {
                   filter: 'blur(20px)',
                 }}
               />
-              
-              <Typography
-                variant="h3"
-                fontWeight="bold"
+
+              <Box
                 sx={{
-                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
-                  background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  mb: 1,
+                  width: { xs: '95%', sm: '100%' },
+                  mx: 'auto',
                   position: 'relative',
                   zIndex: 1,
                 }}
               >
-                📸 Enviar Imagens do seu Clubinho
-              </Typography>
-              
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{
-                  fontSize: { xs: '0.9rem', md: '1rem' },
-                  maxWidth: 600,
-                  mx: 'auto',
-                }}
-              >
-                Registre e compartilhe os momentos especiais das atividades do seu Clubinho para inspirar outros professores
-              </Typography>
+                <Typography
+                  variant="h3"
+                  fontWeight="bold"
+                  sx={{
+                    fontSize: { xs: '1.2rem', sm: '2rem', md: '2.5rem' },
+                    background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    mb: 1,
+                  }}
+                >
+                  📸 Enviar Imagens do seu Clubinho
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: { xs: '0.9rem', md: '1rem' },
+                    maxWidth: { xs: '100%', sm: 600 },
+                    mx: 'auto',
+                  }}
+                >
+                  Registre e compartilhe os momentos especiais das atividades do seu Clubinho para inspirar outros professores
+                </Typography>
+              </Box>
             </Box>
 
             <LoadingSpinner open={isSaving} aria-label="Salvando a seção" />
@@ -243,9 +307,9 @@ export default function ImageSectionPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              <Box 
-                mt={4} 
-                display="flex" 
+              <Box
+                mt={4}
+                display="flex"
                 justifyContent="center"
                 sx={{
                   px: { xs: 1, md: 0 },
