@@ -40,31 +40,10 @@ export default function ImageSectionManager() {
   useEffect(() => { fetchSections(); }, [fetchSections]);
 
   const handleEdit = (section: SectionData) => {
-    const ideasSection: IdeasSection = {
-      id: section.id,
-      title: section.caption || '',
-      description: section.description || '',
-      public: section.public,
-      createdAt: typeof section.createdAt === 'string' ? section.createdAt : section.createdAt?.toISOString(),
-      updatedAt: typeof section.updatedAt === 'string' ? section.updatedAt : section.updatedAt?.toISOString(),
-      medias: (section.mediaItems || []).map((image: any) => ({
-        id: image.id,
-        title: image.caption || '',
-        description: image.description || '',
-        uploadType: MediaUploadType.UPLOAD,
-        mediaType: MediaType.IMAGE,
-        isLocalFile: true,
-        url: image.url,
-        platformType: undefined,
-        originalName: image.originalName || undefined,
-        size: image.size || undefined,
-        createdAt: image.createdAt,
-        updatedAt: image.updatedAt,
-      })),
-    };
-    
-    dispatch(setIdeasSectionData(ideasSection));
-    navigate('/adm/editar-ideias-compartilhadas');
+    // Define os dados da seção no Redux para o modo de edição
+    dispatch(setData(section));
+    // Redireciona para a página de edição de imagens
+    navigate('/adm/editar-imagens-clubinho');
   };
 
   const handleDelete = async () => {
@@ -129,7 +108,7 @@ export default function ImageSectionManager() {
             <Alert severity="info">Sem imagens dos clubinhos para mostrar.</Alert>
           </Box>
         ) : (
-          <Grid container spacing={3} alignItems="stretch">
+          <Grid container spacing={{ xs: 2, md: 3 }} alignItems="stretch">
             {filteredSections.map((section) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={section.id} sx={{ display: 'flex' }}>
                 <ImagePageCard
