@@ -108,7 +108,7 @@ export default function ClubsToolbar({
                   position: "fixed",
                   bottom: 16,
                   right: 16,
-                  zIndex: 1200,
+                  zIndex: 9999,
                 }}
               >
                 <Stack spacing={1} alignItems="flex-end">
@@ -118,6 +118,7 @@ export default function ClubsToolbar({
                       color="secondary"
                       aria-label="Limpar filtros"
                       onClick={handleClear}
+                      sx={{ boxShadow: 6 }}
                     >
                       <CleaningServices fontSize="small" />
                     </Fab>
@@ -128,6 +129,7 @@ export default function ClubsToolbar({
                       size="small"
                       aria-label="Recarregar"
                       onClick={onRefreshClick}
+                      sx={{ boxShadow: 6 }}
                     >
                       <Refresh fontSize="small" />
                     </Fab>
@@ -139,6 +141,7 @@ export default function ClubsToolbar({
                         color="primary"
                         aria-label="Criar Clubinho"
                         onClick={onCreateClick}
+                        sx={{ boxShadow: 6 }}
                       >
                         <Add />
                       </Fab>

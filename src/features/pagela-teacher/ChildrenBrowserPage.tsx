@@ -20,7 +20,7 @@ export default function ChildrenBrowserPage() {
   const nav = useNavigate();
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const club = useSelector((state: RootState) => state.auth.user?.teacherProfile?.club);
+  const club = useSelector((state: RootState) => (state.auth as any).user?.teacherProfile?.club);
 
   const {
     items,

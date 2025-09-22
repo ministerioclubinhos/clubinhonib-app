@@ -8,8 +8,8 @@ import { setData, clearData, SectionData } from '@/store/slices/image-section/im
 import { MediaType, MediaUploadType, MediaPlatform } from '@/store/slices/types';
 import { RootState } from '@/store/slices';
 
-import { LoadingSpinner } from './LoadingSpinner';
-import { NotificationModal } from './NotificationModal';
+import { LoadingSpinner } from '../components/Modals';
+import { NotificationModal } from '../components/Modals';
 import ImageSectionEditor from './ImageSectionEditor';
 
 interface ImageSectionPageProps {

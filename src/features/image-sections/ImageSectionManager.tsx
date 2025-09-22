@@ -15,6 +15,9 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { AppDispatch } from '@/store/slices';
 import { setData, SectionData } from '@/store/slices/image-section/imageSectionSlice';
+import { setIdeasSectionData } from '@/store/slices/ideas/ideasSlice';
+import { IdeasSection } from '@/store/slices/ideas/ideasSlice';
+import { MediaType, MediaUploadType, MediaPlatform } from '@/store/slices/types';
 import ImagePageCard from './components/ImagePageCard';
 import ImagePageDetailsModal from './components/ImagePageDetailsModal';
 import { deleteImageSection } from './api';
@@ -37,8 +40,31 @@ export default function ImageSectionManager() {
   useEffect(() => { fetchSections(); }, [fetchSections]);
 
   const handleEdit = (section: SectionData) => {
-    dispatch(setData(section));
-    navigate('/adm/editar-imagens-clubinho');
+    const ideasSection: IdeasSection = {
+      id: section.id,
+      title: section.caption || '',
+      description: section.description || '',
+      public: section.public,
+      createdAt: typeof section.createdAt === 'string' ? section.createdAt : section.createdAt?.toISOString(),
+      updatedAt: typeof section.updatedAt === 'string' ? section.updatedAt : section.updatedAt?.toISOString(),
+      medias: (section.mediaItems || []).map((image: any) => ({
+        id: image.id,
+        title: image.caption || '',
+        description: image.description || '',
+        uploadType: MediaUploadType.UPLOAD,
+        mediaType: MediaType.IMAGE,
+        isLocalFile: true,
+        url: image.url,
+        platformType: undefined,
+        originalName: image.originalName || undefined,
+        size: image.size || undefined,
+        createdAt: image.createdAt,
+        updatedAt: image.updatedAt,
+      })),
+    };
+    
+    dispatch(setIdeasSectionData(ideasSection));
+    navigate('/adm/editar-ideias-compartilhadas');
   };
 
   const handleDelete = async () => {

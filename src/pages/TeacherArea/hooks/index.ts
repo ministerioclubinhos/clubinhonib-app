@@ -1,0 +1,1 @@
+export { useTeacherArea } from './useTeacherArea';

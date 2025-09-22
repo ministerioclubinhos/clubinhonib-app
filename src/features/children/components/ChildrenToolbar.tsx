@@ -227,7 +227,7 @@ export default function ChildrenToolbar({ filters, onChange, onCreateClick, onRe
                   position: "fixed",
                   bottom: 16,
                   right: 16,
-                  zIndex: 1200,
+                  zIndex: 9999,
                   display: { xs: "block", md: "none" },
                 }}
               >
