@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Typography } from '@mui/material';
+import { Box, Button, Container, Typography, Paper, useTheme, useMediaQuery } from '@mui/material';
+import { motion } from 'framer-motion';
 
 import api from '@/config/axiosConfig';
 import { setData, clearData, SectionData } from '@/store/slices/image-section/imageSectionSlice';
@@ -12,9 +13,7 @@ import { LoadingSpinner } from '../components/Modals';
 import { NotificationModal } from '../components/Modals';
 import ImageSectionEditor from './ImageSectionEditor';
 
-interface ImageSectionPageProps {
-  isEditMode: boolean;
-}
+// Componente apenas para criação de novas galerias por usuários finais
 
 interface NotificationState {
   open: boolean;
@@ -22,9 +21,11 @@ interface NotificationState {
   severity: 'success' | 'error';
 }
 
-export default function ImageSectionPage({ isEditMode }: ImageSectionPageProps) {
+export default function ImageSectionPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const sectionData = useSelector((state: RootState) => state.imageSection.data) as SectionData | null;
 
   const [isSaving, setIsSaving] = useState(false);
@@ -35,10 +36,9 @@ export default function ImageSectionPage({ isEditMode }: ImageSectionPageProps) 
   });
 
   useEffect(() => {
-    if (!isEditMode) {
-      dispatch(clearData());
-    }
-  }, [isEditMode, dispatch]);
+    // Sempre limpa os dados para modo de criação
+    dispatch(clearData());
+  }, [dispatch]);
 
   const showError = (message: string) => {
     setNotification({ open: true, message, severity: 'error' });
@@ -46,15 +46,15 @@ export default function ImageSectionPage({ isEditMode }: ImageSectionPageProps) 
 
   const validate = useCallback((): boolean => {
     if (!sectionData?.caption?.trim()) {
-      showError('A legenda da galeria é obrigatória.');
+      showError('O título das atividades do seu Clubinho é obrigatório.');
       return false;
     }
     if (!sectionData?.description?.trim()) {
-      showError('A descrição da galeria é obrigatória.');
+      showError('A descrição das atividades é obrigatória.');
       return false;
     }
     if (!sectionData?.mediaItems?.length) {
-      showError('Adicione pelo menos uma imagem.');
+      showError('Adicione pelo menos uma imagem das atividades do seu Clubinho.');
       return false;
     }
     return true;
@@ -97,17 +97,14 @@ export default function ImageSectionPage({ isEditMode }: ImageSectionPageProps) 
   }, [sectionData]);
 
   const saveSection = async (formData: FormData) => {
-    const isEdit = isEditMode;
-    const url = isEdit ? `/image-sections/${sectionData!.id}` : '/image-sections';
-    const request = isEdit ? api.patch : api.post;
-
-    await request(url, formData, {
+    // Sempre cria nova seção (modo criação)
+    await api.post('/image-sections', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
     setNotification({
       open: true,
-      message: isEdit ? 'Seção atualizada com sucesso!' : 'Seção criada com sucesso!',
+      message: 'Imagens do seu Clubinho compartilhadas com sucesso!',
       severity: 'success',
     });
 
@@ -121,17 +118,12 @@ export default function ImageSectionPage({ isEditMode }: ImageSectionPageProps) 
     const formData = prepareFormData();
 
     try {
-      if (isEditMode && !sectionData?.id) {
-        showError('ID da seção não encontrado.');
-        return;
-      }
-
       await saveSection(formData);
 
-      navigate(isEditMode ? '/adm/fotos-clubinhos' : '/area-do-professor');
+      navigate('/area-do-professor');
     } catch (error) {
       console.error('Erro ao salvar a seção:', error);
-      showError('Falha ao salvar a seção. Tente novamente.');
+      showError('Falha ao compartilhar as imagens do seu Clubinho. Tente novamente.');
     } finally {
       setIsSaving(false);
     }
@@ -142,57 +134,158 @@ export default function ImageSectionPage({ isEditMode }: ImageSectionPageProps) 
   };
 
   return (
-    <Container sx={{ mt: 10, mb: 10, minWidth: '90%' }}>
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        mb={3}
-        textAlign="center"
-        sx={{
-          fontSize: {
-            xs: '1.2rem',
-            sm: '2rem',
-            md: '2.4rem',
-          },
-          lineHeight: 1.3,
-        }}
-      >
-        {isEditMode
-          ? 'Editar imagens e publicar'
-          : 'Envie imagens do seu Clubinho'}
-      </Typography>
-
-      <LoadingSpinner open={isSaving} aria-label="Salvando a seção" />
-
-      <NotificationModal
-        open={notification.open}
-        message={notification.message}
-        severity={notification.severity}
-        onClose={() => setNotification({ ...notification, open: false })}
-      />
-
-      <ImageSectionEditor
-        isEditMode={isEditMode}
-        initialCaption={sectionData?.caption || ''}
-        initialDescription={sectionData?.description || ''}
-        initialIsPublic={sectionData?.public ?? true}
-        initialMediaItems={sectionData?.mediaItems || []}
-        onChange={handleChange}
-        captionPlaceholder="EX: Clubinho 90: Gincana de Páscoa"
-        descriptionPlaceholder="EX: Descreva o que aconteceu nesta na semana do seu CLubinho, como: Clubinho especial temátio, dinâmica com as crianças ou entrega de super estrelas."
-      />
-
-      <Box mt={3} display="flex" justifyContent="center">
-        <Button
-          variant="contained"
-          color="success"
-          onClick={handleSave}
-          disabled={isSaving}
-          aria-label={isEditMode ? 'Salvar e publicar imagens' : 'Enviar imagens'}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        py: { xs: 2, md: 4 },
+        px: { xs: 1, md: 0 },
+      }}
+    >
+      <Container maxWidth="lg">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
         >
-          {isSaving ? 'Salvando...' : isEditMode ? 'Salvar e publicar imagens' : 'Enviar imagens'}
-        </Button>
-      </Box>
-    </Container>
+          <Paper
+            elevation={8}
+            sx={{
+              p: { xs: 3, md: 4 },
+              borderRadius: 4,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            {/* Header com gradiente e ícone */}
+            <Box
+              sx={{
+                textAlign: 'center',
+                mb: 4,
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -50,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: 100,
+                  height: 100,
+                  background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+                  borderRadius: '50%',
+                  opacity: 0.1,
+                  filter: 'blur(20px)',
+                }}
+              />
+              
+              <Typography
+                variant="h3"
+                fontWeight="bold"
+                sx={{
+                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
+                  background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  mb: 1,
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+              >
+                📸 Enviar Imagens do seu Clubinho
+              </Typography>
+              
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{
+                  fontSize: { xs: '0.9rem', md: '1rem' },
+                  maxWidth: 600,
+                  mx: 'auto',
+                }}
+              >
+                Registre e compartilhe os momentos especiais das atividades do seu Clubinho para inspirar outros professores
+              </Typography>
+            </Box>
+
+            <LoadingSpinner open={isSaving} aria-label="Salvando a seção" />
+
+            <NotificationModal
+              open={notification.open}
+              message={notification.message}
+              severity={notification.severity}
+              onClose={() => setNotification({ ...notification, open: false })}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <ImageSectionEditor
+                isEditMode={false}
+                initialCaption={sectionData?.caption || ''}
+                initialDescription={sectionData?.description || ''}
+                initialIsPublic={sectionData?.public ?? true}
+                initialMediaItems={sectionData?.mediaItems || []}
+                onChange={handleChange}
+                captionPlaceholder="EX: Clubinho 90: Gincana de Páscoa - Crianças aprendendo sobre ressurreição"
+                descriptionPlaceholder="EX: Descreva as atividades realizadas no seu Clubinho: dinâmicas, brincadeiras, ensinamentos bíblicos, momentos especiais com as crianças e como elas reagiram às atividades."
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+            >
+              <Box 
+                mt={4} 
+                display="flex" 
+                justifyContent="center"
+                sx={{
+                  px: { xs: 1, md: 0 },
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  size={isMobile ? "medium" : "large"}
+                  sx={{
+                    minWidth: { xs: 200, md: 250 },
+                    height: { xs: 44, md: 52 },
+                    fontSize: { xs: '0.9rem', md: '1rem' },
+                    fontWeight: 600,
+                    borderRadius: 3,
+                    background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                    boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #5a6fd8, #6a4190)',
+                      boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
+                      transform: 'translateY(-2px)',
+                    },
+                    '&:disabled': {
+                      background: 'rgba(0, 0, 0, 0.12)',
+                      boxShadow: 'none',
+                      transform: 'none',
+                    },
+                    transition: 'all 0.3s ease',
+                  }}
+                  aria-label="Compartilhar imagens do Clubinho"
+                >
+                  {isSaving ? 'Enviando...' : '🚀 Compartilhar Imagens'}
+                </Button>
+              </Box>
+            </motion.div>
+          </Paper>
+        </motion.div>
+      </Container>
+    </Box>
   );
 }

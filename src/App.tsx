@@ -37,6 +37,7 @@ import type { RootState as RootStateType, AppDispatch as AppDispatchType } from 
 import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
 import { WeekMaterialsList } from './pages/TeacherArea/components';
 import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
+import ImageSectionEditorAdmin from './features/image-sections/ImageSectionEditorAdmin';
 import { SiteFeedbackForm } from './pages/TeacherArea/components';
 
 import CoordinatorProfilesManager from './features/coordinators/CoordinatorProfilesManager';
@@ -110,7 +111,7 @@ function App() {
 
               <Route element={<ProtectedRoute />}>
                 <Route path="/area-do-professor" element={<TeacherArea />} />
-                <Route path="/imagens-clubinho" element={<ImageSectionPage isEditMode={false} />} />
+                <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
                 <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
                 <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
                 <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
@@ -130,6 +131,7 @@ function App() {
                   <Route path="paginas-materiais-semanais" element={<WeekMaterialManager />} />
                   <Route path="paginas-fotos" element={<ImagePageManager />} />
                   <Route path="fotos-clubinhos" element={<ImageSectionManager />} />
+                  <Route path="ideias-compartilhadas" element={<IdeasSectionManager  />} />
                   <Route path="paginas-videos" element={<VideosManager />} />
                   <Route path="paginas-ideias" element={<IdeasManager />} />
                   <Route path="criar-pagina" element={<SelecPageTemplate />} />
@@ -145,8 +147,7 @@ function App() {
                   <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
                   <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
                   <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-imagens-clubinho" element={<ImageSectionPage isEditMode />} />
-                  <Route path="ideias-compartilhadas" element={<IdeasSectionManager  />} />
+                  <Route path="editar-imagens-clubinho" element={<ImageSectionEditorAdmin />} />
                   <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage  />} />
                 </Route>
               </Route>
