@@ -25,7 +25,7 @@ import { UserRole } from 'store/slices/auth/authSlice';
 import ClubinhoSectionImageView from './ClubinhoSectionImageView/ClubinhoSectionImageView';
 import HomeIcon from '@mui/icons-material/Home';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { FofinhoButton } from './../../TeacherArea/components';
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import {
   setSectionData,
   appendSections,
@@ -188,7 +188,8 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
   const handleRefresh = () => {
     setPage(1);
     setHasMore(true);
-    dispatch(setSectionData({} as PaginatedSectionResponse));
+    setError(null);
+    // Não limpa os dados, apenas força o reload
   };
 
   const handleHome = () => {
@@ -328,11 +329,11 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
           <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Box
               display="flex"
-              alignItems="center"
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
               justifyContent="space-between"
-              mb={2}
-              flexWrap="wrap"
-              gap={2}
+              mb={{ xs: 1.5, sm: 2 }}
+              flexDirection={{ xs: 'column', sm: 'row' }}
+              gap={{ xs: 1.5, sm: 2 }}
             >
               <Box display="flex" alignItems="center" gap={2}>
                 <IconButton
@@ -359,11 +360,57 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
                 </Typography>
               </Box>
 
-              <Box display="flex" gap={1} alignItems="center">
+              <Box 
+                display="flex" 
+                gap={{ xs: 1, sm: 1 }} 
+                alignItems="center"
+                flexWrap="wrap"
+                width={{ xs: '100%', sm: 'auto' }}
+                justifyContent={{ xs: 'space-between', sm: 'flex-end' }}
+              >
                 {isAuthenticated && (
-                  <Box sx={{ mr: 1 }}>
-                    <FofinhoButton references={['photos']} />
-                  </Box>
+                  <Button
+                    onClick={() => navigate('/imagens-clubinho')}
+                    variant="contained"
+                    sx={{
+                      background: 'linear-gradient(45deg, #ff6b6b, #ff8e8e)',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      borderRadius: 3,
+                      px: { xs: 2, sm: 3 },
+                      py: { xs: 1, sm: 1.5 },
+                      fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                      textTransform: 'none',
+                      boxShadow: '0 4px 12px rgba(255, 107, 107, 0.4)',
+                      '&:hover': {
+                        background: 'linear-gradient(45deg, #ff5252, #ff7979)',
+                        boxShadow: '0 6px 16px rgba(255, 107, 107, 0.5)',
+                        transform: 'translateY(-2px)',
+                      },
+                      transition: 'all 0.3s ease',
+                      whiteSpace: 'nowrap',
+                      minWidth: { xs: 'auto', sm: 'auto' },
+                      maxWidth: { xs: 'calc(100% - 50px)', sm: 'none' },
+                      width: { xs: 'auto', sm: 'auto' },
+                    }}
+                  >
+                    <Box
+                      component="span"
+                      sx={{
+                        display: { xs: 'none', sm: 'inline' }
+                      }}
+                    >
+                      📸 Envie fotos do seu Clubinho para todos verem
+                    </Box>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: { xs: 'inline', sm: 'none' }
+                      }}
+                    >
+                      📸 Envie suas fotos
+                    </Box>
+                  </Button>
                 )}
                 <Tooltip title="Atualizar Feed">
                   <IconButton
@@ -374,9 +421,12 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
                       '&:hover': {
                         bgcolor: 'rgba(255,255,255,0.3)',
                       },
+                      fontSize: { xs: '1rem', sm: '1.2rem' },
+                      width: { xs: 36, sm: 40 },
+                      height: { xs: 36, sm: 40 },
                     }}
                   >
-                    <RefreshIcon />
+                    <RefreshIcon fontSize="inherit" />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -402,7 +452,6 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
         </Paper>
       </motion.div>
 
-      {/* Seções do Feed baseadas no SectionImagePageView */}
       <AnimatePresence>
         {sectionsList.length > 0 ? (
           <motion.div
