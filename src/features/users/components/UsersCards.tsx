@@ -70,6 +70,8 @@ export default function UsersCards(props: Props) {
   } = props;
 
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const { user } = useSelector((state: RootState) => state.auth);
+  
   const toggle = (id: string) =>
     setOpen(prev => {
       const n = new Set(prev);
@@ -123,7 +125,6 @@ export default function UsersCards(props: Props) {
       <Grid container spacing={{ xs: 1, sm: 1.25 }}>
         {rows.map((u) => {
           const expanded = open.has(u.id);
-          const { user } = useSelector((state: RootState) => state.auth);
           const wa = buildWhatsappLink(u.name, user?.name, u.phone);
 
           return (

@@ -74,6 +74,8 @@ export default function TeacherCards({
   onClearClub,
 }: Props) {
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+  
   const toggle = (id: string) =>
     setOpen((prev) => {
       const n = new Set(prev);
@@ -138,7 +140,6 @@ export default function TeacherCards({
           const expanded = open.has(t.id);
           const club = t.club || null;
           const coordUser = club?.coordinator?.user || null;
-          const { user: loggedUser } = useSelector((state: RootState) => state.auth);
           const wa = buildWhatsappLink(t.user?.name, loggedUser?.name, t.user?.phone);
 
           return (

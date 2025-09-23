@@ -35,6 +35,8 @@ export default function ChildrenCards(props: Props) {
   } = props;
 
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const { user } = useSelector((state: RootState) => state.auth);
+  
   const toggle = (id: string) =>
     setOpen((prev) => {
       const n = new Set(prev);
@@ -91,7 +93,6 @@ export default function ChildrenCards(props: Props) {
           const ageDetailedText = timeDifference(c.birthDate);
           const tenure = timeDifference(c.joinedAt);
           const addrPreview = c.address ? `${c.address.city} / ${c.address.state}` : "—";
-          const { user } = useSelector((state: RootState) => state.auth);
           const wa = buildWhatsappLink(c.name, user?.name, c.guardianPhone);
 
           return (

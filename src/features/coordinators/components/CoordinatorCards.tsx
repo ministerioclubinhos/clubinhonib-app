@@ -37,6 +37,8 @@ export default function CoordinatorCards(props: Props) {
   } = props;
 
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+  
   const toggle = (id: string) =>
     setOpen((prev) => {
       const n = new Set(prev);
@@ -83,7 +85,6 @@ export default function CoordinatorCards(props: Props) {
           const expanded = open.has(c.id);
           const clubs = c.clubs ?? [];
           const totalTeachers = clubs.reduce((acc, cl) => acc + (cl.teachers?.length || 0), 0);
-          const { user: loggedUser } = useSelector((state: RootState) => state.auth);
           const wa = buildWhatsappLink({ id: c.id, name: c.user?.name, phone: c.user?.phone } as any, loggedUser?.name);
 
           return (
