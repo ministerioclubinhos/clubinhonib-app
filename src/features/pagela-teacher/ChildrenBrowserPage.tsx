@@ -205,7 +205,7 @@ export default function ChildrenBrowserPage() {
             bottom: 24,
             right: 24,
             display: { xs: "flex", md: "none" },
-            zIndex: 10,
+            zIndex: 1300,
           }}
         >
           <PersonAdd />
