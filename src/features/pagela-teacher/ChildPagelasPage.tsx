@@ -379,7 +379,7 @@ export default function ChildPagelasPage() {
           color="primary"
           aria-label="Criar pagela"
           onClick={openCreate}
-          sx={{ position: "fixed", bottom: 88, right: 16, zIndex: 1100 }}
+          sx={{ position: "fixed", bottom: 88, right: 16, zIndex: 1300 }}
         >
           <Add />
         </Fab>
