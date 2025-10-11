@@ -159,7 +159,7 @@ export default function TeacherCards({
                   },
                   bgcolor: "background.paper",
                   position: "relative",
-                  maxHeight: !expanded ? { xs: 150, sm: 150 } : "none",
+                  maxHeight: !expanded ? { xs: 200, sm: 150 } : "none",
                   "&::before": {
                     content: '""',
                     position: "absolute",
@@ -288,14 +288,8 @@ export default function TeacherCards({
                 </Box>
 
                 {!expanded && (
-                  <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: 0.75 }}>
-                    <Stack
-                      direction="row"
-                      spacing={0.5}
-                      alignItems="center"
-                      flexWrap="wrap"
-                      rowGap={0.25}
-                    >
+                  <>
+                    <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: 0.5 }}>
                       <Chip
                         size="small"
                         variant="filled"
@@ -315,27 +309,56 @@ export default function TeacherCards({
                           "& .MuiChip-label": { px: 0.5 }
                         }}
                       />
-                      {coordUser?.phone && (
-                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
-                          <PhoneIcon sx={{ fontSize: 14, color: "text.secondary" }} />
-                          <Link
-                            href={`tel:${coordUser.phone}`}
-                            underline="hover"
-                            sx={{
-                              fontSize: "0.75rem",
-                              color: "text.secondary",
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis"
-                            }}
-                          >
-                            {coordUser.phone}
-                          </Link>
-                          <CopyButton value={coordUser.phone} title="Copiar telefone" />
+                    </Box>
+
+                    {t.user?.phone && (
+                      <Box sx={{ 
+                        mx: { xs: 1, sm: 1.25 },
+                        mb: 0.75,
+                        p: { xs: 0.75, sm: 1 },
+                        borderRadius: 2,
+                        bgcolor: "grey.50",
+                        border: "1px solid",
+                        borderColor: "grey.200",
+                      }}>
+                        <Stack direction="row" spacing={0.75} alignItems="center">
+                          <PhoneIcon sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
+                          <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Typography 
+                              variant="body2"
+                              sx={{ 
+                                fontWeight: 600,
+                                color: "text.primary",
+                                whiteSpace: "nowrap", 
+                                overflow: "hidden", 
+                                textOverflow: "ellipsis"
+                              }}
+                              title={t.user.phone}
+                            >
+                              {t.user.phone}
+                            </Typography>
+                          </Box>
+                          <Stack direction="row" spacing={0.5}>
+                            <CopyButton value={t.user.phone} title="Copiar telefone" />
+                            {wa && (
+                              <Tooltip title="WhatsApp">
+                                <IconButton
+                                  size="medium"
+                                  component="a"
+                                  href={wa}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  sx={{ color: "success.main" }}
+                                >
+                                  <WhatsApp fontSize="medium" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </Stack>
                         </Stack>
-                      )}
-                    </Stack>
-                  </Box>
+                      </Box>
+                    )}
+                  </>
                 )}
 
                 <Slide direction="down" in={expanded} timeout={300}>
@@ -541,8 +564,34 @@ export default function TeacherCards({
           setPageIndex(0);
         }}
         rowsPerPageOptions={[6, 12, 24]}
-        labelRowsPerPage="Linhas"
-        sx={{ px: 0 }}
+        labelRowsPerPage="Linhas:"
+        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+        slotProps={{
+          select: {
+            sx: { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
+          }
+        }}
+        sx={{ 
+          px: 0,
+          ".MuiTablePagination-toolbar": {
+            minHeight: { xs: 52, sm: 64 },
+            px: { xs: 0.5, sm: 2 },
+          },
+          ".MuiTablePagination-selectLabel": {
+            margin: 0,
+            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          },
+          ".MuiTablePagination-displayedRows": {
+            margin: 0,
+            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          },
+          ".MuiTablePagination-actions": {
+            marginLeft: { xs: 0.5, sm: 1 },
+            "& .MuiIconButton-root": {
+              padding: { xs: "4px", sm: "8px" },
+            }
+          }
+        }}
       />
     </Box>
   );

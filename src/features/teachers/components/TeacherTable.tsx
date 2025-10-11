@@ -287,7 +287,8 @@ export default function TeacherTable({
           setPageIndex(0);
         }}
         rowsPerPageOptions={isXs ? [6, 12, 24] : [12, 24, 50]}
-        labelRowsPerPage={isXs ? "Linhas" : "Linhas por página"}
+        labelRowsPerPage={isXs ? "Linhas:" : "Linhas por página:"}
+        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
       />
     </Paper>
   );

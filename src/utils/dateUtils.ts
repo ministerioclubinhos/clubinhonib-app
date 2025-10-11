@@ -26,6 +26,14 @@ export function summaryLabel(from?: string, to?: string) {
 }
 
 const WEEKDAY_PT: Record<string, string> = {
+  monday: "Segunda-feira",
+  tuesday: "Terça-feira", 
+  wednesday: "Quarta-feira",
+  thursday: "Quinta-feira",
+  friday: "Sexta-feira",
+  saturday: "Sábado",
+  sunday: "Domingo",
+  // Suporte para maiúsculas também (retrocompatibilidade)
   MONDAY: "Segunda-feira",
   TUESDAY: "Terça-feira", 
   WEDNESDAY: "Quarta-feira",

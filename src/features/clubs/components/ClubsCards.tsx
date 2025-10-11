@@ -533,8 +533,34 @@ export default function ClubsCards(props: Props) {
         rowsPerPage={pageSize}
         onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPageIndex(0); }}
         rowsPerPageOptions={[6, 12, 24]}
-        labelRowsPerPage="Linhas"
-        sx={{ px: 0 }}
+        labelRowsPerPage="Linhas:"
+        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+        slotProps={{
+          select: {
+            sx: { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
+          }
+        }}
+        sx={{ 
+          px: 0,
+          ".MuiTablePagination-toolbar": {
+            minHeight: { xs: 52, sm: 64 },
+            px: { xs: 0.5, sm: 2 },
+          },
+          ".MuiTablePagination-selectLabel": {
+            margin: 0,
+            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          },
+          ".MuiTablePagination-displayedRows": {
+            margin: 0,
+            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          },
+          ".MuiTablePagination-actions": {
+            marginLeft: { xs: 0.5, sm: 1 },
+            "& .MuiIconButton-root": {
+              padding: { xs: "4px", sm: "8px" },
+            }
+          }
+        }}
       />
     </Box>
   );
