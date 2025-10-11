@@ -238,7 +238,8 @@ function ClubsTableDesktop(props: Props) {
         rowsPerPage={pageSize}
         onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPageIndex(0); }}
         rowsPerPageOptions={[12, 24, 50]}
-        labelRowsPerPage="Linhas por página"
+        labelRowsPerPage="Linhas por página:"
+        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
       />
     </Paper>
   );

@@ -37,7 +37,7 @@ export default function CoordinatorCards(props: Props) {
   } = props;
 
   const [open, setOpen] = useState<Set<string>>(new Set());
-  const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+  const loggedUser = useSelector((state: RootState) => state.auth?.user);
   
   const toggle = (id: string) =>
     setOpen((prev) => {
@@ -85,7 +85,7 @@ export default function CoordinatorCards(props: Props) {
           const expanded = open.has(c.id);
           const clubs = c.clubs ?? [];
           const totalTeachers = clubs.reduce((acc, cl) => acc + (cl.teachers?.length || 0), 0);
-          const wa = buildWhatsappLink({ id: c.id, name: c.user?.name, phone: c.user?.phone } as any, loggedUser?.name);
+          const wa = buildWhatsappLink(c.user?.name, loggedUser?.name, c.user?.phone);
 
           return (
             <Grid item xs={12} key={c.id} sx={{ mb: { xs: 0.75, sm: 1 }, pb: { xs: 1, sm: 1.25 } }}>
@@ -104,7 +104,7 @@ export default function CoordinatorCards(props: Props) {
                   },
                   bgcolor: "background.paper",
                   position: "relative",
-                  maxHeight: !expanded ? { xs: 150, sm: 150 } : "none",
+                  maxHeight: !expanded ? { xs: 185, sm: 150 } : "none",
                   "&::before": {
                     content: '""',
                     position: "absolute",
@@ -265,14 +265,14 @@ export default function CoordinatorCards(props: Props) {
                         {wa && (
                           <Tooltip title="WhatsApp">
                             <IconButton
-                              size="small"
+                              size="medium"
                               component="a"
                               href={wa}
                               target="_blank"
                               rel="noopener noreferrer"
                               sx={{ color: "success.main" }}
                             >
-                              <WhatsApp fontSize="inherit" />
+                              <WhatsApp fontSize="medium" />
                             </IconButton>
                           </Tooltip>
                         )}
@@ -531,8 +531,34 @@ export default function CoordinatorCards(props: Props) {
         rowsPerPage={pageSize}
         onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPageIndex(0); }}
         rowsPerPageOptions={[6, 12, 24]}
-        labelRowsPerPage="Linhas"
-        sx={{ px: 0 }}
+        labelRowsPerPage="Linhas:"
+        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+        slotProps={{
+          select: {
+            sx: { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
+          }
+        }}
+        sx={{ 
+          px: 0,
+          ".MuiTablePagination-toolbar": {
+            minHeight: { xs: 52, sm: 64 },
+            px: { xs: 0.5, sm: 2 },
+          },
+          ".MuiTablePagination-selectLabel": {
+            margin: 0,
+            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          },
+          ".MuiTablePagination-displayedRows": {
+            margin: 0,
+            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          },
+          ".MuiTablePagination-actions": {
+            marginLeft: { xs: 0.5, sm: 1 },
+            "& .MuiIconButton-root": {
+              padding: { xs: "4px", sm: "8px" },
+            }
+          }
+        }}
       />
     </Box>
   );
