@@ -38,6 +38,8 @@ import {
   MenuBook,
   ArrowUpward,
   ChevronRight,
+  BarChart,
+  Checklist,
 } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
@@ -74,6 +76,8 @@ const cardData: CardData[] = [
   { title: "Clubinhos", description: "Gerencie clubinhos.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/clubinhos", section: "clubinho" },
   { title: "Pagelas", description: "Gerencie pagelas.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/pagelas", section: "clubinho" },
 
+  { title: "Estatísticas", description: "Visualize estatísticas e análises completas.", icon: <BarChart fontSize="large" color="primary" />, path: "/adm/estatisticas", section: "operacional" },
+  { title: "Controle de Clubes", description: "Verificação em tempo real de pagelas por clube.", icon: <Checklist fontSize="large" color="primary" />, path: "/adm/controle-clubes", section: "operacional" },
   { title: "Comentários", description: "Gerencie comentários dos usuários.", icon: <Comment fontSize="large" color="primary" />, path: "/adm/comentarios", section: "operacional" },
   { title: "Contatos", description: "Gerencie contatos enviados para o Clubinho.", icon: <ContactPhone fontSize="large" color="primary" />, path: "/adm/contatos", section: "operacional" },
   { title: "Feedbacks", description: "Gerencie feedbacks enviados para o Clubinho.", icon: <RateReview fontSize="large" color="primary" />, path: "/adm/feedbacks", section: "operacional" },

@@ -1,0 +1,285 @@
+import React, { Suspense } from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Tabs,
+  Tab,
+  Paper,
+  useTheme,
+  useMediaQuery,
+  Button,
+  Collapse,
+  Skeleton,
+} from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { StatisticsFiltersComponent, QuickFilters } from './components';
+import { StatisticsFilters } from './api';
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
+
+// Configurar locale globalmente
+dayjs.locale('pt-br');
+
+// Lazy-load dedicated tab components
+const OverviewTab = React.lazy(() => import('./tabs/OverviewTab'));
+const FrequencyTab = React.lazy(() => import('./tabs/FrequencyTab'));
+const ChildrenTab = React.lazy(() => import('./tabs/ChildrenTab'));
+const ClubsTab = React.lazy(() => import('./tabs/ClubsTab'));
+const TeachersTab = React.lazy(() => import('./tabs/TeachersTab'));
+const DemographicTab = React.lazy(() => import('./tabs/DemographicTab'));
+const GeographicTab = React.lazy(() => import('./tabs/GeographicTab'));
+const DecisionsTab = React.lazy(() => import('./tabs/DecisionsTab'));
+const RetentionTab = React.lazy(() => import('./tabs/RetentionTab'));
+const ActivitiesTab = React.lazy(() => import('./tabs/ActivitiesTab'));
+const RankingsTab = React.lazy(() => import('./tabs/RankingsTab'));
+const OverviewSummaryCards = React.lazy(() =>
+  import('./components').then((m) => ({ default: m.OverviewSummaryCards }))
+);
+
+// Criar um cliente do React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other }) => {
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`statistics-tabpanel-${index}`}
+      aria-labelledby={`statistics-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+    </div>
+  );
+};
+
+const StatisticsPageContent: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = Number(searchParams.get('tab') ?? 0);
+  const [activeTab, setActiveTab] = React.useState(Number.isNaN(initialTab) ? 0 : initialTab);
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
+  
+  // Configurar filtros padrão para o mês atual
+  const getDefaultFilters = (): StatisticsFilters => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    
+    return {
+      startDate: dayjs(firstDay).format('YYYY-MM-DD'),
+      endDate: dayjs(lastDay).format('YYYY-MM-DD'),
+      groupBy: 'week', // Agrupamento semanal para melhor visualização mensal
+    };
+  };
+  
+  const [filters, setFilters] = React.useState<StatisticsFilters>(getDefaultFilters());
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', String(newValue));
+      return next;
+    });
+  };
+
+  const handleFilterChange = (newFilters: StatisticsFilters) => {
+    setFilters(newFilters);
+  };
+
+  const handleResetFilters = () => {
+    setFilters(getDefaultFilters());
+  };
+
+  return (
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          gutterBottom
+          sx={{
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          📊 Estatísticas do Clubinho NIB
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Análise completa de dados, insights e relatórios
+          {filters.startDate && filters.endDate && (
+            <> - {dayjs(filters.startDate).format('MMM/YYYY')} a {dayjs(filters.endDate).format('MMM/YYYY')}</>
+          )}
+        </Typography>
+      </Box>
+
+      {/* Overview Cards - lazy */}
+      <Box sx={{ mb: 4 }}>
+        <Suspense fallback={<Skeleton variant="rounded" height={120} />}>
+          <OverviewSummaryCards />
+        </Suspense>
+      </Box>
+
+      {/* Atalhos Rápidos */}
+      <QuickFilters onSelectFilter={handleFilterChange} currentFilters={filters} />
+
+      {/* Filtros - colapsáveis (fechados por padrão) */}
+      <Box sx={{ mt: 2, mb: 2 }}>
+        <Button variant="outlined" size="small" onClick={() => setFiltersOpen((v) => !v)}>
+          {filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+        </Button>
+      </Box>
+      <Collapse in={filtersOpen} unmountOnExit>
+        <StatisticsFiltersComponent
+          filters={filters}
+          onChange={handleFilterChange}
+          onReset={handleResetFilters}
+        />
+      </Collapse>
+
+      {/* Tabs */}
+      <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant={isMobile ? 'scrollable' : 'fullWidth'}
+            scrollButtons={isMobile ? 'auto' : false}
+            aria-label="tabs de estatísticas"
+          >
+            <Tab label="📈 Visão Geral" />
+            <Tab label="📅 Frequência" />
+            <Tab label="👶 Crianças" />
+            <Tab label="🏫 Clubinhos" />
+            <Tab label="👨‍🏫 Professores" />
+            <Tab label="👥 Demográfico" />
+            <Tab label="🗺️ Geográfico" />
+            <Tab label="✝️ Decisões" />
+            <Tab label="⏱️ Retenção" />
+            <Tab label="📊 Atividades" />
+            <Tab label="🏆 Rankings" />
+          </Tabs>
+        </Box>
+
+        {/* Tab 1: Visão Geral */}
+        <TabPanel value={activeTab} index={0}>
+          <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={80} /><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={280} /></Box>}>
+            <OverviewTab filters={filters} />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 2: Frequência */}
+        <TabPanel value={activeTab} index={1}>
+          <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={300} /></Box>}>
+            <FrequencyTab />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 3: Crianças */}
+        <TabPanel value={activeTab} index={2}>
+          <Suspense fallback={<Skeleton variant="rounded" height={400} />}>
+            <ChildrenTab />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 4: Clubinhos */}
+        <TabPanel value={activeTab} index={3}>
+          <Suspense fallback={<Skeleton variant="rounded" height={400} />}>
+            <ClubsTab />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 5: Professores */}
+        <TabPanel value={activeTab} index={4}>
+          <Suspense fallback={<Skeleton variant="rounded" height={400} />}>
+            <TeachersTab />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 6: Demográfico */}
+        <TabPanel value={activeTab} index={5}>
+          <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={280} /><Skeleton variant="rounded" height={320} /></Box>}>
+            <DemographicTab filters={filters} />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 7: Geográfico */}
+        <TabPanel value={activeTab} index={6}>
+          <Suspense fallback={<Skeleton variant="rounded" height={420} />}>
+            <GeographicTab filters={filters} />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 8: Decisões */}
+        <TabPanel value={activeTab} index={7}>
+          <Suspense fallback={<Skeleton variant="rounded" height={360} />}>
+            <DecisionsTab filters={filters} />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 9: Retenção */}
+        <TabPanel value={activeTab} index={8}>
+          <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={300} /></Box>}>
+            <RetentionTab filters={filters} />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 10: Atividades */}
+        <TabPanel value={activeTab} index={9}>
+          <Suspense fallback={<Skeleton variant="rounded" height={360} />}>
+            <ActivitiesTab filters={filters} />
+          </Suspense>
+        </TabPanel>
+
+        {/* Tab 11: Rankings */}
+        <TabPanel value={activeTab} index={10}>
+          <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={260} /><Skeleton variant="rounded" height={260} /></Box>}>
+            <RankingsTab filters={filters} />
+          </Suspense>
+        </TabPanel>
+      </Paper>
+
+      {/* Footer Info */}
+      <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          💡 Use os filtros acima para personalizar suas análises
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          Última atualização: {dayjs().format('DD/MM/YYYY HH:mm')}
+        </Typography>
+      </Box>
+    </Container>
+  );
+};
+
+// Componente principal com QueryClientProvider
+const StatisticsPage: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <StatisticsPageContent />
+    </QueryClientProvider>
+  );
+};
+
+export default StatisticsPage;
+
