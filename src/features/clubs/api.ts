@@ -20,6 +20,7 @@ export async function apiFetchClubs(args: {
     addressSearchString,
     userSearchString,
     clubSearchString,
+    isActive,
   } = filters || {};
 
   const sortField = sort?.id ?? "updatedAt";
@@ -32,6 +33,7 @@ export async function apiFetchClubs(args: {
       addressSearchString: addressSearchString || undefined,
       userSearchString: userSearchString || undefined,
       clubSearchString: clubSearchString || undefined,
+      isActive: isActive !== undefined ? isActive : undefined,
       sort: sortField,
       order,
     },
@@ -61,6 +63,11 @@ export async function apiUpdateClub(id: string, payload: Omit<EditClubForm, "id"
 
 export async function apiDeleteClub(id: string) {
   await api.delete(`/clubs/${id}`);
+}
+
+export async function apiToggleClubActive(id: string) {
+  const { data } = await api.patch<ClubResponseDto>(`/clubs/${id}/toggle-active`);
+  return data;
 }
 
 export async function apiListUsersByRole(role: "coordinator" | "teacher", limit = 500) {

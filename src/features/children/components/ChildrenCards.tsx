@@ -5,7 +5,7 @@ import {
   Divider, TablePagination, Tooltip, Collapse, ButtonBase,
   Paper, Avatar, Slide, Link
 } from "@mui/material";
-import { Visibility, Edit, Delete, SwapVert, CakeOutlined, PlaceOutlined, ExpandMore as ExpandMoreIcon, LocationOnOutlined, Phone as PhoneIcon, ChildCare, PersonOutlined, WhatsApp } from "@mui/icons-material";
+import { Visibility, Edit, Delete, SwapVert, CakeOutlined, PlaceOutlined, ExpandMore as ExpandMoreIcon, LocationOnOutlined, Phone as PhoneIcon, ChildCare, PersonOutlined, WhatsApp, ToggleOn, ToggleOff } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
 import { ChildResponseDto } from "../types";
 import { RootState } from "@/store/slices";
@@ -26,6 +26,7 @@ type Props = {
   onOpenView: (row: ChildResponseDto) => void;
   onStartEdit: (row: ChildResponseDto) => void;
   onAskDelete: (row: ChildResponseDto) => void;
+  onToggleActive: (row: ChildResponseDto) => void;
 };
 
 export default function ChildrenCards(props: Props) {
@@ -163,17 +164,30 @@ export default function ChildrenCards(props: Props) {
                     >
                       {c.name}
                     </Typography>
-                    <Chip
-                      size="small"
-                      color={c.club ? "primary" : "default"}
-                      variant={c.club ? "filled" : "outlined"}
-                      label={c.club ? `Clubinho #${c.club.number}` : "Sem clubinho"}
-                      sx={{
-                        fontSize: "0.7rem",
-                        height: 20,
-                        mt: 0.25
-                      }}
-                    />
+                    <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap rowGap={0.25}>
+                      <Chip
+                        size="small"
+                        color={c.club ? "primary" : "default"}
+                        variant={c.club ? "filled" : "outlined"}
+                        label={c.club ? `Clubinho #${c.club.number}` : "Sem clubinho"}
+                        sx={{
+                          fontSize: "0.7rem",
+                          height: 20,
+                          mt: 0.25
+                        }}
+                      />
+                      <Chip
+                        size="small"
+                        label={c.isActive ? "Ativo" : "Inativo"}
+                        color={c.isActive ? "success" : "default"}
+                        variant={c.isActive ? "filled" : "outlined"}
+                        sx={{
+                          fontSize: "0.7rem",
+                          height: 20,
+                          mt: 0.25
+                        }}
+                      />
+                    </Stack>
                   </Box>
 
                   <ButtonBase
@@ -531,6 +545,18 @@ export default function ChildrenCards(props: Props) {
                         }}
                       >
                         <Edit fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={c.isActive ? "Desativar" : "Ativar"}>
+                      <IconButton
+                        size="small"
+                        color={c.isActive ? "success" : "default"}
+                        onClick={() => onToggleActive(c)}
+                        sx={{
+                          "&:hover": { bgcolor: c.isActive ? "success.50" : "action.hover" }
+                        }}
+                      >
+                        {c.isActive ? <ToggleOn fontSize="small" /> : <ToggleOff fontSize="small" />}
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Excluir criança">

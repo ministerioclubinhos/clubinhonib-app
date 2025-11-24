@@ -38,6 +38,8 @@ import {
   Groups,
   NoteAdd,
   ExpandMore,
+  Checklist,
+  BarChart,
 } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
@@ -115,6 +117,8 @@ function AdminLayout() {
           { label: "Feedbacks", to: "/adm/feedbacks", icon: <RateReview /> },
           { label: "Comentários", to: "/adm/comentarios", icon: <Comment /> },
           { label: "Contatos", to: "/adm/contatos", icon: <ContactMail /> },
+          { label: "Controle de Clubes", to: "/adm/controle-clubes", icon: <Checklist /> },
+          { label: "Estatísticas", to: "/adm/estatisticas", icon: <BarChart /> },
         ],
       },
     ],

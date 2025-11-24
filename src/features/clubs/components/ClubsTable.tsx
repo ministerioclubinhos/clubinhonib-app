@@ -7,7 +7,7 @@ import {
   ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel,
   SortingState, useReactTable
 } from "@tanstack/react-table";
-import { Visibility, Edit, Delete, AccessTime } from "@mui/icons-material";
+import { Visibility, Edit, Delete, AccessTime, ToggleOn, ToggleOff } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import { ClubResponseDto, WEEKDAYS } from "../types";
@@ -27,6 +27,7 @@ type Props = {
   onOpenView: (club: ClubResponseDto) => void;
   onStartEdit: (club: ClubResponseDto) => void;
   onAskDelete: (club: ClubResponseDto) => void;
+  onToggleActive: (club: ClubResponseDto) => void;
 };
 
 export default function ClubsTable(props: Props) {
@@ -39,7 +40,7 @@ function ClubsTableDesktop(props: Props) {
   const {
     isAdmin,
     rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
-    sorting, setSorting, onOpenView, onStartEdit, onAskDelete,
+    sorting, setSorting, onOpenView, onStartEdit, onAskDelete, onToggleActive,
   } = props;
 
   const theme = useTheme();
@@ -108,6 +109,22 @@ function ClubsTableDesktop(props: Props) {
           );
         },
       },
+      {
+        accessorKey: "isActive",
+        header: "Status",
+        cell: ({ getValue }) => {
+          const active = getValue() as boolean;
+          return (
+            <Chip
+              size="small"
+              label={active ? "Ativo" : "Inativo"}
+              color={active ? "success" : "default"}
+              variant={active ? "filled" : "outlined"}
+            />
+          );
+        },
+        meta: { width: 100 },
+      },
       ...(isMdUp
         ? ([
             {
@@ -141,19 +158,30 @@ function ClubsTableDesktop(props: Props) {
               </IconButton>
             </Tooltip>
             {isAdmin && (
-              <Tooltip title="Excluir">
-                <IconButton size={isXs ? "small" : "medium"} color="error" onClick={() => onAskDelete(row.original)}>
-                  <Delete fontSize="inherit" />
-                </IconButton>
-              </Tooltip>
+              <>
+                <Tooltip title={row.original.isActive ? "Desativar" : "Ativar"}>
+                  <IconButton 
+                    size={isXs ? "small" : "medium"}
+                    color={row.original.isActive ? "success" : "default"}
+                    onClick={() => onToggleActive(row.original)}
+                  >
+                    {row.original.isActive ? <ToggleOn fontSize="inherit" /> : <ToggleOff fontSize="inherit" />}
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Excluir">
+                  <IconButton size={isXs ? "small" : "medium"} color="error" onClick={() => onAskDelete(row.original)}>
+                    <Delete fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+              </>
             )}
           </Box>
         ),
-        meta: { width: isXs ? 120 : 150 },
+        meta: { width: isXs ? 180 : 220 },
       },
     ];
     return base;
-  }, [isXs, isMdUp, onAskDelete, onOpenView, onStartEdit]);
+  }, [isXs, isMdUp, onAskDelete, onOpenView, onStartEdit, onToggleActive]);
 
   const table = useReactTable({
     data: rows,

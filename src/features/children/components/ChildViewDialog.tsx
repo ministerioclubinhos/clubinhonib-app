@@ -29,6 +29,8 @@ import {
   Group,
   Home,
   MenuBook,
+  ToggleOn,
+  ToggleOff,
 } from "@mui/icons-material";
 import { ChildResponseDto } from "../types";
 import { fmtDate } from "@/utils/dates";
@@ -83,9 +85,16 @@ function LineCard({ icon, title, children }: { icon: React.ReactNode; title: str
   );
 }
 
-type Props = { open: boolean; loading: boolean; child: ChildResponseDto | null; onClose: () => void; onEdit?: (id: string) => void };
+type Props = { 
+  open: boolean; 
+  loading: boolean; 
+  child: ChildResponseDto | null; 
+  onClose: () => void; 
+  onEdit?: (id: string) => void;
+  onToggleActive?: (child: ChildResponseDto) => void;
+};
 
-export default function ChildViewDialog({ open, loading, child, onClose, onEdit }: Props) {
+export default function ChildViewDialog({ open, loading, child, onClose, onEdit, onToggleActive }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -159,6 +168,12 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit 
                   </Typography>
                   <Chip size="small" label={child.gender === "F" ? "Feminino" : "Masculino"} color="default" />
                   {typeof age === "number" && <Chip size="small" label={`${age} anos`} color="default" />}
+                  <Chip 
+                    size="small" 
+                    label={child.isActive ? "Ativo" : "Inativo"} 
+                    color={child.isActive ? "success" : "default"} 
+                    variant={child.isActive ? "filled" : "outlined"} 
+                  />
                   {child.club ? (
                     <Chip size="small" label={`Clubinho #${child.club.number}${child.club.weekday ? ` • ${child.club.weekday}` : ""}`} color="primary" variant="outlined" />
                   ) : (
@@ -265,6 +280,34 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit 
               ) : (
                 <Typography variant="body2">Nenhum endereço cadastrado.</Typography>
               )}
+            </Paper>
+
+            {/* Status */}
+            <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" flexWrap="wrap">
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Chip
+                    size="small"
+                    label={child.isActive ? "Ativo" : "Inativo"}
+                    color={child.isActive ? "success" : "default"}
+                    variant={child.isActive ? "filled" : "outlined"}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    Status da criança
+                  </Typography>
+                </Stack>
+                {onToggleActive && (
+                  <Button
+                    variant="outlined"
+                    color={child.isActive ? "warning" : "success"}
+                    startIcon={child.isActive ? <ToggleOff /> : <ToggleOn />}
+                    onClick={() => onToggleActive(child)}
+                    size="small"
+                  >
+                    {child.isActive ? "Desativar" : "Ativar"}
+                  </Button>
+                )}
+              </Stack>
             </Paper>
 
             {/* Metadados */}

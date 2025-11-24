@@ -62,6 +62,8 @@ import DocumentsManager from './features/documents/DocumentsManager';
 import IdeasManager from './features/ideas-pages/IdeasManager';
 import VideosManager from './features/video-pages/VideosManager';
 import WeekMaterialManager from './features/week-materials/WeekMaterialManager';
+import StatisticsPage from './features/statistics/StatisticsPage';
+import ClubControlPage from './features/club-control/ClubControlPage';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
@@ -141,6 +143,8 @@ function App() {
                   <Route path="criancas" element={<ChildrenManager />} />
                   <Route path="clubinhos" element={<ClubsManager />} />
                   <Route path="pagelas" element={<PagelaClubsManager />} />
+                  <Route path="estatisticas" element={<StatisticsPage />} />
+                  <Route path="controle-clubes" element={<ClubControlPage />} />
 
                   <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
                   <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />

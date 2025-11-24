@@ -158,6 +158,12 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                       icon={<AccessTimeIcon sx={{ fontSize: 16 }} />}
                     />
                   )}
+                  <Chip
+                    size="small"
+                    label={club.isActive ? "Ativo" : "Inativo"}
+                    color={club.isActive ? "success" : "default"}
+                    variant={club.isActive ? "filled" : "outlined"}
+                  />
                 </Stack>
               </Box>
             </Stack>

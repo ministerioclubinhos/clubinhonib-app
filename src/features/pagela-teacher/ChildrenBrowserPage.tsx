@@ -15,6 +15,8 @@ import { CreateChildForm, EditChildForm, ChildResponseDto } from "../children/ty
 import { useChildMutations } from "../children/hooks";
 import ChildFormDialog from "../children/components/ChildFormDialog";
 import { apiFetchChild } from "../children/api";
+import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
+import { ChildSimpleResponseDto } from "../children/types";
 
 export default function ChildrenBrowserPage() {
   const nav = useNavigate();
@@ -44,6 +46,7 @@ export default function ChildrenBrowserPage() {
 
   const [creating, setCreating] = React.useState<CreateChildForm | null>(null);
   const [editing, setEditing] = React.useState<EditChildForm | null>(null);
+  const [confirmToggleActive, setConfirmToggleActive] = React.useState<ChildSimpleResponseDto | null>(null);
 
   const {
     dialogLoading,
@@ -51,6 +54,7 @@ export default function ChildrenBrowserPage() {
     setDialogError,
     createChild,
     updateChild,
+    toggleActive,
   } = useChildMutations(async () => {
     await refetch();
   });
@@ -265,6 +269,9 @@ export default function ChildrenBrowserPage() {
                     onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
                     onEdit={(c) => openEdit(c.id)}
                     onRefresh={refetch}
+                    onToggleActive={(c) => {
+                      setConfirmToggleActive(c);
+                    }}
                   />
                 </Grid>
               ))}
@@ -298,6 +305,29 @@ export default function ChildrenBrowserPage() {
         }}
         onSubmit={submitEdit}
         error={dialogError}
+        loading={dialogLoading}
+      />
+
+      <ToggleActiveConfirmDialog
+        open={!!confirmToggleActive}
+        title={confirmToggleActive?.name || ""}
+        isActive={confirmToggleActive?.isActive ?? false}
+        onClose={() => {
+          setConfirmToggleActive(null);
+          setDialogError("");
+        }}
+        onConfirm={async () => {
+          if (!confirmToggleActive) return;
+          // Precisamos buscar o ChildResponseDto completo para usar o toggleActive
+          try {
+            const fullChild = await apiFetchChild(confirmToggleActive.id);
+            await toggleActive(fullChild.id, 1, 20, undefined, undefined);
+            await refetch();
+            setConfirmToggleActive(null);
+          } catch (err: any) {
+            setDialogError(err?.response?.data?.message || err.message || "Erro ao alterar status da criança");
+          }
+        }}
         loading={dialogLoading}
       />
     </Box>

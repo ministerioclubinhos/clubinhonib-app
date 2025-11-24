@@ -11,6 +11,7 @@ import ChildrenTable from "./components/ChildrenTable";
 import ChildViewDialog from "./components/ChildViewDialog";
 import ChildFormDialog from "./components/ChildFormDialog";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
 import { useChildDetails, useChildMutations, useChildren } from "./hooks";
 import {
   ChildFilters,
@@ -69,6 +70,7 @@ export default function ChildrenManager() {
     createChild,
     updateChild,
     deleteChild,
+    toggleActive,
   } = useChildMutations(async () => {
     await fetchPage();
   });
@@ -137,6 +139,14 @@ export default function ChildrenManager() {
     setConfirmDelete(null);
   };
 
+  const [confirmToggleActive, setConfirmToggleActive] = useState<ChildResponseDto | null>(null);
+  const askToggleActive = (row: ChildResponseDto) => setConfirmToggleActive(row);
+  const submitToggleActive = async () => {
+    if (!confirmToggleActive) return;
+    await toggleActive(confirmToggleActive.id, pageIndex + 1, pageSize, filters, sorting);
+    setConfirmToggleActive(null);
+  };
+
   React.useEffect(() => {
     doRefresh();
   }, [doRefresh]);
@@ -186,6 +196,7 @@ export default function ChildrenManager() {
         onOpenView={handleOpenView}
         onStartEdit={startEdit}
         onAskDelete={askDelete}
+        onToggleActive={askToggleActive}
       />
 
       <ChildViewDialog
@@ -193,6 +204,17 @@ export default function ChildrenManager() {
         loading={viewingLoading}
         child={viewing}
         onClose={() => setViewing(null)}
+        onEdit={(id) => {
+          const child = rows.find(c => c.id === id);
+          if (child) {
+            setViewing(null);
+            startEdit(child);
+          }
+        }}
+        onToggleActive={(child) => {
+          setViewing(null);
+          askToggleActive(child);
+        }}
       />
 
       <ChildFormDialog
@@ -231,6 +253,18 @@ export default function ChildrenManager() {
           setDialogError("");
         }}
         onConfirm={submitDelete}
+      />
+
+      <ToggleActiveConfirmDialog
+        open={!!confirmToggleActive}
+        title={confirmToggleActive?.name || ""}
+        isActive={confirmToggleActive?.isActive ?? false}
+        onClose={() => {
+          setConfirmToggleActive(null);
+          setDialogError("");
+        }}
+        onConfirm={submitToggleActive}
+        loading={dialogLoading}
       />
     </Box>
   );
