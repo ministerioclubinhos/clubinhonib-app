@@ -25,8 +25,9 @@ import {
   Snackbar,
   Alert as MuiAlert,
 } from '@mui/material';
-import { Delete, Add, CalendarMonth, CheckCircle, Info, Warning } from '@mui/icons-material';
-import { useCreatePeriod, useAcademicPeriods, useDeletePeriod } from '../hooks';
+import { Delete, Add, CalendarMonth, CheckCircle, Info, Warning, Edit } from '@mui/icons-material';
+import { useCreatePeriod, useAcademicPeriods, useDeletePeriod, useUpdatePeriod } from '../hooks';
+import { AcademicPeriod } from '../api';
 import dayjs from 'dayjs';
 
 // ⚠️ Backend status
@@ -62,6 +63,18 @@ export const PeriodManagement: React.FC = () => {
     periodId: '',
     description: '',
   });
+  const [editDialog, setEditDialog] = React.useState<{
+    open: boolean;
+    period: AcademicPeriod | null;
+  }>({
+    open: false,
+    period: null,
+  });
+  const [editFormData, setEditFormData] = React.useState({
+    startDate: '',
+    endDate: '',
+    description: '',
+  });
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(20);
   const [snackbar, setSnackbar] = React.useState<{
@@ -77,6 +90,7 @@ export const PeriodManagement: React.FC = () => {
   const { data: periodsData, isLoading } = useAcademicPeriods(page, limit);
   const periods = periodsData?.items || [];
   const createPeriod = useCreatePeriod();
+  const updatePeriod = useUpdatePeriod();
   const deletePeriod = useDeletePeriod();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,6 +120,53 @@ export const PeriodManagement: React.FC = () => {
       setSnackbar({
         open: true,
         message: `Erro ao cadastrar período: ${error.response?.data?.message || error.message}`,
+        severity: 'error',
+      });
+    }
+  };
+
+  const handleOpenEdit = (period: AcademicPeriod) => {
+    setEditFormData({
+      startDate: period.startDate,
+      endDate: period.endDate,
+      description: period.description || '',
+    });
+    setEditDialog({ open: true, period });
+  };
+
+  const handleCloseEdit = () => {
+    setEditDialog({ open: false, period: null });
+    setEditFormData({
+      startDate: '',
+      endDate: '',
+      description: '',
+    });
+  };
+
+  const handleSubmitEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editDialog.period) return;
+
+    try {
+      await updatePeriod.mutateAsync({
+        periodId: editDialog.period.id,
+        data: {
+          startDate: editFormData.startDate,
+          endDate: editFormData.endDate,
+          description: editFormData.description,
+        },
+      });
+
+      handleCloseEdit();
+      setSnackbar({
+        open: true,
+        message: 'Período atualizado com sucesso!',
+        severity: 'success',
+      });
+    } catch (error: any) {
+      setSnackbar({
+        open: true,
+        message: `Erro ao atualizar período: ${error.response?.data?.message || error.message}`,
         severity: 'error',
       });
     }
@@ -411,19 +472,30 @@ export const PeriodManagement: React.FC = () => {
                                 )}
                               </TableCell>
                               <TableCell align="center">
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() =>
-                                    setDeleteDialog({
-                                      open: true,
-                                      periodId: period.id,
-                                      description: `${period.year} (${period.description})`,
-                                    })
-                                  }
-                                >
-                                  <Delete />
-                                </IconButton>
+                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => handleOpenEdit(period)}
+                                    title="Editar período"
+                                  >
+                                    <Edit />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() =>
+                                      setDeleteDialog({
+                                        open: true,
+                                        periodId: period.id,
+                                        description: `${period.year} (${period.description})`,
+                                      })
+                                    }
+                                    title="Excluir período"
+                                  >
+                                    <Delete />
+                                  </IconButton>
+                                </Box>
                               </TableCell>
                             </TableRow>
                           );
@@ -458,6 +530,81 @@ export const PeriodManagement: React.FC = () => {
         </Grid>
       </Grid>
 
+      {/* Dialog de Edição */}
+      <Dialog 
+        open={editDialog.open} 
+        onClose={handleCloseEdit}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Edit sx={{ color: theme.palette.primary.main, fontSize: 28 }} />
+          Editar Período Letivo
+        </DialogTitle>
+        <form onSubmit={handleSubmitEdit}>
+          <DialogContent>
+            {editDialog.period && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  Editando período do ano <strong>{editDialog.period.year}</strong>
+                </Typography>
+              </Alert>
+            )}
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Data de Início"
+                  value={editFormData.startDate}
+                  onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
+                  required
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Data de Término"
+                  value={editFormData.endDate}
+                  onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
+                  required
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Descrição"
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                  placeholder="Ex: Ano Letivo 2024 - Atualizado"
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button 
+              onClick={handleCloseEdit}
+              variant="outlined"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="submit"
+              color="primary" 
+              variant="contained" 
+              disabled={updatePeriod.isPending}
+              startIcon={updatePeriod.isPending ? <CircularProgress size={16} /> : <Edit />}
+            >
+              {updatePeriod.isPending ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Dialog de Exclusão */}
       <Dialog 
         open={deleteDialog.open} 
         onClose={() => setDeleteDialog({ open: false, periodId: '', description: '' })}

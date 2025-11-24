@@ -8,8 +8,11 @@ import {
   CircularProgress,
   Button,
   useTheme,
+  Grid,
+  Chip,
+  Collapse,
 } from '@mui/material';
-import { Refresh } from '@mui/icons-material';
+import { Refresh, Block, PersonOff, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useWeekCheck, useCurrentWeek } from '../hooks';
 import { ClubsListTable } from './ClubsListTable';
 import { NoClubsMessage } from './NoClubsMessage';
@@ -23,6 +26,23 @@ import 'dayjs/locale/pt-br';
 
 dayjs.extend(weekOfYear);
 dayjs.locale('pt-br');
+
+const weekdayNames: Record<string, string> = {
+  MONDAY: 'Segunda-feira',
+  TUESDAY: 'Terça-feira',
+  WEDNESDAY: 'Quarta-feira',
+  THURSDAY: 'Quinta-feira',
+  FRIDAY: 'Sexta-feira',
+  SATURDAY: 'Sábado',
+  SUNDAY: 'Domingo',
+  monday: 'Segunda-feira',
+  tuesday: 'Terça-feira',
+  wednesday: 'Quarta-feira',
+  thursday: 'Quinta-feira',
+  friday: 'Sexta-feira',
+  saturday: 'Sábado',
+  sunday: 'Domingo',
+};
 
 const BACKEND_ENABLED = import.meta.env.VITE_CLUB_CONTROL_ENABLED === 'true';
 
@@ -76,6 +96,7 @@ export const ControlDashboard: React.FC = () => {
   );
   
   const [expandedClubs, setExpandedClubs] = React.useState<Set<string>>(new Set());
+  const [expandedInactiveInfo, setExpandedInactiveInfo] = React.useState(false);
   const [clubsPage, setClubsPage] = React.useState(1);
   const [clubsLimit, setClubsLimit] = React.useState(50);
   
@@ -395,6 +416,95 @@ export const ControlDashboard: React.FC = () => {
         childrenWithPagela={childrenWithPagela}
         childrenMissing={childrenMissing}
       />
+
+      {/* ⭐ v1.5.0: Informações sobre clubinhos e crianças desativadas - Colapsável */}
+      {(data.inactiveClubs && data.inactiveClubs.length > 0) || (data.childrenNotAttending && data.childrenNotAttending.total > 0) ? (
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            mb: 3, 
+            borderRadius: 2, 
+            border: `1px solid ${theme.palette.divider}`,
+            overflow: 'hidden',
+          }}
+        >
+          <Collapse in={expandedInactiveInfo}>
+            <Box sx={{ p: 2 }}>
+              <Grid container spacing={2}>
+                {data.inactiveClubs && data.inactiveClubs.length > 0 && (
+                  <Grid item xs={12} md={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                      <Block sx={{ color: theme.palette.warning.main }} />
+                      <Typography variant="subtitle2" fontWeight="bold" color="warning.main">
+                        Clubinhos Desativados ({data.inactiveClubs.length})
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {data.inactiveClubs.map((club) => (
+                        <Chip
+                          key={club.clubId}
+                          label={`#${club.clubNumber} - ${weekdayNames[club.weekday] || club.weekday}`}
+                          size="small"
+                          sx={{
+                            bgcolor: `${theme.palette.warning.main}20`,
+                            color: theme.palette.warning.main,
+                            fontWeight: 600,
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Grid>
+                )}
+                {data.childrenNotAttending && data.childrenNotAttending.total > 0 && (
+                  <Grid item xs={12} md={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                      <PersonOff sx={{ color: theme.palette.error.main }} />
+                      <Typography variant="subtitle2" fontWeight="bold" color="error.main">
+                        Crianças que Não Frequentam Mais ({data.childrenNotAttending.total})
+                      </Typography>
+                    </Box>
+                    {data.childrenNotAttending.list && data.childrenNotAttending.list.length > 0 && (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxHeight: 150, overflowY: 'auto' }}>
+                        {data.childrenNotAttending.list.slice(0, 10).map((child) => (
+                          <Typography key={child.childId} variant="body2" color="text.secondary">
+                            • {child.childName}
+                          </Typography>
+                        ))}
+                        {data.childrenNotAttending.list.length > 10 && (
+                          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                            ... e mais {data.childrenNotAttending.list.length - 10} criança(s)
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          </Collapse>
+          <Box
+            sx={{
+              px: 2,
+              py: 1,
+              bgcolor: theme.palette.grey[50],
+              borderTop: `1px solid ${theme.palette.divider}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+            }}
+            onClick={() => setExpandedInactiveInfo(!expandedInactiveInfo)}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Block sx={{ fontSize: 18, color: theme.palette.text.secondary }} />
+              <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                {data.inactiveClubs?.length || 0} clubinho(s) desativado(s) • {data.childrenNotAttending?.total || 0} criança(s) não frequentam mais
+              </Typography>
+            </Box>
+            {expandedInactiveInfo ? <ExpandLess /> : <ExpandMore />}
+          </Box>
+        </Paper>
+      ) : null}
 
       <CriticalAlerts alerts={criticalAlerts} />
 

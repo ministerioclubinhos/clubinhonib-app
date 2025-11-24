@@ -128,7 +128,13 @@ export const OverviewSummaryCards: React.FC = () => {
 
   if (isLoading || !data) return null;
 
-  const metrics = [
+  const metrics: Array<{
+    title: string;
+    currentValue: number;
+    previousValue?: number;
+    icon: React.ReactNode;
+    color: string;
+  }> = [
     {
       title: 'Total de Crianças',
       currentValue: data.summary.totalChildren,
@@ -154,6 +160,19 @@ export const OverviewSummaryCards: React.FC = () => {
       icon: <TrendingUp />,
       color: theme.palette.info.main,
     },
+    // ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas
+    ...(data.summary.inactiveChildren !== undefined ? [{
+      title: 'Crianças Desativadas',
+      currentValue: data.summary.inactiveChildren,
+      icon: <TrendingDown />,
+      color: theme.palette.warning.main,
+    }] : []),
+    ...(data.summary.inactiveClubs !== undefined ? [{
+      title: 'Clubinhos Desativados',
+      currentValue: data.summary.inactiveClubs,
+      icon: <TrendingDown />,
+      color: theme.palette.error.main,
+    }] : []),
   ];
 
   // Calcular taxa de engajamento

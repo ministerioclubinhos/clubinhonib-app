@@ -243,6 +243,14 @@ export const ClubAttendanceTimeline: React.FC = () => {
             </Grid>
           </Grid>
 
+          {/* ⭐ v2.7.0: Note informativo quando não há período letivo */}
+          {data.note && (
+            <Alert severity="warning" sx={{ mb: 3 }}>
+              <AlertTitle sx={{ fontWeight: 'bold' }}>⚠️ Aviso</AlertTitle>
+              {data.note}
+            </Alert>
+          )}
+
           {/* Alertas */}
           {data.alerts && data.alerts.length > 0 && (
             <Box sx={{ mb: 3 }}>
@@ -362,6 +370,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
             )}
           </Paper>
 
+          {/* ⭐ v2.7.0: missingWeeks pode estar vazio se não há período letivo */}
           {data.missingWeeks && data.missingWeeks.length > 0 ? (
             <Paper
               elevation={0}

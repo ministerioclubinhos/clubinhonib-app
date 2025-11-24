@@ -3,6 +3,11 @@ import apiAxios from '@/config/axiosConfig';
 
 const BASE_URL = '/statistics';
 
+// ⭐ CRÍTICO: Semana do Ano Letivo vs Semana ISO
+// IMPORTANTE: TODOS os parâmetros year e week nos endpoints são do ANO LETIVO, não semana ISO!
+// TODAS as pagelas são armazenadas com semana do ANO LETIVO, não semana ISO.
+// Ao consultar estatísticas, sempre use semana do ano letivo.
+
 export interface TimeSeriesDataPoint {
   date: string;
   value: number;
@@ -155,6 +160,9 @@ export interface OverviewData {
     totalClubs: number;
     totalTeachers: number;
     activeChildrenThisMonth: number;
+    // ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas
+    inactiveChildren?: number;
+    inactiveClubs?: number;
   };
   pagelas: {
     thisWeek: {
@@ -180,6 +188,7 @@ export interface OverviewData {
 }
 
 export interface StatisticsFilters {
+  // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
   year?: number;
   week?: number;
   startDate?: string;
@@ -419,6 +428,20 @@ export interface ClubsStatsResponse {
   };
   clubs: ClubStat[];
   pagination: PaginationInfo;
+  // ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas
+  inactiveClubs?: {
+    total: number;
+    list: Array<{
+      clubId: string;
+      clubNumber: number;
+      weekday: string;
+      isActive: false;
+    }>;
+  };
+  inactiveChildren?: {
+    total: number;
+    fromInactiveClubs: number;
+  };
 }
 
 export interface TeachersStatsResponse {
@@ -468,6 +491,7 @@ export interface ClubAttendanceResponse {
     consecutiveWeeksPresent: number;
     consecutiveWeeksMissing: number;
   };
+  // ⭐ v2.7.0: missingWeeks pode estar vazio se não há período letivo
   missingWeeks: Array<{
     year: number;
     week: number;
@@ -478,6 +502,8 @@ export interface ClubAttendanceResponse {
     };
     reason: string;
     severity: 'info' | 'warning' | 'critical';
+    // ⭐ NOVO: Campo expectedChildren pode estar presente
+    expectedChildren?: number;
   }>;
   alerts: Array<{
     type: string;
@@ -496,6 +522,8 @@ export interface ClubAttendanceResponse {
   }>;
   timelinePagination?: PaginationMeta;
   missingWeeksPagination?: PaginationMeta;
+  // ⭐ v2.7.0: Note informativo quando não há período letivo
+  note?: string;
 }
 
 export interface WeeklyAttendanceResponse {
@@ -505,6 +533,7 @@ export interface WeeklyAttendanceResponse {
     start: string | null;
     end: string | null;
   };
+  // ⭐ v2.7.0: clubs pode estar vazio se não há período letivo ou está fora do período
   clubs: Array<{
     clubId: string;
     clubNumber: number;
@@ -522,11 +551,13 @@ export interface WeeklyAttendanceResponse {
     attendanceRate: number;
   };
   pagination?: PaginationMeta;
+  // ⭐ v2.7.0: Period presente quando há período letivo cadastrado
   period?: {
     year: number;
     startDate: string;
     endDate: string;
   };
+  // ⭐ v2.7.0: Note informativo quando clubs está vazio
   note?: string;
 }
 
@@ -557,9 +588,12 @@ export const statisticsApi = {
 
   // Attendance Analysis (NOVOS!)
   // ⭐ Paginação v2.5.0
+  // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
   getClubAttendance: (clubId: string, params: { year: number; startDate?: string; endDate?: string; page?: number; limit?: number }) =>
     apiAxios.get<ClubAttendanceResponse>(`${BASE_URL}/attendance/club/${clubId}`, { params }),
 
+  // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
+  // ⭐ v2.7.0: Se não há período letivo ou está fora do período, retorna clubs: []
   getWeeklyAttendance: (params: { year: number; week: number; page?: number; limit?: number }) =>
     apiAxios.get<WeeklyAttendanceResponse>(`${BASE_URL}/attendance/week`, { params }),
 

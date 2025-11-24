@@ -52,6 +52,13 @@ export interface ClubCheckResult {
     // ⭐ NOVO v1.4.0: Status de crianças
     activeCount?: number; // Crianças ativas (isActive = true)
     inactiveCount?: number; // Crianças inativas (isActive = false)
+    // ⭐ NOVO: Crianças que não frequentam mais
+    notAttendingCount?: number; // Total de crianças que não frequentam mais
+    notAttendingList?: Array<{
+      childId: string;
+      childName: string;
+      isActive: boolean;
+    }>;
     note?: string; // Nota sobre regras aplicadas
   };
   status: 'ok' | 'pending' | 'partial' | 'missing' | 'exception' | 'inactive' | 'out_of_period'; // ⭐ v1.8.2: Adicionado 'pending'
@@ -60,9 +67,9 @@ export interface ClubCheckResult {
     severity: 'critical' | 'warning' | 'info' | 'success';
     message: string;
   }>;
-  // ⭐ Indicadores melhorados v1.3.0
+  // ⭐ Indicadores melhorados v1.3.0 e v1.4.0
   indicators?: Array<{
-    type: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' | 'exception' | 'no_weekday' | 'out_of_period';
+    type: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' | 'exception' | 'no_weekday' | 'out_of_period' | 'club_inactive' | 'children_not_attending';
     severity: 'success' | 'warning' | 'critical' | 'info';
     message: string;
     details?: {
@@ -74,6 +81,16 @@ export interface ClubCheckResult {
       isPerfect: boolean;
       needsAttention: boolean;
       urgency?: 'low' | 'medium' | 'high' | 'critical';
+      // ⭐ v1.4.0: Para children_not_attending
+      childrenList?: Array<{
+        childId: string;
+        childName: string;
+        isActive: boolean;
+        reason?: string;
+      }>;
+      // ⭐ v1.4.0: Para club_inactive
+      childrenNotAttending?: number;
+      note?: string;
     };
   }>;
   exception: null | {
@@ -85,6 +102,7 @@ export interface ClubCheckResult {
     startDate: string;
     endDate: string;
   };
+  note?: string; // ⭐ v1.8.2: Nota informativa (ex: "Pendente, mas ainda dentro do prazo")
 }
 
 // Types - Pagination (v1.1.0)
@@ -130,14 +148,37 @@ export interface DetailedIndicatorsResponse {
       clubsException?: number;
       clubsInactive?: number;
       clubsOutOfPeriod?: number;
+      clubsWithProblems?: number;
+      clubsWarning?: number;
+      // ⭐ v1.5.0: Informações sobre clubinhos desativados
+      totalClubsInactive?: number;
     };
     children: {
       total: number;
+      withPagela: number;
+      missing: number;
       completionRate: number;
       missingRate: number;
+      // ⭐ v1.5.0: Crianças que não frequentam mais
+      notAttending?: {
+        total: number;
+        fromInactiveClubs: number;
+        fromInactiveChildren: number;
+      };
     };
   };
   indicators: {
+    byType?: {
+      all_ok?: Array<any>;
+      some_missing?: Array<any>;
+      no_pagela?: Array<any>;
+      no_children?: Array<any>;
+      exception?: Array<any>;
+      no_weekday?: Array<any>;
+      out_of_period?: Array<any>;
+      club_inactive?: Array<any>;
+      children_not_attending?: Array<any>;
+    };
     critical: Array<{
       type: string;
       severity: 'critical';
@@ -149,8 +190,20 @@ export interface DetailedIndicatorsResponse {
         completionRate: number;
         missingRate: number;
         isPerfect: boolean;
-        needsAttention: boolean;
+        needsAttention?: boolean;
         urgency?: 'low' | 'medium' | 'high' | 'critical';
+        // ⭐ v1.4.0: Para children_not_attending
+        childrenList?: Array<{
+          childId: string;
+          childName: string;
+          isActive: boolean;
+          reason?: string;
+        }>;
+        // ⭐ v1.4.0: Para club_inactive
+        childrenNotAttending?: number;
+        // ⭐ NOVO: Data da última pagela
+        lastPagelaDate?: string | null;
+        note?: string;
       };
       clubId: string;
       clubNumber: number;
@@ -166,8 +219,20 @@ export interface DetailedIndicatorsResponse {
         completionRate: number;
         missingRate: number;
         isPerfect: boolean;
-        needsAttention: boolean;
+        needsAttention?: boolean;
         urgency?: 'low' | 'medium' | 'high' | 'critical';
+        // ⭐ v1.4.0: Para children_not_attending
+        childrenList?: Array<{
+          childId: string;
+          childName: string;
+          isActive: boolean;
+          reason?: string;
+        }>;
+        // ⭐ v1.4.0: Para club_inactive
+        childrenNotAttending?: number;
+        // ⭐ NOVO: Data da última pagela
+        lastPagelaDate?: string | null;
+        note?: string;
       };
       clubId: string;
       clubNumber: number;
@@ -176,6 +241,11 @@ export interface DetailedIndicatorsResponse {
       type: string;
       severity: 'info';
       message: string;
+      details?: {
+        totalChildren?: number;
+        childrenNotAttending?: number;
+        note?: string;
+      };
       clubId: string;
       clubNumber: number;
     }>;
@@ -183,6 +253,16 @@ export interface DetailedIndicatorsResponse {
       type: string;
       severity: 'success';
       message: string;
+      details?: {
+        totalChildren: number;
+        childrenWithPagela: number;
+        childrenMissing: number;
+        completionRate: number;
+        missingRate: number;
+        isPerfect: boolean;
+        needsAttention: boolean;
+        urgency?: 'low' | 'medium' | 'high' | 'critical';
+      };
       clubId: string;
       clubNumber: number;
     }>;
@@ -205,6 +285,16 @@ export interface DetailedIndicatorsResponse {
           isPerfect: boolean;
           needsAttention: boolean;
           urgency?: 'low' | 'medium' | 'high' | 'critical';
+          // ⭐ v1.4.0: Para children_not_attending
+          childrenList?: Array<{
+            childId: string;
+            childName: string;
+            isActive: boolean;
+            reason?: string;
+          }>;
+          // ⭐ v1.4.0: Para club_inactive
+          childrenNotAttending?: number;
+          note?: string;
         };
       }>;
     }>;
@@ -225,6 +315,16 @@ export interface DetailedIndicatorsResponse {
           isPerfect: boolean;
           needsAttention: boolean;
           urgency?: 'low' | 'medium' | 'high' | 'critical';
+          // ⭐ v1.4.0: Para children_not_attending
+          childrenList?: Array<{
+            childId: string;
+            childName: string;
+            isActive: boolean;
+            reason?: string;
+          }>;
+          // ⭐ v1.4.0: Para club_inactive
+          childrenNotAttending?: number;
+          note?: string;
         };
       }>;
     }>;
@@ -234,17 +334,38 @@ export interface DetailedIndicatorsResponse {
       weekday: string;
       totalClubs: number;
       clubsOk: number;
+      clubsPartial?: number;
       clubsMissing: number;
+      totalChildren: number;
+      childrenWithPagela: number;
+      childrenMissing: number;
       completionRate: number;
     }>;
+    overall?: {
+      completionRate: number;
+      missingRate: number;
+      problemsRate: number;
+    };
   };
-  recommendations?: Array<{
-    type: string;
-    priority: 'low' | 'medium' | 'high' | 'critical';
-    message: string;
-    action?: string;
-  }>;
+  recommendations?: string[]; // ⭐ v1.3.0: Array de strings conforme documentação
   currentWeek?: CurrentWeekInfo;
+  pagination?: PaginationMeta; // ⭐ v1.3.1: Paginação quando page e limit são especificados
+  // ⭐ v1.5.0: Lista de clubinhos desativados
+  inactiveClubs?: Array<{
+    clubId: string;
+    clubNumber: number;
+    weekday: string;
+    isActive: false;
+  }>;
+  // ⭐ v1.5.0: Crianças que não frequentam mais
+  childrenNotAttending?: {
+    total: number;
+    list: Array<{
+      childId: string;
+      childName: string;
+      isActive: boolean;
+    }>;
+  };
 }
 
 // Types - Week Check Result (atualizado para v1.2.0 com currentWeek e v1.5.0 com note)
@@ -271,6 +392,10 @@ export interface WeekCheckResult {
     clubsInactive: number;
     clubsOutOfPeriod: number;
     overallCompleteness?: number;
+    // ⭐ v1.5.0: Informações sobre clubinhos e crianças desativadas
+    totalClubsInactive?: number;
+    totalChildrenNotAttending?: number;
+    inactiveClubsCount?: number;
   };
   clubs: ClubCheckResult[];
   pagination?: PaginationMeta; // ⭐ NOVO v1.1.0
@@ -282,6 +407,22 @@ export interface WeekCheckResult {
   }>;
   currentWeek?: CurrentWeekInfo; // ⭐ NOVO v1.2.0
   note?: string; // ⭐ NOVO v1.5.0: Mensagem quando clubs está vazio
+  // ⭐ v1.5.0: Lista de clubinhos desativados
+  inactiveClubs?: Array<{
+    clubId: string;
+    clubNumber: number;
+    weekday: string;
+    isActive: false;
+  }>;
+  // ⭐ v1.5.0: Crianças que não frequentam mais
+  childrenNotAttending?: {
+    total: number;
+    list: Array<{
+      childId: string;
+      childName: string;
+      isActive: boolean;
+    }>;
+  };
 }
 
 // DTOs - ESTRUTURA GLOBAL
@@ -318,9 +459,9 @@ export const clubControlApi = {
   getPeriodByYear: (year: number) =>
     apiAxios.get<AcademicPeriod>(`${BASE_URL}/periods/${year}`),
 
-  // PATCH /club-control/periods/:id - Atualizar período
+  // PUT /club-control/periods/:id - Atualizar período
   updatePeriod: (periodId: string, data: Partial<CreateAcademicPeriodDto>) =>
-    apiAxios.patch<AcademicPeriod>(`${BASE_URL}/periods/${periodId}`, data),
+    apiAxios.put<AcademicPeriod>(`${BASE_URL}/periods/${periodId}`, data),
 
   // DELETE /club-control/periods/:id - Deletar período
   deletePeriod: (periodId: string) =>
@@ -372,6 +513,17 @@ export const clubControlApi = {
     apiAxios.get<CurrentWeekInfo>(`${BASE_URL}/current-week`),
 
   // GET /club-control/indicators/detailed - Análise detalhada dos indicadores ⭐ NOVO v1.3.0
-  getDetailedIndicators: (params: { year: number; week: number }) =>
+  // ⭐ v1.3.1: Suporta filtros avançados e paginação
+  getDetailedIndicators: (params: { 
+    year: number; 
+    week: number;
+    status?: 'ok' | 'partial' | 'missing' | 'exception' | 'inactive' | 'out_of_period';
+    severity?: 'critical' | 'warning' | 'info' | 'success';
+    weekday?: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
+    indicatorType?: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' | 'exception' | 'no_weekday' | 'out_of_period' | 'club_inactive' | 'children_not_attending';
+    hasProblems?: boolean;
+    page?: number;
+    limit?: number;
+  }) =>
     apiAxios.get<DetailedIndicatorsResponse>(`${BASE_URL}/indicators/detailed`, { params }),
 };

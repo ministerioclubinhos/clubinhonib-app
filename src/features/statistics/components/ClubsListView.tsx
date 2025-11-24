@@ -31,6 +31,8 @@ import {
   School,
   TrendingUp,
   EmojiEvents,
+  Block,
+  Warning,
 } from '@mui/icons-material';
 import { useClubs } from '../hooks';
 import { ClubsFilters } from '../api';
@@ -151,6 +153,84 @@ export const ClubsListView: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas */}
+      {(data.inactiveClubs || data.inactiveChildren) && (
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {data.inactiveClubs && data.inactiveClubs.total > 0 && (
+            <Grid item xs={12} md={6}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  border: `2px solid ${theme.palette.warning.main}40`,
+                  bgcolor: `${theme.palette.warning.main}08`,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Block sx={{ color: theme.palette.warning.main }} />
+                  <Typography variant="subtitle2" fontWeight="bold" color="warning.main">
+                    Clubinhos Desativados
+                  </Typography>
+                </Box>
+                <Typography variant="h5" fontWeight="bold" color="warning.main">
+                  {data.inactiveClubs.total}
+                </Typography>
+                {data.inactiveClubs.list && data.inactiveClubs.list.length > 0 && (
+                  <Box sx={{ mt: 1.5 }}>
+                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                      Lista de clubinhos desativados:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {data.inactiveClubs.list.map((club) => (
+                        <Chip
+                          key={club.clubId}
+                          label={`#${club.clubNumber} - ${weekdayNames[club.weekday] || club.weekday}`}
+                          size="small"
+                          sx={{
+                            bgcolor: `${theme.palette.warning.main}20`,
+                            color: theme.palette.warning.main,
+                            fontWeight: 600,
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+              </Paper>
+            </Grid>
+          )}
+          {data.inactiveChildren && data.inactiveChildren.total > 0 && (
+            <Grid item xs={12} md={6}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 2, 
+                  borderRadius: 2, 
+                  border: `2px solid ${theme.palette.error.main}40`,
+                  bgcolor: `${theme.palette.error.main}08`,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Warning sx={{ color: theme.palette.error.main }} />
+                  <Typography variant="subtitle2" fontWeight="bold" color="error.main">
+                    Crianças Desativadas
+                  </Typography>
+                </Box>
+                <Typography variant="h5" fontWeight="bold" color="error.main">
+                  {data.inactiveChildren.total}
+                </Typography>
+                {data.inactiveChildren.fromInactiveClubs !== undefined && (
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                    {data.inactiveChildren.fromInactiveClubs} de clubinhos desativados
+                  </Typography>
+                )}
+              </Paper>
+            </Grid>
+          )}
+        </Grid>
+      )}
 
       {/* Filtros */}
       <Paper elevation={0} sx={{ p: 2, borderRadius: 2, mb: 2, border: `1px solid ${theme.palette.divider}` }}>

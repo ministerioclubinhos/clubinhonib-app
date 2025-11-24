@@ -27,6 +27,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  List,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -166,6 +167,21 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
     }
   };
 
+  const getSeverityLabel = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return '🔴 Crítico';
+      case 'warning':
+        return '⚠️ Aviso';
+      case 'info':
+        return 'ℹ️ Info';
+      case 'success':
+        return '✅ Sucesso';
+      default:
+        return severity;
+    }
+  };
+
   return (
     <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
       <Box
@@ -280,7 +296,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
             </Typography>
             {statusFilter !== 'all' && (
               <Chip
-                label={`Status: ${statusFilter}`}
+                label={`Status: ${getStatusConfig(statusFilter).label || statusFilter}`}
                 size="small"
                 onDelete={() => onStatusFilterChange('all')}
                 color="primary"
@@ -289,7 +305,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
             )}
             {severityFilter !== 'all' && (
               <Chip
-                label={`Severidade: ${severityFilter}`}
+                label={`Severidade: ${getSeverityLabel(severityFilter)}`}
                 size="small"
                 onDelete={() => onSeverityFilterChange('all')}
                 color="primary"
@@ -298,7 +314,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
             )}
             {weekdayFilter !== 'all' && (
               <Chip
-                label={`Dia: ${weekdayFilter}`}
+                label={`Dia: ${weekdayNames[weekdayFilter.toUpperCase()] || weekdayFilter}`}
                 size="small"
                 onDelete={() => onWeekdayFilterChange('all')}
                 color="primary"
@@ -406,11 +422,12 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                         />
                       ) : (
                         <Chip
-                          label="N/A"
+                          label="N/D"
                           size="small"
                           variant="outlined"
                           color="default"
                           sx={{ fontWeight: 'bold', opacity: 0.5 }}
+                          title="Não disponível"
                         />
                       )}
                     </TableCell>
@@ -505,11 +522,65 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                           )}
 
                           {/* Indicators v1.5.0: Só são gerados dentro do período letivo */}
+                          {/* ⭐ v1.4.0: Suporte para club_inactive e children_not_attending */}
                           {club.indicators && club.indicators.length > 0 && (
                             <Box sx={{ mb: 2 }}>
                               {club.indicators.map((indicator, index) => (
-                                <Alert key={index} severity={indicator.severity as any} sx={{ mb: 1 }}>
-                                  {indicator.message}
+                                <Alert 
+                                  key={index} 
+                                  severity={indicator.severity as any} 
+                                  sx={{ mb: 1 }}
+                                >
+                                  <Typography variant="body2" fontWeight="bold">
+                                    {indicator.message}
+                                  </Typography>
+                                  {/* ⭐ v1.4.0: Exibir lista de crianças para children_not_attending */}
+                                  {indicator.type === 'children_not_attending' && indicator.details?.childrenList && indicator.details.childrenList.length > 0 && (
+                                    <Box sx={{ mt: 1.5 }}>
+                                      <Typography variant="caption" fontWeight="bold" display="block" gutterBottom>
+                                        Crianças que não frequentam mais:
+                                      </Typography>
+                                      <List dense sx={{ pl: 0 }}>
+                                        {indicator.details.childrenList.map((child) => (
+                                          <Box 
+                                            key={child.childId}
+                                            sx={{ 
+                                              display: 'flex', 
+                                              alignItems: 'center', 
+                                              gap: 1,
+                                              py: 0.5,
+                                              px: 1,
+                                              borderRadius: 1,
+                                              bgcolor: 'rgba(0,0,0,0.03)',
+                                              mb: 0.5
+                                            }}
+                                          >
+                                            <PersonOff fontSize="small" color="disabled" />
+                                            <Typography variant="caption">
+                                              <strong>{child.childName}</strong>
+                                              {child.reason && (
+                                                <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                                                  ({child.reason})
+                                                </Typography>
+                                              )}
+                                            </Typography>
+                                          </Box>
+                                        ))}
+                                      </List>
+                                    </Box>
+                                  )}
+                                  {/* ⭐ v1.4.0: Exibir detalhes para club_inactive */}
+                                  {indicator.type === 'club_inactive' && indicator.details?.note && (
+                                    <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                                      {indicator.details.note}
+                                    </Typography>
+                                  )}
+                                  {/* Exibir nota geral se presente */}
+                                  {indicator.details?.note && indicator.type !== 'club_inactive' && (
+                                    <Typography variant="caption" display="block" sx={{ mt: 1, fontStyle: 'italic' }}>
+                                      {indicator.details.note}
+                                    </Typography>
+                                  )}
                                 </Alert>
                               ))}
                             </Box>

@@ -83,11 +83,24 @@ export const useCurrentWeek = () => {
 };
 
 // Hook para análise detalhada dos indicadores ⭐ NOVO v1.3.0
-export const useDetailedIndicators = (year: number, week: number) => {
+// ⭐ v1.3.1: Suporta filtros avançados e paginação
+export const useDetailedIndicators = (
+  year: number, 
+  week: number,
+  filters?: {
+    status?: 'ok' | 'partial' | 'missing' | 'exception' | 'inactive' | 'out_of_period';
+    severity?: 'critical' | 'warning' | 'info' | 'success';
+    weekday?: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
+    indicatorType?: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' | 'exception' | 'no_weekday' | 'out_of_period' | 'club_inactive' | 'children_not_attending';
+    hasProblems?: boolean;
+    page?: number;
+    limit?: number;
+  }
+) => {
   return useQuery({
-    queryKey: ['detailedIndicators', year, week],
+    queryKey: ['detailedIndicators', year, week, filters],
     queryFn: async () => {
-      const response = await clubControlApi.getDetailedIndicators({ year, week });
+      const response = await clubControlApi.getDetailedIndicators({ year, week, ...filters });
       return response.data;
     },
     enabled: BACKEND_ENABLED && !!year && !!week, // 🔴 DESABILITADO
@@ -139,6 +152,22 @@ export const useCreatePeriod = () => {
     mutationFn: (data: CreateAcademicPeriodDto) => clubControlApi.createPeriod(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academicPeriods'] });
+    },
+  });
+};
+
+// Mutation para atualizar período
+export const useUpdatePeriod = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ periodId, data }: { periodId: string; data: Partial<CreateAcademicPeriodDto> }) =>
+      clubControlApi.updatePeriod(periodId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['academicPeriods'] });
+      queryClient.invalidateQueries({ queryKey: ['academicPeriod'] });
+      queryClient.invalidateQueries({ queryKey: ['controlDashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['weekCheck'] });
+      queryClient.invalidateQueries({ queryKey: ['currentWeek'] });
     },
   });
 };
