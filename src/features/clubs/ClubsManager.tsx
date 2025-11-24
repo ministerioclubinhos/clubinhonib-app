@@ -17,6 +17,7 @@ import {
 import { apiFetchClubs } from "./api";
 import BackHeader from "@/components/common/header/BackHeader";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
 import { useSelector } from "react-redux";
 import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
@@ -57,6 +58,7 @@ export default function ClubsManager() {
     createClub,
     updateClub,
     deleteClub,
+    toggleActive,
   } = useClubMutations(async (page, limit) => {
     await apiFetchClubs({ page, limit, filters, sort: sorting });
     await fetchPage();
@@ -77,6 +79,7 @@ export default function ClubsManager() {
       number: 0,
       weekday: "saturday" as Weekday,
       time: null,
+      isActive: true,
       address: {
         street: "",
         district: "",
@@ -120,6 +123,7 @@ export default function ClubsManager() {
       number: c.number,
       weekday: c.weekday,
       time: c.time ?? null,
+      isActive: c.isActive,
       address: c.address,
       coordinatorProfileId: c.coordinator?.id ?? null,
       teacherProfileIds: (c.teachers ?? []).map((t) => t.id),
@@ -158,6 +162,15 @@ export default function ClubsManager() {
     await deleteClub(confirmDelete.id, pageIndex + 1, pageSize, filters, sorting);
     await reloadOptions();
     setConfirmDelete(null);
+  };
+
+  const [confirmToggleActive, setConfirmToggleActive] = useState<ClubResponseDto | null>(null);
+  const askToggleActive = (club: ClubResponseDto) => setConfirmToggleActive(club);
+  const submitToggleActive = async () => {
+    if (!confirmToggleActive) return;
+    await toggleActive(confirmToggleActive.id, pageIndex + 1, pageSize, filters, sorting);
+    await reloadOptions();
+    setConfirmToggleActive(null);
   };
 
   React.useEffect(() => {
@@ -212,6 +225,7 @@ export default function ClubsManager() {
         onOpenView={handleOpenView}
         onStartEdit={startEdit}
         onAskDelete={askDelete}
+        onToggleActive={askToggleActive}
       />
 
       <ClubViewDialog
@@ -261,6 +275,18 @@ export default function ClubsManager() {
           setDialogError("");
         }}
         onConfirm={submitDelete}
+      />
+
+      <ToggleActiveConfirmDialog
+        open={!!confirmToggleActive}
+        title={confirmToggleActive ? `Clubinho #${confirmToggleActive.number}` : ""}
+        isActive={confirmToggleActive?.isActive ?? false}
+        onClose={() => {
+          setConfirmToggleActive(null);
+          setDialogError("");
+        }}
+        onConfirm={submitToggleActive}
+        loading={dialogLoading}
       />
     </Box>
   );

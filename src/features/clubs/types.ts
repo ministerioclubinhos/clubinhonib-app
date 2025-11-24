@@ -46,6 +46,7 @@ export type ClubSimpleResponseDto = {
   number: number;
   weekday: Weekday;
   time?: string | null;
+  isActive: boolean;
   address: AddressResponseDto;
   createdAt: string;
   updatedAt: string;
@@ -56,6 +57,7 @@ export type ClubResponseDto = {
   number: number;
   weekday: Weekday;
   time?: string | null;
+  isActive: boolean;
   address: AddressResponseDto;
   coordinator?: CoordinatorMiniDto | null;
   teachers: TeacherMiniDto[];
@@ -81,6 +83,7 @@ export type CreateClubForm = {
   number: number;
   weekday: Weekday;
   time?: string | null;
+  isActive?: boolean;
   address: Partial<AddressResponseDto> & {
     street: string; district: string; city: string; state: string; postalCode: string;
   };
@@ -95,6 +98,7 @@ export type ClubFilters = {
   addressSearchString?: string;
   userSearchString?: string;
   clubSearchString?: string;
+  isActive?: boolean;
 };
 
 export type ClubSort =

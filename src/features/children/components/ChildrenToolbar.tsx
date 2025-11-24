@@ -1,7 +1,8 @@
 import React from "react";
 import {
   Paper, Grid, TextField, Stack, Button, Tooltip, IconButton,
-  InputAdornment, Popover, ToggleButtonGroup, ToggleButton, Box, Typography, Fab
+  InputAdornment, Popover, ToggleButtonGroup, ToggleButton, Box, Typography, Fab,
+  FormControl, InputLabel, Select, MenuItem
 } from "@mui/material";
 import { CleaningServices, Refresh, Add, Event, Close } from "@mui/icons-material";
 import { ChildFilters } from "../types";
@@ -173,6 +174,7 @@ export default function ChildrenToolbar({ filters, onChange, onCreateClick, onRe
       birthDateTo: "",
       joinedFrom: "",
       joinedTo: "",
+      isActive: undefined,
     }));
 
   return (
@@ -216,6 +218,27 @@ export default function ChildrenToolbar({ filters, onChange, onCreateClick, onRe
             to={filters.joinedTo}
             onChange={(from, to) => onChange(prev => ({ ...prev, joinedFrom: from, joinedTo: to }))}
           />
+        </Grid>
+
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Status</InputLabel>
+            <Select
+              label="Status"
+              value={filters.isActive === undefined ? "" : filters.isActive ? "true" : "false"}
+              onChange={(e) => {
+                const val = e.target.value;
+                onChange(prev => ({
+                  ...prev,
+                  isActive: val === "" ? undefined : val === "true"
+                }));
+              }}
+            >
+              <MenuItem value="">Todos</MenuItem>
+              <MenuItem value="true">Ativo</MenuItem>
+              <MenuItem value="false">Inativo</MenuItem>
+            </Select>
+          </FormControl>
         </Grid>
 
         <Grid item xs={12}>

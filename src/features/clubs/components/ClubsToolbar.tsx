@@ -10,6 +10,10 @@ import {
   Box,
   Fab,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { Add, Refresh, CleaningServices } from "@mui/icons-material";
 import { useSelector } from "react-redux";
@@ -45,6 +49,7 @@ export default function ClubsToolbar({
       clubSearchString: "",
       userSearchString: "",
       addressSearchString: "",
+      isActive: undefined,
     }));
   };
 
@@ -97,6 +102,24 @@ export default function ClubsToolbar({
             onChange={(e) => handleChange("addressSearchString", e.target.value)}
             placeholder="Rua, bairro ou cidade"
           />
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Status</InputLabel>
+            <Select
+              label="Status"
+              value={filters.isActive === undefined ? "" : filters.isActive ? "true" : "false"}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange("isActive", val === "" ? undefined : val === "true");
+              }}
+            >
+              <MenuItem value="">Todos</MenuItem>
+              <MenuItem value="true">Ativo</MenuItem>
+              <MenuItem value="false">Inativo</MenuItem>
+            </Select>
+          </FormControl>
         </Grid>
 
         <Grid item xs={12}>

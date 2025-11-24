@@ -1,7 +1,7 @@
 import * as React from "react";
 import {
   Card, CardActionArea, CardContent, Stack, Typography,
-  Box, Avatar, Tooltip, IconButton, useTheme
+  Box, Avatar, Tooltip, IconButton, useTheme, Divider, Button
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
@@ -9,6 +9,8 @@ import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import ToggleOnIcon from "@mui/icons-material/ToggleOn";
+import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 
 import { ChildSimpleResponseDto } from "@/features/children/types";
 import DecisionModal from "./DecisionModal";
@@ -29,12 +31,14 @@ export default function ChildCard({
   child,
   onClick,
   onEdit,
-  onRefresh
+  onRefresh,
+  onToggleActive
 }: {
   child: ChildSimpleResponseDto;
   onClick: (c: ChildSimpleResponseDto) => void;
   onEdit?: (c: ChildSimpleResponseDto) => void;
   onRefresh?: () => void;
+  onToggleActive?: (c: ChildSimpleResponseDto) => void;
 }) {
   const theme = useTheme();
   const colors = genderPastel(child.name || child.id, child.gender);
@@ -70,7 +74,7 @@ export default function ChildCard({
       >
         <Tooltip title={alreadyAccepted ? "Registrar reconciliação" : "Registrar decisão por Jesus"}>
           <IconButton
-            onClick={() => setModalOpen(true)}
+            onClick={(e) => { e.stopPropagation(); setModalOpen(true); }}
             sx={{
               position: "absolute",
               top: 8,
@@ -79,7 +83,6 @@ export default function ChildCard({
               border: "2px solid",
               borderColor: "divider",
               zIndex: 3,
-              mb: 6,
               "&:hover": { bgcolor: "background.paper" },
             }}
           >
@@ -178,6 +181,105 @@ export default function ChildCard({
             </Stack>
           </CardContent>
         </CardActionArea>
+
+        {!!onToggleActive && (
+          <>
+            <Divider />
+            <Box
+              sx={{
+                px: { xs: 1.5, sm: 2 },
+                py: 1.5,
+                bgcolor: theme.palette.mode === "light" ? "grey.50" : "grey.900",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1.5,
+              }}
+            >
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                  fontWeight: 500,
+                  flex: 1,
+                  lineHeight: 1.4,
+                }}
+              >
+                {!child.isActive
+                  ? "Criança voltou a frequentar o clubinho?"
+                  : "Criança não frequenta mais o clubinho?"}
+              </Typography>
+              <Tooltip title={child.isActive ? "Desativar criança" : "Ativar criança"}>
+                <Box
+                  component="button"
+                  onClick={(e) => { e.stopPropagation(); onToggleActive(child); }}
+                  sx={{
+                    position: "relative",
+                    width: 56,
+                    height: 32,
+                    borderRadius: 16,
+                    border: "none",
+                    cursor: "pointer",
+                    bgcolor: child.isActive ? theme.palette.success.main : theme.palette.grey[400],
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      bgcolor: child.isActive ? theme.palette.success.dark : theme.palette.grey[500],
+                      transform: "scale(1.05)",
+                    },
+                    "&:active": {
+                      transform: "scale(0.95)",
+                    },
+                    "&:focus": {
+                      outline: `2px solid ${child.isActive ? theme.palette.success.main : theme.palette.grey[400]}`,
+                      outlineOffset: 2,
+                    },
+                    display: "flex",
+                    alignItems: "center",
+                    px: 0.5,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      bgcolor: "white",
+                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      transform: child.isActive ? "translateX(24px)" : "translateX(0)",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {child.isActive ? (
+                      <Box
+                        component="span"
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          bgcolor: theme.palette.success.main,
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          bgcolor: theme.palette.grey[500],
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Box>
+              </Tooltip>
+            </Box>
+          </>
+        )}
       </Card>
       <DecisionModal
         open={modalOpen}

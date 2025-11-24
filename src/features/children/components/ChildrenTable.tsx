@@ -7,7 +7,7 @@ import {
   ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel,
   SortingState, useReactTable
 } from "@tanstack/react-table";
-import { Visibility, Edit, Delete } from "@mui/icons-material";
+import { Visibility, Edit, Delete, ToggleOn, ToggleOff } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import { ChildResponseDto } from "../types";
@@ -25,6 +25,7 @@ type Props = {
   onOpenView: (row: ChildResponseDto) => void;
   onStartEdit: (row: ChildResponseDto) => void;
   onAskDelete: (row: ChildResponseDto) => void;
+  onToggleActive: (row: ChildResponseDto) => void;
 };
 
 import { formatDate, gLabel } from "@/utils/dateUtils";
@@ -39,7 +40,7 @@ export default function ChildrenTable(props: Props) {
 function ChildrenTableDesktop(props: Props) {
   const {
     rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
-    sorting, setSorting, onOpenView, onStartEdit, onAskDelete,
+    sorting, setSorting, onOpenView, onStartEdit, onAskDelete, onToggleActive,
   } = props;
   
   const theme = useTheme();
@@ -90,6 +91,22 @@ function ChildrenTableDesktop(props: Props) {
       meta: { width: 160 },
     },
     {
+      accessorKey: "isActive",
+      header: "Status",
+      cell: ({ getValue }) => {
+        const active = getValue() as boolean;
+        return (
+          <Chip
+            size="small"
+            label={active ? "Ativo" : "Inativo"}
+            color={active ? "success" : "default"}
+            variant={active ? "filled" : "outlined"}
+          />
+        );
+      },
+      meta: { width: 100 },
+    },
+    {
       accessorKey: "createdAt",
       header: "Criado em",
       cell: ({ getValue }) => formatDate(getValue() as any, true),
@@ -109,12 +126,20 @@ function ChildrenTableDesktop(props: Props) {
         <Box sx={{ display: "flex", gap: 0.5 }}>
           <Tooltip title="Detalhes"><IconButton onClick={() => onOpenView(row.original)}><Visibility /></IconButton></Tooltip>
           <Tooltip title="Editar"><IconButton onClick={() => onStartEdit(row.original)}><Edit /></IconButton></Tooltip>
+          <Tooltip title={row.original.isActive ? "Desativar" : "Ativar"}>
+            <IconButton 
+              color={row.original.isActive ? "success" : "default"}
+              onClick={() => onToggleActive(row.original)}
+            >
+              {row.original.isActive ? <ToggleOn /> : <ToggleOff />}
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Excluir"><IconButton color="error" onClick={() => onAskDelete(row.original)}><Delete /></IconButton></Tooltip>
         </Box>
       ),
-      meta: { width: 150 },
+      meta: { width: 200 },
     },
-  ]), [onAskDelete, onOpenView, onStartEdit]);
+  ]), [onAskDelete, onOpenView, onStartEdit, onToggleActive]);
 
   const table = useReactTable({
     data: rows,

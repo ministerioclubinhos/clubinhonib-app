@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  apiCreateChild, apiDeleteChild, apiFetchChild, apiFetchChildren, apiUpdateChild
+  apiCreateChild, apiDeleteChild, apiFetchChild, apiFetchChildren, apiUpdateChild, apiToggleChildActive
 } from "./api";
 import { ChildFilters, ChildResponseDto, ChildSort, CreateChildForm, EditChildForm } from "./types";
 
@@ -94,5 +94,18 @@ export function useChildMutations(refetch: (page: number, limit: number, filters
     }
   }, [refetch]);
 
-  return { dialogLoading, dialogError, setDialogError, createChild, updateChild, deleteChild };
+  const toggleActive = useCallback(async (id: string, page: number, limit: number, filters?: ChildFilters, sort?: ChildSort) => {
+    setDialogLoading(true);
+    setDialogError("");
+    try {
+      await apiToggleChildActive(id);
+      await refetch(page, limit, filters, sort);
+    } catch (err: any) {
+      setDialogError(err?.response?.data?.message || err.message || "Erro ao alterar status da criança");
+    } finally {
+      setDialogLoading(false);
+    }
+  }, [refetch]);
+
+  return { dialogLoading, dialogError, setDialogError, createChild, updateChild, deleteChild, toggleActive };
 }
