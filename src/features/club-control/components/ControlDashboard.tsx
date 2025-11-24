@@ -44,8 +44,6 @@ const weekdayNames: Record<string, string> = {
   sunday: 'Domingo',
 };
 
-const BACKEND_ENABLED = import.meta.env.VITE_CLUB_CONTROL_ENABLED === 'true';
-
 const academicWeekToCalendarWeek = (
   academicWeek: number,
   academicYear: number,
@@ -203,43 +201,6 @@ export const ControlDashboard: React.FC = () => {
   const clubsToDisplay = filteredClubs;
 
   const currentWeekData = data?.currentWeek || currentWeekInfo;
-  if (!BACKEND_ENABLED) {
-    return (
-      <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: `2px solid ${theme.palette.info.main}` }}>
-        <Alert severity="info" sx={{ borderRadius: 2, mb: 3 }}>
-          <AlertTitle>🚧 Módulo em Desenvolvimento</AlertTitle>
-          <Typography variant="body2" gutterBottom>
-            O <strong>Painel de Controle</strong> está aguardando a implementação do backend.
-          </Typography>
-        </Alert>
-
-        <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            📋 Como Ativar (Quando o Backend Estiver Pronto):
-          </Typography>
-          <Typography variant="body2" component="ol" sx={{ pl: 2, m: 0 }}>
-            <li>Crie um arquivo <code>.env</code> na raiz do projeto</li>
-            <li>Adicione: <code>VITE_CLUB_CONTROL_ENABLED=true</code></li>
-            <li>Reinicie o servidor de desenvolvimento</li>
-            <li>O painel de controle estará ativo!</li>
-          </Typography>
-        </Box>
-
-        <Box sx={{ p: 2, bgcolor: theme.palette.primary.main + '10', borderRadius: 2 }}>
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            🎯 O Que Este Módulo Faz:
-          </Typography>
-          <Typography variant="body2" component="ul" sx={{ pl: 2, mb: 0 }}>
-            <li><strong>Verificação em Tempo Real:</strong> Veja quais clubes lançaram pagelas</li>
-            <li><strong>Detecção de Faltantes:</strong> Identifique crianças sem pagela</li>
-            <li><strong>Gestão de Períodos:</strong> Configure ano letivo global</li>
-            <li><strong>Exceções Globais:</strong> Cadastre feriados e eventos</li>
-            <li><strong>Alertas Automáticos:</strong> Sistema de notificações por severidade</li>
-          </Typography>
-        </Box>
-      </Paper>
-    );
-  }
 
   const toggleExpanded = (clubId: string) => {
     const newSet = new Set(expandedClubs);
