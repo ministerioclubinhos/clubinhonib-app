@@ -36,7 +36,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
     <Paper
       elevation={0}
       sx={{
-        p: 3,
+        p: { xs: 1.5, sm: 2 },
         height: '100%',
         background: `linear-gradient(135deg, ${color}08 0%, ${color}03 100%)`,
         border: `2px solid ${color}20`,
@@ -57,48 +57,60 @@ const MetricCard: React.FC<MetricCardProps> = ({
           position: 'absolute',
           top: -20,
           right: -20,
-          width: 100,
-          height: 100,
+          width: { xs: 60, sm: 100 },
+          height: { xs: 60, sm: 100 },
           borderRadius: '50%',
           background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
         }}
       />
 
       <Box sx={{ position: 'relative', zIndex: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: { xs: 1, sm: 1.5 } }}>
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            fontWeight={600} 
+            sx={{ 
+              textTransform: 'uppercase', 
+              letterSpacing: 1,
+              fontSize: { xs: '0.7rem', sm: '0.75rem' }
+            }}
+          >
             {title}
           </Typography>
           <Box
             sx={{
-              p: 1,
+              p: { xs: 0.75, sm: 1 },
               borderRadius: 2,
               bgcolor: `${color}15`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              '& svg': {
+                fontSize: { xs: 18, sm: 24 },
+                color: color,
+              },
             }}
           >
-              {React.cloneElement(icon as React.ReactElement, {
-              style: { fontSize: 24, color },
-            } as any)}
+            {icon}
           </Box>
         </Box>
 
         <Typography
-          variant="h3"
+          variant="h4"
           fontWeight="bold"
           sx={{
             background: `linear-gradient(135deg, ${color} 0%, ${color}CC 100%)`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-            mb: 1,
+            mb: { xs: 0.5, sm: 1 },
+            fontSize: { xs: '1.5rem', sm: '2rem' },
           }}
         >
           {currentValue.toLocaleString('pt-BR')}
           {suffix && (
-            <Typography component="span" variant="h5" sx={{ ml: 0.5, opacity: 0.7 }}>
+            <Typography component="span" variant="h6" sx={{ ml: 0.5, opacity: 0.7, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
               {suffix}
             </Typography>
           )}
@@ -113,6 +125,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
               bgcolor: `${trend.color}15`,
               color: trend.color,
               fontWeight: 600,
+              fontSize: { xs: '0.65rem', sm: '0.7rem' },
+              height: { xs: 20, sm: 24 },
               '& .MuiChip-icon': { color: trend.color },
             }}
           />
@@ -180,7 +194,7 @@ export const OverviewSummaryCards: React.FC = () => {
 
   return (
     <Box>
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 1, sm: 1.5 }}>
         {metrics.map((metric, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <MetricCard {...metric} />
@@ -192,18 +206,18 @@ export const OverviewSummaryCards: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 3,
-          mt: 3,
+          p: { xs: 2, sm: 3 },
+          mt: { xs: 2, sm: 3 },
           borderRadius: 3,
           background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
           border: `2px solid ${theme.palette.divider}`,
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-          <Typography variant="body2" fontWeight={600} color="text.secondary">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+          <Typography variant="body2" fontWeight={600} color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             Taxa de Engajamento Mensal
           </Typography>
-          <Typography variant="h6" fontWeight="bold" color="primary">
+          <Typography variant="h6" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
             {engagementRate.toFixed(1)}%
           </Typography>
         </Box>

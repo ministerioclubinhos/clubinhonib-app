@@ -21,6 +21,11 @@ import {
   IconButton,
   useTheme,
   Avatar,
+  Card,
+  CardContent,
+  useMediaQuery,
+  Stack,
+  Divider,
 } from '@mui/material';
 import {
   ExpandMore,
@@ -39,6 +44,7 @@ import { ClubsFilters } from '../api';
 
 export const ClubsListView: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [filters, setFilters] = React.useState<ClubsFilters>({
     page: 1,
     limit: 20,
@@ -154,35 +160,34 @@ export const ClubsListView: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas */}
+      {/* ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas - Compacto */}
       {(data.inactiveClubs || data.inactiveChildren) && (
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
           {data.inactiveClubs && data.inactiveClubs.total > 0 && (
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6} md={data.inactiveChildren && data.inactiveChildren.total > 0 ? 6 : 12}>
               <Paper 
                 elevation={0} 
                 sx={{ 
-                  p: 2, 
+                  p: { xs: 1.5, sm: 2 }, 
                   borderRadius: 2, 
                   border: `2px solid ${theme.palette.warning.main}40`,
                   bgcolor: `${theme.palette.warning.main}08`,
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Block sx={{ color: theme.palette.warning.main }} />
-                  <Typography variant="subtitle2" fontWeight="bold" color="warning.main">
-                    Clubinhos Desativados
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 0.75, sm: 1 } }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 } }}>
+                    <Block sx={{ color: theme.palette.warning.main, fontSize: { xs: 18, sm: 20 } }} />
+                    <Typography variant="subtitle2" fontWeight="bold" color="warning.main" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      Clubinhos Desativados
+                    </Typography>
+                  </Box>
+                  <Typography variant="h6" fontWeight="bold" color="warning.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                    {data.inactiveClubs.total}
                   </Typography>
                 </Box>
-                <Typography variant="h5" fontWeight="bold" color="warning.main">
-                  {data.inactiveClubs.total}
-                </Typography>
                 {data.inactiveClubs.list && data.inactiveClubs.list.length > 0 && (
-                  <Box sx={{ mt: 1.5 }}>
-                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
-                      Lista de clubinhos desativados:
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <Box sx={{ mt: { xs: 1, sm: 1.5 } }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 0.5, sm: 0.5 } }}>
                       {data.inactiveClubs.list.map((club) => (
                         <Chip
                           key={club.clubId}
@@ -192,6 +197,8 @@ export const ClubsListView: React.FC = () => {
                             bgcolor: `${theme.palette.warning.main}20`,
                             color: theme.palette.warning.main,
                             fontWeight: 600,
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 },
                           }}
                         />
                       ))}
@@ -202,27 +209,29 @@ export const ClubsListView: React.FC = () => {
             </Grid>
           )}
           {data.inactiveChildren && data.inactiveChildren.total > 0 && (
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6} md={data.inactiveClubs && data.inactiveClubs.total > 0 ? 6 : 12}>
               <Paper 
                 elevation={0} 
                 sx={{ 
-                  p: 2, 
+                  p: { xs: 1.5, sm: 2 }, 
                   borderRadius: 2, 
                   border: `2px solid ${theme.palette.error.main}40`,
                   bgcolor: `${theme.palette.error.main}08`,
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Warning sx={{ color: theme.palette.error.main }} />
-                  <Typography variant="subtitle2" fontWeight="bold" color="error.main">
-                    Crianças Desativadas
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 0.75, sm: 1 } }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 } }}>
+                    <Warning sx={{ color: theme.palette.error.main, fontSize: { xs: 18, sm: 20 } }} />
+                    <Typography variant="subtitle2" fontWeight="bold" color="error.main" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      Crianças Desativadas
+                    </Typography>
+                  </Box>
+                  <Typography variant="h6" fontWeight="bold" color="error.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                    {data.inactiveChildren.total}
                   </Typography>
                 </Box>
-                <Typography variant="h5" fontWeight="bold" color="error.main">
-                  {data.inactiveChildren.total}
-                </Typography>
                 {data.inactiveChildren.fromInactiveClubs !== undefined && (
-                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                     {data.inactiveChildren.fromInactiveClubs} de clubinhos desativados
                   </Typography>
                 )}
@@ -308,135 +317,298 @@ export const ClubsListView: React.FC = () => {
         </Collapse>
       </Paper>
 
-      {/* Tabela */}
-      <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: 'primary.main' }}>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Rank</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Clubinho</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Dia/Horário</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Local</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Coordenador</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Crianças</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Professores</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Presença</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Performance</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Decisões</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.clubs.map((club) => (
-              <TableRow
-                key={club.clubId}
-                hover
-                sx={{ bgcolor: club.rank <= 3 ? `${getMedalColor(club.rank)}08` : 'transparent' }}
+      {/* Versão Mobile: Cards */}
+      {isMobile ? (
+        <Stack spacing={2}>
+          {data.clubs.length === 0 ? (
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
+              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                Nenhum clubinho encontrado
+              </Typography>
+            </Paper>
+          ) : (
+            data.clubs.map((club) => (
+              <Card 
+                key={club.clubId} 
+                elevation={3} 
+                sx={{ 
+                  borderRadius: 2,
+                  border: club.rank <= 3 ? `2px solid ${getMedalColor(club.rank)}40` : undefined,
+                  bgcolor: club.rank <= 3 ? `${getMedalColor(club.rank)}08` : undefined,
+                }}
               >
-                <TableCell>
-                  {club.rank <= 3 ? (
-                    <EmojiEvents sx={{ color: getMedalColor(club.rank), fontSize: 28 }} />
-                  ) : (
-                    <Typography fontWeight="bold">#{club.rank}</Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    Clubinho #{club.clubNumber}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Box>
-                    <Typography variant="body2">{weekdayNames[club.weekday] || club.weekday}</Typography>
-                    <Typography variant="caption" color="text.secondary">{club.time}</Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">{club.address.city}, {club.address.state}</Typography>
-                  <Typography variant="caption" color="text.secondary">{club.address.district}</Typography>
-                </TableCell>
-                <TableCell>
-                  {club.coordinator ? club.coordinator.name : '-'}
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    icon={<Groups />}
-                    label={`${club.children.total} (${club.children.active} ativos)`}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Typography variant="caption" color="text.secondary" display="block">
-                    M: {club.children.byGender.M} | F: {club.children.byGender.F}
-                  </Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    icon={<School />}
-                    label={club.teachers.total.toString()}
-                    size="small"
-                    color="info"
-                    variant="outlined"
-                  />
-                </TableCell>
-                <TableCell align="right">
-                  <Box>
-                    <Typography variant="body2" fontWeight="bold">
-                      {club.performance.presenceRate.toFixed(1)}%
-                    </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={club.performance.presenceRate}
-                      sx={{
-                        mt: 0.5,
-                        height: 4,
-                        borderRadius: 2,
-                        '& .MuiLinearProgress-bar': {
-                          bgcolor: theme.palette.success.main,
-                        },
-                      }}
-                    />
-                  </Box>
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    icon={<TrendingUp />}
-                    label={club.performance.performanceScore.toFixed(1)}
-                    size="small"
-                    color={getPerformanceColor(club.performance.performanceScore)}
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={club.performance.totalDecisions}
-                    size="small"
-                    color="success"
-                    variant="outlined"
-                  />
-                </TableCell>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                  <Stack spacing={1.5}>
+                    {/* Header */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        {club.rank <= 3 ? (
+                          <EmojiEvents sx={{ color: getMedalColor(club.rank), fontSize: { xs: 24, sm: 28 } }} />
+                        ) : (
+                          <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            #{club.rank}
+                          </Typography>
+                        )}
+                        <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}>
+                          Clubinho #{club.clubNumber}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Informações */}
+                    <Grid container spacing={1.5}>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Dia/Horário
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {weekdayNames[club.weekday] || club.weekday}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            {club.time}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Local
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {club.address.city}, {club.address.state}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            {club.address.district}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Coordenador
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {club.coordinator ? club.coordinator.name : '-'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    {/* Crianças e Professores */}
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      <Chip
+                        icon={<Groups />}
+                        label={`${club.children.total} crianças (${club.children.active} ativos)`}
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                      <Chip
+                        icon={<School />}
+                        label={`${club.teachers.total} professores`}
+                        size="small"
+                        color="info"
+                        variant="outlined"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, alignSelf: 'center' }}>
+                        M: {club.children.byGender.M} | F: {club.children.byGender.F}
+                      </Typography>
+                    </Box>
+
+                    {/* Presença */}
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          Presença
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          {club.performance.presenceRate.toFixed(1)}%
+                        </Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={club.performance.presenceRate}
+                        sx={{
+                          height: 6,
+                          borderRadius: 3,
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: theme.palette.success.main,
+                            borderRadius: 3,
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    {/* Performance e Decisões */}
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <Chip
+                        icon={<TrendingUp />}
+                        label={`Performance: ${club.performance.performanceScore.toFixed(1)}`}
+                        size="small"
+                        color={getPerformanceColor(club.performance.performanceScore)}
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                      <Chip
+                        label={`${club.performance.totalDecisions} decisões`}
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </Stack>
+      ) : (
+        /* Versão Desktop: Tabela */
+        <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'primary.main' }}>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Rank</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Clubinho</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Dia/Horário</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Local</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Coordenador</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Crianças</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Professores</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Presença</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Performance</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Decisões</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {data.clubs.map((club) => (
+                <TableRow
+                  key={club.clubId}
+                  hover
+                  sx={{ bgcolor: club.rank <= 3 ? `${getMedalColor(club.rank)}08` : 'transparent' }}
+                >
+                  <TableCell>
+                    {club.rank <= 3 ? (
+                      <EmojiEvents sx={{ color: getMedalColor(club.rank), fontSize: 28 }} />
+                    ) : (
+                      <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>#{club.rank}</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      Clubinho #{club.clubNumber}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{weekdayNames[club.weekday] || club.weekday}</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>{club.time}</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{club.address.city}, {club.address.state}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>{club.address.district}</Typography>
+                  </TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {club.coordinator ? club.coordinator.name : '-'}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      icon={<Groups />}
+                      label={`${club.children.total} (${club.children.active} ativos)`}
+                      size="small"
+                      variant="outlined"
+                    />
+                    <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                      M: {club.children.byGender.M} | F: {club.children.byGender.F}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      icon={<School />}
+                      label={club.teachers.total.toString()}
+                      size="small"
+                      color="info"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        {club.performance.presenceRate.toFixed(1)}%
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={club.performance.presenceRate}
+                        sx={{
+                          mt: 0.5,
+                          height: 4,
+                          borderRadius: 2,
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: theme.palette.success.main,
+                          },
+                        }}
+                      />
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      icon={<TrendingUp />}
+                      label={club.performance.performanceScore.toFixed(1)}
+                      size="small"
+                      color={getPerformanceColor(club.performance.performanceScore)}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      label={club.performance.totalDecisions}
+                      size="small"
+                      color="success"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-        {data.clubs.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography color="text.secondary">Nenhum clubinho encontrado</Typography>
-          </Box>
-        )}
-      </TableContainer>
+          {data.clubs.length === 0 && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Nenhum clubinho encontrado</Typography>
+            </Box>
+          )}
+        </TableContainer>
+      )}
 
-      {/* Paginação */}
+      {/* Paginação - Funciona em ambos (mobile e desktop) */}
       {data.pagination && (
-        <TablePagination
-          component="div"
-          count={data.pagination.total}
-          page={data.pagination.page - 1}
-          onPageChange={handlePageChange}
-          rowsPerPage={data.pagination.limit}
-          onRowsPerPageChange={handleLimitChange}
-          rowsPerPageOptions={[10, 20, 50]}
-          labelRowsPerPage="Clubinhos por página:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-        />
+        <Box sx={{ px: { xs: 1, sm: 0 }, mt: 2 }}>
+          <TablePagination
+            component="div"
+            count={data.pagination.total}
+            page={data.pagination.page - 1}
+            onPageChange={handlePageChange}
+            rowsPerPage={data.pagination.limit}
+            onRowsPerPageChange={handleLimitChange}
+            rowsPerPageOptions={[10, 20, 50]}
+            labelRowsPerPage="Clubinhos por página:"
+            labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+            sx={{
+              '& .MuiTablePagination-toolbar': {
+                flexWrap: 'wrap',
+                gap: 1,
+                px: { xs: 0, sm: 2 },
+              },
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+            }}
+          />
+        </Box>
       )}
     </Box>
   );

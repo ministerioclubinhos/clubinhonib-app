@@ -21,6 +21,11 @@ import {
   Collapse,
   IconButton,
   useTheme,
+  Card,
+  CardContent,
+  useMediaQuery,
+  Stack,
+  Divider,
 } from '@mui/material';
 import {
   ExpandMore,
@@ -37,6 +42,7 @@ import { TeachersFilters } from '../api';
 
 export const TeachersListView: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [filters, setFilters] = React.useState<TeachersFilters>({
     page: 1,
     limit: 20,
@@ -208,130 +214,261 @@ export const TeachersListView: React.FC = () => {
         </Collapse>
       </Paper>
 
-      {/* Tabela com cabeçalho fixo e scroll interno */}
-      <TableContainer
-        component={Paper}
-        elevation={3}
-        sx={{
-          borderRadius: 2,
-          maxHeight: { xs: 420, md: 560 },
-          overflow: 'auto',
-        }}
-      >
-        <Table stickyHeader size="small">
-          <TableHead>
-            <TableRow sx={{ bgcolor: 'primary.main' }}>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Rank</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Professor</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold', display: { xs: 'none', sm: 'table-cell' } }}>Clubinho</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold', display: { xs: 'none', md: 'table-cell' } }}>Local</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Crianças</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold', display: { xs: 'none', sm: 'table-cell' } }} align="right">Pagelas</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Presença</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Efetividade</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold', display: { xs: 'none', md: 'table-cell' } }} align="center">Status</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.teachers.map((teacher) => (
-              <TableRow key={teacher.teacherId} hover>
-                <TableCell>
-                  <Typography fontWeight="bold" color="primary">#{teacher.rank}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.success.main }}>
-                      {getInitials(teacher.name)}
-                    </Avatar>
-                    <Typography fontWeight="medium" noWrap maxWidth={{ xs: 140, md: 220 }}>{teacher.name}</Typography>
-                  </Box>
-                </TableCell>
-                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                  {teacher.club ? `#${teacher.club.number}` : '-'}
-                </TableCell>
-                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                  {teacher.club ? `${teacher.club.city}, ${teacher.club.state}` : '-'}
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    icon={<Group />}
-                    label={`${teacher.children.unique} (${teacher.children.active} ativos)`}
-                    size="small"
-                    variant="outlined"
-                  />
-                  {teacher.children.withDecisions > 0 && (
-                    <Typography variant="caption" color="success.main" display="block" noWrap>
-                      {teacher.children.withDecisions} decisões
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{teacher.performance.totalPagelas}</TableCell>
-                <TableCell align="right">
-                  <Box>
-                    <Typography variant="body2" fontWeight="bold">
-                      {teacher.performance.avgPresenceRate.toFixed(1)}%
-                    </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={teacher.performance.avgPresenceRate}
-                      sx={{
-                        mt: 0.5,
-                        height: 3,
-                        borderRadius: 2,
-                        '& .MuiLinearProgress-bar': {
-                          bgcolor: theme.palette.success.main,
-                        },
-                      }}
-                    />
-                  </Box>
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    icon={<Star />}
-                    label={teacher.performance.effectivenessScore.toFixed(0)}
-                    size="small"
-                    color={getEffectivenessColor(teacher.performance.effectivenessScore)}
-                  />
-                </TableCell>
-                <TableCell align="center" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                  {teacher.isActive ? (
-                    <Chip label="Ativo" size="small" color="success" variant="outlined" icon={<CheckCircle />} />
-                  ) : (
-                    <Chip label="Inativo" size="small" variant="outlined" />
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      {/* Versão Mobile: Cards */}
+      {isMobile ? (
+        <Stack spacing={2}>
+          {data.teachers.length === 0 ? (
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
+              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                Nenhum professor encontrado
+              </Typography>
+            </Paper>
+          ) : (
+            data.teachers.map((teacher) => (
+              <Card key={teacher.teacherId} elevation={3} sx={{ borderRadius: 2 }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                  <Stack spacing={1.5}>
+                    {/* Header */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
+                        <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          #{teacher.rank}
+                        </Typography>
+                        <Avatar sx={{ width: { xs: 32, sm: 36 }, height: { xs: 32, sm: 36 }, bgcolor: theme.palette.success.main }}>
+                          {getInitials(teacher.name)}
+                        </Avatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {teacher.name}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      {teacher.isActive ? (
+                        <Chip label="Ativo" size="small" color="success" variant="outlined" icon={<CheckCircle />} sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                      ) : (
+                        <Chip label="Inativo" size="small" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                      )}
+                    </Box>
 
-        {data.teachers.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography color="text.secondary">Nenhum professor encontrado</Typography>
-          </Box>
-        )}
-      </TableContainer>
+                    <Divider />
 
-      {/* Paginação */}
-      {data.pagination && (
-        <TablePagination
-          component="div"
-          count={data.pagination.total}
-          page={data.pagination.page - 1}
-          onPageChange={handlePageChange}
-          rowsPerPage={data.pagination.limit}
-          onRowsPerPageChange={handleLimitChange}
-          rowsPerPageOptions={[10, 20, 50]}
-          labelRowsPerPage="Professores por página:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+                    {/* Informações */}
+                    <Grid container spacing={1.5}>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Clubinho
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {teacher.club ? `#${teacher.club.number}` : '-'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Local
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {teacher.club ? `${teacher.club.city}, ${teacher.club.state}` : '-'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    {/* Crianças e Pagelas */}
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <Chip
+                        icon={<Group />}
+                        label={`${teacher.children.unique} crianças (${teacher.children.active} ativos)`}
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                      {teacher.children.withDecisions > 0 && (
+                        <Chip
+                          label={`${teacher.children.withDecisions} decisões`}
+                          size="small"
+                          color="success"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        />
+                      )}
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        {teacher.performance.totalPagelas} pagelas
+                      </Typography>
+                    </Box>
+
+                    {/* Presença */}
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          Presença
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          {teacher.performance.avgPresenceRate.toFixed(1)}%
+                        </Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={teacher.performance.avgPresenceRate}
+                        sx={{
+                          height: 6,
+                          borderRadius: 3,
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: theme.palette.success.main,
+                            borderRadius: 3,
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    {/* Efetividade */}
+                    <Box>
+                      <Chip
+                        icon={<Star />}
+                        label={`Efetividade: ${teacher.performance.effectivenessScore.toFixed(0)}`}
+                        size="small"
+                        color={getEffectivenessColor(teacher.performance.effectivenessScore)}
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </Stack>
+      ) : (
+        /* Versão Desktop: Tabela */
+        <TableContainer
+          component={Paper}
+          elevation={3}
           sx={{
-            position: 'sticky',
-            bottom: 0,
-            bgcolor: 'background.paper',
-            borderTop: `1px solid ${theme.palette.divider}`,
-            zIndex: 1,
+            borderRadius: 2,
+            maxHeight: { xs: 420, md: 560 },
+            overflow: 'auto',
           }}
-        />
+        >
+          <Table stickyHeader size="small">
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'primary.main' }}>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Rank</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Professor</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Clubinho</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Local</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Crianças</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Pagelas</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Presença</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Efetividade</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.teachers.map((teacher) => (
+                <TableRow key={teacher.teacherId} hover>
+                  <TableCell>
+                    <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>#{teacher.rank}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.success.main }}>
+                        {getInitials(teacher.name)}
+                      </Avatar>
+                      <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{teacher.name}</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {teacher.club ? `#${teacher.club.number}` : '-'}
+                  </TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {teacher.club ? `${teacher.club.city}, ${teacher.club.state}` : '-'}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      icon={<Group />}
+                      label={`${teacher.children.unique} (${teacher.children.active} ativos)`}
+                      size="small"
+                      variant="outlined"
+                    />
+                    {teacher.children.withDecisions > 0 && (
+                      <Typography variant="caption" color="success.main" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        {teacher.children.withDecisions} decisões
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{teacher.performance.totalPagelas}</TableCell>
+                  <TableCell align="right">
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        {teacher.performance.avgPresenceRate.toFixed(1)}%
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={teacher.performance.avgPresenceRate}
+                        sx={{
+                          mt: 0.5,
+                          height: 3,
+                          borderRadius: 2,
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: theme.palette.success.main,
+                          },
+                        }}
+                      />
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      icon={<Star />}
+                      label={teacher.performance.effectivenessScore.toFixed(0)}
+                      size="small"
+                      color={getEffectivenessColor(teacher.performance.effectivenessScore)}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    {teacher.isActive ? (
+                      <Chip label="Ativo" size="small" color="success" variant="outlined" icon={<CheckCircle />} />
+                    ) : (
+                      <Chip label="Inativo" size="small" variant="outlined" />
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {data.teachers.length === 0 && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Nenhum professor encontrado</Typography>
+            </Box>
+          )}
+        </TableContainer>
+      )}
+
+      {/* Paginação - Funciona em ambos (mobile e desktop) */}
+      {data.pagination && (
+        <Box sx={{ px: { xs: 1, sm: 0 }, mt: 2 }}>
+          <TablePagination
+            component="div"
+            count={data.pagination.total}
+            page={data.pagination.page - 1}
+            onPageChange={handlePageChange}
+            rowsPerPage={data.pagination.limit}
+            onRowsPerPageChange={handleLimitChange}
+            rowsPerPageOptions={[10, 20, 50]}
+            labelRowsPerPage="Professores por página:"
+            labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+            sx={{
+              '& .MuiTablePagination-toolbar': {
+                flexWrap: 'wrap',
+                gap: 1,
+                px: { xs: 0, sm: 2 },
+              },
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+            }}
+          />
+        </Box>
       )}
     </Box>
   );

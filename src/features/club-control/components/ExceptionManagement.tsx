@@ -27,6 +27,11 @@ import {
   TablePagination,
   Snackbar,
   Alert as MuiAlert,
+  Card,
+  CardContent,
+  useMediaQuery,
+  Stack,
+  Divider,
 } from '@mui/material';
 import {
   Delete,
@@ -56,6 +61,7 @@ const BACKEND_ENABLED = import.meta.env.VITE_CLUB_CONTROL_ENABLED === 'true';
 
 export const ExceptionManagement: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Se backend não está habilitado, mostrar mensagem
   if (!BACKEND_ENABLED) {
@@ -171,32 +177,33 @@ export const ExceptionManagement: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 2.5,
-          mb: 3,
+          p: { xs: 2, sm: 2.5 },
+          mb: { xs: 2, sm: 3 },
           borderRadius: 3,
           border: `2px solid ${theme.palette.warning.main}30`,
           bgcolor: theme.palette.warning.main + '08',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
           <Box
             sx={{
-              width: 56,
-              height: 56,
+              width: { xs: 48, sm: 56 },
+              height: { xs: 48, sm: 56 },
               borderRadius: 2,
               bgcolor: theme.palette.warning.main,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
-            <EventBusy sx={{ fontSize: 32, color: 'white' }} />
+            <EventBusy sx={{ fontSize: { xs: 24, sm: 32 }, color: 'white' }} />
           </Box>
           <Box>
-            <Typography variant="h5" fontWeight="bold">
+            <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}>
               🚫 Exceções GLOBAIS
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
               Datas em que TODOS os clubes não funcionarão
             </Typography>
           </Box>
@@ -227,26 +234,27 @@ export const ExceptionManagement: React.FC = () => {
         </Typography>
       </Alert>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
         {/* Formulário de Cadastro */}
         <Grid item xs={12} md={5}>
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2, sm: 3 },
               borderRadius: 3,
               border: `2px solid ${theme.palette.warning.main}40`,
               bgcolor: theme.palette.warning.main + '05',
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, mb: 2 }}>
               <Box
                 sx={{
-                  width: 40,
-                  height: 40,
+                  width: { xs: 36, sm: 40 },
+                  height: { xs: 36, sm: 40 },
                   borderRadius: 2,
                   bgcolor: theme.palette.warning.main,
                   display: 'flex',
+                  flexShrink: 0,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
@@ -419,7 +427,106 @@ export const ExceptionManagement: React.FC = () => {
                     Cadastre datas em que NENHUM clube funcionará.
                   </Typography>
                 </Alert>
+              ) : isMobile ? (
+                /* Versão Mobile: Cards */
+                <Stack spacing={2}>
+                  {exceptions
+                    .sort((a, b) => new Date(b.exceptionDate).getTime() - new Date(a.exceptionDate).getTime())
+                    .map((exception) => {
+                      const typeConfig = getTypeConfig(exception.type);
+                      const isPast = dayjs(exception.exceptionDate).isBefore(dayjs(), 'day');
+                      const weekday = dayjs(exception.exceptionDate).format('dddd');
+                      
+                      return (
+                        <Card key={exception.id} elevation={2} sx={{ borderRadius: 2, opacity: isPast ? 0.7 : 1 }}>
+                          <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                            <Stack spacing={1.5}>
+                              {/* Header */}
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box>
+                                  <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                    {dayjs(exception.exceptionDate).format('DD/MM/YYYY')}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                    {weekday}
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                  {isPast && (
+                                    <Chip label="Passado" size="small" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                                  )}
+                                  {exception.isRecurrent && (
+                                    <Chip
+                                      icon={<Repeat />}
+                                      label="Recorrente"
+                                      size="small"
+                                      color="info"
+                                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                    />
+                                  )}
+                                </Box>
+                              </Box>
+
+                              <Divider />
+
+                              {/* Tipo */}
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                  Tipo
+                                </Typography>
+                                <Box sx={{ mt: 0.5 }}>
+                                  <Chip
+                                    icon={typeConfig.icon}
+                                    label={typeConfig.label}
+                                    size="small"
+                                    sx={{ bgcolor: typeConfig.color + '20', color: typeConfig.color, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                  />
+                                </Box>
+                              </Box>
+
+                              {/* Motivo */}
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                  Motivo
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                  {exception.reason}
+                                </Typography>
+                                {exception.notes && (
+                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                    {exception.notes}
+                                  </Typography>
+                                )}
+                              </Box>
+
+                              {/* Ações */}
+                              <Box>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  color="error"
+                                  startIcon={<Delete />}
+                                  onClick={() =>
+                                    setDeleteDialog({
+                                      open: true,
+                                      exceptionId: exception.id,
+                                      description: `${dayjs(exception.exceptionDate).format('DD/MM/YYYY')} - ${exception.reason}`,
+                                    })
+                                  }
+                                  fullWidth
+                                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                                >
+                                  Excluir
+                                </Button>
+                              </Box>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                </Stack>
               ) : (
+                /* Versão Desktop: Tabela */
                 <TableContainer sx={{ maxHeight: 500 }}>
                   <Table stickyHeader>
                     <TableHead>
@@ -441,10 +548,10 @@ export const ExceptionManagement: React.FC = () => {
                           return (
                             <TableRow key={exception.id} hover sx={{ opacity: isPast ? 0.6 : 1 }}>
                               <TableCell>
-                                <Typography variant="body2" fontWeight="bold">
+                                <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                                   {dayjs(exception.exceptionDate).format('DD/MM/YYYY')}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary" display="block">
+                                <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                   {weekday}
                                 </Typography>
                                 {isPast && (
@@ -469,9 +576,9 @@ export const ExceptionManagement: React.FC = () => {
                                 />
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2">{exception.reason}</Typography>
+                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{exception.reason}</Typography>
                                 {exception.notes && (
-                                  <Typography variant="caption" color="text.secondary" display="block">
+                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                     {exception.notes}
                                   </Typography>
                                 )}
@@ -499,25 +606,36 @@ export const ExceptionManagement: React.FC = () => {
                 </TableContainer>
               )}
 
-              {/* ⭐ Paginação v1.1.0 */}
+              {/* ⭐ Paginação v1.1.0 - Funciona em ambos (mobile e desktop) */}
               {exceptionsData && exceptionsData.total > 0 && (
-                <TablePagination
-                  component="div"
-                  count={exceptionsData.total}
-                  page={page - 1}
-                  onPageChange={(event, newPage) => setPage(newPage + 1)}
-                  rowsPerPage={limit}
-                  onRowsPerPageChange={(event) => {
-                    setLimit(parseInt(event.target.value, 10));
-                    setPage(1);
-                  }}
-                  rowsPerPageOptions={[25, 50, 100]}
-                  labelRowsPerPage="Exceções por página:"
-                  labelDisplayedRows={({ from, to, count }) => 
-                    `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
-                  }
-                  sx={{ borderTop: 1, borderColor: 'divider' }}
-                />
+                <Box sx={{ borderTop: 1, borderColor: 'divider', px: { xs: 1, sm: 0 } }}>
+                  <TablePagination
+                    component="div"
+                    count={exceptionsData.total}
+                    page={page - 1}
+                    onPageChange={(event, newPage) => setPage(newPage + 1)}
+                    rowsPerPage={limit}
+                    onRowsPerPageChange={(event) => {
+                      setLimit(parseInt(event.target.value, 10));
+                      setPage(1);
+                    }}
+                    rowsPerPageOptions={[25, 50, 100]}
+                    labelRowsPerPage="Exceções por página:"
+                    labelDisplayedRows={({ from, to, count }) => 
+                      `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
+                    }
+                    sx={{
+                      '& .MuiTablePagination-toolbar': {
+                        flexWrap: 'wrap',
+                        gap: 1,
+                        px: { xs: 0, sm: 2 },
+                      },
+                      '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      },
+                    }}
+                  />
+                </Box>
               )}
             </Box>
           </Paper>

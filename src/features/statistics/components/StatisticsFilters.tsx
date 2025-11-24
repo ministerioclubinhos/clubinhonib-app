@@ -54,11 +54,11 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
   }, [filters.startDate, filters.endDate]);
 
   return (
-    <Paper elevation={3} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <FilterList />
-          <Typography variant="h6" fontWeight="bold">
+    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, mb: { xs: 2, sm: 3 } }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
+          <FilterList sx={{ fontSize: { xs: 20, sm: 24 } }} />
+          <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
             Filtros
           </Typography>
           {isCurrentMonth && (
@@ -119,7 +119,7 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
       )}
 
       {/* Filtros Básicos - Sempre visíveis */}
-      <Grid container spacing={2}>
+      <Grid container spacing={{ xs: 1.5, sm: 2 }}>
         <Grid item xs={12} sm={6} md={3}>
           <TextField
             fullWidth

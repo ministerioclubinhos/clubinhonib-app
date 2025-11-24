@@ -24,6 +24,11 @@ import {
   TablePagination,
   Snackbar,
   Alert as MuiAlert,
+  Card,
+  CardContent,
+  useMediaQuery,
+  Stack,
+  Divider,
 } from '@mui/material';
 import { Delete, Add, CalendarMonth, CheckCircle, Info, Warning, Edit } from '@mui/icons-material';
 import { useCreatePeriod, useAcademicPeriods, useDeletePeriod, useUpdatePeriod } from '../hooks';
@@ -35,6 +40,7 @@ const BACKEND_ENABLED = import.meta.env.VITE_CLUB_CONTROL_ENABLED === 'true';
 
 export const PeriodManagement: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Se backend não está habilitado, mostrar mensagem
   if (!BACKEND_ENABLED) {
@@ -256,44 +262,45 @@ export const PeriodManagement: React.FC = () => {
         </Typography>
       </Alert>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
         {/* Formulário de Cadastro */}
         <Grid item xs={12} md={5}>
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2, sm: 3 },
               borderRadius: 3,
               border: `2px solid ${theme.palette.success.main}40`,
               bgcolor: theme.palette.success.main + '05',
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, mb: 2 }}>
               <Box
                 sx={{
-                  width: 40,
-                  height: 40,
+                  width: { xs: 36, sm: 40 },
+                  height: { xs: 36, sm: 40 },
                   borderRadius: 2,
                   bgcolor: theme.palette.success.main,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  flexShrink: 0,
                 }}
               >
-                <Add sx={{ color: 'white' }} />
+                <Add sx={{ color: 'white', fontSize: { xs: 20, sm: 24 } }} />
               </Box>
               <Box>
-                <Typography variant="h6" fontWeight="bold">
+                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                   Novo Período Letivo
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                   Válido para todos os clubes
                 </Typography>
               </Box>
             </Box>
 
             <form onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
+              <Grid container spacing={{ xs: 1.5, sm: 2 }}>
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -398,35 +405,135 @@ export const PeriodManagement: React.FC = () => {
               )}
             </Box>
 
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, overflowX: 'auto' }}>
               {isLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress />
                 </Box>
               ) : !periods || periods.length === 0 ? (
                 <Alert severity="info" sx={{ borderRadius: 2 }}>
-                  <Typography variant="body2" fontWeight="bold" gutterBottom>
+                  <Typography variant="body2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                     Nenhum período cadastrado
                   </Typography>
-                  <Typography variant="caption">
+                  <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                     Cadastre o primeiro período letivo usando o formulário ao lado.
                   </Typography>
                 </Alert>
+              ) : isMobile ? (
+                /* Versão Mobile: Cards */
+                <Stack spacing={2}>
+                  {periods
+                    .sort((a, b) => b.year - a.year)
+                    .map((period) => {
+                      const isCurrent = period.year === new Date().getFullYear();
+                      
+                      return (
+                        <Card key={period.id} elevation={2} sx={{ borderRadius: 2 }}>
+                          <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                            <Stack spacing={1.5}>
+                              {/* Header */}
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography variant="h6" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                                    {period.year}
+                                  </Typography>
+                                  {isCurrent && (
+                                    <Chip label="ATUAL" size="small" color="primary" sx={{ fontWeight: 'bold', fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                                  )}
+                                </Box>
+                                {period.isActive ? (
+                                  <Chip
+                                    icon={<CheckCircle />}
+                                    label="Ativo"
+                                    size="small"
+                                    color="success"
+                                    sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                  />
+                                ) : (
+                                  <Chip label="Inativo" size="small" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                                )}
+                              </Box>
+
+                              <Divider />
+
+                              {/* Período */}
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                  Período
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                  {dayjs(period.startDate).format('DD/MM/YYYY')} até {dayjs(period.endDate).format('DD/MM/YYYY')}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                  ({dayjs(period.endDate).diff(dayjs(period.startDate), 'day')} dias)
+                                </Typography>
+                              </Box>
+
+                              {/* Descrição */}
+                              {period.description && (
+                                <Box>
+                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                    Descrição
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                    {period.description}
+                                  </Typography>
+                                </Box>
+                              )}
+
+                              {/* Ações */}
+                              <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  color="primary"
+                                  startIcon={<Edit />}
+                                  onClick={() => handleOpenEdit(period)}
+                                  fullWidth
+                                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                                >
+                                  Editar
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  color="error"
+                                  startIcon={<Delete />}
+                                  onClick={() =>
+                                    setDeleteDialog({
+                                      open: true,
+                                      periodId: period.id,
+                                      description: `${period.year} (${period.description})`,
+                                    })
+                                  }
+                                  fullWidth
+                                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                                >
+                                  Excluir
+                                </Button>
+                              </Box>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                </Stack>
               ) : (
-                <TableContainer>
-                  <Table>
+                /* Versão Desktop: Tabela */
+                <TableContainer sx={{ overflowX: 'auto' }}>
+                  <Table sx={{ minWidth: 600 }}>
                     <TableHead>
                       <TableRow>
-                        <TableCell><strong>Ano</strong></TableCell>
-                        <TableCell><strong>Período</strong></TableCell>
-                        <TableCell><strong>Descrição</strong></TableCell>
-                        <TableCell><strong>Status</strong></TableCell>
-                        <TableCell align="center"><strong>Ações</strong></TableCell>
+                        <TableCell sx={{ minWidth: 80 }}><strong>Ano</strong></TableCell>
+                        <TableCell sx={{ minWidth: 150 }}><strong>Período</strong></TableCell>
+                        <TableCell sx={{ minWidth: 150 }}><strong>Descrição</strong></TableCell>
+                        <TableCell sx={{ minWidth: 100 }}><strong>Status</strong></TableCell>
+                        <TableCell align="center" sx={{ minWidth: 100 }}><strong>Ações</strong></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {periods
-                        .sort((a, b) => b.year - a.year) // Mais recente primeiro
+                        .sort((a, b) => b.year - a.year)
                         .map((period) => {
                           const isCurrent = period.year === new Date().getFullYear();
                           
@@ -434,7 +541,7 @@ export const PeriodManagement: React.FC = () => {
                             <TableRow key={period.id} hover>
                               <TableCell>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Typography variant="h6" fontWeight="bold" color="primary">
+                                  <Typography variant="h6" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                                     {period.year}
                                   </Typography>
                                   {isCurrent && (
@@ -443,21 +550,21 @@ export const PeriodManagement: React.FC = () => {
                                 </Box>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2">
+                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                                   {dayjs(period.startDate).format('DD/MM/YYYY')}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                                   até
                                 </Typography>
-                                <Typography variant="body2">
+                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                                   {dayjs(period.endDate).format('DD/MM/YYYY')}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary" display="block">
+                                <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                   ({dayjs(period.endDate).diff(dayjs(period.startDate), 'day')} dias)
                                 </Typography>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2">{period.description || '-'}</Typography>
+                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{period.description || '-'}</Typography>
                               </TableCell>
                               <TableCell>
                                 {period.isActive ? (
@@ -505,25 +612,36 @@ export const PeriodManagement: React.FC = () => {
                 </TableContainer>
               )}
 
-              {/* ⭐ Paginação v1.1.0 */}
+              {/* ⭐ Paginação v1.1.0 - Funciona em ambos (mobile e desktop) */}
               {periodsData && periodsData.total > 0 && (
-                <TablePagination
-                  component="div"
-                  count={periodsData.total}
-                  page={page - 1}
-                  onPageChange={(event, newPage) => setPage(newPage + 1)}
-                  rowsPerPage={limit}
-                  onRowsPerPageChange={(event) => {
-                    setLimit(parseInt(event.target.value, 10));
-                    setPage(1);
-                  }}
-                  rowsPerPageOptions={[10, 20, 50]}
-                  labelRowsPerPage="Períodos por página:"
-                  labelDisplayedRows={({ from, to, count }) => 
-                    `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
-                  }
-                  sx={{ borderTop: 1, borderColor: 'divider' }}
-                />
+                <Box sx={{ borderTop: 1, borderColor: 'divider', px: { xs: 1, sm: 0 } }}>
+                  <TablePagination
+                    component="div"
+                    count={periodsData.total}
+                    page={page - 1}
+                    onPageChange={(event, newPage) => setPage(newPage + 1)}
+                    rowsPerPage={limit}
+                    onRowsPerPageChange={(event) => {
+                      setLimit(parseInt(event.target.value, 10));
+                      setPage(1);
+                    }}
+                    rowsPerPageOptions={[10, 20, 50]}
+                    labelRowsPerPage="Períodos por página:"
+                    labelDisplayedRows={({ from, to, count }) => 
+                      `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
+                    }
+                    sx={{
+                      '& .MuiTablePagination-toolbar': {
+                        flexWrap: 'wrap',
+                        gap: 1,
+                        px: { xs: 0, sm: 2 },
+                      },
+                      '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      },
+                    }}
+                  />
+                </Box>
               )}
             </Box>
           </Paper>

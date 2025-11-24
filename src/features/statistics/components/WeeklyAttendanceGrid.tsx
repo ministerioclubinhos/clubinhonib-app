@@ -18,6 +18,11 @@ import {
   LinearProgress,
   IconButton,
   TablePagination,
+  Card,
+  CardContent,
+  useMediaQuery,
+  Stack,
+  Divider,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -33,6 +38,7 @@ import dayjs from 'dayjs';
 
 export const WeeklyAttendanceGrid: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data: currentWeekInfo } = useCurrentWeek();
 
   const [academicYear, setAcademicYear] = React.useState<number | null>(
@@ -326,90 +332,190 @@ export const WeeklyAttendanceGrid: React.FC = () => {
         />
       </Paper>
 
-      {/* Tabela de Clubinhos */}
-      <TableContainer
-        component={Paper}
-        elevation={0}
-        sx={{ borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}
-      >
-        <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: 'primary.main' }}>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Clubinho</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Dia da Semana</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Data Esperada</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
-                Pagelas
-              </TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
-                Status
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.clubs.map((club) => {
-              const statusConfig = getStatusConfig(club.status);
-              return (
-                <TableRow
-                  key={club.clubId}
-                  hover
-                  sx={{
-                    bgcolor: statusConfig.bgcolor,
-                  }}
-                >
-                  <TableCell>
-                    <Typography fontWeight="bold">Clubinho #{club.clubNumber}</Typography>
-                  </TableCell>
-                  <TableCell>{weekdayNames[club.weekday] || club.weekday}</TableCell>
-                  <TableCell>{dayjs(club.expectedDate).format('DD/MM/YYYY')}</TableCell>
-                  <TableCell align="center">
-                    {club.hasPagela ? (
-                      <Chip label={club.totalPagelas || 0} size="small" color="success" />
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        -
+      {/* Versão Mobile: Cards */}
+      {isMobile ? (
+        <Stack spacing={2}>
+          {data.clubs.map((club) => {
+            const statusConfig = getStatusConfig(club.status);
+            return (
+              <Card
+                key={club.clubId}
+                elevation={2}
+                sx={{
+                  borderRadius: 2,
+                  border: `2px solid ${statusConfig.color}40`,
+                  bgcolor: statusConfig.bgcolor,
+                }}
+              >
+                <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                  <Stack spacing={1.5}>
+                    {/* Header */}
+                    <Box>
+                      <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}>
+                        Clubinho #{club.clubNumber}
                       </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Chip
-                      icon={statusConfig.icon}
-                      label={statusConfig.label}
-                      size="small"
-                      sx={{
-                        bgcolor: statusConfig.bgcolor,
-                        color: statusConfig.color,
-                        border: `1px solid ${statusConfig.color}`,
-                        fontWeight: 600,
-                      }}
-                    />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                    </Box>
 
-      {/* ⭐ Paginação v2.5.0 */}
+                    <Divider />
+
+                    {/* Informações */}
+                    <Grid container spacing={1.5}>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Dia da Semana
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {weekdayNames[club.weekday] || club.weekday}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Data Esperada
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {dayjs(club.expectedDate).format('DD/MM/YYYY')}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    {/* Pagelas e Status */}
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          Pagelas
+                        </Typography>
+                        <Box sx={{ mt: 0.5 }}>
+                          {club.hasPagela ? (
+                            <Chip label={club.totalPagelas || 0} size="small" color="success" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                          ) : (
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                              -
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                      <Box>
+                        <Chip
+                          icon={statusConfig.icon}
+                          label={statusConfig.label}
+                          size="small"
+                          sx={{
+                            bgcolor: statusConfig.bgcolor,
+                            color: statusConfig.color,
+                            border: `1px solid ${statusConfig.color}`,
+                            fontWeight: 600,
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </Stack>
+      ) : (
+        /* Versão Desktop: Tabela */
+        <TableContainer
+          component={Paper}
+          elevation={0}
+          sx={{ borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}
+        >
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'primary.main' }}>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Clubinho</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Dia da Semana</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Data Esperada</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
+                  Pagelas
+                </TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
+                  Status
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.clubs.map((club) => {
+                const statusConfig = getStatusConfig(club.status);
+                return (
+                  <TableRow
+                    key={club.clubId}
+                    hover
+                    sx={{
+                      bgcolor: statusConfig.bgcolor,
+                    }}
+                  >
+                    <TableCell>
+                      <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Clubinho #{club.clubNumber}</Typography>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{weekdayNames[club.weekday] || club.weekday}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{dayjs(club.expectedDate).format('DD/MM/YYYY')}</TableCell>
+                    <TableCell align="center">
+                      {club.hasPagela ? (
+                        <Chip label={club.totalPagelas || 0} size="small" color="success" />
+                      ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          -
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        icon={statusConfig.icon}
+                        label={statusConfig.label}
+                        size="small"
+                        sx={{
+                          bgcolor: statusConfig.bgcolor,
+                          color: statusConfig.color,
+                          border: `1px solid ${statusConfig.color}`,
+                          fontWeight: 600,
+                        }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {/* ⭐ Paginação v2.5.0 - Funciona em ambos (mobile e desktop) */}
       {data.pagination && (
-        <TablePagination
-          component="div"
-          count={data.pagination.total}
-          page={data.pagination.page - 1}
-          onPageChange={(event, newPage) => setPage(newPage + 1)}
-          rowsPerPage={data.pagination.limit}
-          onRowsPerPageChange={(event) => {
-            setLimit(parseInt(event.target.value, 10));
-            setPage(1);
-          }}
-          rowsPerPageOptions={[25, 50, 100]}
-          labelRowsPerPage="Clubinhos por página:"
-          labelDisplayedRows={({ from, to, count }) => 
-            `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
-          }
-          sx={{ borderTop: 1, borderColor: 'divider', mt: 0 }}
-        />
+        <Box sx={{ px: { xs: 1, sm: 0 }, mt: 2 }}>
+          <TablePagination
+            component="div"
+            count={data.pagination.total}
+            page={data.pagination.page - 1}
+            onPageChange={(event, newPage) => setPage(newPage + 1)}
+            rowsPerPage={data.pagination.limit}
+            onRowsPerPageChange={(event) => {
+              setLimit(parseInt(event.target.value, 10));
+              setPage(1);
+            }}
+            rowsPerPageOptions={[25, 50, 100]}
+            labelRowsPerPage="Clubinhos por página:"
+            labelDisplayedRows={({ from, to, count }) => 
+              `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
+            }
+            sx={{
+              '& .MuiTablePagination-toolbar': {
+                flexWrap: 'wrap',
+                gap: 1,
+                px: { xs: 0, sm: 2 },
+              },
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+            }}
+          />
+        </Box>
       )}
         </>
       )}

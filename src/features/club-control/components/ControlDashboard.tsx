@@ -389,7 +389,8 @@ export const ControlDashboard: React.FC = () => {
     })) : []);
 
   return (
-    <Box>
+
+<Box sx={{ px: { xs: 1, sm: 2, md: 0 } }}>
       <WeekNavigationHeader
         academicWeek={academicWeek}
         academicYear={academicYear}
@@ -429,17 +430,22 @@ export const ControlDashboard: React.FC = () => {
           }}
         >
           <Collapse in={expandedInactiveInfo}>
-            <Box sx={{ p: 2 }}>
-              <Grid container spacing={2}>
+            <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Grid container spacing={{ xs: 2, sm: 2 }}>
                 {data.inactiveClubs && data.inactiveClubs.length > 0 && (
                   <Grid item xs={12} md={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                      <Block sx={{ color: theme.palette.warning.main }} />
-                      <Typography variant="subtitle2" fontWeight="bold" color="warning.main">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 }, mb: { xs: 1, sm: 1.5 } }}>
+                      <Block sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.warning.main, flexShrink: 0 }} />
+                      <Typography 
+                        variant="subtitle2" 
+                        fontWeight="bold" 
+                        color="warning.main"
+                        sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                      >
                         Clubinhos Desativados ({data.inactiveClubs.length})
                       </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 0.5, sm: 0.5 } }}>
                       {data.inactiveClubs.map((club) => (
                         <Chip
                           key={club.clubId}
@@ -449,6 +455,8 @@ export const ControlDashboard: React.FC = () => {
                             bgcolor: `${theme.palette.warning.main}20`,
                             color: theme.palette.warning.main,
                             fontWeight: 600,
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 },
                           }}
                         />
                       ))}
@@ -457,21 +465,38 @@ export const ControlDashboard: React.FC = () => {
                 )}
                 {data.childrenNotAttending && data.childrenNotAttending.total > 0 && (
                   <Grid item xs={12} md={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                      <PersonOff sx={{ color: theme.palette.error.main }} />
-                      <Typography variant="subtitle2" fontWeight="bold" color="error.main">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 }, mb: { xs: 1, sm: 1.5 } }}>
+                      <PersonOff sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.error.main, flexShrink: 0 }} />
+                      <Typography 
+                        variant="subtitle2" 
+                        fontWeight="bold" 
+                        color="error.main"
+                        sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                      >
                         Crianças que Não Frequentam Mais ({data.childrenNotAttending.total})
                       </Typography>
                     </Box>
                     {data.childrenNotAttending.list && data.childrenNotAttending.list.length > 0 && (
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxHeight: 150, overflowY: 'auto' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 0.5, sm: 0.5 }, maxHeight: { xs: 120, sm: 150 }, overflowY: 'auto' }}>
                         {data.childrenNotAttending.list.slice(0, 10).map((child) => (
-                          <Typography key={child.childId} variant="body2" color="text.secondary">
+                          <Typography 
+                            key={child.childId} 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                          >
                             • {child.childName}
                           </Typography>
                         ))}
                         {data.childrenNotAttending.list.length > 10 && (
-                          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary" 
+                            sx={{ 
+                              fontStyle: 'italic',
+                              fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                            }}
+                          >
                             ... e mais {data.childrenNotAttending.list.length - 10} criança(s)
                           </Typography>
                         )}
@@ -484,24 +509,36 @@ export const ControlDashboard: React.FC = () => {
           </Collapse>
           <Box
             sx={{
-              px: 2,
-              py: 1,
+              px: { xs: 1.5, sm: 2 },
+              py: { xs: 1, sm: 1.25 },
               bgcolor: theme.palette.grey[50],
               borderTop: `1px solid ${theme.palette.divider}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               cursor: 'pointer',
+              gap: 1,
             }}
             onClick={() => setExpandedInactiveInfo(!expandedInactiveInfo)}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Block sx={{ fontSize: 18, color: theme.palette.text.secondary }} />
-              <Typography variant="body2" color="text.secondary" fontWeight={600}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 }, flex: 1, minWidth: 0 }}>
+              <Block sx={{ fontSize: { xs: 16, sm: 18 }, color: theme.palette.text.secondary, flexShrink: 0 }} />
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                fontWeight={600}
+                sx={{ 
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  lineHeight: { xs: 1.3, sm: 1.5 },
+                  wordBreak: 'break-word',
+                }}
+              >
                 {data.inactiveClubs?.length || 0} clubinho(s) desativado(s) • {data.childrenNotAttending?.total || 0} criança(s) não frequentam mais
               </Typography>
             </Box>
-            {expandedInactiveInfo ? <ExpandLess /> : <ExpandMore />}
+            <Box sx={{ flexShrink: 0 }}>
+              {expandedInactiveInfo ? <ExpandLess sx={{ fontSize: { xs: 20, sm: 24 } }} /> : <ExpandMore sx={{ fontSize: { xs: 20, sm: 24 } }} />}
+            </Box>
           </Box>
         </Paper>
       ) : null}

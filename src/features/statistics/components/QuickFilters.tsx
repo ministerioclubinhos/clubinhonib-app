@@ -103,16 +103,16 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({ onSelectFilter, curr
     <Paper
       elevation={0}
       sx={{
-        p: 2,
+        p: { xs: 1.5, sm: 2 },
         borderRadius: 2,
-        mb: 3,
+        mb: { xs: 2, sm: 3 },
         background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}03 100%)`,
         border: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <EventAvailable sx={{ fontSize: 20, color: theme.palette.text.secondary }} />
-        <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 1.5, sm: 2 } }}>
+        <EventAvailable sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.text.secondary }} />
+        <Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           Atalhos Rápidos
         </Typography>
       </Box>
@@ -120,7 +120,7 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({ onSelectFilter, curr
       <Box
         sx={{
           display: 'flex',
-          gap: 1,
+          gap: { xs: 0.75, sm: 1 },
           flexWrap: 'wrap',
           alignItems: 'center',
         }}
@@ -140,6 +140,8 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({ onSelectFilter, curr
                 borderColor: active ? undefined : `${filter.color}50`,
                 color: active ? undefined : filter.color,
                 bgcolor: active ? filter.color : 'transparent',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                px: { xs: 1, sm: 1.5 },
                 '&:hover': {
                   bgcolor: active ? filter.color : `${filter.color}15`,
                   borderColor: filter.color,

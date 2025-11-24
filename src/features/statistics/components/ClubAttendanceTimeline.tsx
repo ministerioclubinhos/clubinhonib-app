@@ -14,6 +14,9 @@ import {
   MenuItem,
   Button,
   TablePagination,
+  Collapse,
+  IconButton,
+  useMediaQuery,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -23,12 +26,32 @@ import {
   CalendarToday,
   TrendingUp,
   TrendingDown,
+  ExpandMore,
+  ExpandLess,
 } from '@mui/icons-material';
 import { useClubAttendance, useClubs } from '../hooks';
 import dayjs from 'dayjs';
 
+const weekdayNames: Record<string, string> = {
+  MONDAY: 'Segunda-feira',
+  TUESDAY: 'Terça-feira',
+  WEDNESDAY: 'Quarta-feira',
+  THURSDAY: 'Quinta-feira',
+  FRIDAY: 'Sexta-feira',
+  SATURDAY: 'Sábado',
+  SUNDAY: 'Domingo',
+  monday: 'Segunda-feira',
+  tuesday: 'Terça-feira',
+  wednesday: 'Quarta-feira',
+  thursday: 'Quinta-feira',
+  friday: 'Sexta-feira',
+  saturday: 'Sábado',
+  sunday: 'Domingo',
+};
+
 export const ClubAttendanceTimeline: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const currentYear = new Date().getFullYear();
   const [selectedClubId, setSelectedClubId] = React.useState<string>('');
   const [year, setYear] = React.useState(currentYear);
@@ -36,6 +59,9 @@ export const ClubAttendanceTimeline: React.FC = () => {
   const [timelinePage, setTimelinePage] = React.useState(1);
   const [timelineLimit, setTimelineLimit] = React.useState(50);
   const [missingWeeksPage, setMissingWeeksPage] = React.useState(1);
+  // Estados para colapsar seções
+  const [expandedTimeline, setExpandedTimeline] = React.useState(true);
+  const [expandedMissingWeeks, setExpandedMissingWeeks] = React.useState(false);
 
   const { data: clubsData } = useClubs({ page: 1, limit: 100 });
   const { data, isLoading } = useClubAttendance(selectedClubId, { 
@@ -79,6 +105,32 @@ export const ClubAttendanceTimeline: React.FC = () => {
     }
   };
 
+  const getSeverityLabel = (severity: 'info' | 'warning' | 'critical') => {
+    switch (severity) {
+      case 'critical':
+        return 'Crítico';
+      case 'warning':
+        return 'Atenção';
+      case 'info':
+        return 'Informação';
+      default:
+        return severity;
+    }
+  };
+
+  const translateAlertType = (type: string) => {
+    const translations: Record<string, string> = {
+      'missing_weeks': 'Semanas Faltantes',
+      'low_attendance': 'Baixa Frequência',
+      'no_pagela': 'Sem Pagela',
+      'incomplete_pagela': 'Pagela Incompleta',
+      'exception': 'Exceção',
+      'out_of_period': 'Fora do Período',
+    };
+    
+    return translations[type.toLowerCase()] || type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
   if (isLoading) {
     return (
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
@@ -92,8 +144,8 @@ export const ClubAttendanceTimeline: React.FC = () => {
   return (
     <Box>
       {/* Seleção de Clubinho */}
-      <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-        <Grid container spacing={2} alignItems="center">
+      <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2, sm: 3 }, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+        <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
@@ -105,7 +157,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
             >
               {clubsData?.clubs.map((club) => (
                 <MenuItem key={club.clubId} value={club.clubId}>
-                  Clubinho #{club.clubNumber} - {club.weekday} - {club.address.city}
+                  Clubinho #{club.clubNumber} - {weekdayNames[club.weekday] || club.weekday} - {club.address.city}
                 </MenuItem>
               ))}
             </TextField>
@@ -141,48 +193,53 @@ export const ClubAttendanceTimeline: React.FC = () => {
         </Paper>
       ) : (
         <>
-          {/* Cards de Resumo */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6} md={3}>
+          {/* Cards de Resumo - Compactos */}
+          <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
+            <Grid item xs={6} sm={3}>
               <Paper
                 elevation={0}
                 sx={{
-                  p: 2,
+                  p: { xs: 1.5, sm: 2 },
                   borderRadius: 2,
                   background: `linear-gradient(135deg, ${theme.palette.success.main}15 0%, ${theme.palette.success.main}05 100%)`,
                   border: `2px solid ${theme.palette.success.main}30`,
                 }}
               >
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                   Taxa de Frequência
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="success.main">
+                <Typography variant="h5" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, mb: 0.5 }}>
                   {data.attendance.attendanceRate.toFixed(1)}%
                 </Typography>
                 <Chip
                   icon={<CheckCircle />}
-                  label={`${data.attendance.weeksWithPagela}/${data.attendance.weeksExpected} semanas`}
+                  label={`${data.attendance.weeksWithPagela}/${data.attendance.weeksExpected}`}
                   size="small"
                   color="success"
-                  sx={{ mt: 1 }}
+                  sx={{ 
+                    mt: { xs: 0.5, sm: 1 },
+                    fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                    height: { xs: 20, sm: 24 },
+                    '& .MuiChip-icon': { fontSize: { xs: 14, sm: 16 } }
+                  }}
                 />
               </Paper>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={3}>
               <Paper
                 elevation={0}
                 sx={{
-                  p: 2,
+                  p: { xs: 1.5, sm: 2 },
                   borderRadius: 2,
                   background: `linear-gradient(135deg, ${theme.palette.warning.main}15 0%, ${theme.palette.warning.main}05 100%)`,
                   border: `2px solid ${theme.palette.warning.main}30`,
                 }}
               >
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                   Semanas Faltantes
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="warning.main">
+                <Typography variant="h5" fontWeight="bold" color="warning.main" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, mb: 0.5 }}>
                   {data.attendance.weeksMissing}
                 </Typography>
                 <Chip
@@ -190,53 +247,58 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   label={data.attendance.weeksMissing === 0 ? 'Nenhuma' : 'Atenção!'}
                   size="small"
                   color={data.attendance.weeksMissing === 0 ? 'success' : 'warning'}
-                  sx={{ mt: 1 }}
+                  sx={{ 
+                    mt: { xs: 0.5, sm: 1 },
+                    fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                    height: { xs: 20, sm: 24 },
+                    '& .MuiChip-icon': { fontSize: { xs: 14, sm: 16 } }
+                  }}
                 />
               </Paper>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={3}>
               <Paper
                 elevation={0}
                 sx={{
-                  p: 2,
+                  p: { xs: 1.5, sm: 2 },
                   borderRadius: 2,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main}15 0%, ${theme.palette.primary.main}05 100%)`,
                   border: `2px solid ${theme.palette.primary.main}30`,
                 }}
               >
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                   Sequência Atual
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="h4" fontWeight="bold" color="primary">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, mb: 0.5 }}>
+                  <Typography variant="h5" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
                     {data.attendance.consecutiveWeeksPresent}
                   </Typography>
-                  <TrendingUp sx={{ color: theme.palette.success.main }} />
+                  <TrendingUp sx={{ color: theme.palette.success.main, fontSize: { xs: 18, sm: 20 } }} />
                 </Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                   semanas consecutivas
                 </Typography>
               </Paper>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={3}>
               <Paper
                 elevation={0}
                 sx={{
-                  p: 2,
+                  p: { xs: 1.5, sm: 2 },
                   borderRadius: 2,
                   background: `linear-gradient(135deg, ${theme.palette.info.main}15 0%, ${theme.palette.info.main}05 100%)`,
                   border: `2px solid ${theme.palette.info.main}30`,
                 }}
               >
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                   Período
                 </Typography>
-                <Typography variant="h6" fontWeight="bold" color="info.main">
+                <Typography variant="h6" fontWeight="bold" color="info.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, mb: 0.5 }}>
                   {data.period.activeWeeks} semanas
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                   de {data.period.totalWeeks} do ano
                 </Typography>
               </Paper>
@@ -245,213 +307,288 @@ export const ClubAttendanceTimeline: React.FC = () => {
 
           {/* ⭐ v2.7.0: Note informativo quando não há período letivo */}
           {data.note && (
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              <AlertTitle sx={{ fontWeight: 'bold' }}>⚠️ Aviso</AlertTitle>
+            <Alert severity="warning" sx={{ mb: { xs: 2, sm: 3 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              <AlertTitle sx={{ fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>⚠️ Aviso</AlertTitle>
               {data.note}
             </Alert>
           )}
 
-          {/* Alertas */}
+          {/* Alertas - Todos lado a lado */}
           {data.alerts && data.alerts.length > 0 && (
-            <Box sx={{ mb: 3 }}>
-              {data.alerts.map((alert, index) => (
-                <Alert
-                  key={index}
-                  severity={alert.severity}
-                  icon={getSeverityIcon(alert.severity)}
-                  sx={{ mb: 1 }}
-                >
-                  <AlertTitle sx={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
-                    {alert.type.replace(/_/g, ' ')}
-                  </AlertTitle>
-                  {alert.message}
-                </Alert>
-              ))}
+            <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+              <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+                {data.alerts.map((alert, index) => (
+                  <Grid item xs={12} sm={6} key={index}>
+                    <Alert
+                      severity={alert.severity}
+                      icon={getSeverityIcon(alert.severity)}
+                      sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, height: '100%' }}
+                    >
+                      <AlertTitle sx={{ fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        {translateAlertType(alert.type)}
+                      </AlertTitle>
+                      {alert.message}
+                    </Alert>
+                  </Grid>
+                ))}
+              </Grid>
             </Box>
           )}
 
-          {/* Timeline Visual */}
+          {/* Timeline Visual - Colapsável */}
           <Paper
             elevation={0}
             sx={{
-              p: 3,
               borderRadius: 3,
               background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}03 100%)`,
               border: `2px solid ${theme.palette.divider}`,
+              overflow: 'hidden',
             }}
           >
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
-                📅 Timeline Semanal - {year}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {dayjs(data.period.startDate).format('DD/MM/YYYY')} até{' '}
-                {dayjs(data.period.endDate).format('DD/MM/YYYY')}
-              </Typography>
-            </Box>
-
-            {/* Grid de Semanas */}
             <Box
               sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))',
-                gap: 1,
+                p: { xs: 1.5, sm: 2 },
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                bgcolor: theme.palette.grey[50],
+                borderBottom: expandedTimeline ? `1px solid ${theme.palette.divider}` : 'none',
               }}
+              onClick={() => setExpandedTimeline(!expandedTimeline)}
             >
-              {data.timeline.map((week) => (
+              <Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                  📅 Timeline Semanal - {year}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                  {dayjs(data.period.startDate).format('DD/MM/YYYY')} até{' '}
+                  {dayjs(data.period.endDate).format('DD/MM/YYYY')}
+                </Typography>
+              </Box>
+              <IconButton size="small">
+                {expandedTimeline ? <ExpandLess /> : <ExpandMore />}
+              </IconButton>
+            </Box>
+            
+            <Collapse in={expandedTimeline}>
+              <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+
+                {/* Grid de Semanas - Compacto */}
                 <Box
-                  key={`${week.year}-${week.week}`}
                   sx={{
-                    p: 1,
-                    borderRadius: 1,
-                    textAlign: 'center',
-                    bgcolor: week.hasPagela
-                      ? `${theme.palette.success.main}20`
-                      : `${theme.palette.error.main}20`,
-                    border: `2px solid ${
-                      week.hasPagela ? theme.palette.success.main : theme.palette.error.main
-                    }`,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      transform: 'scale(1.05)',
-                      boxShadow: 2,
-                    },
+                    display: 'grid',
+                    gridTemplateColumns: isMobile 
+                      ? 'repeat(auto-fill, minmax(45px, 1fr))' 
+                      : 'repeat(auto-fill, minmax(55px, 1fr))',
+                    gap: { xs: 0.5, sm: 1 },
                   }}
                 >
-                  <Typography variant="caption" fontWeight="bold" display="block">
-                    S{week.week}
-                  </Typography>
-                  {week.hasPagela ? (
-                    <CheckCircle sx={{ fontSize: 20, color: theme.palette.success.main }} />
-                  ) : (
-                    <Cancel sx={{ fontSize: 20, color: theme.palette.error.main }} />
-                  )}
-                  {week.hasPagela && week.totalPagelas && (
-                    <Typography variant="caption" display="block" color="text.secondary">
-                      {week.totalPagelas}
-                    </Typography>
-                  )}
+                  {data.timeline.map((week) => (
+                    <Box
+                      key={`${week.year}-${week.week}`}
+                      sx={{
+                        p: { xs: 0.5, sm: 1 },
+                        borderRadius: 1,
+                        textAlign: 'center',
+                        bgcolor: week.hasPagela
+                          ? `${theme.palette.success.main}20`
+                          : `${theme.palette.error.main}20`,
+                        border: `2px solid ${
+                          week.hasPagela ? theme.palette.success.main : theme.palette.error.main
+                        }`,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          transform: 'scale(1.05)',
+                          boxShadow: 2,
+                        },
+                      }}
+                    >
+                      <Typography variant="caption" fontWeight="bold" display="block" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                        S{week.week}
+                      </Typography>
+                      {week.hasPagela ? (
+                        <CheckCircle sx={{ fontSize: { xs: 16, sm: 20 }, color: theme.palette.success.main }} />
+                      ) : (
+                        <Cancel sx={{ fontSize: { xs: 16, sm: 20 }, color: theme.palette.error.main }} />
+                      )}
+                      {week.hasPagela && week.totalPagelas && (
+                        <Typography variant="caption" display="block" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                          {week.totalPagelas}
+                        </Typography>
+                      )}
+                    </Box>
+                  ))}
                 </Box>
-              ))}
-            </Box>
 
-            {/* Legenda */}
-            <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <CheckCircle sx={{ color: theme.palette.success.main }} />
-                <Typography variant="caption">Com Pagela</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Cancel sx={{ color: theme.palette.error.main }} />
-                <Typography variant="caption">Sem Pagela</Typography>
-              </Box>
-            </Box>
+                {/* Legenda - Compacta */}
+                <Box sx={{ mt: { xs: 2, sm: 3 }, display: 'flex', gap: { xs: 1.5, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <CheckCircle sx={{ color: theme.palette.success.main, fontSize: { xs: 16, sm: 18 } }} />
+                    <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Com Pagela</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Cancel sx={{ color: theme.palette.error.main, fontSize: { xs: 16, sm: 18 } }} />
+                    <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Sem Pagela</Typography>
+                  </Box>
+                </Box>
 
-            {/* ⭐ Paginação Timeline v2.5.0 */}
-            {data.timelinePagination && (
-              <TablePagination
-                component="div"
-                count={data.timelinePagination.total}
-                page={data.timelinePagination.page - 1}
-                onPageChange={(event, newPage) => setTimelinePage(newPage + 1)}
-                rowsPerPage={data.timelinePagination.limit}
-                onRowsPerPageChange={(event) => {
-                  setTimelineLimit(parseInt(event.target.value, 10));
-                  setTimelinePage(1);
-                }}
-                rowsPerPageOptions={[25, 50, 100]}
-                labelRowsPerPage="Semanas por página:"
-                labelDisplayedRows={({ from, to, count }) => 
-                  `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
-                }
-                sx={{ borderTop: 1, borderColor: 'divider', mt: 2 }}
-              />
-            )}
+                {/* ⭐ Paginação Timeline v2.5.0 */}
+                {data.timelinePagination && (
+                  <Box sx={{ mt: { xs: 1.5, sm: 2 }, px: { xs: 0, sm: 0 } }}>
+                    <TablePagination
+                      component="div"
+                      count={data.timelinePagination.total}
+                      page={data.timelinePagination.page - 1}
+                      onPageChange={(event, newPage) => setTimelinePage(newPage + 1)}
+                      rowsPerPage={data.timelinePagination.limit}
+                      onRowsPerPageChange={(event) => {
+                        setTimelineLimit(parseInt(event.target.value, 10));
+                        setTimelinePage(1);
+                      }}
+                      rowsPerPageOptions={[25, 50, 100]}
+                      labelRowsPerPage="Semanas por página:"
+                      labelDisplayedRows={({ from, to, count }) => 
+                        `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
+                      }
+                      sx={{
+                        borderTop: 1,
+                        borderColor: 'divider',
+                        '& .MuiTablePagination-toolbar': {
+                          flexWrap: 'wrap',
+                          gap: 1,
+                          px: { xs: 0, sm: 2 },
+                        },
+                        '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        },
+                      }}
+                    />
+                  </Box>
+                )}
+              </Box>
+            </Collapse>
           </Paper>
 
-          {/* ⭐ v2.7.0: missingWeeks pode estar vazio se não há período letivo */}
+          {/* ⭐ v2.7.0: missingWeeks pode estar vazio se não há período letivo - Colapsável */}
           {data.missingWeeks && data.missingWeeks.length > 0 ? (
             <Paper
               elevation={0}
               sx={{
-                p: 3,
-                mt: 3,
+                mt: { xs: 2, sm: 3 },
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.warning.main}03 100%)`,
                 border: `2px solid ${theme.palette.divider}`,
+                overflow: 'hidden',
               }}
             >
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
-                ⚠️ Semanas Faltantes ({data.missingWeeksPagination?.total || data.missingWeeks.length})
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {data.missingWeeks.map((week, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      bgcolor: `${getSeverityColor(week.severity)}10`,
-                      border: `1px solid ${getSeverityColor(week.severity)}40`,
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          Semana {week.week} - {dayjs(week.expectedDate).format('DD/MM/YYYY')}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {dayjs(week.weekRange.start).format('DD/MM')} até{' '}
-                          {dayjs(week.weekRange.end).format('DD/MM/YYYY')}
-                        </Typography>
-                      </Box>
-                      <Chip
-                        icon={getSeverityIcon(week.severity)}
-                        label={week.severity}
-                        size="small"
+              <Box
+                sx={{
+                  p: { xs: 1.5, sm: 2 },
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  bgcolor: theme.palette.grey[50],
+                  borderBottom: expandedMissingWeeks ? `1px solid ${theme.palette.divider}` : 'none',
+                }}
+                onClick={() => setExpandedMissingWeeks(!expandedMissingWeeks)}
+              >
+                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                  ⚠️ Semanas Faltantes ({data.missingWeeksPagination?.total || data.missingWeeks.length})
+                </Typography>
+                <IconButton size="small">
+                  {expandedMissingWeeks ? <ExpandLess /> : <ExpandMore />}
+                </IconButton>
+              </Box>
+              
+              <Collapse in={expandedMissingWeeks}>
+                <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 1.5 } }}>
+                    {data.missingWeeks.map((week, index) => (
+                      <Box
+                        key={index}
                         sx={{
-                          bgcolor: `${getSeverityColor(week.severity)}20`,
-                          color: getSeverityColor(week.severity),
-                          fontWeight: 600,
+                          p: { xs: 1.5, sm: 2 },
+                          borderRadius: 2,
+                          bgcolor: `${getSeverityColor(week.severity)}10`,
+                          border: `1px solid ${getSeverityColor(week.severity)}40`,
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: 1 }}>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="subtitle2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                              Semana {week.week} - {dayjs(week.expectedDate).format('DD/MM/YYYY')}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                              {dayjs(week.weekRange.start).format('DD/MM')} até{' '}
+                              {dayjs(week.weekRange.end).format('DD/MM/YYYY')}
+                            </Typography>
+                          </Box>
+                          <Chip
+                            icon={getSeverityIcon(week.severity)}
+                            label={getSeverityLabel(week.severity)}
+                            size="small"
+                            sx={{
+                              bgcolor: `${getSeverityColor(week.severity)}20`,
+                              color: getSeverityColor(week.severity),
+                              fontWeight: 600,
+                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                              height: { xs: 24, sm: 28 },
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+
+                  {/* ⭐ Paginação Missing Weeks v2.5.0 */}
+                  {data.missingWeeksPagination && data.missingWeeksPagination.totalPages > 1 && (
+                    <Box sx={{ mt: { xs: 1.5, sm: 2 }, px: { xs: 0, sm: 0 } }}>
+                      <TablePagination
+                        component="div"
+                        count={data.missingWeeksPagination.total}
+                        page={data.missingWeeksPagination.page - 1}
+                        onPageChange={(event, newPage) => setMissingWeeksPage(newPage + 1)}
+                        rowsPerPage={data.missingWeeksPagination.limit}
+                        rowsPerPageOptions={[]}
+                        labelDisplayedRows={({ from, to, count }) => 
+                          `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
+                        }
+                        sx={{
+                          borderTop: 1,
+                          borderColor: 'divider',
+                          '& .MuiTablePagination-toolbar': {
+                            flexWrap: 'wrap',
+                            gap: 1,
+                            px: { xs: 0, sm: 2 },
+                          },
+                          '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          },
                         }}
                       />
                     </Box>
-                  </Box>
-                ))}
-              </Box>
-
-              {/* ⭐ Paginação Missing Weeks v2.5.0 */}
-              {data.missingWeeksPagination && data.missingWeeksPagination.totalPages > 1 && (
-                <TablePagination
-                  component="div"
-                  count={data.missingWeeksPagination.total}
-                  page={data.missingWeeksPagination.page - 1}
-                  onPageChange={(event, newPage) => setMissingWeeksPage(newPage + 1)}
-                  rowsPerPage={data.missingWeeksPagination.limit}
-                  rowsPerPageOptions={[]}
-                  labelDisplayedRows={({ from, to, count }) => 
-                    `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
-                  }
-                  sx={{ borderTop: 1, borderColor: 'divider', mt: 2 }}
-                />
-              )}
+                  )}
+                </Box>
+              </Collapse>
             </Paper>
           ) : (
             <Paper
               elevation={0}
               sx={{
-                p: 3,
-                mt: 3,
+                p: { xs: 1.5, sm: 2, md: 3 },
+                mt: { xs: 2, sm: 3 },
                 borderRadius: 3,
                 border: `1px solid ${theme.palette.divider}`,
                 bgcolor: theme.palette.success.main + '08',
               }}
             >
-              <Typography variant="h6" fontWeight="bold" color="success.main" gutterBottom>
+              <Typography variant="h6" fontWeight="bold" color="success.main" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                 ✅ Nenhuma Semana Faltante
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                 Este clubinho teve pagela em todas as semanas esperadas do período letivo.
               </Typography>
             </Paper>
@@ -461,4 +598,5 @@ export const ClubAttendanceTimeline: React.FC = () => {
     </Box>
   );
 };
+
 

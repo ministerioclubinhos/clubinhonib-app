@@ -21,6 +21,11 @@ import {
   Collapse,
   IconButton,
   useTheme,
+  Card,
+  CardContent,
+  useMediaQuery,
+  Stack,
+  Divider,
 } from '@mui/material';
 import {
   ExpandMore,
@@ -36,6 +41,7 @@ import { ChildrenFilters } from '../api';
 
 export const ChildrenListView: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [filters, setFilters] = React.useState<ChildrenFilters>({
     page: 1,
     limit: 20,
@@ -219,132 +225,291 @@ export const ChildrenListView: React.FC = () => {
         </Collapse>
       </Paper>
 
-      {/* Tabela */}
-      <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: 'primary.main' }}>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Ranking</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Criança</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Idade</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Clubinho</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Cidade</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Tempo</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Pagelas</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Presença</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Engajamento</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Status</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.children.map((child) => (
-              <TableRow key={child.childId} hover>
-                <TableCell>
-                  <Typography fontWeight="bold" color="primary">#{child.rank}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        bgcolor: child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main,
-                        fontSize: 14,
-                      }}
-                    >
-                      {getInitials(child.name)}
-                    </Avatar>
-                    <Box>
-                      <Typography fontWeight="medium">{child.name}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {child.gender === 'M' ? 'Masculino' : 'Feminino'}
-                      </Typography>
+      {/* Versão Mobile: Cards */}
+      {isMobile ? (
+        <Stack spacing={2}>
+          {data.children.length === 0 ? (
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
+              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                Nenhuma criança encontrada com os filtros selecionados
+              </Typography>
+            </Paper>
+          ) : (
+            data.children.map((child) => (
+              <Card key={child.childId} elevation={3} sx={{ borderRadius: 2 }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                  <Stack spacing={1.5}>
+                    {/* Header */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
+                        <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          #{child.rank}
+                        </Typography>
+                        <Avatar
+                          sx={{
+                            width: { xs: 32, sm: 36 },
+                            height: { xs: 32, sm: 36 },
+                            bgcolor: child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main,
+                            fontSize: { xs: 12, sm: 14 },
+                          }}
+                        >
+                          {getInitials(child.name)}
+                        </Avatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {child.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            {child.gender === 'M' ? 'Masculino' : 'Feminino'} • {child.age} anos
+                          </Typography>
+                        </Box>
+                      </Box>
                     </Box>
-                  </Box>
-                </TableCell>
-                <TableCell>{child.age} anos</TableCell>
-                <TableCell>
-                  {child.club ? `#${child.club.number}` : '-'}
-                </TableCell>
-                <TableCell>
-                  {child.address ? `${child.address.city}, ${child.address.state}` : '-'}
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={`${child.monthsParticipating}m`}
-                    size="small"
-                    variant="outlined"
-                  />
-                </TableCell>
-                <TableCell align="right">{child.stats.totalPagelas}</TableCell>
-                <TableCell align="right">
-                  <Box>
-                    <Typography variant="body2" fontWeight="bold">
-                      {child.stats.presenceRate.toFixed(1)}%
-                    </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={child.stats.presenceRate}
-                      sx={{
-                        mt: 0.5,
-                        height: 4,
-                        borderRadius: 2,
-                        bgcolor: `${theme.palette.success.main}15`,
-                        '& .MuiLinearProgress-bar': {
-                          bgcolor: theme.palette.success.main,
-                        },
-                      }}
-                    />
-                  </Box>
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    icon={<Star />}
-                    label={child.stats.engagementScore.toFixed(0)}
-                    size="small"
-                    color={getEngagementColor(child.stats.engagementScore)}
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    {child.isActive && (
-                      <Chip label="Ativo" size="small" color="success" variant="outlined" />
-                    )}
-                    {child.decisions.hasDecision && (
-                      <Chip
-                        icon={<CheckCircle />}
-                        label={child.decisions.decisionType}
-                        size="small"
-                        color="success"
+
+                    <Divider />
+
+                    {/* Informações */}
+                    <Grid container spacing={1.5}>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Clubinho
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {child.club ? `#${child.club.number}` : '-'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Cidade
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {child.address ? `${child.address.city}, ${child.address.state}` : '-'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Tempo
+                          </Typography>
+                          <Chip
+                            label={`${child.monthsParticipating}m`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          />
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            Pagelas
+                          </Typography>
+                          <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            {child.stats.totalPagelas}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    {/* Presença */}
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          Presença
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          {child.stats.presenceRate.toFixed(1)}%
+                        </Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={child.stats.presenceRate}
+                        sx={{
+                          height: 6,
+                          borderRadius: 3,
+                          bgcolor: `${theme.palette.success.main}15`,
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: theme.palette.success.main,
+                            borderRadius: 3,
+                          },
+                        }}
                       />
-                    )}
-                  </Box>
-                </TableCell>
+                    </Box>
+
+                    {/* Engajamento e Status */}
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <Chip
+                        icon={<Star />}
+                        label={`Engajamento: ${child.stats.engagementScore.toFixed(0)}`}
+                        size="small"
+                        color={getEngagementColor(child.stats.engagementScore)}
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      />
+                      {child.isActive && (
+                        <Chip label="Ativo" size="small" color="success" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                      )}
+                      {child.decisions.hasDecision && (
+                        <Chip
+                          icon={<CheckCircle />}
+                          label={child.decisions.decisionType}
+                          size="small"
+                          color="success"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        />
+                      )}
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </Stack>
+      ) : (
+        /* Versão Desktop: Tabela */
+        <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'primary.main' }}>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Ranking</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Criança</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Idade</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Clubinho</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Cidade</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Tempo</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Pagelas</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Presença</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Engajamento</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Status</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {data.children.map((child) => (
+                <TableRow key={child.childId} hover>
+                  <TableCell>
+                    <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>#{child.rank}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Avatar
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          bgcolor: child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main,
+                          fontSize: 14,
+                        }}
+                      >
+                        {getInitials(child.name)}
+                      </Avatar>
+                      <Box>
+                        <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.name}</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          {child.gender === 'M' ? 'Masculino' : 'Feminino'}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.age} anos</TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {child.club ? `#${child.club.number}` : '-'}
+                  </TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {child.address ? `${child.address.city}, ${child.address.state}` : '-'}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      label={`${child.monthsParticipating}m`}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.stats.totalPagelas}</TableCell>
+                  <TableCell align="right">
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        {child.stats.presenceRate.toFixed(1)}%
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={child.stats.presenceRate}
+                        sx={{
+                          mt: 0.5,
+                          height: 4,
+                          borderRadius: 2,
+                          bgcolor: `${theme.palette.success.main}15`,
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: theme.palette.success.main,
+                          },
+                        }}
+                      />
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      icon={<Star />}
+                      label={child.stats.engagementScore.toFixed(0)}
+                      size="small"
+                      color={getEngagementColor(child.stats.engagementScore)}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      {child.isActive && (
+                        <Chip label="Ativo" size="small" color="success" variant="outlined" />
+                      )}
+                      {child.decisions.hasDecision && (
+                        <Chip
+                          icon={<CheckCircle />}
+                          label={child.decisions.decisionType}
+                          size="small"
+                          color="success"
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-        {data.children.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography color="text.secondary">Nenhuma criança encontrada com os filtros selecionados</Typography>
-          </Box>
-        )}
-      </TableContainer>
+          {data.children.length === 0 && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                Nenhuma criança encontrada com os filtros selecionados
+              </Typography>
+            </Box>
+          )}
+        </TableContainer>
+      )}
 
-      {/* Paginação */}
+      {/* Paginação - Funciona em ambos (mobile e desktop) */}
       {data.pagination && (
-        <TablePagination
-          component="div"
-          count={data.pagination.total}
-          page={data.pagination.page - 1}
-          onPageChange={handlePageChange}
-          rowsPerPage={data.pagination.limit}
-          onRowsPerPageChange={handleLimitChange}
-          rowsPerPageOptions={[10, 20, 50, 100]}
-          labelRowsPerPage="Itens por página:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-        />
+        <Box sx={{ px: { xs: 1, sm: 0 }, mt: 2 }}>
+          <TablePagination
+            component="div"
+            count={data.pagination.total}
+            page={data.pagination.page - 1}
+            onPageChange={handlePageChange}
+            rowsPerPage={data.pagination.limit}
+            onRowsPerPageChange={handleLimitChange}
+            rowsPerPageOptions={[10, 20, 50, 100]}
+            labelRowsPerPage="Itens por página:"
+            labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+            sx={{
+              '& .MuiTablePagination-toolbar': {
+                flexWrap: 'wrap',
+                gap: 1,
+                px: { xs: 0, sm: 2 },
+              },
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+            }}
+          />
+        </Box>
       )}
     </Box>
   );

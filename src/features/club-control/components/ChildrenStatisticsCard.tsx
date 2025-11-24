@@ -29,43 +29,58 @@ export const ChildrenStatisticsCard: React.FC<ChildrenStatisticsCardProps> = ({
     <Paper
       elevation={0}
       sx={{
-        p: 2.5,
-        mb: 3,
+        p: { xs: 1.5, sm: 2 },
+        mb: { xs: 2, sm: 3 },
         borderRadius: 3,
         border: `1px solid ${theme.palette.divider}`,
         bgcolor: 'background.paper',
       }}
     >
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={4}>
+      <Grid container spacing={{ xs: 1, sm: 2 }}>
+        <Grid item xs={4} sm={4}>
           <Box sx={{ textAlign: 'center' }}>
-            <Groups sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
-            <Typography variant="h4" fontWeight="bold" color="primary">
+            <Groups sx={{ fontSize: { xs: 20, sm: 28 }, color: theme.palette.primary.main, mb: { xs: 0.5, sm: 1 } }} />
+            <Typography 
+              variant="h5" 
+              fontWeight="bold" 
+              color="primary"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.75rem' }, mb: { xs: 0.25, sm: 0.5 } }}
+            >
               {totalChildren}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, lineHeight: { xs: 1.2, sm: 1.5 } }}>
               Total de Crianças
             </Typography>
           </Box>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={4} sm={4}>
           <Box sx={{ textAlign: 'center' }}>
-            <Assignment sx={{ fontSize: 40, color: theme.palette.success.main, mb: 1 }} />
-            <Typography variant="h4" fontWeight="bold" color="success.main">
+            <Assignment sx={{ fontSize: { xs: 20, sm: 28 }, color: theme.palette.success.main, mb: { xs: 0.5, sm: 1 } }} />
+            <Typography 
+              variant="h5" 
+              fontWeight="bold" 
+              color="success.main"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.75rem' }, mb: { xs: 0.25, sm: 0.5 } }}
+            >
               {childrenWithPagela}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, lineHeight: { xs: 1.2, sm: 1.5 } }}>
               Com Pagela
             </Typography>
           </Box>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={4} sm={4}>
           <Box sx={{ textAlign: 'center' }}>
-            <PersonOff sx={{ fontSize: 40, color: theme.palette.error.main, mb: 1 }} />
-            <Typography variant="h4" fontWeight="bold" color="error.main">
+            <PersonOff sx={{ fontSize: { xs: 20, sm: 28 }, color: theme.palette.error.main, mb: { xs: 0.5, sm: 1 } }} />
+            <Typography 
+              variant="h5" 
+              fontWeight="bold" 
+              color="error.main"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.75rem' }, mb: { xs: 0.25, sm: 0.5 } }}
+            >
               {childrenMissing}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, lineHeight: { xs: 1.2, sm: 1.5 } }}>
               Sem Pagela
             </Typography>
           </Box>
