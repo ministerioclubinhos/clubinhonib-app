@@ -56,25 +56,10 @@ const EXCEPTION_TYPES = [
   { value: 'other', label: 'Outro', icon: <Help />, color: '#607d8b' },
 ];
 
-// ⚠️ Backend status
-const BACKEND_ENABLED = import.meta.env.VITE_CLUB_CONTROL_ENABLED === 'true';
-
 export const ExceptionManagement: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Se backend não está habilitado, mostrar mensagem
-  if (!BACKEND_ENABLED) {
-    return (
-      <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: `2px solid ${theme.palette.info.main}` }}>
-        <Alert severity="info" sx={{ borderRadius: 2, mb: 2 }}>
-          <Typography variant="body2">
-            🚧 <strong>Módulo aguardando backend.</strong> Configure <code>VITE_CLUB_CONTROL_ENABLED=true</code> no <code>.env</code> para ativar.
-          </Typography>
-        </Alert>
-      </Paper>
-    );
-  }
   const [formData, setFormData] = React.useState({
     exceptionDate: '',
     reason: '',

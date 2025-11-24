@@ -1,10 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clubControlApi, CreateAcademicPeriodDto, CreateWeekdayExceptionDto } from './api';
 
-// ⚠️ BACKEND NOT READY - Queries desabilitadas por padrão
-// Para ativar: configure VITE_CLUB_CONTROL_ENABLED=true no .env
-const BACKEND_ENABLED = import.meta.env.VITE_CLUB_CONTROL_ENABLED === 'true';
-
 // ========================================
 // Hooks para Dashboard e Verificação
 // ========================================
@@ -17,7 +13,7 @@ export const useControlDashboard = (page: number = 1, limit: number = 20) => {
       const response = await clubControlApi.getDashboard({ page, limit });
       return response.data;
     },
-    enabled: BACKEND_ENABLED, // 🔴 DESABILITADO até backend estar pronto
+    enabled: true,
     staleTime: 1 * 60 * 1000,
     refetchInterval: false,
     refetchOnWindowFocus: false,
@@ -41,7 +37,7 @@ export const useWeekCheck = (year?: number, week?: number, page: number = 1, lim
       const response = await clubControlApi.checkWeek(params);
       return response.data;
     },
-    enabled: BACKEND_ENABLED, // ⭐ v1.8.0: Sempre habilitado, mesmo sem year/week (calcula automaticamente)
+    enabled: true, // ⭐ v1.8.0: Sempre habilitado, mesmo sem year/week (calcula automaticamente)
     staleTime: 0, // ⭐ v1.8.0: staleTime 0 para garantir que dados sejam atualizados quando parâmetros mudarem
     gcTime: 0, // ⭐ v1.8.1: gcTime 0 para garantir que não use dados em cache de outras semanas (React Query v5)
     refetchOnWindowFocus: false,
@@ -58,7 +54,7 @@ export const useClubCheck = (clubId: string, year: number, week: number) => {
       const response = await clubControlApi.checkClub(clubId, { year, week });
       return response.data;
     },
-    enabled: BACKEND_ENABLED && !!clubId && !!year && !!week, // 🔴 DESABILITADO
+    enabled: !!clubId && !!year && !!week,
     staleTime: 1 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 1,
@@ -74,7 +70,7 @@ export const useCurrentWeek = () => {
       const response = await clubControlApi.getCurrentWeek();
       return response.data;
     },
-    enabled: BACKEND_ENABLED, // 🔴 DESABILITADO
+    enabled: true,
     staleTime: 5 * 60 * 1000, // 5 minutos (semana muda raramente)
     refetchOnWindowFocus: false,
     retry: 1,
@@ -103,7 +99,7 @@ export const useDetailedIndicators = (
       const response = await clubControlApi.getDetailedIndicators({ year, week, ...filters });
       return response.data;
     },
-    enabled: BACKEND_ENABLED && !!year && !!week, // 🔴 DESABILITADO
+    enabled: !!year && !!week,
     staleTime: 2 * 60 * 1000, // 2 minutos
     refetchOnWindowFocus: false,
     retry: 1,
@@ -123,7 +119,7 @@ export const useAcademicPeriods = (page: number = 1, limit: number = 20) => {
       const response = await clubControlApi.getPeriods({ page, limit });
       return response.data;
     },
-    enabled: BACKEND_ENABLED, // 🔴 DESABILITADO
+    enabled: true,
     staleTime: 10 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
@@ -138,7 +134,7 @@ export const usePeriodByYear = (year: number) => {
       const response = await clubControlApi.getPeriodByYear(year);
       return response.data;
     },
-    enabled: BACKEND_ENABLED && !!year, // 🔴 DESABILITADO
+    enabled: !!year,
     staleTime: 10 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
@@ -195,7 +191,7 @@ export const useWeekdayExceptions = (params?: { startDate?: string; endDate?: st
       const response = await clubControlApi.getExceptions(params);
       return response.data;
     },
-    enabled: BACKEND_ENABLED, // 🔴 DESABILITADO
+    enabled: true,
     staleTime: 5 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
@@ -210,7 +206,7 @@ export const useExceptionByDate = (date: string) => {
       const response = await clubControlApi.getExceptionByDate(date);
       return response.data;
     },
-    enabled: BACKEND_ENABLED && !!date, // 🔴 DESABILITADO
+    enabled: !!date,
     staleTime: 5 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
