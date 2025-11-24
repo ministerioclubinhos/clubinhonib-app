@@ -2,7 +2,7 @@ import React from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider,
   Typography, Alert, TextField, FormControl, InputLabel, Select, MenuItem,
-  useTheme, useMediaQuery
+  useTheme, useMediaQuery, FormControlLabel, Checkbox
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddressFields from "./form/AddressFields";
@@ -118,6 +118,18 @@ export default function ClubFormDialog({
               value={time}
               onChange={(e) => onChange({ ...value, time: e.target.value } as any)}
               helperText="0:00 a 23:59"
+            />
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={(value as any).isActive !== false}
+                  onChange={(e) => onChange({ ...value, isActive: e.target.checked } as any)}
+                />
+              }
+              label="Ativo"
             />
           </Grid>
 

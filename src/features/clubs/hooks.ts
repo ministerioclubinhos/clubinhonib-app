@@ -7,6 +7,7 @@ import {
   apiListCoordinatorsSimple,
   apiListTeachersSimple,
   apiUpdateClub,
+  apiToggleClubActive,
 } from "./api";
 import {
   ClubResponseDto,
@@ -132,7 +133,23 @@ export function useClubMutations(
     [fetchClubs]
   );
 
-  return { dialogLoading, dialogError, setDialogError, createClub, updateClub, deleteClub };
+  const toggleActive = useCallback(
+    async (id: string, page: number, limit: number, filters?: ClubFilters, sort?: ClubSort) => {
+      setDialogLoading(true);
+      setDialogError("");
+      try {
+        await apiToggleClubActive(id);
+        await fetchClubs(page, limit, filters, sort);
+      } catch (err: any) {
+        setDialogError(err?.response?.data?.message || err.message || "Erro ao alterar status do clubinho");
+      } finally {
+        setDialogLoading(false);
+      }
+    },
+    [fetchClubs]
+  );
+
+  return { dialogLoading, dialogError, setDialogError, createClub, updateClub, deleteClub, toggleActive };
 }
 
 export function useOptions() {

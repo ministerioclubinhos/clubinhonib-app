@@ -23,6 +23,7 @@ export async function apiFetchChildren(args: {
       birthDateTo: filters?.birthDateTo || undefined,
       joinedFrom: filters?.joinedFrom || undefined,
       joinedTo: filters?.joinedTo || undefined,
+      isActive: filters?.isActive !== undefined ? filters.isActive : undefined,
     },
   });
   return data;
@@ -50,4 +51,9 @@ export async function apiUpdateChild(id: string, payload: Omit<EditChildForm, "i
 
 export async function apiDeleteChild(id: string) {
   await api.delete(`/children/${id}`);
+}
+
+export async function apiToggleChildActive(id: string) {
+  const { data } = await api.patch<ChildResponseDto>(`/children/${id}/toggle-active`);
+  return data;
 }

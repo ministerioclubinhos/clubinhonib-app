@@ -10,7 +10,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   CalendarMonthOutlined, LocationOnOutlined,
   SupervisorAccount, Group as GroupIcon, AccessTime as AccessTimeIcon,
-  Phone as PhoneIcon,
+  Phone as PhoneIcon, ToggleOn, ToggleOff,
 } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
 import { ClubResponseDto } from "../types";
@@ -30,6 +30,7 @@ type Props = {
   onOpenView: (club: ClubResponseDto) => void;
   onStartEdit: (club: ClubResponseDto) => void;
   onAskDelete: (club: ClubResponseDto) => void;
+  onToggleActive: (club: ClubResponseDto) => void;
 };
 
 
@@ -155,6 +156,9 @@ export default function ClubsCards(props: Props) {
                     spacing={0.5} 
                     alignItems="center"
                     sx={{ minWidth: 0, flex: 1 }}
+                    flexWrap="wrap"
+                    useFlexGap
+                    rowGap={0.25}
                   >
                     <CalendarMonthOutlined sx={{ fontSize: 16, color: "text.secondary", flexShrink: 0 }} />
                     <Typography 
@@ -169,6 +173,16 @@ export default function ClubsCards(props: Props) {
                     >
                       {weekdayLabel(c.weekday)}
                     </Typography>
+                    <Chip
+                      size="small"
+                      label={c.isActive ? "Ativo" : "Inativo"}
+                      color={c.isActive ? "success" : "default"}
+                      variant={c.isActive ? "filled" : "outlined"}
+                      sx={{
+                        fontSize: "0.65rem",
+                        height: 18,
+                      }}
+                    />
                   </Stack>
 
                   {c.time && (
@@ -503,18 +517,32 @@ export default function ClubsCards(props: Props) {
                       </IconButton>
                     </Tooltip>
                     {isAdmin && (
-                      <Tooltip title="Excluir clubinho">
-                        <IconButton 
-                          size="small" 
-                          color="error" 
-                          onClick={() => onAskDelete(c)}
-                          sx={{ 
-                            "&:hover": { bgcolor: "error.50" }
-                          }}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <>
+                        <Tooltip title={c.isActive ? "Desativar" : "Ativar"}>
+                          <IconButton
+                            size="small"
+                            color={c.isActive ? "success" : "default"}
+                            onClick={() => onToggleActive(c)}
+                            sx={{
+                              "&:hover": { bgcolor: c.isActive ? "success.50" : "action.hover" }
+                            }}
+                          >
+                            {c.isActive ? <ToggleOn fontSize="small" /> : <ToggleOff fontSize="small" />}
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Excluir clubinho">
+                          <IconButton 
+                            size="small" 
+                            color="error" 
+                            onClick={() => onAskDelete(c)}
+                            sx={{ 
+                              "&:hover": { bgcolor: "error.50" }
+                            }}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </>
                     )}
                   </Stack>
                 </Box>

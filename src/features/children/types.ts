@@ -4,6 +4,7 @@ export type ChildListItemDto = {
   guardianName: string;
   guardianPhone: string;
   clubId: string | null;
+  isActive: boolean;
 };
 
 export type ChildResponseDto = {
@@ -14,6 +15,7 @@ export type ChildResponseDto = {
   guardianPhone: string;
   birthDate: string;
   joinedAt: string | null;
+  isActive: boolean;
   club: { id: string; number: number; weekday?: string } | null;
   address: {
     id: string;
@@ -46,6 +48,7 @@ export type ChildSimpleResponseDto = {
   guardianPhone: string;
   gender: string;
   clubId: string;
+  isActive: boolean;
   acceptedChrists: AcceptedChristShortDto[];
 };
 
@@ -73,6 +76,7 @@ export type ChildFilters = {
   birthDateTo?: string;
   joinedFrom?: string;
   joinedTo?: string;
+  isActive?: boolean;
 };
 
 export type ChildSort =
@@ -86,6 +90,7 @@ export type CreateChildForm = {
   guardianPhone: string;
   birthDate: string;
   joinedAt?: string | null;
+  isActive?: boolean;
   clubId?: string | null;
   address?: {
     street: string;
