@@ -445,10 +445,10 @@ export default function ClubsCards(props: Props) {
                         onClick={() => onOpenView(c)}
                         sx={{ 
                           color: "primary.main",
-                          p: { xs: 0.5, sm: 0.75 },
+                          p: { xs: 0.75, sm: 1 },
                           "&:hover": { bgcolor: "primary.50" },
                           "& .MuiSvgIcon-root": {
-                            fontSize: { xs: 20, sm: 22 }
+                            fontSize: { xs: 30, sm: 26 }
                           }
                         }}
                       >
@@ -461,10 +461,10 @@ export default function ClubsCards(props: Props) {
                         onClick={() => onStartEdit(c)}
                         sx={{ 
                           color: "info.main",
-                          p: { xs: 0.5, sm: 0.75 },
+                          p: { xs: 0.75, sm: 1 },
                           "&:hover": { bgcolor: "info.50" },
                           "& .MuiSvgIcon-root": {
-                            fontSize: { xs: 20, sm: 22 }
+                            fontSize: { xs: 24, sm: 26 }
                           }
                         }}
                       >
@@ -479,10 +479,10 @@ export default function ClubsCards(props: Props) {
                             color={c.isActive ? "success" : "default"}
                             onClick={() => onToggleActive(c)}
                             sx={{
-                              p: { xs: 0.5, sm: 0.75 },
+                              p: { xs: 0.75, sm: 1 },
                               "&:hover": { bgcolor: c.isActive ? "success.50" : "action.hover" },
                               "& .MuiSvgIcon-root": {
-                                fontSize: { xs: 20, sm: 22 }
+                                fontSize: { xs: 24, sm: 26 }
                               }
                             }}
                           >
@@ -495,10 +495,10 @@ export default function ClubsCards(props: Props) {
                             color="error" 
                             onClick={() => onAskDelete(c)}
                             sx={{ 
-                              p: { xs: 0.5, sm: 0.75 },
+                              p: { xs: 0.75, sm: 1 },
                               "&:hover": { bgcolor: "error.50" },
                               "& .MuiSvgIcon-root": {
-                                fontSize: { xs: 20, sm: 22 }
+                                fontSize: { xs: 24, sm: 26 }
                               }
                             }}
                           >
