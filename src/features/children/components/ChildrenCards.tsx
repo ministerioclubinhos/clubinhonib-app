@@ -3,7 +3,7 @@ import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
   Typography, MenuItem, Select, FormControl, InputLabel,
   Divider, TablePagination, Tooltip, Collapse, ButtonBase,
-  Paper, Avatar, Slide, Link
+  Paper, Avatar, Link
 } from "@mui/material";
 import { Visibility, Edit, Delete, SwapVert, CakeOutlined, PlaceOutlined, ExpandMore as ExpandMoreIcon, LocationOnOutlined, Phone as PhoneIcon, ChildCare, PersonOutlined, WhatsApp, ToggleOn, ToggleOff } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
@@ -32,7 +32,7 @@ type Props = {
 export default function ChildrenCards(props: Props) {
   const {
     rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
-    sorting, setSorting, onOpenView, onStartEdit, onAskDelete
+    sorting, setSorting, onOpenView, onStartEdit, onAskDelete, onToggleActive
   } = props;
 
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -97,7 +97,7 @@ export default function ChildrenCards(props: Props) {
           const wa = buildWhatsappLink(c.name, user?.name, c.guardianPhone);
 
           return (
-            <Grid item xs={12} key={c.id} sx={{ mb: { xs: 0.75, sm: 1 }, pb: { xs: 1, sm: 1.25 } }}>
+            <Grid item xs={12} key={c.id} sx={{ mb: { xs: 0.75, sm: 1 } }}>
               <Card
                 variant="outlined"
                 sx={{
@@ -113,7 +113,8 @@ export default function ChildrenCards(props: Props) {
                   },
                   bgcolor: "background.paper",
                   position: "relative",
-                  maxHeight: !expanded ? { xs: 170, sm: 170 } : "none",
+                  display: "flex",
+                  flexDirection: "column",
                   "&::before": {
                     content: '""',
                     position: "absolute",
@@ -125,175 +126,130 @@ export default function ChildrenCards(props: Props) {
                   }
                 }}
               >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  sx={{
-                    px: { xs: 1, sm: 1.25 },
-                    pt: 1,
-                    pb: 0.5,
-                    gap: { xs: 0.75, sm: 1 },
-                    mt: 0.5,
-                  }}
-                >
-                  <Avatar
-                    className="child-avatar"
-                    sx={{
-                      width: { xs: 40, sm: 48 },
-                      height: { xs: 40, sm: 48 },
-                      bgcolor: c.club ? "primary.main" : "grey.500",
-                      color: "white",
-                      fontWeight: 800,
-                      fontSize: { xs: 14, sm: 16 },
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      flexShrink: 0,
-                    }}
-                    aria-label={`Avatar da criança ${c.name}`}
-                  >
-                    {initials(c.name)}
-                  </Avatar>
-
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography
-                      variant="subtitle1"
-                      fontWeight={700}
-                      noWrap
-                      title={c.name}
-                      sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+                {/* Header - Compacto no mobile */}
+                <Box sx={{ px: { xs: 0.75, sm: 1.25 }, pt: { xs: 0.5, sm: 1 }, pb: { xs: 0, sm: 0.5 }, mt: { xs: 0.25, sm: 0.5 } }}>
+                  <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }} sx={{ mb: { xs: 0.25, sm: 0 } }}>
+                    <Avatar
+                      className="child-avatar"
+                      sx={{
+                        width: { xs: 32, sm: 48 },
+                        height: { xs: 32, sm: 48 },
+                        bgcolor: c.club ? "primary.main" : "grey.500",
+                        color: "white",
+                        fontWeight: 800,
+                        fontSize: { xs: 11, sm: 16 },
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                        flexShrink: 0,
+                      }}
+                      aria-label={`Avatar da criança ${c.name}`}
                     >
-                      {c.name}
-                    </Typography>
-                    <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap rowGap={0.25}>
-                      <Chip
-                        size="small"
-                        color={c.club ? "primary" : "default"}
-                        variant={c.club ? "filled" : "outlined"}
-                        label={c.club ? `Clubinho #${c.club.number}` : "Sem clubinho"}
-                        sx={{
-                          fontSize: "0.7rem",
-                          height: 20,
-                          mt: 0.25
+                      {initials(c.name)}
+                    </Avatar>
+
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        noWrap
+                        title={c.name}
+                        sx={{ fontSize: { xs: "0.85rem", sm: "1rem" } }}
+                      >
+                        {c.name}
+                      </Typography>
+                      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap rowGap={0.25} sx={{ mt: 0.25 }}>
+                        <Chip
+                          size="small"
+                          color={c.club ? "primary" : "default"}
+                          variant={c.club ? "filled" : "outlined"}
+                          label={c.club ? `#${c.club.number}` : "Sem clubinho"}
+                          sx={{
+                            fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                            height: { xs: 18, sm: 20 },
+                          }}
+                        />
+                        <Chip
+                          size="small"
+                          label={c.isActive ? "Ativo" : "Inativo"}
+                          color={c.isActive ? "success" : "default"}
+                          variant={c.isActive ? "filled" : "outlined"}
+                          sx={{
+                            fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                            height: { xs: 18, sm: 20 },
+                          }}
+                        />
+                      </Stack>
+                    </Box>
+
+                    <ButtonBase
+                      onClick={() => toggle(c.id)}
+                      aria-label={expanded ? "Recolher" : "Expandir"}
+                      sx={{
+                        borderRadius: 1.5,
+                        px: { xs: 0.5, sm: 1 },
+                        py: { xs: 0.25, sm: 0.5 },
+                        display: "flex",
+                        alignItems: "center",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        bgcolor: "background.paper",
+                        flexShrink: 0,
+                        "&:hover": { bgcolor: "action.hover" },
+                      }}
+                    >
+                      <ExpandMoreIcon
+                        sx={{ 
+                          fontSize: { xs: 18, sm: 20 },
+                          transition: "transform .15s ease", 
+                          transform: expanded ? "rotate(180deg)" : "rotate(0deg)" 
                         }}
                       />
-                      <Chip
-                        size="small"
-                        label={c.isActive ? "Ativo" : "Inativo"}
-                        color={c.isActive ? "success" : "default"}
-                        variant={c.isActive ? "filled" : "outlined"}
+                    </ButtonBase>
+                  </Stack>
+
+                  {/* Responsável - Compacto */}
+                  <Box
+                    sx={{
+                      p: { xs: 0.375, sm: 0.75 },
+                      borderRadius: 1.5,
+                      bgcolor: "grey.50",
+                      border: "1px solid",
+                      borderColor: "grey.200",
+                      mt: { xs: 0.25, sm: 0.5 },
+                    }}
+                  >
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <PersonOutlined sx={{ fontSize: { xs: 14, sm: 18 }, color: "primary.main", flexShrink: 0 }} />
+                      <Typography
+                        variant="body2"
                         sx={{
-                          fontSize: "0.7rem",
-                          height: 20,
-                          mt: 0.25
+                          fontWeight: 600,
+                          color: "text.primary",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                          flex: 1
                         }}
-                      />
+                        title={c.guardianName || "Sem responsável"}
+                      >
+                        {c.guardianName || "Sem responsável"}
+                      </Typography>
+                      {c.guardianPhone && (
+                        <Stack direction="row" spacing={0.25}>
+                          <Tooltip title="Ligar">
+                            <IconButton size="small" href={`tel:${c.guardianPhone}`} sx={{ p: { xs: 0.25, sm: 0.5 } }}>
+                              <PhoneIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                            </IconButton>
+                          </Tooltip>
+                          <CopyButton value={c.guardianPhone} title="Copiar telefone" />
+                        </Stack>
+                      )}
                     </Stack>
                   </Box>
 
-                  <ButtonBase
-                    onClick={() => toggle(c.id)}
-                    aria-label={expanded ? "Recolher" : "Expandir"}
-                    sx={{
-                      borderRadius: 2,
-                      px: { xs: 0.75, sm: 1 },
-                      py: 0.5,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      bgcolor: "background.paper",
-                      flexShrink: 0,
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        fontWeight: 600,
-                        display: { xs: "none", sm: "block" }
-                      }}
-                    >
-                      {expanded ? "Recolher" : "Detalhes"}
-                    </Typography>
-                    <ExpandMoreIcon
-                      fontSize="small"
-                      sx={{ transition: "transform .15s ease", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
-                    />
-                  </ButtonBase>
-                </Stack>
-
-                <Box
-                  sx={{
-                    mx: { xs: 1, sm: 1.25 },
-                    mb: 0.5,
-                    p: { xs: 0.75, sm: 1 },
-                    borderRadius: 2,
-                    bgcolor: "grey.50",
-                    border: "1px solid",
-                    borderColor: "grey.200",
-                  }}
-                >
-                  <Stack spacing={0.75}>
-                    <Stack direction="row" spacing={0.75} alignItems="center">
-                      <PersonOutlined sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
-                      <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontWeight: 600,
-                            color: "text.primary",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis"
-                          }}
-                          title={c.guardianName || "Sem responsável"}
-                        >
-                          {c.guardianName || "Sem responsável"}
-                        </Typography>
-                      </Box>
-                    </Stack>
-
-                    {c.guardianPhone && (
-                      <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                        <Tooltip title="Ligar">
-                          <IconButton size="small" href={`tel:${c.guardianPhone}`} sx={{ p: 0.5 }}>
-                            <PhoneIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
-                          <span>
-                            <IconButton
-                              size="small"
-                              color="success"
-                              component="a"
-                              href={wa || undefined}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              disabled={!wa}
-                              aria-label="abrir WhatsApp"
-                              sx={{ p: 0.5 }}
-                            >
-                              <WhatsApp fontSize="medium" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        <CopyButton value={c.guardianPhone} title="Copiar telefone" />
-                      </Stack>
-                    )}
-                  </Stack>
-                </Box>
-
-                {!expanded && (
-                  <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: 0.75 }}>
-                    <Stack
-                      direction="row"
-                      spacing={0.5}
-                      alignItems="center"
-                      flexWrap="wrap"
-                      rowGap={0.25}
-                    >
+                  {/* Info adicional - Apenas no modo comprimido */}
+                  {!expanded && (
+                    <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap rowGap={0.5} sx={{ mt: { xs: 0.5, sm: 0.5 }, pb: { xs: 0.5, sm: 0 } }}>
                       {c.gender && (
                         <Chip
                           size="small"
@@ -302,9 +258,9 @@ export default function ChildrenCards(props: Props) {
                           color="info"
                           sx={{
                             fontWeight: 600,
-                            fontSize: "0.7rem",
-                            height: 20,
-                            "& .MuiChip-label": { px: 0.5 }
+                            fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                            height: { xs: 22, sm: 24 },
+                            "& .MuiChip-label": { px: { xs: 0.75, sm: 1 } }
                           }}
                         />
                       )}
@@ -316,9 +272,9 @@ export default function ChildrenCards(props: Props) {
                           color="success"
                           sx={{
                             fontWeight: 600,
-                            fontSize: "0.7rem",
-                            height: 20,
-                            "& .MuiChip-label": { px: 0.5 }
+                            fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                            height: { xs: 22, sm: 24 },
+                            "& .MuiChip-label": { px: { xs: 0.75, sm: 1 } }
                           }}
                         />
                       )}
@@ -330,32 +286,34 @@ export default function ChildrenCards(props: Props) {
                           color="warning"
                           sx={{
                             fontWeight: 600,
-                            fontSize: "0.7rem",
-                            height: 20,
-                            "& .MuiChip-label": { px: 0.5 }
+                            fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                            height: { xs: 22, sm: 24 },
+                            "& .MuiChip-label": { px: { xs: 0.75, sm: 1 } }
                           }}
                         />
                       )}
+                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: { xs: 0, sm: 0.25 }, mt: { xs: 0.25, sm: 0 } }}>
+                        <LocationOnOutlined sx={{ fontSize: { xs: 14, sm: 16 }, color: "text.secondary" }} />
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            fontWeight: 500,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            lineHeight: 1.4
+                          }}
+                        >
+                          {addrPreview}
+                        </Typography>
+                      </Stack>
                     </Stack>
-                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
-                      <LocationOnOutlined sx={{ fontSize: 14, color: "text.secondary" }} />
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{
-                          fontWeight: 500,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis"
-                        }}
-                      >
-                        {addrPreview}
-                      </Typography>
-                    </Stack>
-                  </Box>
-                )}
+                  )}
+                </Box>
 
-                <Slide direction="down" in={expanded} timeout={300}>
+                {expanded && (
                   <Box>
                     <Divider sx={{ mx: { xs: 1, sm: 1.25 } }} />
                     <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
@@ -487,37 +445,39 @@ export default function ChildrenCards(props: Props) {
                       </Stack>
                     </CardContent>
                   </Box>
-                </Slide>
+                )}
 
+                {/* Rodapé - Sempre visível */}
                 <Box
                   sx={{
                     display: "flex",
-                    justifyContent: "space-between",
+                    justifyContent: "flex-end",
                     alignItems: "center",
-                    gap: 0.75,
-                    px: { xs: 1, sm: 1.25 },
-                    pb: { xs: 0.75, sm: 1 },
-                    pt: 0.75,
+                    gap: { xs: 0.5, sm: 0.75 },
+                    px: { xs: 0.75, sm: 1.25 },
+                    py: { xs: 0.375, sm: 0.75 },
                     bgcolor: "grey.50",
                     borderTop: "1px solid",
                     borderColor: "grey.200",
+                    flexShrink: 0,
+                    mt: "auto",
                   }}
                 >
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                    {c.name}
-                  </Typography>
-
-                  <Stack direction="row" spacing={0.5}>
+                  <Stack direction="row" spacing={{ xs: 0.25, sm: 0.5 }}>
                     <Tooltip title="Visualizar detalhes">
                       <IconButton
                         size="small"
                         onClick={() => onOpenView(c)}
                         sx={{
                           color: "primary.main",
-                          "&:hover": { bgcolor: "primary.50" }
+                          p: { xs: 0.5, sm: 0.75 },
+                          "&:hover": { bgcolor: "primary.50" },
+                          "& .MuiSvgIcon-root": {
+                            fontSize: { xs: 20, sm: 22 }
+                          }
                         }}
                       >
-                        <Visibility fontSize="small" />
+                        <Visibility />
                       </IconButton>
                     </Tooltip>
                     {wa && (
@@ -530,8 +490,14 @@ export default function ChildrenCards(props: Props) {
                           target="_blank"
                           rel="noopener noreferrer"
                           aria-label="abrir WhatsApp"
+                          sx={{
+                            p: { xs: 0.5, sm: 0.75 },
+                            "& .MuiSvgIcon-root": {
+                              fontSize: { xs: 20, sm: 22 }
+                            }
+                          }}
                         >
-                          <WhatsApp fontSize="medium" />
+                          <WhatsApp />
                         </IconButton>
                       </Tooltip>
                     )}
@@ -541,10 +507,14 @@ export default function ChildrenCards(props: Props) {
                         onClick={() => onStartEdit(c)}
                         sx={{
                           color: "info.main",
-                          "&:hover": { bgcolor: "info.50" }
+                          p: { xs: 0.5, sm: 0.75 },
+                          "&:hover": { bgcolor: "info.50" },
+                          "& .MuiSvgIcon-root": {
+                            fontSize: { xs: 20, sm: 22 }
+                          }
                         }}
                       >
-                        <Edit fontSize="small" />
+                        <Edit />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={c.isActive ? "Desativar" : "Ativar"}>
@@ -553,10 +523,14 @@ export default function ChildrenCards(props: Props) {
                         color={c.isActive ? "success" : "default"}
                         onClick={() => onToggleActive(c)}
                         sx={{
-                          "&:hover": { bgcolor: c.isActive ? "success.50" : "action.hover" }
+                          p: { xs: 0.5, sm: 0.75 },
+                          "&:hover": { bgcolor: c.isActive ? "success.50" : "action.hover" },
+                          "& .MuiSvgIcon-root": {
+                            fontSize: { xs: 20, sm: 22 }
+                          }
                         }}
                       >
-                        {c.isActive ? <ToggleOn fontSize="small" /> : <ToggleOff fontSize="small" />}
+                        {c.isActive ? <ToggleOn /> : <ToggleOff />}
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Excluir criança">
@@ -565,10 +539,14 @@ export default function ChildrenCards(props: Props) {
                         color="error"
                         onClick={() => onAskDelete(c)}
                         sx={{
-                          "&:hover": { bgcolor: "error.50" }
+                          p: { xs: 0.5, sm: 0.75 },
+                          "&:hover": { bgcolor: "error.50" },
+                          "& .MuiSvgIcon-root": {
+                            fontSize: { xs: 20, sm: 22 }
+                          }
                         }}
                       >
-                        <Delete fontSize="small" />
+                        <Delete />
                       </IconButton>
                     </Tooltip>
                   </Stack>

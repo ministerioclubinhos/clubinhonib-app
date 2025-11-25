@@ -296,22 +296,7 @@ projeto-clubinho/clubinhonib-app/
 
 ## 🎯 COMO ATIVAR O SISTEMA
 
-### Passo 1: Configurar Variável de Ambiente
-
-```bash
-# Arquivo: .env (raiz do projeto)
-VITE_CLUB_CONTROL_ENABLED=true
-```
-
-### Passo 2: Reiniciar Servidor
-
-```bash
-# Parar servidor (Ctrl+C)
-# Iniciar novamente
-npm run dev
-```
-
-### Passo 3: Cadastrar Período Letivo
+### Passo 1: Cadastrar Período Letivo
 
 ```bash
 # Acessar: http://localhost:5173/adm/controle-clubes
