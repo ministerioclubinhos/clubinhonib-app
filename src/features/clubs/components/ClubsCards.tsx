@@ -3,7 +3,7 @@ import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
   Typography, MenuItem, Select, FormControl, InputLabel,
   Divider, TablePagination, Tooltip, Collapse, ButtonBase,
-  Paper, Avatar, Fade, Slide
+  Paper, Avatar, Fade
 } from "@mui/material";
 import {
   Visibility, Edit, Delete, SwapVert,
@@ -35,7 +35,7 @@ type Props = {
 
 
 export default function ClubsCards(props: Props) {
-  const { isAdmin, rows, total, pageIndex, pageSize, setPageIndex, setPageSize, sorting, setSorting, onOpenView, onStartEdit, onAskDelete } = props;
+  const { isAdmin, rows, total, pageIndex, pageSize, setPageIndex, setPageSize, sorting, setSorting, onOpenView, onStartEdit, onAskDelete, onToggleActive } = props;
   const [open, setOpen] = useState<Set<string>>(new Set());
   const toggle = (id: string) =>
     setOpen((prev) => {
@@ -86,7 +86,7 @@ export default function ClubsCards(props: Props) {
         </Tooltip>
       </Stack>
 
-      <Grid container spacing={{ xs: 1, sm: 1.25 }}>
+      <Grid container spacing={{ xs: 0.75, sm: 1.25 }}>
         {rows.map((c) => {
           const expanded = open.has(c.id);
           const coordName = c.coordinator?.user?.name || c.coordinator?.user?.email || "—";
@@ -98,166 +98,135 @@ export default function ClubsCards(props: Props) {
               <Card
                 variant="outlined"
                 sx={{
-                  borderRadius: 3,
+                  borderRadius: { xs: 2, sm: 3 },
                   overflow: "hidden",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   "&:hover": { 
-                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)", 
-                    transform: "translateY(-2px)",
+                    boxShadow: { xs: "none", sm: "0 8px 25px rgba(0,0,0,0.15)" }, 
+                    transform: { xs: "none", sm: "translateY(-2px)" },
                     "& .club-avatar": {
-                      transform: "scale(1.1)",
+                      transform: { xs: "none", sm: "scale(1.1)" },
                     }
                   },
                   bgcolor: "background.paper",
                   position: "relative",
-                  maxHeight: !expanded ? { xs: 160, sm: 140 } : "none",
+                  display: "flex",
+                  flexDirection: "column",
                   "&::before": {
                     content: '""',
                     position: "absolute",
                     top: 0,
                     left: 0,
                     right: 0,
-                    height: 4,
+                    height: 3,
                     background: "linear-gradient(90deg, #4caf50 0%, #2196f3 100%)",
                   }
                 }}
               >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  sx={{
-                    px: { xs: 1, sm: 1.25 },
-                    pt: 1,
-                    pb: 0.5,
-                    gap: { xs: 0.75, sm: 1 },
-                    mt: 0.5, // Espaço para a barra colorida
-                  }}
-                >
-                  <Avatar
-                    className="club-avatar"
-                    sx={{
-                      width: { xs: 40, sm: 48 }, 
-                      height: { xs: 40, sm: 48 },
-                      bgcolor: "success.main", 
-                      color: "success.contrastText",
-                      fontWeight: 800, 
-                      fontSize: { xs: 14, sm: 16 },
-                      boxShadow: "0 4px 12px rgba(76, 175, 80, 0.3)",
-                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      flexShrink: 0,
-                    }}
-                    aria-label={`Clubinho número ${c.number}`}
-                  >
-                    {c.number}
-                  </Avatar>
+                {/* Header - Compacto no mobile */}
+                <Box sx={{ px: { xs: 0.75, sm: 1.25 }, pt: { xs: 0.5, sm: 1 }, pb: { xs: 0.25, sm: 0.5 }, mt: { xs: 0.25, sm: 0.5 } }}>
+                  <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }} sx={{ mb: { xs: 0.375, sm: 0 } }}>
+                    <Avatar
+                      className="club-avatar"
+                      sx={{
+                        width: { xs: 32, sm: 48 }, 
+                        height: { xs: 32, sm: 48 },
+                        bgcolor: "success.main", 
+                        color: "success.contrastText",
+                        fontWeight: 800, 
+                        fontSize: { xs: 11, sm: 16 },
+                        boxShadow: "0 2px 8px rgba(76, 175, 80, 0.3)",
+                        flexShrink: 0,
+                      }}
+                      aria-label={`Clubinho número ${c.number}`}
+                    >
+                      {c.number}
+                    </Avatar>
 
-                  <Stack 
-                    direction="row" 
-                    spacing={0.5} 
-                    alignItems="center"
-                    sx={{ minWidth: 0, flex: 1 }}
-                    flexWrap="wrap"
-                    useFlexGap
-                    rowGap={0.25}
-                  >
-                    <CalendarMonthOutlined sx={{ fontSize: 16, color: "text.secondary", flexShrink: 0 }} />
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ 
-                        fontWeight: 600,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis"
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap rowGap={0.25}>
+                        <CalendarMonthOutlined sx={{ fontSize: { xs: 14, sm: 16 }, color: "text.secondary", flexShrink: 0 }} />
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary" 
+                          sx={{ 
+                            fontWeight: 600,
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            whiteSpace: "nowrap"
+                          }}
+                        >
+                          {weekdayLabel(c.weekday)}
+                        </Typography>
+                        {c.time && (
+                          <>
+                            <AccessTimeIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: "text.secondary", ml: { xs: 0.25, sm: 0.5 } }} />
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary" 
+                              sx={{ 
+                                fontWeight: 600,
+                                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                                whiteSpace: "nowrap"
+                              }}
+                            >
+                              {c.time}
+                            </Typography>
+                          </>
+                        )}
+                        <Chip
+                          size="small"
+                          label={c.isActive ? "Ativo" : "Inativo"}
+                          color={c.isActive ? "success" : "default"}
+                          variant={c.isActive ? "filled" : "outlined"}
+                          sx={{
+                            fontSize: { xs: "0.6rem", sm: "0.65rem" },
+                            height: { xs: 16, sm: 18 },
+                            ml: { xs: 0.25, sm: 0.5 }
+                          }}
+                        />
+                      </Stack>
+                    </Box>
+
+                    <ButtonBase
+                      onClick={() => toggle(c.id)}
+                      aria-label={expanded ? "Recolher" : "Expandir"}
+                      sx={{
+                        borderRadius: 1.5,
+                        px: { xs: 0.5, sm: 1 },
+                        py: { xs: 0.25, sm: 0.5 },
+                        display: "flex",
+                        alignItems: "center",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        bgcolor: "background.paper",
+                        flexShrink: 0,
+                        "&:hover": { bgcolor: "action.hover" },
                       }}
                     >
-                      {weekdayLabel(c.weekday)}
-                    </Typography>
-                    <Chip
-                      size="small"
-                      label={c.isActive ? "Ativo" : "Inativo"}
-                      color={c.isActive ? "success" : "default"}
-                      variant={c.isActive ? "filled" : "outlined"}
-                      sx={{
-                        fontSize: "0.65rem",
-                        height: 18,
-                      }}
-                    />
+                      <ExpandMoreIcon
+                        fontSize="small"
+                        sx={{ 
+                          fontSize: { xs: 18, sm: 20 },
+                          transition: "transform .15s ease", 
+                          transform: expanded ? "rotate(180deg)" : "rotate(0deg)" 
+                        }}
+                      />
+                    </ButtonBase>
                   </Stack>
 
-                  {c.time && (
-                    <Stack 
-                      direction="row" 
-                      spacing={0.5} 
-                      alignItems="center"
-                      sx={{ minWidth: 0, flexShrink: 0 }}
-                    >
-                      <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
-                          fontWeight: 600,
-                          whiteSpace: "nowrap"
-                        }}
-                      >
-                        {c.time}
-                      </Typography>
-                    </Stack>
-                  )}
-
-                  <ButtonBase
-                    onClick={() => toggle(c.id)}
-                    aria-label={expanded ? "Recolher" : "Expandir"}
+                  {/* Coordenador - Compacto */}
+                  <Box
                     sx={{
-                      borderRadius: 2,
-                      px: { xs: 0.75, sm: 1 },
-                      py: 0.5,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
+                      p: { xs: 0.375, sm: 0.75 },
+                      borderRadius: 1.5,
+                      bgcolor: "grey.50",
                       border: "1px solid",
-                      borderColor: "divider",
-                      bgcolor: "background.paper",
-                      flexShrink: 0,
-                      "&:hover": { bgcolor: "action.hover" },
+                      borderColor: "grey.200",
+                      mt: { xs: 0.25, sm: 0.5 },
                     }}
                   >
-                    <Typography 
-                      variant="caption" 
-                      color="text.secondary" 
-                      sx={{ 
-                        fontWeight: 600,
-                        display: { xs: "none", sm: "block" }
-                      }}
-                    >
-                      {expanded ? "Recolher" : "Detalhes"}
-                    </Typography>
-                    <ExpandMoreIcon
-                      fontSize="small"
-                      sx={{ transition: "transform .15s ease", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
-                    />
-                  </ButtonBase>
-                </Stack>
-
-                <Box
-                  sx={{
-                    mx: { xs: 1, sm: 1.25 },
-                    mb: 0.5,
-                    p: { xs: 0.75, sm: 1 },
-                    borderRadius: 2,
-                    bgcolor: "grey.50",
-                    border: "1px solid",
-                    borderColor: "grey.200",
-                  }}
-                >
-                  <Stack
-                    direction="row"
-                    spacing={0.75}
-                    alignItems="center"
-                  >
-                    <SupervisorAccount sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
-                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <SupervisorAccount sx={{ fontSize: { xs: 14, sm: 18 }, color: "primary.main", flexShrink: 0 }} />
                       <Typography 
                         variant="body2"
                         sx={{ 
@@ -265,95 +234,64 @@ export default function ClubsCards(props: Props) {
                           color: "text.primary",
                           whiteSpace: "nowrap", 
                           overflow: "hidden", 
-                          textOverflow: "ellipsis"
+                          textOverflow: "ellipsis",
+                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                          flex: 1
                         }}
                         title={coordName}
                       >
                         {coordName}
                       </Typography>
-                    </Box>
-                    {c.coordinator?.user?.phone && (
-                      <Stack direction="row" spacing={0.25}>
-                        <Tooltip title="Ligar">
-                          <IconButton size="small" href={`tel:${c.coordinator.user.phone}`} sx={{ p: 0.5 }}>
-                            <PhoneIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <CopyButton value={c.coordinator.user.phone} title="Copiar telefone" />
-                      </Stack>
-                    )}
-                  </Stack>
-                </Box>
+                      {c.coordinator?.user?.phone && (
+                        <Stack direction="row" spacing={0.25}>
+                          <Tooltip title="Ligar">
+                            <IconButton size="small" href={`tel:${c.coordinator.user.phone}`} sx={{ p: { xs: 0.25, sm: 0.5 } }}>
+                              <PhoneIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                            </IconButton>
+                          </Tooltip>
+                          <CopyButton value={c.coordinator.user.phone} title="Copiar telefone" />
+                        </Stack>
+                      )}
+                    </Stack>
+                  </Box>
 
-                {!expanded && (
-                  <Box sx={{ px: { xs: 1, sm: 1.25 }, pb: 0.75 }}>
-                    <Stack
-                      direction="row"
-                      spacing={0.5}
-                      alignItems="center"
-                      flexWrap="wrap"
-                      rowGap={0.25}
-                    >
+                  {/* Info adicional - Apenas no modo comprimido */}
+                  {!expanded && (
+                    <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap rowGap={0.25} sx={{ mt: { xs: 0.25, sm: 0.5 }, pb: { xs: 0.25, sm: 0 } }}>
                       <Chip
                         size="small"
                         variant="filled"
-                        icon={<GroupIcon sx={{ fontSize: 12 }} />}
+                        icon={<GroupIcon sx={{ fontSize: { xs: 10, sm: 12 } }} />}
                         label={`${teachers.length || 0}`}
                         color="info"
                         sx={{ 
                           fontWeight: 600, 
-                          fontSize: "0.7rem",
-                          height: 20,
-                          "& .MuiChip-label": { px: 0.5 }
+                          fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                          height: { xs: 18, sm: 20 },
+                          "& .MuiChip-label": { px: { xs: 0.25, sm: 0.5 } }
                         }}
                       />
-                      {c.time && (
-                        <Chip
-                          size="small"
-                          variant="filled"
-                          icon={<AccessTimeIcon sx={{ fontSize: 12 }} />}
-                          label={c.time}
-                          color="success"
+                      <Stack direction="row" spacing={0.25} alignItems="center" sx={{ ml: { xs: 0, sm: 0.25 } }}>
+                        <LocationOnOutlined sx={{ fontSize: { xs: 11, sm: 14 }, color: "text.secondary" }} />
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary" 
                           sx={{ 
-                            fontWeight: 600, 
-                            fontSize: "0.7rem",
-                            height: 20,
-                            "& .MuiChip-label": { px: 0.5 }
+                            fontWeight: 500,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            fontSize: { xs: "0.65rem", sm: "0.75rem" }
                           }}
-                        />
-                      )}
-                      <Chip
-                        size="small"
-                        variant="outlined"
-                        icon={<CalendarMonthOutlined sx={{ fontSize: 12 }} />}
-                        label={weekdayLabel(c.weekday)}
-                        sx={{ 
-                          fontWeight: 600, 
-                          fontSize: "0.7rem",
-                          height: 20,
-                          "& .MuiChip-label": { px: 0.5 }
-                        }}
-                      />
+                        >
+                          {addrPreview}
+                        </Typography>
+                      </Stack>
                     </Stack>
-                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
-                      <LocationOnOutlined sx={{ fontSize: 14, color: "text.secondary" }} />
-                      <Typography 
-                        variant="caption" 
-                        color="text.secondary" 
-                        sx={{ 
-                          fontWeight: 500,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis"
-                        }}
-                      >
-                        {addrPreview}
-                      </Typography>
-                    </Stack>
-                  </Box>
-                )}
+                  )}
+                </Box>
 
-                <Slide direction="down" in={expanded} timeout={300}>
+                {expanded && (
                   <Box>
                     <Divider sx={{ mx: { xs: 1.5, sm: 2 } }} />
                     <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
@@ -471,37 +409,50 @@ export default function ClubsCards(props: Props) {
                       </Stack>
                     </CardContent>
                   </Box>
-                </Slide>
+                )}
 
+                {/* Rodapé - Sempre visível */}
                 <Box
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    gap: 0.75,
-                    px: { xs: 1, sm: 1.25 },
-                    pb: { xs: 0.75, sm: 1 },
-                    pt: 0.75,
+                    gap: { xs: 0.5, sm: 0.75 },
+                    px: { xs: 0.75, sm: 1.25 },
+                    py: { xs: 0.375, sm: 0.75 },
                     bgcolor: "grey.50",
                     borderTop: "1px solid",
                     borderColor: "grey.200",
+                    flexShrink: 0,
+                    mt: "auto",
                   }}
                 >
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary" 
+                    sx={{ 
+                      fontWeight: 500, 
+                      fontSize: { xs: "0.65rem", sm: "0.75rem" } 
+                    }}
+                  >
                     Clubinho #{c.number}
                   </Typography>
                   
-                  <Stack direction="row" spacing={0.5}>
+                  <Stack direction="row" spacing={{ xs: 0.25, sm: 0.5 }}>
                     <Tooltip title="Visualizar detalhes">
                       <IconButton 
                         size="small" 
                         onClick={() => onOpenView(c)}
                         sx={{ 
                           color: "primary.main",
-                          "&:hover": { bgcolor: "primary.50" }
+                          p: { xs: 0.5, sm: 0.75 },
+                          "&:hover": { bgcolor: "primary.50" },
+                          "& .MuiSvgIcon-root": {
+                            fontSize: { xs: 20, sm: 22 }
+                          }
                         }}
                       >
-                        <Visibility fontSize="small" />
+                        <Visibility />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Editar clubinho">
@@ -510,10 +461,14 @@ export default function ClubsCards(props: Props) {
                         onClick={() => onStartEdit(c)}
                         sx={{ 
                           color: "info.main",
-                          "&:hover": { bgcolor: "info.50" }
+                          p: { xs: 0.5, sm: 0.75 },
+                          "&:hover": { bgcolor: "info.50" },
+                          "& .MuiSvgIcon-root": {
+                            fontSize: { xs: 20, sm: 22 }
+                          }
                         }}
                       >
-                        <Edit fontSize="small" />
+                        <Edit />
                       </IconButton>
                     </Tooltip>
                     {isAdmin && (
@@ -524,10 +479,14 @@ export default function ClubsCards(props: Props) {
                             color={c.isActive ? "success" : "default"}
                             onClick={() => onToggleActive(c)}
                             sx={{
-                              "&:hover": { bgcolor: c.isActive ? "success.50" : "action.hover" }
+                              p: { xs: 0.5, sm: 0.75 },
+                              "&:hover": { bgcolor: c.isActive ? "success.50" : "action.hover" },
+                              "& .MuiSvgIcon-root": {
+                                fontSize: { xs: 20, sm: 22 }
+                              }
                             }}
                           >
-                            {c.isActive ? <ToggleOn fontSize="small" /> : <ToggleOff fontSize="small" />}
+                            {c.isActive ? <ToggleOn /> : <ToggleOff />}
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Excluir clubinho">
@@ -536,10 +495,14 @@ export default function ClubsCards(props: Props) {
                             color="error" 
                             onClick={() => onAskDelete(c)}
                             sx={{ 
-                              "&:hover": { bgcolor: "error.50" }
+                              p: { xs: 0.5, sm: 0.75 },
+                              "&:hover": { bgcolor: "error.50" },
+                              "& .MuiSvgIcon-root": {
+                                fontSize: { xs: 20, sm: 22 }
+                              }
                             }}
                           >
-                            <Delete fontSize="small" />
+                            <Delete />
                           </IconButton>
                         </Tooltip>
                       </>
@@ -571,7 +534,6 @@ export default function ClubsCards(props: Props) {
         sx={{ 
           px: 0,
           ".MuiTablePagination-toolbar": {
-            minHeight: { xs: 52, sm: 64 },
             px: { xs: 0.5, sm: 2 },
           },
           ".MuiTablePagination-selectLabel": {
