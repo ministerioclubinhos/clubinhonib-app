@@ -1,8 +1,8 @@
 import React from 'react';
-import { Box, Paper, Typography, CircularProgress, useTheme, Grid, LinearProgress, Chip } from '@mui/material';
+import { Box, Paper, Typography, CircularProgress, useTheme, Grid, LinearProgress, Chip, useMediaQuery } from '@mui/material';
 import {
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -12,6 +12,8 @@ import {
   Pie,
   Cell,
   Legend,
+  ComposedChart,
+  Line,
 } from 'recharts';
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { useAcceptedChristsChartData } from '../hooks';
@@ -23,6 +25,7 @@ interface EnhancedDecisionsChartProps {
 
 export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ filters }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data, isLoading } = useAcceptedChristsChartData(filters);
 
   if (isLoading) {
@@ -43,21 +46,64 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
     );
   }
 
-  const chartData = data.timeSeries.map((item) => ({
-    date: item.date,
-    total: item.series.total,
-    accepted: item.series.ACCEPTED || 0,
-    reconciled: item.series.RECONCILED || 0,
-  }));
+  const chartData = data.timeSeries && Array.isArray(data.timeSeries) 
+    ? data.timeSeries.map((item) => ({
+        date: item.date,
+        total: item.series?.total || 0,
+        accepted: item.series?.ACCEPTED || 0,
+        reconciled: item.series?.RECONCILED || 0,
+      }))
+    : [];
 
-  const totalAccepted = chartData.reduce((sum, item) => sum + item.accepted, 0);
-  const totalReconciled = chartData.reduce((sum, item) => sum + item.reconciled, 0);
+  // Calcular totais dos dados agregados se timeSeries estiver vazio
+  const totalAccepted = chartData.length > 0 
+    ? chartData.reduce((sum, item) => sum + (item.accepted || 0), 0)
+    : (data.byGender?.reduce((sum, item) => sum + (item.accepted || 0), 0) || 0);
+  const totalReconciled = chartData.length > 0 
+    ? chartData.reduce((sum, item) => sum + (item.reconciled || 0), 0)
+    : (data.byGender?.reduce((sum, item) => sum + (item.reconciled || 0), 0) || 0);
   const totalDecisions = totalAccepted + totalReconciled;
 
   const pieData = [
     { name: 'Aceitaram Cristo', value: totalAccepted, color: theme.palette.success.main },
     { name: 'Reconciliados', value: totalReconciled, color: theme.palette.info.main },
   ];
+
+  // Dados por gênero
+  const genderData = data.byGender?.map((item) => ({
+    name: item.gender === 'M' ? 'Masculino' : 'Feminino',
+    total: item.total,
+    accepted: item.accepted,
+    reconciled: item.reconciled,
+  })) || [];
+
+  // Dados por faixa etária
+  const ageGroupData = data.byAgeGroup?.map((item) => ({
+    name: item.ageGroup,
+    total: item.total,
+    accepted: item.accepted,
+    reconciled: item.reconciled,
+  })) || [];
+
+  // Top 10 clubinhos
+  const topClubsData = data.byClub
+    ?.sort((a, b) => b.total - a.total)
+    .slice(0, 10)
+    .map((item) => ({
+      name: `#${item.clubNumber}`,
+      total: item.total,
+      accepted: item.accepted,
+      reconciled: item.reconciled,
+    })) || [];
+
+  // Dados por tempo de participação
+  const participationData = data.byParticipationTime?.map((item) => ({
+    name: item.timeRange,
+    total: item.total,
+    accepted: item.accepted,
+    reconciled: item.reconciled,
+    avgMonths: item.avgMonthsParticipating,
+  })) || [];
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -109,112 +155,125 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
   };
 
   return (
-    <Box>
+    <Box sx={{ width: '98%', maxWidth: '98%', overflowX: 'hidden', mx: 'auto' }}>
       {/* Cards de Resumo */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={4}>
+      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: 3, width: '100%', maxWidth: '100%' }}>
+        <Grid item xs={12} sm={6} md={4} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2, sm: 3 },
               borderRadius: 3,
               background: `linear-gradient(135deg, ${theme.palette.primary.main}15 0%, ${theme.palette.primary.main}05 100%)`,
               border: `2px solid ${theme.palette.primary.main}30`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
               <Box
                 sx={{
-                  p: 1.5,
+                  p: { xs: 1, sm: 1.5 },
                   borderRadius: 2,
                   bgcolor: `${theme.palette.primary.main}20`,
                 }}
               >
-                <EmojiEvents sx={{ fontSize: 32, color: theme.palette.primary.main }} />
+                <EmojiEvents sx={{ fontSize: { xs: 24, sm: 32 }, color: theme.palette.primary.main }} />
               </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Total de Decisões
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="primary">
-                  {totalDecisions}
+                <Typography variant="h4" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, wordBreak: 'break-word' }}>
+                  {totalDecisions.toLocaleString()}
                 </Typography>
               </Box>
             </Box>
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2, sm: 3 },
               borderRadius: 3,
               background: `linear-gradient(135deg, ${theme.palette.success.main}15 0%, ${theme.palette.success.main}05 100%)`,
               border: `2px solid ${theme.palette.success.main}30`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
               <Box
                 sx={{
-                  p: 1.5,
+                  p: { xs: 1, sm: 1.5 },
                   borderRadius: 2,
                   bgcolor: `${theme.palette.success.main}20`,
                 }}
               >
-                <TrendingUp sx={{ fontSize: 32, color: theme.palette.success.main }} />
+                <TrendingUp sx={{ fontSize: { xs: 24, sm: 32 }, color: theme.palette.success.main }} />
               </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Aceitaram Cristo
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="success.main">
-                  {totalAccepted}
+                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, wordBreak: 'break-word' }}>
+                  {totalAccepted.toLocaleString()}
                 </Typography>
-                <Chip
-                  label={`${((totalAccepted / totalDecisions) * 100).toFixed(0)}%`}
-                  size="small"
-                  color="success"
-                  sx={{ mt: 0.5 }}
-                />
+                {totalDecisions > 0 && (
+                  <Chip
+                    label={`${((totalAccepted / totalDecisions) * 100).toFixed(0)}%`}
+                    size="small"
+                    color="success"
+                    sx={{ mt: 0.5, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                  />
+                )}
               </Box>
             </Box>
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2, sm: 3 },
               borderRadius: 3,
               background: `linear-gradient(135deg, ${theme.palette.info.main}15 0%, ${theme.palette.info.main}05 100%)`,
               border: `2px solid ${theme.palette.info.main}30`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
               <Box
                 sx={{
-                  p: 1.5,
+                  p: { xs: 1, sm: 1.5 },
                   borderRadius: 2,
                   bgcolor: `${theme.palette.info.main}20`,
                 }}
               >
-                <Group sx={{ fontSize: 32, color: theme.palette.info.main }} />
+                <Group sx={{ fontSize: { xs: 24, sm: 32 }, color: theme.palette.info.main }} />
               </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Reconciliados
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="info.main">
-                  {totalReconciled}
+                <Typography variant="h4" fontWeight="bold" color="info.main" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, wordBreak: 'break-word' }}>
+                  {totalReconciled.toLocaleString()}
                 </Typography>
-                <Chip
-                  label={`${((totalReconciled / totalDecisions) * 100).toFixed(0)}%`}
-                  size="small"
-                  color="info"
-                  sx={{ mt: 0.5 }}
-                />
+                {totalDecisions > 0 && (
+                  <Chip
+                    label={`${((totalReconciled / totalDecisions) * 100).toFixed(0)}%`}
+                    size="small"
+                    color="info"
+                    sx={{ mt: 0.5, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                  />
+                )}
               </Box>
             </Box>
           </Paper>
@@ -222,83 +281,218 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
       </Grid>
 
       {/* Gráficos */}
-      <Grid container spacing={3}>
-        {/* Gráfico de Área Temporal */}
-        <Grid item xs={12} lg={8}>
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%' }}>
+        {/* Gráfico Temporal - Se houver dados temporais */}
+        {chartData && chartData.length > 0 && (
+          <Grid item xs={12}>
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 2, sm: 3 },
               borderRadius: 3,
               background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}03 100%)`,
               border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
             }}
           >
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
+            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
               ✝️ Evolução de Decisões ao Longo do Tempo
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
               Acompanhamento temporal das decisões por Cristo
             </Typography>
 
-            <ResponsiveContainer width="100%" height={350}>
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorAccepted" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={theme.palette.success.main} stopOpacity={0.6} />
-                    <stop offset="95%" stopColor={theme.palette.success.main} stopOpacity={0.1} />
-                  </linearGradient>
-                  <linearGradient id="colorReconciled" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={theme.palette.info.main} stopOpacity={0.6} />
-                    <stop offset="95%" stopColor={theme.palette.info.main} stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: 12 }} />
-                <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="accepted"
-                  name="Aceitaram"
-                  stroke={theme.palette.success.main}
-                  strokeWidth={2}
-                  fill="url(#colorAccepted)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="reconciled"
-                  name="Reconciliados"
-                  stroke={theme.palette.info.main}
-                  strokeWidth={2}
-                  fill="url(#colorReconciled)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
+              <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+                <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: isMobile ? 80 : 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                  <XAxis 
+                    dataKey="date" 
+                    stroke={theme.palette.text.secondary} 
+                    style={{ fontSize: isMobile ? 10 : 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={isMobile ? 80 : 60}
+                  />
+                  <YAxis yAxisId="left" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 10 : 12 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }} />
+                  <Bar
+                    yAxisId="left"
+                    dataKey="accepted"
+                    name="Aceitaram Cristo"
+                    fill={theme.palette.success.main}
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    yAxisId="left"
+                    dataKey="reconciled"
+                    name="Reconciliados"
+                    fill={theme.palette.info.main}
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="total"
+                    name="Total"
+                    stroke={theme.palette.primary.main}
+                    strokeWidth={isMobile ? 2 : 2}
+                    dot={{ r: isMobile ? 3 : 4 }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+        )}
+
+        {/* Gráfico por Gênero */}
+        {genderData.length > 0 && (
+          <Grid item xs={12} md={6}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: 3,
+                border: `2px solid ${theme.palette.divider}`,
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                👥 Decisões por Gênero
+              </Typography>
+              <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
+                <BarChart data={genderData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                  <XAxis dataKey="name" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 10 : 12 }} />
+                  <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 10 : 12 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }} />
+                  <Bar dataKey="accepted" name="Aceitaram" fill={theme.palette.success.main} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="reconciled" name="Reconciliados" fill={theme.palette.info.main} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+        )}
+
+        {/* Gráfico por Faixa Etária */}
+        {ageGroupData.length > 0 && (
+          <Grid item xs={12} md={6}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: 3,
+                border: `2px solid ${theme.palette.divider}`,
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                🎂 Decisões por Faixa Etária
+              </Typography>
+              <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
+                <BarChart data={ageGroupData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                  <XAxis dataKey="name" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 10 : 12 }} />
+                  <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 10 : 12 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }} />
+                  <Bar dataKey="accepted" name="Aceitaram" fill={theme.palette.success.main} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="reconciled" name="Reconciliados" fill={theme.palette.info.main} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+        )}
+
+        {/* Top 10 Clubinhos */}
+        {topClubsData.length > 0 && (
+          <Grid item xs={12}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: 3,
+                border: `2px solid ${theme.palette.divider}`,
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                🏆 Top 10 Clubinhos com Mais Decisões
+              </Typography>
+              <ResponsiveContainer width="100%" height={isMobile ? 400 : 300}>
+                <BarChart data={topClubsData} layout="vertical" margin={{ top: 20, right: 30, left: isMobile ? 40 : 60, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                  <XAxis type="number" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 10 : 12 }} />
+                  <YAxis dataKey="name" type="category" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 10 : 12 }} width={isMobile ? 40 : 50} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }} />
+                  <Bar dataKey="accepted" name="Aceitaram" fill={theme.palette.success.main} radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="reconciled" name="Reconciliados" fill={theme.palette.info.main} radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+        )}
+
+        {/* Gráfico por Tempo de Participação */}
+        {participationData.length > 0 && (
+          <Grid item xs={12} md={6}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: 3,
+                border: `2px solid ${theme.palette.divider}`,
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                ⏱️ Decisões por Tempo de Participação
+              </Typography>
+              <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
+                <BarChart data={participationData} margin={{ top: 20, right: 30, left: 20, bottom: isMobile ? 60 : 40 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                  <XAxis dataKey="name" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 12 }} angle={isMobile ? -45 : -15} textAnchor="end" height={isMobile ? 80 : 60} />
+                  <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 10 : 12 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }} />
+                  <Bar dataKey="accepted" name="Aceitaram" fill={theme.palette.success.main} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="reconciled" name="Reconciliados" fill={theme.palette.info.main} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+        )}
 
         {/* Gráfico de Pizza */}
-        <Grid item xs={12} lg={4}>
+        <Grid item xs={12} md={6}>
           <Paper
             elevation={0}
             sx={{
               p: 3,
               borderRadius: 3,
-              height: '100%',
-              background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.success.main}03 100%)`,
               border: `2px solid ${theme.palette.divider}`,
             }}
           >
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              📊 Distribuição
+            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+              📊 Distribuição Geral
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
               Proporção de cada tipo de decisão
             </Typography>
 
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
               <PieChart>
                 <Pie
                   data={pieData}
@@ -306,7 +500,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
                   cy="50%"
                   labelLine={false}
                   label={renderCustomizedLabel}
-                  outerRadius={100}
+                  outerRadius={isMobile ? 60 : 80}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -327,12 +521,12 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
                       <Typography variant="body2">{item.name}</Typography>
                     </Box>
                     <Typography variant="body2" fontWeight="bold">
-                      {item.value}
+                      {item.value.toLocaleString()}
                     </Typography>
                   </Box>
                   <LinearProgress
                     variant="determinate"
-                    value={(item.value / totalDecisions) * 100}
+                    value={totalDecisions > 0 ? (item.value / totalDecisions) * 100 : 0}
                     sx={{
                       height: 8,
                       borderRadius: 4,

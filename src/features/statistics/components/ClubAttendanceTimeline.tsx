@@ -57,7 +57,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
   const [year, setYear] = React.useState(currentYear);
   // ⭐ Paginação v2.5.0
   const [timelinePage, setTimelinePage] = React.useState(1);
-  const [timelineLimit, setTimelineLimit] = React.useState(50);
+  const [timelineLimit, setTimelineLimit] = React.useState(20);
   const [missingWeeksPage, setMissingWeeksPage] = React.useState(1);
   // Estados para colapsar seções
   const [expandedTimeline, setExpandedTimeline] = React.useState(true);
@@ -155,11 +155,17 @@ export const ClubAttendanceTimeline: React.FC = () => {
               onChange={(e) => setSelectedClubId(e.target.value)}
               size="small"
             >
-              {clubsData?.clubs.map((club) => (
-                <MenuItem key={club.clubId} value={club.clubId}>
-                  Clubinho #{club.clubNumber} - {weekdayNames[club.weekday] || club.weekday} - {club.address.city}
+              {clubsData?.clubs && clubsData.clubs.length > 0 ? (
+                clubsData.clubs.map((club) => (
+                  <MenuItem key={club.clubId} value={club.clubId}>
+                    Clubinho #{club.clubNumber} - {weekdayNames[club.weekday] || club.weekday} - {club.address.city}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem value="" disabled>
+                  Nenhum clubinho disponível
                 </MenuItem>
-              ))}
+              )}
             </TextField>
           </Grid>
           <Grid item xs={12} md={3}>
@@ -447,7 +453,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                         setTimelineLimit(parseInt(event.target.value, 10));
                         setTimelinePage(1);
                       }}
-                      rowsPerPageOptions={[25, 50, 100]}
+                      rowsPerPageOptions={[10, 20, 50, 100]}
                       labelRowsPerPage="Semanas por página:"
                       labelDisplayedRows={({ from, to, count }) => 
                         `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`

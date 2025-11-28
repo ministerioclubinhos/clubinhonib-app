@@ -8,6 +8,7 @@ import {
   Avatar,
   LinearProgress,
   Chip,
+  useMediaQuery,
 } from '@mui/material';
 import {
   BarChart,
@@ -30,7 +31,28 @@ interface ClubPerformanceChartProps {
 
 export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filters }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data, isLoading } = usePagelasChartData(filters);
+
+  // IMPORTANTE: Hooks devem ser chamados antes de qualquer early return
+  // Ordenar clubinhos por performance e garantir que os dados estão no formato correto
+  const topClubs = React.useMemo(() => {
+    if (!data?.byClub || data.byClub.length === 0) return [];
+    const sorted = [...data.byClub]
+      .filter(club => {
+        const rate = Number(club.presenceRate);
+        return !isNaN(rate) && rate >= 0;
+      })
+      .sort((a, b) => b.presenceRate - a.presenceRate)
+      .slice(0, 10)
+      .map((club, index) => ({
+        ...club,
+        presenceRate: Number(club.presenceRate) || 0,
+        clubNumber: Number(club.clubNumber) || 0,
+      }));
+    
+    return sorted;
+  }, [data?.byClub]);
 
   if (isLoading) {
     return (
@@ -50,9 +72,13 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
     );
   }
 
-  // Ordenar clubinhos por performance
-  const sortedClubs = [...data.byClub].sort((a, b) => b.presenceRate - a.presenceRate);
-  const topClubs = sortedClubs.slice(0, 10);
+  if (!data.byClub || data.byClub.length === 0) {
+    return (
+      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+        <Typography color="text.secondary">Nenhum dado de clubinho disponível para o período selecionado</Typography>
+      </Paper>
+    );
+  }
 
   const getPerformanceColor = (rate: number) => {
     if (rate >= 90) return theme.palette.success.main;
@@ -114,101 +140,130 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
     <Paper
       elevation={0}
       sx={{
-        p: 3,
+        p: { xs: 2, sm: 3 },
         borderRadius: 3,
         background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.warning.main}03 100%)`,
         border: `2px solid ${theme.palette.divider}`,
+        width: '98%',
+        maxWidth: '98%',
+        overflow: 'hidden',
       }}
     >
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-          <EmojiEvents sx={{ fontSize: 28, color: theme.palette.warning.main }} />
-          <Typography variant="h5" fontWeight="bold">
+      <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
+          <EmojiEvents sx={{ fontSize: { xs: 24, sm: 28 }, color: theme.palette.warning.main }} />
+          <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
             🏆 Performance dos Clubinhos
           </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           Ranking de clubinhos por taxa de presença e engajamento
         </Typography>
       </Box>
 
-      {/* Gráfico de Barras Horizontal */}
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={topClubs} layout="horizontal">
-          <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-          <XAxis type="number" domain={[0, 100]} stroke={theme.palette.text.secondary} />
-          <YAxis
-            type="category"
-            dataKey="clubNumber"
-            tickFormatter={(value) => `#${value}`}
-            stroke={theme.palette.text.secondary}
-            width={60}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="presenceRate" name="Taxa de Presença (%)" radius={[0, 8, 8, 0]}>
-            {topClubs.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getPerformanceColor(entry.presenceRate)} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      {/* Gráfico de Barras Vertical */}
+      {topClubs.length > 0 ? (
+        <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+          <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
+            <BarChart 
+              data={topClubs} 
+              margin={{ top: 20, right: isMobile ? 10 : 30, left: isMobile ? 10 : 20, bottom: isMobile ? 80 : 60 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+              <XAxis 
+                dataKey="clubNumber"
+                tickFormatter={(value) => `#${value}`}
+                stroke={theme.palette.text.secondary}
+                angle={isMobile ? -90 : -45}
+                textAnchor="end"
+                height={isMobile ? 100 : 80}
+                style={{ fontSize: isMobile ? 10 : 12 }}
+              />
+              <YAxis
+                type="number"
+                domain={[0, 100]}
+                stroke={theme.palette.text.secondary}
+                label={{ value: 'Taxa de Presença (%)', angle: -90, position: 'insideLeft' }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Bar 
+                dataKey="presenceRate" 
+                name="Taxa de Presença (%)" 
+                radius={[8, 8, 0, 0]}
+                isAnimationActive={true}
+              >
+                {topClubs.map((entry, index) => (
+                  <Cell key={`cell-${entry.clubId || index}`} fill={getPerformanceColor(entry.presenceRate)} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+      ) : (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+          <Typography color="text.secondary">Nenhum dado disponível para exibir no gráfico</Typography>
+        </Box>
+      )}
 
       {/* Lista Detalhada */}
-      <Box sx={{ mt: 3 }}>
-        <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+      <Box sx={{ mt: { xs: 2, sm: 3 } }}>
+        <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           Top 5 Clubinhos
         </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
           {topClubs.slice(0, 5).map((club, index) => (
             <Paper
               key={club.clubId}
               elevation={0}
               sx={{
-                p: 2,
+                p: { xs: 1.5, sm: 2 },
                 borderRadius: 2,
                 background: index < 3 ? `${getMedalColor(index)}08` : theme.palette.background.default,
                 border: `1px solid ${theme.palette.divider}`,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  transform: 'translateX(4px)',
+                  transform: isMobile ? 'none' : 'translateX(4px)',
                   boxShadow: 2,
                 },
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
                 {/* Posição/Medalha */}
                 <Avatar
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: { xs: 36, sm: 40 },
+                    height: { xs: 36, sm: 40 },
                     bgcolor: index < 3 ? getMedalColor(index) : theme.palette.grey[400],
                     fontWeight: 'bold',
+                    fontSize: { xs: 14, sm: 16 },
                   }}
                 >
-                  {index < 3 ? <EmojiEvents /> : index + 1}
+                  {index < 3 ? <EmojiEvents sx={{ fontSize: { xs: 20, sm: 24 } }} /> : index + 1}
                 </Avatar>
 
                 {/* Informações do Clubinho */}
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <Typography variant="subtitle1" fontWeight="bold">
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
+                    <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                       Clubinho #{club.clubNumber}
                     </Typography>
                     <Chip
-                      icon={<Group />}
+                      icon={<Group sx={{ fontSize: { xs: 14, sm: 16 } }} />}
                       label={`${club.total} pagelas`}
                       size="small"
                       variant="outlined"
+                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }}
                     />
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+                    <Box sx={{ flex: 1, minWidth: { xs: '100%', sm: 'auto' } }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Taxa de Presença
                         </Typography>
-                        <Typography variant="caption" fontWeight="bold" color={getPerformanceColor(club.presenceRate)}>
+                        <Typography variant="caption" fontWeight="bold" color={getPerformanceColor(club.presenceRate)} sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           {club.presenceRate.toFixed(1)}%
                         </Typography>
                       </Box>
@@ -216,7 +271,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
                         variant="determinate"
                         value={club.presenceRate}
                         sx={{
-                          height: 6,
+                          height: { xs: 4, sm: 6 },
                           borderRadius: 3,
                           bgcolor: `${getPerformanceColor(club.presenceRate)}15`,
                           '& .MuiLinearProgress-bar': {
@@ -228,10 +283,11 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
                     </Box>
 
                     <Chip
-                      icon={<TrendingUp />}
+                      icon={<TrendingUp sx={{ fontSize: { xs: 14, sm: 16 } }} />}
                       label={club.presenceRate >= 85 ? 'Excelente' : club.presenceRate >= 70 ? 'Bom' : 'Regular'}
                       size="small"
                       color={club.presenceRate >= 85 ? 'success' : club.presenceRate >= 70 ? 'info' : 'warning'}
+                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }}
                     />
                   </Box>
                 </Box>

@@ -47,10 +47,18 @@ export const ClubsListView: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [filters, setFilters] = React.useState<ClubsFilters>({
     page: 1,
-    limit: 20,
+    limit: isMobile ? 5 : 20,
     sortBy: 'performanceScore',
     sortOrder: 'DESC',
   });
+  
+  // Atualizar limit quando isMobile mudar
+  React.useEffect(() => {
+    const newLimit = isMobile ? 5 : 20;
+    if (filters.limit !== newLimit) {
+      setFilters({ ...filters, limit: newLimit, page: 1 });
+    }
+  }, [isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
   const [filtersExpanded, setFiltersExpanded] = React.useState(false);
 
   const { data, isLoading } = useClubs(filters);
@@ -68,7 +76,7 @@ export const ClubsListView: React.FC = () => {
   };
 
   const handleReset = () => {
-    setFilters({ page: 1, limit: 20, sortBy: 'performanceScore', sortOrder: 'DESC' });
+    setFilters({ page: 1, limit: isMobile ? 5 : 20, sortBy: 'performanceScore', sortOrder: 'DESC' });
   };
 
   const getPerformanceColor = (score: number) => {
@@ -111,49 +119,92 @@ export const ClubsListView: React.FC = () => {
     FRIDAY: 'Sexta',
     SATURDAY: 'Sábado',
     SUNDAY: 'Domingo',
+    // Suporte para minúsculas
+    monday: 'Segunda',
+    tuesday: 'Terça',
+    wednesday: 'Quarta',
+    thursday: 'Quinta',
+    friday: 'Sexta',
+    saturday: 'Sábado',
+    sunday: 'Domingo',
   };
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
       {/* Cards de Resumo */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Total Clubinhos</Typography>
-            <Typography variant="h5" fontWeight="bold" color="primary">
+      <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0, display: 'flex', flexWrap: 'wrap' }}>
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Total Clubinhos</Typography>
+            <Typography variant="h5" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.filteredClubs}
             </Typography>
-            <Typography variant="caption" color="text.secondary">de {data.summary.totalClubs}</Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, wordBreak: 'break-word' }}>de {data.summary.totalClubs}</Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Total Crianças</Typography>
-            <Typography variant="h5" fontWeight="bold" color="info.main">
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Total Crianças</Typography>
+            <Typography variant="h5" fontWeight="bold" color="info.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.totalChildren}
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Performance Média</Typography>
-            <Typography variant="h5" fontWeight="bold" color="success.main">
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Performance Média</Typography>
+            <Typography variant="h5" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.avgPerformanceScore.toFixed(1)}%
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Presença Média</Typography>
-            <Typography variant="h5" fontWeight="bold" color="secondary.main">
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Presença Média</Typography>
+            <Typography variant="h5" fontWeight="bold" color="secondary.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.avgPresenceRate.toFixed(1)}%
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Total Decisões</Typography>
-            <Typography variant="h5" fontWeight="bold" color="warning.main">
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Total Decisões</Typography>
+            <Typography variant="h5" fontWeight="bold" color="warning.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.totalDecisions}
             </Typography>
           </Paper>
@@ -319,7 +370,7 @@ export const ClubsListView: React.FC = () => {
 
       {/* Versão Mobile: Cards */}
       {isMobile ? (
-        <Stack spacing={2}>
+        <Stack spacing={1.5} sx={{ width: '100%', maxWidth: '100%' }}>
           {data.clubs.length === 0 ? (
             <Paper elevation={3} sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
               <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
@@ -330,134 +381,167 @@ export const ClubsListView: React.FC = () => {
             data.clubs.map((club) => (
               <Card 
                 key={club.clubId} 
-                elevation={3} 
+                elevation={1} 
                 sx={{ 
-                  borderRadius: 2,
+                  borderRadius: 1.5,
                   border: club.rank <= 3 ? `2px solid ${getMedalColor(club.rank)}40` : undefined,
                   bgcolor: club.rank <= 3 ? `${getMedalColor(club.rank)}08` : undefined,
+                  borderLeft: `4px solid ${club.rank <= 3 ? getMedalColor(club.rank) : theme.palette.primary.main}`,
+                  width: '100%',
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '3px',
+                    background: `linear-gradient(90deg, ${club.rank <= 3 ? getMedalColor(club.rank) : theme.palette.primary.main} 0%, ${club.rank <= 3 ? getMedalColor(club.rank) : theme.palette.primary.light} 100%)`,
+                  },
                 }}
               >
-                <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
-                  <Stack spacing={1.5}>
+                <CardContent sx={{ 
+                  p: { xs: 1, sm: 2 },
+                  '&:last-child': { pb: { xs: 1, sm: 2 } },
+                  width: '100%',
+                  maxWidth: '100%',
+                }}>
+                  <Stack spacing={1}>
                     {/* Header */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                         {club.rank <= 3 ? (
-                          <EmojiEvents sx={{ color: getMedalColor(club.rank), fontSize: { xs: 24, sm: 28 } }} />
+                          <EmojiEvents sx={{ color: getMedalColor(club.rank), fontSize: { xs: 20, sm: 28 } }} />
                         ) : (
-                          <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>
                             #{club.rank}
                           </Typography>
                         )}
-                        <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}>
+                        <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.85rem', sm: '1.125rem' } }}>
                           Clubinho #{club.clubNumber}
                         </Typography>
                       </Box>
                     </Box>
 
-                    <Divider />
+                    <Divider sx={{ my: 0.5 }} />
 
-                    {/* Informações */}
-                    <Grid container spacing={1.5}>
+                    {/* Informações - 2 colunas */}
+                    <Grid container spacing={1}>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                            Dia/Horário
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                            Dia
                           </Typography>
-                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
                             {weekdayNames[club.weekday] || club.weekday}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                            {club.time}
+                        </Box>
+                      </Grid>
+                      {club.time && (
+                        <Grid item xs={6}>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                              Horário
+                            </Typography>
+                            <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                              {club.time}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      )}
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                            Cidade
+                          </Typography>
+                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                            {club.address.city}, {club.address.state}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      {club.coordinator && (
+                        <Grid item xs={6}>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                              Coordenador
+                            </Typography>
+                            <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                              {club.coordinator.name}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      )}
+                      <Grid item xs={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                            Crianças
+                          </Typography>
+                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                            {club.children.total} ({club.children.active} ativos)
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                            Local
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                            Professores
                           </Typography>
-                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                            {club.address.city}, {club.address.state}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                            {club.address.district}
+                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                            {club.teachers.total}
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={12}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                            Coordenador
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                            Gênero
                           </Typography>
-                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                            {club.coordinator ? club.coordinator.name : '-'}
+                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                            M: {club.children.byGender.M} | F: {club.children.byGender.F}
                           </Typography>
                         </Box>
                       </Grid>
                     </Grid>
 
-                    {/* Crianças e Professores */}
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      <Chip
-                        icon={<Groups />}
-                        label={`${club.children.total} crianças (${club.children.active} ativos)`}
-                        size="small"
-                        variant="outlined"
-                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                      />
-                      <Chip
-                        icon={<School />}
-                        label={`${club.teachers.total} professores`}
-                        size="small"
-                        color="info"
-                        variant="outlined"
-                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                      />
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, alignSelf: 'center' }}>
-                        M: {club.children.byGender.M} | F: {club.children.byGender.F}
-                      </Typography>
-                    </Box>
-
                     {/* Presença */}
                     <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                           Presença
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                          {club.performance.presenceRate.toFixed(1)}%
+                        <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                          {club.performance.presenceRate.toFixed(0)}%
                         </Typography>
                       </Box>
                       <LinearProgress
                         variant="determinate"
                         value={club.performance.presenceRate}
                         sx={{
-                          height: 6,
-                          borderRadius: 3,
+                          height: { xs: 4, sm: 6 },
+                          borderRadius: 2,
                           '& .MuiLinearProgress-bar': {
                             bgcolor: theme.palette.success.main,
-                            borderRadius: 3,
+                            borderRadius: 2,
                           },
                         }}
                       />
                     </Box>
 
-                    {/* Performance e Decisões */}
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {/* Performance */}
+                    <Box>
                       <Chip
-                        icon={<TrendingUp />}
-                        label={`Performance: ${club.performance.performanceScore.toFixed(1)}`}
+                        icon={<TrendingUp sx={{ fontSize: { xs: 12, sm: 16 } }} />}
+                        label={`${club.performance.performanceScore.toFixed(0)}`}
                         size="small"
                         color={getPerformanceColor(club.performance.performanceScore)}
-                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                      />
-                      <Chip
-                        label={`${club.performance.totalDecisions} decisões`}
-                        size="small"
-                        color="success"
-                        variant="outlined"
-                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        sx={{ 
+                          fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                          height: { xs: 20, sm: 24 },
+                          width: '100%',
+                          '& .MuiChip-label': { px: { xs: 0.5, sm: 1 } }
+                        }}
                       />
                     </Box>
                   </Stack>
@@ -594,7 +678,7 @@ export const ClubsListView: React.FC = () => {
             onPageChange={handlePageChange}
             rowsPerPage={data.pagination.limit}
             onRowsPerPageChange={handleLimitChange}
-            rowsPerPageOptions={[10, 20, 50]}
+            rowsPerPageOptions={isMobile ? [5, 10, 20] : [10, 20, 50, 100]}
             labelRowsPerPage="Clubinhos por página:"
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
             sx={{
