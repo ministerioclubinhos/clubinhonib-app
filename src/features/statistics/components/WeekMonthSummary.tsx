@@ -8,6 +8,7 @@ import {
   Grid,
   LinearProgress,
   Chip,
+  useMediaQuery,
 } from '@mui/material';
 import {
   LineChart,
@@ -25,7 +26,28 @@ import { useOverview } from '../hooks';
 
 export const WeekMonthSummary: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data, isLoading } = useOverview();
+
+  // Transformar dados das últimas 6 semanas para o formato do gráfico
+  // IMPORTANTE: Hooks devem ser chamados antes de qualquer early return
+  const lastSixWeeksData = React.useMemo(() => {
+    if (!data?.pagelas?.lastSixWeeks || data.pagelas.lastSixWeeks.length === 0) return [];
+    return data.pagelas.lastSixWeeks.map((item) => ({
+      date: `S${item.week}/${item.year}`,
+      value: item.total,
+      presenceRate: item.presenceRate,
+    }));
+  }, [data?.pagelas?.lastSixWeeks]);
+
+  // Transformar dados dos últimos 6 meses para o formato do gráfico
+  const lastSixMonthsData = React.useMemo(() => {
+    if (!data?.acceptedChrists?.lastSixMonths || data.acceptedChrists.lastSixMonths.length === 0) return [];
+    return data.acceptedChrists.lastSixMonths.map((item) => ({
+      date: item.month,
+      value: item.total,
+    }));
+  }, [data?.acceptedChrists?.lastSixMonths]);
 
   if (isLoading || !data) {
     return (
@@ -67,21 +89,24 @@ export const WeekMonthSummary: React.FC = () => {
   const decisionTrend = getTrend(data.acceptedChrists.thisWeek, data.acceptedChrists.thisMonth);
 
   return (
-    <Grid container spacing={3}>
+    <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
       {/* Card Resumo Semana vs Mês */}
-      <Grid item xs={12} md={6}>
+      <Grid item xs={12} md={6} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
           sx={{
-            p: 3,
+            p: { xs: 2, sm: 3 },
             borderRadius: 3,
             background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}05 100%)`,
             border: `2px solid ${theme.palette.divider}`,
+            width: '98%',
+            maxWidth: '98%',
+            overflow: 'hidden',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-            <CalendarToday sx={{ fontSize: 24, color: theme.palette.primary.main }} />
-            <Typography variant="h6" fontWeight="bold">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: { xs: 2, sm: 3 } }}>
+            <CalendarToday sx={{ fontSize: { xs: 20, sm: 24 }, color: theme.palette.primary.main }} />
+            <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
               📅 Resumo: Semana vs Mês
             </Typography>
           </Box>
@@ -92,25 +117,25 @@ export const WeekMonthSummary: React.FC = () => {
               Pagelas Registradas
             </Typography>
             <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
+              <Box sx={{ flex: { xs: '1 1 calc(50% - 8px)', sm: 'none' }, minWidth: 0 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Esta Semana
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="primary">
+                <Typography variant="h4" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' }, wordBreak: 'break-word' }}>
                   {data.pagelas.thisWeek.total}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   {data.pagelas.thisWeek.presenceRate.toFixed(1)}% presença
                 </Typography>
               </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
+              <Box sx={{ flex: { xs: '1 1 calc(50% - 8px)', sm: 'none' }, minWidth: 0 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Este Mês
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="primary">
+                <Typography variant="h4" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' }, wordBreak: 'break-word' }}>
                   {data.pagelas.thisMonth.total}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   {data.pagelas.thisMonth.presenceRate.toFixed(1)}% presença
                 </Typography>
               </Box>
@@ -132,28 +157,28 @@ export const WeekMonthSummary: React.FC = () => {
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Decisões por Cristo
             </Typography>
-            <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
+            <Box sx={{ display: 'flex', gap: { xs: 2, sm: 3 }, mb: 2, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+              <Box sx={{ flex: { xs: '1 1 calc(50% - 8px)', sm: 'none' }, minWidth: 0 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Esta Semana
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="success.main">
+                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
                   {data.acceptedChrists.thisWeek}
                 </Typography>
               </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
+              <Box sx={{ flex: { xs: '1 1 calc(50% - 8px)', sm: 'none' }, minWidth: 0 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Este Mês
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="success.main">
+                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
                   {data.acceptedChrists.thisMonth}
                 </Typography>
               </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
+              <Box sx={{ flex: { xs: '1 1 100%', sm: 'none' }, minWidth: 0 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Este Ano
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="success.main">
+                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
                   {data.acceptedChrists.thisYear}
                 </Typography>
               </Box>
@@ -175,10 +200,10 @@ export const WeekMonthSummary: React.FC = () => {
             <Typography variant="caption" color="text.secondary" gutterBottom display="block">
               Distribuição de Decisões (Ano Todo)
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Typography variant="body2">Aceitaram</Typography>
-                <Typography variant="h6" fontWeight="bold" color="success.main">
+            <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
+              <Grid item xs={6} sx={{ width: '100%', maxWidth: '100%' }}>
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Aceitaram</Typography>
+                <Typography variant="h6" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, wordBreak: 'break-word' }}>
                   {data.acceptedChrists.byDecisionType.ACCEPTED}
                 </Typography>
                 <LinearProgress
@@ -198,9 +223,9 @@ export const WeekMonthSummary: React.FC = () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2">Reconciliados</Typography>
-                <Typography variant="h6" fontWeight="bold" color="info.main">
+              <Grid item xs={6} sx={{ width: '100%', maxWidth: '100%' }}>
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Reconciliados</Typography>
+                <Typography variant="h6" fontWeight="bold" color="info.main" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, wordBreak: 'break-word' }}>
                   {data.acceptedChrists.byDecisionType.RECONCILED}
                 </Typography>
                 <LinearProgress
@@ -226,21 +251,25 @@ export const WeekMonthSummary: React.FC = () => {
       </Grid>
 
       {/* Gráfico de Últimas Semanas */}
-      <Grid item xs={12} md={6}>
+      <Grid item xs={12} md={6} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
           sx={{
-            p: 3,
+            p: { xs: 2, sm: 3 },
             borderRadius: 3,
             background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.success.main}05 100%)`,
             border: `2px solid ${theme.palette.divider}`,
+            width: '98%',
+            maxWidth: '98%',
+            overflow: 'hidden',
           }}
         >
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
+          <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
             📊 Últimas 6 Semanas - Pagelas
           </Typography>
-          <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={data.pagelas.lastSixWeeks}>
+          <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+            <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
+            <AreaChart data={lastSixWeeksData}>
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.6} />
@@ -248,8 +277,8 @@ export const WeekMonthSummary: React.FC = () => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-              <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: 11 }} />
-              <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: 11 }} />
+              <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 60 : 30} />
+              <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: theme.palette.background.paper,
@@ -267,25 +296,30 @@ export const WeekMonthSummary: React.FC = () => {
               />
             </AreaChart>
           </ResponsiveContainer>
+          </Box>
         </Paper>
       </Grid>
 
       {/* Gráfico de Últimos Meses - Decisões */}
-      <Grid item xs={12}>
+      <Grid item xs={12} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
           sx={{
-            p: 3,
+            p: { xs: 2, sm: 3 },
             borderRadius: 3,
             background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.success.main}05 100%)`,
             border: `2px solid ${theme.palette.divider}`,
+            width: '98%',
+            maxWidth: '98%',
+            overflow: 'hidden',
           }}
         >
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
+          <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
             ✝️ Últimos 6 Meses - Decisões por Cristo
           </Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={data.acceptedChrists.lastSixMonths}>
+          <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+            <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+            <AreaChart data={lastSixMonthsData}>
               <defs>
                 <linearGradient id="colorDecisions" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={theme.palette.success.main} stopOpacity={0.6} />
@@ -293,8 +327,8 @@ export const WeekMonthSummary: React.FC = () => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-              <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: 11 }} />
-              <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: 11 }} />
+              <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 60 : 30} />
+              <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: theme.palette.background.paper,
@@ -312,53 +346,54 @@ export const WeekMonthSummary: React.FC = () => {
               />
             </AreaChart>
           </ResponsiveContainer>
+          </Box>
 
           {/* Stats Rápidas */}
-          <Grid container spacing={2} sx={{ mt: 2 }}>
-            <Grid item xs={12} sm={3}>
-              <Typography variant="caption" color="text.secondary">
+          <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mt: 2, width: '100%', maxWidth: '100%', margin: 0 }}>
+            <Grid item xs={6} sm={3} sx={{ width: '100%', maxWidth: '100%' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Média Mensal
               </Typography>
-              <Typography variant="h6" fontWeight="bold" color="success.main">
+              <Typography variant="h6" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, wordBreak: 'break-word' }}>
                 {(() => {
-                  if (!data.acceptedChrists.lastSixMonths || data.acceptedChrists.lastSixMonths.length === 0) return '0';
-                  const avg = data.acceptedChrists.lastSixMonths.reduce((sum, m) => sum + (m.value || 0), 0) / 6;
+                  if (!lastSixMonthsData || lastSixMonthsData.length === 0) return '0';
+                  const avg = lastSixMonthsData.reduce((sum, m) => sum + (m.value || 0), 0) / 6;
                   return isNaN(avg) ? '0' : avg.toFixed(0);
                 })()}
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={3}>
-              <Typography variant="caption" color="text.secondary">
+            <Grid item xs={6} sm={3} sx={{ width: '100%', maxWidth: '100%' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Melhor Mês
               </Typography>
-              <Typography variant="h6" fontWeight="bold" color="success.main">
+              <Typography variant="h6" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, wordBreak: 'break-word' }}>
                 {(() => {
-                  if (!data.acceptedChrists.lastSixMonths || data.acceptedChrists.lastSixMonths.length === 0) return '0';
-                  const max = Math.max(...data.acceptedChrists.lastSixMonths.map((m) => m.value || 0));
+                  if (!lastSixMonthsData || lastSixMonthsData.length === 0) return '0';
+                  const max = Math.max(...lastSixMonthsData.map((m) => m.value || 0));
                   return isNaN(max) || max === -Infinity ? '0' : max.toString();
                 })()}
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={3}>
-              <Typography variant="caption" color="text.secondary">
+            <Grid item xs={6} sm={3} sx={{ width: '100%', maxWidth: '100%' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Total (6 meses)
               </Typography>
-              <Typography variant="h6" fontWeight="bold" color="success.main">
+              <Typography variant="h6" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, wordBreak: 'break-word' }}>
                 {(() => {
-                  if (!data.acceptedChrists.lastSixMonths) return '0';
-                  const total = data.acceptedChrists.lastSixMonths.reduce((sum, m) => sum + (m.value || 0), 0);
+                  if (!lastSixMonthsData) return '0';
+                  const total = lastSixMonthsData.reduce((sum, m) => sum + (m.value || 0), 0);
                   return isNaN(total) ? '0' : total.toString();
                 })()}
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={3}>
-              <Typography variant="caption" color="text.secondary">
+            <Grid item xs={6} sm={3} sx={{ width: '100%', maxWidth: '100%' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Projeção Anual
               </Typography>
-              <Typography variant="h6" fontWeight="bold" color="success.main">
+              <Typography variant="h6" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, wordBreak: 'break-word' }}>
                 {(() => {
-                  if (!data.acceptedChrists.lastSixMonths || data.acceptedChrists.lastSixMonths.length === 0) return '0';
-                  const total = data.acceptedChrists.lastSixMonths.reduce((sum, m) => sum + (m.value || 0), 0);
+                  if (!lastSixMonthsData || lastSixMonthsData.length === 0) return '0';
+                  const total = lastSixMonthsData.reduce((sum, m) => sum + (m.value || 0), 0);
                   const projection = (total / 6) * 12;
                   return isNaN(projection) ? '0' : projection.toFixed(0);
                 })()}

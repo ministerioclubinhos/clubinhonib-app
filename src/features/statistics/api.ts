@@ -168,12 +168,21 @@ export interface OverviewData {
     thisWeek: {
       total: number;
       presenceRate: number;
+      meditationRate?: number;
+      verseRecitationRate?: number;
     };
     thisMonth: {
       total: number;
       presenceRate: number;
+      meditationRate?: number;
+      verseRecitationRate?: number;
     };
-    lastSixWeeks: TimeSeriesDataPoint[];
+    lastSixWeeks: Array<{
+      week: number;
+      year: number;
+      total: number;
+      presenceRate: number;
+    }>;
   };
   acceptedChrists: {
     thisWeek: number;
@@ -183,7 +192,10 @@ export interface OverviewData {
       ACCEPTED: number;
       RECONCILED: number;
     };
-    lastSixMonths: TimeSeriesDataPoint[];
+    lastSixMonths: Array<{
+      month: string;
+      total: number;
+    }>;
   };
 }
 

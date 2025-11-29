@@ -19,8 +19,9 @@ import {
   Stack,
   Divider,
   Grid,
+  Button,
 } from '@mui/material';
-import { Star, EmojiEvents } from '@mui/icons-material';
+import { Star, EmojiEvents, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useInsights } from '../hooks';
 import { StatisticsFilters } from '../api';
 
@@ -32,10 +33,11 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data, isLoading, error } = useInsights(filters);
+  const [showAllMobile, setShowAllMobile] = React.useState(false);
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -45,11 +47,17 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
 
   if (error || !data) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        <Typography color="error">Erro ao carregar crianças mais engajadas</Typography>
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+        <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Erro ao carregar crianças mais engajadas</Typography>
       </Paper>
     );
   }
+
+  // No mobile, mostrar apenas 3 inicialmente
+  const initialMobileItems = 3;
+  const displayedChildren = isMobile && !showAllMobile 
+    ? (data.topEngagedChildren || []).slice(0, initialMobileItems)
+    : (data.topEngagedChildren || []);
 
   const getMedalColor = (position: number) => {
     switch (position) {
@@ -80,7 +88,13 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
   };
 
   return (
-    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+    <Paper elevation={3} sx={{ 
+      p: { xs: 2, sm: 3 }, 
+      borderRadius: 2,
+      width: '98%',
+      maxWidth: '98%',
+      overflow: 'hidden',
+    }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 2, sm: 3 } }}>
         <Star sx={{ color: theme.palette.warning.main, fontSize: { xs: 24, sm: 28 } }} />
         <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
@@ -88,7 +102,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
         </Typography>
       </Box>
 
-      {data.topEngagedChildren.length === 0 ? (
+      {!data.topEngagedChildren || data.topEngagedChildren.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             Nenhum dado disponível
@@ -97,7 +111,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
       ) : isMobile ? (
         /* Versão Mobile: Cards */
         <Stack spacing={2}>
-          {data.topEngagedChildren.map((child, index) => (
+          {displayedChildren.map((child, index) => (
             <Card
               key={child.childId}
               elevation={2}
@@ -215,6 +229,27 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
               </CardContent>
             </Card>
           ))}
+          
+          {/* Botão Ver Mais / Ver Menos no Mobile */}
+          {isMobile && data.topEngagedChildren.length > initialMobileItems && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
+              <Button
+                variant="outlined"
+                onClick={() => setShowAllMobile(!showAllMobile)}
+                endIcon={showAllMobile ? <ExpandLess /> : <ExpandMore />}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  px: 3,
+                }}
+              >
+                {showAllMobile 
+                  ? `Ver menos (mostrando ${data.topEngagedChildren.length})` 
+                  : `Ver mais (${data.topEngagedChildren.length - initialMobileItems} restantes)`
+                }
+              </Button>
+            </Box>
+          )}
         </Stack>
       ) : (
         /* Versão Desktop: Tabela */

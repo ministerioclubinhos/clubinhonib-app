@@ -48,7 +48,19 @@ export const WeeklyAttendanceGrid: React.FC = () => {
     currentWeekInfo?.academicWeek || null
   );
   const [page, setPage] = React.useState(1);
-  const [limit, setLimit] = React.useState(50);
+  // No mobile, usar 5 itens por padrão; no desktop, 20
+  const mobileLimit = 5;
+  const desktopLimit = 20;
+  const [limit, setLimit] = React.useState(isMobile ? mobileLimit : desktopLimit);
+  
+  // Atualizar limit quando isMobile mudar
+  React.useEffect(() => {
+    const newLimit = isMobile ? mobileLimit : desktopLimit;
+    if (limit !== newLimit) {
+      setLimit(newLimit);
+      setPage(1); // Resetar página ao mudar o limite
+    }
+  }, [isMobile, limit]);
 
   const { data, isLoading } = useWeeklyAttendance({ 
     year: academicYear || new Date().getFullYear(), 
@@ -114,6 +126,13 @@ export const WeeklyAttendanceGrid: React.FC = () => {
     FRIDAY: 'Sexta',
     SATURDAY: 'Sábado',
     SUNDAY: 'Domingo',
+    monday: 'Segunda',
+    tuesday: 'Terça',
+    wednesday: 'Quarta',
+    thursday: 'Quinta',
+    friday: 'Sexta',
+    saturday: 'Sábado',
+    sunday: 'Domingo',
   };
 
   const handlePrevWeek = () => {
@@ -334,48 +353,48 @@ export const WeeklyAttendanceGrid: React.FC = () => {
 
       {/* Versão Mobile: Cards */}
       {isMobile ? (
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
           {data.clubs.map((club) => {
             const statusConfig = getStatusConfig(club.status);
             return (
               <Card
                 key={club.clubId}
-                elevation={2}
+                elevation={1}
                 sx={{
-                  borderRadius: 2,
-                  border: `2px solid ${statusConfig.color}40`,
+                  borderRadius: 1.5,
+                  border: `1.5px solid ${statusConfig.color}40`,
                   bgcolor: statusConfig.bgcolor,
                 }}
               >
-                <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
-                  <Stack spacing={1.5}>
+                <CardContent sx={{ p: { xs: 1, sm: 2 }, '&:last-child': { pb: { xs: 1, sm: 2 } } }}>
+                  <Stack spacing={1}>
                     {/* Header */}
                     <Box>
-                      <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}>
+                      <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.85rem', sm: '1.125rem' } }}>
                         Clubinho #{club.clubNumber}
                       </Typography>
                     </Box>
 
-                    <Divider />
+                    <Divider sx={{ my: 0.5 }} />
 
                     {/* Informações */}
-                    <Grid container spacing={1.5}>
+                    <Grid container spacing={1}>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                             Dia da Semana
                           </Typography>
-                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
                             {weekdayNames[club.weekday] || club.weekday}
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                             Data Esperada
                           </Typography>
-                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
                             {dayjs(club.expectedDate).format('DD/MM/YYYY')}
                           </Typography>
                         </Box>
@@ -383,16 +402,25 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                     </Grid>
 
                     {/* Pagelas e Status */}
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                           Pagelas
                         </Typography>
-                        <Box sx={{ mt: 0.5 }}>
+                        <Box sx={{ mt: 0.25 }}>
                           {club.hasPagela ? (
-                            <Chip label={club.totalPagelas || 0} size="small" color="success" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                            <Chip 
+                              label={club.totalPagelas || 0} 
+                              size="small" 
+                              color="success" 
+                              sx={{ 
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                                height: { xs: 20, sm: 24 },
+                                '& .MuiChip-label': { px: { xs: 0.75, sm: 1 } }
+                              }} 
+                            />
                           ) : (
-                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
                               -
                             </Typography>
                           )}
@@ -408,7 +436,10 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                             color: statusConfig.color,
                             border: `1px solid ${statusConfig.color}`,
                             fontWeight: 600,
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                            fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                            height: { xs: 20, sm: 24 },
+                            '& .MuiChip-icon': { fontSize: { xs: 14, sm: 16 } },
+                            '& .MuiChip-label': { px: { xs: 0.75, sm: 1 } }
                           }}
                         />
                       </Box>
@@ -499,7 +530,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
               setLimit(parseInt(event.target.value, 10));
               setPage(1);
             }}
-            rowsPerPageOptions={[25, 50, 100]}
+            rowsPerPageOptions={isMobile ? [5, 10, 20] : [10, 20, 50, 100]}
             labelRowsPerPage="Clubinhos por página:"
             labelDisplayedRows={({ from, to, count }) => 
               `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`

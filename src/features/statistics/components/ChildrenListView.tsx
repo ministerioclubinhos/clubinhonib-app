@@ -44,10 +44,18 @@ export const ChildrenListView: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [filters, setFilters] = React.useState<ChildrenFilters>({
     page: 1,
-    limit: 20,
+    limit: isMobile ? 5 : 20,
     sortBy: 'engagementScore',
     sortOrder: 'DESC',
   });
+  
+  // Atualizar limit quando isMobile mudar
+  React.useEffect(() => {
+    const newLimit = isMobile ? 5 : 20;
+    if (filters.limit !== newLimit) {
+      setFilters({ ...filters, limit: newLimit, page: 1 });
+    }
+  }, [isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
   const [filtersExpanded, setFiltersExpanded] = React.useState(false);
 
   const { data, isLoading } = useChildren(filters);
@@ -100,48 +108,83 @@ export const ChildrenListView: React.FC = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
       {/* Cards de Resumo */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Total Filtrado</Typography>
-            <Typography variant="h5" fontWeight="bold" color="primary">
+      <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0 }}>
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Total Filtrado</Typography>
+            <Typography variant="h5" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.filteredChildren}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, wordBreak: 'break-word' }}>
               de {data.summary.totalChildren}
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Idade Média</Typography>
-            <Typography variant="h5" fontWeight="bold" color="info.main">
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Idade Média</Typography>
+            <Typography variant="h5" fontWeight="bold" color="info.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.avgAge.toFixed(1)} anos
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Engajamento Médio</Typography>
-            <Typography variant="h5" fontWeight="bold" color="success.main">
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Engajamento Médio</Typography>
+            <Typography variant="h5" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.avgEngagementScore.toFixed(1)}%
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Presença Média</Typography>
-            <Typography variant="h5" fontWeight="bold" color="secondary.main">
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Presença Média</Typography>
+            <Typography variant="h5" fontWeight="bold" color="secondary.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.avgPresenceRate.toFixed(1)}%
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
-            <Typography variant="caption" color="text.secondary">Com Decisão</Typography>
-            <Typography variant="h5" fontWeight="bold" color="warning.main">
+        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 1.5, sm: 2 }, 
+            borderRadius: 2, 
+            border: `2px solid ${theme.palette.divider}`,
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Com Decisão</Typography>
+            <Typography variant="h5" fontWeight="bold" color="warning.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
               {data.summary.childrenWithDecisions}
             </Typography>
           </Paper>
@@ -227,7 +270,7 @@ export const ChildrenListView: React.FC = () => {
 
       {/* Versão Mobile: Cards */}
       {isMobile ? (
-        <Stack spacing={2}>
+        <Stack spacing={1.5} sx={{ width: '100%', maxWidth: '100%' }}>
           {data.children.length === 0 ? (
             <Paper elevation={3} sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
               <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
@@ -236,79 +279,100 @@ export const ChildrenListView: React.FC = () => {
             </Paper>
           ) : (
             data.children.map((child) => (
-              <Card key={child.childId} elevation={3} sx={{ borderRadius: 2 }}>
-                <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
-                  <Stack spacing={1.5}>
+              <Card key={child.childId} elevation={1} sx={{ 
+                borderRadius: 1.5,
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden',
+                borderLeft: `4px solid ${child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main}`,
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '3px',
+                  background: `linear-gradient(90deg, ${child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main} 0%, ${child.gender === 'F' ? theme.palette.secondary.light : theme.palette.info.light} 100%)`,
+                },
+              }}>
+                <CardContent sx={{ 
+                  p: { xs: 1, sm: 2 }, 
+                  '&:last-child': { pb: { xs: 1, sm: 2 } },
+                  width: '100%',
+                  maxWidth: '100%',
+                }}>
+                  <Stack spacing={1}>
                     {/* Header */}
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
-                        <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                        <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>
                           #{child.rank}
                         </Typography>
                         <Avatar
                           sx={{
-                            width: { xs: 32, sm: 36 },
-                            height: { xs: 32, sm: 36 },
+                            width: { xs: 28, sm: 36 },
+                            height: { xs: 28, sm: 36 },
                             bgcolor: child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main,
-                            fontSize: { xs: 12, sm: 14 },
+                            fontSize: { xs: 11, sm: 14 },
                           }}
                         >
                           {getInitials(child.name)}
                         </Avatar>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' }, wordBreak: 'break-word' }}>
                             {child.name}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, wordBreak: 'break-word' }}>
                             {child.gender === 'M' ? 'Masculino' : 'Feminino'} • {child.age} anos
                           </Typography>
                         </Box>
                       </Box>
                     </Box>
 
-                    <Divider />
+                    <Divider sx={{ my: 0.5 }} />
 
                     {/* Informações */}
-                    <Grid container spacing={1.5}>
+                    <Grid container spacing={1}>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                             Clubinho
                           </Typography>
-                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' }, wordBreak: 'break-word' }}>
                             {child.club ? `#${child.club.number}` : '-'}
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                             Cidade
                           </Typography>
-                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' }, wordBreak: 'break-word' }}>
                             {child.address ? `${child.address.city}, ${child.address.state}` : '-'}
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                             Tempo
                           </Typography>
                           <Chip
                             label={`${child.monthsParticipating}m`}
                             size="small"
                             variant="outlined"
-                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                            sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }}
                           />
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                             Pagelas
                           </Typography>
-                          <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
                             {child.stats.totalPagelas}
                           </Typography>
                         </Box>
@@ -318,10 +382,10 @@ export const ChildrenListView: React.FC = () => {
                     {/* Presença */}
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                           Presença
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
                           {child.stats.presenceRate.toFixed(1)}%
                         </Typography>
                       </Box>
@@ -329,36 +393,40 @@ export const ChildrenListView: React.FC = () => {
                         variant="determinate"
                         value={child.stats.presenceRate}
                         sx={{
-                          height: 6,
-                          borderRadius: 3,
+                          height: { xs: 4, sm: 6 },
+                          borderRadius: 2,
                           bgcolor: `${theme.palette.success.main}15`,
                           '& .MuiLinearProgress-bar': {
                             bgcolor: theme.palette.success.main,
-                            borderRadius: 3,
+                            borderRadius: 2,
                           },
                         }}
                       />
                     </Box>
 
                     {/* Engajamento e Status */}
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
                       <Chip
-                        icon={<Star />}
-                        label={`Engajamento: ${child.stats.engagementScore.toFixed(0)}`}
+                        icon={<Star sx={{ fontSize: { xs: 12, sm: 16 } }} />}
+                        label={`${child.stats.engagementScore.toFixed(0)}`}
                         size="small"
                         color={getEngagementColor(child.stats.engagementScore)}
-                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        sx={{ 
+                          fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                          height: { xs: 20, sm: 24 },
+                          '& .MuiChip-label': { px: { xs: 0.5, sm: 1 } }
+                        }}
                       />
                       {child.isActive && (
-                        <Chip label="Ativo" size="small" color="success" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                        <Chip label="Ativo" size="small" color="success" variant="outlined" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }} />
                       )}
                       {child.decisions.hasDecision && (
                         <Chip
-                          icon={<CheckCircle />}
+                          icon={<CheckCircle sx={{ fontSize: { xs: 12, sm: 16 } }} />}
                           label={child.decisions.decisionType}
                           size="small"
                           color="success"
-                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }}
                         />
                       )}
                     </Box>
@@ -495,7 +563,7 @@ export const ChildrenListView: React.FC = () => {
             onPageChange={handlePageChange}
             rowsPerPage={data.pagination.limit}
             onRowsPerPageChange={handleLimitChange}
-            rowsPerPageOptions={[10, 20, 50, 100]}
+            rowsPerPageOptions={isMobile ? [5, 10, 20] : [10, 20, 50, 100]}
             labelRowsPerPage="Itens por página:"
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
             sx={{

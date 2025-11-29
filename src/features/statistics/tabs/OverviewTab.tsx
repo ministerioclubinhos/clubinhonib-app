@@ -9,11 +9,27 @@ interface OverviewTabProps {
 
 const OverviewTab: React.FC<OverviewTabProps> = ({ filters }) => {
 	return (
-		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-			<WeekMonthSummary />
-			<AdvancedPagelasChart filters={filters} />
-			<ClubPerformanceChart filters={filters} />
-			<TopEngagedChildren filters={filters} />
+		<Box sx={{ 
+			display: 'flex', 
+			flexDirection: 'column', 
+			alignItems: 'center',
+			gap: { xs: 2, sm: 3 },
+			width: '100%',
+			maxWidth: '100%',
+			overflowX: 'hidden',
+		}}>
+			<Box sx={{ width: '98%', maxWidth: '98%' }}>
+				<WeekMonthSummary />
+			</Box>
+			<Box sx={{ width: '98%', maxWidth: '98%' }}>
+				<AdvancedPagelasChart filters={filters} />
+			</Box>
+			<Box sx={{ width: '98%', maxWidth: '98%' }}>
+				<ClubPerformanceChart filters={filters} />
+			</Box>
+			<Box sx={{ width: '98%', maxWidth: '98%' }}>
+				<TopEngagedChildren filters={filters} />
+			</Box>
 		</Box>
 	);
 };
