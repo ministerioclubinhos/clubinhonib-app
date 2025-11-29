@@ -4,6 +4,7 @@ import type { PageDto, Pagela, CreatePagelaPayload, UpdatePagelaPayload } from "
 export async function apiListPagelasPaginated(
   params: {
     childId: string;
+    searchString?: string;
     year?: number;
     week?: number;
     present?: "true" | "false";

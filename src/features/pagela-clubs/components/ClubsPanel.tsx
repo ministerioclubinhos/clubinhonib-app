@@ -45,7 +45,7 @@ export function ClubsPanel({
     const dq = useDebounced(search);
 
     const [page, setPage] = useState(1);
-    const [limit] = useState(12);
+    const [limit] = useState(6);
     const [rows, setRows] = useState<ClubResponseDto[]>([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -54,8 +54,7 @@ export function ClubsPanel({
     const sort = useMemo<ClubSort>(() => ({ id: "updatedAt", desc: true }), []);
     const filters: ClubFilters = useMemo(
         () => ({
-            addressSearchString: dq || undefined,
-            clubSearchString: dq || undefined,
+            searchString: dq || undefined,
         }),
         [dq]
     );
@@ -128,7 +127,7 @@ export function ClubsPanel({
                 <Stack spacing={1}>
                     {loading &&
                         Array.from({ length: 6 }).map((_, i) => (
-                            <Skeleton key={i} variant="rounded" height={72} />
+                            <Skeleton key={i} variant="rounded" height={touchMin + 88} />
                         ))}
 
                     {!loading && error && <Alert severity="error">{error}</Alert>}
@@ -144,7 +143,7 @@ export function ClubsPanel({
                                 .map((t) => t.user?.name || t.user?.email || "Prof.")
                                 .filter(Boolean);
 
-                            const shown = teacherNames.slice(0, isMobile ? 2 : 3);
+                            const shown = teacherNames.slice(0, 2);
                             const extra = Math.max(0, teacherNames.length - shown.length);
                             const selected = selectedId === c.id;
 
@@ -157,6 +156,8 @@ export function ClubsPanel({
                                         borderColor: selected ? "primary.main" : "divider",
                                         backgroundColor: selected ? alpha(theme.palette.primary.main, 0.06) : "background.paper",
                                         transition: "background-color .2s, border-color .2s",
+                                        minHeight: isMobile ? touchMin : touchMin + 16,
+                                        height: isMobile ? "auto" : touchMin + 88,
                                         "&:hover": {
                                             backgroundColor: alpha(theme.palette.primary.main, 0.04),
                                         },
@@ -164,21 +165,58 @@ export function ClubsPanel({
                                 >
                                     <CardActionArea onClick={() => onSelect(c)}>
                                         {isMobile ? (
-                                            <Stack spacing={0.75} sx={{ p: 1.25, minHeight: touchMin }}>
-                                                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                                                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                                                        Clubinho #{c.number}
+                                            <Stack spacing={0.75} sx={{ p: 1.25 }}>
+                                                {/* Primeira linha: Avatar, dia da semana, quantidade de professores */}
+                                                <Stack direction="row" alignItems="center" spacing={1.5}>
+                                                    <Avatar
+                                                        sx={{
+                                                            bgcolor: alpha(theme.palette.primary.main, 0.12),
+                                                            color: theme.palette.primary.main,
+                                                            width: 40,
+                                                            height: 40,
+                                                            fontSize: 13,
+                                                            fontWeight: 700,
+                                                            flexShrink: 0,
+                                                        }}
+                                                    >
+                                                        #{c.number}
+                                                    </Avatar>
+                                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.1, flex: 1 }}>
+                                                        {WEEKDAY_PT[c.weekday as Weekday]}
                                                     </Typography>
                                                     <Chip
                                                         size="small"
-                                                        label={diaDe(c.weekday)}
-                                                        color="info"
+                                                        label={`Prof.: ${c.teachers?.length ?? 0}`}
+                                                        color="secondary"
                                                         variant="outlined"
-                                                        sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
+                                                        sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 }, flexShrink: 0 }}
                                                     />
                                                 </Stack>
 
-                                                <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap" }}>
+                                                {/* Segunda linha: Nome do coordenador */}
+                                                {c.coordinator?.user?.name && (
+                                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                                                        <Chip
+                                                            size="small"
+                                                            color="success"
+                                                            label="Coord."
+                                                            variant="filled"
+                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12, fontWeight: 700 } }}
+                                                        />
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.success.main }}>
+                                                            {c.coordinator.user.name}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+
+                                                {/* Terceira linha: 2 primeiros professores e "+n" */}
+                                                <Box
+                                                    sx={{
+                                                        display: "flex",
+                                                        flexWrap: "wrap",
+                                                        gap: 0.75,
+                                                    }}
+                                                >
                                                     {shown.length === 0 ? (
                                                         <Chip
                                                             size="small"
@@ -189,7 +227,7 @@ export function ClubsPanel({
                                                         />
                                                     ) : (
                                                         <>
-                                                            {shown.map((name, idx) => (
+                                                            {shown.slice(0, 2).map((name, idx) => (
                                                                 <Chip
                                                                     key={idx}
                                                                     size="small"
@@ -209,21 +247,23 @@ export function ClubsPanel({
                                                             )}
                                                         </>
                                                     )}
-                                                </Stack>
+                                                </Box>
 
+                                                {/* Quarta linha: Endereço (cidade e bairro) */}
                                                 <Typography
                                                     variant="body2"
                                                     color="text.secondary"
                                                     noWrap
-                                                    title={`${c.address?.street ?? ""}${c.address?.district ? `, ${c.address?.district}` : ""}`}
+                                                    sx={{ opacity: 0.9 }}
+                                                    title={`${c.address?.district ?? ""} – ${c.address?.city ?? ""}/${c.address?.state ?? ""}`}
                                                 >
-                                                    {(c.address?.street ?? "Rua não informada")},{" "}
-                                                    {c.address?.district ?? "Bairro não informado"}
+                                                    {c.address?.district ?? "Bairro não informado"} – {c.address?.city ?? "Cidade não informada"}/{c.address?.state ?? "Estado não informado"}
                                                 </Typography>
                                             </Stack>
                                         ) : (
-                                            <>
-                                                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ p: 1.25, minHeight: touchMin }}>
+                                            <Stack spacing={0.75} sx={{ p: 1.25 }}>
+                                                {/* Primeira linha: Avatar, dia da semana, quantidade de professores */}
+                                                <Stack direction="row" alignItems="center" spacing={1.5}>
                                                     <Avatar
                                                         sx={{
                                                             bgcolor: alpha(theme.palette.primary.main, 0.12),
@@ -232,86 +272,90 @@ export function ClubsPanel({
                                                             height: 40,
                                                             fontSize: 13,
                                                             fontWeight: 700,
+                                                            flexShrink: 0,
                                                         }}
                                                     >
                                                         #{c.number}
                                                     </Avatar>
-
-                                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.1 }} noWrap>
-                                                            {WEEKDAY_PT[c.weekday as Weekday]} · #{c.number}
-                                                        </Typography>
-
-                                                        <Stack direction="row" spacing={0.75} sx={{ mt: 0.5, flexWrap: "wrap" }}>
-                                                            {shown.length === 0 ? (
-                                                                <Chip
-                                                                    size="small"
-                                                                    variant="outlined"
-                                                                    color="warning"
-                                                                    label="Sem professores"
-                                                                    sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                                                                />
-                                                            ) : (
-                                                                <>
-                                                                    {shown.map((name, idx) => (
-                                                                        <Chip
-                                                                            key={idx}
-                                                                            size="small"
-                                                                            color="secondary"
-                                                                            label={name}
-                                                                            variant="outlined"
-                                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                                                                        />
-                                                                    ))}
-                                                                    {extra > 0 && (
-                                                                        <Chip
-                                                                            size="small"
-                                                                            color="primary"
-                                                                            label={`+${extra}`}
-                                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                                                                        />
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        </Stack>
-
-                                                        <Typography
-                                                            variant="body2"
-                                                            color="text.secondary"
-                                                            noWrap
-                                                            sx={{ opacity: 0.9, mt: 0.5 }}
-                                                            title={`${c.address?.street}, ${c.address?.district} – ${c.address?.city}/${c.address?.state}`}
-                                                        >
-                                                            {c.address?.street}, {c.address?.district} – {c.address?.city}/{c.address?.state}
-                                                        </Typography>
-                                                    </Box>
-
-                                                    <Stack direction="row" spacing={0.75} sx={{ alignItems: "center", ml: 0.5 }}>
-                                                        <Chip
-                                                            size="small"
-                                                            label={`Prof.: ${c.teachers?.length ?? 0}`}
-                                                            color="secondary"
-                                                            variant="outlined"
-                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                                                        />
-                                                        <Chip
-                                                            size="small"
-                                                            color={c.coordinator ? "success" : "default"}
-                                                            label={c.coordinator ? "Coord." : "Sem Coord."}
-                                                            variant={c.coordinator ? "filled" : "outlined"}
-                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                                                        />
-                                                    </Stack>
+                                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.1, flex: 1 }}>
+                                                        {WEEKDAY_PT[c.weekday as Weekday]}
+                                                    </Typography>
+                                                    <Chip
+                                                        size="small"
+                                                        label={`Prof.: ${c.teachers?.length ?? 0}`}
+                                                        color="secondary"
+                                                        variant="outlined"
+                                                        sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 }, flexShrink: 0 }}
+                                                    />
                                                 </Stack>
 
-                                                <Divider sx={{ mx: 1.25 }} />
-                                                <Typography
-                                                    variant="caption"
-                                                    sx={{ p: 1, pt: 0.75, display: "block", color: "text.secondary" }}
+                                                {/* Segunda linha: Nome do coordenador */}
+                                                {c.coordinator?.user?.name && (
+                                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                                                        <Chip
+                                                            size="small"
+                                                            color="success"
+                                                            label="Coord."
+                                                            variant="filled"
+                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12, fontWeight: 700 } }}
+                                                        />
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.success.main }}>
+                                                            {c.coordinator.user.name}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+
+                                                {/* Terceira linha: 2 primeiros professores e "+n" */}
+                                                <Box
+                                                    sx={{
+                                                        display: "flex",
+                                                        flexWrap: "wrap",
+                                                        gap: 0.75,
+                                                    }}
                                                 >
-                                                    Atualizado em {new Date(c.updatedAt).toLocaleDateString("pt-BR")}
+                                                    {shown.length === 0 ? (
+                                                        <Chip
+                                                            size="small"
+                                                            variant="outlined"
+                                                            color="warning"
+                                                            label="Sem professores"
+                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
+                                                        />
+                                                    ) : (
+                                                        <>
+                                                            {shown.slice(0, 2).map((name, idx) => (
+                                                                <Chip
+                                                                    key={idx}
+                                                                    size="small"
+                                                                    color="secondary"
+                                                                    label={name}
+                                                                    variant="outlined"
+                                                                    sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
+                                                                />
+                                                            ))}
+                                                            {extra > 0 && (
+                                                                <Chip
+                                                                    size="small"
+                                                                    color="primary"
+                                                                    label={`+${extra}`}
+                                                                    sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
+                                                                />
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </Box>
+
+                                                {/* Quarta linha: Endereço (cidade e bairro) */}
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                    noWrap
+                                                    sx={{ opacity: 0.9 }}
+                                                    title={`${c.address?.district} – ${c.address?.city}/${c.address?.state}`}
+                                                >
+                                                    {c.address?.district} – {c.address?.city}/{c.address?.state}
                                                 </Typography>
-                                            </>
+                                            </Stack>
                                         )}
                                     </CardActionArea>
                                 </Card>
@@ -320,17 +364,19 @@ export function ClubsPanel({
                 </Stack>
             </Box>
 
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flexWrap: "wrap", gap: 1 }}>
                 <Tooltip title="Recarregar">
-                    <IconButton onClick={() => fetchClubs()}>
+                    <IconButton onClick={() => fetchClubs()} size={isMobile ? "small" : "medium"}>
                         <RefreshIcon />
                     </IconButton>
                 </Tooltip>
                 <Pagination
-                    size="small"
+                    size={isMobile ? "small" : "small"}
                     count={Math.max(1, Math.ceil(total / limit))}
                     page={page}
                     onChange={(_, p) => setPage(p)}
+                    siblingCount={isMobile ? 0 : 1}
+                    boundaryCount={isMobile ? 1 : 1}
                     renderItem={(item) => (
                         <PaginationItem
                             {...item}
