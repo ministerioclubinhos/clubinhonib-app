@@ -95,9 +95,7 @@ export type EditClubForm = Partial<CreateClubForm> & { id: string };
 export type UserLite = { id: string; name?: string; email?: string };
 
 export type ClubFilters = {
-  addressSearchString?: string;
-  userSearchString?: string;
-  clubSearchString?: string;
+  searchString?: string;
   isActive?: boolean;
 };
 
