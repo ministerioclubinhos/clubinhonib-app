@@ -41,6 +41,8 @@ import {
 } from '@mui/icons-material';
 import { useClubs } from '../hooks';
 import { ClubsFilters } from '../api';
+import { PeriodFilter } from './PeriodFilter';
+import { getPeriodDates } from '../utils/periodHelpers';
 
 export const ClubsListView: React.FC = () => {
   const theme = useTheme();
@@ -309,6 +311,27 @@ export const ClubsListView: React.FC = () => {
 
         <Collapse in={filtersExpanded}>
           <Grid container spacing={2}>
+            {/* ⭐ v2.11.0: Filtro de Período */}
+            <Grid item xs={12}>
+              <PeriodFilter
+                period={filters.period}
+                startDate={filters.startDate}
+                endDate={filters.endDate}
+                onPeriodChange={(period) => {
+                  const dates = getPeriodDates(period);
+                  setFilters({
+                    ...filters,
+                    period,
+                    startDate: dates?.startDate,
+                    endDate: dates?.endDate,
+                    page: 1,
+                  });
+                }}
+                onStartDateChange={(startDate) => handleFilterChange('startDate', startDate)}
+                onEndDateChange={(endDate) => handleFilterChange('endDate', endDate)}
+              />
+            </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
@@ -318,6 +341,7 @@ export const ClubsListView: React.FC = () => {
                 size="small"
               />
             </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
@@ -337,6 +361,96 @@ export const ClubsListView: React.FC = () => {
                 <MenuItem value="SUNDAY">Domingo</MenuItem>
               </TextField>
             </Grid>
+
+            {/* ⭐ v2.11.0: Filtros avançados para clubes */}
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Mínimo de Crianças"
+                value={filters.minChildren || ''}
+                onChange={(e) => handleFilterChange('minChildren', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Máximo de Crianças"
+                value={filters.maxChildren || ''}
+                onChange={(e) => handleFilterChange('maxChildren', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Performance Mínima"
+                value={filters.minPerformanceScore || ''}
+                onChange={(e) => handleFilterChange('minPerformanceScore', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Performance Máxima"
+                value={filters.maxPerformanceScore || ''}
+                onChange={(e) => handleFilterChange('maxPerformanceScore', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Presença Mínima (%)"
+                value={filters.minPresenceRate || ''}
+                onChange={(e) => handleFilterChange('minPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Presença Máxima (%)"
+                value={filters.maxPresenceRate || ''}
+                onChange={(e) => handleFilterChange('maxPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Mínimo de Decisões"
+                value={filters.minDecisions || ''}
+                onChange={(e) => handleFilterChange('minDecisions', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Mínimo de Professores"
+                value={filters.minTeachers || ''}
+                onChange={(e) => handleFilterChange('minTeachers', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
@@ -351,6 +465,7 @@ export const ClubsListView: React.FC = () => {
                 <MenuItem value="totalChildren">Total Crianças</MenuItem>
               </TextField>
             </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth

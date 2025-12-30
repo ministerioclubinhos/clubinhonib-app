@@ -38,6 +38,8 @@ import {
 } from '@mui/icons-material';
 import { useChildren } from '../hooks';
 import { ChildrenFilters } from '../api';
+import { PeriodFilter } from './PeriodFilter';
+import { getPeriodDates } from '../utils/periodHelpers';
 
 export const ChildrenListView: React.FC = () => {
   const theme = useTheme();
@@ -211,6 +213,39 @@ export const ChildrenListView: React.FC = () => {
 
         <Collapse in={filtersExpanded}>
           <Grid container spacing={2}>
+            {/* ⭐ v2.11.0: Filtro de Período */}
+            <Grid item xs={12}>
+              <PeriodFilter
+                period={filters.period}
+                startDate={filters.startDate}
+                endDate={filters.endDate}
+                onPeriodChange={(period) => {
+                  const dates = getPeriodDates(period);
+                  setFilters({
+                    ...filters,
+                    period,
+                    startDate: dates?.startDate,
+                    endDate: dates?.endDate,
+                    page: 1,
+                  });
+                }}
+                onStartDateChange={(startDate) => handleFilterChange('startDate', startDate)}
+                onEndDateChange={(endDate) => handleFilterChange('endDate', endDate)}
+              />
+            </Grid>
+
+            {/* ⭐ v2.11.0: Busca por nome */}
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Buscar por nome"
+                placeholder="Digite o nome da criança..."
+                value={filters.search || ''}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                size="small"
+              />
+            </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
@@ -225,6 +260,7 @@ export const ChildrenListView: React.FC = () => {
                 <MenuItem value="F">Feminino</MenuItem>
               </TextField>
             </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
@@ -235,6 +271,92 @@ export const ChildrenListView: React.FC = () => {
                 size="small"
               />
             </Grid>
+
+            <Grid item xs={12} sm={6} md={2}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Idade Máxima"
+                value={filters.maxAge || ''}
+                onChange={(e) => handleFilterChange('maxAge', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            {/* ⭐ v2.11.0: Filtros avançados */}
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                select
+                label="Categoria"
+                value={
+                  filters.isNewcomer ? 'newcomer' :
+                  filters.isVeteran ? 'veteran' :
+                  filters.hasLowEngagement ? 'low_engagement' :
+                  ''
+                }
+                onChange={(e) => {
+                  setFilters({
+                    ...filters,
+                    isNewcomer: e.target.value === 'newcomer' ? true : undefined,
+                    isVeteran: e.target.value === 'veteran' ? true : undefined,
+                    hasLowEngagement: e.target.value === 'low_engagement' ? true : undefined,
+                    page: 1,
+                  });
+                }}
+                size="small"
+              >
+                <MenuItem value="">Todos</MenuItem>
+                <MenuItem value="newcomer">🆕 Newcomers (últimos 3 meses)</MenuItem>
+                <MenuItem value="veteran">🏆 Veteranos (1+ ano)</MenuItem>
+                <MenuItem value="low_engagement">⚠️ Baixo Engajamento (&lt;50%)</MenuItem>
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Engajamento Mínimo"
+                value={filters.minEngagementScore || ''}
+                onChange={(e) => handleFilterChange('minEngagementScore', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Engajamento Máximo"
+                value={filters.maxEngagementScore || ''}
+                onChange={(e) => handleFilterChange('maxEngagementScore', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Presença Mínima (%)"
+                value={filters.minPresenceRate || ''}
+                onChange={(e) => handleFilterChange('minPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Presença Máxima (%)"
+                value={filters.maxPresenceRate || ''}
+                onChange={(e) => handleFilterChange('maxPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
@@ -251,7 +373,8 @@ export const ChildrenListView: React.FC = () => {
                 <MenuItem value="presenceRate">Taxa Presença</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+
+            <Grid item xs={12} sm={6} md={2}>
               <TextField
                 fullWidth
                 select

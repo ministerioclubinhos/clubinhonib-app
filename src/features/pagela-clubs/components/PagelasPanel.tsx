@@ -228,50 +228,50 @@ export function PagelasPanel({ child }: { child: ChildResponseDto | null }) {
                   </Stack>
                 ) : (
                   <>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      spacing={1.5}
-                    >
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    spacing={1.5}
+                  >
                       <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
                         <Avatar sx={{ width: 40, height: 40, bgcolor: colors.avatar, color: colors.avatarColor, flexShrink: 0 }}>
-                          <BookmarksIcon />
-                        </Avatar>
-                        <Box sx={{ minWidth: 0 }}>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.1 }} noWrap>
-                            Semana {p.week} · {p.year}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" noWrap>
-                            Ref.: {fmtDate(p.referenceDate)}
-                          </Typography>
-                        </Box>
-                      </Stack>
-
-                      <Stack direction="row" spacing={0.75} sx={{ flexShrink: 0 }}>
-                        <Chip
-                          size="small"
-                          color={p.present ? "success" : "default"}
-                          label={p.present ? "Presente" : "Ausente"}
-                          variant={p.present ? "filled" : "outlined"}
-                          sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                        />
-                        <Chip
-                          size="small"
-                          color={p.didMeditation ? "info" : "default"}
-                          label={p.didMeditation ? "Meditação" : "Sem Med."}
-                          variant={p.didMeditation ? "filled" : "outlined"}
-                          sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                        />
-                        <Chip
-                          size="small"
-                          color={p.recitedVerse ? "secondary" : "default"}
-                          label={p.recitedVerse ? "Verso" : "Sem Verso"}
-                          variant={p.recitedVerse ? "filled" : "outlined"}
-                          sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                        />
-                      </Stack>
+                        <BookmarksIcon />
+                      </Avatar>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.1 }} noWrap>
+                          Semana {p.week} · {p.year}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          Ref.: {fmtDate(p.referenceDate)}
+                        </Typography>
+                      </Box>
                     </Stack>
+
+                    <Stack direction="row" spacing={0.75} sx={{ flexShrink: 0 }}>
+                      <Chip
+                        size="small"
+                        color={p.present ? "success" : "default"}
+                        label={p.present ? "Presente" : "Ausente"}
+                        variant={p.present ? "filled" : "outlined"}
+                        sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
+                      />
+                      <Chip
+                        size="small"
+                        color={p.didMeditation ? "info" : "default"}
+                        label={p.didMeditation ? "Meditação" : "Sem Med."}
+                        variant={p.didMeditation ? "filled" : "outlined"}
+                        sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
+                      />
+                      <Chip
+                        size="small"
+                        color={p.recitedVerse ? "secondary" : "default"}
+                        label={p.recitedVerse ? "Verso" : "Sem Verso"}
+                        variant={p.recitedVerse ? "filled" : "outlined"}
+                        sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
+                      />
+                    </Stack>
+                  </Stack>
                     {p.notes && p.notes.trim() !== "" && (
                       <Tooltip title={p.notes} arrow>
                         <Typography

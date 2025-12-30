@@ -1,0 +1,60 @@
+[
+  {
+    "ParameterKey": "RepositoryUrl",
+    "ParameterValue": "https://github.com/clubinhonib/clubinhonib-app"
+  },
+  {
+    "ParameterKey": "RepositoryBranch",
+    "ParameterValue": "main"
+  },
+  {
+    "ParameterKey": "StagingBranch",
+    "ParameterValue": "staging"
+  },
+  {
+    "ParameterKey": "RootDomainName",
+    "ParameterValue": "clubinhonib.com"
+  },
+  {
+    "ParameterKey": "StagingSubdomainPrefix",
+    "ParameterValue": "staging"
+  },
+  {
+    "ParameterKey": "ProdApiUrl",
+    "ParameterValue": "https://api.clubinhonib.com"
+  },
+  {
+    "ParameterKey": "ProdFeedMinisterioId",
+    "ParameterValue": "b8d9fa5f-4942-4a5b-bdf9-e1c8d7c3126b"
+  },
+  {
+    "ParameterKey": "ProdGoogleClientId",
+    "ParameterValue": "402870724062-qigpqvb1p93sa1mjs59ijcm2dcd3e1tc.apps.googleusercontent.com"
+  },
+  {
+    "ParameterKey": "ProdSpecialFamilyDayId",
+    "ParameterValue": "a2f9913a-e123-46b2-b6f4-a4138686042f"
+  },
+  {
+    "ParameterKey": "StagingApiUrl",
+    "ParameterValue": "https://staging-api.clubinhonib.com"
+  },
+  {
+    "ParameterKey": "StagingFeedMinisterioId",
+    "ParameterValue": "afa51053-1296-4c89-9059-a8ad8bd1ec90"
+  },
+  {
+    "ParameterKey": "StagingGoogleClientId",
+    "ParameterValue": "402870724062-qigpqvb1p93sa1mjs59ijcm2dcd3e1tc.apps.googleusercontent.com"
+  },
+  {
+    "ParameterKey": "StagingSpecialFamilyDayId",
+    "ParameterValue": "a2f9913a-e123-46b2-b6f4-a4138686042f"
+  },
+  {
+    "ParameterKey": "GitHubAccessToken",
+    "ParameterValue": "COLE_SEU_TOKEN_AQUI (NÃO VERSIONE; prefira export AMPLIFY_GITHUB_TOKEN)"
+  }
+]
+
+

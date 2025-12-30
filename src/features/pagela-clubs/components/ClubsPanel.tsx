@@ -313,46 +313,46 @@ export function ClubsPanel({
                                                         gap: 0.75,
                                                     }}
                                                 >
-                                                    {shown.length === 0 ? (
-                                                        <Chip
-                                                            size="small"
-                                                            variant="outlined"
-                                                            color="warning"
-                                                            label="Sem professores"
-                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                                                        />
-                                                    ) : (
-                                                        <>
-                                                            {shown.slice(0, 2).map((name, idx) => (
+                                                            {shown.length === 0 ? (
                                                                 <Chip
-                                                                    key={idx}
                                                                     size="small"
-                                                                    color="secondary"
-                                                                    label={name}
                                                                     variant="outlined"
+                                                                    color="warning"
+                                                                    label="Sem professores"
                                                                     sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
                                                                 />
-                                                            ))}
-                                                            {extra > 0 && (
-                                                                <Chip
-                                                                    size="small"
-                                                                    color="primary"
-                                                                    label={`+${extra}`}
-                                                                    sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
-                                                                />
+                                                            ) : (
+                                                                <>
+                                                            {shown.slice(0, 2).map((name, idx) => (
+                                                                        <Chip
+                                                                            key={idx}
+                                                                            size="small"
+                                                                            color="secondary"
+                                                                            label={name}
+                                                                            variant="outlined"
+                                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
+                                                                        />
+                                                                    ))}
+                                                                    {extra > 0 && (
+                                                                        <Chip
+                                                                            size="small"
+                                                                            color="primary"
+                                                                            label={`+${extra}`}
+                                                                            sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
+                                                                        />
+                                                                    )}
+                                                                </>
                                                             )}
-                                                        </>
-                                                    )}
                                                 </Box>
 
                                                 {/* Quarta linha: Endereço (cidade e bairro) */}
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                    noWrap
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                            noWrap
                                                     sx={{ opacity: 0.9 }}
                                                     title={`${c.address?.district} – ${c.address?.city}/${c.address?.state}`}
-                                                >
+                                                        >
                                                     {c.address?.district} – {c.address?.city}/{c.address?.state}
                                                 </Typography>
                                             </Stack>
