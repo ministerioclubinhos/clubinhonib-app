@@ -202,22 +202,7 @@ jobs:
             ACTION="CREATE"
           fi
           
-          CHANGE_BATCH=$(cat <<EOF
-{
-  "Changes": [{
-    "Action": "${ACTION}",
-    "ResourceRecordSet": {
-      "Name": "${SUBDOMAIN}.",
-      "Type": "CNAME",
-      "TTL": 300,
-      "ResourceRecords": [{
-        "Value": "${CLOUDFRONT_DOMAIN}."
-      }]
-    }
-  }]
-}
-EOF
-)
+          CHANGE_BATCH=$(printf '{"Changes":[{"Action":"%s","ResourceRecordSet":{"Name":"%s.","Type":"CNAME","TTL":300,"ResourceRecords":[{"Value":"%s."}]}}]}' "$ACTION" "$SUBDOMAIN" "$CLOUDFRONT_DOMAIN")
           
           CHANGE_ID=$(aws route53 change-resource-record-sets \
             --hosted-zone-id "$HOSTED_ZONE_ID" \
