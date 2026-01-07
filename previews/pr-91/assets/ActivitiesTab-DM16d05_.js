@@ -1,0 +1,1 @@
+import{j as i}from"./index-CUqXZ82V.js";import{A as r}from"./ActivitiesComparisonChart-BsfXdLEE.js";import"./hooks-DbXgi7GY.js";import"./BarChart-D0sRNF_8.js";import"./RadarChart-B4CHg2Jx.js";import"./ActivePoints-SWc7igUR.js";import"./PolarChart-R6wet7eD.js";const x=({filters:t})=>i.jsx(r,{filters:t});export{x as default};
