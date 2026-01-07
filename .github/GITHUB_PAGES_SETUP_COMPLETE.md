@@ -1,5 +1,7 @@
 # 🚀 Guia Completo: Habilitar GitHub Pages para Previews de PR
 
+Baseado na [documentação oficial do GitHub Pages](https://docs.github.com/pt/pages/quickstart)
+
 ## 📋 Situação Atual
 
 - ✅ Workflow funcionando e fazendo deploy
@@ -10,19 +12,32 @@
 
 ## 🔧 Passo a Passo para Habilitar
 
+Seguindo a [documentação oficial do GitHub Pages](https://docs.github.com/pt/pages/quickstart):
+
 ### 1. Acesse as Configurações do Repositório
 
-Vá para: **https://github.com/ministerioclubinhos/clubinhonib-app/settings/pages**
+1. No repositório `clubinhonib-app`, clique na aba **"Configurações"** (Settings)
+2. Na seção **"Code and automation"** da barra lateral, clique em **"Pages"**
+
+Ou acesse diretamente: **https://github.com/ministerioclubinhos/clubinhonib-app/settings/pages**
 
 ### 2. Configure a Fonte de Publicação
 
-Na seção **"Build and deployment"**:
+Na seção **"Build e implantação"** (Build and deployment):
 
-1. Em **"Source"**, selecione: **"Deploy from a branch"**
+1. Em **"Fonte"** (Source), selecione: **"Fazer implantação de um branch"** (Deploy from a branch)
 2. Em **"Branch"**:
-   - Selecione: **`gh-pages`**
-   - Selecione: **`/ (root)`**
-3. Clique em **"Save"**
+   - Use o menu suspenso e selecione: **`gh-pages`**
+   - Selecione o diretório: **`/ (root)`**
+3. Clique em **"Salvar"** (Save)
+
+### 3. Aguarde a Publicação
+
+- Pode levar **até 10 minutos** para o site ficar disponível
+- Você verá uma mensagem confirmando que o site está publicado em:
+  ```
+  https://ministerioclubinhos.github.io/clubinhonib-app/
+  ```
 
 ### 3. Aguarde a Publicação
 
@@ -73,14 +88,23 @@ Após habilitar, os previews estarão disponíveis em:
 4. **Aguarde mais alguns minutos:**
    - O GitHub pode levar até 10 minutos para propagar
 
-## 📝 Diferenças do Guia Oficial
+## 📝 Diferenças: Site de Usuário vs Repositório de Projeto
 
-O guia oficial do GitHub fala sobre sites de usuário (`username.github.io`), mas estamos usando um **repositório de projeto**, então:
+A [documentação oficial](https://docs.github.com/pt/pages/quickstart) foca em **sites de usuário** (`username.github.io`), mas estamos usando um **repositório de projeto**:
 
+### Site de Usuário (documentação oficial):
+- Repositório deve ser nomeado: `username.github.io`
+- URL: `https://username.github.io`
+- Exemplo: `octocat.github.io`
+
+### Repositório de Projeto (nosso caso):
 - ✅ **Não precisa** criar um repositório especial
 - ✅ **Não precisa** renomear o repositório
-- ✅ A URL será: `ministerioclubinhos.github.io/clubinhonib-app/`
 - ✅ Funciona com qualquer nome de repositório
+- ✅ A URL será: `https://username.github.io/nome-do-repositorio/`
+- ✅ No nosso caso: `https://ministerioclubinhos.github.io/clubinhonib-app/`
+
+**Ambos usam o mesmo processo de configuração** (Settings > Pages > Deploy from a branch), apenas a URL final é diferente.
 
 ## 🔍 Estrutura Esperada na Branch `gh-pages`
 
