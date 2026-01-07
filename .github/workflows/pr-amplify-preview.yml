@@ -55,12 +55,35 @@ jobs:
           echo "app-id=$APP_ID" >> $GITHUB_OUTPUT
           echo "✅ Amplify App ID: $APP_ID"
 
-      - name: Create or update PR branch in Amplify
-        id: create-branch
+      - name: Create branch in repository first
+        id: create-repo-branch
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           HEAD_REF=${{ github.head_ref }}
           BRANCH_NAME="pr-$PR_NUMBER"
+          
+          echo "📤 Criando branch $BRANCH_NAME no repositório..."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git fetch origin "$HEAD_REF"
+          git checkout -b "$BRANCH_NAME" "origin/$HEAD_REF" 2>/dev/null || {
+            git checkout "$BRANCH_NAME"
+            git reset --hard "origin/$HEAD_REF"
+          }
+          
+          git push origin "$BRANCH_NAME" --force
+          
+          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "head-ref=$HEAD_REF" >> $GITHUB_OUTPUT
+          echo "✅ Branch $BRANCH_NAME criada no repositório"
+
+      - name: Create or update PR branch in Amplify
+        id: create-branch
+        run: |
+          BRANCH_NAME=${{ steps.create-repo-branch.outputs.branch-name }}
+          HEAD_REF=${{ steps.create-repo-branch.outputs.head-ref }}
+          PR_NUMBER=${{ github.event.pull_request.number }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
           echo "🔍 Verificando se branch $BRANCH_NAME existe..."
@@ -89,7 +112,25 @@ jobs:
           fi
           
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-          echo "head-ref=$HEAD_REF" >> $GITHUB_OUTPUT
+
+      - name: Update branch environment variables in Amplify
+        run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          
+          echo "⚙️ Configurando variáveis de ambiente para branch $BRANCH_NAME..."
+          
+          aws amplify update-branch \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH_NAME" \
+            --environment-variables \
+              VITE_API_URL=https://staging-api.clubinhonib.com \
+              VITE_FEED_MINISTERIO_ID=afa51053-1296-4c89-9059-a8ad8bd1ec90 \
+              VITE_GOOGLE_CLIENT_ID=135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com \
+              VITE_SPECIAL_FAMILY_DAY_ID=a2f9913a-e123-46b2-b6f4-a4138686042f \
+            --region ${{ env.AWS_REGION }}
+          
+          echo "✅ Variáveis de ambiente configuradas"
 
       - name: Create subdomain for PR branch
         id: create-subdomain
@@ -126,24 +167,6 @@ jobs:
           
           echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
           echo "✅ Subdomínio configurado: https://$SUBDOMAIN"
-
-      - name: Create branch in repository and push code
-        run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
-          HEAD_REF=${{ steps.create-branch.outputs.head-ref }}
-          
-          echo "📤 Criando/atualizando branch $BRANCH_NAME no repositório..."
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git fetch origin "$HEAD_REF"
-          git checkout -b "$BRANCH_NAME" origin/"$HEAD_REF" 2>/dev/null || git checkout "$BRANCH_NAME"
-          git reset --hard "origin/$HEAD_REF" || true
-          
-          git push origin "$BRANCH_NAME" --force
-          
-          echo "✅ Branch $BRANCH_NAME criada/atualizada. Amplify fará build automaticamente."
 
       - name: Wait for Amplify build and get URL
         id: get-url
