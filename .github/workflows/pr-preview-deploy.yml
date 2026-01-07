@@ -3,6 +3,7 @@ name: PR Preview Deploy
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -73,19 +74,7 @@ jobs:
             const repoName = context.repo.repo;
             const previewUrl = `https://${repoOwner}.github.io/${repoName}/previews/pr-${prNumber}/`;
             
-            const commentBody = `🚀 **Preview deploy concluído!**
-
-🔗 **Preview disponível em:** [${previewUrl}](${previewUrl})
-
-⚠️ **Nota:** Esta preview está conectada à API de staging.
-
-📋 **Variáveis de ambiente usadas:**
-- \`VITE_API_URL\`: https://staging-api.clubinhonib.com
-- \`VITE_FEED_MINISTERIO_ID\`: afa51053-1296-4c89-9059-a8ad8bd1ec90
-- \`VITE_GOOGLE_CLIENT_ID\`: 135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com
-- \`VITE_SPECIAL_FAMILY_DAY_ID\`: a2f9913a-e123-46b2-b6f4-a4138686042f
-
-_Deploy automático do PR #${prNumber}_`;
+            const commentBody = `🚀 **Preview deploy concluído!**\n\n🔗 **Preview disponível em:** [${previewUrl}](${previewUrl})\n\n⚠️ **Nota:** Esta preview está conectada à API de staging.\n\n📋 **Variáveis de ambiente usadas:**\n- \`VITE_API_URL\`: https://staging-api.clubinhonib.com\n- \`VITE_FEED_MINISTERIO_ID\`: afa51053-1296-4c89-9059-a8ad8bd1ec90\n- \`VITE_GOOGLE_CLIENT_ID\`: 135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com\n- \`VITE_SPECIAL_FAMILY_DAY_ID\`: a2f9913a-e123-46b2-b6f4-a4138686042f\n\n_Deploy automático do PR #${prNumber}_`;
 
             const comments = await github.rest.issues.listComments({
               owner: repoOwner,
