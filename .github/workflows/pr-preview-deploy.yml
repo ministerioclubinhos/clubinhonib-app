@@ -60,7 +60,8 @@ jobs:
           mkdir -p "previews/$BRANCH_NAME"
           cp -r dist/* "previews/$BRANCH_NAME/"
           
-          git add "previews/$BRANCH_NAME"
+          touch .nojekyll
+          git add "previews/$BRANCH_NAME" .nojekyll
           git commit -m "Deploy preview for PR #$PR_NUMBER" || exit 0
           git push origin gh-pages
 
