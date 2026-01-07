@@ -378,9 +378,8 @@ jobs:
           fi
           
           echo "status=$FINAL_STATUS" >> $GITHUB_OUTPUT
-          echo "status-message<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$STATUS_MESSAGE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          STATUS_MSG_ESCAPED=$(echo -e "$STATUS_MESSAGE" | sed 's/$/\\n/' | tr -d '\n' | sed 's/\\n$//')
+          echo "status-message=$STATUS_MSG_ESCAPED" >> $GITHUB_OUTPUT
           
           echo "📊 Status Final:"
           echo -e "$STATUS_MESSAGE"
@@ -394,7 +393,7 @@ jobs:
             const previewUrl = '${{ steps.wait-dns.outputs.url }}';
             const subdomain = '${{ steps.wait-dns.outputs.subdomain }}';
             const status = '${{ steps.verify-deployment.outputs.status }}';
-            const statusMessage = `${{ steps.verify-deployment.outputs.status-message }}`;
+            const statusMessage = '${{ steps.verify-deployment.outputs.status-message }}'.replace(/\\n/g, '\n');
             const buildCompleted = '${{ steps.wait-build.outputs.build-completed }}' === 'true';
             const dnsReady = '${{ steps.wait-dns.outputs.dns-ready }}' === 'true';
             
