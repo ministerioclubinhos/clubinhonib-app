@@ -484,22 +484,7 @@ _Deploy automático do PR #${prNumber} via AWS Amplify_`;
             --region ${{ env.AWS_REGION }} || echo "Branch já foi removida ou não existe"
           
           echo "🗑️ Removendo registro DNS do Route 53..."
-          CHANGE_BATCH=$(cat <<EOF
-{
-  "Changes": [{
-    "Action": "DELETE",
-    "ResourceRecordSet": {
-      "Name": "${SUBDOMAIN}.",
-      "Type": "CNAME",
-      "TTL": 300,
-      "ResourceRecords": [{
-        "Value": "${BRANCH_NAME}.${APP_ID}.amplifyapp.com."
-      }]
-    }
-  }]
-}
-EOF
-)
+          CHANGE_BATCH=$(printf '{"Changes":[{"Action":"DELETE","ResourceRecordSet":{"Name":"%s.","Type":"CNAME","TTL":300,"ResourceRecords":[{"Value":"%s.%s.amplifyapp.com."}]}}]}' "$SUBDOMAIN" "$BRANCH_NAME" "$APP_ID")
           
           aws route53 change-resource-record-sets \
             --hosted-zone-id "$HOSTED_ZONE_ID" \
