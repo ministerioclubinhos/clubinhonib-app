@@ -1,0 +1,224 @@
+name: PR Amplify Preview Deploy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with staging environment variables
+        env:
+          VITE_API_URL: https://staging-api.clubinhonib.com
+          VITE_FEED_MINISTERIO_ID: afa51053-1296-4c89-9059-a8ad8bd1ec90
+          VITE_GOOGLE_CLIENT_ID: 135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com
+          VITE_SPECIAL_FAMILY_DAY_ID: a2f9913a-e123-46b2-b6f4-a4138686042f
+        run: npm run build
+
+      - name: Get Amplify App ID
+        id: get-app-id
+        run: |
+          APP_ID=$(aws amplify list-apps --region ${{ env.AWS_REGION }} --query "apps[?name=='clubinhonib-app'].appId" --output text)
+          if [ -z "$APP_ID" ]; then
+            echo "❌ Amplify app 'clubinhonib-app' não encontrado!"
+            exit 1
+          fi
+          echo "app-id=$APP_ID" >> $GITHUB_OUTPUT
+          echo "✅ Amplify App ID: $APP_ID"
+
+      - name: Create or update PR branch in Amplify
+        id: create-branch
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          BRANCH_NAME="pr-$PR_NUMBER"
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          
+          echo "🔍 Verificando se branch $BRANCH_NAME existe..."
+          EXISTING_BRANCH=$(aws amplify get-branch \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH_NAME" \
+            --region ${{ env.AWS_REGION }} \
+            --query 'branch.branchName' \
+            --output text 2>/dev/null || echo "")
+          
+          if [ -z "$EXISTING_BRANCH" ]; then
+            echo "📦 Criando nova branch no Amplify: $BRANCH_NAME"
+            aws amplify create-branch \
+              --app-id "$APP_ID" \
+              --branch-name "$BRANCH_NAME" \
+              --description "Preview branch for PR #$PR_NUMBER" \
+              --enable-auto-build false \
+              --enable-pull-request-preview false \
+              --stage DEVELOPMENT \
+              --region ${{ env.AWS_REGION }}
+            
+            echo "⏳ Aguardando branch ser criada..."
+            sleep 5
+          else
+            echo "✅ Branch $BRANCH_NAME já existe"
+          fi
+          
+          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create subdomain for PR branch
+        id: create-subdomain
+        run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
+          
+          echo "🌐 Verificando domínio: $SUBDOMAIN"
+          
+          DOMAIN_EXISTS=$(aws amplify get-domain-association \
+            --app-id "$APP_ID" \
+            --domain-name "clubinhonib.com" \
+            --region ${{ env.AWS_REGION }} \
+            --query 'domainAssociation.domainName' \
+            --output text 2>/dev/null || echo "")
+          
+          if [ -z "$DOMAIN_EXISTS" ]; then
+            echo "📝 Criando associação de domínio principal..."
+            aws amplify create-domain-association \
+              --app-id "$APP_ID" \
+              --domain-name "clubinhonib.com" \
+              --sub-domain-settings prefix=,branchName=main \
+              --region ${{ env.AWS_REGION }} || true
+            sleep 10
+          fi
+          
+          echo "🔗 Adicionando subdomínio para branch $BRANCH_NAME..."
+          aws amplify update-domain-association \
+            --app-id "$APP_ID" \
+            --domain-name "clubinhonib.com" \
+            --sub-domain-settings prefix="$BRANCH_NAME",branchName="$BRANCH_NAME" \
+            --region ${{ env.AWS_REGION }} || echo "Subdomínio pode já existir"
+          
+          echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
+          echo "✅ Subdomínio configurado: https://$SUBDOMAIN"
+
+      - name: Deploy to Amplify branch
+        run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          
+          echo "🚀 Fazendo deploy para branch $BRANCH_NAME..."
+          
+          ZIP_FILE="deploy-${BRANCH_NAME}.zip"
+          cd dist
+          zip -r "../$ZIP_FILE" .
+          cd ..
+          
+          JOB_ID=$(aws amplify start-job \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH_NAME" \
+            --job-type RELEASE \
+            --region ${{ env.AWS_REGION }} \
+            --query 'jobSummary.jobId' \
+            --output text)
+          
+          echo "📦 Job ID: $JOB_ID"
+          echo "⏳ Aguardando deploy completar..."
+          
+          aws amplify wait job-completed \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH_NAME" \
+            --job-id "$JOB_ID" \
+            --region ${{ env.AWS_REGION }} || echo "Deploy em andamento..."
+          
+          echo "✅ Deploy iniciado!"
+
+      - name: Comment PR with preview URL
+        if: github.event_name == 'pull_request' && github.event.action != 'closed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const subdomain = '${{ steps.create-subdomain.outputs.subdomain }}';
+            const previewUrl = `https://${subdomain}`;
+            
+            const commentBody = `🚀 **Preview deploy concluído no AWS Amplify!**
+
+🔗 **Preview disponível em:** [${previewUrl}](${previewUrl})
+
+⚠️ **Nota:** Esta preview está conectada à API de staging.
+
+📋 **Variáveis de ambiente usadas:**
+- \`VITE_API_URL\`: https://staging-api.clubinhonib.com
+- \`VITE_FEED_MINISTERIO_ID\`: afa51053-1296-4c89-9059-a8ad8bd1ec90
+- \`VITE_GOOGLE_CLIENT_ID\`: 135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com
+- \`VITE_SPECIAL_FAMILY_DAY_ID\`: a2f9913a-e123-46b2-b6f4-a4138686042f
+
+🌐 **Subdomínio:** \`${subdomain}\`
+
+_Deploy automático do PR #${prNumber} via AWS Amplify_`;
+
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const botComment = comments.data.find(
+              comment => comment.user.type === 'Bot' && comment.body.includes('Preview deploy concluído no AWS Amplify')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: commentBody,
+              });
+            }
+
+      - name: Cleanup on PR close
+        if: github.event.action == 'closed'
+        run: |
+          BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          
+          echo "🧹 Limpando branch e subdomínio do PR fechado..."
+          
+          aws amplify delete-branch \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH_NAME" \
+            --region ${{ env.AWS_REGION }} || echo "Branch já foi removida ou não existe"
+          
+          echo "✅ Limpeza concluída"
+
