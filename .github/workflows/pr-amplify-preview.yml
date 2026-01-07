@@ -271,17 +271,19 @@ EOF
           echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
           echo "✅ Subdomínio $SUBDOMAIN configurado no Amplify"
 
-      - name: Wait for Amplify build and get URL
-        id: get-url
+      - name: Wait for Amplify build to complete
+        id: wait-build
         run: |
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
-          echo "⏳ Aguardando build do Amplify..."
+          echo "⏳ Aguardando build do Amplify iniciar..."
           sleep 30
           
-          MAX_WAIT=300
+          MAX_WAIT=600
           ELAPSED=0
+          BUILD_COMPLETED=false
+          
           while [ $ELAPSED -lt $MAX_WAIT ]; do
             JOB_STATUS=$(aws amplify list-jobs \
               --app-id "$APP_ID" \
@@ -293,19 +295,110 @@ EOF
             
             if [ "$JOB_STATUS" = "SUCCEED" ]; then
               echo "✅ Build concluído com sucesso!"
+              BUILD_COMPLETED=true
               break
             elif [ "$JOB_STATUS" = "FAILED" ]; then
               echo "❌ Build falhou"
               exit 1
+            elif [ "$JOB_STATUS" = "PENDING" ] || [ "$JOB_STATUS" = "RUNNING" ]; then
+              echo "⏳ Build em andamento... Status: $JOB_STATUS ($ELAPSED/$MAX_WAIT segundos)"
             fi
             
-            echo "⏳ Build em andamento... ($ELAPSED/$MAX_WAIT segundos)"
-            sleep 10
-            ELAPSED=$((ELAPSED + 10))
+            sleep 15
+            ELAPSED=$((ELAPSED + 15))
           done
           
-          SUBDOMAIN=${{ steps.create-subdomain.outputs.subdomain }}
+          if [ "$BUILD_COMPLETED" != "true" ]; then
+            echo "⚠️ Timeout aguardando build. Continuando..."
+          fi
+          
+          echo "build-completed=$BUILD_COMPLETED" >> $GITHUB_OUTPUT
+
+      - name: Wait for DNS propagation and subdomain availability
+        id: wait-dns
+        run: |
+          SUBDOMAIN=${{ steps.add-subdomain-amplify.outputs.subdomain }}
+          
+          echo "🌐 Verificando disponibilidade do subdomínio: $SUBDOMAIN"
+          echo "⏳ Aguardando propagação DNS e deploy..."
+          
+          MAX_WAIT=600
+          ELAPSED=0
+          DNS_READY=false
+          
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            if dig +short "$SUBDOMAIN" @8.8.8.8 | grep -q .; then
+              echo "✅ DNS resolvido! Verificando se o site está respondendo..."
+              
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$SUBDOMAIN" || echo "000")
+              
+              if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
+                echo "✅ Subdomínio disponível e respondendo! HTTP $HTTP_CODE"
+                DNS_READY=true
+                break
+              else
+                echo "⏳ DNS OK, mas site ainda não está respondendo (HTTP $HTTP_CODE)..."
+              fi
+            else
+              echo "⏳ DNS ainda não propagado... ($ELAPSED/$MAX_WAIT segundos)"
+            fi
+            
+            sleep 15
+            ELAPSED=$((ELAPSED + 15))
+          done
+          
+          if [ "$DNS_READY" != "true" ]; then
+            echo "⚠️ Timeout aguardando DNS. Subdomínio pode não estar totalmente disponível ainda."
+          fi
+          
+          echo "dns-ready=$DNS_READY" >> $GITHUB_OUTPUT
+          echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
           echo "url=https://$SUBDOMAIN" >> $GITHUB_OUTPUT
+
+      - name: Verify final deployment status
+        id: verify-deployment
+        run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          SUBDOMAIN=${{ steps.wait-dns.outputs.subdomain }}
+          BUILD_COMPLETED=${{ steps.wait-build.outputs.build-completed }}
+          DNS_READY=${{ steps.wait-dns.outputs.dns-ready }}
+          
+          echo "🔍 Verificando status final do deployment..."
+          
+          FINAL_STATUS="✅"
+          STATUS_MESSAGE=""
+          
+          if [ "$BUILD_COMPLETED" = "true" ]; then
+            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Build concluído\n"
+          else
+            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Build ainda em andamento\n"
+            FINAL_STATUS="⚠️"
+          fi
+          
+          if [ "$DNS_READY" = "true" ]; then
+            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Subdomínio disponível\n"
+          else
+            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Subdomínio ainda propagando\n"
+            FINAL_STATUS="⚠️"
+          fi
+          
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$SUBDOMAIN" || echo "000")
+          
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
+            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Site respondendo (HTTP $HTTP_CODE)\n"
+          else
+            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Site retornou HTTP $HTTP_CODE\n"
+            FINAL_STATUS="⚠️"
+          fi
+          
+          echo "status=$FINAL_STATUS" >> $GITHUB_OUTPUT
+          echo "status-message<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$STATUS_MESSAGE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "📊 Status Final:"
+          echo -e "$STATUS_MESSAGE"
 
       - name: Comment PR with preview URL
         if: github.event_name == 'pull_request' && github.event.action != 'closed'
@@ -313,11 +406,27 @@ EOF
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
-            const previewUrl = '${{ steps.get-url.outputs.url }}' || `https://${{ steps.create-subdomain.outputs.subdomain }}`;
+            const previewUrl = '${{ steps.wait-dns.outputs.url }}';
+            const subdomain = '${{ steps.wait-dns.outputs.subdomain }}';
+            const status = '${{ steps.verify-deployment.outputs.status }}';
+            const statusMessage = `${{ steps.verify-deployment.outputs.status-message }}`;
+            const buildCompleted = '${{ steps.wait-build.outputs.build-completed }}' === 'true';
+            const dnsReady = '${{ steps.wait-dns.outputs.dns-ready }}' === 'true';
             
-            const commentBody = `🚀 **Preview deploy concluído no AWS Amplify!**
+            let statusEmoji = '🚀';
+            let statusText = 'Preview deploy concluído no AWS Amplify!';
+            
+            if (status === '⚠️') {
+              statusEmoji = '⚠️';
+              statusText = 'Preview deploy em andamento no AWS Amplify';
+            }
+            
+            const commentBody = `${statusEmoji} **${statusText}**
 
 🔗 **Preview disponível em:** [${previewUrl}](${previewUrl})
+
+📊 **Status do Deployment:**
+${statusMessage}
 
 ⚠️ **Nota:** Esta preview está conectada à API de staging.
 
