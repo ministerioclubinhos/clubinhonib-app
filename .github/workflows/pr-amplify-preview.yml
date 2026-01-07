@@ -59,6 +59,7 @@ jobs:
         id: create-branch
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
+          HEAD_REF=${{ github.head_ref }}
           BRANCH_NAME="pr-$PR_NUMBER"
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
@@ -75,19 +76,20 @@ jobs:
             aws amplify create-branch \
               --app-id "$APP_ID" \
               --branch-name "$BRANCH_NAME" \
-              --description "Preview branch for PR #$PR_NUMBER" \
-              --enable-auto-build false \
-              --enable-pull-request-preview false \
+              --description "Preview branch for PR #$PR_NUMBER from $HEAD_REF" \
+              --enable-auto-build true \
+              --enable-pull-request-preview true \
               --stage DEVELOPMENT \
               --region ${{ env.AWS_REGION }}
             
             echo "⏳ Aguardando branch ser criada..."
-            sleep 5
+            sleep 10
           else
             echo "✅ Branch $BRANCH_NAME já existe"
           fi
           
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "head-ref=$HEAD_REF" >> $GITHUB_OUTPUT
 
       - name: Create subdomain for PR branch
         id: create-subdomain
@@ -125,28 +127,20 @@ jobs:
           echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
           echo "✅ Subdomínio configurado: https://$SUBDOMAIN"
 
-      - name: Push to temporary branch and trigger Amplify build
+      - name: Create branch in repository and push code
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
-          HEAD_REF=${{ github.head_ref }}
+          HEAD_REF=${{ steps.create-branch.outputs.head-ref }}
           
-          echo "📤 Criando branch temporária no repositório..."
+          echo "📤 Criando/atualizando branch $BRANCH_NAME no repositório..."
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          git checkout -b "$BRANCH_NAME" || git checkout "$BRANCH_NAME"
-          git merge "origin/$HEAD_REF" --no-edit || echo "Merge não necessário"
+          git fetch origin "$HEAD_REF"
+          git checkout -b "$BRANCH_NAME" origin/"$HEAD_REF" 2>/dev/null || git checkout "$BRANCH_NAME"
+          git reset --hard "origin/$HEAD_REF" || true
           
-          cat > .env <<EOF
-          VITE_API_URL=https://staging-api.clubinhonib.com
-          VITE_FEED_MINISTERIO_ID=afa51053-1296-4c89-9059-a8ad8bd1ec90
-          VITE_GOOGLE_CLIENT_ID=135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com
-          VITE_SPECIAL_FAMILY_DAY_ID=a2f9913a-e123-46b2-b6f4-a4138686042f
-          EOF
-          
-          git add .env
-          git commit -m "Add staging env vars for PR #$PR_NUMBER" || echo "Nada para commitar"
           git push origin "$BRANCH_NAME" --force
           
           echo "✅ Branch $BRANCH_NAME criada/atualizada. Amplify fará build automaticamente."
