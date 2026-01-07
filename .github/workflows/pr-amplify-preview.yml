@@ -96,14 +96,31 @@ jobs:
           
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
-      - name: Create subdomain for PR branch
-        id: create-subdomain
+      - name: Get Route 53 Hosted Zone ID
+        id: get-hosted-zone
+        run: |
+          HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name \
+            --dns-name "clubinhonib.com" \
+            --region ${{ env.AWS_REGION }} \
+            --query 'HostedZones[0].Id' \
+            --output text 2>/dev/null | sed 's|/hostedzone/||' || echo "")
+          
+          if [ -z "$HOSTED_ZONE_ID" ]; then
+            echo "❌ Hosted Zone para clubinhonib.com não encontrada no Route 53!"
+            exit 1
+          fi
+          
+          echo "hosted-zone-id=$HOSTED_ZONE_ID" >> $GITHUB_OUTPUT
+          echo "✅ Hosted Zone ID: $HOSTED_ZONE_ID"
+
+      - name: Get Amplify domain certificate ARN
+        id: get-domain-cert
         run: |
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
           
-          echo "🌐 Verificando domínio: $SUBDOMAIN"
+          echo "🔍 Verificando associação de domínio no Amplify..."
           
           DOMAIN_EXISTS=$(aws amplify get-domain-association \
             --app-id "$APP_ID" \
@@ -113,24 +130,117 @@ jobs:
             --output text 2>/dev/null || echo "")
           
           if [ -z "$DOMAIN_EXISTS" ]; then
-            echo "📝 Criando associação de domínio principal..."
+            echo "📝 Criando associação de domínio principal no Amplify..."
             aws amplify create-domain-association \
               --app-id "$APP_ID" \
               --domain-name "clubinhonib.com" \
               --sub-domain-settings prefix=,branchName=main \
               --region ${{ env.AWS_REGION }} || true
-            sleep 10
+            echo "⏳ Aguardando associação de domínio..."
+            sleep 20
           fi
           
-          echo "🔗 Adicionando subdomínio para branch $BRANCH_NAME..."
-          aws amplify update-domain-association \
+          DOMAIN_INFO=$(aws amplify get-domain-association \
             --app-id "$APP_ID" \
             --domain-name "clubinhonib.com" \
-            --sub-domain-settings prefix="$BRANCH_NAME",branchName="$BRANCH_NAME" \
-            --region ${{ env.AWS_REGION }} || echo "Subdomínio pode já existir"
+            --region ${{ env.AWS_REGION }} \
+            --query 'domainAssociation.{certificateArn:certificateArn,subDomains:subDomains}' \
+            --output json)
+          
+          CERT_ARN=$(echo "$DOMAIN_INFO" | jq -r '.certificateArn // empty')
+          echo "certificate-arn=$CERT_ARN" >> $GITHUB_OUTPUT
+          echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
+          echo "✅ Certificado ARN: $CERT_ARN"
+
+      - name: Create Route 53 DNS record for subdomain
+        id: create-dns-record
+        run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          HOSTED_ZONE_ID=${{ steps.get-hosted-zone.outputs.hosted-zone-id }}
+          SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
+          
+          echo "🌐 Criando registro DNS no Route 53 para $SUBDOMAIN..."
+          
+          EXISTING_RECORD=$(aws route53 list-resource-record-sets \
+            --hosted-zone-id "$HOSTED_ZONE_ID" \
+            --query "ResourceRecordSets[?Name=='${SUBDOMAIN}.']" \
+            --output json 2>/dev/null || echo "[]")
+          
+          if [ "$EXISTING_RECORD" != "[]" ]; then
+            echo "✅ Registro DNS já existe para $SUBDOMAIN"
+          else
+            echo "📝 Criando novo registro DNS..."
+            
+            CHANGE_BATCH=$(cat <<EOF
+{
+  "Changes": [{
+    "Action": "CREATE",
+    "ResourceRecordSet": {
+      "Name": "${SUBDOMAIN}.",
+      "Type": "CNAME",
+      "TTL": 300,
+      "ResourceRecords": [{
+        "Value": "${BRANCH_NAME}.${APP_ID}.amplifyapp.com"
+      }]
+    }
+  }]
+}
+EOF
+)
+            
+            CHANGE_ID=$(aws route53 change-resource-record-sets \
+              --hosted-zone-id "$HOSTED_ZONE_ID" \
+              --change-batch "$CHANGE_BATCH" \
+              --query 'ChangeInfo.Id' \
+              --output text)
+            
+            echo "⏳ Aguardando propagação DNS (Change ID: $CHANGE_ID)..."
+            aws route53 wait resource-record-sets-changed --id "$CHANGE_ID" || sleep 30
+            
+            echo "✅ Registro DNS criado no Route 53"
+          fi
           
           echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
-          echo "✅ Subdomínio configurado: https://$SUBDOMAIN"
+
+      - name: Add subdomain to Amplify domain association
+        id: add-subdomain-amplify
+        run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          SUBDOMAIN=${{ steps.create-dns-record.outputs.subdomain }}
+          
+          echo "🔗 Adicionando subdomínio $SUBDOMAIN ao Amplify..."
+          
+          EXISTING_SUBDOMAINS=$(aws amplify get-domain-association \
+            --app-id "$APP_ID" \
+            --domain-name "clubinhonib.com" \
+            --region ${{ env.AWS_REGION }} \
+            --query 'domainAssociation.subDomains[*].{prefix:prefix,branchName:branchName}' \
+            --output json)
+          
+          SUBDOMAIN_EXISTS=$(echo "$EXISTING_SUBDOMAINS" | jq -r ".[] | select(.prefix==\"$BRANCH_NAME\") | .prefix" || echo "")
+          
+          if [ -z "$SUBDOMAIN_EXISTS" ]; then
+            echo "📝 Adicionando novo subdomínio ao Amplify..."
+            
+            UPDATED_SUBDOMAINS=$(echo "$EXISTING_SUBDOMAINS" | jq ". + [{\"prefix\": \"$BRANCH_NAME\", \"branchName\": \"$BRANCH_NAME\"}]")
+            
+            SUBDOMAIN_SETTINGS=$(echo "$UPDATED_SUBDOMAINS" | jq -c 'map({prefix: .prefix, branchName: .branchName})')
+            
+            aws amplify update-domain-association \
+              --app-id "$APP_ID" \
+              --domain-name "clubinhonib.com" \
+              --sub-domain-settings "$SUBDOMAIN_SETTINGS" \
+              --region ${{ env.AWS_REGION }}
+            
+            echo "⏳ Aguardando configuração do subdomínio no Amplify..."
+            sleep 20
+          else
+            echo "✅ Subdomínio já existe no Amplify"
+          fi
+          
+          echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
+          echo "✅ Subdomínio $SUBDOMAIN configurado no Amplify"
 
       - name: Wait for Amplify build and get URL
         id: get-url
