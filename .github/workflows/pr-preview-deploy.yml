@@ -62,52 +62,51 @@ jobs:
           
           touch .nojekyll
           
-          cat > index.html << 'INDEXEOF'
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>PR Previews - Clubinho NIB</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-    h1 { color: #333; }
-    .preview-list { list-style: none; padding: 0; }
-    .preview-item { padding: 15px; margin: 10px 0; background: #f6f8fa; border-radius: 6px; border-left: 4px solid #0366d6; }
-    .preview-item a { color: #0366d6; text-decoration: none; font-weight: 600; }
-    .preview-item a:hover { text-decoration: underline; }
-    .preview-item .path { color: #586069; font-size: 14px; margin-top: 5px; }
-  </style>
-</head>
-<body>
-  <h1>🚀 PR Previews - Clubinho NIB</h1>
-  <p>Lista de previews disponíveis:</p>
-  <ul class="preview-list" id="preview-list">
-    <li class="preview-item">Carregando previews...</li>
-  </ul>
-  <script>
-    fetch('previews/')
-      .then(r => r.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const links = Array.from(doc.querySelectorAll('a')).filter(a => a.href.includes('pr-'));
-        const list = document.getElementById('preview-list');
-        if (links.length === 0) {
-          list.innerHTML = '<li class="preview-item">Nenhum preview disponível no momento.</li>';
-        } else {
-          list.innerHTML = links.map(link => {
-            const prNum = link.href.match(/pr-(\d+)/)?.[1] || '?';
-            return '<li class="preview-item"><a href="' + link.href + '">PR #' + prNum + '</a><div class="path">' + link.href + '</div></li>';
-          }).join('');
-        }
-      })
-      .catch(() => {
-        document.getElementById('preview-list').innerHTML = '<li class="preview-item">Erro ao carregar previews. Verifique se o GitHub Pages está habilitado.</li>';
-      });
-  </script>
-</body>
-</html>
-INDEXEOF
+          printf '%s\n' \
+            '<!DOCTYPE html>' \
+            '<html>' \
+            '<head>' \
+            '  <meta charset="utf-8">' \
+            '  <title>PR Previews - Clubinho NIB</title>' \
+            '  <style>' \
+            '    body { font-family: -apple-system, BlinkMacSystemFont, '\''Segoe UI'\'', sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }' \
+            '    h1 { color: #333; }' \
+            '    .preview-list { list-style: none; padding: 0; }' \
+            '    .preview-item { padding: 15px; margin: 10px 0; background: #f6f8fa; border-radius: 6px; border-left: 4px solid #0366d6; }' \
+            '    .preview-item a { color: #0366d6; text-decoration: none; font-weight: 600; }' \
+            '    .preview-item a:hover { text-decoration: underline; }' \
+            '    .preview-item .path { color: #586069; font-size: 14px; margin-top: 5px; }' \
+            '  </style>' \
+            '</head>' \
+            '<body>' \
+            '  <h1>🚀 PR Previews - Clubinho NIB</h1>' \
+            '  <p>Lista de previews disponíveis:</p>' \
+            '  <ul class="preview-list" id="preview-list">' \
+            '    <li class="preview-item">Carregando previews...</li>' \
+            '  </ul>' \
+            '  <script>' \
+            '    fetch('\''previews/'\'')' \
+            '      .then(r => r.text())' \
+            '      .then(html => {' \
+            '        const parser = new DOMParser();' \
+            '        const doc = parser.parseFromString(html, '\''text/html'\'');' \
+            '        const links = Array.from(doc.querySelectorAll('\''a'\'')).filter(a => a.href.includes('\''pr-'\''));' \
+            '        const list = document.getElementById('\''preview-list'\'');' \
+            '        if (links.length === 0) {' \
+            '          list.innerHTML = '\''<li class="preview-item">Nenhum preview disponível no momento.</li>'\'';' \
+            '        } else {' \
+            '          list.innerHTML = links.map(link => {' \
+            '            const prNum = link.href.match(/pr-(\\d+)/)?.[1] || '\''?'\'';' \
+            '            return '\''<li class="preview-item"><a href="'\'' + link.href + '\''">PR #'\'' + prNum + '\''</a><div class="path">'\'' + link.href + '\''</div></li>'\'';' \
+            '          }).join('\'''\'');' \
+            '        }' \
+            '      })' \
+            '      .catch(() => {' \
+            '        document.getElementById('\''preview-list'\'').innerHTML = '\''<li class="preview-item">Erro ao carregar previews. Verifique se o GitHub Pages está habilitado.</li>'\'';' \
+            '      });' \
+            '  </script>' \
+            '</body>' \
+            '</html>' > index.html
           
           git add "previews/$BRANCH_NAME" .nojekyll index.html
           git commit -m "Deploy preview for PR #$PR_NUMBER" || exit 0
