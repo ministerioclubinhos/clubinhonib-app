@@ -1,0 +1,157 @@
+name: PR Preview Deploy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with staging environment variables
+        env:
+          VITE_API_URL: https://staging-api.clubinhonib.com
+          VITE_FEED_MINISTERIO_ID: afa51053-1296-4c89-9059-a8ad8bd1ec90
+          VITE_GOOGLE_CLIENT_ID: 135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com
+          VITE_SPECIAL_FAMILY_DAY_ID: a2f9913a-e123-46b2-b6f4-a4138686042f
+        run: npm run build
+
+      - name: Deploy to gh-pages branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          BRANCH_NAME="pr-$PR_NUMBER"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          
+          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+            git fetch origin gh-pages
+            git checkout gh-pages
+            git rm -rf "previews/$BRANCH_NAME" 2>/dev/null || true
+          else
+            git checkout --orphan gh-pages
+            git rm -rf .
+          fi
+          
+          mkdir -p "previews/$BRANCH_NAME"
+          cp -r dist/* "previews/$BRANCH_NAME/"
+          
+          touch .nojekyll
+          
+          cat > index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PR Previews - Clubinho NIB</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+    h1 { color: #333; }
+    .preview-list { list-style: none; padding: 0; }
+    .preview-item { padding: 15px; margin: 10px 0; background: #f6f8fa; border-radius: 6px; border-left: 4px solid #0366d6; }
+    .preview-item a { color: #0366d6; text-decoration: none; font-weight: 600; }
+    .preview-item a:hover { text-decoration: underline; }
+    .preview-item .path { color: #586069; font-size: 14px; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h1>🚀 PR Previews - Clubinho NIB</h1>
+  <p>Lista de previews disponíveis:</p>
+  <ul class="preview-list" id="preview-list">
+    <li class="preview-item">Carregando previews...</li>
+  </ul>
+  <script>
+    fetch('previews/')
+      .then(r => r.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const links = Array.from(doc.querySelectorAll('a')).filter(a => a.href.includes('pr-'));
+        const list = document.getElementById('preview-list');
+        if (links.length === 0) {
+          list.innerHTML = '<li class="preview-item">Nenhum preview disponível no momento.</li>';
+        } else {
+          list.innerHTML = links.map(link => {
+            const prNum = link.href.match(/pr-(\d+)/)?.[1] || '?';
+            return `<li class="preview-item">
+              <a href="${link.href}">PR #${prNum}</a>
+              <div class="path">${link.href}</div>
+            </li>`;
+          }).join('');
+        }
+      })
+      .catch(() => {
+        document.getElementById('preview-list').innerHTML = '<li class="preview-item">Erro ao carregar previews. Verifique se o GitHub Pages está habilitado.</li>';
+      });
+  </script>
+</body>
+</html>
+EOF
+          
+          git add "previews/$BRANCH_NAME" .nojekyll index.html
+          git commit -m "Deploy preview for PR #$PR_NUMBER" || exit 0
+          git push origin gh-pages
+
+      - name: Comment PR with preview URL
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const repoOwner = context.repo.owner;
+            const repoName = context.repo.repo;
+            const previewUrl = `https://${repoOwner}.github.io/${repoName}/previews/pr-${prNumber}/`;
+            
+            const commentBody = `🚀 **Preview deploy concluído!**\n\n🔗 **Preview disponível em:** [${previewUrl}](${previewUrl})\n\n⚠️ **Nota:** Esta preview está conectada à API de staging.\n\n📋 **Variáveis de ambiente usadas:**\n- \`VITE_API_URL\`: https://staging-api.clubinhonib.com\n- \`VITE_FEED_MINISTERIO_ID\`: afa51053-1296-4c89-9059-a8ad8bd1ec90\n- \`VITE_GOOGLE_CLIENT_ID\`: 135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com\n- \`VITE_SPECIAL_FAMILY_DAY_ID\`: a2f9913a-e123-46b2-b6f4-a4138686042f\n\n_Deploy automático do PR #${prNumber}_`;
+
+            const comments = await github.rest.issues.listComments({
+              owner: repoOwner,
+              repo: repoName,
+              issue_number: prNumber,
+            });
+
+            const botComment = comments.data.find(
+              comment => comment.user.type === 'Bot' && comment.body.includes('Preview deploy concluído')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: repoOwner,
+                repo: repoName,
+                comment_id: botComment.id,
+                body: commentBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: repoOwner,
+                repo: repoName,
+                issue_number: prNumber,
+                body: commentBody,
+              });
+            }
+
+
