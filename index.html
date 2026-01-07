@@ -31,7 +31,7 @@
           list.innerHTML = '<li class="preview-item">Nenhum preview disponível no momento.</li>';
         } else {
           list.innerHTML = links.map(link => {
-            const prNum = link.href.match(/pr-(\d+)/)?.[1] || '?';
+            const prNum = link.href.match(/pr-(\\d+)/)?.[1] || '?';
             return '<li class="preview-item"><a href="' + link.href + '">PR #' + prNum + '</a><div class="path">' + link.href + '</div></li>';
           }).join('');
         }
