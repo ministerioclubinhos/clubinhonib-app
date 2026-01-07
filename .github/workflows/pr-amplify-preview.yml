@@ -125,36 +125,67 @@ jobs:
           echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
           echo "✅ Subdomínio configurado: https://$SUBDOMAIN"
 
-      - name: Deploy to Amplify branch
+      - name: Push to temporary branch and trigger Amplify build
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          HEAD_REF=${{ github.head_ref }}
+          
+          echo "📤 Criando branch temporária no repositório..."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git checkout -b "$BRANCH_NAME" || git checkout "$BRANCH_NAME"
+          git merge "origin/$HEAD_REF" --no-edit || echo "Merge não necessário"
+          
+          cat > .env <<EOF
+          VITE_API_URL=https://staging-api.clubinhonib.com
+          VITE_FEED_MINISTERIO_ID=afa51053-1296-4c89-9059-a8ad8bd1ec90
+          VITE_GOOGLE_CLIENT_ID=135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com
+          VITE_SPECIAL_FAMILY_DAY_ID=a2f9913a-e123-46b2-b6f4-a4138686042f
+          EOF
+          
+          git add .env
+          git commit -m "Add staging env vars for PR #$PR_NUMBER" || echo "Nada para commitar"
+          git push origin "$BRANCH_NAME" --force
+          
+          echo "✅ Branch $BRANCH_NAME criada/atualizada. Amplify fará build automaticamente."
+
+      - name: Wait for Amplify build and get URL
+        id: get-url
         run: |
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
-          echo "🚀 Fazendo deploy para branch $BRANCH_NAME..."
+          echo "⏳ Aguardando build do Amplify..."
+          sleep 30
           
-          ZIP_FILE="deploy-${BRANCH_NAME}.zip"
-          cd dist
-          zip -r "../$ZIP_FILE" .
-          cd ..
+          MAX_WAIT=300
+          ELAPSED=0
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            JOB_STATUS=$(aws amplify list-jobs \
+              --app-id "$APP_ID" \
+              --branch-name "$BRANCH_NAME" \
+              --region ${{ env.AWS_REGION }} \
+              --max-results 1 \
+              --query 'jobSummaries[0].status' \
+              --output text 2>/dev/null || echo "PENDING")
+            
+            if [ "$JOB_STATUS" = "SUCCEED" ]; then
+              echo "✅ Build concluído com sucesso!"
+              break
+            elif [ "$JOB_STATUS" = "FAILED" ]; then
+              echo "❌ Build falhou"
+              exit 1
+            fi
+            
+            echo "⏳ Build em andamento... ($ELAPSED/$MAX_WAIT segundos)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
           
-          JOB_ID=$(aws amplify start-job \
-            --app-id "$APP_ID" \
-            --branch-name "$BRANCH_NAME" \
-            --job-type RELEASE \
-            --region ${{ env.AWS_REGION }} \
-            --query 'jobSummary.jobId' \
-            --output text)
-          
-          echo "📦 Job ID: $JOB_ID"
-          echo "⏳ Aguardando deploy completar..."
-          
-          aws amplify wait job-completed \
-            --app-id "$APP_ID" \
-            --branch-name "$BRANCH_NAME" \
-            --job-id "$JOB_ID" \
-            --region ${{ env.AWS_REGION }} || echo "Deploy em andamento..."
-          
-          echo "✅ Deploy iniciado!"
+          SUBDOMAIN=${{ steps.create-subdomain.outputs.subdomain }}
+          echo "url=https://$SUBDOMAIN" >> $GITHUB_OUTPUT
 
       - name: Comment PR with preview URL
         if: github.event_name == 'pull_request' && github.event.action != 'closed'
@@ -162,8 +193,7 @@ jobs:
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
-            const subdomain = '${{ steps.create-subdomain.outputs.subdomain }}';
-            const previewUrl = `https://${subdomain}`;
+            const previewUrl = '${{ steps.get-url.outputs.url }}' || `https://${{ steps.create-subdomain.outputs.subdomain }}`;
             
             const commentBody = `🚀 **Preview deploy concluído no AWS Amplify!**
 
