@@ -132,10 +132,9 @@ export default function CoordinatorTable({
         header: 'Ações',
         enableSorting: false,
         cell: ({ row }) => {
-          const { user: loggedUser } = useSelector((state: RootState) => state.auth);
           const wa = buildWhatsappLink(
             row.original.user?.name,
-            loggedUser?.name,
+            user?.name,
             row.original.user?.phone
           );
 

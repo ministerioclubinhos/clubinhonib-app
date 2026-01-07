@@ -34,12 +34,12 @@ export default function ChildrenBrowserPage() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
   const club = useSelector((state: RootState) => (state.auth as any).user?.teacherProfile?.club);
-
-  const { items, loading, error, setError, refetch } = club
-    ? useChildrenBrowser()
-    : { items: [], loading: false, error: '', setError: () => {}, refetch: () => {} };
-
   const [query, setQuery] = React.useState('');
+
+  const childrenBrowserResult = useChildrenBrowser();
+  const { items, loading, error, setError, refetch } = club
+    ? childrenBrowserResult
+    : { items: [], loading: false, error: '', setError: () => {}, refetch: () => {} };
   const filteredItems = React.useMemo(() => {
     const s = query.trim().toLowerCase();
     if (!s) return items;

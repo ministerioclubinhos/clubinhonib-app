@@ -51,16 +51,16 @@ const theme = createTheme({
 });
 
 const programIcons = [
-  <BadgeIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
-  <VolunteerActivismIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
-  <GroupsIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
-  <OndemandVideoIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
-  <EmojiPeopleIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
-  <SportsKabaddiIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
-  <MusicNoteIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
-  <MenuBookIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
-  <RestaurantIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
-  <CardGiftcardIcon sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <BadgeIcon key="badge" sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <VolunteerActivismIcon key="volunteer" sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <GroupsIcon key="groups" sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <OndemandVideoIcon key="video" sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <EmojiPeopleIcon key="emoji" sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <SportsKabaddiIcon key="sports" sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <MusicNoteIcon key="music" sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <MenuBookIcon key="book" sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <RestaurantIcon key="restaurant" sx={{ color: '#FF6F00', fontSize: 32 }} />,
+  <CardGiftcardIcon key="gift" sx={{ color: '#FF6F00', fontSize: 32 }} />,
 ];
 
 const NextArrow = (props: any) => {
