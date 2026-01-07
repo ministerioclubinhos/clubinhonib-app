@@ -9,7 +9,7 @@ env:
   AWS_REGION: us-east-1
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -95,6 +95,34 @@ jobs:
           fi
           
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Set Amplify env vars for branch (staging)
+        id: set-branch-env
+        run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          
+          echo "🧩 Configurando variáveis de ambiente da branch $BRANCH_NAME no Amplify (staging)..."
+          aws amplify update-branch \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH_NAME" \
+            --environment-variables VITE_API_URL=https://staging-api.clubinhonib.com,VITE_FEED_MINISTERIO_ID=afa51053-1296-4c89-9059-a8ad8bd1ec90,VITE_GOOGLE_CLIENT_ID=135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com,VITE_SPECIAL_FAMILY_DAY_ID=a2f9913a-e123-46b2-b6f4-a4138686042f \
+            --region ${{ env.AWS_REGION }}
+          echo "✅ Variáveis configuradas"
+
+      - name: Start Amplify build explicitly
+        id: start-build
+        run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          
+          echo "🚀 Iniciando build do Amplify para a branch $BRANCH_NAME..."
+          aws amplify start-job \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH_NAME" \
+            --job-type RELEASE \
+            --region ${{ env.AWS_REGION }} >/dev/null 2>&1 || true
+          echo "✅ Comando de start-job enviado (idempotente)"
 
       - name: Get Route 53 Hosted Zone ID
         id: get-hosted-zone
@@ -432,8 +460,6 @@ jobs:
             const subdomain = '${{ steps.wait-deployment.outputs.subdomain }}';
             const status = '${{ steps.verify-deployment.outputs.status }}';
             const statusMessage = '${{ steps.verify-deployment.outputs.status-message }}'.replace(/\\n/g, '\n');
-            const buildCompleted = '${{ steps.wait-build.outputs.build-completed }}' === 'true';
-            const dnsReady = '${{ steps.wait-dns.outputs.dns-ready }}' === 'true';
             
             let statusEmoji = '🚀';
             let statusText = 'Preview deploy concluído no AWS Amplify!';
