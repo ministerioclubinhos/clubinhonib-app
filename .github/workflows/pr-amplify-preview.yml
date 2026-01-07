@@ -33,7 +33,7 @@ jobs:
         run: |
           APP_ID=$(aws amplify list-apps --region ${{ env.AWS_REGION }} --query "apps[?name=='clubinhonib-app'].appId" --output text)
           if [ -z "$APP_ID" ]; then
-            echo "❌ Amplify app 'clubinhonib-app' não encontrado!"
+            echo "❌ Amplify app 'clubinhonib-app' not found!"
             exit 1
           fi
           echo "app-id=$APP_ID" >> $GITHUB_OUTPUT
@@ -135,7 +135,7 @@ jobs:
           
           if [ -z "$HOSTED_ZONE_ID" ]; then
             HOSTED_ZONE_ID="Z04342831HLGP0JZ4VI5K"
-            echo "⚠️ Usando Hosted Zone ID padrão: $HOSTED_ZONE_ID"
+            echo "⚠️ Using default Hosted Zone ID: $HOSTED_ZONE_ID"
           fi
           
           echo "hosted-zone-id=$HOSTED_ZONE_ID" >> $GITHUB_OUTPUT
@@ -499,24 +499,24 @@ jobs:
             const statusMessage = '${{ steps.verify-deployment.outputs.status-message }}'.replace(/\\n/g, '\n');
             
             let statusEmoji = '🚀';
-            let statusText = 'Preview deploy concluído no AWS Amplify!';
+            let statusText = 'Preview deploy completed on AWS Amplify!';
             
             if (status === '⚠️') {
               statusEmoji = '⚠️';
-              statusText = 'Preview deploy em andamento no AWS Amplify';
+              statusText = 'Preview deploy in progress on AWS Amplify';
             }
             
             const commentBody = statusEmoji + ' **' + statusText + '**\n\n' +
-              '🔗 **Preview disponível em:** [' + previewUrl + '](' + previewUrl + ')\n\n' +
-              '📊 **Status do Deployment:**\n' + statusMessage + '\n' +
-              '⚠️ **Nota:** Esta preview está conectada à API de staging.\n\n' +
-              '📋 **Variáveis de ambiente usadas:**\n' +
+              '🔗 **Preview available at:** [' + previewUrl + '](' + previewUrl + ')\n\n' +
+              '📊 **Deployment Status:**\n' + statusMessage + '\n' +
+              '⚠️ **Note:** This preview is connected to the staging API.\n\n' +
+              '📋 **Environment variables used:**\n' +
               '- \\`VITE_API_URL\\`: https://staging-api.clubinhonib.com\n' +
               '- \\`VITE_FEED_MINISTERIO_ID\\`: afa51053-1296-4c89-9059-a8ad8bd1ec90\n' +
               '- \\`VITE_GOOGLE_CLIENT_ID\\`: 135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com\n' +
               '- \\`VITE_SPECIAL_FAMILY_DAY_ID\\`: a2f9913a-e123-46b2-b6f4-a4138686042f\n\n' +
-              '🌐 **Subdomínio:** \\`' + subdomain + '\\`\n\n' +
-              '_Deploy automático do PR #' + prNumber + ' via AWS Amplify_';
+              '🌐 **Subdomain:** \\`' + subdomain + '\\`\n\n' +
+              '_Automatic deploy of PR #' + prNumber + ' via AWS Amplify_';
 
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -525,7 +525,7 @@ jobs:
             });
 
             const botComment = comments.data.find(
-              comment => comment.user.type === 'Bot' && comment.body.includes('Preview deploy concluído no AWS Amplify')
+              comment => comment.user.type === 'Bot' && comment.body.includes('Preview deploy completed on AWS Amplify')
             );
 
             if (botComment) {
@@ -569,7 +569,7 @@ jobs:
         run: |
           APP_ID=$(aws amplify list-apps --region ${{ env.AWS_REGION }} --query "apps[?name=='clubinhonib-app'].appId" --output text)
           if [ -z "$APP_ID" ]; then
-            echo "❌ Amplify app 'clubinhonib-app' não encontrado!"
+            echo "❌ Amplify app 'clubinhonib-app' not found!"
             exit 1
           fi
           echo "app-id=$APP_ID" >> $GITHUB_OUTPUT
@@ -585,7 +585,7 @@ jobs:
           
           if [ -z "$HOSTED_ZONE_ID" ]; then
             HOSTED_ZONE_ID="Z04342831HLGP0JZ4VI5K"
-            echo "⚠️ Usando Hosted Zone ID padrão: $HOSTED_ZONE_ID"
+            echo "⚠️ Using default Hosted Zone ID: $HOSTED_ZONE_ID"
           fi
           
           echo "hosted-zone-id=$HOSTED_ZONE_ID" >> $GITHUB_OUTPUT
