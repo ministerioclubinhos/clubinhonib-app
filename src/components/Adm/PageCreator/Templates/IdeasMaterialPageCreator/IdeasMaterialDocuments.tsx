@@ -21,7 +21,6 @@ import { Delete, Edit, Visibility } from '@mui/icons-material';
 import { validateMediaURL } from 'utils/validateMediaURL';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
-import { getMediaPreviewUrl } from 'utils/getMediaPreviewUrl';
 
 interface DocumentsProps {
   documents: MediaItem[];

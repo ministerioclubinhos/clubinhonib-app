@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '@/store/slices';
 import { IdeasSection } from '@/store/slices/ideas/ideasSlice';
-import { setIdeasSectionData, clearIdeasSectionData } from '@/store/slices/ideas/ideasSlice';
+import { clearIdeasSectionData } from '@/store/slices/ideas/ideasSlice';
 import { IdeasMaterialSection } from '../IdeasMaterialPageCreator/IdeasMaterialSection';
 import api from '@/config/axiosConfig';
 

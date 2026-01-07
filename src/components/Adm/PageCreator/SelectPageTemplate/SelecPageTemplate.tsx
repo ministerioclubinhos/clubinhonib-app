@@ -40,8 +40,6 @@ export default function SelecPageTemplate() {
   const [selectedOption, setSelectedOption] = useState<keyof typeof Options | ''>('');
   const dispatch = useDispatch();
 
-  const theme = useTheme();
-
   const handleChange = (event: SelectChangeEvent) => {
     const selected = event.target.value as keyof typeof Options;
     setSelectedOption(selected);

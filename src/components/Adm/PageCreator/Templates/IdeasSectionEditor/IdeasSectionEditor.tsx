@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
   Box,
-  TextField,
   Button,
   Typography,
   Snackbar,
@@ -27,12 +26,11 @@ interface IdeasSectionEditorProps {
 
 export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEditorProps) {
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useDispatch();
 
   const existingSection = useSelector((state: RootState) => state.ideas.ideasSectionData);
 
-  const { pages, loading: pagesLoading, error: pagesError, fetchPages } = useIdeasPages();
+  const { pages, loading: pagesLoading, fetchPages } = useIdeasPages();
 
   const [sectionData, setSectionData] = useState<IdeasSection>({
     title: '',

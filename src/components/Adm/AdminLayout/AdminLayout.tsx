@@ -147,7 +147,7 @@ function AdminLayout() {
       .map((sec) => ({ ...sec, items: sec.items.filter(canSeeItem) }))
       .filter((sec) => sec.items.length > 0);
     return filtered;
-  }, [allSections, isAdmin, isCoordinator]);
+  }, [allSections, isAdmin, isCoordinator, canSeeItem]);
 
   const sectionOfPath = (path: string): SectionId => {
     if (path.startsWith('/adm/paginas-') || path.startsWith('/adm/fotos-')) return 'pages';

@@ -249,13 +249,16 @@ export default function AdminDashboardPage() {
     '/adm/pagelas',
   ]);
 
-  const canSeeCard = (card: CardData): boolean => {
-    if (isAdmin) return true;
-    if (isCoordinator) return coordinatorAllowed.has(card.path);
-    return false;
-  };
+  const canSeeCard = React.useCallback(
+    (card: CardData): boolean => {
+      if (isAdmin) return true;
+      if (isCoordinator) return coordinatorAllowed.has(card.path);
+      return false;
+    },
+    [isAdmin, isCoordinator]
+  );
 
-  const visibleCards = React.useMemo(() => cardData.filter(canSeeCard), [isAdmin, isCoordinator]);
+  const visibleCards = React.useMemo(() => cardData.filter(canSeeCard), [cardData, canSeeCard]);
 
   const grouped = React.useMemo(() => {
     const g: Record<Exclude<SectionId, 'all'>, CardData[]> = {
