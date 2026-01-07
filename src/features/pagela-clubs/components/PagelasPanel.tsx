@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   Avatar,
-  Divider,
   Pagination,
   IconButton,
   Tooltip,

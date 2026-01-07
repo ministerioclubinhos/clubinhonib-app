@@ -78,9 +78,10 @@ export const ClubsListView: React.FC = () => {
   };
 
   const handleReset = () => {
+    const limit = isMobile ? 5 : 20;
     setFilters({
       page: 1,
-      limit: isMobile ? 5 : 20,
+      limit,
       sortBy: 'performanceScore',
       sortOrder: 'DESC',
     });

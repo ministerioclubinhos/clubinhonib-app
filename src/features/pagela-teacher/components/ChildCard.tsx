@@ -11,7 +11,6 @@ import {
   IconButton,
   useTheme,
   Divider,
-  Button,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
@@ -19,8 +18,6 @@ import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import ToggleOnIcon from '@mui/icons-material/ToggleOn';
-import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 
 import { ChildSimpleResponseDto } from '@/features/children/types';
 import DecisionModal from './DecisionModal';

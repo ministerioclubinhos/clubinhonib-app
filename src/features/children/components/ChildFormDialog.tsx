@@ -49,7 +49,7 @@ export default function ChildFormDialog({
 }: Props) {
   const isCreate = mode === 'create';
   const user = useSelector((state: RootState) => state.auth.user);
-  
+
   if (!value) return null;
   const isTeacher = user?.role === UserRole.TEACHER;
   const teacherClub = user?.teacherProfile?.club ?? null;
