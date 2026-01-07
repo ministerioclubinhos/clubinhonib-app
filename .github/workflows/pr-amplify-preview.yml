@@ -508,14 +508,7 @@ jobs:
             
             const commentBody = statusEmoji + ' **' + statusText + '**\n\n' +
               '🔗 **Preview available at:** [' + previewUrl + '](' + previewUrl + ')\n\n' +
-              '📊 **Deployment Status:**\n' + statusMessage + '\n' +
               '⚠️ **Note:** This preview is connected to the staging API.\n\n' +
-              '📋 **Environment variables used:**\n' +
-              '- \\`VITE_API_URL\\`: https://staging-api.clubinhonib.com\n' +
-              '- \\`VITE_FEED_MINISTERIO_ID\\`: afa51053-1296-4c89-9059-a8ad8bd1ec90\n' +
-              '- \\`VITE_GOOGLE_CLIENT_ID\\`: 135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com\n' +
-              '- \\`VITE_SPECIAL_FAMILY_DAY_ID\\`: a2f9913a-e123-46b2-b6f4-a4138686042f\n\n' +
-              '🌐 **Subdomain:** \\`' + subdomain + '\\`\n\n' +
               '_Automatic deploy of PR #' + prNumber + ' via AWS Amplify_';
 
             const comments = await github.rest.issues.listComments({
