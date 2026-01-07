@@ -77,10 +77,10 @@ export const TeachersListView: React.FC = () => {
   };
 
   const handleReset = () => {
+    const limit = isMobile ? 5 : 20;
     setFilters({
       page: 1,
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      limit: isMobile ? 5 : 20,
+      limit,
       sortBy: 'effectivenessScore',
       sortOrder: 'DESC',
     });
