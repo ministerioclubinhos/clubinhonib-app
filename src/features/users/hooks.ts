@@ -1,17 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  apiCreateUser,
-  apiDeleteUser,
-  apiListUsers,
-  apiUpdateUser,
-} from "./api";
-import {
-  CreateUserForm,
-  SortParam,
-  UserFilters,
-  UserRow,
-  UpadateUserForm,
-} from "./types";
+import { useCallback, useEffect, useState } from 'react';
+import { apiCreateUser, apiDeleteUser, apiListUsers, apiUpdateUser } from './api';
+import { CreateUserForm, SortParam, UserFilters, UserRow, UpadateUserForm } from './types';
 
 export function useUsers(
   pageIndex: number,
@@ -22,15 +11,15 @@ export function useUsers(
   const [rows, setRows] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const fetchPage = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
-      const sort = sorting?.id ?? "updatedAt";
-      const order = sorting?.desc ? "DESC" : "ASC";
+      const sort = sorting?.id ?? 'updatedAt';
+      const order = sorting?.desc ? 'DESC' : 'ASC';
 
       const page = await apiListUsers({
         page: pageIndex + 1,
@@ -46,9 +35,7 @@ export function useUsers(
       setRows(Array.isArray(page?.items) ? page.items : []);
       setTotal(Number(page?.meta?.total ?? 0));
     } catch (err: any) {
-      setError(
-        err?.response?.data?.message || err.message || "Erro ao buscar usuários"
-      );
+      setError(err?.response?.data?.message || err.message || 'Erro ao buscar usuários');
     } finally {
       setLoading(false);
     }
@@ -80,39 +67,19 @@ export function useUsers(
 
 export function useUserMutations(refreshPage: () => Promise<void> | void) {
   const [dialogLoading, setDialogLoading] = useState(false);
-  const [dialogError, setDialogError] = useState("");
+  const [dialogError, setDialogError] = useState('');
 
-  const createUser = useCallback(async (form: CreateUserForm) => {
-    setDialogLoading(true);
-    setDialogError("");
-
-    try {
-      const { confirmPassword, ...payload } = form;
-      await apiCreateUser(payload);
-      await refreshPage();
-    } catch (err: any) {
-      setDialogError(
-        err?.response?.data?.message || err.message || "Erro ao criar usuário"
-      );
-      throw err;
-    } finally {
-      setDialogLoading(false);
-    }
-  }, [refreshPage]);
-
-  const updateUser = useCallback(
-    async (id: string, form: UpadateUserForm & { confirmPassword?: string }) => {
+  const createUser = useCallback(
+    async (form: CreateUserForm) => {
       setDialogLoading(true);
-      setDialogError("");
+      setDialogError('');
 
       try {
         const { confirmPassword, ...payload } = form;
-        await apiUpdateUser(id, form);
+        await apiCreateUser(payload);
         await refreshPage();
       } catch (err: any) {
-        setDialogError(
-          err?.response?.data?.message || err.message || "Erro ao atualizar usuário"
-        );
+        setDialogError(err?.response?.data?.message || err.message || 'Erro ao criar usuário');
         throw err;
       } finally {
         setDialogLoading(false);
@@ -121,22 +88,42 @@ export function useUserMutations(refreshPage: () => Promise<void> | void) {
     [refreshPage]
   );
 
-  const deleteUser = useCallback(async (id: string) => {
-    setDialogLoading(true);
-    setDialogError("");
+  const updateUser = useCallback(
+    async (id: string, form: UpadateUserForm & { confirmPassword?: string }) => {
+      setDialogLoading(true);
+      setDialogError('');
 
-    try {
-      await apiDeleteUser(id);
-      await refreshPage();
-    } catch (err: any) {
-      setDialogError(
-        err?.response?.data?.message || err.message || "Erro ao excluir usuário"
-      );
-      throw err;
-    } finally {
-      setDialogLoading(false);
-    }
-  }, [refreshPage]);
+      try {
+        const { confirmPassword, ...payload } = form;
+        await apiUpdateUser(id, form);
+        await refreshPage();
+      } catch (err: any) {
+        setDialogError(err?.response?.data?.message || err.message || 'Erro ao atualizar usuário');
+        throw err;
+      } finally {
+        setDialogLoading(false);
+      }
+    },
+    [refreshPage]
+  );
+
+  const deleteUser = useCallback(
+    async (id: string) => {
+      setDialogLoading(true);
+      setDialogError('');
+
+      try {
+        await apiDeleteUser(id);
+        await refreshPage();
+      } catch (err: any) {
+        setDialogError(err?.response?.data?.message || err.message || 'Erro ao excluir usuário');
+        throw err;
+      } finally {
+        setDialogLoading(false);
+      }
+    },
+    [refreshPage]
+  );
 
   return {
     dialogLoading,

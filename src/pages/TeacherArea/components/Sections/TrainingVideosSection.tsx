@@ -35,8 +35,7 @@ const TrainingVideosSection: React.FC = () => {
     if (!term) return videos;
     return videos.filter(
       (video) =>
-        video.title.toLowerCase().includes(term) ||
-        video.subtitle?.toLowerCase().includes(term)
+        video.title.toLowerCase().includes(term) || video.subtitle?.toLowerCase().includes(term)
     );
   }, [videos, search]);
 
@@ -136,11 +135,7 @@ const TrainingVideosSection: React.FC = () => {
 
           {filteredVideos.length > visibleCount && (
             <Box textAlign="center" mt={3}>
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => setExpanded((prev) => !prev)}
-              >
+              <Button size="small" variant="text" onClick={() => setExpanded((prev) => !prev)}>
                 {expanded ? 'Ver menos' : 'Ver mais'}
               </Button>
             </Box>

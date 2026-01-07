@@ -30,14 +30,22 @@ export default function ImageSectionManager() {
   const navigate = useNavigate();
 
   const {
-    filteredSections, loading, isFiltering, error, setError,
-    searchTerm, setSearchTerm, fetchSections,
+    filteredSections,
+    loading,
+    isFiltering,
+    error,
+    setError,
+    searchTerm,
+    setSearchTerm,
+    fetchSections,
   } = useImageSections();
 
   const [sectionToDelete, setSectionToDelete] = useState<SectionData | null>(null);
   const [selectedSection, setSelectedSection] = useState<SectionData | null>(null);
 
-  useEffect(() => { fetchSections(); }, [fetchSections]);
+  useEffect(() => {
+    fetchSections();
+  }, [fetchSections]);
 
   const handleEdit = (section: SectionData) => {
     // Define os dados da seção no Redux para o modo de edição
@@ -64,7 +72,14 @@ export default function ImageSectionManager() {
 
   return (
     <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh' }}>
-      <Container sx={{ maxWidth: { xs: '100%', md: '100%' }, px: { xs: 2, md: 3 }, pt: { xs: 0, md: 4 }, pb: 4 }}>
+      <Container
+        sx={{
+          maxWidth: { xs: '100%', md: '100%' },
+          px: { xs: 2, md: 3 },
+          pt: { xs: 0, md: 4 },
+          pb: 4,
+        }}
+      >
         <BackHeader title="Imagens dos Clubinhos" />
         <Box sx={{ maxWidth: 560, mx: 'auto', mt: 2, mb: 4, position: 'relative' }}>
           <TextField
@@ -98,10 +113,14 @@ export default function ImageSectionManager() {
         </Box>
 
         {isBusy ? (
-          <Box textAlign="center" mt={10}><CircularProgress /></Box>
+          <Box textAlign="center" mt={10}>
+            <CircularProgress />
+          </Box>
         ) : error ? (
           <Box textAlign="center" mt={10}>
-            <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
+            <Alert severity="error" onClose={() => setError('')}>
+              {error}
+            </Alert>
           </Box>
         ) : filteredSections.length === 0 ? (
           <Box textAlign="center" mt={10}>

@@ -4,18 +4,16 @@ import { RadarComparisonChart, DemographicCharts } from '../components';
 import { StatisticsFilters } from '../api';
 
 interface DemographicTabProps {
-	filters: StatisticsFilters;
+  filters: StatisticsFilters;
 }
 
 const DemographicTab: React.FC<DemographicTabProps> = ({ filters }) => {
-	return (
-		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-			<RadarComparisonChart filters={filters} />
-			<DemographicCharts filters={filters} />
-		</Box>
-	);
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <RadarComparisonChart filters={filters} />
+      <DemographicCharts filters={filters} />
+    </Box>
+  );
 };
 
 export default DemographicTab;
-
-

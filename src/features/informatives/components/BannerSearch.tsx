@@ -1,11 +1,18 @@
 import React from 'react';
-import { Box, CircularProgress, TextField, InputAdornment, IconButton, Tooltip } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
 import { Search, Clear } from '@mui/icons-material';
 
 type Props = {
   value: string;
   onChange: (v: string) => void;
-  loading?: boolean; 
+  loading?: boolean;
 };
 
 export default function BannerSearch({ value, onChange, loading }: Props) {

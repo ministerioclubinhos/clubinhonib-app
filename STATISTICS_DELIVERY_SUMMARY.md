@@ -27,6 +27,7 @@ Uma aplicação web moderna e interativa com:
 ### 🎨 Gráficos Ricos Implementados
 
 #### 1. Cards de Métricas Avançados
+
 - Gradientes animados
 - Ícones coloridos
 - Badges de tendência
@@ -34,6 +35,7 @@ Uma aplicação web moderna e interativa com:
 - Hover effects elegantes
 
 #### 2. Gráfico Multi-Tipo (AdvancedPagelasChart)
+
 - 4 tipos: Composto, Linha, Área, Barras
 - Toggle entre tipos
 - Seleção de métricas
@@ -41,18 +43,21 @@ Uma aplicação web moderna e interativa com:
 - Tooltips customizados
 
 #### 3. Gráficos Radar (RadarComparisonChart)
+
 - Comparação por Gênero (360°)
 - Comparação por Faixa Etária
 - Múltiplas dimensões
 - Cores distintas
 
 #### 4. Análise de Decisões (EnhancedDecisionsChart)
+
 - 3 cards de resumo visuais
 - Gráfico de área temporal com gradientes
 - Pizza interativa
 - Barras de progresso lineares
 
 #### 5. Performance de Clubes (ClubPerformanceChart)
+
 - Gráfico de barras horizontal
 - Top 5 com detalhes
 - Medalhas 🥇🥈🥉
@@ -60,29 +65,34 @@ Uma aplicação web moderna e interativa com:
 - Avatares e chips
 
 #### 6. Ranking de Clubinhos
+
 - Tabela com medalhas
 - Chips de performance
 - Ícones de troféu
 - Cores dinâmicas
 
 #### 7. Top Crianças Engajadas
+
 - Avatares com iniciais
 - Scores de engajamento
 - Badges de decisões
 - Dados completos
 
 #### 8. Análise Geográfica
+
 - Top 10 cidades (barras horizontais)
 - Tabela detalhada
 - Crianças únicas por cidade
 
 #### 9. Análise Demográfica
+
 - Pizza (gênero)
 - Barras (faixa etária)
 - Barras (tempo de participação)
 - Cores consistentes
 
 #### 10. Filtros Expansíveis
+
 - Básicos sempre visíveis
 - Avançados em colapso
 - Botão de reset
@@ -121,15 +131,15 @@ features/statistics/
 
 ### Tecnologias Utilizadas
 
-| Biblioteca | Versão | Finalidade |
-|------------|--------|------------|
-| **React** | 19.1.1 | Framework UI |
-| **TypeScript** | 5.6.2 | Tipagem estática |
-| **Material-UI** | 6.4.11 | Componentes UI |
-| **Recharts** | Latest | Gráficos interativos |
-| **TanStack Query** | Latest | Estado assíncrono |
-| **Day.js** | 1.11.13 | Manipulação de datas |
-| **Axios** | 1.8.4 | HTTP client |
+| Biblioteca         | Versão  | Finalidade           |
+| ------------------ | ------- | -------------------- |
+| **React**          | 19.1.1  | Framework UI         |
+| **TypeScript**     | 5.6.2   | Tipagem estática     |
+| **Material-UI**    | 6.4.11  | Componentes UI       |
+| **Recharts**       | Latest  | Gráficos interativos |
+| **TanStack Query** | Latest  | Estado assíncrono    |
+| **Day.js**         | 1.11.13 | Manipulação de datas |
+| **Axios**          | 1.8.4   | HTTP client          |
 
 ### Padrões Aplicados
 
@@ -139,7 +149,7 @@ features/statistics/
 ✅ **Material-UI**: Design system consistente  
 ✅ **Responsivo**: Mobile-first approach  
 ✅ **Acessibilidade**: aria-labels, contraste adequado  
-✅ **Performance**: Lazy loading, debounce em filtros  
+✅ **Performance**: Lazy loading, debounce em filtros
 
 ---
 
@@ -148,16 +158,19 @@ features/statistics/
 ### Filtros Inteligentes
 
 **Padrão Automático**: Mês atual
+
 - ✅ Data inicial: Primeiro dia do mês
 - ✅ Data final: Último dia do mês
 - ✅ Agrupamento: Semanal
 
 **Filtros Básicos**:
+
 - Ano
 - Agrupar por (dia, semana, mês, ano)
 - Data inicial/final
 
 **Filtros Avançados** (expansíveis):
+
 - Gênero
 - Idade mínima/máxima
 - Cidade
@@ -180,7 +193,7 @@ features/statistics/
 ✅ Legendas clicáveis  
 ✅ Filtros em tempo real  
 ✅ Loading states  
-✅ Error handling  
+✅ Error handling
 
 ---
 
@@ -223,10 +236,10 @@ boxShadow: 0 8px 24px colorAlpha30
 ### Espaçamento Consistente
 
 ```typescript
-padding: 3        // 24px (cards)
-gap: 2-3          // 16-24px (entre elementos)
-mb: 3-4           // 24-32px (margin bottom)
-borderRadius: 2-3 // 8-12px (bordas)
+padding: 3; // 24px (cards)
+gap: 2 - 3; // 16-24px (entre elementos)
+mb: 3 - 4; // 24-32px (margin bottom)
+borderRadius: 2 - 3; // 8-12px (bordas)
 ```
 
 ---
@@ -236,15 +249,16 @@ borderRadius: 2-3 // 8-12px (bordas)
 ### Endpoints Consumidos
 
 ```typescript
-GET /statistics/overview
-GET /statistics/pagelas/charts
-GET /statistics/accepted-christs/charts
-GET /statistics/insights
+GET / statistics / overview;
+GET / statistics / pagelas / charts;
+GET / statistics / accepted - christs / charts;
+GET / statistics / insights;
 ```
 
 ### Parâmetros Suportados
 
 15+ tipos de filtros:
+
 - Temporais: year, week, startDate, endDate, groupBy
 - Geográficos: city, state, district
 - Demográficos: gender, minAge, maxAge
@@ -255,9 +269,9 @@ GET /statistics/insights
 ### Cache e Otimização
 
 ```typescript
-staleTime: 5 * 60 * 1000  // 5 minutos
-refetchOnWindowFocus: false
-retry: 1
+staleTime: 5 * 60 * 1000; // 5 minutos
+refetchOnWindowFocus: false;
+retry: 1;
 ```
 
 ---
@@ -294,6 +308,7 @@ Total: **5 documentos** + código comentado
 ## ✅ Checklist de Entrega
 
 ### Funcionalidades
+
 - [x] Página de estatísticas completa
 - [x] Gráficos ricos e interativos
 - [x] Filtros avançados
@@ -304,6 +319,7 @@ Total: **5 documentos** + código comentado
 - [x] Loading states
 
 ### Código
+
 - [x] TypeScript com tipagem forte
 - [x] Componentes reutilizáveis
 - [x] Hooks customizados
@@ -312,6 +328,7 @@ Total: **5 documentos** + código comentado
 - [x] Comentários onde necessário
 
 ### Integração
+
 - [x] Rota adicionada no App.tsx
 - [x] Card no AdminDashboardPage
 - [x] Proteção de rota (Admin/Coordenador)
@@ -319,6 +336,7 @@ Total: **5 documentos** + código comentado
 - [x] Ícones válidos do Material-UI
 
 ### Documentação
+
 - [x] README principal
 - [x] Guia de integração
 - [x] Guia de gráficos ricos
@@ -326,6 +344,7 @@ Total: **5 documentos** + código comentado
 - [x] Resumo de entrega
 
 ### Testes
+
 - [x] Compilação sem erros
 - [x] Sem warnings de lint
 - [x] Imports corretos
@@ -354,25 +373,30 @@ Total: **5 documentos** + código comentado
 ♿ **Acessível**: aria-labels, contraste adequado  
 📊 **Informativo**: 13 visualizações diferentes  
 🎨 **Consistente**: Design system Material-UI  
-📚 **Documentado**: 5 guias completos  
+📚 **Documentado**: 5 guias completos
 
 ---
 
 ## 🏆 Destaques
 
 ### Gráfico Multi-Tipo
+
 O **AdvancedPagelasChart** permite alternar entre 4 tipos de visualização com um único clique, oferecendo flexibilidade total na análise de dados.
 
 ### Cores Inteligentes
+
 Toda a aplicação usa **cores baseadas em performance**, facilitando a identificação rápida de pontos de atenção.
 
 ### Filtros do Mês Atual
+
 Por padrão, a página mostra **automaticamente o mês atual**, eliminando a necessidade de configuração inicial.
 
 ### Gráficos Radar
+
 Comparações visuais em **360 graus** para análise demográfica intuitiva.
 
 ### Medalhas e Rankings
+
 Sistema de **medalhas** (🥇🥈🥉) para gamificar e destacar os melhores clubes.
 
 ---
@@ -380,18 +404,21 @@ Sistema de **medalhas** (🥇🥈🥉) para gamificar e destacar os melhores clu
 ## 🔄 Próximas Melhorias Sugeridas
 
 ### Curto Prazo
+
 - [ ] Export para CSV/Excel
 - [ ] Print/PDF de gráficos
 - [ ] Comparação de períodos lado a lado
 - [ ] Alertas personalizados
 
 ### Médio Prazo
+
 - [ ] Mapas interativos (Leaflet/Google Maps)
 - [ ] Drill-down em gráficos
 - [ ] Dashboard por papel (coordenador vs admin)
 - [ ] Temas claro/escuro
 
 ### Longo Prazo
+
 - [ ] Machine Learning para previsões
 - [ ] Análise de sentimentos
 - [ ] Recomendações automáticas
@@ -418,7 +445,7 @@ A **Página de Estatísticas do Clubinho NIB** foi entregue **completa e funcion
 ✅ Design moderno e profissional  
 ✅ Código limpo e documentado  
 ✅ Performance otimizada  
-✅ Totalmente integrada  
+✅ Totalmente integrada
 
 **Status**: ✅ PRONTO PARA PRODUÇÃO
 
@@ -426,7 +453,7 @@ A **Página de Estatísticas do Clubinho NIB** foi entregue **completa e funcion
 
 **Desenvolvido com 💙 para o Clubinho NIB**
 
-*Transformando dados em insights visuais que inspiram ação!* 🚀📊
+_Transformando dados em insights visuais que inspiram ação!_ 🚀📊
 
 ---
 
@@ -434,4 +461,3 @@ Data de Entrega: Novembro 2024
 Versão: 1.0.0  
 Desenvolvedor: AI Assistant  
 Tecnologias: React, TypeScript, Material-UI, Recharts, TanStack Query
-

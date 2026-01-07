@@ -1,6 +1,6 @@
-import api from "@/config/axiosConfig";
-import { MediaItem } from "@/store/slices/types";
-import type { VideoPageData } from "@/store/slices/video/videoSlice";
+import api from '@/config/axiosConfig';
+import { MediaItem } from '@/store/slices/types';
+import type { VideoPageData } from '@/store/slices/video/videoSlice';
 
 export interface GetVideoPageResponse {
   id: string;
@@ -13,7 +13,7 @@ export interface GetVideoPageResponse {
 export const toVideoPageData = (dto: GetVideoPageResponse): VideoPageData => ({
   id: dto.id,
   title: dto.title,
-  description: dto.description ?? "",
+  description: dto.description ?? '',
   public: dto.public ?? false,
   videos: Array.isArray(dto.videos) ? dto.videos : [],
 });

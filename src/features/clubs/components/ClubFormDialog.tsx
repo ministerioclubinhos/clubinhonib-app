@@ -1,22 +1,41 @@
-import React from "react";
+import React from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider,
-  Typography, Alert, TextField, FormControl, InputLabel, Select, MenuItem,
-  useTheme, useMediaQuery, FormControlLabel, Checkbox
-} from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
-import AddressFields from "./form/AddressFields";
-import CoordinatorSelect from "./form/CoordinatorSelect";
-import TeachersSelect from "./form/TeachersSelect";
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Grid,
+  Divider,
+  Typography,
+  Alert,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  useTheme,
+  useMediaQuery,
+  FormControlLabel,
+  Checkbox,
+} from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import AddressFields from './form/AddressFields';
+import CoordinatorSelect from './form/CoordinatorSelect';
+import TeachersSelect from './form/TeachersSelect';
 import {
-  CoordinatorOption, CreateClubForm, EditClubForm, TeacherOption,
-  Weekday, WEEKDAYS
-} from "../types";
-import { useSelector } from "react-redux";
-import { selectIsAdmin } from "@/store/selectors/routeSelectors";
+  CoordinatorOption,
+  CreateClubForm,
+  EditClubForm,
+  TeacherOption,
+  Weekday,
+  WEEKDAYS,
+} from '../types';
+import { useSelector } from 'react-redux';
+import { selectIsAdmin } from '@/store/selectors/routeSelectors';
 
 type Props = {
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
   open: boolean;
   value: CreateClubForm | EditClubForm | null;
   onChange: (val: CreateClubForm | EditClubForm) => void;
@@ -29,30 +48,38 @@ type Props = {
 };
 
 export default function ClubFormDialog({
-  mode, open, value, onChange, onCancel, onSubmit,
-  error, loading, coordinatorOptions, teacherOptions,
+  mode,
+  open,
+  value,
+  onChange,
+  onCancel,
+  onSubmit,
+  error,
+  loading,
+  coordinatorOptions,
+  teacherOptions,
 }: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
   const teachersKey = React.useMemo(
-    () => (teacherOptions ?? [])
-      .map(t => `${t.teacherProfileId}:${t.vinculado ? 1 : 0}`)
-      .join("|"),
+    () =>
+      (teacherOptions ?? []).map((t) => `${t.teacherProfileId}:${t.vinculado ? 1 : 0}`).join('|'),
     [teacherOptions]
   );
   const isAdmin = useSelector(selectIsAdmin);
-  const isCreate = mode === "create";
+  const isCreate = mode === 'create';
 
   if (!value) return null;
 
   const teachers = (value as any).teacherProfileIds ?? [];
   const coord = (value as any).coordinatorProfileId ?? null;
-  const time = (value as any).time ?? "";
+  const time = (value as any).time ?? '';
 
-  const numberValue =
-    isAdmin
-      ? (isCreate ? ((value as any).number ?? 0) : ((value as any).number ?? ""))
-      : undefined;
+  const numberValue = isAdmin
+    ? isCreate
+      ? ((value as any).number ?? 0)
+      : ((value as any).number ?? '')
+    : undefined;
 
   return (
     <Dialog
@@ -62,16 +89,20 @@ export default function ClubFormDialog({
       fullWidth
       PaperProps={{
         sx: {
-          width: isXs ? "98vw" : undefined,
-          maxWidth: isXs ? "98vw" : undefined,
+          width: isXs ? '98vw' : undefined,
+          maxWidth: isXs ? '98vw' : undefined,
           m: isXs ? 0 : undefined,
         },
       }}
     >
-      <DialogTitle>{isCreate ? "Criar Clubinho" : "Editar Clubinho"}</DialogTitle>
+      <DialogTitle>{isCreate ? 'Criar Clubinho' : 'Editar Clubinho'}</DialogTitle>
 
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         <Grid container spacing={2}>
           {isAdmin && (
@@ -80,11 +111,11 @@ export default function ClubFormDialog({
                 label="Número"
                 type="text"
                 fullWidth
-                inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                 value={numberValue}
                 onChange={(e) => {
                   const raw = e.target.value;
-                  const onlyDigits = raw.replace(/\D/g, "");
+                  const onlyDigits = raw.replace(/\D/g, '');
                   const parsed = onlyDigits ? Number(onlyDigits) : undefined;
                   onChange({ ...value, number: parsed } as any);
                 }}
@@ -97,13 +128,13 @@ export default function ClubFormDialog({
               <InputLabel>Dia da semana</InputLabel>
               <Select
                 label="Dia da semana"
-                value={(value as any).weekday ?? "saturday"}
-                onChange={(e) =>
-                  onChange({ ...value, weekday: e.target.value as Weekday } as any)
-                }
+                value={(value as any).weekday ?? 'saturday'}
+                onChange={(e) => onChange({ ...value, weekday: e.target.value as Weekday } as any)}
               >
                 {WEEKDAYS.map((w) => (
-                  <MenuItem key={w.value} value={w.value}>{w.label}</MenuItem>
+                  <MenuItem key={w.value} value={w.value}>
+                    {w.label}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -138,36 +169,40 @@ export default function ClubFormDialog({
               <CoordinatorSelect
                 value={coord}
                 options={coordinatorOptions}
-                onChange={(val) =>
-                  onChange({ ...value, coordinatorProfileId: val } as any)
-                }
+                onChange={(val) => onChange({ ...value, coordinatorProfileId: val } as any)}
               />
             </Grid>
           )}
 
-          <Grid item xs={12}><Divider /></Grid>
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
 
           <Grid item xs={12}>
-            <Typography variant="subtitle1" fontWeight={700}>Endereço</Typography>
+            <Typography variant="subtitle1" fontWeight={700}>
+              Endereço
+            </Typography>
           </Grid>
           <AddressFields
             value={(value as any).address ?? {}}
             onChange={(addr) => onChange({ ...value, address: addr } as any)}
           />
 
-          <Grid item xs={12}><Divider /></Grid>
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
 
           <Grid item xs={12}>
-            <Typography variant="subtitle1" fontWeight={700}>Professores</Typography>
+            <Typography variant="subtitle1" fontWeight={700}>
+              Professores
+            </Typography>
           </Grid>
           <Grid item xs={12}>
             <TeachersSelect
               key={teachersKey}
               value={teachers}
               options={teacherOptions}
-              onChange={(ids) =>
-                onChange({ ...value, teacherProfileIds: ids } as any)
-              }
+              onChange={(ids) => onChange({ ...value, teacherProfileIds: ids } as any)}
             />
           </Grid>
         </Grid>
@@ -180,11 +215,11 @@ export default function ClubFormDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onCancel} sx={{ color: "text.secondary" }}>
+        <Button onClick={onCancel} sx={{ color: 'text.secondary' }}>
           Cancelar
         </Button>
         <Button variant="contained" onClick={onSubmit} disabled={loading}>
-          {isCreate ? "Criar" : "Salvar"}
+          {isCreate ? 'Criar' : 'Salvar'}
         </Button>
       </DialogActions>
     </Dialog>

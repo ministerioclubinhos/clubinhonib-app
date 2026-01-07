@@ -51,11 +51,10 @@ export default function IdeasSectionManager() {
     fetchSections,
   } = useIdeasSections();
 
-
   const [sectionToDelete, setSectionToDelete] = useState<IdeasSectionType | null>(null);
   const [selectedSection, setSelectedSection] = useState<IdeasSectionType | null>(null);
 
-  useEffect(() => { 
+  useEffect(() => {
     fetchSections();
   }, [fetchSections]);
 
@@ -67,7 +66,7 @@ export default function IdeasSectionManager() {
       public: section.public,
       createdAt: section.createdAt,
       updatedAt: section.updatedAt,
-      medias: (section.medias || []).map(media => ({
+      medias: (section.medias || []).map((media) => ({
         id: media.id,
         title: media.title,
         description: media.description,
@@ -75,16 +74,16 @@ export default function IdeasSectionManager() {
         mediaType: media.mediaType as MediaType,
         isLocalFile: media.isLocalFile,
         url: media.url,
-        platformType: media.platformType as MediaPlatform || undefined,
+        platformType: (media.platformType as MediaPlatform) || undefined,
         originalName: media.originalName || undefined,
         size: media.size || undefined,
         createdAt: media.createdAt,
         updatedAt: media.updatedAt,
       })),
     };
-    
+
     dispatch(setIdeasSectionData(ideasSection));
-    
+
     navigate('/adm/editar-ideias-compartilhadas');
   };
 
@@ -106,9 +105,16 @@ export default function IdeasSectionManager() {
 
   return (
     <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh' }}>
-      <Container sx={{ maxWidth: { xs: '100%', md: '100%' }, px: { xs: 2, md: 3 }, pt: { xs: 0, md: 4 }, pb: 4 }}>
+      <Container
+        sx={{
+          maxWidth: { xs: '100%', md: '100%' },
+          px: { xs: 2, md: 3 },
+          pt: { xs: 0, md: 4 },
+          pb: 4,
+        }}
+      >
         <BackHeader title="Ideias compartilhadas" />
-        
+
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ maxWidth: 560, flex: 1, mr: 2 }}>
             <TextField
@@ -143,15 +149,21 @@ export default function IdeasSectionManager() {
         </Box>
 
         {isBusy ? (
-          <Box textAlign="center" mt={10}><CircularProgress /></Box>
+          <Box textAlign="center" mt={10}>
+            <CircularProgress />
+          </Box>
         ) : error ? (
           <Box textAlign="center" mt={10}>
-            <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
+            <Alert severity="error" onClose={() => setError('')}>
+              {error}
+            </Alert>
           </Box>
         ) : filteredSections.length === 0 ? (
           <Box textAlign="center" mt={10}>
             <Alert severity="info">
-              {hasQuery ? 'Nenhuma seção encontrada com os filtros aplicados.' : 'Nenhuma seção de ideias cadastrada.'}
+              {hasQuery
+                ? 'Nenhuma seção encontrada com os filtros aplicados.'
+                : 'Nenhuma seção de ideias cadastrada.'}
             </Alert>
           </Box>
         ) : (
@@ -181,7 +193,6 @@ export default function IdeasSectionManager() {
           open={!!selectedSection}
           onClose={() => setSelectedSection(null)}
         />
-
       </Container>
     </Box>
   );

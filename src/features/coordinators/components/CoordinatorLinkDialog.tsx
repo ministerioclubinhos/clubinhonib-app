@@ -1,9 +1,18 @@
-import React from "react";
+import React from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, TextField, Alert, Box, Typography
-} from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
-import { CoordinatorProfile } from "../types";
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Grid,
+  TextField,
+  Alert,
+  Box,
+  Typography,
+} from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import { CoordinatorProfile } from '../types';
 
 type Props = {
   open: boolean;
@@ -20,8 +29,17 @@ type Props = {
 };
 
 export default function CoordinatorLinkDialog({
-  open, coordinator, linkNumber, unlinkNumber, onChangeLink, onChangeUnlink,
-  onLink, onUnlink, loading, error, onClose,
+  open,
+  coordinator,
+  linkNumber,
+  unlinkNumber,
+  onChangeLink,
+  onChangeUnlink,
+  onLink,
+  onUnlink,
+  loading,
+  error,
+  onClose,
 }: Props) {
   const disabledLink = loading || !linkNumber;
   const disabledUnlink = loading || !unlinkNumber;
@@ -30,7 +48,11 @@ export default function CoordinatorLinkDialog({
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Vincular / Desvincular Clubinho</DialogTitle>
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         {!!coordinator && (
           <Grid container spacing={2}>
@@ -47,9 +69,11 @@ export default function CoordinatorLinkDialog({
                 fullWidth
                 value={linkNumber}
                 onChange={(e) => onChangeLink(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !disabledLink) onLink(); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !disabledLink) onLink();
+                }}
                 disabled={loading}
-                inputProps={{ inputMode: "numeric", min: 0 }}
+                inputProps={{ inputMode: 'numeric', min: 0 }}
               />
             </Grid>
 
@@ -60,18 +84,25 @@ export default function CoordinatorLinkDialog({
                 fullWidth
                 value={unlinkNumber}
                 onChange={(e) => onChangeUnlink(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !disabledUnlink) onUnlink(); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !disabledUnlink) onUnlink();
+                }}
                 disabled={loading}
-                inputProps={{ inputMode: "numeric", min: 0 }}
+                inputProps={{ inputMode: 'numeric', min: 0 }}
               />
             </Grid>
 
             <Grid item xs={12}>
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Button variant="contained" onClick={onLink} disabled={disabledLink}>
                   Vincular
                 </Button>
-                <Button color="warning" variant="outlined" onClick={onUnlink} disabled={disabledUnlink}>
+                <Button
+                  color="warning"
+                  variant="outlined"
+                  onClick={onUnlink}
+                  disabled={disabledUnlink}
+                >
                   Desvincular
                 </Button>
                 {loading && <CircularProgress size={20} />}
@@ -82,7 +113,9 @@ export default function CoordinatorLinkDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} disabled={loading}>Fechar</Button>
+        <Button onClick={onClose} disabled={loading}>
+          Fechar
+        </Button>
       </DialogActions>
     </Dialog>
   );

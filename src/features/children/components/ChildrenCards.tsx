@@ -1,18 +1,49 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from 'react';
 import {
-  Box, Card, CardContent, Chip, Grid, IconButton, Stack,
-  Typography, MenuItem, Select, FormControl, InputLabel,
-  Divider, TablePagination, Tooltip, Collapse, ButtonBase,
-  Paper, Avatar, Link
-} from "@mui/material";
-import { Visibility, Edit, Delete, SwapVert, CakeOutlined, PlaceOutlined, ExpandMore as ExpandMoreIcon, LocationOnOutlined, Phone as PhoneIcon, ChildCare, PersonOutlined, WhatsApp, ToggleOn, ToggleOff } from "@mui/icons-material";
-import { SortingState } from "@tanstack/react-table";
-import { ChildResponseDto } from "../types";
-import { RootState } from "@/store/slices";
-import { useSelector } from "react-redux";
-import { buildWhatsappLink } from "@/utils/whatsapp";
-import { formatDate, gLabel, ageFrom, timeDifference } from "@/utils/dateUtils";
-import { CopyButton, initials } from "@/utils/components";
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Grid,
+  IconButton,
+  Stack,
+  Typography,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Divider,
+  TablePagination,
+  Tooltip,
+  Collapse,
+  ButtonBase,
+  Paper,
+  Avatar,
+  Link,
+} from '@mui/material';
+import {
+  Visibility,
+  Edit,
+  Delete,
+  SwapVert,
+  CakeOutlined,
+  PlaceOutlined,
+  ExpandMore as ExpandMoreIcon,
+  LocationOnOutlined,
+  Phone as PhoneIcon,
+  ChildCare,
+  PersonOutlined,
+  WhatsApp,
+  ToggleOn,
+  ToggleOff,
+} from '@mui/icons-material';
+import { SortingState } from '@tanstack/react-table';
+import { ChildResponseDto } from '../types';
+import { RootState } from '@/store/slices';
+import { useSelector } from 'react-redux';
+import { buildWhatsappLink } from '@/utils/whatsapp';
+import { formatDate, gLabel, ageFrom, timeDifference } from '@/utils/dateUtils';
+import { CopyButton, initials } from '@/utils/components';
 
 type Props = {
   rows: ChildResponseDto[];
@@ -31,34 +62,51 @@ type Props = {
 
 export default function ChildrenCards(props: Props) {
   const {
-    rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
-    sorting, setSorting, onOpenView, onStartEdit, onAskDelete, onToggleActive
+    rows,
+    total,
+    pageIndex,
+    pageSize,
+    setPageIndex,
+    setPageSize,
+    sorting,
+    setSorting,
+    onOpenView,
+    onStartEdit,
+    onAskDelete,
+    onToggleActive,
   } = props;
 
   const [open, setOpen] = useState<Set<string>>(new Set());
   const { user } = useSelector((state: RootState) => state.auth);
-  
+
   const toggle = (id: string) =>
     setOpen((prev) => {
       const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
+      if (n.has(id)) {
+        n.delete(id);
+      } else {
+        n.add(id);
+      }
       return n;
     });
 
-  const currentSort = sorting?.[0] ?? { id: "updatedAt", desc: true };
-  const sortField = String(currentSort.id ?? "updatedAt");
+  const currentSort = sorting?.[0] ?? { id: 'updatedAt', desc: true };
+  const sortField = String(currentSort.id ?? 'updatedAt');
   const sortDesc = !!currentSort.desc;
 
   const handleSortField = (field: string) => setSorting([{ id: field, desc: sortDesc }]);
   const toggleSortDir = () => setSorting([{ id: sortField, desc: !sortDesc }]);
 
-  const sortOptions = useMemo(() => ([
-    { id: "name", label: "Nome" },
-    { id: "birthDate", label: "Nascimento" },
-    { id: "joinedAt", label: "No clubinho desde" },
-    { id: "updatedAt", label: "Atualizado em" },
-    { id: "createdAt", label: "Criado em" },
-  ]), []);
+  const sortOptions = useMemo(
+    () => [
+      { id: 'name', label: 'Nome' },
+      { id: 'birthDate', label: 'Nascimento' },
+      { id: 'joinedAt', label: 'No clubinho desde' },
+      { id: 'updatedAt', label: 'Atualizado em' },
+      { id: 'createdAt', label: 'Criado em' },
+    ],
+    []
+  );
 
   return (
     <Box sx={{ px: { xs: 0, sm: 1 }, py: 0 }}>
@@ -75,12 +123,16 @@ export default function ChildrenCards(props: Props) {
             label="Ordenar por"
             value={sortField}
             onChange={(e) => handleSortField(String(e.target.value))}
-            sx={{ ".MuiSelect-select": { py: 0.75 } }}
+            sx={{ '.MuiSelect-select': { py: 0.75 } }}
           >
-            {sortOptions.map(o => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+            {sortOptions.map((o) => (
+              <MenuItem key={o.id} value={o.id}>
+                {o.label}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
-        <Tooltip title={sortDesc ? "Ordem: Descendente" : "Ordem: Ascendente"}>
+        <Tooltip title={sortDesc ? 'Ordem: Descendente' : 'Ordem: Ascendente'}>
           <IconButton size="small" onClick={toggleSortDir} aria-label="Inverter ordem">
             <SwapVert fontSize="small" />
           </IconButton>
@@ -93,7 +145,7 @@ export default function ChildrenCards(props: Props) {
           const age = ageFrom(c.birthDate);
           const ageDetailedText = timeDifference(c.birthDate);
           const tenure = timeDifference(c.joinedAt);
-          const addrPreview = c.address ? `${c.address.city} / ${c.address.state}` : "—";
+          const addrPreview = c.address ? `${c.address.city} / ${c.address.state}` : '—';
           const wa = buildWhatsappLink(c.name, user?.name, c.guardianPhone);
 
           return (
@@ -102,43 +154,55 @@ export default function ChildrenCards(props: Props) {
                 variant="outlined"
                 sx={{
                   borderRadius: 3,
-                  overflow: "hidden",
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  "&:hover": {
-                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-                    transform: "translateY(-2px)",
-                    "& .child-avatar": {
-                      transform: "scale(1.1)",
-                    }
+                  overflow: 'hidden',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                    transform: 'translateY(-2px)',
+                    '& .child-avatar': {
+                      transform: 'scale(1.1)',
+                    },
                   },
-                  bgcolor: "background.paper",
-                  position: "relative",
-                  display: "flex",
-                  flexDirection: "column",
-                  "&::before": {
+                  bgcolor: 'background.paper',
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  '&::before': {
                     content: '""',
-                    position: "absolute",
+                    position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
                     height: 4,
-                    background: "linear-gradient(90deg, #ff5722 0%, #ff9800 100%)",
-                  }
+                    background: 'linear-gradient(90deg, #ff5722 0%, #ff9800 100%)',
+                  },
                 }}
               >
                 {/* Header - Compacto no mobile */}
-                <Box sx={{ px: { xs: 0.75, sm: 1.25 }, pt: { xs: 0.5, sm: 1 }, pb: { xs: 0, sm: 0.5 }, mt: { xs: 0.25, sm: 0.5 } }}>
-                  <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }} sx={{ mb: { xs: 0.25, sm: 0 } }}>
+                <Box
+                  sx={{
+                    px: { xs: 0.75, sm: 1.25 },
+                    pt: { xs: 0.5, sm: 1 },
+                    pb: { xs: 0, sm: 0.5 },
+                    mt: { xs: 0.25, sm: 0.5 },
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    spacing={{ xs: 0.5, sm: 1 }}
+                    sx={{ mb: { xs: 0.25, sm: 0 } }}
+                  >
                     <Avatar
                       className="child-avatar"
                       sx={{
                         width: { xs: 32, sm: 48 },
                         height: { xs: 32, sm: 48 },
-                        bgcolor: c.club ? "primary.main" : "grey.500",
-                        color: "white",
+                        bgcolor: c.club ? 'primary.main' : 'grey.500',
+                        color: 'white',
                         fontWeight: 800,
                         fontSize: { xs: 11, sm: 16 },
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                         flexShrink: 0,
                       }}
                       aria-label={`Avatar da criança ${c.name}`}
@@ -152,28 +216,35 @@ export default function ChildrenCards(props: Props) {
                         fontWeight={700}
                         noWrap
                         title={c.name}
-                        sx={{ fontSize: { xs: "0.85rem", sm: "1rem" } }}
+                        sx={{ fontSize: { xs: '0.85rem', sm: '1rem' } }}
                       >
                         {c.name}
                       </Typography>
-                      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap rowGap={0.25} sx={{ mt: 0.25 }}>
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        flexWrap="wrap"
+                        useFlexGap
+                        rowGap={0.25}
+                        sx={{ mt: 0.25 }}
+                      >
                         <Chip
                           size="small"
-                          color={c.club ? "primary" : "default"}
-                          variant={c.club ? "filled" : "outlined"}
-                          label={c.club ? `#${c.club.number}` : "Sem clubinho"}
+                          color={c.club ? 'primary' : 'default'}
+                          variant={c.club ? 'filled' : 'outlined'}
+                          label={c.club ? `#${c.club.number}` : 'Sem clubinho'}
                           sx={{
-                            fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
                             height: { xs: 18, sm: 20 },
                           }}
                         />
                         <Chip
                           size="small"
-                          label={c.isActive ? "Ativo" : "Inativo"}
-                          color={c.isActive ? "success" : "default"}
-                          variant={c.isActive ? "filled" : "outlined"}
+                          label={c.isActive ? 'Ativo' : 'Inativo'}
+                          color={c.isActive ? 'success' : 'default'}
+                          variant={c.isActive ? 'filled' : 'outlined'}
                           sx={{
-                            fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
                             height: { xs: 18, sm: 20 },
                           }}
                         />
@@ -182,25 +253,25 @@ export default function ChildrenCards(props: Props) {
 
                     <ButtonBase
                       onClick={() => toggle(c.id)}
-                      aria-label={expanded ? "Recolher" : "Expandir"}
+                      aria-label={expanded ? 'Recolher' : 'Expandir'}
                       sx={{
                         borderRadius: 1.5,
                         px: { xs: 0.5, sm: 1 },
                         py: { xs: 0.25, sm: 0.5 },
-                        display: "flex",
-                        alignItems: "center",
-                        border: "1px solid",
-                        borderColor: "divider",
-                        bgcolor: "background.paper",
+                        display: 'flex',
+                        alignItems: 'center',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'background.paper',
                         flexShrink: 0,
-                        "&:hover": { bgcolor: "action.hover" },
+                        '&:hover': { bgcolor: 'action.hover' },
                       }}
                     >
                       <ExpandMoreIcon
-                        sx={{ 
+                        sx={{
                           fontSize: { xs: 18, sm: 20 },
-                          transition: "transform .15s ease", 
-                          transform: expanded ? "rotate(180deg)" : "rotate(0deg)" 
+                          transition: 'transform .15s ease',
+                          transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
                         }}
                       />
                     </ButtonBase>
@@ -211,33 +282,39 @@ export default function ChildrenCards(props: Props) {
                     sx={{
                       p: { xs: 0.375, sm: 0.75 },
                       borderRadius: 1.5,
-                      bgcolor: "grey.50",
-                      border: "1px solid",
-                      borderColor: "grey.200",
+                      bgcolor: 'grey.50',
+                      border: '1px solid',
+                      borderColor: 'grey.200',
                       mt: { xs: 0.25, sm: 0.5 },
                     }}
                   >
                     <Stack direction="row" spacing={0.5} alignItems="center">
-                      <PersonOutlined sx={{ fontSize: { xs: 14, sm: 18 }, color: "primary.main", flexShrink: 0 }} />
+                      <PersonOutlined
+                        sx={{ fontSize: { xs: 14, sm: 18 }, color: 'primary.main', flexShrink: 0 }}
+                      />
                       <Typography
                         variant="body2"
                         sx={{
                           fontWeight: 600,
-                          color: "text.primary",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          flex: 1
+                          color: 'text.primary',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          flex: 1,
                         }}
-                        title={c.guardianName || "Sem responsável"}
+                        title={c.guardianName || 'Sem responsável'}
                       >
-                        {c.guardianName || "Sem responsável"}
+                        {c.guardianName || 'Sem responsável'}
                       </Typography>
                       {c.guardianPhone && (
                         <Stack direction="row" spacing={0.25}>
                           <Tooltip title="Ligar">
-                            <IconButton size="small" href={`tel:${c.guardianPhone}`} sx={{ p: { xs: 0.25, sm: 0.5 } }}>
+                            <IconButton
+                              size="small"
+                              href={`tel:${c.guardianPhone}`}
+                              sx={{ p: { xs: 0.25, sm: 0.5 } }}
+                            >
                               <PhoneIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                             </IconButton>
                           </Tooltip>
@@ -249,7 +326,15 @@ export default function ChildrenCards(props: Props) {
 
                   {/* Info adicional - Apenas no modo comprimido */}
                   {!expanded && (
-                    <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap rowGap={0.5} sx={{ mt: { xs: 0.5, sm: 0.5 }, pb: { xs: 0.5, sm: 0 } }}>
+                    <Stack
+                      direction="row"
+                      spacing={0.75}
+                      alignItems="center"
+                      flexWrap="wrap"
+                      useFlexGap
+                      rowGap={0.5}
+                      sx={{ mt: { xs: 0.5, sm: 0.5 }, pb: { xs: 0.5, sm: 0 } }}
+                    >
                       {c.gender && (
                         <Chip
                           size="small"
@@ -258,9 +343,9 @@ export default function ChildrenCards(props: Props) {
                           color="info"
                           sx={{
                             fontWeight: 600,
-                            fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
                             height: { xs: 22, sm: 24 },
-                            "& .MuiChip-label": { px: { xs: 0.75, sm: 1 } }
+                            '& .MuiChip-label': { px: { xs: 0.75, sm: 1 } },
                           }}
                         />
                       )}
@@ -272,9 +357,9 @@ export default function ChildrenCards(props: Props) {
                           color="success"
                           sx={{
                             fontWeight: 600,
-                            fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
                             height: { xs: 22, sm: 24 },
-                            "& .MuiChip-label": { px: { xs: 0.75, sm: 1 } }
+                            '& .MuiChip-label': { px: { xs: 0.75, sm: 1 } },
                           }}
                         />
                       )}
@@ -286,24 +371,31 @@ export default function ChildrenCards(props: Props) {
                           color="warning"
                           sx={{
                             fontWeight: 600,
-                            fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
                             height: { xs: 22, sm: 24 },
-                            "& .MuiChip-label": { px: { xs: 0.75, sm: 1 } }
+                            '& .MuiChip-label': { px: { xs: 0.75, sm: 1 } },
                           }}
                         />
                       )}
-                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: { xs: 0, sm: 0.25 }, mt: { xs: 0.25, sm: 0 } }}>
-                        <LocationOnOutlined sx={{ fontSize: { xs: 14, sm: 16 }, color: "text.secondary" }} />
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        alignItems="center"
+                        sx={{ ml: { xs: 0, sm: 0.25 }, mt: { xs: 0.25, sm: 0 } }}
+                      >
+                        <LocationOnOutlined
+                          sx={{ fontSize: { xs: 14, sm: 16 }, color: 'text.secondary' }}
+                        />
                         <Typography
                           variant="caption"
                           color="text.secondary"
                           sx={{
                             fontWeight: 500,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                            lineHeight: 1.4
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            lineHeight: 1.4,
                           }}
                         >
                           {addrPreview}
@@ -323,19 +415,29 @@ export default function ChildrenCards(props: Props) {
                           sx={{
                             p: 1.25,
                             borderRadius: 2,
-                            bgcolor: "grey.50",
-                            border: "1px solid",
-                            borderColor: "grey.200",
+                            bgcolor: 'grey.50',
+                            border: '1px solid',
+                            borderColor: 'grey.200',
                           }}
                         >
                           <Stack spacing={1}>
                             <Stack direction="row" spacing={0.75} alignItems="center">
                               <ChildCare fontSize="small" color="primary" />
-                              <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
+                              <Typography
+                                variant="subtitle2"
+                                color="text.primary"
+                                sx={{ fontWeight: 600 }}
+                              >
                                 Informações da Criança
                               </Typography>
                             </Stack>
-                            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              flexWrap="wrap"
+                              useFlexGap
+                              rowGap={1}
+                            >
                               {c.gender && (
                                 <Chip
                                   size="small"
@@ -372,19 +474,29 @@ export default function ChildrenCards(props: Props) {
                           sx={{
                             p: 1.25,
                             borderRadius: 2,
-                            bgcolor: "grey.50",
-                            border: "1px solid",
-                            borderColor: "grey.200",
+                            bgcolor: 'grey.50',
+                            border: '1px solid',
+                            borderColor: 'grey.200',
                           }}
                         >
                           <Stack spacing={1}>
                             <Stack direction="row" spacing={0.75} alignItems="center">
                               <CakeOutlined fontSize="small" color="primary" />
-                              <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
+                              <Typography
+                                variant="subtitle2"
+                                color="text.primary"
+                                sx={{ fontWeight: 600 }}
+                              >
                                 Datas Importantes
                               </Typography>
                             </Stack>
-                            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              flexWrap="wrap"
+                              useFlexGap
+                              rowGap={1}
+                            >
                               <Chip
                                 size="small"
                                 variant="outlined"
@@ -409,32 +521,52 @@ export default function ChildrenCards(props: Props) {
                             sx={{
                               p: 1.25,
                               borderRadius: 2,
-                              bgcolor: "grey.50",
-                              border: "1px solid",
-                              borderColor: "grey.200",
+                              bgcolor: 'grey.50',
+                              border: '1px solid',
+                              borderColor: 'grey.200',
                             }}
                           >
                             <Stack spacing={1}>
                               <Stack direction="row" spacing={0.75} alignItems="center">
                                 <PlaceOutlined fontSize="small" color="primary" />
-                                <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
+                                <Typography
+                                  variant="subtitle2"
+                                  color="text.primary"
+                                  sx={{ fontWeight: 600 }}
+                                >
                                   Endereço
                                 </Typography>
                               </Stack>
                               <Stack spacing={0.5}>
-                                <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4 }}>
-                                  {c.address.street}{c.address.number ? `, ${c.address.number}` : ""}
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: 500, lineHeight: 1.4 }}
+                                >
+                                  {c.address.street}
+                                  {c.address.number ? `, ${c.address.number}` : ''}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ lineHeight: 1.4 }}
+                                >
                                   {c.address.district} • {c.address.city} / {c.address.state}
                                 </Typography>
                                 {c.address.postalCode && (
-                                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{ lineHeight: 1.4 }}
+                                  >
                                     CEP: {c.address.postalCode}
                                   </Typography>
                                 )}
                                 {c.address.complement && (
-                                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{ lineHeight: 1.4 }}
+                                  >
                                     Complemento: {c.address.complement}
                                   </Typography>
                                 )}
@@ -450,17 +582,17 @@ export default function ChildrenCards(props: Props) {
                 {/* Rodapé - Sempre visível */}
                 <Box
                   sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
                     gap: { xs: 0.5, sm: 0.75 },
                     px: { xs: 0.75, sm: 1.25 },
                     py: { xs: 0.375, sm: 0.75 },
-                    bgcolor: "grey.50",
-                    borderTop: "1px solid",
-                    borderColor: "grey.200",
+                    bgcolor: 'grey.50',
+                    borderTop: '1px solid',
+                    borderColor: 'grey.200',
                     flexShrink: 0,
-                    mt: "auto",
+                    mt: 'auto',
                   }}
                 >
                   <Stack direction="row" spacing={{ xs: 0.25, sm: 0.5 }}>
@@ -469,12 +601,12 @@ export default function ChildrenCards(props: Props) {
                         size="small"
                         onClick={() => onOpenView(c)}
                         sx={{
-                          color: "primary.main",
+                          color: 'primary.main',
                           p: { xs: 0.75, sm: 1 },
-                          "&:hover": { bgcolor: "primary.50" },
-                          "& .MuiSvgIcon-root": {
-                            fontSize: { xs: 30, sm: 26 }
-                          }
+                          '&:hover': { bgcolor: 'primary.50' },
+                          '& .MuiSvgIcon-root': {
+                            fontSize: { xs: 30, sm: 26 },
+                          },
                         }}
                       >
                         <Visibility />
@@ -492,9 +624,9 @@ export default function ChildrenCards(props: Props) {
                           aria-label="abrir WhatsApp"
                           sx={{
                             p: { xs: 0.75, sm: 1 },
-                            "& .MuiSvgIcon-root": {
-                              fontSize: { xs: 24, sm: 26 }
-                            }
+                            '& .MuiSvgIcon-root': {
+                              fontSize: { xs: 24, sm: 26 },
+                            },
                           }}
                         >
                           <WhatsApp />
@@ -506,28 +638,28 @@ export default function ChildrenCards(props: Props) {
                         size="small"
                         onClick={() => onStartEdit(c)}
                         sx={{
-                          color: "info.main",
+                          color: 'info.main',
                           p: { xs: 0.75, sm: 1 },
-                          "&:hover": { bgcolor: "info.50" },
-                          "& .MuiSvgIcon-root": {
-                            fontSize: { xs: 24, sm: 26 }
-                          }
+                          '&:hover': { bgcolor: 'info.50' },
+                          '& .MuiSvgIcon-root': {
+                            fontSize: { xs: 24, sm: 26 },
+                          },
                         }}
                       >
                         <Edit />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={c.isActive ? "Desativar" : "Ativar"}>
+                    <Tooltip title={c.isActive ? 'Desativar' : 'Ativar'}>
                       <IconButton
                         size="small"
-                        color={c.isActive ? "success" : "default"}
+                        color={c.isActive ? 'success' : 'default'}
                         onClick={() => onToggleActive(c)}
                         sx={{
                           p: { xs: 0.75, sm: 1 },
-                          "&:hover": { bgcolor: c.isActive ? "success.50" : "action.hover" },
-                          "& .MuiSvgIcon-root": {
-                            fontSize: { xs: 24, sm: 26 }
-                          }
+                          '&:hover': { bgcolor: c.isActive ? 'success.50' : 'action.hover' },
+                          '& .MuiSvgIcon-root': {
+                            fontSize: { xs: 24, sm: 26 },
+                          },
                         }}
                       >
                         {c.isActive ? <ToggleOn /> : <ToggleOff />}
@@ -540,10 +672,10 @@ export default function ChildrenCards(props: Props) {
                         onClick={() => onAskDelete(c)}
                         sx={{
                           p: { xs: 0.75, sm: 1 },
-                          "&:hover": { bgcolor: "error.50" },
-                          "& .MuiSvgIcon-root": {
-                            fontSize: { xs: 24, sm: 26 }
-                          }
+                          '&:hover': { bgcolor: 'error.50' },
+                          '& .MuiSvgIcon-root': {
+                            fontSize: { xs: 24, sm: 26 },
+                          },
                         }}
                       >
                         <Delete />
@@ -564,7 +696,10 @@ export default function ChildrenCards(props: Props) {
         page={pageIndex}
         onPageChange={(_, p) => setPageIndex(p)}
         rowsPerPage={pageSize}
-        onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPageIndex(0); }}
+        onRowsPerPageChange={(e) => {
+          setPageSize(parseInt(e.target.value, 10));
+          setPageIndex(0);
+        }}
         rowsPerPageOptions={[6, 12, 24]}
         labelRowsPerPage="Linhas"
         sx={{ px: 0 }}

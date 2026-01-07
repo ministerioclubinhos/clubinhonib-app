@@ -1,5 +1,5 @@
-import * as React from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import * as React from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
   Alert,
@@ -16,21 +16,22 @@ import {
   Stack,
   Fab,
   SwipeableDrawer,
-} from "@mui/material";
-import MuiAlert from "@mui/material/Alert";
-import { ArrowBack, FamilyRestroom, Phone, Add } from "@mui/icons-material";
-import { useChildrenBrowser, useChildPagelas } from "./hooks";
-import PagelaList from "./components/PagelaList";
-import PagelaQuickForm from "./components/PagelaQuickForm";
-import type { ChildSimpleResponseDto } from "../children/types";
-import type { Pagela } from "./types";
+} from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+import { ArrowBack, FamilyRestroom, Phone, Add } from '@mui/icons-material';
+import { useChildrenBrowser, useChildPagelas } from './hooks';
+import PagelaList from './components/PagelaList';
+import PagelaQuickForm from './components/PagelaQuickForm';
+import type { ChildSimpleResponseDto } from '../children/types';
+import type { Pagela } from './types';
 
 function genderPastel(seed: string, gender?: string) {
   const hash = Array.from(seed).reduce((a, ch) => (a * 33 + ch.charCodeAt(0)) % 1000, 7);
   const t = hash / 1000;
-  const g = (gender || "").toUpperCase();
-  const h = g === "F" ? (310 + t * 70) % 360 : 190 + t * 40;
-  const s = 70, l = 85;
+  const g = (gender || '').toUpperCase();
+  const h = g === 'F' ? (310 + t * 70) % 360 : 190 + t * 40;
+  const s = 70,
+    l = 85;
   return {
     solid: `hsl(${h} ${s}% ${l - 15}%)`,
     soft: `hsl(${(h + 12) % 360} ${s}% ${l}%)`,
@@ -40,16 +41,21 @@ function genderPastel(seed: string, gender?: string) {
 const TEACHER_PROFILE_ID: string | null = null;
 
 export default function ChildPagelasPage() {
-  const { childId = "" } = useParams();
+  const { childId = '' } = useParams();
   const nav = useNavigate();
   const loc = useLocation() as { state?: { child?: ChildSimpleResponseDto } };
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { byId, loading: loadingChildren, error: cError, setError: setCErr, onChangeQ } =
-    useChildrenBrowser();
+  const {
+    byId,
+    loading: loadingChildren,
+    error: cError,
+    setError: setCErr,
+    onChangeQ,
+  } = useChildrenBrowser();
   React.useEffect(() => {
-    if (!loc.state?.child && !byId.get(childId)) onChangeQ("");
+    if (!loc.state?.child && !byId.get(childId)) onChangeQ('');
   }, [childId]);
 
   const child = loc.state?.child || byId.get(childId) || null;
@@ -62,13 +68,13 @@ export default function ChildPagelasPage() {
 
   const [snack, setSnack] = React.useState({
     open: false,
-    message: "",
-    severity: "success" as "success" | "error" | "info" | "warning",
+    message: '',
+    severity: 'success' as 'success' | 'error' | 'info' | 'warning',
   });
-  const showSnack = (m: string, s: typeof snack.severity = "success") =>
+  const showSnack = (m: string, s: typeof snack.severity = 'success') =>
     setSnack({ open: true, message: m, severity: s });
   const closeSnack = (_?: unknown, r?: string) => {
-    if (r === "clickaway") return;
+    if (r === 'clickaway') return;
     setSnack((s) => ({ ...s, open: false }));
   };
 
@@ -92,8 +98,8 @@ export default function ChildPagelasPage() {
   const closeSheet = () => setSheetOpen(false);
 
   const initials = React.useMemo(() => {
-    const parts = (child?.name || "").trim().split(/\s+/).slice(0, 2);
-    return parts.map((p: string) => p?.[0]?.toUpperCase() || "").join("");
+    const parts = (child?.name || '').trim().split(/\s+/).slice(0, 2);
+    return parts.map((p: string) => p?.[0]?.toUpperCase() || '').join('');
   }, [child?.name]);
 
   return (
@@ -102,8 +108,8 @@ export default function ChildPagelasPage() {
         px: { xs: 2, md: 4 },
         pt: { xs: 3, md: 5 },
         pb: 6,
-        minHeight: "100vh",
-        bgcolor: "#f6f7f9",
+        minHeight: '100vh',
+        bgcolor: '#f6f7f9',
       }}
     >
       <Paper
@@ -112,22 +118,44 @@ export default function ChildPagelasPage() {
           p: { xs: 2, md: 2 },
           mb: 2,
           borderRadius: 4,
-          border: "1px solid",
-          borderColor: "divider",
-          overflow: "hidden",
-          position: "relative",
+          border: '1px solid',
+          borderColor: 'divider',
+          overflow: 'hidden',
+          position: 'relative',
           background: `linear-gradient(135deg, ${colors.soft} 0%, ${colors.solid} 100%)`,
         }}
       >
-        <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-          <Box sx={{ position: "absolute", top: -24, left: -24, width: 130, height: 130, borderRadius: "50%", bgcolor: "rgba(255,255,255,.28)", filter: "blur(3px)" }} />
-          <Box sx={{ position: "absolute", bottom: -28, right: -28, width: 160, height: 160, borderRadius: "50%", bgcolor: "rgba(255,255,255,.18)", filter: "blur(2px)" }} />
+        <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -24,
+              left: -24,
+              width: 130,
+              height: 130,
+              borderRadius: '50%',
+              bgcolor: 'rgba(255,255,255,.28)',
+              filter: 'blur(3px)',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -28,
+              right: -28,
+              width: 160,
+              height: 160,
+              borderRadius: '50%',
+              bgcolor: 'rgba(255,255,255,.18)',
+              filter: 'blur(2px)',
+            }}
+          />
         </Box>
 
         {isXs ? (
-          <Box sx={{ position: "relative", zIndex: 1 }}>
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Stack spacing={0.75}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <IconButton
                   size="small"
                   onClick={() => nav(-1)}
@@ -135,11 +163,11 @@ export default function ChildPagelasPage() {
                   sx={{
                     width: 40,
                     height: 40,
-                    bgcolor: "background.paper",
+                    bgcolor: 'background.paper',
                     boxShadow: 2,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    "&:hover": { bgcolor: "background.paper" },
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    '&:hover': { bgcolor: 'background.paper' },
                   }}
                 >
                   <ArrowBack />
@@ -149,14 +177,14 @@ export default function ChildPagelasPage() {
                   sx={{
                     width: 52,
                     height: 52,
-                    border: "3px solid",
-                    borderColor: "background.paper",
+                    border: '3px solid',
+                    borderColor: 'background.paper',
                     bgcolor: colors.solid,
                     fontWeight: 900,
-                    flex: "0 0 auto",
+                    flex: '0 0 auto',
                   }}
                 >
-                  {initials || "?"}
+                  {initials || '?'}
                 </Avatar>
               </Box>
 
@@ -165,28 +193,38 @@ export default function ChildPagelasPage() {
                 sx={{
                   fontWeight: 900,
                   lineHeight: 1.15,
-                  color: "#143a2b",
-                  display: "-webkit-box",
+                  color: '#143a2b',
+                  display: '-webkit-box',
                   WebkitLineClamp: 1,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
                 }}
                 title={child?.name}
               >
-                {child?.name || "Criança"}
+                {child?.name || 'Criança'}
               </Typography>
 
-              <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.75)" }}>
+              <Stack
+                direction="row"
+                spacing={0.75}
+                alignItems="center"
+                sx={{ color: 'rgba(0,0,0,.75)' }}
+              >
                 <FamilyRestroom fontSize="small" />
-                <Typography variant="body2" noWrap title={child?.guardianName || "—"}>
-                  {child?.guardianName || "—"}
+                <Typography variant="body2" noWrap title={child?.guardianName || '—'}>
+                  {child?.guardianName || '—'}
                 </Typography>
               </Stack>
 
-              <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.75)" }}>
+              <Stack
+                direction="row"
+                spacing={0.75}
+                alignItems="center"
+                sx={{ color: 'rgba(0,0,0,.75)' }}
+              >
                 <Phone fontSize="small" />
-                <Typography variant="body2" noWrap title={child?.guardianPhone || "—"}>
-                  {child?.guardianPhone || "—"}
+                <Typography variant="body2" noWrap title={child?.guardianPhone || '—'}>
+                  {child?.guardianPhone || '—'}
                 </Typography>
               </Stack>
 
@@ -195,7 +233,12 @@ export default function ChildPagelasPage() {
                   size="small"
                   color="success"
                   label="Clubinho"
-                  sx={{ fontWeight: 800, height: 22, alignSelf: "flex-start", "& .MuiChip-label": { px: 0.75 } }}
+                  sx={{
+                    fontWeight: 800,
+                    height: 22,
+                    alignSelf: 'flex-start',
+                    '& .MuiChip-label': { px: 0.75 },
+                  }}
                 />
               )}
             </Stack>
@@ -205,7 +248,7 @@ export default function ChildPagelasPage() {
             container
             spacing={{ xs: 1.5, md: 2 }}
             alignItems="center"
-            sx={{ position: "relative", zIndex: 1 }}
+            sx={{ position: 'relative', zIndex: 1 }}
           >
             <Grid item>
               <IconButton
@@ -215,11 +258,11 @@ export default function ChildPagelasPage() {
                 sx={{
                   width: 40,
                   height: 40,
-                  bgcolor: "background.paper",
+                  bgcolor: 'background.paper',
                   boxShadow: 2,
-                  border: "1px solid",
-                  borderColor: "divider",
-                  "&:hover": { bgcolor: "background.paper" },
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  '&:hover': { bgcolor: 'background.paper' },
                 }}
               >
                 <ArrowBack />
@@ -232,32 +275,32 @@ export default function ChildPagelasPage() {
                   sx={{
                     width: 52,
                     height: 52,
-                    border: "3px solid",
-                    borderColor: "background.paper",
+                    border: '3px solid',
+                    borderColor: 'background.paper',
                     bgcolor: colors.solid,
                     fontWeight: 900,
                     flexShrink: 0,
                   }}
                 >
-                  {initials || "?"}
+                  {initials || '?'}
                 </Avatar>
 
                 <Box sx={{ minWidth: 0 }}>
                   <Typography
                     variant="h6"
                     sx={{
-                      color: "#143a2b",
+                      color: '#143a2b',
                       lineHeight: 1.1,
-                      display: "-webkit-box",
+                      display: '-webkit-box',
                       WebkitLineClamp: 1,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
                       fontWeight: 700,
                     }}
                   >
-                    Pagela {((child as any)?.gender === "F" ? "da" : "do")}{" "}
+                    Pagela {(child as any)?.gender === 'F' ? 'da' : 'do'}{' '}
                     <Box component="span" sx={{ fontWeight: 900 }}>
-                      {child?.name || "Criança"}
+                      {child?.name || 'Criança'}
                     </Box>
                   </Typography>
 
@@ -265,18 +308,18 @@ export default function ChildPagelasPage() {
                     direction="row"
                     spacing={1}
                     alignItems="center"
-                    sx={{ color: "rgba(0,0,0,.72)", flexWrap: "wrap" }}
+                    sx={{ color: 'rgba(0,0,0,.72)', flexWrap: 'wrap' }}
                   >
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       <FamilyRestroom fontSize="small" />
                       <Typography variant="body2" noWrap>
-                        {child?.guardianName || "—"}
+                        {child?.guardianName || '—'}
                       </Typography>
                     </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       <Phone fontSize="small" />
                       <Typography variant="body2" noWrap>
-                        {child?.guardianPhone || "—"}
+                        {child?.guardianPhone || '—'}
                       </Typography>
                     </Stack>
                     {child?.clubId && (
@@ -292,7 +335,6 @@ export default function ChildPagelasPage() {
               </Stack>
             </Grid>
           </Grid>
-
         )}
       </Paper>
 
@@ -301,8 +343,8 @@ export default function ChildPagelasPage() {
           severity="error"
           sx={{ mb: 2 }}
           onClose={() => {
-            list.setError("");
-            setCErr("");
+            list.setError('');
+            setCErr('');
           }}
         >
           {list.error || cError}
@@ -320,19 +362,19 @@ export default function ChildPagelasPage() {
               <PagelaQuickForm
                 initial={formInitial}
                 childId={childId}
-                childName={child?.name || ""}
-                childGender={child?.gender || ""}
+                childName={child?.name || ''}
+                childGender={child?.gender || ''}
                 defaultYear={0}
                 defaultWeek={0}
                 teacherProfileId={TEACHER_PROFILE_ID}
                 findPagela={findPagela}
                 onCreate={async (p) => {
                   await actions.create(p);
-                  showSnack("Pagela salva!");
+                  showSnack('Pagela salva!');
                 }}
                 onUpdate={async (id, p) => {
                   await actions.update(id, p);
-                  showSnack("Pagela atualizada!");
+                  showSnack('Pagela atualizada!');
                 }}
               />
             )
@@ -344,8 +386,8 @@ export default function ChildPagelasPage() {
             sx={{
               p: { xs: 1.5, md: 2 },
               borderRadius: 3,
-              border: "1px solid",
-              borderColor: "divider",
+              border: '1px solid',
+              borderColor: 'divider',
             }}
           >
             <Typography variant="subtitle1" fontWeight={900} sx={{ mb: 1.25 }}>
@@ -367,7 +409,7 @@ export default function ChildPagelasPage() {
               }}
               onDelete={async (row) => {
                 await actions.remove(row.id);
-                showSnack("Pagela excluída.", "info");
+                showSnack('Pagela excluída.', 'info');
               }}
             />
           </Paper>
@@ -379,7 +421,7 @@ export default function ChildPagelasPage() {
           color="primary"
           aria-label="Criar pagela"
           onClick={openCreate}
-          sx={{ position: "fixed", bottom: 88, right: 16, zIndex: 1300 }}
+          sx={{ position: 'fixed', bottom: 88, right: 16, zIndex: 1300 }}
         >
           <Add />
         </Fab>
@@ -394,27 +436,27 @@ export default function ChildPagelasPage() {
           disableSwipeToOpen={false}
           ModalProps={{ keepMounted: true }}
           PaperProps={{
-            sx: { height: "86vh", borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+            sx: { height: '86vh', borderTopLeftRadius: 24, borderTopRightRadius: 24 },
           }}
         >
-          <Box sx={{ p: 1.25, pb: 2, height: "100%", overflow: "auto" }}>
+          <Box sx={{ p: 1.25, pb: 2, height: '100%', overflow: 'auto' }}>
             <PagelaQuickForm
               initial={formInitial}
               childId={childId}
-              childName={child?.name || ""}
-              childGender={child?.gender || ""}
+              childName={child?.name || ''}
+              childGender={child?.gender || ''}
               defaultYear={0}
               defaultWeek={0}
               teacherProfileId={TEACHER_PROFILE_ID}
               findPagela={findPagela}
               onCreate={async (p) => {
                 await actions.create(p);
-                showSnack("Pagela salva!");
+                showSnack('Pagela salva!');
                 closeSheet();
               }}
               onUpdate={async (id, p) => {
                 await actions.update(id, p);
-                showSnack("Pagela atualizada!");
+                showSnack('Pagela atualizada!');
                 closeSheet();
               }}
               onClose={closeSheet}
@@ -427,7 +469,7 @@ export default function ChildPagelasPage() {
         open={snack.open}
         autoHideDuration={2800}
         onClose={closeSnack}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <MuiAlert elevation={6} variant="filled" severity={snack.severity} onClose={closeSnack}>
           {snack.message}

@@ -51,7 +51,7 @@ export const TeachersListView: React.FC = () => {
     sortBy: 'effectivenessScore',
     sortOrder: 'DESC',
   });
-  
+
   // Atualizar limit quando isMobile mudar
   React.useEffect(() => {
     const newLimit = isMobile ? 5 : 20;
@@ -59,7 +59,7 @@ export const TeachersListView: React.FC = () => {
       setFilters({ ...filters, limit: newLimit, page: 1 });
     }
   }, [isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
-  
+
   const [filtersExpanded, setFiltersExpanded] = React.useState(false);
 
   const { data, isLoading } = useTeachers(filters);
@@ -77,7 +77,12 @@ export const TeachersListView: React.FC = () => {
   };
 
   const handleReset = () => {
-    setFilters({ page: 1, limit: isMobile ? 5 : 20, sortBy: 'effectivenessScore', sortOrder: 'DESC' });
+    setFilters({
+      page: 1,
+      limit: isMobile ? 5 : 20,
+      sortBy: 'effectivenessScore',
+      sortOrder: 'DESC',
+    });
   };
 
   const getEffectivenessColor = (score: number) => {
@@ -114,66 +119,137 @@ export const TeachersListView: React.FC = () => {
   return (
     <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
       {/* Cards de Resumo */}
-      <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0, display: 'flex', flexWrap: 'wrap' }}>
+      <Grid
+        container
+        spacing={{ xs: 1.5, sm: 2 }}
+        sx={{
+          mb: 3,
+          width: '100%',
+          maxWidth: '100%',
+          margin: 0,
+          display: 'flex',
+          flexWrap: 'wrap',
+        }}
+      >
         <Grid item xs={6} sm={6} md={3} sx={{ width: '100%', maxWidth: '100%' }}>
-          <Paper elevation={0} sx={{ 
-            p: { xs: 1.5, sm: 2 }, 
-            borderRadius: 2, 
-            border: `2px solid ${theme.palette.divider}`,
-            width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Total Professores</Typography>
-            <Typography variant="h5" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
+              Total Professores
+            </Typography>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              color="primary"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+            >
               {data.summary.filteredTeachers}
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, wordBreak: 'break-word' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, wordBreak: 'break-word' }}
+            >
               ({data.summary.activeTeachers} ativos)
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={6} sm={6} md={3} sx={{ width: '100%', maxWidth: '100%' }}>
-          <Paper elevation={0} sx={{ 
-            p: { xs: 1.5, sm: 2 }, 
-            borderRadius: 2, 
-            border: `2px solid ${theme.palette.divider}`,
-            width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Total Crianças</Typography>
-            <Typography variant="h5" fontWeight="bold" color="info.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
+              Total Crianças
+            </Typography>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              color="info.main"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+            >
               {data.summary.totalChildren}
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={6} sm={6} md={3} sx={{ width: '100%', maxWidth: '100%' }}>
-          <Paper elevation={0} sx={{ 
-            p: { xs: 1.5, sm: 2 }, 
-            borderRadius: 2, 
-            border: `2px solid ${theme.palette.divider}`,
-            width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Efetividade Média</Typography>
-            <Typography variant="h5" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
+              Efetividade Média
+            </Typography>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              color="success.main"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+            >
               {data.summary.avgEffectivenessScore.toFixed(1)}%
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={6} sm={6} md={3} sx={{ width: '100%', maxWidth: '100%' }}>
-          <Paper elevation={0} sx={{ 
-            p: { xs: 1.5, sm: 2 }, 
-            borderRadius: 2, 
-            border: `2px solid ${theme.palette.divider}`,
-            width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Presença Média</Typography>
-            <Typography variant="h5" fontWeight="bold" color="secondary.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
+              Presença Média
+            </Typography>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              color="secondary.main"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+            >
               {data.summary.avgPresenceRate.toFixed(1)}%
             </Typography>
           </Paper>
@@ -181,14 +257,28 @@ export const TeachersListView: React.FC = () => {
       </Grid>
 
       {/* Filtros */}
-      <Paper elevation={0} sx={{ p: 2, borderRadius: 2, mb: 2, border: `1px solid ${theme.palette.divider}` }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: filtersExpanded ? 2 : 0 }}>
+      <Paper
+        elevation={0}
+        sx={{ p: 2, borderRadius: 2, mb: 2, border: `1px solid ${theme.palette.divider}` }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: filtersExpanded ? 2 : 0,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <FilterList />
-            <Typography variant="subtitle1" fontWeight="bold">Filtros</Typography>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Filtros
+            </Typography>
           </Box>
           <Box>
-            <Button size="small" startIcon={<Refresh />} onClick={handleReset}>Limpar</Button>
+            <Button size="small" startIcon={<Refresh />} onClick={handleReset}>
+              Limpar
+            </Button>
             <IconButton size="small" onClick={() => setFiltersExpanded(!filtersExpanded)}>
               {filtersExpanded ? <ExpandLess /> : <ExpandMore />}
             </IconButton>
@@ -247,7 +337,12 @@ export const TeachersListView: React.FC = () => {
                 type="number"
                 label="Efetividade Mínima"
                 value={filters.minEffectivenessScore || ''}
-                onChange={(e) => handleFilterChange('minEffectivenessScore', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'minEffectivenessScore',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -258,7 +353,12 @@ export const TeachersListView: React.FC = () => {
                 type="number"
                 label="Efetividade Máxima"
                 value={filters.maxEffectivenessScore || ''}
-                onChange={(e) => handleFilterChange('maxEffectivenessScore', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'maxEffectivenessScore',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -269,7 +369,12 @@ export const TeachersListView: React.FC = () => {
                 type="number"
                 label="Presença Mínima (%)"
                 value={filters.minPresenceRate || ''}
-                onChange={(e) => handleFilterChange('minPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'minPresenceRate',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -280,7 +385,12 @@ export const TeachersListView: React.FC = () => {
                 type="number"
                 label="Presença Máxima (%)"
                 value={filters.maxPresenceRate || ''}
-                onChange={(e) => handleFilterChange('maxPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'maxPresenceRate',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -291,7 +401,12 @@ export const TeachersListView: React.FC = () => {
                 type="number"
                 label="Mínimo de Decisões"
                 value={filters.minDecisions || ''}
-                onChange={(e) => handleFilterChange('minDecisions', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'minDecisions',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -332,7 +447,10 @@ export const TeachersListView: React.FC = () => {
                 label="Status"
                 value={filters.isActive !== undefined ? filters.isActive.toString() : ''}
                 onChange={(e) =>
-                  handleFilterChange('isActive', e.target.value === '' ? undefined : e.target.value === 'true')
+                  handleFilterChange(
+                    'isActive',
+                    e.target.value === '' ? undefined : e.target.value === 'true'
+                  )
                 }
                 size="small"
               >
@@ -356,10 +474,10 @@ export const TeachersListView: React.FC = () => {
             </Paper>
           ) : (
             data.teachers.map((teacher) => (
-              <Card 
-                key={teacher.teacherId} 
-                elevation={1} 
-                sx={{ 
+              <Card
+                key={teacher.teacherId}
+                elevation={1}
+                sx={{
                   borderRadius: 1.5,
                   borderLeft: `4px solid ${theme.palette.success.main}`,
                   width: '100%',
@@ -377,31 +495,68 @@ export const TeachersListView: React.FC = () => {
                   },
                 }}
               >
-                <CardContent sx={{ 
-                  p: { xs: 1, sm: 2 },
-                  '&:last-child': { pb: { xs: 1, sm: 2 } },
-                  width: '100%',
-                  maxWidth: '100%',
-                }}>
+                <CardContent
+                  sx={{
+                    p: { xs: 1, sm: 2 },
+                    '&:last-child': { pb: { xs: 1, sm: 2 } },
+                    width: '100%',
+                    maxWidth: '100%',
+                  }}
+                >
                   <Stack spacing={1}>
                     {/* Header */}
                     <Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                        <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>
+                        <Typography
+                          fontWeight="bold"
+                          color="primary"
+                          sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}
+                        >
                           #{teacher.rank}
                         </Typography>
-                        <Avatar sx={{ width: { xs: 28, sm: 36 }, height: { xs: 28, sm: 36 }, bgcolor: theme.palette.success.main, fontSize: { xs: 11, sm: 14 } }}>
+                        <Avatar
+                          sx={{
+                            width: { xs: 28, sm: 36 },
+                            height: { xs: 28, sm: 36 },
+                            bgcolor: theme.palette.success.main,
+                            fontSize: { xs: 11, sm: 14 },
+                          }}
+                        >
                           {getInitials(teacher.name)}
                         </Avatar>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.75rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                          <Typography
+                            fontWeight="medium"
+                            sx={{
+                              fontSize: { xs: '0.75rem', sm: '1rem' },
+                              wordBreak: 'break-word',
+                            }}
+                          >
                             {teacher.name}
                           </Typography>
                         </Box>
                         {teacher.isActive ? (
-                          <Chip label="Ativo" size="small" color="success" variant="outlined" icon={<CheckCircle sx={{ fontSize: { xs: 12, sm: 16 } }} />} sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }} />
+                          <Chip
+                            label="Ativo"
+                            size="small"
+                            color="success"
+                            variant="outlined"
+                            icon={<CheckCircle sx={{ fontSize: { xs: 12, sm: 16 } }} />}
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              height: { xs: 20, sm: 24 },
+                            }}
+                          />
                         ) : (
-                          <Chip label="Inativo" size="small" variant="outlined" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }} />
+                          <Chip
+                            label="Inativo"
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              height: { xs: 20, sm: 24 },
+                            }}
+                          />
                         )}
                       </Box>
                     </Box>
@@ -412,40 +567,88 @@ export const TeachersListView: React.FC = () => {
                     <Grid container spacing={1}>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              display: 'block',
+                              mb: 0.25,
+                            }}
+                          >
                             Clubinho
                           </Typography>
-                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}
+                          >
                             {teacher.club ? `#${teacher.club.number}` : '-'}
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              display: 'block',
+                              mb: 0.25,
+                            }}
+                          >
                             Local
                           </Typography>
-                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}
+                          >
                             {teacher.club ? `${teacher.club.city}, ${teacher.club.state}` : '-'}
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              display: 'block',
+                              mb: 0.25,
+                            }}
+                          >
                             Crianças
                           </Typography>
-                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}
+                          >
                             {teacher.children.unique} ({teacher.children.active} ativos)
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              display: 'block',
+                              mb: 0.25,
+                            }}
+                          >
                             Pagelas
                           </Typography>
-                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}
+                          >
                             {teacher.performance.totalPagelas}
                           </Typography>
                         </Box>
@@ -453,10 +656,23 @@ export const TeachersListView: React.FC = () => {
                       {teacher.children.withDecisions > 0 && (
                         <Grid item xs={12}>
                           <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                                display: 'block',
+                                mb: 0.25,
+                              }}
+                            >
                               Decisões
                             </Typography>
-                            <Typography variant="caption" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              color="success.main"
+                              sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}
+                            >
                               {teacher.children.withDecisions}
                             </Typography>
                           </Box>
@@ -466,11 +682,26 @@ export const TeachersListView: React.FC = () => {
 
                     {/* Presença */}
                     <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          mb: 0.25,
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                        >
                           Presença
                         </Typography>
-                        <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                        <Typography
+                          variant="caption"
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}
+                        >
                           {teacher.performance.avgPresenceRate.toFixed(0)}%
                         </Typography>
                       </Box>
@@ -495,11 +726,11 @@ export const TeachersListView: React.FC = () => {
                         label={`${teacher.performance.effectivenessScore.toFixed(0)}`}
                         size="small"
                         color={getEffectivenessColor(teacher.performance.effectivenessScore)}
-                        sx={{ 
+                        sx={{
                           fontSize: { xs: '0.65rem', sm: '0.75rem' },
                           height: { xs: 20, sm: 24 },
                           width: '100%',
-                          '& .MuiChip-label': { px: { xs: 0.5, sm: 1 } }
+                          '& .MuiChip-label': { px: { xs: 0.5, sm: 1 } },
                         }}
                       />
                     </Box>
@@ -527,25 +758,46 @@ export const TeachersListView: React.FC = () => {
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Professor</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Clubinho</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Local</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Crianças</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Pagelas</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Presença</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Efetividade</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Status</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
+                  Crianças
+                </TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">
+                  Pagelas
+                </TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">
+                  Presença
+                </TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
+                  Efetividade
+                </TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
+                  Status
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {data.teachers.map((teacher) => (
                 <TableRow key={teacher.teacherId} hover>
                   <TableCell>
-                    <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>#{teacher.rank}</Typography>
+                    <Typography
+                      fontWeight="bold"
+                      color="primary"
+                      sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                    >
+                      #{teacher.rank}
+                    </Typography>
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.success.main }}>
                         {getInitials(teacher.name)}
                       </Avatar>
-                      <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{teacher.name}</Typography>
+                      <Typography
+                        fontWeight="medium"
+                        sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                      >
+                        {teacher.name}
+                      </Typography>
                     </Box>
                   </TableCell>
                   <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
@@ -562,15 +814,26 @@ export const TeachersListView: React.FC = () => {
                       variant="outlined"
                     />
                     {teacher.children.withDecisions > 0 && (
-                      <Typography variant="caption" color="success.main" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                      <Typography
+                        variant="caption"
+                        color="success.main"
+                        display="block"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      >
                         {teacher.children.withDecisions} decisões
                       </Typography>
                     )}
                   </TableCell>
-                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{teacher.performance.totalPagelas}</TableCell>
+                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {teacher.performance.totalPagelas}
+                  </TableCell>
                   <TableCell align="right">
                     <Box>
-                      <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                      >
                         {teacher.performance.avgPresenceRate.toFixed(1)}%
                       </Typography>
                       <LinearProgress
@@ -597,7 +860,13 @@ export const TeachersListView: React.FC = () => {
                   </TableCell>
                   <TableCell align="center">
                     {teacher.isActive ? (
-                      <Chip label="Ativo" size="small" color="success" variant="outlined" icon={<CheckCircle />} />
+                      <Chip
+                        label="Ativo"
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                        icon={<CheckCircle />}
+                      />
                     ) : (
                       <Chip label="Inativo" size="small" variant="outlined" />
                     )}
@@ -609,7 +878,9 @@ export const TeachersListView: React.FC = () => {
 
           {data.teachers.length === 0 && (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Nenhum professor encontrado</Typography>
+              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                Nenhum professor encontrado
+              </Typography>
             </Box>
           )}
         </TableContainer>
@@ -644,5 +915,3 @@ export const TeachersListView: React.FC = () => {
     </Box>
   );
 };
-
-

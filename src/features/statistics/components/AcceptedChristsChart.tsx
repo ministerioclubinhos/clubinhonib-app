@@ -56,11 +56,7 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-          <XAxis
-            dataKey="date"
-            stroke={theme.palette.text.secondary}
-            style={{ fontSize: 12 }}
-          />
+          <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: 12 }} />
           <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: 12 }} />
           <Tooltip
             contentStyle={{
@@ -128,4 +124,3 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
     </Paper>
   );
 };
-

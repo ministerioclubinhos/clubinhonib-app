@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -14,9 +14,9 @@ import {
   InputAdornment,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
-import { TeacherProfile } from "../types";
+} from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import { TeacherProfile } from '../types';
 
 type Props = {
   open: boolean;
@@ -38,44 +38,40 @@ export default function TeacherEditDialog({
   onClose,
 }: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [clubInput, setClubInput] = React.useState<string>("");
-  const [localErr, setLocalErr] = React.useState<string>("");
+  const [clubInput, setClubInput] = React.useState<string>('');
+  const [localErr, setLocalErr] = React.useState<string>('');
 
   React.useEffect(() => {
-    setClubInput(teacher?.club?.number ? String(teacher.club.number) : "");
-    setLocalErr("");
+    setClubInput(teacher?.club?.number ? String(teacher.club.number) : '');
+    setLocalErr('');
   }, [teacher]);
 
   const submit = React.useCallback(() => {
-    setLocalErr("");
+    setLocalErr('');
     const v = Number(clubInput);
     if (!clubInput || Number.isNaN(v) || v <= 0) {
-      setLocalErr("Informe um número de Clubinho válido (maior que zero).");
+      setLocalErr('Informe um número de Clubinho válido (maior que zero).');
       return;
     }
     onSetClub(v);
   }, [clubInput, onSetClub]);
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-    if (e.key === "Enter" && !loading) {
+    if (e.key === 'Enter' && !loading) {
       e.preventDefault();
       submit();
     }
   };
 
-  const currentClubLabel =
-    teacher?.club?.number != null ? `#${teacher.club.number}` : "—";
+  const currentClubLabel = teacher?.club?.number != null ? `#${teacher.club.number}` : '—';
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Vincular / Desvincular Clubinho</DialogTitle>
 
-      <DialogContent
-        dividers
-        sx={{ p: { xs: 2, md: 3 }, position: "relative" }}
-      >
+      <DialogContent dividers sx={{ p: { xs: 2, md: 3 }, position: 'relative' }}>
         {(error || localErr) && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error || localErr}
@@ -85,11 +81,8 @@ export default function TeacherEditDialog({
         {!!teacher && (
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Typography
-                component="div"
-                sx={{ fontWeight: 700, lineHeight: 1.3 }}
-              >
-                {teacher.user?.name || teacher.user?.email || "—"}
+              <Typography component="div" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
+                {teacher.user?.name || teacher.user?.email || '—'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Clubinho atual: <strong>{currentClubLabel}</strong>
@@ -108,9 +101,7 @@ export default function TeacherEditDialog({
                 inputProps={{ min: 1 }}
                 disabled={loading}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">#</InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start">#</InputAdornment>,
                 }}
                 helperText={
                   teacher?.club?.number
@@ -122,23 +113,14 @@ export default function TeacherEditDialog({
 
             <Grid item xs={12} md={4}>
               <Stack
-                direction={isXs ? "row" : "column"}
+                direction={isXs ? 'row' : 'column'}
                 spacing={1}
-                sx={{ height: "100%", alignItems: "stretch", justifyContent: "center" }}
+                sx={{ height: '100%', alignItems: 'stretch', justifyContent: 'center' }}
               >
-                <Button
-                  variant="contained"
-                  onClick={submit}
-                  disabled={loading || !clubInput}
-                >
+                <Button variant="contained" onClick={submit} disabled={loading || !clubInput}>
                   Vincular
                 </Button>
-                <Button
-                  color="warning"
-                  variant="outlined"
-                  onClick={onClearClub}
-                  disabled={loading}
-                >
+                <Button color="warning" variant="outlined" onClick={onClearClub} disabled={loading}>
                   Desvincular
                 </Button>
               </Stack>
@@ -149,13 +131,13 @@ export default function TeacherEditDialog({
         {loading && (
           <Box
             sx={{
-              position: "absolute",
+              position: 'absolute',
               inset: 0,
-              bgcolor: "rgba(255,255,255,0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "none",
+              bgcolor: 'rgba(255,255,255,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
             }}
           >
             <CircularProgress size={28} />
@@ -164,7 +146,7 @@ export default function TeacherEditDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} sx={{ color: "text.secondary" }}>
+        <Button onClick={onClose} sx={{ color: 'text.secondary' }}>
           Fechar
         </Button>
       </DialogActions>

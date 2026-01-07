@@ -10,13 +10,7 @@ import {
   Tooltip,
   useTheme,
 } from '@mui/material';
-import {
-  CalendarToday,
-  NavigateBefore,
-  NavigateNext,
-  Refresh,
-  Info,
-} from '@mui/icons-material';
+import { CalendarToday, NavigateBefore, NavigateNext, Refresh, Info } from '@mui/icons-material';
 import dayjs from 'dayjs';
 
 interface WeekNavigationHeaderProps {
@@ -59,89 +53,125 @@ export const WeekNavigationHeader: React.FC<WeekNavigationHeaderProps> = ({
         bgcolor: theme.palette.primary.main + '08',
       }}
     >
-      <Stack 
-        direction={{ xs: 'column', sm: 'row' }} 
-        alignItems={{ xs: 'flex-start', sm: 'center' }} 
-        justifyContent="space-between" 
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        justifyContent="space-between"
         spacing={2}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, width: { xs: '100%', sm: 'auto' } }}>
-          <CalendarToday sx={{ fontSize: { xs: 24, sm: 32 }, color: theme.palette.primary.main, flexShrink: 0 }} />
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 1, sm: 2 },
+            width: { xs: '100%', sm: 'auto' },
+          }}
+        >
+          <CalendarToday
+            sx={{ fontSize: { xs: 24, sm: 32 }, color: theme.palette.primary.main, flexShrink: 0 }}
+          />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {academicWeek !== null && academicYear !== null ? (
               <>
-                <Typography 
-                  variant="h5" 
-                  fontWeight="bold" 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 1, 
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
                     mb: 0.5,
                     flexWrap: 'wrap',
-                    fontSize: { xs: '1.1rem', sm: '1.5rem' }
+                    fontSize: { xs: '1.1rem', sm: '1.5rem' },
                   }}
                 >
-                  <Box component="span">Semana {academicWeek} do Ano Letivo {academicYear}</Box>
+                  <Box component="span">
+                    Semana {academicWeek} do Ano Letivo {academicYear}
+                  </Box>
                   <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                     {isCurrentWeek && (
-                      <Chip label="ATUAL" size="small" color="primary" sx={{ fontWeight: 'bold' }} />
+                      <Chip
+                        label="ATUAL"
+                        size="small"
+                        color="primary"
+                        sx={{ fontWeight: 'bold' }}
+                      />
                     )}
                     {isWithinPeriod && (
-                      <Chip 
-                        label="Dentro do Período" 
-                        size="small" 
-                        color="success" 
-                        sx={{ fontWeight: 'bold' }} 
+                      <Chip
+                        label="Dentro do Período"
+                        size="small"
+                        color="success"
+                        sx={{ fontWeight: 'bold' }}
                       />
                     )}
                     {isWithinPeriod === false && (
-                      <Chip 
-                        label="Fora do Período" 
-                        size="small" 
-                        color="warning" 
-                        sx={{ fontWeight: 'bold' }} 
+                      <Chip
+                        label="Fora do Período"
+                        size="small"
+                        color="warning"
+                        sx={{ fontWeight: 'bold' }}
                       />
                     )}
                   </Box>
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 0.5, fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                >
                   {weekStart.format('DD [de] MMMM')} até {weekEnd.format('DD [de] MMMM [de] YYYY')}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                >
                   <Info sx={{ fontSize: 12 }} />
                   Semana {calendarWeek.week} do ano calendário {calendarWeek.year}
                 </Typography>
               </>
             ) : (
               <>
-                <Typography 
-                  variant="h5" 
-                  fontWeight="bold" 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: 1,
                     flexWrap: 'wrap',
-                    fontSize: { xs: '1.1rem', sm: '1.5rem' }
+                    fontSize: { xs: '1.1rem', sm: '1.5rem' },
                   }}
                 >
                   <Box component="span">
                     {academicWeek !== null && academicYear !== null ? (
-                      <>Semana {academicWeek} do Ano Letivo {academicYear}</>
+                      <>
+                        Semana {academicWeek} do Ano Letivo {academicYear}
+                      </>
                     ) : (
-                      <>Semana {calendarWeek.week} de {calendarWeek.year}</>
+                      <>
+                        Semana {calendarWeek.week} de {calendarWeek.year}
+                      </>
                     )}
                   </Box>
                   {isCurrentWeek && (
                     <Chip label="ATUAL" size="small" color="primary" sx={{ fontWeight: 'bold' }} />
                   )}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                >
                   {weekStart.format('DD [de] MMMM')} até {weekEnd.format('DD [de] MMMM [de] YYYY')}
                 </Typography>
                 {academicWeek !== null && academicYear !== null && (
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                  >
                     <Info sx={{ fontSize: 12 }} />
                     Semana {calendarWeek.week} do ano calendário {calendarWeek.year}
                   </Typography>
@@ -151,12 +181,12 @@ export const WeekNavigationHeader: React.FC<WeekNavigationHeaderProps> = ({
           </Box>
         </Box>
 
-        <Stack 
-          direction="row" 
-          spacing={1} 
-          sx={{ 
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
             width: { xs: '100%', sm: 'auto' },
-            justifyContent: { xs: 'space-between', sm: 'flex-end' }
+            justifyContent: { xs: 'space-between', sm: 'flex-end' },
           }}
         >
           <Tooltip title="Semana anterior">
@@ -187,4 +217,3 @@ export const WeekNavigationHeader: React.FC<WeekNavigationHeaderProps> = ({
     </Paper>
   );
 };
-

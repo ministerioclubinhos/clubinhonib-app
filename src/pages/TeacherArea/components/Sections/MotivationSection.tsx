@@ -106,7 +106,8 @@ const MotivationSection: React.FC<MotivationSectionProps> = ({ motivationText })
                   letterSpacing: '0.3px',
                 }}
               >
-                Nesta semana, que tal dar um passo a mais e compartilhar o amor de Jesus com as crianças da sua comunidade?
+                Nesta semana, que tal dar um passo a mais e compartilhar o amor de Jesus com as
+                crianças da sua comunidade?
               </Typography>
 
               <Typography

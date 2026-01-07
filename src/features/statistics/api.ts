@@ -244,7 +244,14 @@ export interface OverviewData {
 }
 
 // ⭐ v2.11.0: Atalhos de período
-export type PeriodShortcut = 'today' | 'this_week' | 'this_month' | 'last_7_days' | 'last_30_days' | 'this_year' | 'custom';
+export type PeriodShortcut =
+  | 'today'
+  | 'this_week'
+  | 'this_month'
+  | 'last_7_days'
+  | 'last_30_days'
+  | 'this_year'
+  | 'custom';
 
 export interface StatisticsFilters {
   // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
@@ -654,8 +661,7 @@ export const statisticsApi = {
     apiAxios.get<InsightsData>(`${BASE_URL}/insights`, { params }),
 
   // Overview
-  getOverview: () =>
-    apiAxios.get<OverviewData>(`${BASE_URL}/overview`),
+  getOverview: () => apiAxios.get<OverviewData>(`${BASE_URL}/overview`),
 
   // Complete Views
   getChildren: (params?: ChildrenFilters) =>
@@ -670,8 +676,10 @@ export const statisticsApi = {
   // Attendance Analysis (NOVOS!)
   // ⭐ Paginação v2.5.0
   // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
-  getClubAttendance: (clubId: string, params: { year: number; startDate?: string; endDate?: string; page?: number; limit?: number }) =>
-    apiAxios.get<ClubAttendanceResponse>(`${BASE_URL}/attendance/club/${clubId}`, { params }),
+  getClubAttendance: (
+    clubId: string,
+    params: { year: number; startDate?: string; endDate?: string; page?: number; limit?: number }
+  ) => apiAxios.get<ClubAttendanceResponse>(`${BASE_URL}/attendance/club/${clubId}`, { params }),
 
   // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
   // ⭐ v2.7.0: Se não há período letivo ou está fora do período, retorna clubs: []
@@ -679,11 +687,12 @@ export const statisticsApi = {
     apiAxios.get<WeeklyAttendanceResponse>(`${BASE_URL}/attendance/week`, { params }),
 
   // Specific Views (Individual)
-  getClubStats: (clubId: string, params?: { startDate?: string; endDate?: string; groupBy?: string }) =>
-    apiAxios.get(`${BASE_URL}/clubs/${clubId}`, { params }),
+  getClubStats: (
+    clubId: string,
+    params?: { startDate?: string; endDate?: string; groupBy?: string }
+  ) => apiAxios.get(`${BASE_URL}/clubs/${clubId}`, { params }),
 
-  getChildStats: (childId: string) =>
-    apiAxios.get(`${BASE_URL}/children/${childId}`),
+  getChildStats: (childId: string) => apiAxios.get(`${BASE_URL}/children/${childId}`),
 
   getCityStats: (city: string, params?: { state?: string; startDate?: string; endDate?: string }) =>
     apiAxios.get(`${BASE_URL}/cities/${city}`, { params }),
@@ -691,4 +700,3 @@ export const statisticsApi = {
   getTeacherStats: (teacherId: string, params?: { startDate?: string; endDate?: string }) =>
     apiAxios.get(`${BASE_URL}/teachers/${teacherId}`, { params }),
 };
-

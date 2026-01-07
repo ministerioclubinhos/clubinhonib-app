@@ -1,12 +1,4 @@
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  useTheme, 
-  useMediaQuery,
-  Chip,
-  Alert,
-} from '@mui/material';
+import { Box, Typography, Paper, useTheme, useMediaQuery, Chip, Alert } from '@mui/material';
 import { motion } from 'framer-motion';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import DownloadButton from './DownloadButton';
@@ -136,12 +128,7 @@ export default function WeekAudioPlayerView({ audio }: Props) {
         }}
       >
         {/* Header */}
-        <Box
-          display="flex"
-          alignItems="center"
-          gap={2}
-          mb={3}
-        >
+        <Box display="flex" alignItems="center" gap={2} mb={3}>
           <Box
             sx={{
               p: 2,
@@ -155,7 +142,7 @@ export default function WeekAudioPlayerView({ audio }: Props) {
           >
             <MusicNoteIcon sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} />
           </Box>
-          
+
           <Box flex={1}>
             <Typography
               variant="h6"
@@ -169,7 +156,7 @@ export default function WeekAudioPlayerView({ audio }: Props) {
             >
               {audio.title}
             </Typography>
-            
+
             {fileSize && (
               <Chip
                 label={fileSize}
@@ -185,9 +172,7 @@ export default function WeekAudioPlayerView({ audio }: Props) {
         </Box>
 
         {/* Audio Player */}
-        <Box sx={{ mb: 3 }}>
-          {renderAudioPlayer()}
-        </Box>
+        <Box sx={{ mb: 3 }}>{renderAudioPlayer()}</Box>
 
         {/* Description */}
         {audio.description && (

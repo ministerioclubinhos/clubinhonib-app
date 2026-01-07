@@ -5,15 +5,11 @@ import { TeacherWeekBanner, TeacherMeditationBanner, IdeasSharingBanner } from '
 
 const BannerSection: React.FC<BannerSectionProps> = ({ showMeditationBanner }) => {
   return (
-    <Grid
-      container
-      spacing={2}
-      sx={{ mb: 6, mt: 0, pt: 0, justifyContent: 'space-between' }}
-    >
+    <Grid container spacing={2} sx={{ mb: 6, mt: 0, pt: 0, justifyContent: 'space-between' }}>
       {showMeditationBanner ? (
         <>
           <Grid item xs={12} sx={{ mb: 2 }}>
-            <IdeasSharingBanner forceColumnLayout={showMeditationBanner}/>
+            <IdeasSharingBanner forceColumnLayout={showMeditationBanner} />
           </Grid>
 
           <Grid item xs={12} md={6}>
@@ -26,7 +22,7 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showMeditationBanner }) =
       ) : (
         <>
           <Grid item xs={12} md={6}>
-            <IdeasSharingBanner  variant="compact" />
+            <IdeasSharingBanner variant="compact" />
           </Grid>
           <Grid item xs={12} md={6}>
             <TeacherWeekBanner />

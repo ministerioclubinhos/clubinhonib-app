@@ -12,7 +12,7 @@ const WeekMaterialsBanner: React.FC = () => {
   const currentWeekRoute = routes.find(
     (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.current === true
   );
-  
+
   if (!currentWeekRoute) return null;
 
   return (
@@ -31,7 +31,8 @@ const WeekMaterialsBanner: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
+          background:
+            'radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
           zIndex: 0,
           borderRadius: 'inherit',
         },
@@ -44,13 +45,14 @@ const WeekMaterialsBanner: React.FC = () => {
           left: 0,
           right: 0,
           height: '60px',
-          background: 'linear-gradient(to top, transparent 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 100%)',
+          background:
+            'linear-gradient(to top, transparent 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 100%)',
           zIndex: 2,
           borderTopLeftRadius: 0,
           borderTopRightRadius: 0,
         }}
       />
-      
+
       <motion.div
         style={{
           position: 'absolute',
@@ -58,7 +60,8 @@ const WeekMaterialsBanner: React.FC = () => {
           left: 0,
           right: 0,
           height: '40px',
-          background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
+          background:
+            'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
           clipPath: 'polygon(0 0%, 0 40%, 25% 60%, 50% 40%, 75% 70%, 100% 50%, 100% 0%)',
           zIndex: 1,
         }}
@@ -168,10 +171,7 @@ const WeekMaterialsBanner: React.FC = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               variant="contained"
               size="large"
@@ -183,12 +183,12 @@ const WeekMaterialsBanner: React.FC = () => {
                 fontSize: { xs: '1rem', md: '1.1rem' },
                 fontWeight: 700,
                 borderRadius: 3,
-                 background: 'linear-gradient(45deg, #F4D03F 30%, #F1C40F 90%)',
-                 color: '#2C3E50',
-                 boxShadow: '0 8px 20px rgba(244, 208, 63, 0.3)',
-                 '&:hover': {
-                   background: 'linear-gradient(45deg, #F1C40F 30%, #D4AC0D 90%)',
-                   boxShadow: '0 12px 25px rgba(244, 208, 63, 0.4)',
+                background: 'linear-gradient(45deg, #F4D03F 30%, #F1C40F 90%)',
+                color: '#2C3E50',
+                boxShadow: '0 8px 20px rgba(244, 208, 63, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #F1C40F 30%, #D4AC0D 90%)',
+                  boxShadow: '0 12px 25px rgba(244, 208, 63, 0.4)',
                   transform: 'translateY(-2px)',
                 },
                 transition: 'all 0.3s ease',
@@ -199,7 +199,7 @@ const WeekMaterialsBanner: React.FC = () => {
           </motion.div>
         </motion.div>
       </Container>
-      
+
       {/* Divisão Suave */}
       <Box
         sx={{
@@ -208,13 +208,14 @@ const WeekMaterialsBanner: React.FC = () => {
           left: 0,
           right: 0,
           height: '60px',
-          background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 100%)',
+          background:
+            'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 100%)',
           zIndex: 2,
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
         }}
       />
-      
+
       {/* Ondas Decorativas */}
       <motion.div
         style={{
@@ -223,7 +224,8 @@ const WeekMaterialsBanner: React.FC = () => {
           left: 0,
           right: 0,
           height: '40px',
-          background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
+          background:
+            'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
           clipPath: 'polygon(0 100%, 0 60%, 25% 40%, 50% 60%, 75% 30%, 100% 50%, 100% 100%)',
           zIndex: 1,
         }}

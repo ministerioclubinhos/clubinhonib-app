@@ -31,9 +31,7 @@ export function useWeekMaterials() {
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
       const term = search.toLowerCase();
-      setFiltered(
-        materials.filter((m) => (m.title || '').toLowerCase().includes(term)),
-      );
+      setFiltered(materials.filter((m) => (m.title || '').toLowerCase().includes(term)));
       setIsFiltering(false);
     }, 300);
     return () => {
@@ -41,15 +39,21 @@ export function useWeekMaterials() {
     };
   }, [search, materials]);
 
-  const remove = useCallback(async (id: string) => {
-    await deleteWeekMaterial(id);
-    await fetchAll();
-  }, [fetchAll]);
+  const remove = useCallback(
+    async (id: string) => {
+      await deleteWeekMaterial(id);
+      await fetchAll();
+    },
+    [fetchAll]
+  );
 
-  const markAsCurrent = useCallback(async (id: string) => {
-    await setCurrentWeek(id);
-    await fetchAll();
-  }, [fetchAll]);
+  const markAsCurrent = useCallback(
+    async (id: string) => {
+      await setCurrentWeek(id);
+      await fetchAll();
+    },
+    [fetchAll]
+  );
 
   return {
     materials,

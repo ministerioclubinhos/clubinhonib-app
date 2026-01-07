@@ -1,5 +1,14 @@
 import React from 'react';
-import { Grid, Card, CardContent, CardActions, Typography, IconButton, Tooltip, Box } from '@mui/material';
+import {
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  IconButton,
+  Tooltip,
+  Box,
+} from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import type { InformativeBannerData } from 'store/slices/informative/informativeBannerSlice';
 

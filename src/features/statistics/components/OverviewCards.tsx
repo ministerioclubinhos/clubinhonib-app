@@ -12,7 +12,7 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
   const theme = useTheme();
-  
+
   return (
     <Paper
       elevation={3}
@@ -112,4 +112,3 @@ export const OverviewCards: React.FC = () => {
     </Grid>
   );
 };
-

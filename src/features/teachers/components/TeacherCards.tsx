@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Card,
@@ -21,8 +21,8 @@ import {
   Avatar,
   Slide,
   ButtonBase,
-  Link
-} from "@mui/material";
+  Link,
+} from '@mui/material';
 import {
   Visibility,
   Link as LinkIcon,
@@ -34,17 +34,15 @@ import {
   SchoolOutlined,
   GroupOutlined,
   PersonOutlined,
-  WhatsApp
-} from "@mui/icons-material";
-import type { SortingState } from "@tanstack/react-table";
-import type { TeacherProfile } from "../types";
-import { fmtDate } from "@/utils/dates";
-import { RootState } from "@/store/slices";
-import { buildWhatsappLink } from "@/utils/whatsapp";
-import { weekdayLabel } from "@/utils/dateUtils";
-import { CopyButton, initials } from "@/utils/components";
-
-
+  WhatsApp,
+} from '@mui/icons-material';
+import type { SortingState } from '@tanstack/react-table';
+import type { TeacherProfile } from '../types';
+import { fmtDate } from '@/utils/dates';
+import { RootState } from '@/store/slices';
+import { buildWhatsappLink } from '@/utils/whatsapp';
+import { weekdayLabel } from '@/utils/dateUtils';
+import { CopyButton, initials } from '@/utils/components';
 
 type Props = {
   rows: TeacherProfile[];
@@ -75,7 +73,7 @@ export default function TeacherCards({
 }: Props) {
   const [open, setOpen] = useState<Set<string>>(new Set());
   const { user: loggedUser } = useSelector((state: RootState) => state.auth);
-  
+
   const toggle = (id: string) =>
     setOpen((prev) => {
       const n = new Set(prev);
@@ -83,24 +81,22 @@ export default function TeacherCards({
       return n;
     });
 
-  const currentSort = sorting?.[0] ?? { id: "updatedAt", desc: true };
-  const sortField = String(currentSort.id ?? "updatedAt");
+  const currentSort = sorting?.[0] ?? { id: 'updatedAt', desc: true };
+  const sortField = String(currentSort.id ?? 'updatedAt');
   const sortDesc = !!currentSort.desc;
 
   const sortOptions = useMemo(
     () => [
-      { id: "teacher", label: "Nome" },
-      { id: "club", label: "Nº do Clubinho" },
-      { id: "updatedAt", label: "Atualizado em" },
-      { id: "createdAt", label: "Criado em" },
+      { id: 'teacher', label: 'Nome' },
+      { id: 'club', label: 'Nº do Clubinho' },
+      { id: 'updatedAt', label: 'Atualizado em' },
+      { id: 'createdAt', label: 'Criado em' },
     ],
     []
   );
 
-  const handleSortField = (field: string) =>
-    setSorting([{ id: field, desc: sortDesc }]);
-  const toggleSortDir = () =>
-    setSorting([{ id: sortField, desc: !sortDesc }]);
+  const handleSortField = (field: string) => setSorting([{ id: field, desc: sortDesc }]);
+  const toggleSortDir = () => setSorting([{ id: sortField, desc: !sortDesc }]);
 
   return (
     <Box sx={{ px: 0, py: 0 }}>
@@ -117,7 +113,7 @@ export default function TeacherCards({
             label="Ordenar por"
             value={sortField}
             onChange={(e) => handleSortField(String(e.target.value))}
-            sx={{ ".MuiSelect-select": { py: 0.75 } }}
+            sx={{ '.MuiSelect-select': { py: 0.75 } }}
           >
             {sortOptions.map((o) => (
               <MenuItem key={o.id} value={o.id}>
@@ -126,9 +122,7 @@ export default function TeacherCards({
             ))}
           </Select>
         </FormControl>
-        <Tooltip
-          title={sortDesc ? "Ordem: Descendente" : "Ordem: Ascendente"}
-        >
+        <Tooltip title={sortDesc ? 'Ordem: Descendente' : 'Ordem: Ascendente'}>
           <IconButton size="small" onClick={toggleSortDir} aria-label="Inverter ordem">
             <SwapVert fontSize="small" />
           </IconButton>
@@ -148,27 +142,27 @@ export default function TeacherCards({
                 variant="outlined"
                 sx={{
                   borderRadius: 3,
-                  overflow: "hidden",
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  "&:hover": {
-                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-                    transform: "translateY(-2px)",
-                    "& .teacher-avatar": {
-                      transform: "scale(1.1)",
-                    }
+                  overflow: 'hidden',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                    transform: 'translateY(-2px)',
+                    '& .teacher-avatar': {
+                      transform: 'scale(1.1)',
+                    },
                   },
-                  bgcolor: "background.paper",
-                  position: "relative",
-                  maxHeight: !expanded ? { xs: 200, sm: 150 } : "none",
-                  "&::before": {
+                  bgcolor: 'background.paper',
+                  position: 'relative',
+                  maxHeight: !expanded ? { xs: 200, sm: 150 } : 'none',
+                  '&::before': {
                     content: '""',
-                    position: "absolute",
+                    position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
                     height: 4,
-                    background: "linear-gradient(90deg, #ff9800 0%, #4caf50 100%)",
-                  }
+                    background: 'linear-gradient(90deg, #ff9800 0%, #4caf50 100%)',
+                  },
                 }}
               >
                 <Stack
@@ -187,12 +181,12 @@ export default function TeacherCards({
                     sx={{
                       width: { xs: 40, sm: 48 },
                       height: { xs: 40, sm: 48 },
-                      bgcolor: t.active ? "success.main" : "grey.500",
-                      color: "white",
+                      bgcolor: t.active ? 'success.main' : 'grey.500',
+                      color: 'white',
                       fontWeight: 800,
                       fontSize: { xs: 14, sm: 16 },
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                      transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       flexShrink: 0,
                     }}
                     aria-label={`Avatar do professor ${t.user?.name}`}
@@ -206,37 +200,37 @@ export default function TeacherCards({
                       fontWeight={700}
                       noWrap
                       title={t.user?.name || t.user?.email}
-                      sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+                      sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
                     >
-                      {t.user?.name || t.user?.email || "—"}
+                      {t.user?.name || t.user?.email || '—'}
                     </Typography>
                     <Chip
                       size="small"
-                      color={t.active ? "success" : "default"}
-                      label={t.active ? "Ativo" : "Inativo"}
+                      color={t.active ? 'success' : 'default'}
+                      label={t.active ? 'Ativo' : 'Inativo'}
                       sx={{
-                        fontSize: "0.7rem",
+                        fontSize: '0.7rem',
                         height: 20,
-                        mt: 0.25
+                        mt: 0.25,
                       }}
                     />
                   </Box>
 
                   <ButtonBase
                     onClick={() => toggle(t.id)}
-                    aria-label={expanded ? "Recolher" : "Expandir"}
+                    aria-label={expanded ? 'Recolher' : 'Expandir'}
                     sx={{
                       borderRadius: 2,
                       px: { xs: 0.75, sm: 1 },
                       py: 0.5,
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 0.5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      bgcolor: "background.paper",
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      bgcolor: 'background.paper',
                       flexShrink: 0,
-                      "&:hover": { bgcolor: "action.hover" },
+                      '&:hover': { bgcolor: 'action.hover' },
                     }}
                   >
                     <Typography
@@ -244,14 +238,17 @@ export default function TeacherCards({
                       color="text.secondary"
                       sx={{
                         fontWeight: 600,
-                        display: { xs: "none", sm: "block" }
+                        display: { xs: 'none', sm: 'block' },
                       }}
                     >
-                      {expanded ? "Recolher" : "Detalhes"}
+                      {expanded ? 'Recolher' : 'Detalhes'}
                     </Typography>
                     <ExpandMoreIcon
                       fontSize="small"
-                      sx={{ transition: "transform .15s ease", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                      sx={{
+                        transition: 'transform .15s ease',
+                        transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      }}
                     />
                   </ButtonBase>
                 </Stack>
@@ -262,26 +259,26 @@ export default function TeacherCards({
                     mb: 0.5,
                     p: { xs: 0.75, sm: 1 },
                     borderRadius: 2,
-                    bgcolor: "grey.50",
-                    border: "1px solid",
-                    borderColor: "grey.200",
+                    bgcolor: 'grey.50',
+                    border: '1px solid',
+                    borderColor: 'grey.200',
                   }}
                 >
                   <Stack direction="row" spacing={0.75} alignItems="center">
-                    <SchoolOutlined sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
+                    <SchoolOutlined sx={{ fontSize: 18, color: 'primary.main', flexShrink: 0 }} />
                     <Box sx={{ minWidth: 0, flex: 1 }}>
                       <Typography
                         variant="body2"
                         sx={{
                           fontWeight: 600,
-                          color: "text.primary",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis"
+                          color: 'text.primary',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
-                        title={club ? `Clubinho #${club.number ?? "?"}` : "Sem Clubinho"}
+                        title={club ? `Clubinho #${club.number ?? '?'}` : 'Sem Clubinho'}
                       >
-                        {club ? `Clubinho #${club.number ?? "?"}` : "Sem Clubinho"}
+                        {club ? `Clubinho #${club.number ?? '?'}` : 'Sem Clubinho'}
                       </Typography>
                     </Box>
                   </Stack>
@@ -299,39 +296,41 @@ export default function TeacherCards({
                             ? coordUser.name
                             : coordUser?.email
                               ? coordUser.email
-                              : "Sem coordenador"
+                              : 'Sem coordenador'
                         }
                         color="info"
                         sx={{
                           fontWeight: 600,
-                          fontSize: "0.7rem",
+                          fontSize: '0.7rem',
                           height: 20,
-                          "& .MuiChip-label": { px: 0.5 }
+                          '& .MuiChip-label': { px: 0.5 },
                         }}
                       />
                     </Box>
 
                     {t.user?.phone && (
-                      <Box sx={{ 
-                        mx: { xs: 1, sm: 1.25 },
-                        mb: 0.75,
-                        p: { xs: 0.75, sm: 1 },
-                        borderRadius: 2,
-                        bgcolor: "grey.50",
-                        border: "1px solid",
-                        borderColor: "grey.200",
-                      }}>
+                      <Box
+                        sx={{
+                          mx: { xs: 1, sm: 1.25 },
+                          mb: 0.75,
+                          p: { xs: 0.75, sm: 1 },
+                          borderRadius: 2,
+                          bgcolor: 'grey.50',
+                          border: '1px solid',
+                          borderColor: 'grey.200',
+                        }}
+                      >
                         <Stack direction="row" spacing={0.75} alignItems="center">
-                          <PhoneIcon sx={{ fontSize: 18, color: "primary.main", flexShrink: 0 }} />
+                          <PhoneIcon sx={{ fontSize: 18, color: 'primary.main', flexShrink: 0 }} />
                           <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography 
+                            <Typography
                               variant="body2"
-                              sx={{ 
+                              sx={{
                                 fontWeight: 600,
-                                color: "text.primary",
-                                whiteSpace: "nowrap", 
-                                overflow: "hidden", 
-                                textOverflow: "ellipsis"
+                                color: 'text.primary',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                               }}
                               title={t.user.phone}
                             >
@@ -348,7 +347,7 @@ export default function TeacherCards({
                                   href={wa}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  sx={{ color: "success.main" }}
+                                  sx={{ color: 'success.main' }}
                                 >
                                   <WhatsApp fontSize="medium" />
                                 </IconButton>
@@ -371,15 +370,19 @@ export default function TeacherCards({
                           sx={{
                             p: 1.25,
                             borderRadius: 2,
-                            bgcolor: "grey.50",
-                            border: "1px solid",
-                            borderColor: "grey.200",
+                            bgcolor: 'grey.50',
+                            border: '1px solid',
+                            borderColor: 'grey.200',
                           }}
                         >
                           <Stack spacing={1}>
                             <Stack direction="row" spacing={0.75} alignItems="center">
                               <PersonOutlined fontSize="small" color="primary" />
-                              <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
+                              <Typography
+                                variant="subtitle2"
+                                color="text.primary"
+                                sx={{ fontWeight: 600 }}
+                              >
                                 Informações do Professor
                               </Typography>
                             </Stack>
@@ -389,7 +392,7 @@ export default function TeacherCards({
                               </Typography>
                               {t.user?.phone && (
                                 <Stack direction="row" spacing={0.5} alignItems="center">
-                                  <PhoneIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                                  <PhoneIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
                                   <Typography variant="body2" color="text.secondary">
                                     {t.user.phone}
                                   </Typography>
@@ -402,7 +405,7 @@ export default function TeacherCards({
                                         href={wa}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        sx={{ color: "success.main", p: 0.5 }}
+                                        sx={{ color: 'success.main', p: 0.5 }}
                                       >
                                         <WhatsApp fontSize="small" />
                                       </IconButton>
@@ -421,23 +424,33 @@ export default function TeacherCards({
                             sx={{
                               p: 1.25,
                               borderRadius: 2,
-                              bgcolor: "grey.50",
-                              border: "1px solid",
-                              borderColor: "grey.200",
+                              bgcolor: 'grey.50',
+                              border: '1px solid',
+                              borderColor: 'grey.200',
                             }}
                           >
                             <Stack spacing={1}>
                               <Stack direction="row" spacing={0.75} alignItems="center">
                                 <SchoolOutlined fontSize="small" color="primary" />
-                                <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
-                                  Clubinho #{club.number ?? "?"}
+                                <Typography
+                                  variant="subtitle2"
+                                  color="text.primary"
+                                  sx={{ fontWeight: 600 }}
+                                >
+                                  Clubinho #{club.number ?? '?'}
                                 </Typography>
                               </Stack>
-                              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                flexWrap="wrap"
+                                useFlexGap
+                                rowGap={1}
+                              >
                                 <Chip
                                   size="small"
                                   color="primary"
-                                  label={`#${club.number ?? "?"}`}
+                                  label={`#${club.number ?? '?'}`}
                                   sx={{ fontWeight: 500 }}
                                 />
                                 <Chip
@@ -449,7 +462,7 @@ export default function TeacherCards({
                                 <Chip
                                   size="small"
                                   variant="outlined"
-                                  label={coordUser?.name || coordUser?.email || "Sem coordenador"}
+                                  label={coordUser?.name || coordUser?.email || 'Sem coordenador'}
                                   sx={{ fontWeight: 500 }}
                                 />
                               </Stack>
@@ -462,9 +475,9 @@ export default function TeacherCards({
                           sx={{
                             p: 1.25,
                             borderRadius: 2,
-                            bgcolor: "grey.50",
-                            border: "1px solid",
-                            borderColor: "grey.200",
+                            bgcolor: 'grey.50',
+                            border: '1px solid',
+                            borderColor: 'grey.200',
                           }}
                         >
                           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap rowGap={1}>
@@ -491,16 +504,16 @@ export default function TeacherCards({
 
                 <Box
                   sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                     gap: 0.75,
                     px: { xs: 1, sm: 1.25 },
                     pb: { xs: 0.75, sm: 1 },
                     pt: 0.75,
-                    bgcolor: "grey.50",
-                    borderTop: "1px solid",
-                    borderColor: "grey.200",
+                    bgcolor: 'grey.50',
+                    borderTop: '1px solid',
+                    borderColor: 'grey.200',
                   }}
                 >
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
@@ -513,8 +526,8 @@ export default function TeacherCards({
                         size="small"
                         onClick={() => onView(t)}
                         sx={{
-                          color: "primary.main",
-                          "&:hover": { bgcolor: "primary.50" }
+                          color: 'primary.main',
+                          '&:hover': { bgcolor: 'primary.50' },
                         }}
                       >
                         <Visibility fontSize="small" />
@@ -525,8 +538,8 @@ export default function TeacherCards({
                         size="small"
                         onClick={() => onEditLinks(t)}
                         sx={{
-                          color: "info.main",
-                          "&:hover": { bgcolor: "info.50" }
+                          color: 'info.main',
+                          '&:hover': { bgcolor: 'info.50' },
                         }}
                       >
                         <LinkIcon fontSize="small" />
@@ -538,7 +551,7 @@ export default function TeacherCards({
                         color="error"
                         onClick={() => onClearClub(t.id)}
                         sx={{
-                          "&:hover": { bgcolor: "error.50" }
+                          '&:hover': { bgcolor: 'error.50' },
                         }}
                       >
                         <LinkOffIcon fontSize="small" />
@@ -568,29 +581,29 @@ export default function TeacherCards({
         labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
         slotProps={{
           select: {
-            sx: { fontSize: { xs: "0.75rem", sm: "0.875rem" } }
-          }
+            sx: { fontSize: { xs: '0.75rem', sm: '0.875rem' } },
+          },
         }}
-        sx={{ 
+        sx={{
           px: 0,
-          ".MuiTablePagination-toolbar": {
+          '.MuiTablePagination-toolbar': {
             minHeight: { xs: 52, sm: 64 },
             px: { xs: 0.5, sm: 2 },
           },
-          ".MuiTablePagination-selectLabel": {
+          '.MuiTablePagination-selectLabel': {
             margin: 0,
-            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
           },
-          ".MuiTablePagination-displayedRows": {
+          '.MuiTablePagination-displayedRows': {
             margin: 0,
-            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
           },
-          ".MuiTablePagination-actions": {
+          '.MuiTablePagination-actions': {
             marginLeft: { xs: 0.5, sm: 1 },
-            "& .MuiIconButton-root": {
-              padding: { xs: "4px", sm: "8px" },
-            }
-          }
+            '& .MuiIconButton-root': {
+              padding: { xs: '4px', sm: '8px' },
+            },
+          },
         }}
       />
     </Box>

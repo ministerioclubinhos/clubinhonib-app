@@ -5,11 +5,13 @@ Este guia mostra como integrar os dados de estatísticas em outras partes da apl
 ## Importando Componentes
 
 ### Opção 1: Importar diretamente
+
 ```typescript
 import { OverviewCards, PagelasTimeSeriesChart } from '@/features/statistics/components';
 ```
 
 ### Opção 2: Usar o index
+
 ```typescript
 import { OverviewCards, PagelasTimeSeriesChart } from '@/features/statistics';
 ```
@@ -78,7 +80,7 @@ import { RootState } from '@/store/slices';
 
 export const CoordinatorDashboard: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
-  
+
   // Filtrar apenas pelos clubes do coordenador
   const { data: insights } = useInsights({
     coordinatorId: user?.id,
@@ -95,7 +97,7 @@ export const CoordinatorDashboard: React.FC = () => {
       <Grid item xs={12}>
         <Typography variant="h5">Meu Dashboard</Typography>
       </Grid>
-      
+
       <Grid item xs={12} md={6}>
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6">Meus Clubes</Typography>
@@ -252,13 +254,10 @@ Se precisar armazenar dados de estatísticas no Redux:
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { statisticsApi } from '@/features/statistics';
 
-export const fetchOverviewStats = createAsyncThunk(
-  'stats/fetchOverview',
-  async () => {
-    const response = await statisticsApi.getOverview();
-    return response.data;
-  }
-);
+export const fetchOverviewStats = createAsyncThunk('stats/fetchOverview', async () => {
+  const response = await statisticsApi.getOverview();
+  return response.data;
+});
 
 const statsSlice = createSlice({
   name: 'stats',
@@ -282,6 +281,7 @@ export default statsSlice.reducer;
 ## Performance
 
 ### Cache
+
 Os dados são cacheados por 5 minutos. Para cache mais longo:
 
 ```typescript
@@ -291,6 +291,7 @@ const { data } = usePagelasChartData(filters, {
 ```
 
 ### Lazy Loading
+
 Carregue componentes de estatísticas sob demanda:
 
 ```typescript
@@ -308,23 +309,29 @@ export const LazyStats: React.FC = () => (
 ## Exemplos de Casos de Uso
 
 ### 1. Widget no Dashboard Principal
+
 Mostrar resumo de estatísticas na home do admin.
 
 ### 2. Badge de Notificação
+
 Exibir número de crianças ativas no menu.
 
 ### 3. Relatórios Personalizados
+
 Criar relatórios específicos por coordenador ou professor.
 
 ### 4. Análise Comparativa
+
 Comparar performance entre diferentes clubes ou períodos.
 
 ### 5. Alertas Automáticos
+
 Notificar quando métricas caem abaixo de threshold.
 
 ## Troubleshooting
 
 ### Dados não atualizam
+
 ```typescript
 // Force refetch
 const { refetch } = usePagelasChartData(filters);
@@ -334,6 +341,7 @@ const { refetch } = usePagelasChartData(filters);
 ```
 
 ### Erro de CORS
+
 Configure o proxy no `vite.config.ts`:
 
 ```typescript
@@ -347,6 +355,7 @@ export default defineConfig({
 ```
 
 ### TypeScript Errors
+
 Certifique-se de que todos os tipos estão sendo importados de `@/features/statistics/api`.
 
 ## Recursos Adicionais
@@ -358,4 +367,3 @@ Certifique-se de que todos os tipos estão sendo importados de `@/features/stati
 ---
 
 **Dúvidas?** Consulte o código-fonte em `src/features/statistics/` ou a documentação da API.
-

@@ -1,5 +1,5 @@
-import api from "@/config/axiosConfig";
-import type { PageDto, Pagela, CreatePagelaPayload, UpdatePagelaPayload } from "./types";
+import api from '@/config/axiosConfig';
+import type { PageDto, Pagela, CreatePagelaPayload, UpdatePagelaPayload } from './types';
 
 export async function apiListPagelasPaginated(
   params: {
@@ -7,15 +7,15 @@ export async function apiListPagelasPaginated(
     searchString?: string;
     year?: number;
     week?: number;
-    present?: "true" | "false";
-    didMeditation?: "true" | "false";
-    recitedVerse?: "true" | "false";
+    present?: 'true' | 'false';
+    didMeditation?: 'true' | 'false';
+    recitedVerse?: 'true' | 'false';
     page?: number;
     limit?: number;
   },
   options?: { signal?: AbortSignal }
 ) {
-  const { data } = await api.get<PageDto<Pagela>>("/pagelas/paginated", {
+  const { data } = await api.get<PageDto<Pagela>>('/pagelas/paginated', {
     params,
     signal: options?.signal,
   });
@@ -23,7 +23,7 @@ export async function apiListPagelasPaginated(
 }
 
 export async function apiCreatePagela(payload: CreatePagelaPayload) {
-  const { data } = await api.post<Pagela>("/pagelas", payload);
+  const { data } = await api.post<Pagela>('/pagelas', payload);
   return data;
 }
 
@@ -38,9 +38,9 @@ export async function apiDeletePagela(id: string) {
 
 export async function apiCreateAcceptedChrist(payload: {
   childId: string;
-  decision: "ACCEPTED" | "RECONCILED";
+  decision: 'ACCEPTED' | 'RECONCILED';
   notes?: string | null;
 }) {
-  const { data } = await api.post("/accepted-christs", payload);
+  const { data } = await api.post('/accepted-christs', payload);
   return data;
 }

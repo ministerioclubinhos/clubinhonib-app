@@ -53,7 +53,9 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
   if (!data) {
     return (
       <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
-        <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Erro ao carregar dados</Typography>
+        <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+          Erro ao carregar dados
+        </Typography>
       </Paper>
     );
   }
@@ -61,7 +63,9 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
   if (!data.timeSeries || !data.timeSeries.total || data.timeSeries.total.length === 0) {
     return (
       <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
-        <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Nenhum dado disponível para o período selecionado</Typography>
+        <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+          Nenhum dado disponível para o período selecionado
+        </Typography>
       </Paper>
     );
   }
@@ -119,7 +123,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
   const renderChart = () => {
     const commonProps = {
       data: combinedData,
-      margin: isMobile 
+      margin: isMobile
         ? { top: 10, right: 10, left: 0, bottom: 0 }
         : { top: 10, right: 30, left: 0, bottom: 0 },
     };
@@ -130,25 +134,29 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
           <ComposedChart {...commonProps}>
             <defs>
               {metrics.map((metric) => (
-                <linearGradient key={metric.key} id={`gradient-${metric.key}`} x1="0" y1="0" x2="0" y2="1">
+                <linearGradient
+                  key={metric.key}
+                  id={`gradient-${metric.key}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
                   <stop offset="5%" stopColor={metric.color} stopOpacity={0.8} />
                   <stop offset="95%" stopColor={metric.color} stopOpacity={0.1} />
                 </linearGradient>
               ))}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               stroke={theme.palette.text.secondary}
               angle={isMobile ? -45 : 0}
               textAnchor={isMobile ? 'end' : 'middle'}
               height={isMobile ? 60 : 30}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
-            <YAxis 
-              stroke={theme.palette.text.secondary}
-              style={{ fontSize: isMobile ? 9 : 11 }}
-            />
+            <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             {selectedMetrics.map((key) => {
@@ -174,25 +182,29 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
           <ComposedChart {...commonProps}>
             <defs>
               {metrics.map((metric) => (
-                <linearGradient key={metric.key} id={`area-gradient-${metric.key}`} x1="0" y1="0" x2="0" y2="1">
+                <linearGradient
+                  key={metric.key}
+                  id={`area-gradient-${metric.key}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
                   <stop offset="5%" stopColor={metric.color} stopOpacity={0.6} />
                   <stop offset="95%" stopColor={metric.color} stopOpacity={0.1} />
                 </linearGradient>
               ))}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               stroke={theme.palette.text.secondary}
               angle={isMobile ? -45 : 0}
               textAnchor={isMobile ? 'end' : 'middle'}
               height={isMobile ? 60 : 30}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
-            <YAxis 
-              stroke={theme.palette.text.secondary}
-              style={{ fontSize: isMobile ? 9 : 11 }}
-            />
+            <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             {selectedMetrics.map((key) => {
@@ -216,23 +228,22 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
         return (
           <ComposedChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               stroke={theme.palette.text.secondary}
               angle={isMobile ? -45 : 0}
               textAnchor={isMobile ? 'end' : 'middle'}
               height={isMobile ? 60 : 30}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
-            <YAxis 
-              stroke={theme.palette.text.secondary}
-              style={{ fontSize: isMobile ? 9 : 11 }}
-            />
+            <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             {selectedMetrics.map((key) => {
               const metric = metrics.find((m) => m.key === key);
-              return metric ? <Bar key={key} dataKey={key} name={metric.label} fill={metric.color} /> : null;
+              return metric ? (
+                <Bar key={key} dataKey={key} name={metric.label} fill={metric.color} />
+              ) : null;
             })}
           </ComposedChart>
         );
@@ -248,18 +259,15 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               stroke={theme.palette.text.secondary}
               angle={isMobile ? -45 : 0}
               textAnchor={isMobile ? 'end' : 'middle'}
               height={isMobile ? 60 : 30}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
-            <YAxis 
-              stroke={theme.palette.text.secondary}
-              style={{ fontSize: isMobile ? 9 : 11 }}
-            />
+            <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             <Area
@@ -305,20 +313,29 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
     >
       <Box sx={{ mb: { xs: 2, sm: 3 }, width: '100%', maxWidth: '100%' }}>
         <Box sx={{ mb: { xs: 2, sm: 0 } }}>
-          <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}>
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            gutterBottom
+            sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}
+          >
             📊 Evolução de Pagelas
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}
+          >
             Análise temporal detalhada das atividades
           </Typography>
         </Box>
 
         <Box sx={{ width: '100%', maxWidth: '100%', mb: { xs: 2, sm: 0 } }}>
-          <ButtonGroup 
-            size="small" 
-            variant="outlined" 
+          <ButtonGroup
+            size="small"
+            variant="outlined"
             fullWidth={isMobile}
-            sx={{ 
+            sx={{
               display: 'flex',
               flexWrap: { xs: 'wrap', sm: 'nowrap' },
               width: { xs: '100%', sm: 'auto' },
@@ -369,7 +386,13 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
 
         {chartType !== 'composed' && (
           <Box sx={{ mt: 2, width: '100%', maxWidth: '100%' }}>
-            <Typography variant="caption" color="text.secondary" gutterBottom display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              gutterBottom
+              display="block"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
               Selecione as métricas para visualizar:
             </Typography>
             <ToggleButtonGroup
@@ -394,7 +417,15 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
             >
               {metrics.map((metric) => (
                 <ToggleButton key={metric.key} value={metric.key}>
-                  <Box sx={{ width: { xs: 10, sm: 12 }, height: { xs: 10, sm: 12 }, borderRadius: '50%', bgcolor: metric.color, mr: { xs: 0.5, sm: 1 } }} />
+                  <Box
+                    sx={{
+                      width: { xs: 10, sm: 12 },
+                      height: { xs: 10, sm: 12 },
+                      borderRadius: '50%',
+                      bgcolor: metric.color,
+                      mr: { xs: 0.5, sm: 1 },
+                    }}
+                  />
                   {metric.label}
                 </ToggleButton>
               ))}
@@ -411,4 +442,3 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
     </Paper>
   );
 };
-

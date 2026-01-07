@@ -1,6 +1,15 @@
 import React from 'react';
 import { Box, Paper, Typography, CircularProgress, useTheme, Grid } from '@mui/material';
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, ResponsiveContainer, Tooltip } from 'recharts';
+import {
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts';
 import { usePagelasChartData } from '../hooks';
 import { StatisticsFilters } from '../api';
 
@@ -115,7 +124,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
           <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
             Performance relativa entre meninos e meninas
           </Typography>
-          
+
           <ResponsiveContainer width="100%" height={350}>
             <RadarChart data={genderData}>
               <PolarGrid stroke={theme.palette.divider} />
@@ -152,7 +161,11 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
                 <Typography variant="caption" color="text.secondary">
                   {g.gender === 'M' ? 'Masculino' : 'Feminino'}
                 </Typography>
-                <Typography variant="h6" fontWeight="bold" color={g.gender === 'M' ? 'info.main' : 'secondary.main'}>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  color={g.gender === 'M' ? 'info.main' : 'secondary.main'}
+                >
                   {g.total}
                 </Typography>
               </Box>
@@ -179,7 +192,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
           <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
             Performance por grupos de idade
           </Typography>
-          
+
           <ResponsiveContainer width="100%" height={350}>
             <RadarChart data={ageGroupData}>
               <PolarGrid stroke={theme.palette.divider} />
@@ -236,4 +249,3 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
     </Grid>
   );
 };
-

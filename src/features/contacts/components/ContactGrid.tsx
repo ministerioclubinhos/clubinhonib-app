@@ -1,7 +1,7 @@
-import React from "react";
-import { Grid, Box, CircularProgress, Typography } from "@mui/material";
-import ContactCard from "./ContactCard";
-import { Contact } from "../types";
+import React from 'react';
+import { Grid, Box, CircularProgress, Typography } from '@mui/material';
+import ContactCard from './ContactCard';
+import { Contact } from '../types';
 
 type Props = {
   items: Contact[];
@@ -22,7 +22,9 @@ export default function ContactGrid({ items, loading, onView, onDeleteAsk }: Pro
   if (!items.length) {
     return (
       <Box textAlign="center" mt={6}>
-        <Typography variant="body2" color="text.secondary">Nenhum contato encontrado.</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Nenhum contato encontrado.
+        </Typography>
       </Box>
     );
   }
@@ -32,7 +34,12 @@ export default function ContactGrid({ items, loading, onView, onDeleteAsk }: Pro
       {items.map((contact) => (
         <Grid item xs={12} sm={6} md={3} key={contact.id}>
           <ContactCard
-            contact={{ id: contact.id, name: contact.name, phone: contact.phone, read: contact.read }}
+            contact={{
+              id: contact.id,
+              name: contact.name,
+              phone: contact.phone,
+              read: contact.read,
+            }}
             onView={() => onView(contact)}
             onDelete={() => onDeleteAsk(contact)}
           />

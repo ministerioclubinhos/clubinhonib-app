@@ -24,7 +24,9 @@ export function useIdeasPages() {
     }
   }, []);
 
-  useEffect(() => { fetchPages(); }, [fetchPages]);
+  useEffect(() => {
+    fetchPages();
+  }, [fetchPages]);
 
   return { pages, setPages, loading, error, setError, fetchPages };
 }
@@ -36,7 +38,7 @@ export function useIdeasSearch(pages: IdeasPageData[]) {
   const filtered = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return pages;
-    return pages.filter(p => p.title.toLowerCase().includes(term));
+    return pages.filter((p) => p.title.toLowerCase().includes(term));
   }, [pages, searchTerm]);
 
   useEffect(() => {
@@ -51,16 +53,19 @@ export function useIdeasSearch(pages: IdeasPageData[]) {
 export function useIdeasMutations(fetchPages: () => Promise<void> | void) {
   const [mutError, setMutError] = useState<string | null>(null);
 
-  const deletePage = useCallback(async (id: string) => {
-    setMutError(null);
-    try {
-      await apiDeleteIdeasPage(id);
-      await fetchPages();
-    } catch {
-      setMutError('Erro ao excluir a página. Tente novamente.');
-      throw new Error('delete failed');
-    }
-  }, [fetchPages]);
+  const deletePage = useCallback(
+    async (id: string) => {
+      setMutError(null);
+      try {
+        await apiDeleteIdeasPage(id);
+        await fetchPages();
+      } catch {
+        setMutError('Erro ao excluir a página. Tente novamente.');
+        throw new Error('delete failed');
+      }
+    },
+    [fetchPages]
+  );
 
   return { mutError, setMutError, deletePage };
 }

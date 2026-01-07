@@ -47,31 +47,36 @@ export default function IdeasVideoPlayerView({ video }: Props) {
   };
 
   const renderVideo = () => {
-    if (!video.url) return (
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        height: 200,
-        backgroundColor: 'grey.100',
-        borderRadius: 2,
-      }}>
-        <Typography color="error" align="center">
-          Vídeo não disponível
-        </Typography>
-      </Box>
-    );
+    if (!video.url)
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 200,
+            backgroundColor: 'grey.100',
+            borderRadius: 2,
+          }}
+        >
+          <Typography color="error" align="center">
+            Vídeo não disponível
+          </Typography>
+        </Box>
+      );
 
     if (!shouldRenderVideo()) {
       return (
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          height: 200,
-          backgroundColor: 'grey.100',
-          borderRadius: 2,
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 200,
+            backgroundColor: 'grey.100',
+            borderRadius: 2,
+          }}
+        >
           <Typography color="error" align="center">
             Vídeo não pode ser renderizado
           </Typography>
@@ -81,16 +86,18 @@ export default function IdeasVideoPlayerView({ video }: Props) {
 
     if (video.isLocalFile || video.uploadType === MediaUploadType.UPLOAD) {
       return (
-        <Box sx={{ 
-          position: 'relative',
-          borderRadius: 2,
-          overflow: 'hidden',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        }}>
-          <video 
-            controls 
-            style={{ 
-              width: '100%', 
+        <Box
+          sx={{
+            position: 'relative',
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          }}
+        >
+          <video
+            controls
+            style={{
+              width: '100%',
               borderRadius: 8,
               aspectRatio: '16/9',
               objectFit: 'cover',
@@ -108,33 +115,37 @@ export default function IdeasVideoPlayerView({ video }: Props) {
         case MediaPlatform.YOUTUBE: {
           const embedUrl = getYouTubeEmbedUrl(video.url);
           return embedUrl ? (
-            <Box sx={{ 
-              position: 'relative',
-              borderRadius: 2,
-              overflow: 'hidden',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            }}>
+            <Box
+              sx={{
+                position: 'relative',
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              }}
+            >
               <iframe
                 src={embedUrl}
                 title={video.title}
                 allowFullScreen
-                style={{ 
-                  width: '100%', 
-                  aspectRatio: '16/9', 
+                style={{
+                  width: '100%',
+                  aspectRatio: '16/9',
                   border: 'none',
                   borderRadius: 8,
                 }}
               />
             </Box>
           ) : (
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              height: 200,
-              backgroundColor: 'grey.100',
-              borderRadius: 2,
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 200,
+                backgroundColor: 'grey.100',
+                borderRadius: 2,
+              }}
+            >
               <Typography color="error" align="center">
                 URL do YouTube inválida
               </Typography>
@@ -145,33 +156,37 @@ export default function IdeasVideoPlayerView({ video }: Props) {
         case MediaPlatform.GOOGLE_DRIVE: {
           const previewUrl = getMediaPreviewUrl(video);
           return previewUrl ? (
-            <Box sx={{ 
-              position: 'relative',
-              borderRadius: 2,
-              overflow: 'hidden',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            }}>
+            <Box
+              sx={{
+                position: 'relative',
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              }}
+            >
               <iframe
                 src={previewUrl}
                 title={video.title}
                 allowFullScreen
-                style={{ 
-                  width: '100%', 
-                  aspectRatio: '16/9', 
+                style={{
+                  width: '100%',
+                  aspectRatio: '16/9',
                   border: 'none',
                   borderRadius: 8,
                 }}
               />
             </Box>
           ) : (
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              height: 200,
-              backgroundColor: 'grey.100',
-              borderRadius: 2,
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 200,
+                backgroundColor: 'grey.100',
+                borderRadius: 2,
+              }}
+            >
               <Typography color="error" align="center">
                 URL do Google Drive inválida
               </Typography>
@@ -181,14 +196,16 @@ export default function IdeasVideoPlayerView({ video }: Props) {
 
         default:
           return (
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              height: 200,
-              backgroundColor: 'grey.100',
-              borderRadius: 2,
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 200,
+                backgroundColor: 'grey.100',
+                borderRadius: 2,
+              }}
+            >
               <Typography color="error" align="center">
                 Plataforma não suportada
               </Typography>
@@ -198,14 +215,16 @@ export default function IdeasVideoPlayerView({ video }: Props) {
     }
 
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        height: 200,
-        backgroundColor: 'grey.100',
-        borderRadius: 2,
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: 200,
+          backgroundColor: 'grey.100',
+          borderRadius: 2,
+        }}
+      >
         <Typography color="error" align="center">
           Tipo de vídeo não suportado
         </Typography>
@@ -214,13 +233,15 @@ export default function IdeasVideoPlayerView({ video }: Props) {
   };
 
   return (
-    <Box sx={{ 
-      width: '100%', 
-      p: { xs: 1.5, sm: 2, md: 3 },
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
+    <Box
+      sx={{
+        width: '100%',
+        p: { xs: 1.5, sm: 2, md: 3 },
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -228,13 +249,22 @@ export default function IdeasVideoPlayerView({ video }: Props) {
         style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
       >
         {/* Header com ícone */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, sm: 2 } }}>
-          <PlayCircleOutlineIcon sx={{ color: theme.palette.error.main, fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
-          <Typography 
-            variant="subtitle1" 
-            fontWeight="bold" 
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 0.5, sm: 1 },
+            mb: { xs: 1.5, sm: 2 },
+          }}
+        >
+          <PlayCircleOutlineIcon
+            sx={{ color: theme.palette.error.main, fontSize: { xs: '1.2rem', sm: '1.5rem' } }}
+          />
+          <Typography
+            variant="subtitle1"
+            fontWeight="bold"
             color={theme.palette.error.main}
-            sx={{ 
+            sx={{
               fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
               lineHeight: 1.3,
             }}
@@ -244,17 +274,15 @@ export default function IdeasVideoPlayerView({ video }: Props) {
         </Box>
 
         {/* Vídeo */}
-        <Box sx={{ mb: { xs: 1.5, sm: 2 }, flex: 1 }}>
-          {renderVideo()}
-        </Box>
+        <Box sx={{ mb: { xs: 1.5, sm: 2 }, flex: 1 }}>{renderVideo()}</Box>
 
         {/* Descrição */}
         {video.description && (
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
+          <Typography
+            variant="body2"
+            color="text.secondary"
             mb={{ xs: 1.5, sm: 2 }}
-            sx={{ 
+            sx={{
               fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
               lineHeight: 1.4,
             }}
@@ -266,9 +294,9 @@ export default function IdeasVideoPlayerView({ video }: Props) {
         {/* Botão de download */}
         {shouldAllowDownload() && (
           <Box sx={{ mt: 'auto' }}>
-            <DownloadButton 
-              url={video.url} 
-              filename={video.originalName || video.title || 'video'} 
+            <DownloadButton
+              url={video.url}
+              filename={video.originalName || video.title || 'video'}
               size="small"
               fullWidth={isMobile}
             />

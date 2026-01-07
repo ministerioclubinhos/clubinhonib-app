@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { useSelector } from "react-redux";
+import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import {
   Paper,
   Table,
@@ -18,7 +18,7 @@ import {
   useTheme,
   Tooltip,
   IconButton,
-} from "@mui/material";
+} from '@mui/material';
 import {
   ColumnDef,
   flexRender,
@@ -26,14 +26,14 @@ import {
   getPaginationRowModel,
   SortingState,
   useReactTable,
-} from "@tanstack/react-table";
-import { Visibility, Edit, Delete, WhatsApp } from "@mui/icons-material";
-import { UserRow } from "../types";
-import { fmtDate } from "@/utils/dates";
-import { UserRole } from "@/store/slices/auth/authSlice";
-import { RootState } from "@/store/slices";
-import UsersCards from "./UsersCards";
-import { buildWhatsappLink } from "@/utils/whatsapp";
+} from '@tanstack/react-table';
+import { Visibility, Edit, Delete, WhatsApp } from '@mui/icons-material';
+import { UserRow } from '../types';
+import { fmtDate } from '@/utils/dates';
+import { UserRole } from '@/store/slices/auth/authSlice';
+import { RootState } from '@/store/slices';
+import UsersCards from './UsersCards';
+import { buildWhatsappLink } from '@/utils/whatsapp';
 
 type Props = {
   rows: UserRow[];
@@ -50,15 +50,14 @@ type Props = {
 };
 
 const roleLabels: Record<UserRole, string> = {
-  [UserRole.ADMIN]: "Administrador",
-  [UserRole.COORDINATOR]: "Coordenador",
-  [UserRole.TEACHER]: "Professor",
+  [UserRole.ADMIN]: 'Administrador',
+  [UserRole.COORDINATOR]: 'Coordenador',
+  [UserRole.TEACHER]: 'Professor',
 };
-
 
 export default function UsersTable(props: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true });
   return isXs ? <UsersCards {...props} /> : <UsersTableDesktop {...props} />;
 }
 
@@ -76,24 +75,19 @@ function UsersTableDesktop({
   onDelete,
 }: Props) {
   const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   const columns = useMemo<ColumnDef<UserRow>[]>(() => {
     return [
       {
-        accessorKey: "name",
-        header: "Nome",
+        accessorKey: 'name',
+        header: 'Nome',
         cell: ({ row }) => (
-          <Box sx={{ display: "flex", flexDirection: "column", minWidth: 160 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 160 }}>
             <Typography fontWeight={600} noWrap>
-              {row.original.name || "—"}
+              {row.original.name || '—'}
             </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              noWrap
-              title={row.original.email}
-            >
+            <Typography variant="caption" color="text.secondary" noWrap title={row.original.email}>
               {row.original.email}
             </Typography>
           </Box>
@@ -101,8 +95,8 @@ function UsersTableDesktop({
         meta: { width: 260 },
       },
       {
-        accessorKey: "role",
-        header: "Papel",
+        accessorKey: 'role',
+        header: 'Papel',
         cell: ({ getValue }) => {
           const role = getValue() as UserRole;
           return (
@@ -110,68 +104,68 @@ function UsersTableDesktop({
               size="small"
               label={roleLabels[role] ?? role}
               variant="outlined"
-              color={role === UserRole.ADMIN ? "secondary" : "default"}
+              color={role === UserRole.ADMIN ? 'secondary' : 'default'}
             />
           );
         },
         meta: { width: 140 },
       },
       {
-        accessorKey: "active",
-        header: "Ativo",
+        accessorKey: 'active',
+        header: 'Ativo',
         cell: ({ getValue }) => (
           <Chip
             size="small"
-            label={getValue() ? "Sim" : "Não"}
-            color={getValue() ? "success" : "default"}
+            label={getValue() ? 'Sim' : 'Não'}
+            color={getValue() ? 'success' : 'default'}
           />
         ),
         meta: { width: 90 },
       },
       {
-        accessorKey: "completed",
-        header: "Completo",
+        accessorKey: 'completed',
+        header: 'Completo',
         cell: ({ getValue }) => (
           <Chip
             size="small"
-            label={getValue() ? "Sim" : "Não"}
-            color={getValue() ? "success" : "default"}
+            label={getValue() ? 'Sim' : 'Não'}
+            color={getValue() ? 'success' : 'default'}
           />
         ),
         meta: { width: 110 },
       },
       {
-        accessorKey: "phone",
-        header: "Telefone",
+        accessorKey: 'phone',
+        header: 'Telefone',
 
         meta: { width: 190 },
       },
       ...(isMdUp
         ? ([
             {
-              accessorKey: "createdAt",
-              header: "Criado em",
+              accessorKey: 'createdAt',
+              header: 'Criado em',
               cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
               meta: { width: 170 },
             },
             {
-              accessorKey: "updatedAt",
-              header: "Atualizado em",
+              accessorKey: 'updatedAt',
+              header: 'Atualizado em',
               cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
               meta: { width: 170 },
             },
           ] as ColumnDef<UserRow>[])
         : []),
       {
-        id: "actions",
-        header: "Ações",
+        id: 'actions',
+        header: 'Ações',
         enableSorting: false,
         cell: ({ row }) => {
           const { user } = useSelector((state: RootState) => state.auth);
           const wa = buildWhatsappLink(row.original.name, user?.name, row.original.phone);
           return (
-            <Box sx={{ display: "flex", gap: 0.5 }}>
-              <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
+              <Tooltip title={wa ? 'WhatsApp' : 'Sem telefone'}>
                 <span>
                   <IconButton
                     color="success"
@@ -219,12 +213,12 @@ function UsersTableDesktop({
     manualPagination: true,
     manualSorting: true,
     onSortingChange: (u) => {
-      const next = typeof u === "function" ? u(sorting) : u;
+      const next = typeof u === 'function' ? u(sorting) : u;
       setSorting(next);
       setPageIndex(0);
     },
     onPaginationChange: (u) => {
-      const next = typeof u === "function" ? u({ pageIndex, pageSize }) : u;
+      const next = typeof u === 'function' ? u({ pageIndex, pageSize }) : u;
       setPageIndex(next.pageIndex ?? 0);
       setPageSize(next.pageSize ?? 12);
     },
@@ -242,19 +236,13 @@ function UsersTableDesktop({
                 {hg.headers.map((h) => {
                   const sorted = h.column.getIsSorted();
                   const width = (h.column.columnDef.meta as any)?.width;
-                  const isActions = h.column.id === "actions";
+                  const isActions = h.column.id === 'actions';
                   return (
                     <TableCell key={h.id} sx={{ width }}>
                       {!isActions ? (
                         <TableSortLabel
                           active={!!sorted}
-                          direction={
-                            sorted === "asc"
-                              ? "asc"
-                              : sorted === "desc"
-                              ? "desc"
-                              : "asc"
-                          }
+                          direction={sorted === 'asc' ? 'asc' : sorted === 'desc' ? 'desc' : 'asc'}
                           onClick={h.column.getToggleSortingHandler()}
                         >
                           {flexRender(h.column.columnDef.header, h.getContext())}
@@ -314,11 +302,11 @@ function StackedPhoneWithWA({ user }: { user: UserRow }) {
   const { user: loggedUser } = useSelector((state: RootState) => state.auth);
   const wa = buildWhatsappLink(user.name, loggedUser?.name, user.phone);
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
       <Typography noWrap title={user.phone || undefined} sx={{ mr: 0.25 }}>
-        {user.phone ? String(user.phone) : "—"}
+        {user.phone ? String(user.phone) : '—'}
       </Typography>
-      <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
+      <Tooltip title={wa ? 'WhatsApp' : 'Sem telefone'}>
         <span>
           <IconButton
             size="small"

@@ -39,7 +39,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
   const topClubs = React.useMemo(() => {
     if (!data?.byClub || data.byClub.length === 0) return [];
     const sorted = [...data.byClub]
-      .filter(club => {
+      .filter((club) => {
         const rate = Number(club.presenceRate);
         return !isNaN(rate) && rate >= 0;
       })
@@ -50,7 +50,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
         presenceRate: Number(club.presenceRate) || 0,
         clubNumber: Number(club.clubNumber) || 0,
       }));
-    
+
     return sorted;
   }, [data?.byClub]);
 
@@ -75,7 +75,9 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
   if (!data.byClub || data.byClub.length === 0) {
     return (
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-        <Typography color="text.secondary">Nenhum dado de clubinho disponível para o período selecionado</Typography>
+        <Typography color="text.secondary">
+          Nenhum dado de clubinho disponível para o período selecionado
+        </Typography>
       </Paper>
     );
   }
@@ -152,11 +154,19 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
       <Box sx={{ mb: { xs: 2, sm: 3 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
           <EmojiEvents sx={{ fontSize: { xs: 24, sm: 28 }, color: theme.palette.warning.main }} />
-          <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+          >
             🏆 Performance dos Clubinhos
           </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+        >
           Ranking de clubinhos por taxa de presença e engajamento
         </Typography>
       </Box>
@@ -165,12 +175,17 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
       {topClubs.length > 0 ? (
         <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
           <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
-            <BarChart 
-              data={topClubs} 
-              margin={{ top: 20, right: isMobile ? 10 : 30, left: isMobile ? 10 : 20, bottom: isMobile ? 80 : 60 }}
+            <BarChart
+              data={topClubs}
+              margin={{
+                top: 20,
+                right: isMobile ? 10 : 30,
+                left: isMobile ? 10 : 20,
+                bottom: isMobile ? 80 : 60,
+              }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-              <XAxis 
+              <XAxis
                 dataKey="clubNumber"
                 tickFormatter={(value) => `#${value}`}
                 stroke={theme.palette.text.secondary}
@@ -187,14 +202,17 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Bar 
-                dataKey="presenceRate" 
-                name="Taxa de Presença (%)" 
+              <Bar
+                dataKey="presenceRate"
+                name="Taxa de Presença (%)"
                 radius={[8, 8, 0, 0]}
                 isAnimationActive={true}
               >
                 {topClubs.map((entry, index) => (
-                  <Cell key={`cell-${entry.clubId || index}`} fill={getPerformanceColor(entry.presenceRate)} />
+                  <Cell
+                    key={`cell-${entry.clubId || index}`}
+                    fill={getPerformanceColor(entry.presenceRate)}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -202,13 +220,20 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
         </Box>
       ) : (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-          <Typography color="text.secondary">Nenhum dado disponível para exibir no gráfico</Typography>
+          <Typography color="text.secondary">
+            Nenhum dado disponível para exibir no gráfico
+          </Typography>
         </Box>
       )}
 
       {/* Lista Detalhada */}
       <Box sx={{ mt: { xs: 2, sm: 3 } }}>
-        <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+        <Typography
+          variant="subtitle2"
+          fontWeight="bold"
+          gutterBottom
+          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+        >
           Top 5 Clubinhos
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
@@ -219,7 +244,8 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
               sx={{
                 p: { xs: 1.5, sm: 2 },
                 borderRadius: 2,
-                background: index < 3 ? `${getMedalColor(index)}08` : theme.palette.background.default,
+                background:
+                  index < 3 ? `${getMedalColor(index)}08` : theme.palette.background.default,
                 border: `1px solid ${theme.palette.divider}`,
                 transition: 'all 0.2s ease',
                 '&:hover': {
@@ -244,8 +270,20 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
 
                 {/* Informações do Clubinho */}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
-                    <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      mb: 0.5,
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                    >
                       Clubinho #{club.clubNumber}
                     </Typography>
                     <Chip
@@ -257,13 +295,29 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
                     />
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: { xs: 1, sm: 2 },
+                      flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                    }}
+                  >
                     <Box sx={{ flex: 1, minWidth: { xs: '100%', sm: 'auto' } }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           Taxa de Presença
                         </Typography>
-                        <Typography variant="caption" fontWeight="bold" color={getPerformanceColor(club.presenceRate)} sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          fontWeight="bold"
+                          color={getPerformanceColor(club.presenceRate)}
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           {club.presenceRate.toFixed(1)}%
                         </Typography>
                       </Box>
@@ -284,9 +338,21 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
 
                     <Chip
                       icon={<TrendingUp sx={{ fontSize: { xs: 14, sm: 16 } }} />}
-                      label={club.presenceRate >= 85 ? 'Excelente' : club.presenceRate >= 70 ? 'Bom' : 'Regular'}
+                      label={
+                        club.presenceRate >= 85
+                          ? 'Excelente'
+                          : club.presenceRate >= 70
+                            ? 'Bom'
+                            : 'Regular'
+                      }
                       size="small"
-                      color={club.presenceRate >= 85 ? 'success' : club.presenceRate >= 70 ? 'info' : 'warning'}
+                      color={
+                        club.presenceRate >= 85
+                          ? 'success'
+                          : club.presenceRate >= 70
+                            ? 'info'
+                            : 'warning'
+                      }
                       sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }}
                     />
                   </Box>
@@ -299,4 +365,3 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
     </Paper>
   );
 };
-

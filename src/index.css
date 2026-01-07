@@ -1,6 +1,6 @@
 :root {
   --cor-primaria: #81d742;
-  --cor-secundaria: #0073E6;
+  --cor-secundaria: #0073e6;
 }
 
 * {
@@ -30,7 +30,6 @@ body,
   display: flex;
   flex-direction: column;
 }
-
 
 .mainContainer {
   flex: 1;

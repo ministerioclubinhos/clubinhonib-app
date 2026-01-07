@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Paper,
   Grid,
@@ -13,9 +13,9 @@ import {
   InputLabel,
   Box,
   Fab,
-} from "@mui/material";
-import { Clear, Refresh } from "@mui/icons-material";
-import type { CoordinatorFilters } from "../types";
+} from '@mui/material';
+import { Clear, Refresh } from '@mui/icons-material';
+import type { CoordinatorFilters } from '../types';
 
 type Props = {
   filters: CoordinatorFilters;
@@ -24,29 +24,22 @@ type Props = {
   isXs?: boolean;
 };
 
-export default function CoordinatorToolbar({
-  filters,
-  onChange,
-  onRefresh,
-  isXs,
-}: Props) {
-  const set = <K extends keyof CoordinatorFilters>(
-    key: K,
-    val: CoordinatorFilters[K]
-  ) => onChange((prev) => ({ ...prev, [key]: val }));
+export default function CoordinatorToolbar({ filters, onChange, onRefresh, isXs }: Props) {
+  const set = <K extends keyof CoordinatorFilters>(key: K, val: CoordinatorFilters[K]) =>
+    onChange((prev) => ({ ...prev, [key]: val }));
 
   const clear = () =>
     onChange(() => ({
-      searchString: "",
-      active: "all",
-      hasClubs: "all",
-      clubNumber: "",
+      searchString: '',
+      active: 'all',
+      hasClubs: 'all',
+      clubNumber: '',
     }));
 
   const handleClubNumber = (v: string) => {
-    if (v === "") return set("clubNumber", "");
+    if (v === '') return set('clubNumber', '');
     const n = Number(v);
-    if (Number.isFinite(n) && n >= 0) set("clubNumber", n);
+    if (Number.isFinite(n) && n >= 0) set('clubNumber', n);
   };
 
   return (
@@ -58,9 +51,9 @@ export default function CoordinatorToolbar({
             size="small"
             label="Buscar (nome, e-mail, telefone)"
             value={filters.searchString}
-            onChange={(e) => set("searchString", e.target.value)}
+            onChange={(e) => set('searchString', e.target.value)}
             placeholder="Ex.: Ana, ana@site.com, 92..."
-            inputProps={{ "aria-label": "Campo de busca" }}
+            inputProps={{ 'aria-label': 'Campo de busca' }}
           />
         </Grid>
 
@@ -71,9 +64,7 @@ export default function CoordinatorToolbar({
               labelId="coord-vinculo-label"
               label="Vínculo"
               value={filters.hasClubs}
-              onChange={(e) =>
-                set("hasClubs", e.target.value as CoordinatorFilters["hasClubs"])
-              }
+              onChange={(e) => set('hasClubs', e.target.value as CoordinatorFilters['hasClubs'])}
             >
               <MenuItem value="all">Todos</MenuItem>
               <MenuItem value="yes">Com clubinhos</MenuItem>
@@ -88,9 +79,9 @@ export default function CoordinatorToolbar({
             size="small"
             label="Nº do Clubinho"
             type="number"
-            value={filters.clubNumber ?? ""}
+            value={filters.clubNumber ?? ''}
             onChange={(e) => handleClubNumber(e.target.value)}
-            inputProps={{ inputMode: "numeric", min: 0 }}
+            inputProps={{ inputMode: 'numeric', min: 0 }}
           />
         </Grid>
 
@@ -102,9 +93,9 @@ export default function CoordinatorToolbar({
                 aria-label="Limpar filtros"
                 onClick={clear}
                 sx={{
-                  position: "fixed",
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 96px)",
-                  right: "calc(env(safe-area-inset-right, 0px) + 16px)",
+                  position: 'fixed',
+                  bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)',
+                  right: 'calc(env(safe-area-inset-right, 0px) + 16px)',
                   zIndex: 9999,
                   boxShadow: 6,
                 }}
@@ -116,13 +107,13 @@ export default function CoordinatorToolbar({
                 aria-label="Recarregar"
                 onClick={onRefresh}
                 sx={{
-                  position: "fixed",
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
-                  right: "calc(env(safe-area-inset-right, 0px) + 16px)",
+                  position: 'fixed',
+                  bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+                  right: 'calc(env(safe-area-inset-right, 0px) + 16px)',
                   zIndex: 9999,
-                  bgcolor: "white",
+                  bgcolor: 'white',
                   boxShadow: 6,
-                  "&:hover": { bgcolor: "grey.100" },
+                  '&:hover': { bgcolor: 'grey.100' },
                 }}
               >
                 <Refresh />
@@ -130,12 +121,7 @@ export default function CoordinatorToolbar({
             </>
           ) : (
             <Stack direction="row" spacing={1.25} justifyContent="flex-end">
-              <Button
-                variant="contained"
-                color="secondary"
-                startIcon={<Clear />}
-                onClick={clear}
-              >
+              <Button variant="contained" color="secondary" startIcon={<Clear />} onClick={clear}>
                 Limpar
               </Button>
               <Tooltip title="Recarregar">

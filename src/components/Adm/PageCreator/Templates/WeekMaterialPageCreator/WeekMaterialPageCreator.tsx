@@ -157,12 +157,12 @@ export default function WeekMaterialPageCreator({
         ...(item.uploadType === MediaUploadType.LINK && item.url && { url: item.url }),
         ...(item.uploadType === MediaUploadType.UPLOAD &&
           item.fileField && {
-          fieldKey: item.fileField,
-        }),
+            fieldKey: item.fileField,
+          }),
         ...(item.uploadType === MediaUploadType.UPLOAD &&
           item.size && {
-          size: item.size,
-        }),
+            size: item.size,
+          }),
       });
 
       const payload = {
@@ -181,11 +181,11 @@ export default function WeekMaterialPageCreator({
 
       const res = fromTemplatePage
         ? await api.post('/week-material-pages', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        })
+            headers: { 'Content-Type': 'multipart/form-data' },
+          })
         : await api.patch(`/week-material-pages/${weekMaterialSData?.id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
 
       if (!res?.data) throw new Error('Erro ao salvar');
 
@@ -218,7 +218,6 @@ export default function WeekMaterialPageCreator({
         mt: { xs: 0, md: 5 },
       }}
     >
-
       <Typography
         variant="h3"
         mb={3}

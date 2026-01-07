@@ -16,7 +16,10 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { AppDispatch } from '@/store/slices';
-import { setWeekMaterialData, WeekMaterialPageData } from 'store/slices/week-material/weekMaterialSlice';
+import {
+  setWeekMaterialData,
+  WeekMaterialPageData,
+} from 'store/slices/week-material/weekMaterialSlice';
 import { fetchRoutes } from '@/store/slices/route/routeSlice';
 
 import { useWeekMaterials } from './hooks';
@@ -27,12 +30,24 @@ import BackHeader from '@/components/common/header/BackHeader';
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 export default function WeekMaterialManager() {
-  const { filtered, search, setSearch, loading, isFiltering, error, setError, fetchAll, remove, markAsCurrent } =
-    useWeekMaterials();
+  const {
+    filtered,
+    search,
+    setSearch,
+    loading,
+    isFiltering,
+    error,
+    setError,
+    fetchAll,
+    remove,
+    markAsCurrent,
+  } = useWeekMaterials();
 
   const [materialToDelete, setMaterialToDelete] = useState<WeekMaterialPageData | null>(null);
   const [selectedMaterial, setSelectedMaterial] = useState<WeekMaterialPageData | null>(null);
-  const [materialToSetAsCurrent, setMaterialToSetAsCurrent] = useState<WeekMaterialPageData | null>(null);
+  const [materialToSetAsCurrent, setMaterialToSetAsCurrent] = useState<WeekMaterialPageData | null>(
+    null
+  );
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -40,7 +55,9 @@ export default function WeekMaterialManager() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   const handleEdit = (material: WeekMaterialPageData) => {
     dispatch(setWeekMaterialData(material));
@@ -80,13 +97,19 @@ export default function WeekMaterialManager() {
       </Box>
 
       {loading || isFiltering ? (
-        <Box textAlign="center" mt={10}><CircularProgress /></Box>
+        <Box textAlign="center" mt={10}>
+          <CircularProgress />
+        </Box>
       ) : error ? (
         <Box textAlign="center" mt={10}>
-          <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
+          <Alert severity="error" onClose={() => setError('')}>
+            {error}
+          </Alert>
         </Box>
       ) : filtered.length === 0 ? (
-        <Box textAlign="center" mt={10}><Alert severity="info">Nenhum material encontrado.</Alert></Box>
+        <Box textAlign="center" mt={10}>
+          <Alert severity="info">Nenhum material encontrado.</Alert>
+        </Box>
       ) : (
         <Grid container spacing={4} justifyContent="center">
           {filtered.map((material) => (

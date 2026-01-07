@@ -1,18 +1,41 @@
-import React from "react";
-import { Box, TextField, CircularProgress, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import React from 'react';
+import {
+  Box,
+  TextField,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from '@mui/material';
 
 type Props = {
   search: string;
   onSearchChange: (v: string) => void;
-  status: "all" | "published" | "unpublished";
-  setStatus: (s: "all" | "published" | "unpublished") => void;
+  status: 'all' | 'published' | 'unpublished';
+  setStatus: (s: 'all' | 'published' | 'unpublished') => void;
   isFiltering: boolean;
 };
 
-export default function CommentsToolbar({ search, onSearchChange, status, setStatus, isFiltering }: Props) {
+export default function CommentsToolbar({
+  search,
+  onSearchChange,
+  status,
+  setStatus,
+  isFiltering,
+}: Props) {
   return (
-    <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2, mb: 4, alignItems: { sm: "center" }, position: "relative" }}>
-      <Box sx={{ flex: 1, position: "relative" }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: 2,
+        mb: 4,
+        alignItems: { sm: 'center' },
+        position: 'relative',
+      }}
+    >
+      <Box sx={{ flex: 1, position: 'relative' }}>
         <TextField
           fullWidth
           label="Buscar por nome, clubinho ou bairro"
@@ -23,7 +46,10 @@ export default function CommentsToolbar({ search, onSearchChange, status, setSta
           sx={{ maxWidth: { sm: 400 } }}
         />
         {isFiltering && (
-          <CircularProgress size={20} sx={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }} />
+          <CircularProgress
+            size={20}
+            sx={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)' }}
+          />
         )}
       </Box>
       <FormControl sx={{ minWidth: 160 }} size="small">

@@ -1,13 +1,19 @@
-import api from "@/config/axiosConfig";
+import api from '@/config/axiosConfig';
 import {
-  ClubResponseDto, Paginated, CreateClubForm, EditClubForm,
-  CoordinatorMiniDto, TeacherOption, UserPublicDto,
-  ClubFilters, ClubSort,
+  ClubResponseDto,
+  Paginated,
+  CreateClubForm,
+  EditClubForm,
+  CoordinatorMiniDto,
+  TeacherOption,
+  UserPublicDto,
+  ClubFilters,
+  ClubSort,
   CoordinatorOption,
-  SimpleClubResponseDto
-} from "./types";
-import { CoordinatorProfile } from "../coordinators/types";
-import { TeacherProfile } from "../teachers/types";
+  SimpleClubResponseDto,
+} from './types';
+import { CoordinatorProfile } from '../coordinators/types';
+import { TeacherProfile } from '../teachers/types';
 
 export async function apiFetchClubs(args: {
   page: number;
@@ -16,15 +22,12 @@ export async function apiFetchClubs(args: {
   sort?: ClubSort;
 }) {
   const { page, limit, filters, sort } = args;
-  const {
-    searchString,
-    isActive,
-  } = filters || {};
+  const { searchString, isActive } = filters || {};
 
-  const sortField = sort?.id ?? "updatedAt";
-  const order = sort?.desc ? "DESC" : "ASC";
+  const sortField = sort?.id ?? 'updatedAt';
+  const order = sort?.desc ? 'DESC' : 'ASC';
 
-  const { data } = await api.get<Paginated<ClubResponseDto>>("/clubs", {
+  const { data } = await api.get<Paginated<ClubResponseDto>>('/clubs', {
     params: {
       page,
       limit,
@@ -48,11 +51,11 @@ export async function apiFetchSimpleClubs() {
 }
 
 export async function apiCreateClub(payload: CreateClubForm) {
-  const { data } = await api.post<ClubResponseDto>("/clubs", payload);
+  const { data } = await api.post<ClubResponseDto>('/clubs', payload);
   return data;
 }
 
-export async function apiUpdateClub(id: string, payload: Omit<EditClubForm, "id">) {
+export async function apiUpdateClub(id: string, payload: Omit<EditClubForm, 'id'>) {
   const { data } = await api.patch<ClubResponseDto>(`/clubs/${id}`, payload);
   return data;
 }
@@ -66,11 +69,14 @@ export async function apiToggleClubActive(id: string) {
   return data;
 }
 
-export async function apiListUsersByRole(role: "coordinator" | "teacher", limit = 500) {
-  const { data } = await api.get<{ items: { id: string; name?: string; email?: string }[] }>("/users", {
-    params: { role, page: 1, limit, sort: "name", order: "ASC" },
-  });
-  return (Array.isArray(data?.items) ? data.items : []);
+export async function apiListUsersByRole(role: 'coordinator' | 'teacher', limit = 500) {
+  const { data } = await api.get<{ items: { id: string; name?: string; email?: string }[] }>(
+    '/users',
+    {
+      params: { role, page: 1, limit, sort: 'name', order: 'ASC' },
+    }
+  );
+  return Array.isArray(data?.items) ? data.items : [];
 }
 
 export async function apiGetCoordinatorProfile(userId: string) {
@@ -79,12 +85,16 @@ export async function apiGetCoordinatorProfile(userId: string) {
 }
 
 export async function apiGetTeacherProfile(userId: string) {
-  const { data } = await api.get<{ id: string; user: UserPublicDto; club?: { id: string; number?: number } | null }>(`/teacher-profiles/${userId}`);
+  const { data } = await api.get<{
+    id: string;
+    user: UserPublicDto;
+    club?: { id: string; number?: number } | null;
+  }>(`/teacher-profiles/${userId}`);
   return data;
 }
 
 export async function apiLoadCoordinatorOptions() {
-  const { data } = await api.get<CoordinatorProfile[]>("/coordinator-profiles");
+  const { data } = await api.get<CoordinatorProfile[]>('/coordinator-profiles');
   return data.map((c) => ({
     coordinatorProfileId: c.id,
     name: c.user?.name,
@@ -92,7 +102,7 @@ export async function apiLoadCoordinatorOptions() {
 }
 
 export async function apiLoadTeacherOptions() {
-  const { data } = await api.get<TeacherProfile[]>("/teacher-profiles");
+  const { data } = await api.get<TeacherProfile[]>('/teacher-profiles');
   return data.map((t) => ({
     teacherProfileId: t.id,
     name: t.user?.name ?? t.user?.email ?? t.id,
@@ -114,11 +124,11 @@ export type CoordinatorSimpleApi = {
 };
 
 export async function apiListTeachersSimple(): Promise<TeacherSimpleApi[]> {
-  const { data } = await api.get<TeacherSimpleApi[]>("/teacher-profiles/simple");
+  const { data } = await api.get<TeacherSimpleApi[]>('/teacher-profiles/simple');
   return data;
 }
 
 export async function apiListCoordinatorsSimple(): Promise<CoordinatorSimpleApi[]> {
-  const { data } = await api.get<CoordinatorSimpleApi[]>("/coordinator-profiles/simple");
+  const { data } = await api.get<CoordinatorSimpleApi[]>('/coordinator-profiles/simple');
   return data;
 }

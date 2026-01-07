@@ -1,5 +1,14 @@
 import React from 'react';
-import { Box, Container, Typography, Paper, Tabs, Tab, useTheme, useMediaQuery } from '@mui/material';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Tabs,
+  Tab,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
 import { Dashboard, CalendarMonth, EventBusy, Assessment } from '@mui/icons-material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ControlDashboard, PeriodManagement, ExceptionManagement } from './components';
@@ -50,38 +59,43 @@ const ClubControlPageContent: React.FC = () => {
           border: `2px solid ${theme.palette.primary.main}40`,
         }}
       >
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: { xs: 'flex-start', sm: 'center' }, 
-          gap: { xs: 1.5, sm: 2 }, 
-          mb: { xs: 1.5, sm: 2 },
-          flexDirection: { xs: 'column', sm: 'row' }
-        }}>
-          <Dashboard sx={{ 
-            fontSize: { xs: 28, sm: 36, md: 40 }, 
-            color: theme.palette.primary.main,
-            flexShrink: 0
-          }} />
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: { xs: 1.5, sm: 2 },
+            mb: { xs: 1.5, sm: 2 },
+            flexDirection: { xs: 'column', sm: 'row' },
+          }}
+        >
+          <Dashboard
+            sx={{
+              fontSize: { xs: 28, sm: 36, md: 40 },
+              color: theme.palette.primary.main,
+              flexShrink: 0,
+            }}
+          />
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography 
-              variant="h4" 
+            <Typography
+              variant="h4"
               fontWeight="bold"
-              sx={{ 
+              sx={{
                 fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' },
-                mb: { xs: 0.5, sm: 0 }
+                mb: { xs: 0.5, sm: 0 },
               }}
             >
               🎯 Módulo de Controle
             </Typography>
-            <Typography 
-              variant="body2" 
+            <Typography
+              variant="body2"
               color="text.secondary"
-              sx={{ 
+              sx={{
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                lineHeight: { xs: 1.4, sm: 1.5 }
+                lineHeight: { xs: 1.4, sm: 1.5 },
               }}
             >
-              Sistema de controle e verificação de pagelas por clube - Garantindo que nenhuma criança fique sem ser atendida
+              Sistema de controle e verificação de pagelas por clube - Garantindo que nenhuma
+              criança fique sem ser atendida
             </Typography>
           </Box>
         </Box>
@@ -108,34 +122,34 @@ const ClubControlPageContent: React.FC = () => {
             },
           }}
         >
-          <Tab 
-            icon={<Assessment />} 
-            iconPosition="start" 
-            label={isMobile ? "Painel" : "Painel de Controle"}
-            sx={{ 
+          <Tab
+            icon={<Assessment />}
+            iconPosition="start"
+            label={isMobile ? 'Painel' : 'Painel de Controle'}
+            sx={{
               '& .MuiTab-label': {
                 fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-              }
+              },
             }}
           />
-          <Tab 
-            icon={<CalendarMonth />} 
-            iconPosition="start" 
-            label={isMobile ? "Períodos" : "Períodos Letivos"}
-            sx={{ 
+          <Tab
+            icon={<CalendarMonth />}
+            iconPosition="start"
+            label={isMobile ? 'Períodos' : 'Períodos Letivos'}
+            sx={{
               '& .MuiTab-label': {
                 fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-              }
+              },
             }}
           />
-          <Tab 
-            icon={<EventBusy />} 
-            iconPosition="start" 
-            label={isMobile ? "Exceções" : "Exceções (Dias sem Clube)"}
-            sx={{ 
+          <Tab
+            icon={<EventBusy />}
+            iconPosition="start"
+            label={isMobile ? 'Exceções' : 'Exceções (Dias sem Clube)'}
+            sx={{
               '& .MuiTab-label': {
                 fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-              }
+              },
             }}
           />
         </Tabs>
@@ -173,4 +187,3 @@ const ClubControlPage: React.FC = () => {
 };
 
 export default ClubControlPage;
-

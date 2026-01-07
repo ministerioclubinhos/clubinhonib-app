@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Box,
@@ -18,7 +18,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Button,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Menu as MenuIcon,
   EventNote,
@@ -40,85 +40,89 @@ import {
   ExpandMore,
   Checklist,
   BarChart,
-} from "@mui/icons-material";
+} from '@mui/icons-material';
 
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/slices";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/slices';
+import { UserRole } from '@/store/slices/auth/authSlice';
 
 const drawerWidth = 240;
 
 type NavItem = { label: string; to: string; icon: ReactNode };
-type SectionId = "pages" | "conteudos" | "clubinho" | "operacional";
+type SectionId = 'pages' | 'conteudos' | 'clubinho' | 'operacional';
 type Section = { id: SectionId; title: string; items: NavItem[] };
-type MobileTab = "tudo" | SectionId;
+type MobileTab = 'tudo' | SectionId;
 
 function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const isAdmin = !!isAuthenticated && user?.role === UserRole.ADMIN;
   const isCoordinator = !!isAuthenticated && user?.role === UserRole.COORDINATOR;
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileTab, setMobileTab] = useState<MobileTab>("tudo");
+  const [mobileTab, setMobileTab] = useState<MobileTab>('tudo');
   const toggleDrawer = () => setMobileOpen((v) => !v);
 
-  const HEADER_H = 64; 
-  const FOOTER_H = 88; 
+  const HEADER_H = 64;
+  const FOOTER_H = 88;
   const cssVars = {
-    "--app-header-h": `${HEADER_H}px`,
-    "--app-footer-h": `${FOOTER_H}px`,
+    '--app-header-h': `${HEADER_H}px`,
+    '--app-footer-h': `${FOOTER_H}px`,
   } as React.CSSProperties;
 
   const allSections = useMemo<Section[]>(
     () => [
       {
-        id: "pages",
-        title: "Páginas",
+        id: 'pages',
+        title: 'Páginas',
         items: [
-          { label: "Materiais semanais", to: "/adm/paginas-materiais-semanais", icon: <EventNote /> },
-          { label: "Páginas de fotos", to: "/adm/paginas-fotos", icon: <PhotoLibrary /> },
-          { label: "Fotos dos clubinhos", to: "/adm/fotos-clubinhos", icon: <Collections /> },
-          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <Lightbulb /> },
-          { label: "Páginas de vídeos", to: "/adm/paginas-videos", icon: <VideoLibrary /> },
-          { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
+          {
+            label: 'Materiais semanais',
+            to: '/adm/paginas-materiais-semanais',
+            icon: <EventNote />,
+          },
+          { label: 'Páginas de fotos', to: '/adm/paginas-fotos', icon: <PhotoLibrary /> },
+          { label: 'Fotos dos clubinhos', to: '/adm/fotos-clubinhos', icon: <Collections /> },
+          { label: 'Ideias compartilhadas', to: '/adm/ideias-compartilhadas', icon: <Lightbulb /> },
+          { label: 'Páginas de vídeos', to: '/adm/paginas-videos', icon: <VideoLibrary /> },
+          { label: 'Páginas de ideias', to: '/adm/paginas-ideias', icon: <Lightbulb /> },
         ],
       },
       {
-        id: "conteudos",
-        title: "Conteúdos",
+        id: 'conteudos',
+        title: 'Conteúdos',
         items: [
-          { label: "Meditações", to: "/adm/meditacoes", icon: <MenuBook /> },
-          { label: "Documentos", to: "/adm/documentos", icon: <Description /> },
-          { label: "Informativos", to: "/adm/informativos", icon: <Campaign /> },
-          { label: "Criar Página", to: "/adm/criar-pagina", icon: <NoteAdd /> },
+          { label: 'Meditações', to: '/adm/meditacoes', icon: <MenuBook /> },
+          { label: 'Documentos', to: '/adm/documentos', icon: <Description /> },
+          { label: 'Informativos', to: '/adm/informativos', icon: <Campaign /> },
+          { label: 'Criar Página', to: '/adm/criar-pagina', icon: <NoteAdd /> },
         ],
       },
       {
-        id: "clubinho",
-        title: "Clubinho",
+        id: 'clubinho',
+        title: 'Clubinho',
         items: [
-          { label: "Clubinhos", to: "/adm/clubinhos", icon: <Groups /> },
-          { label: "Pagelas", to: "/adm/pagelas", icon: <Groups /> },
-          { label: "Usuários", to: "/adm/usuarios", icon: <Group /> },
-          { label: "Professores", to: "/adm/professores", icon: <School /> },
-          { label: "Coordenadores", to: "/adm/coordenadores", icon: <SupervisorAccount /> },
-          { label: "Crianças", to: "/adm/criancas", icon: <Groups /> },
+          { label: 'Clubinhos', to: '/adm/clubinhos', icon: <Groups /> },
+          { label: 'Pagelas', to: '/adm/pagelas', icon: <Groups /> },
+          { label: 'Usuários', to: '/adm/usuarios', icon: <Group /> },
+          { label: 'Professores', to: '/adm/professores', icon: <School /> },
+          { label: 'Coordenadores', to: '/adm/coordenadores', icon: <SupervisorAccount /> },
+          { label: 'Crianças', to: '/adm/criancas', icon: <Groups /> },
         ],
       },
       {
-        id: "operacional",
-        title: "Operacional",
+        id: 'operacional',
+        title: 'Operacional',
         items: [
-          { label: "Feedbacks", to: "/adm/feedbacks", icon: <RateReview /> },
-          { label: "Comentários", to: "/adm/comentarios", icon: <Comment /> },
-          { label: "Contatos", to: "/adm/contatos", icon: <ContactMail /> },
-          { label: "Controle de Clubes", to: "/adm/controle-clubes", icon: <Checklist /> },
-          { label: "Estatísticas", to: "/adm/estatisticas", icon: <BarChart /> },
+          { label: 'Feedbacks', to: '/adm/feedbacks', icon: <RateReview /> },
+          { label: 'Comentários', to: '/adm/comentarios', icon: <Comment /> },
+          { label: 'Contatos', to: '/adm/contatos', icon: <ContactMail /> },
+          { label: 'Controle de Clubes', to: '/adm/controle-clubes', icon: <Checklist /> },
+          { label: 'Estatísticas', to: '/adm/estatisticas', icon: <BarChart /> },
         ],
       },
     ],
@@ -126,10 +130,10 @@ function AdminLayout() {
   );
 
   const coordinatorAllowed = new Set<string>([
-    "/adm/criancas",
-    "/adm/professores",
-    "/adm/clubinhos",
-    "/adm/pagelas",
+    '/adm/criancas',
+    '/adm/professores',
+    '/adm/clubinhos',
+    '/adm/pagelas',
   ]);
 
   const canSeeItem = (item: NavItem): boolean => {
@@ -146,26 +150,26 @@ function AdminLayout() {
   }, [allSections, isAdmin, isCoordinator]);
 
   const sectionOfPath = (path: string): SectionId => {
-    if (path.startsWith("/adm/paginas-") || path.startsWith("/adm/fotos-")) return "pages";
+    if (path.startsWith('/adm/paginas-') || path.startsWith('/adm/fotos-')) return 'pages';
     if (
-      path.startsWith("/adm/meditacoes") ||
-      path.startsWith("/adm/documentos") ||
-      path.startsWith("/adm/informativos") ||
-      path.startsWith("/adm/criar-pagina")
+      path.startsWith('/adm/meditacoes') ||
+      path.startsWith('/adm/documentos') ||
+      path.startsWith('/adm/informativos') ||
+      path.startsWith('/adm/criar-pagina')
     ) {
-      return "conteudos";
+      return 'conteudos';
     }
     if (
-      path.startsWith("/adm/usuarios") ||
-      path.startsWith("/adm/clubinhos") ||
-      path.startsWith("/adm/pagelas") ||
-      path.startsWith("/adm/professores") ||
-      path.startsWith("/adm/coordenadores") ||
-      path.startsWith("/adm/criancas")
+      path.startsWith('/adm/usuarios') ||
+      path.startsWith('/adm/clubinhos') ||
+      path.startsWith('/adm/pagelas') ||
+      path.startsWith('/adm/professores') ||
+      path.startsWith('/adm/coordenadores') ||
+      path.startsWith('/adm/criancas')
     ) {
-      return "clubinho";
+      return 'clubinho';
     }
-    return "operacional";
+    return 'operacional';
   };
 
   const [expanded, setExpanded] = useState<SectionId | null>(sectionOfPath(location.pathname));
@@ -175,9 +179,8 @@ function AdminLayout() {
     setExpanded((prev) => (prev === target ? prev : target));
   }, [location.pathname]);
 
-  const handleAccordion =
-    (panel: SectionId) => (_: React.SyntheticEvent, isExpanding: boolean) =>
-      setExpanded((prev) => (isExpanding ? panel : prev === panel ? null : prev));
+  const handleAccordion = (panel: SectionId) => (_: React.SyntheticEvent, isExpanding: boolean) =>
+    setExpanded((prev) => (isExpanding ? panel : prev === panel ? null : prev));
 
   const handleNavigate = (to: string) => {
     navigate(to);
@@ -185,14 +188,14 @@ function AdminLayout() {
   };
 
   const visibleSections =
-    isMobile && mobileTab !== "tudo" ? sections.filter((s) => s.id === mobileTab) : sections;
+    isMobile && mobileTab !== 'tudo' ? sections.filter((s) => s.id === mobileTab) : sections;
 
   const labelMap: Record<MobileTab, string> = {
-    tudo: "tudo",
-    pages: "pages",
-    conteudos: "conteúdos",
-    clubinho: "clubinho",
-    operacional: "operacional",
+    tudo: 'tudo',
+    pages: 'pages',
+    conteudos: 'conteúdos',
+    clubinho: 'clubinho',
+    operacional: 'operacional',
   };
 
   const drawerContent = (
@@ -209,31 +212,33 @@ function AdminLayout() {
         <Box sx={{ px: 1.25, py: 1 }}>
           <Box
             sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(104px, 1fr))",
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(104px, 1fr))',
               gap: 0.5,
             }}
           >
-            {(["tudo", "pages", "conteudos", "clubinho", "operacional"] as MobileTab[]).map((tab) => (
-              <Button
-                key={tab}
-                size="small"
-                variant={mobileTab === tab ? "contained" : "outlined"}
-                onClick={() => setMobileTab(tab)}
-                sx={{
-                  textTransform: "none",
-                  justifyContent: "center",
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 2,
-                  fontSize: 12,
-                  lineHeight: 1.2,
-                  minWidth: 0,
-                }}
-              >
-                {labelMap[tab]}
-              </Button>
-            ))}
+            {(['tudo', 'pages', 'conteudos', 'clubinho', 'operacional'] as MobileTab[]).map(
+              (tab) => (
+                <Button
+                  key={tab}
+                  size="small"
+                  variant={mobileTab === tab ? 'contained' : 'outlined'}
+                  onClick={() => setMobileTab(tab)}
+                  sx={{
+                    textTransform: 'none',
+                    justifyContent: 'center',
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 2,
+                    fontSize: 12,
+                    lineHeight: 1.2,
+                    minWidth: 0,
+                  }}
+                >
+                  {labelMap[tab]}
+                </Button>
+              )
+            )}
           </Box>
         </Box>
       )}
@@ -247,9 +252,9 @@ function AdminLayout() {
           square
           elevation={0}
           sx={{
-            "&::before": { display: "none" },
+            '&::before': { display: 'none' },
             borderRadius: 0,
-            bgcolor: "transparent",
+            bgcolor: 'transparent',
           }}
         >
           <AccordionSummary
@@ -257,8 +262,8 @@ function AdminLayout() {
             sx={{
               px: 2,
               py: 1,
-              "& .MuiAccordionSummary-content": { alignItems: "center", my: 0.25 },
-              "&:hover": { bgcolor: "action.hover" },
+              '& .MuiAccordionSummary-content': { alignItems: 'center', my: 0.25 },
+              '&:hover': { bgcolor: 'action.hover' },
             }}
           >
             <Typography
@@ -275,8 +280,7 @@ function AdminLayout() {
             <List dense disablePadding>
               {sec.items.map((item) => {
                 const selected =
-                  location.pathname === item.to ||
-                  location.pathname.startsWith(item.to + "/");
+                  location.pathname === item.to || location.pathname.startsWith(item.to + '/');
                 return (
                   <ListItemButton
                     key={item.to}
@@ -285,13 +289,13 @@ function AdminLayout() {
                     sx={{
                       py: 1,
                       px: 2,
-                      "& .MuiListItemText-primary": { fontSize: isMobile ? 13 : undefined },
-                      "& .MuiListItemIcon-root, & .MuiSvgIcon-root": {
-                        fontSize: isMobile ? "1.1rem" : undefined,
+                      '& .MuiListItemText-primary': { fontSize: isMobile ? 13 : undefined },
+                      '& .MuiListItemIcon-root, & .MuiSvgIcon-root': {
+                        fontSize: isMobile ? '1.1rem' : undefined,
                       },
-                      "&.Mui-selected": {
-                        bgcolor: "action.selected",
-                        "&:hover": { bgcolor: "action.selected" },
+                      '&.Mui-selected': {
+                        bgcolor: 'action.selected',
+                        '&:hover': { bgcolor: 'action.selected' },
                       },
                     }}
                   >
@@ -312,11 +316,11 @@ function AdminLayout() {
     <Box
       style={cssVars}
       sx={{
-        display: "flex",
-        width: "100%",
-        maxWidth: "100vw",
-        overflowX: "hidden",
-        minHeight: "100vh",
+        display: 'flex',
+        width: '100%',
+        maxWidth: '100vw',
+        overflowX: 'hidden',
+        minHeight: '100vh',
         m: 0,
         p: 0,
       }}
@@ -335,21 +339,19 @@ function AdminLayout() {
       )}
 
       <Drawer
-        variant={isMobile ? "temporary" : "permanent"}
+        variant={isMobile ? 'temporary' : 'permanent'}
         open={isMobile ? mobileOpen : true}
         onClose={toggleDrawer}
         ModalProps={{ keepMounted: true }}
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          "& .MuiDrawer-paper": {
+          '& .MuiDrawer-paper': {
             width: drawerWidth,
-            boxSizing: "border-box",
+            boxSizing: 'border-box',
             mt: isMobile ? 0 : `${HEADER_H}px`,
-            height: isMobile
-              ? "100vh"
-              : `calc(100vh - var(--app-header-h))`,
-            pb: isMobile ? 0 : "var(--app-footer-h)",
+            height: isMobile ? '100vh' : `calc(100vh - var(--app-header-h))`,
+            pb: isMobile ? 0 : 'var(--app-footer-h)',
             zIndex: isMobile ? 1300 : 1000,
             borderRight: `1px solid ${theme.palette.divider}`,
           },
@@ -362,13 +364,13 @@ function AdminLayout() {
         component="main"
         sx={{
           flexGrow: 1,
-          width: "100%",
+          width: '100%',
           px: { xs: 0, md: 4 },
           py: { xs: 0, md: 6 },
           mt: isMobile ? 2 : 0,
-          bgcolor: "#f5f7fa",
+          bgcolor: '#f5f7fa',
           minHeight: `calc(100vh - var(--app-header-h))`,
-          pb: { xs: "var(--app-footer-h)", md: "var(--app-footer-h)" },
+          pb: { xs: 'var(--app-footer-h)', md: 'var(--app-footer-h)' },
         }}
       >
         {isMobile && <Toolbar sx={{ minHeight: 0, p: 0 }} />}

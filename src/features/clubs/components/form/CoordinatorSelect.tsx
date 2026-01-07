@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   FormControl,
   InputLabel,
@@ -13,8 +13,8 @@ import {
   Box,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
-import { CoordinatorOption } from "../../types";
+} from '@mui/material';
+import { CoordinatorOption } from '../../types';
 
 type Props = {
   value?: string | null;
@@ -24,23 +24,23 @@ type Props = {
 };
 
 function normalize(s?: string | null) {
-  return (s ?? "")
+  return (s ?? '')
     .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 export default function CoordinatorSelect({
   value,
   options,
   onChange,
-  label = "Coordenador (opcional)",
+  label = 'Coordenador (opcional)',
 }: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
 
   const filtered = useMemo(() => {
     const q = normalize(query);
@@ -64,13 +64,13 @@ export default function CoordinatorSelect({
   const stop = (e: any) => e.stopPropagation();
 
   const actionStackProps = isXs
-    ? { direction: "column" as const, sx: { width: "100%" } }
-    : { direction: "row" as const };
+    ? { direction: 'column' as const, sx: { width: '100%' } }
+    : { direction: 'row' as const };
 
-  const btnProps = isXs ? { fullWidth: true, size: "medium" as const } : { size: "small" as const };
+  const btnProps = isXs ? { fullWidth: true, size: 'medium' as const } : { size: 'small' as const };
 
-  const menuWidth = isXs ? "98vw" : 480;
-  const menuMaxH = isXs ? "70vh" : 420;
+  const menuWidth = isXs ? '98vw' : 480;
+  const menuMaxH = isXs ? '70vh' : 420;
 
   return (
     <FormControl fullWidth>
@@ -80,10 +80,10 @@ export default function CoordinatorSelect({
         open={open}
         onOpen={() => setOpen(true)}
         onClose={() => setOpen(false)}
-        value={value ?? ""}
+        value={value ?? ''}
         onChange={handleChange}
         renderValue={(selected) => {
-          if (!selected) return "—";
+          if (!selected) return '—';
           const opt = options.find((o) => o.coordinatorProfileId === selected);
           return opt?.name || selected;
         }}
@@ -95,12 +95,12 @@ export default function CoordinatorSelect({
         <ListSubheader
           disableSticky
           sx={{
-            position: "sticky",
+            position: 'sticky',
             top: 0,
             zIndex: 1,
-            bgcolor: "background.paper",
-            borderBottom: "1px solid",
-            borderColor: "divider",
+            bgcolor: 'background.paper',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
             py: 1,
           }}
           onKeyDown={stop}
@@ -115,14 +115,14 @@ export default function CoordinatorSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={stop}
-              inputProps={{ "aria-label": "Buscar coordenador" }}
+              inputProps={{ 'aria-label': 'Buscar coordenador' }}
             />
           </Box>
 
           <Stack
-            direction={isXs ? "column" : "row"}
+            direction={isXs ? 'column' : 'row'}
             spacing={1}
-            alignItems={isXs ? "flex-start" : "center"}
+            alignItems={isXs ? 'flex-start' : 'center'}
             justifyContent="space-between"
             sx={{ px: 1.5, pb: 0.5 }}
           >
@@ -149,7 +149,7 @@ export default function CoordinatorSelect({
           <MenuItem disabled>
             <ListItemText
               primary="Nenhum coordenador encontrado."
-              primaryTypographyProps={{ variant: "body2", color: "text.secondary" }}
+              primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
             />
           </MenuItem>
         ) : (

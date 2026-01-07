@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   FormControl,
   InputLabel,
@@ -15,8 +15,8 @@ import {
   Stack,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
-import { TeacherOption } from "../../types";
+} from '@mui/material';
+import { TeacherOption } from '../../types';
 
 type Props = {
   value: string[];
@@ -26,49 +26,40 @@ type Props = {
 };
 
 function normalize(s?: string | null) {
-  return (s ?? "")
+  return (s ?? '')
     .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 export default function TeachersSelect({
   value,
   options,
   onChange,
-  name = "Selecionar professores",
+  name = 'Selecionar professores',
 }: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
 
   const fingerprint = useMemo(
-    () =>
-      (options ?? [])
-        .map((o) => `${o.teacherProfileId}:${o.vinculado ? 1 : 0}`)
-        .join("|"),
+    () => (options ?? []).map((o) => `${o.teacherProfileId}:${o.vinculado ? 1 : 0}`).join('|'),
     [options]
   );
 
   const safeValue = useMemo(
     () =>
       Array.from(
-        new Set(
-          (value ?? []).filter(
-            (v): v is string => typeof v === "string" && v.trim() !== ""
-          )
-        )
+        new Set((value ?? []).filter((v): v is string => typeof v === 'string' && v.trim() !== ''))
       ),
     [value]
   );
 
   const baseVisible = useMemo(
     () =>
-      (options ?? []).filter(
-        (opt) => !opt.vinculado || safeValue.includes(opt.teacherProfileId)
-      ),
+      (options ?? []).filter((opt) => !opt.vinculado || safeValue.includes(opt.teacherProfileId)),
     [fingerprint, safeValue]
   );
 
@@ -90,11 +81,7 @@ export default function TeachersSelect({
     (e: any) => {
       const raw = (e.target.value ?? []) as Array<string | null | undefined>;
       const cleaned = Array.from(
-        new Set(
-          raw.filter(
-            (v): v is string => typeof v === "string" && v.trim() !== ""
-          )
-        )
+        new Set(raw.filter((v): v is string => typeof v === 'string' && v.trim() !== ''))
       );
       onChange(cleaned);
     },
@@ -123,25 +110,20 @@ export default function TeachersSelect({
     (selected: string[]) => {
       if (isXs) {
         const total = selected.length;
-        if (total === 0) return "Nenhum professor";
+        if (total === 0) return 'Nenhum professor';
         if (total <= 2) {
           const names = selected
-            .map(
-              (id) => options.find((t) => t.teacherProfileId === id)?.name ?? id
-            )
-            .join(", ");
+            .map((id) => options.find((t) => t.teacherProfileId === id)?.name ?? id)
+            .join(', ');
           return names;
         }
         return `${total} selecionados`;
       }
       return (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {selected.map((id) => {
-            const name =
-              options.find((t) => t.teacherProfileId === id)?.name ?? id;
-            return (
-              <Chip key={id} size="small" label={name} sx={{ maxWidth: 180 }} title={name} />
-            );
+            const name = options.find((t) => t.teacherProfileId === id)?.name ?? id;
+            return <Chip key={id} size="small" label={name} sx={{ maxWidth: 180 }} title={name} />;
           })}
         </Box>
       );
@@ -149,11 +131,13 @@ export default function TeachersSelect({
     [isXs, options]
   );
 
-  const menuWidth = isXs ? "96vw" : 560;
-  const menuMaxHeight = isXs ? "75vh" : 480;
+  const menuWidth = isXs ? '96vw' : 560;
+  const menuMaxHeight = isXs ? '75vh' : 480;
 
-  const actionsDirection = isXs ? "column" : "row";
-  const actionsButtonProps = isXs ? { fullWidth: true, size: "medium" as const } : { size: "small" as const };
+  const actionsDirection = isXs ? 'column' : 'row';
+  const actionsButtonProps = isXs
+    ? { fullWidth: true, size: 'medium' as const }
+    : { size: 'small' as const };
 
   return (
     <FormControl fullWidth>
@@ -175,12 +159,12 @@ export default function TeachersSelect({
         <ListSubheader
           disableSticky
           sx={{
-            position: "sticky",
+            position: 'sticky',
             top: 0,
-            bgcolor: "background.paper",
+            bgcolor: 'background.paper',
             zIndex: 1,
-            borderBottom: "1px solid",
-            borderColor: "divider",
+            borderBottom: '1px solid',
+            borderColor: 'divider',
             py: 1,
           }}
           onKeyDown={stopPropagation as any}
@@ -195,14 +179,14 @@ export default function TeachersSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={stopPropagation}
-              inputProps={{ "aria-label": "Buscar professor" }}
+              inputProps={{ 'aria-label': 'Buscar professor' }}
             />
           </Box>
 
           <Stack
-            direction={isXs ? "column" : "row"}
+            direction={isXs ? 'column' : 'row'}
             spacing={1}
-            alignItems={isXs ? "flex-start" : "center"}
+            alignItems={isXs ? 'flex-start' : 'center'}
             justifyContent="space-between"
             sx={{ px: 1.5, pb: 0.5 }}
           >
@@ -214,7 +198,7 @@ export default function TeachersSelect({
               direction={actionsDirection}
               spacing={1}
               alignItems="stretch"
-              sx={{ width: isXs ? "100%" : "auto" }}
+              sx={{ width: isXs ? '100%' : 'auto' }}
             >
               <Button {...actionsButtonProps} onClick={selectVisible}>
                 Selecionar visíveis
@@ -234,7 +218,7 @@ export default function TeachersSelect({
           <MenuItem disabled dense>
             <ListItemText
               primary="Nenhum resultado para a busca."
-              primaryTypographyProps={{ variant: "body2", color: "text.secondary" }}
+              primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
             />
           </MenuItem>
         )}
@@ -248,8 +232,8 @@ export default function TeachersSelect({
               <ListItemText
                 primaryTypographyProps={{ noWrap: true }}
                 primary={t.name}
-                secondary={t.vinculado && !isSelected ? "vinculado" : undefined}
-                secondaryTypographyProps={{ color: "text.secondary" }}
+                secondary={t.vinculado && !isSelected ? 'vinculado' : undefined}
+                secondaryTypographyProps={{ color: 'text.secondary' }}
               />
             </MenuItem>
           );

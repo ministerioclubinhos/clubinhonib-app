@@ -1,8 +1,17 @@
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography,
-  Stack, Paper, Grid, Box, useMediaQuery
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Stack,
+  Paper,
+  Grid,
+  Box,
+  useMediaQuery,
 } from '@mui/material';
-  import { useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -69,12 +78,24 @@ export default function ImagePageDetailsModal({ section, open, onClose }: Props)
       <DialogContent sx={{ pb: 1 }}>
         {section ? (
           <Stack spacing={3} mt={0.5}>
-            <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-              <Typography variant="h6" gutterBottom color="primary">Informações Gerais</Typography>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="h6" gutterBottom color="primary">
+                Informações Gerais
+              </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <Typography variant="body1"><strong>Legenda:</strong> {section.caption || 'Não informado'}</Typography>
+                    <Typography variant="body1">
+                      <strong>Legenda:</strong> {section.caption || 'Não informado'}
+                    </Typography>
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                       <strong>Descrição:</strong> {section.description || 'Não informado'}
                     </Typography>
@@ -82,21 +103,35 @@ export default function ImagePageDetailsModal({ section, open, onClose }: Props)
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <Typography variant="body1"><strong>Criado em:</strong> {formatDatePtBr(section.createdAt)}</Typography>
-                    <Typography variant="body1"><strong>Atualizado em:</strong> {formatDatePtBr(section.updatedAt)}</Typography>
+                    <Typography variant="body1">
+                      <strong>Criado em:</strong> {formatDatePtBr(section.createdAt)}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Atualizado em:</strong> {formatDatePtBr(section.updatedAt)}
+                    </Typography>
                   </Stack>
                 </Grid>
               </Grid>
             </Paper>
 
-            <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-              <Typography variant="h6" gutterBottom color="primary">Galeria de Imagens</Typography>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="h6" gutterBottom color="primary">
+                Galeria de Imagens
+              </Typography>
               {(section.mediaItems?.length ?? 0) > 0 ? (
                 <Box
                   sx={{
                     position: 'relative',
                     width: '100%',
-                    aspectRatio: aspect, 
+                    aspectRatio: aspect,
                     bgcolor: 'background.default',
                     borderRadius: 2,
                     overflow: 'hidden',
@@ -104,7 +139,16 @@ export default function ImagePageDetailsModal({ section, open, onClose }: Props)
                 >
                   <StyledSlider {...(carouselSettings as any)}>
                     {section.mediaItems!.map((item) => (
-                      <Box key={item.id} sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Box
+                        key={item.id}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
                         <img
                           src={item.url}
                           alt={item.originalName}
@@ -119,12 +163,16 @@ export default function ImagePageDetailsModal({ section, open, onClose }: Props)
                   </StyledSlider>
                 </Box>
               ) : (
-                <Typography variant="body2" color="text.secondary">Nenhuma imagem disponível.</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Nenhuma imagem disponível.
+                </Typography>
               )}
             </Paper>
           </Stack>
         ) : (
-          <Typography variant="body2" color="text.secondary">Nenhuma seção selecionada.</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Nenhuma seção selecionada.
+          </Typography>
         )}
       </DialogContent>
 

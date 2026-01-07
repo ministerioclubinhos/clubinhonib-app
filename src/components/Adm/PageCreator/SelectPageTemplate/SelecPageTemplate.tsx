@@ -69,7 +69,7 @@ export default function SelecPageTemplate() {
       <Typography
         variant="subtitle1"
         color="text.secondary"
-        sx={{  mb: { xs: 2, md: 3 }, fontSize: { xs: '1rem', md: '1.5rem' } }}
+        sx={{ mb: { xs: 2, md: 3 }, fontSize: { xs: '1rem', md: '1.5rem' } }}
       >
         Selecione um modelo abaixo para visualizar e criar um novo conteúdo.
       </Typography>
@@ -96,7 +96,7 @@ export default function SelecPageTemplate() {
       <Paper
         elevation={3}
         sx={{
-           width: '100%',
+          width: '100%',
           p: 1,
           transition: 'all 0.3s ease-in-out',
           opacity: selectedOption ? 1 : 0.5,

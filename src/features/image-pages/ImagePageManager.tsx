@@ -1,13 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Grid,
-  CircularProgress,
-  Alert,
-  Container,
-} from '@mui/material';
+import { Box, Grid, CircularProgress, Alert, Container } from '@mui/material';
 import { AppDispatch } from '@/store/slices';
 import { setImageData, ImagePageData } from 'store/slices/image/imageSlice';
 
@@ -62,7 +56,14 @@ export default function ImagePageManager() {
 
   return (
     <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh' }}>
-      <Container sx={{ maxWidth: { xs: '100%', md: '100%' }, px: { xs: 2, md: 3 }, pt: { xs: 0, md: 4 }, pb: 4 }}>
+      <Container
+        sx={{
+          maxWidth: { xs: '100%', md: '100%' },
+          px: { xs: 2, md: 3 },
+          pt: { xs: 0, md: 4 },
+          pb: 4,
+        }}
+      >
         <BackHeader title="Páginas de Imagens" />
 
         <ImagePageToolbar search={search} onSearchChange={setSearch} loading={isFiltering} />

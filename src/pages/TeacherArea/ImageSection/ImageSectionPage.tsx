@@ -1,7 +1,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Typography, Paper, useTheme, useMediaQuery, IconButton } from '@mui/material';
+import {
+  Box,
+  Button,
+  Container,
+  Typography,
+  Paper,
+  useTheme,
+  useMediaQuery,
+  IconButton,
+} from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { motion } from 'framer-motion';
 
@@ -14,7 +23,6 @@ import { LoadingSpinner } from '../components/Modals';
 import { NotificationModal } from '../components/Modals';
 import ImageSectionEditor from './ImageSectionEditor';
 
-
 interface NotificationState {
   open: boolean;
   message: string;
@@ -26,7 +34,9 @@ export default function ImageSectionPage() {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const sectionData = useSelector((state: RootState) => state.imageSection.data) as SectionData | null;
+  const sectionData = useSelector(
+    (state: RootState) => state.imageSection.data
+  ) as SectionData | null;
 
   const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState<NotificationState>({
@@ -271,7 +281,8 @@ export default function ImageSectionPage() {
                     mx: 'auto',
                   }}
                 >
-                  Registre e compartilhe os momentos especiais das atividades do seu Clubinho para inspirar outros professores
+                  Registre e compartilhe os momentos especiais das atividades do seu Clubinho para
+                  inspirar outros professores
                 </Typography>
               </Box>
             </Box>
@@ -320,7 +331,7 @@ export default function ImageSectionPage() {
                   color="primary"
                   onClick={handleSave}
                   disabled={isSaving}
-                  size={isMobile ? "medium" : "large"}
+                  size={isMobile ? 'medium' : 'large'}
                   sx={{
                     minWidth: { xs: 200, md: 250 },
                     height: { xs: 44, md: 52 },

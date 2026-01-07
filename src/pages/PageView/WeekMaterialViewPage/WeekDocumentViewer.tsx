@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Paper, 
-  useTheme, 
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  useTheme,
   useMediaQuery,
   Chip,
   Stack,
@@ -55,12 +55,7 @@ export default function WeekDocumentViewer({ document }: Props) {
         }}
       >
         {/* Header */}
-        <Box
-          display="flex"
-          alignItems="center"
-          gap={2}
-          mb={{ xs: 2, md: 3 }}
-        >
+        <Box display="flex" alignItems="center" gap={2} mb={{ xs: 2, md: 3 }}>
           <Box
             sx={{
               p: 2,
@@ -74,7 +69,7 @@ export default function WeekDocumentViewer({ document }: Props) {
           >
             <DescriptionIcon sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} />
           </Box>
-          
+
           <Box flex={1}>
             <Typography
               variant="h6"
@@ -88,7 +83,7 @@ export default function WeekDocumentViewer({ document }: Props) {
             >
               {document.title}
             </Typography>
-            
+
             {fileSize && (
               <Chip
                 label={fileSize}
@@ -118,10 +113,7 @@ export default function WeekDocumentViewer({ document }: Props) {
           </Typography>
         )}
 
-        <Stack
-          spacing={{ xs: 1.5, md: 2 }}
-          sx={{ mt: 'auto' }}
-        >
+        <Stack spacing={{ xs: 1.5, md: 2 }} sx={{ mt: 'auto' }}>
           {previewUrl ? (
             <Button
               fullWidth
@@ -166,7 +158,7 @@ export default function WeekDocumentViewer({ document }: Props) {
               Visualização não disponível
             </Button>
           )}
-          
+
           <DownloadButton
             url={document.url}
             filename={document.originalName || document.title || 'documento'}
@@ -175,10 +167,10 @@ export default function WeekDocumentViewer({ document }: Props) {
           />
         </Stack>
 
-        <MediaDocumentPreviewModal 
-          open={open} 
-          onClose={() => setOpen(false)} 
-          media={document} 
+        <MediaDocumentPreviewModal
+          open={open}
+          onClose={() => setOpen(false)}
+          media={document}
           title={document.title}
         />
       </Paper>

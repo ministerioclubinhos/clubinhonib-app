@@ -110,12 +110,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
   if (loading) {
     return (
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="60vh"
-        >
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
           <CircularProgress size={60} />
         </Box>
       </Container>
@@ -135,9 +130,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
   if (!studyMaterials) {
     return (
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
-        <Alert severity="info">
-          Nenhum material encontrado.
-        </Alert>
+        <Alert severity="info">Nenhum material encontrado.</Alert>
       </Container>
     );
   }
@@ -175,7 +168,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
       icon: () => <Typography>🎵</Typography>,
       color: '#9c27b0',
     },
-  ].filter(type => type.items.length > 0);
+  ].filter((type) => type.items.length > 0);
 
   const totalItems = mediaTypes.reduce((sum, type) => sum + type.items.length, 0);
 
@@ -198,7 +191,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
           whileHover={{
             scale: 1.02,
             boxShadow: '0 12px 40px rgba(102, 126, 234, 0.2)',
-            transition: { duration: 0.3 }
+            transition: { duration: 0.3 },
           }}
           transition={{ duration: 0.3 }}
         >
@@ -218,12 +211,19 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
                 '& .pulse-circle': {
                   transform: 'scale(1.2)',
                   opacity: 0.8,
-                }
+                },
               },
             }}
           >
-
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, position: 'relative', zIndex: 10 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                mb: 2,
+                position: 'relative',
+                zIndex: 10,
+              }}
+            >
               <IconButton
                 onClick={handleBack}
                 sx={{
@@ -286,7 +286,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
                 transition={{
                   duration: 4,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
                 style={{
                   position: 'absolute',
@@ -308,8 +308,8 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
                 transition={{
                   duration: 3.5,
                   repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1
+                  ease: 'easeInOut',
+                  delay: 1,
                 }}
                 style={{
                   position: 'absolute',
@@ -328,13 +328,13 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
                   background: [
                     'linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%)',
                     'linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                    'linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%)'
-                  ]
+                    'linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                  ],
                 }}
                 transition={{
                   duration: 6,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
                 style={{
                   position: 'absolute',
@@ -421,15 +421,17 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
         </motion.div>
       </motion.div>
 
-      <Box sx={{
-        flex: 1,
-        p: { xs: 2, md: 4 },
-        bgcolor: 'background.default',
-        borderRadius: '24px 24px 0 0',
-        position: 'relative',
-        zIndex: 1,
-        minHeight: 'calc(100vh - 200px)',
-      }}>
+      <Box
+        sx={{
+          flex: 1,
+          p: { xs: 2, md: 4 },
+          bgcolor: 'background.default',
+          borderRadius: '24px 24px 0 0',
+          position: 'relative',
+          zIndex: 1,
+          minHeight: 'calc(100vh - 200px)',
+        }}
+      >
         <Container
           maxWidth="xl"
           sx={{
@@ -473,7 +475,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
                 <Tabs
                   value={activeTab}
                   onChange={(_, newValue) => setActiveTab(newValue)}
-                  variant={isMobile ? "fullWidth" : "scrollable"}
+                  variant={isMobile ? 'fullWidth' : 'scrollable'}
                   scrollButtons={isMobile ? false : 'auto'}
                   sx={{
                     '& .MuiTab-root': {
@@ -487,7 +489,10 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
                       maxWidth: isMobile ? 'none' : 'auto',
                       transition: 'all 0.2s ease-in-out',
                       '&:hover': {
-                        backgroundColor: { xs: 'rgba(25, 118, 210, 0.04)', md: 'rgba(25, 118, 210, 0.04)' },
+                        backgroundColor: {
+                          xs: 'rgba(25, 118, 210, 0.04)',
+                          md: 'rgba(25, 118, 210, 0.04)',
+                        },
                         borderRadius: { xs: 1, md: 0 },
                       },
                     },
@@ -528,7 +533,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
                               sx={{
                                 fontSize: '0.875rem',
                                 fontWeight: 'inherit',
-                                whiteSpace: 'nowrap'
+                                whiteSpace: 'nowrap',
                               }}
                             >
                               {type.label}
@@ -612,11 +617,7 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
                   borderRadius: { xs: 3, md: 4 },
                 }}
               >
-                <Typography
-                  variant="h6"
-                  color="text.secondary"
-                  sx={{ mb: 2 }}
-                >
+                <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
                   📚 Nenhum material disponível
                 </Typography>
                 <Typography color="text.secondary">

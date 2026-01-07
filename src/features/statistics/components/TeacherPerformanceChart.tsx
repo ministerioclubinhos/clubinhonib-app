@@ -46,15 +46,15 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
   if (!data || !data.byTeacher || data.byTeacher.length === 0) {
     return (
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-        <Typography color="text.secondary">Sem dados de professores para o período selecionado</Typography>
+        <Typography color="text.secondary">
+          Sem dados de professores para o período selecionado
+        </Typography>
       </Paper>
     );
   }
 
   // Ordenar por total e pegar top 10
-  const topTeachers = [...data.byTeacher]
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 10);
+  const topTeachers = [...data.byTeacher].sort((a, b) => b.total - a.total).slice(0, 10);
 
   const getPerformanceColor = (rate: number) => {
     if (rate >= 90) return theme.palette.success.main;
@@ -146,8 +146,8 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                   index === 0
                     ? theme.palette.warning.main
                     : index === 1
-                    ? theme.palette.info.main
-                    : theme.palette.success.main
+                      ? theme.palette.info.main
+                      : theme.palette.success.main
                 }
               />
             ))}
@@ -190,8 +190,8 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                         index === 0
                           ? theme.palette.warning.main
                           : index === 1
-                          ? theme.palette.info.main
-                          : theme.palette.success.main,
+                            ? theme.palette.info.main
+                            : theme.palette.success.main,
                       fontWeight: 'bold',
                     }}
                   >
@@ -241,8 +241,8 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                             index === 0
                               ? theme.palette.warning.main
                               : index === 1
-                              ? theme.palette.info.main
-                              : theme.palette.success.main,
+                                ? theme.palette.info.main
+                                : theme.palette.success.main,
                         },
                       }}
                     />
@@ -270,9 +270,9 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
               Média de Pagelas
             </Typography>
             <Typography variant="h6" fontWeight="bold" color="success.main">
-              {(data.byTeacher.reduce((sum, t) => sum + t.total, 0) / data.byTeacher.length).toFixed(
-                0
-              )}
+              {(
+                data.byTeacher.reduce((sum, t) => sum + t.total, 0) / data.byTeacher.length
+              ).toFixed(0)}
             </Typography>
           </Grid>
           <Grid item xs={12} sm={4}>
@@ -288,4 +288,3 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
     </Paper>
   );
 };
-

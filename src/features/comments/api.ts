@@ -1,8 +1,8 @@
-import api from "@/config/axiosConfig";
-import { CommentData } from "store/slices/comment/commentsSlice";
+import api from '@/config/axiosConfig';
+import { CommentData } from 'store/slices/comment/commentsSlice';
 
 export async function apiGetComments() {
-  const { data } = await api.get<CommentData[]>("/comments");
+  const { data } = await api.get<CommentData[]>('/comments');
   return data;
 }
 
@@ -20,13 +20,16 @@ export async function apiPublishComment(c: CommentData) {
   });
 }
 
-export async function apiUpdateComment(c: CommentData, payload: {
-  name: string;
-  comment: string;
-  clubinho: string;
-  neighborhood: string;
-  published?: boolean; 
-}) {
+export async function apiUpdateComment(
+  c: CommentData,
+  payload: {
+    name: string;
+    comment: string;
+    clubinho: string;
+    neighborhood: string;
+    published?: boolean;
+  }
+) {
   await api.put(`/comments/${c.id}`, {
     name: payload.name,
     comment: payload.comment,

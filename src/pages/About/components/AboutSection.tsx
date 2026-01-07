@@ -62,19 +62,21 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section, index }) => {
             left: 0,
             right: 0,
             height: '4px',
-            background: section.isMain 
+            background: section.isMain
               ? 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)'
               : 'linear-gradient(90deg, #667eea, #764ba2)',
           },
         }}
       >
-        <CardContent sx={{ 
-          p: { xs: 2, sm: 3, md: 4 }, 
-          height: '100%', 
-          display: 'flex', 
-          flexDirection: 'column',
-          '&:last-child': { pb: { xs: 2, sm: 3, md: 4 } }
-        }}>
+        <CardContent
+          sx={{
+            p: { xs: 2, sm: 3, md: 4 },
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            '&:last-child': { pb: { xs: 2, sm: 3, md: 4 } },
+          }}
+        >
           {/* Ícone */}
           <Box
             sx={{

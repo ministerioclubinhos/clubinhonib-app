@@ -1,26 +1,26 @@
-import { Fragment, useState, useMemo } from "react";
-import { 
-  Card, 
-  Typography, 
-  Box, 
-  Dialog, 
+import { Fragment, useState, useMemo } from 'react';
+import {
+  Card,
+  Typography,
+  Box,
+  Dialog,
   IconButton,
   Paper,
   useTheme,
   useMediaQuery,
   Chip,
   Zoom,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import VideoFileIcon from "@mui/icons-material/VideoFile";
-import { motion } from "framer-motion";
-import VideoPlayer from "./VideoPlayer";
-import { MediaItem, MediaUploadType } from "@/store/slices/types";
-import { getPreferredThumb } from "@/utils/video";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import VideoFileIcon from '@mui/icons-material/VideoFile';
+import { motion } from 'framer-motion';
+import VideoPlayer from './VideoPlayer';
+import { MediaItem, MediaUploadType } from '@/store/slices/types';
+import { getPreferredThumb } from '@/utils/video';
 
-interface Props { 
-  video: MediaItem 
+interface Props {
+  video: MediaItem;
 }
 
 const VideoCard = ({ video }: Props) => {
@@ -33,9 +33,9 @@ const VideoCard = ({ video }: Props) => {
 
   return (
     <Fragment>
-      <motion.div 
-        initial={{ opacity: 0, y: 16 }} 
-        animate={{ opacity: 1, y: 0 }} 
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         whileHover={{ y: -2 }}
       >
@@ -60,10 +60,10 @@ const VideoCard = ({ video }: Props) => {
           }}
         >
           {/* Video Thumbnail */}
-          <Box 
-            sx={{ 
-              position: 'relative', 
-              borderRadius: { xs: 2, md: 3 }, 
+          <Box
+            sx={{
+              position: 'relative',
+              borderRadius: { xs: 2, md: 3 },
               overflow: 'hidden',
               mb: 2,
               bgcolor: 'grey.100',
@@ -95,8 +95,8 @@ const VideoCard = ({ video }: Props) => {
                 }}
               />
             ) : (
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   height: { xs: 160, md: 200 },
                   display: 'flex',
                   alignItems: 'center',
@@ -107,15 +107,15 @@ const VideoCard = ({ video }: Props) => {
                 <VideoFileIcon sx={{ fontSize: '3rem', color: 'grey.400' }} />
               </Box>
             )}
-            
+
             {/* Play Overlay */}
-            <Box 
-              sx={{ 
-                position: 'absolute', 
-                inset: 0, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
+            <Box
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 background: 'linear-gradient(180deg, rgba(0,0,0,.0) 0%, rgba(0,0,0,.35) 100%)',
                 '&:hover': {
                   background: 'linear-gradient(180deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.45) 100%)',
@@ -138,12 +138,12 @@ const VideoCard = ({ video }: Props) => {
                   },
                 }}
               >
-                <PlayArrowIcon 
-                  sx={{ 
-                    fontSize: { xs: '2rem', md: '2.5rem' }, 
+                <PlayArrowIcon
+                  sx={{
+                    fontSize: { xs: '2rem', md: '2.5rem' },
                     color: 'primary.main',
                     ml: 0.5, // Slight offset for play icon
-                  }} 
+                  }}
                 />
               </Box>
             </Box>
@@ -167,8 +167,8 @@ const VideoCard = ({ video }: Props) => {
               )}
             </Box>
 
-            <Typography 
-              variant="h6" 
+            <Typography
+              variant="h6"
               fontWeight="bold"
               sx={{
                 fontSize: { xs: '1rem', md: '1.1rem' },
@@ -179,10 +179,10 @@ const VideoCard = ({ video }: Props) => {
             >
               {video.title}
             </Typography>
-            
+
             {video.description && (
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 color="text.secondary"
                 sx={{
                   fontSize: { xs: '0.85rem', md: '0.9rem' },
@@ -198,22 +198,22 @@ const VideoCard = ({ video }: Props) => {
       </motion.div>
 
       {/* Video Modal */}
-      <Dialog 
-        fullWidth 
-        maxWidth="lg" 
-        open={open} 
-        onClose={() => setOpen(false)} 
-        PaperProps={{ 
-          sx: { 
+      <Dialog
+        fullWidth
+        maxWidth="lg"
+        open={open}
+        onClose={() => setOpen(false)}
+        PaperProps={{
+          sx: {
             borderRadius: { xs: 3, md: 4 },
             bgcolor: 'transparent',
             boxShadow: 'none',
-          } 
+          },
         }}
       >
         <Box sx={{ position: 'relative' }}>
-          <IconButton 
-            onClick={() => setOpen(false)} 
+          <IconButton
+            onClick={() => setOpen(false)}
             aria-label="Fechar"
             sx={{
               position: 'absolute',
@@ -229,7 +229,7 @@ const VideoCard = ({ video }: Props) => {
           >
             <CloseIcon />
           </IconButton>
-          
+
           <Box sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
             <Zoom in={open} timeout={300}>
               <Box>

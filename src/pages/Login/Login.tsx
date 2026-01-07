@@ -36,7 +36,7 @@ const mapLoginError = (err: unknown): string => {
     const raw = (err.response?.data as any)?.message;
     const serverMsg = Array.isArray(raw) ? raw.join(' ') : String(raw ?? '');
 
-    if (status === 401 ) {
+    if (status === 401) {
       return 'Email ou senha inválidos.';
     }
 
@@ -67,7 +67,10 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const redirectPath = user?.role === UserRole.ADMIN || user?.role === UserRole.COORDINATOR ? '/adm' : '/area-do-professor';
+      const redirectPath =
+        user?.role === UserRole.ADMIN || user?.role === UserRole.COORDINATOR
+          ? '/adm'
+          : '/area-do-professor';
       navigate(redirectPath);
     }
   }, [isAuthenticated, user, navigate]);
@@ -103,7 +106,9 @@ const Login: React.FC = () => {
     try {
       const response = await api.post<LoginResponse>('/auth/login', { email, password });
       if (response.data.user.active === false) {
-        setErrorMessage('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
+        setErrorMessage(
+          'Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139'
+        );
         return;
       }
       const { accessToken, refreshToken, user: responseUser } = response.data;
@@ -137,7 +142,9 @@ const Login: React.FC = () => {
       const res = await api.post('/auth/google', { token: credential });
 
       if (res.data.active === false) {
-        setErrorMessage('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
+        setErrorMessage(
+          'Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139'
+        );
         return;
       }
 

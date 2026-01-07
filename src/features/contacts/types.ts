@@ -8,4 +8,4 @@ export type Contact = {
   createdAt?: string;
 };
 
-export type SnackbarKind = "success" | "error";
+export type SnackbarKind = 'success' | 'error';

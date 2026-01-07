@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -13,16 +13,16 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
-import { Close, Save } from "@mui/icons-material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import SpaIcon from "@mui/icons-material/Spa";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import { useSelector } from "react-redux";
-import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from "../types";
-import { todayISO } from "../utils";
+} from '@mui/material';
+import { Close, Save } from '@mui/icons-material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SpaIcon from '@mui/icons-material/Spa';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import { useSelector } from 'react-redux';
+import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from '../types';
+import { todayISO } from '../utils';
 
 type Props = {
   initial?: Pagela | null;
@@ -53,7 +53,7 @@ export default function PagelaQuickForm({
   onClose,
 }: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const teacherProfileIdFromRedux = useSelector(
     (s: any) => s?.auth?.user?.teacherProfile?.id ?? null
@@ -61,8 +61,8 @@ export default function PagelaQuickForm({
 
   const effectiveTeacherProfileId = teacherProfileIdFromRedux ?? teacherProfileId ?? null;
 
-  const [yearText, setYearText] = React.useState<string>("");
-  const [weekText, setWeekText] = React.useState<string>("");
+  const [yearText, setYearText] = React.useState<string>('');
+  const [weekText, setWeekText] = React.useState<string>('');
 
   const [editing, setEditing] = React.useState<boolean>(!!initial?.id);
   const [currentId, setCurrentId] = React.useState<string | null>(initial?.id ?? null);
@@ -70,23 +70,23 @@ export default function PagelaQuickForm({
   const [present, setPresent] = React.useState<boolean>(initial?.present ?? false);
   const [med, setMed] = React.useState<boolean>(initial?.didMeditation ?? false);
   const [verse, setVerse] = React.useState<boolean>(initial?.recitedVerse ?? false);
-  const [notes, setNotes] = React.useState<string>(initial?.notes ?? "");
+  const [notes, setNotes] = React.useState<string>(initial?.notes ?? '');
 
   React.useEffect(() => {
     if (initial?.id) {
       setEditing(true);
       setCurrentId(initial.id);
-      setYearText(String(initial.year ?? ""));
-      setWeekText(String(initial.week ?? ""));
+      setYearText(String(initial.year ?? ''));
+      setWeekText(String(initial.week ?? ''));
       setPresent(!!initial.present);
       setMed(!!initial.didMeditation);
       setVerse(!!initial.recitedVerse);
-      setNotes(initial.notes ?? "");
+      setNotes(initial.notes ?? '');
     } else {
       setEditing(false);
       setCurrentId(null);
-      setYearText("");
-      setWeekText("");
+      setYearText('');
+      setWeekText('');
     }
   }, [initial]);
 
@@ -117,7 +117,7 @@ export default function PagelaQuickForm({
         setPresent(!!found.present);
         setMed(!!found.didMeditation);
         setVerse(!!found.recitedVerse);
-        setNotes(found.notes ?? "");
+        setNotes(found.notes ?? '');
       } else {
         setEditing(false);
         setCurrentId(null);
@@ -157,71 +157,74 @@ export default function PagelaQuickForm({
   };
 
   const headerBg = editing
-    ? "linear-gradient(135deg, #FFE8B3 0%, #FFD480 50%, #FFC266 100%)"
-    : "linear-gradient(135deg, #b8f1d7 0%, #b8d6ff 50%, #ffc7ec 100%)";
+    ? 'linear-gradient(135deg, #FFE8B3 0%, #FFD480 50%, #FFC266 100%)'
+    : 'linear-gradient(135deg, #b8f1d7 0%, #b8d6ff 50%, #ffc7ec 100%)';
 
-  const headerTitle = editing ? "Editando" : "Criando";
+  const headerTitle = editing ? 'Editando' : 'Criando';
   const footerMsg = editing
-    ? "ao salvar, você ATUALIZA o registro existente"
-    : "ao salvar, você CRIA um novo registro";
+    ? 'ao salvar, você ATUALIZA o registro existente'
+    : 'ao salvar, você CRIA um novo registro';
 
-  const yearWeekLabel = `Ano: ${parsedYear ?? "--"} • Semana: ${parsedWeek ?? "--"}`;
+  const yearWeekLabel = `Ano: ${parsedYear ?? '--'} • Semana: ${parsedWeek ?? '--'}`;
 
-  const article = childGender === "F" ? "a" : "o";
+  const article = childGender === 'F' ? 'a' : 'o';
 
   return (
     <Card
       variant="outlined"
       sx={{
-        borderRadius: { xs: "24px 24px 0 0", sm: 4 },
-        overflow: "hidden",
-        borderColor: "divider",
-        transition: "box-shadow .12s ease, transform .12s ease",
-        "&:hover": { boxShadow: 4, transform: { sm: "translateY(-1px)" } },
+        borderRadius: { xs: '24px 24px 0 0', sm: 4 },
+        overflow: 'hidden',
+        borderColor: 'divider',
+        transition: 'box-shadow .12s ease, transform .12s ease',
+        '&:hover': { boxShadow: 4, transform: { sm: 'translateY(-1px)' } },
       }}
     >
       <Box
         sx={{
-          position: "relative",
+          position: 'relative',
           height: { xs: 64, sm: 84 },
           background: headerBg,
         }}
       >
         <Box
           sx={{
-            position: "absolute",
+            position: 'absolute',
             top: -10,
             left: -18,
             width: 90,
             height: 90,
-            borderRadius: "50%",
+            borderRadius: '50%',
             opacity: 0.15,
-            bgcolor: "#000",
-            filter: "blur(2px)",
+            bgcolor: '#000',
+            filter: 'blur(2px)',
           }}
         />
         <Box
           sx={{
-            position: "absolute",
+            position: 'absolute',
             bottom: -16,
             right: -12,
             width: 80,
             height: 80,
-            borderRadius: "50%",
+            borderRadius: '50%',
             opacity: 0.12,
-            bgcolor: "#000",
-            filter: "blur(1px)",
+            bgcolor: '#000',
+            filter: 'blur(1px)',
           }}
         />
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="space-between"
-          sx={{ height: "100%", px: { xs: 1.25, sm: 2 } }}
+          sx={{ height: '100%', px: { xs: 1.25, sm: 2 } }}
         >
           <Stack spacing={0}>
-            <Typography variant="subtitle2" sx={{ color: "text.primary", opacity: 0.9, fontWeight: 800 }}>
-              {headerTitle} para {article} <strong>{childName || "—"}</strong>
+            <Typography
+              variant="subtitle2"
+              sx={{ color: 'text.primary', opacity: 0.9, fontWeight: 800 }}
+            >
+              {headerTitle} para {article} <strong>{childName || '—'}</strong>
             </Typography>
 
             <Stack direction="row" spacing={0.75} alignItems="center">
@@ -237,7 +240,10 @@ export default function PagelaQuickForm({
               size="small"
               onClick={onClose}
               aria-label="Fechar"
-              sx={{ bgcolor: "rgba(255,255,255,.85)", "&:hover": { bgcolor: "rgba(255,255,255,.95)" } }}
+              sx={{
+                bgcolor: 'rgba(255,255,255,.85)',
+                '&:hover': { bgcolor: 'rgba(255,255,255,.95)' },
+              }}
             >
               <Close fontSize="small" />
             </IconButton>
@@ -253,24 +259,34 @@ export default function PagelaQuickForm({
               size="small"
               type="text"
               value={yearText}
-              onChange={(e) => setYearText(e.target.value.replace(/\D+/g, "").slice(0, 4))}
+              onChange={(e) => setYearText(e.target.value.replace(/\D+/g, '').slice(0, 4))}
               sx={{ width: 120 }}
-              inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 4 }}
+              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 4 }}
             />
             <TextField
               label="Semana"
               size="small"
               type="text"
               value={weekText}
-              onChange={(e) => setWeekText(e.target.value.replace(/\D+/g, "").slice(0, 2))}
+              onChange={(e) => setWeekText(e.target.value.replace(/\D+/g, '').slice(0, 2))}
               sx={{ width: 140 }}
-              inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 2 }}
+              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 2 }}
             />
           </Stack>
 
-          <RowSwitch icon={<CheckCircleIcon />} label="Presença" checked={present} onChange={setPresent} />
+          <RowSwitch
+            icon={<CheckCircleIcon />}
+            label="Presença"
+            checked={present}
+            onChange={setPresent}
+          />
           <RowSwitch icon={<SpaIcon />} label="Fez meditação" checked={med} onChange={setMed} />
-          <RowSwitch icon={<MenuBookIcon />} label="Recitou o versículo" checked={verse} onChange={setVerse} />
+          <RowSwitch
+            icon={<MenuBookIcon />}
+            label="Recitou o versículo"
+            checked={verse}
+            onChange={setVerse}
+          />
 
           <Divider sx={{ my: 0.5 }} />
 
@@ -284,13 +300,19 @@ export default function PagelaQuickForm({
             fullWidth
           />
 
-          <Box sx={{ display: "flex", justifyContent: { xs: "stretch", sm: "flex-end" }, mt: 0.5 }}>
+          <Box sx={{ display: 'flex', justifyContent: { xs: 'stretch', sm: 'flex-end' }, mt: 0.5 }}>
             <Button
               onClick={handleSave}
               disabled={!canSave}
               variant="contained"
               startIcon={<Save />}
-              sx={{ borderRadius: 999, px: 2.25, py: 0.75, fontWeight: 800, width: { xs: "100%", sm: "auto" } }}
+              sx={{
+                borderRadius: 999,
+                px: 2.25,
+                py: 0.75,
+                fontWeight: 800,
+                width: { xs: '100%', sm: 'auto' },
+              }}
             >
               Salvar
             </Button>
@@ -301,7 +323,7 @@ export default function PagelaQuickForm({
             spacing={0.5}
             alignItems="center"
             justifyContent="center"
-            sx={{ color: "text.secondary", mt: 0.25 }}
+            sx={{ color: 'text.secondary', mt: 0.25 }}
           >
             <Typography variant="caption" sx={{ fontWeight: 700 }}>
               {footerMsg}
@@ -330,7 +352,7 @@ function RowSwitch({
       control={<Switch checked={checked} onChange={(_, v) => onChange(v)} />}
       label={
         <Stack direction="row" spacing={0.75} alignItems="center">
-          <Box sx={{ "& svg": { fontSize: 18, opacity: 0.75 } }}>{icon}</Box>
+          <Box sx={{ '& svg': { fontSize: 18, opacity: 0.75 } }}>{icon}</Box>
           <Typography fontWeight={800}>{label}</Typography>
         </Stack>
       }
@@ -340,8 +362,8 @@ function RowSwitch({
         px: 1,
         py: 0.5,
         borderRadius: 2,
-        justifyContent: "space-between",
-        bgcolor: "action.hover",
+        justifyContent: 'space-between',
+        bgcolor: 'action.hover',
       }}
     />
   );

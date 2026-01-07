@@ -1,18 +1,37 @@
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 import {
-  Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  TableSortLabel, Divider, Typography, Chip, Box, TablePagination,
-  useMediaQuery, useTheme, Tooltip, IconButton
-} from "@mui/material";
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  Divider,
+  Typography,
+  Chip,
+  Box,
+  TablePagination,
+  useMediaQuery,
+  useTheme,
+  Tooltip,
+  IconButton,
+} from '@mui/material';
 import {
-  ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, SortingState, useReactTable
-} from "@tanstack/react-table";
-import { Visibility, Link as LinkIcon, WhatsApp } from "@mui/icons-material";
-import type { CoordinatorProfile } from "../types";
-import { fmtDate } from "@/utils/dates";
-import { buildWhatsappLink } from "@/utils/whatsapp";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/slices";
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  SortingState,
+  useReactTable,
+} from '@tanstack/react-table';
+import { Visibility, Link as LinkIcon, WhatsApp } from '@mui/icons-material';
+import type { CoordinatorProfile } from '../types';
+import { fmtDate } from '@/utils/dates';
+import { buildWhatsappLink } from '@/utils/whatsapp';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/slices';
 
 type Props = {
   rows: CoordinatorProfile[];
@@ -28,107 +47,132 @@ type Props = {
 };
 
 export default function CoordinatorTable({
-  rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
-  sorting, setSorting, onView, onLink,
+  rows,
+  total,
+  pageIndex,
+  pageSize,
+  setPageIndex,
+  setPageSize,
+  sorting,
+  setSorting,
+  onView,
+  onLink,
 }: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
-  const columns = useMemo<ColumnDef<CoordinatorProfile>[]>(() => [
-    {
-      id: "user",
-      header: "Coordenador",
-      cell: ({ row }) => {
-        const u = row.original.user;
-        return (
-          <Box sx={{ display: "flex", flexDirection: "column", minWidth: 190 }}>
-            <Typography fontWeight={600} noWrap>{u?.name || "—"}</Typography>
-            <Typography variant="caption" color="text.secondary" noWrap title={u?.email}>{u?.email}</Typography>
-          </Box>
-        );
-      },
-    },
-    {
-      id: "clubs",
-      header: "Clubinhos",
-      cell: ({ row }) => {
-        const list = row.original.clubs ?? [];
-        if (!list.length) return <Chip size="small" label="—" />;
-        return (
-          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-            {list.map((c) => <Chip key={c.id} size="small" label={`#${c.number ?? "?"}`} />)}
-          </Box>
-        );
-      },
-    },
-    {
-      id: "teachers",
-      header: "Professores",
-      cell: ({ row }) => {
-        const list = (row.original.clubs ?? []).flatMap(c => c.teachers ?? []);
-        if (!list.length) return <Chip size="small" label="—" />;
-        return (
-          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-            {list.map((t) => <Chip key={t.id} size="small" label={t.user?.name || t.user?.email || t.id} />)}
-          </Box>
-        );
-      },
-    },
-    ...(isMdUp ? ([
+  const columns = useMemo<ColumnDef<CoordinatorProfile>[]>(
+    () => [
       {
-        accessorKey: "createdAt",
-        header: "Criado em",
-        cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
-        meta: { width: 170 },
+        id: 'user',
+        header: 'Coordenador',
+        cell: ({ row }) => {
+          const u = row.original.user;
+          return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 190 }}>
+              <Typography fontWeight={600} noWrap>
+                {u?.name || '—'}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" noWrap title={u?.email}>
+                {u?.email}
+              </Typography>
+            </Box>
+          );
+        },
       },
       {
-        accessorKey: "updatedAt",
-        header: "Atualizado em",
-        cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
-        meta: { width: 170 },
+        id: 'clubs',
+        header: 'Clubinhos',
+        cell: ({ row }) => {
+          const list = row.original.clubs ?? [];
+          if (!list.length) return <Chip size="small" label="—" />;
+          return (
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              {list.map((c) => (
+                <Chip key={c.id} size="small" label={`#${c.number ?? '?'}`} />
+              ))}
+            </Box>
+          );
+        },
       },
-    ] as ColumnDef<CoordinatorProfile>[]) : []),
-    {
-      id: "actions",
-      header: "Ações",
-      enableSorting: false,
-      cell: ({ row }) => {
-        const { user: loggedUser } = useSelector((state: RootState) => state.auth);
-        const wa = buildWhatsappLink(row.original.user?.name, loggedUser?.name, row.original.user?.phone);
+      {
+        id: 'teachers',
+        header: 'Professores',
+        cell: ({ row }) => {
+          const list = (row.original.clubs ?? []).flatMap((c) => c.teachers ?? []);
+          if (!list.length) return <Chip size="small" label="—" />;
+          return (
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              {list.map((t) => (
+                <Chip key={t.id} size="small" label={t.user?.name || t.user?.email || t.id} />
+              ))}
+            </Box>
+          );
+        },
+      },
+      ...(isMdUp
+        ? ([
+            {
+              accessorKey: 'createdAt',
+              header: 'Criado em',
+              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
+              meta: { width: 170 },
+            },
+            {
+              accessorKey: 'updatedAt',
+              header: 'Atualizado em',
+              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
+              meta: { width: 170 },
+            },
+          ] as ColumnDef<CoordinatorProfile>[])
+        : []),
+      {
+        id: 'actions',
+        header: 'Ações',
+        enableSorting: false,
+        cell: ({ row }) => {
+          const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+          const wa = buildWhatsappLink(
+            row.original.user?.name,
+            loggedUser?.name,
+            row.original.user?.phone
+          );
 
-        return (
-          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-            <Tooltip title="Detalhes">
-              <IconButton size={isXs ? "small" : "medium"} onClick={() => onView(row.original)}>
-                <Visibility fontSize="inherit" />
-              </IconButton>
-            </Tooltip>
-            {wa && (
-              <Tooltip title="WhatsApp">
-                <IconButton
-                  size={isXs ? "small" : "medium"}
-                  component="a"
-                  href={wa}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ color: "success.main" }}
-                >
-                  <WhatsApp fontSize="inherit" />
+          return (
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              <Tooltip title="Detalhes">
+                <IconButton size={isXs ? 'small' : 'medium'} onClick={() => onView(row.original)}>
+                  <Visibility fontSize="inherit" />
                 </IconButton>
               </Tooltip>
-            )}
-            <Tooltip title="Vincular/Desvincular clubinho">
-              <IconButton size={isXs ? "small" : "medium"} onClick={() => onLink(row.original)}>
-                <LinkIcon fontSize="inherit" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        );
+              {wa && (
+                <Tooltip title="WhatsApp">
+                  <IconButton
+                    size={isXs ? 'small' : 'medium'}
+                    component="a"
+                    href={wa}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ color: 'success.main' }}
+                  >
+                    <WhatsApp fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              <Tooltip title="Vincular/Desvincular clubinho">
+                <IconButton size={isXs ? 'small' : 'medium'} onClick={() => onLink(row.original)}>
+                  <LinkIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          );
+        },
+        meta: { width: isXs ? 180 : 240 },
       },
-      meta: { width: isXs ? 180 : 240 },
-    },
-  ], [isMdUp, isXs, onLink, onView]);
+    ],
+    [isMdUp, isXs, onLink, onView]
+  );
 
   const table = useReactTable({
     data: rows,
@@ -139,12 +183,12 @@ export default function CoordinatorTable({
     manualPagination: true,
     manualSorting: true,
     onSortingChange: (u) => {
-      const next = typeof u === "function" ? u(sorting) : u;
+      const next = typeof u === 'function' ? u(sorting) : u;
       setSorting(next);
       setPageIndex(0);
     },
     onPaginationChange: (u) => {
-      const next = typeof u === "function" ? u({ pageIndex, pageSize }) : u;
+      const next = typeof u === 'function' ? u({ pageIndex, pageSize }) : u;
       setPageIndex(next.pageIndex ?? 0);
       setPageSize(next.pageSize ?? 12);
     },
@@ -155,20 +199,20 @@ export default function CoordinatorTable({
   return (
     <Paper>
       <TableContainer>
-        <Table size={isXs ? "small" : "medium"} stickyHeader>
+        <Table size={isXs ? 'small' : 'medium'} stickyHeader>
           <TableHead>
-            {table.getHeaderGroups().map(hg => (
+            {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
-                {hg.headers.map(h => {
+                {hg.headers.map((h) => {
                   const sorted = h.column.getIsSorted();
                   const width = (h.column.columnDef.meta as any)?.width;
-                  const isActions = h.column.id === "actions";
+                  const isActions = h.column.id === 'actions';
                   return (
                     <TableCell key={h.id} sx={{ width }}>
                       {!isActions ? (
                         <TableSortLabel
                           active={!!sorted}
-                          direction={sorted === "asc" ? "asc" : sorted === "desc" ? "desc" : "asc"}
+                          direction={sorted === 'asc' ? 'asc' : sorted === 'desc' ? 'desc' : 'asc'}
                           onClick={h.column.getToggleSortingHandler()}
                         >
                           {flexRender(h.column.columnDef.header, h.getContext())}
@@ -186,13 +230,15 @@ export default function CoordinatorTable({
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length} align="center">
-                  <Typography variant="body2" color="text.secondary">Nenhum coordenador encontrado nesta página.</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Nenhum coordenador encontrado nesta página.
+                  </Typography>
                 </TableCell>
               </TableRow>
             ) : (
-              table.getRowModel().rows.map(row => (
+              table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} hover>
-                  {row.getVisibleCells().map(cell => (
+                  {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -210,9 +256,12 @@ export default function CoordinatorTable({
         page={pageIndex}
         onPageChange={(_, p) => setPageIndex(p)}
         rowsPerPage={pageSize}
-        onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPageIndex(0); }}
+        onRowsPerPageChange={(e) => {
+          setPageSize(parseInt(e.target.value, 10));
+          setPageIndex(0);
+        }}
         rowsPerPageOptions={isXs ? [6, 12, 24] : [12, 24, 50]}
-        labelRowsPerPage={isXs ? "Linhas:" : "Linhas por página:"}
+        labelRowsPerPage={isXs ? 'Linhas:' : 'Linhas por página:'}
         labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
       />
     </Paper>

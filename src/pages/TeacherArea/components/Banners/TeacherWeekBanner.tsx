@@ -19,15 +19,15 @@ const TeacherWeekBanner: React.FC = () => {
         elevation={3}
         sx={{
           width: '100%',
-          height: { 
+          height: {
             xs: 'auto',
-            sm: 'auto', 
-            md: 350 
+            sm: 'auto',
+            md: 350,
           },
-          minHeight: { 
+          minHeight: {
             xs: 300,
-            sm: 300, 
-            md: 280 
+            sm: 300,
+            md: 280,
           },
           display: 'flex',
           flexDirection: 'column',
@@ -40,9 +40,9 @@ const TeacherWeekBanner: React.FC = () => {
           border: '1px solid rgba(0,0,0,0.05)',
         }}
       >
-        <Typography 
-          variant="h6" 
-          sx={{ 
+        <Typography
+          variant="h6"
+          sx={{
             color: 'text.secondary',
             fontSize: { xs: '1rem', md: '1.1rem' },
             fontWeight: 500,
@@ -64,15 +64,15 @@ const TeacherWeekBanner: React.FC = () => {
         elevation={4}
         sx={{
           width: '100%',
-          height: { 
+          height: {
             xs: 'auto',
-            sm: 'auto', 
-            md: 350 
+            sm: 'auto',
+            md: 350,
           },
-          minHeight: { 
+          minHeight: {
             xs: 300,
-            sm: 300, 
-            md: 280 
+            sm: 300,
+            md: 280,
           },
           display: 'flex',
           flexDirection: 'column',
@@ -109,12 +109,14 @@ const TeacherWeekBanner: React.FC = () => {
           },
         }}
       >
-        <Box sx={{ 
-          position: 'relative',
-          zIndex: 1,
-          width: '100%',
-          maxWidth: { xs: '100%', md: '600px' },
-        }}>
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            width: '100%',
+            maxWidth: { xs: '100%', md: '600px' },
+          }}
+        >
           <Typography
             variant="h6"
             sx={{
@@ -160,7 +162,10 @@ const TeacherWeekBanner: React.FC = () => {
                   fontWeight: { xs: 500, md: 700 },
                   fontSize: { xs: '0.95rem', md: '1.5rem' },
                   mb: 3,
-                  textShadow: { xs: '1px 1px 3px rgba(0, 0, 0, 0.3)', md: '2px 2px 8px rgba(0, 0, 0, 0.6)' },
+                  textShadow: {
+                    xs: '1px 1px 3px rgba(0, 0, 0, 0.3)',
+                    md: '2px 2px 8px rgba(0, 0, 0, 0.6)',
+                  },
                   opacity: 0.95,
                 }}
               >

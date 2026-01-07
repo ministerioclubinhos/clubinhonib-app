@@ -1,4 +1,4 @@
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from '@/store/slices/auth/authSlice';
 
 export type UserRow = {
   id: string;
@@ -19,9 +19,8 @@ export type CreateUserForm = {
   password: string;
   confirmPassword?: string;
   phone?: string;
-  role: UserRole
+  role: UserRole;
 };
-
 
 export type UpadateUserForm = {
   name: string;
@@ -41,13 +40,12 @@ export type UsersPage = {
 
 export type UserFilters = {
   q: string;
-  role: "all" | UserRole | string;
+  role: 'all' | UserRole | string;
   onlyActive: boolean;
   onlyCompleted: boolean;
 };
 
 export type SortParam = { id: string; desc: boolean } | null;
 
-export const TZ = "America/Manaus";
-export const SENSITIVE_KEYS = new Set(["password", "refreshToken"]);
-
+export const TZ = 'America/Manaus';
+export const SENSITIVE_KEYS = new Set(['password', 'refreshToken']);

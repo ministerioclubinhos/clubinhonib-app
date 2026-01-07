@@ -47,10 +47,13 @@ export function useVideoPages() {
     return pages.filter((p) => p.title?.toLowerCase().includes(term));
   }, [pages, debouncedSearch]);
 
-  const removePage = useCallback(async (id: string) => {
-    await apiDeleteVideoPage(id);
-    await fetchPages();
-  }, [fetchPages]);
+  const removePage = useCallback(
+    async (id: string) => {
+      await apiDeleteVideoPage(id);
+      await fetchPages();
+    },
+    [fetchPages]
+  );
 
   return {
     pages,

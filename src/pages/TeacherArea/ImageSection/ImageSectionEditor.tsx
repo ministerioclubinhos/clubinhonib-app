@@ -49,7 +49,7 @@ export default function ImageSectionEditor({
 }: ImageSectionEditorProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [caption, setCaption] = useState(initialCaption);
   const [description, setDescription] = useState(initialDescription);
   const [isPublic, setIsPublic] = useState(initialIsPublic);
@@ -116,7 +116,7 @@ export default function ImageSectionEditor({
               >
                 📝 Informações da Galeria
               </Typography>
-              
+
               <Box display="flex" flexDirection="column" gap={{ xs: 1.5, md: 2 }}>
                 <TextField
                   fullWidth
@@ -126,7 +126,7 @@ export default function ImageSectionEditor({
                   placeholder={captionPlaceholder}
                   variant="outlined"
                   required
-                  size={isMobile ? "small" : "medium"}
+                  size={isMobile ? 'small' : 'medium'}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -144,7 +144,7 @@ export default function ImageSectionEditor({
                   multiline
                   rows={isMobile ? 3 : 4}
                   required
-                  size={isMobile ? "small" : "medium"}
+                  size={isMobile ? 'small' : 'medium'}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -160,17 +160,17 @@ export default function ImageSectionEditor({
                   >
                     <FormControlLabel
                       control={
-                        <Switch 
-                          checked={isPublic} 
-                          onChange={handlePublicChange} 
+                        <Switch
+                          checked={isPublic}
+                          onChange={handlePublicChange}
                           color="primary"
-                          size={isMobile ? "small" : "medium"}
+                          size={isMobile ? 'small' : 'medium'}
                         />
                       }
                       label={
                         <Typography
                           variant="body2"
-                          sx={{ 
+                          sx={{
                             fontSize: { xs: '0.85rem', md: '0.9rem' },
                             fontWeight: 500,
                           }}
@@ -222,12 +222,12 @@ export default function ImageSectionEditor({
                 >
                   🖼️ Galeria de Imagens
                 </Typography>
-                
+
                 <Button
                   variant="contained"
                   color="primary"
                   onClick={() => setIsModalOpen(true)}
-                  size={isMobile ? "small" : "medium"}
+                  size={isMobile ? 'small' : 'medium'}
                   sx={{
                     borderRadius: 2,
                     px: { xs: 2, md: 3 },
@@ -258,13 +258,13 @@ export default function ImageSectionEditor({
                       nextEl: '.swiper-button-next',
                       prevEl: '.swiper-button-prev',
                     }}
-                    pagination={{ 
+                    pagination={{
                       clickable: true,
                       dynamicBullets: true,
                     }}
-                    style={{ 
-                      padding: isMobile ? '8px 0 40px' : '16px 0 50px', 
-                      width: '100%', 
+                    style={{
+                      padding: isMobile ? '8px 0 40px' : '16px 0 50px',
+                      width: '100%',
                       margin: '0 auto',
                       borderRadius: 12,
                     }}
@@ -276,8 +276,8 @@ export default function ImageSectionEditor({
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.3, delay: index * 0.1 }}
                         >
-                          <Box 
-                            position="relative" 
+                          <Box
+                            position="relative"
                             height={{ xs: 250, sm: 300, md: 350 }}
                             sx={{
                               borderRadius: 3,
@@ -313,11 +313,11 @@ export default function ImageSectionEditor({
                                 },
                                 transition: 'all 0.2s ease',
                               }}
-                              size={isMobile ? "small" : "medium"}
+                              size={isMobile ? 'small' : 'medium'}
                             >
-                              <DeleteIcon color="error" fontSize={isMobile ? "small" : "medium"} />
+                              <DeleteIcon color="error" fontSize={isMobile ? 'small' : 'medium'} />
                             </IconButton>
-                            
+
                             {/* Overlay com número da imagem */}
                             <Box
                               sx={{
@@ -340,7 +340,7 @@ export default function ImageSectionEditor({
                       </SwiperSlide>
                     ))}
                   </Swiper>
-                  
+
                   {/* Custom Navigation Buttons */}
                   <Box
                     className="swiper-button-prev"
@@ -376,8 +376,8 @@ export default function ImageSectionEditor({
                       border: '2px dashed rgba(102, 126, 234, 0.3)',
                     }}
                   >
-                    <Typography 
-                      color="text.secondary" 
+                    <Typography
+                      color="text.secondary"
                       sx={{
                         fontSize: { xs: '0.9rem', md: '1rem' },
                         fontWeight: 500,
@@ -385,8 +385,8 @@ export default function ImageSectionEditor({
                     >
                       📷 Adicione imagens dos momentos especiais do seu Clubinho!
                     </Typography>
-                    <Typography 
-                      color="text.secondary" 
+                    <Typography
+                      color="text.secondary"
                       variant="body2"
                       sx={{
                         fontSize: { xs: '0.8rem', md: '0.9rem' },

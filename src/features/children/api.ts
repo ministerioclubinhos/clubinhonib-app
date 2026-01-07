@@ -1,5 +1,13 @@
-import api from "@/config/axiosConfig";
-import { ChildResponseDto, Paginated, CreateChildForm, EditChildForm, ChildFilters, ChildSort, ChildSimpleResponseDto } from "./types";
+import api from '@/config/axiosConfig';
+import {
+  ChildResponseDto,
+  Paginated,
+  CreateChildForm,
+  EditChildForm,
+  ChildFilters,
+  ChildSort,
+  ChildSimpleResponseDto,
+} from './types';
 
 export async function apiFetchChildren(args: {
   page: number;
@@ -11,7 +19,7 @@ export async function apiFetchChildren(args: {
   const orderBy = sort?.id ?? 'updatedAt';
   const order = sort?.desc ? 'DESC' : 'ASC';
 
-  const { data } = await api.get<Paginated<ChildResponseDto>>("/children", {
+  const { data } = await api.get<Paginated<ChildResponseDto>>('/children', {
     params: {
       page,
       limit,
@@ -40,11 +48,11 @@ export async function apiFetchChildSimple() {
 }
 
 export async function apiCreateChild(payload: CreateChildForm) {
-  const { data } = await api.post<ChildResponseDto>("/children", payload);
+  const { data } = await api.post<ChildResponseDto>('/children', payload);
   return data;
 }
 
-export async function apiUpdateChild(id: string, payload: Omit<EditChildForm, "id">) {
+export async function apiUpdateChild(id: string, payload: Omit<EditChildForm, 'id'>) {
   const { data } = await api.put<ChildResponseDto>(`/children/${id}`, payload);
   return data;
 }

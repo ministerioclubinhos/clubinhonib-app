@@ -1,12 +1,24 @@
-import React from "react";
+import React from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid,
-  TextField, Alert, Box, FormControl, InputLabel, Select, MenuItem,
-  FormControlLabel, Switch
-} from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
-import { UserRole } from "@/store/slices/auth/authSlice";
-import { UpadateUserForm } from "../types";
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Grid,
+  TextField,
+  Alert,
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Switch,
+} from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import { UserRole } from '@/store/slices/auth/authSlice';
+import { UpadateUserForm } from '../types';
 
 type Props = {
   open: boolean;
@@ -19,13 +31,19 @@ type Props = {
 };
 
 const roleLabels: Record<UserRole, string> = {
-  [UserRole.COORDINATOR]: "Coordenador",
-  [UserRole.TEACHER]: "Professor",
-  [UserRole.ADMIN]: "Administrador",
+  [UserRole.COORDINATOR]: 'Coordenador',
+  [UserRole.TEACHER]: 'Professor',
+  [UserRole.ADMIN]: 'Administrador',
 };
 
 export default function UserEditDialog({
-  open, value, onChange, loading, error, onCancel, onConfirm,
+  open,
+  value,
+  onChange,
+  loading,
+  error,
+  onCancel,
+  onConfirm,
 }: Props) {
   if (!value) return null;
 
@@ -41,7 +59,11 @@ export default function UserEditDialog({
     <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
       <DialogTitle>Editar Usuário</DialogTitle>
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         <Grid container spacing={2} sx={{ mt: 1 }}>
           <Grid item xs={12} md={6}>
@@ -113,8 +135,8 @@ export default function UserEditDialog({
                     onChange({
                       ...value,
                       editPassword: checked,
-                      password: checked ? value.password : "",
-                      confirmPassword: checked ? value.confirmPassword : "",
+                      password: checked ? value.password : '',
+                      confirmPassword: checked ? value.confirmPassword : '',
                     });
                   }}
                 />
@@ -139,7 +161,7 @@ export default function UserEditDialog({
                   fullWidth
                   label="Confirmar Senha"
                   type="password"
-                  value={value.confirmPassword ?? ""}
+                  value={value.confirmPassword ?? ''}
                   onChange={(e) => onChange({ ...value, confirmPassword: e.target.value })}
                 />
               </Grid>
@@ -160,7 +182,9 @@ export default function UserEditDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onCancel} sx={{ color: "text.secondary" }}>Cancelar</Button>
+        <Button onClick={onCancel} sx={{ color: 'text.secondary' }}>
+          Cancelar
+        </Button>
         <Button variant="contained" onClick={onConfirm} disabled={loading || senhaInvalida}>
           Salvar
         </Button>

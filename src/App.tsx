@@ -121,7 +121,9 @@ function App() {
                 <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
               </Route>
 
-              <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>
+              <Route
+                element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}
+              >
                 <Route path="/adm" element={<AdminLayout />}>
                   <Route index element={<AdminDashboardPage />} />
                   <Route path="meditacoes" element={<MeditationManager />} />
@@ -133,7 +135,7 @@ function App() {
                   <Route path="paginas-materiais-semanais" element={<WeekMaterialManager />} />
                   <Route path="paginas-fotos" element={<ImagePageManager />} />
                   <Route path="fotos-clubinhos" element={<ImageSectionManager />} />
-                  <Route path="ideias-compartilhadas" element={<IdeasSectionManager  />} />
+                  <Route path="ideias-compartilhadas" element={<IdeasSectionManager />} />
                   <Route path="paginas-videos" element={<VideosManager />} />
                   <Route path="paginas-ideias" element={<IdeasManager />} />
                   <Route path="criar-pagina" element={<SelecPageTemplate />} />
@@ -146,13 +148,28 @@ function App() {
                   <Route path="estatisticas" element={<StatisticsPage />} />
                   <Route path="controle-clubes" element={<ClubControlPage />} />
 
-                  <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
+                  <Route
+                    path="editar-meditacao"
+                    element={<MeditationPageCreator fromTemplatePage={false} />}
+                  />
+                  <Route
+                    path="editar-pagina-imagens"
+                    element={<ImagePageCreator fromTemplatePage={false} />}
+                  />
+                  <Route
+                    path="editar-pagina-videos"
+                    element={<VideoPageCreator fromTemplatePage={false} />}
+                  />
+                  <Route
+                    path="editar-pagina-semana"
+                    element={<WeekMaterialPageCreator fromTemplatePage={false} />}
+                  />
+                  <Route
+                    path="editar-pagina-ideias"
+                    element={<IdeasMaterialPageCreator fromTemplatePage={false} />}
+                  />
                   <Route path="editar-imagens-clubinho" element={<ImageSectionEditorAdmin />} />
-                  <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage  />} />
+                  <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage />} />
                 </Route>
               </Route>
 
@@ -160,7 +177,9 @@ function App() {
                 <Route
                   key={route.id}
                   path={`/${route.path}`}
-                  element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
+                  element={
+                    <PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />
+                  }
                 />
               ))}
             </Routes>

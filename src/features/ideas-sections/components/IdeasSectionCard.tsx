@@ -30,7 +30,7 @@ export default function IdeasSectionCard({ section, onDelete, onEdit, onViewDeta
   const previewMedia = section.medias?.[0];
   const hasMedia = section.medias && section.medias.length > 0;
 
-  const mediaTypes = Array.from(new Set(section.medias?.map(m => m.mediaType) || []));
+  const mediaTypes = Array.from(new Set(section.medias?.map((m) => m.mediaType) || []));
 
   return (
     <Card
@@ -124,7 +124,6 @@ export default function IdeasSectionCard({ section, onDelete, onEdit, onViewDeta
         >
           {truncate(section.description)}
         </Typography>
-
 
         {mediaTypes.length > 0 && (
           <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5} mt={1}>

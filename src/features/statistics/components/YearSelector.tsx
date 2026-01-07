@@ -74,9 +74,7 @@ export const YearSelector: React.FC<YearSelectorProps> = ({
  */
 export const useYearSelection = (initialYear?: number) => {
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = React.useState<number>(
-    initialYear || currentYear
-  );
+  const [selectedYear, setSelectedYear] = React.useState<number>(initialYear || currentYear);
 
   return {
     selectedYear,

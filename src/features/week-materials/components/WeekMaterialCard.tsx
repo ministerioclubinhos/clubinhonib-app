@@ -1,6 +1,17 @@
 import {
-  Grid, Card, CardContent, Typography, IconButton, Button, Box, Chip, Stack,
-  useMediaQuery, useTheme, Tooltip, Divider
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  IconButton,
+  Button,
+  Box,
+  Chip,
+  Stack,
+  useMediaQuery,
+  useTheme,
+  Tooltip,
+  Divider,
 } from '@mui/material';
 import { Visibility, Delete, Public, Lock } from '@mui/icons-material';
 import { WeekMaterialPageData } from 'store/slices/week-material/weekMaterialSlice';
@@ -15,7 +26,11 @@ interface Props {
 }
 
 export default function WeekMaterialCard({
-  material, onView, onEdit, onDelete, onSetAsCurrent,
+  material,
+  onView,
+  onEdit,
+  onDelete,
+  onSetAsCurrent,
 }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -27,7 +42,7 @@ export default function WeekMaterialCard({
       item
       sx={{
         flexBasis: { xs: '100%', sm: '50%', md: '33.33%', lg: '25%' },
-        maxWidth:  { xs: '100%', sm: '50%', md: '33.33%', lg: '25%' },
+        maxWidth: { xs: '100%', sm: '50%', md: '33.33%', lg: '25%' },
         display: 'flex',
       }}
     >
@@ -51,19 +66,27 @@ export default function WeekMaterialCard({
             gap: 1,
             px: 1.25,
             py: 1,
-            bgcolor: (t) => t.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
+            bgcolor: (t) => (t.palette.mode === 'dark' ? 'grey.900' : 'grey.50'),
             borderBottom: '1px solid',
             borderColor: 'divider',
           }}
         >
           {isMobile ? (
             <IconButton size="small" disabled>
-              {isPublic ? <Public color="success" fontSize="small" /> : <Lock color="error" fontSize="small" />}
+              {isPublic ? (
+                <Public color="success" fontSize="small" />
+              ) : (
+                <Lock color="error" fontSize="small" />
+              )}
             </IconButton>
           ) : (
             <Tooltip title={isPublic ? 'Público' : 'Privado'}>
               <IconButton size="small" disabled>
-                {isPublic ? <Public color="success" fontSize="small" /> : <Lock color="error" fontSize="small" />}
+                {isPublic ? (
+                  <Public color="success" fontSize="small" />
+                ) : (
+                  <Lock color="error" fontSize="small" />
+                )}
               </IconButton>
             </Tooltip>
           )}
@@ -95,7 +118,9 @@ export default function WeekMaterialCard({
           </IconButton>
         </Box>
 
-        <CardContent sx={{ p: { xs: 1.5, sm: 2.5 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <CardContent
+          sx={{ p: { xs: 1.5, sm: 2.5 }, flex: 1, display: 'flex', flexDirection: 'column' }}
+        >
           {!isMobile && (
             <Typography
               variant="h6"
@@ -182,12 +207,7 @@ export default function WeekMaterialCard({
               />
             ) : (
               onSetAsCurrent && (
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={onSetAsCurrent}
-                  sx={{ mt: 0.5 }}
-                >
+                <Button variant="text" size="small" onClick={onSetAsCurrent} sx={{ mt: 0.5 }}>
                   Tornar material da semana
                 </Button>
               )

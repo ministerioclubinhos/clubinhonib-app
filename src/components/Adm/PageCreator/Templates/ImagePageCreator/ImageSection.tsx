@@ -103,8 +103,6 @@ export default function ImageSection({
                   Excluir Seção
                 </Button>
               </Box>
-
-
             </CardContent>
           </Grid>
         </Grid>

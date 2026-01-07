@@ -1,8 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions,
-  Stack, Button, IconButton, Divider, Paper, Grid
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stack,
+  Button,
+  IconButton,
+  Divider,
+  Paper,
+  Grid,
 } from '@mui/material';
 import { ContentCopy, Close } from '@mui/icons-material';
 import { Fragment } from 'react/jsx-runtime';
@@ -34,7 +44,9 @@ export default function VideoPageDetailsModal({ page, open, onClose }: VideoPage
       }}
     >
       <Box sx={{ position: 'relative' }}>
-        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', color: '#333', p: 2 }}>
+        <DialogTitle
+          sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', color: '#333', p: 2 }}
+        >
           Detalhes da Página de Vídeos
         </DialogTitle>
         <IconButton
@@ -88,7 +100,13 @@ export default function VideoPageDetailsModal({ page, open, onClose }: VideoPage
               <Fragment>
                 <Divider sx={{ my: 2 }} />
                 <Paper elevation={2} sx={{ p: 3, borderRadius: 2, bgcolor: '#fff' }}>
-                  <Typography variant="h6" fontWeight="bold" color="primary" textAlign="center" mb={3}>
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    color="primary"
+                    textAlign="center"
+                    mb={3}
+                  >
                     Vídeos
                   </Typography>
 
@@ -124,7 +142,15 @@ export default function VideoPageDetailsModal({ page, open, onClose }: VideoPage
                           )}
 
                           {video.url && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 1, flexWrap: 'wrap' }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                mt: 1,
+                                gap: 1,
+                                flexWrap: 'wrap',
+                              }}
+                            >
                               <Typography variant="body2" sx={{ color: '#555' }}>
                                 <strong>URL:</strong> {video.url}
                               </Typography>

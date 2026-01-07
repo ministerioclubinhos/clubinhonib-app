@@ -1,74 +1,76 @@
-import * as React from "react";
+import * as React from 'react';
 import {
-  Box, Alert, Grid, Paper, TextField, InputAdornment,
-  Typography, CircularProgress, Button, Fab, IconButton, Tooltip,
-  useMediaQuery, useTheme
-} from "@mui/material";
-import { Search, PersonAdd, ArrowBack } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/slices";
+  Box,
+  Alert,
+  Grid,
+  Paper,
+  TextField,
+  InputAdornment,
+  Typography,
+  CircularProgress,
+  Button,
+  Fab,
+  IconButton,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import { Search, PersonAdd, ArrowBack } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/slices';
 
-import { useChildrenBrowser } from "./hooks";
-import ChildCard from "./components/ChildCard";
-import { CreateChildForm, EditChildForm, ChildResponseDto } from "../children/types";
-import { useChildMutations } from "../children/hooks";
-import ChildFormDialog from "../children/components/ChildFormDialog";
-import { apiFetchChild } from "../children/api";
-import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
-import { ChildSimpleResponseDto } from "../children/types";
+import { useChildrenBrowser } from './hooks';
+import ChildCard from './components/ChildCard';
+import { CreateChildForm, EditChildForm, ChildResponseDto } from '../children/types';
+import { useChildMutations } from '../children/hooks';
+import ChildFormDialog from '../children/components/ChildFormDialog';
+import { apiFetchChild } from '../children/api';
+import ToggleActiveConfirmDialog from '@/components/common/modal/ToggleActiveConfirmDialog';
+import { ChildSimpleResponseDto } from '../children/types';
 
 export default function ChildrenBrowserPage() {
   const nav = useNavigate();
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
   const club = useSelector((state: RootState) => (state.auth as any).user?.teacherProfile?.club);
 
-  const {
-    items,
-    loading,
-    error,
-    setError,
-    refetch,
-  } = club ? useChildrenBrowser() : { items: [], loading: false, error: "", setError: () => { }, refetch: () => { } };
+  const { items, loading, error, setError, refetch } = club
+    ? useChildrenBrowser()
+    : { items: [], loading: false, error: '', setError: () => {}, refetch: () => {} };
 
-  const [query, setQuery] = React.useState("");
+  const [query, setQuery] = React.useState('');
   const filteredItems = React.useMemo(() => {
     const s = query.trim().toLowerCase();
     if (!s) return items;
     return items.filter((c) => {
-      const name = c.name?.toLowerCase() ?? "";
-      const gname = c.guardianName?.toLowerCase() ?? "";
-      const gphone = c.guardianPhone?.toLowerCase() ?? "";
+      const name = c.name?.toLowerCase() ?? '';
+      const gname = c.guardianName?.toLowerCase() ?? '';
+      const gphone = c.guardianPhone?.toLowerCase() ?? '';
       return name.includes(s) || gname.includes(s) || gphone.includes(s);
     });
   }, [items, query]);
 
   const [creating, setCreating] = React.useState<CreateChildForm | null>(null);
   const [editing, setEditing] = React.useState<EditChildForm | null>(null);
-  const [confirmToggleActive, setConfirmToggleActive] = React.useState<ChildSimpleResponseDto | null>(null);
+  const [confirmToggleActive, setConfirmToggleActive] =
+    React.useState<ChildSimpleResponseDto | null>(null);
 
-  const {
-    dialogLoading,
-    dialogError,
-    setDialogError,
-    createChild,
-    updateChild,
-    toggleActive,
-  } = useChildMutations(async () => {
-    await refetch();
-  });
+  const { dialogLoading, dialogError, setDialogError, createChild, updateChild, toggleActive } =
+    useChildMutations(async () => {
+      await refetch();
+    });
 
   const openCreate = () =>
     setCreating({
-      name: "",
-      gender: "M",
-      guardianName: "",
-      guardianPhone: "",
-      birthDate: "",
+      name: '',
+      gender: 'M',
+      guardianName: '',
+      guardianPhone: '',
+      birthDate: '',
       joinedAt: null,
       clubId: null,
-      address: { street: "", district: "", city: "", state: "", postalCode: "" } as any,
+      address: { street: '', district: '', city: '', state: '', postalCode: '' } as any,
     });
 
   const submitCreate = async () => {
@@ -80,8 +82,8 @@ export default function ChildrenBrowserPage() {
     try {
       await createChild(payload, 1, 12);
       setCreating(null);
-      setDialogError("");
-    } catch { }
+      setDialogError('');
+    } catch {}
   };
 
   const openEdit = async (childId: string) => {
@@ -89,28 +91,38 @@ export default function ChildrenBrowserPage() {
       const full: ChildResponseDto = await apiFetchChild(childId);
       setEditing({
         id: full.id,
-        name: full.name ?? "",
-        gender: (full.gender as any) ?? "M",
-        guardianName: full.guardianName ?? "",
-        guardianPhone: full.guardianPhone ?? "",
-        birthDate: full.birthDate ?? "",
+        name: full.name ?? '',
+        gender: (full.gender as any) ?? 'M',
+        guardianName: full.guardianName ?? '',
+        guardianPhone: full.guardianPhone ?? '',
+        birthDate: full.birthDate ?? '',
         joinedAt: (full as any).joinedAt ?? null,
         clubId: (full as any)?.club?.id ?? null,
         address: full.address
           ? {
-            street: full.address.street ?? "",
-            number: (full.address as any).number ?? "",
-            district: full.address.district ?? "",
-            city: full.address.city ?? "",
-            state: full.address.state ?? "",
-            postalCode: full.address.postalCode ?? "",
-            complement: (full.address as any).complement ?? "",
-          }
-          : { street: "", number: "", district: "", city: "", state: "", postalCode: "", complement: "" } as any,
+              street: full.address.street ?? '',
+              number: (full.address as any).number ?? '',
+              district: full.address.district ?? '',
+              city: full.address.city ?? '',
+              state: full.address.state ?? '',
+              postalCode: full.address.postalCode ?? '',
+              complement: (full.address as any).complement ?? '',
+            }
+          : ({
+              street: '',
+              number: '',
+              district: '',
+              city: '',
+              state: '',
+              postalCode: '',
+              complement: '',
+            } as any),
       });
-      setDialogError("");
+      setDialogError('');
     } catch (e: any) {
-      setDialogError(e?.response?.data?.message || e?.message || "Não foi possível abrir a criança para edição");
+      setDialogError(
+        e?.response?.data?.message || e?.message || 'Não foi possível abrir a criança para edição'
+      );
     }
   };
 
@@ -120,12 +132,12 @@ export default function ChildrenBrowserPage() {
     try {
       await updateChild(id, rest, 1, 12);
       setEditing(null);
-      setDialogError("");
-    } catch { }
+      setDialogError('');
+    } catch {}
   };
 
   React.useEffect(() => {
-    document.title = "Lançar Pagela • Selecionar Criança";
+    document.title = 'Lançar Pagela • Selecionar Criança';
   }, []);
 
   return (
@@ -134,21 +146,21 @@ export default function ChildrenBrowserPage() {
         px: { xs: 2, md: 4 },
         pt: { xs: 2, md: 4 },
         pb: { xs: 2, md: 4 },
-        minHeight: "100vh",
-        bgcolor: "#f6f7f9"
+        minHeight: '100vh',
+        bgcolor: '#f6f7f9',
       }}
     >
       <Box
         sx={{
           mb: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           gap: 1,
-          flexWrap: "wrap",
+          flexWrap: 'wrap',
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
           {isXs && (
             <Tooltip title="Voltar">
               <IconButton
@@ -156,9 +168,9 @@ export default function ChildrenBrowserPage() {
                 aria-label="Voltar para a página anterior"
                 sx={{
                   mr: 0.5,
-                  bgcolor: "white",
+                  bgcolor: 'white',
                   boxShadow: 1,
-                  "&:hover": { bgcolor: "grey.100" },
+                  '&:hover': { bgcolor: 'grey.100' },
                 }}
               >
                 <ArrowBack />
@@ -170,7 +182,7 @@ export default function ChildrenBrowserPage() {
             component="h1"
             variant="h5"
             fontWeight={900}
-            sx={{ color: "#143a2b", fontSize: { xs: "1.25rem", md: "1.75rem" } }}
+            sx={{ color: '#143a2b', fontSize: { xs: '1.25rem', md: '1.75rem' } }}
           >
             Área das crianças
           </Typography>
@@ -179,11 +191,10 @@ export default function ChildrenBrowserPage() {
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ display: { xs: "none", md: "block" } }}
+              sx={{ display: { xs: 'none', md: 'block' } }}
             >
               Toque em uma criança para abrir suas pagelas
             </Typography>
-
           )}
         </Box>
 
@@ -192,7 +203,7 @@ export default function ChildrenBrowserPage() {
             onClick={openCreate}
             startIcon={<PersonAdd />}
             variant="contained"
-            sx={{ display: { xs: "none", md: "inline-flex" } }}
+            sx={{ display: { xs: 'none', md: 'inline-flex' } }}
           >
             Adicionar criança
           </Button>
@@ -205,10 +216,10 @@ export default function ChildrenBrowserPage() {
           aria-label="Adicionar criança"
           onClick={openCreate}
           sx={{
-            position: "fixed",
+            position: 'fixed',
             bottom: 24,
             right: 24,
-            display: { xs: "flex", md: "none" },
+            display: { xs: 'flex', md: 'none' },
             zIndex: 1300,
           }}
         >
@@ -218,20 +229,19 @@ export default function ChildrenBrowserPage() {
 
       {!club ? (
         <Alert severity="warning" sx={{ mt: 4 }}>
-          <Typography fontWeight="bold">
-            Você não está vinculado a nenhum clubinho.
-          </Typography>
+          <Typography fontWeight="bold">Você não está vinculado a nenhum clubinho.</Typography>
           <Typography>
-            Entre em contato com <strong>seu Coordenador</strong> ou envie uma mensagem para  <strong>(92) 99127-4881</strong> ou <strong>(92) 98155-3139</strong>.
+            Entre em contato com <strong>seu Coordenador</strong> ou envie uma mensagem para{' '}
+            <strong>(92) 99127-4881</strong> ou <strong>(92) 98155-3139</strong>.
           </Typography>
         </Alert>
       ) : (
         <>
           <Paper
             elevation={0}
-            sx={{ p: 2, mb: 2, borderRadius: 3, border: "1px solid", borderColor: "divider" }}
+            sx={{ p: 2, mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}
           >
-            <Typography variant="h6" fontWeight={900} sx={{ mb: 1, color: "#143a2b" }}>
+            <Typography variant="h6" fontWeight={900} sx={{ mb: 1, color: '#143a2b' }}>
               Selecionar Criança
             </Typography>
             <TextField
@@ -251,7 +261,7 @@ export default function ChildrenBrowserPage() {
           </Paper>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
               {error}
             </Alert>
           )}
@@ -287,7 +297,7 @@ export default function ChildrenBrowserPage() {
         onChange={(v) => setCreating(v as CreateChildForm)}
         onCancel={() => {
           setCreating(null);
-          setDialogError("");
+          setDialogError('');
         }}
         onSubmit={submitCreate}
         error={dialogError}
@@ -301,7 +311,7 @@ export default function ChildrenBrowserPage() {
         onChange={(v) => setEditing(v as EditChildForm)}
         onCancel={() => {
           setEditing(null);
-          setDialogError("");
+          setDialogError('');
         }}
         onSubmit={submitEdit}
         error={dialogError}
@@ -310,11 +320,11 @@ export default function ChildrenBrowserPage() {
 
       <ToggleActiveConfirmDialog
         open={!!confirmToggleActive}
-        title={confirmToggleActive?.name || ""}
+        title={confirmToggleActive?.name || ''}
         isActive={confirmToggleActive?.isActive ?? false}
         onClose={() => {
           setConfirmToggleActive(null);
-          setDialogError("");
+          setDialogError('');
         }}
         onConfirm={async () => {
           if (!confirmToggleActive) return;
@@ -325,7 +335,9 @@ export default function ChildrenBrowserPage() {
             await refetch();
             setConfirmToggleActive(null);
           } catch (err: any) {
-            setDialogError(err?.response?.data?.message || err.message || "Erro ao alterar status da criança");
+            setDialogError(
+              err?.response?.data?.message || err.message || 'Erro ao alterar status da criança'
+            );
           }
         }}
         loading={dialogLoading}

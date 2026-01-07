@@ -27,7 +27,7 @@ export enum MediaTargetType {
   IdeasPage = 'IdeasPage',
   Document = 'Document',
   Event = 'Event',
-  Informative = 'Informative'
+  Informative = 'Informative',
 }
 
 export interface MediaItem {
@@ -75,7 +75,13 @@ export const FeedbackCategoryLabels: Record<FeedbackCategory, string> = {
 };
 
 export type Weekday =
-  | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday';
 
 export type Address = {
   id?: string;
@@ -122,11 +128,11 @@ export type TeacherProfile = {
 };
 
 export const weekdayOptions: { value: Weekday; label: string }[] = [
-  { value: "monday", label: "Segunda" },
-  { value: "tuesday", label: "Terça" },
-  { value: "wednesday", label: "Quarta" },
-  { value: "thursday", label: "Quinta" },
-  { value: "friday", label: "Sexta" },
-  { value: "saturday", label: "Sábado" },
-  { value: "sunday", label: "Domingo" },
+  { value: 'monday', label: 'Segunda' },
+  { value: 'tuesday', label: 'Terça' },
+  { value: 'wednesday', label: 'Quarta' },
+  { value: 'thursday', label: 'Quinta' },
+  { value: 'friday', label: 'Sexta' },
+  { value: 'saturday', label: 'Sábado' },
+  { value: 'sunday', label: 'Domingo' },
 ];

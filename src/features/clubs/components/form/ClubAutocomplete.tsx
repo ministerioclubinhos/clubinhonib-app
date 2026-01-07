@@ -1,9 +1,9 @@
-import * as React from "react";
-import Autocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
-import CircularProgress from "@mui/material/CircularProgress";
-import FormHelperText from "@mui/material/FormHelperText";
-import { apiFetchSimpleClubs } from "@/features/clubs/api";
+import * as React from 'react';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
+import FormHelperText from '@mui/material/FormHelperText';
+import { apiFetchSimpleClubs } from '@/features/clubs/api';
 
 export type SimpleClubResponseDto = {
   id: string;
@@ -21,33 +21,33 @@ type Props = {
   disabled?: boolean;
   required?: boolean;
   fullWidth?: boolean;
-  size?: "small" | "medium";
+  size?: 'small' | 'medium';
   fetchOnMount?: boolean;
 };
 
 export default function ClubAutocomplete({
   value,
   onChange,
-  label = "Clubinho",
-  placeholder = "Digite para filtrar…",
+  label = 'Clubinho',
+  placeholder = 'Digite para filtrar…',
   helperText,
   errorText,
   disabled,
   required,
   fullWidth = true,
-  size = "small",
+  size = 'small',
   fetchOnMount = false,
 }: Props) {
   const [options, setOptions] = React.useState<SimpleClubResponseDto[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const [loadError, setLoadError] = React.useState<string>("");
+  const [loadError, setLoadError] = React.useState<string>('');
 
   const selected = options.find((o) => o.id === value) || null;
 
   const load = React.useCallback(async () => {
     if (loading || options.length > 0) return;
     setLoading(true);
-    setLoadError("");
+    setLoadError('');
     try {
       const items = await apiFetchSimpleClubs();
       const safe = Array.isArray(items) ? items : [];
@@ -57,7 +57,7 @@ export default function ClubAutocomplete({
         onChange(safe[0].id, safe[0]);
       }
     } catch (e: any) {
-      setLoadError(e?.response?.data?.message || e?.message || "Falha ao carregar clubinhos");
+      setLoadError(e?.response?.data?.message || e?.message || 'Falha ao carregar clubinhos');
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export default function ClubAutocomplete({
         onOpen={load}
         onChange={(_, opt) => onChange(opt ? opt.id : null, opt ?? null)}
         isOptionEqualToValue={(o, v) => o.id === v.id}
-        getOptionLabel={(o) => o?.detalhe ?? ""}
+        getOptionLabel={(o) => o?.detalhe ?? ''}
         clearOnEscape
         disableClearable={false}
         fullWidth={fullWidth}
@@ -103,9 +103,7 @@ export default function ClubAutocomplete({
         )}
       />
       {(helperText || loadError) && (
-        <FormHelperText error={!!loadError}>
-          {loadError ? loadError : helperText}
-        </FormHelperText>
+        <FormHelperText error={!!loadError}>{loadError ? loadError : helperText}</FormHelperText>
       )}
     </>
   );

@@ -53,7 +53,7 @@ export const ClubsListView: React.FC = () => {
     sortBy: 'performanceScore',
     sortOrder: 'DESC',
   });
-  
+
   // Atualizar limit quando isMobile mudar
   React.useEffect(() => {
     const newLimit = isMobile ? 5 : 20;
@@ -78,7 +78,12 @@ export const ClubsListView: React.FC = () => {
   };
 
   const handleReset = () => {
-    setFilters({ page: 1, limit: isMobile ? 5 : 20, sortBy: 'performanceScore', sortOrder: 'DESC' });
+    setFilters({
+      page: 1,
+      limit: isMobile ? 5 : 20,
+      sortBy: 'performanceScore',
+      sortOrder: 'DESC',
+    });
   };
 
   const getPerformanceColor = (score: number) => {
@@ -134,79 +139,166 @@ export const ClubsListView: React.FC = () => {
   return (
     <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
       {/* Cards de Resumo */}
-      <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0, display: 'flex', flexWrap: 'wrap' }}>
+      <Grid
+        container
+        spacing={{ xs: 1.5, sm: 2 }}
+        sx={{
+          mb: 3,
+          width: '100%',
+          maxWidth: '100%',
+          margin: 0,
+          display: 'flex',
+          flexWrap: 'wrap',
+        }}
+      >
         <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
-          <Paper elevation={0} sx={{ 
-            p: { xs: 1.5, sm: 2 }, 
-            borderRadius: 2, 
-            border: `2px solid ${theme.palette.divider}`,
-            width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Total Clubinhos</Typography>
-            <Typography variant="h5" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
+              Total Clubinhos
+            </Typography>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              color="primary"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+            >
               {data.summary.filteredClubs}
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, wordBreak: 'break-word' }}>de {data.summary.totalClubs}</Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, wordBreak: 'break-word' }}
+            >
+              de {data.summary.totalClubs}
+            </Typography>
           </Paper>
         </Grid>
         <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
-          <Paper elevation={0} sx={{ 
-            p: { xs: 1.5, sm: 2 }, 
-            borderRadius: 2, 
-            border: `2px solid ${theme.palette.divider}`,
-            width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Total Crianças</Typography>
-            <Typography variant="h5" fontWeight="bold" color="info.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
+              Total Crianças
+            </Typography>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              color="info.main"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+            >
               {data.summary.totalChildren}
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
-          <Paper elevation={0} sx={{ 
-            p: { xs: 1.5, sm: 2 }, 
-            borderRadius: 2, 
-            border: `2px solid ${theme.palette.divider}`,
-            width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Performance Média</Typography>
-            <Typography variant="h5" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
+              Performance Média
+            </Typography>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              color="success.main"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+            >
               {data.summary.avgPerformanceScore.toFixed(1)}%
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
-          <Paper elevation={0} sx={{ 
-            p: { xs: 1.5, sm: 2 }, 
-            borderRadius: 2, 
-            border: `2px solid ${theme.palette.divider}`,
-            width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Presença Média</Typography>
-            <Typography variant="h5" fontWeight="bold" color="secondary.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
+              Presença Média
+            </Typography>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              color="secondary.main"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+            >
               {data.summary.avgPresenceRate.toFixed(1)}%
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
-          <Paper elevation={0} sx={{ 
-            p: { xs: 1.5, sm: 2 }, 
-            borderRadius: 2, 
-            border: `2px solid ${theme.palette.divider}`,
-            width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Total Decisões</Typography>
-            <Typography variant="h5" fontWeight="bold" color="warning.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              border: `2px solid ${theme.palette.divider}`,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
+              Total Decisões
+            </Typography>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              color="warning.main"
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+            >
               {data.summary.totalDecisions}
             </Typography>
           </Paper>
@@ -217,24 +309,48 @@ export const ClubsListView: React.FC = () => {
       {(data.inactiveClubs || data.inactiveChildren) && (
         <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
           {data.inactiveClubs && data.inactiveClubs.total > 0 && (
-            <Grid item xs={12} sm={6} md={data.inactiveChildren && data.inactiveChildren.total > 0 ? 6 : 12}>
-              <Paper 
-                elevation={0} 
-                sx={{ 
-                  p: { xs: 1.5, sm: 2 }, 
-                  borderRadius: 2, 
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={data.inactiveChildren && data.inactiveChildren.total > 0 ? 6 : 12}
+            >
+              <Paper
+                elevation={0}
+                sx={{
+                  p: { xs: 1.5, sm: 2 },
+                  borderRadius: 2,
                   border: `2px solid ${theme.palette.warning.main}40`,
                   bgcolor: `${theme.palette.warning.main}08`,
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 0.75, sm: 1 } }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: { xs: 0.75, sm: 1 },
+                  }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 } }}>
-                    <Block sx={{ color: theme.palette.warning.main, fontSize: { xs: 18, sm: 20 } }} />
-                    <Typography variant="subtitle2" fontWeight="bold" color="warning.main" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    <Block
+                      sx={{ color: theme.palette.warning.main, fontSize: { xs: 18, sm: 20 } }}
+                    />
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight="bold"
+                      color="warning.main"
+                      sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                    >
                       Clubinhos Desativados
                     </Typography>
                   </Box>
-                  <Typography variant="h6" fontWeight="bold" color="warning.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    color="warning.main"
+                    sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+                  >
                     {data.inactiveClubs.total}
                   </Typography>
                 </Box>
@@ -262,29 +378,57 @@ export const ClubsListView: React.FC = () => {
             </Grid>
           )}
           {data.inactiveChildren && data.inactiveChildren.total > 0 && (
-            <Grid item xs={12} sm={6} md={data.inactiveClubs && data.inactiveClubs.total > 0 ? 6 : 12}>
-              <Paper 
-                elevation={0} 
-                sx={{ 
-                  p: { xs: 1.5, sm: 2 }, 
-                  borderRadius: 2, 
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={data.inactiveClubs && data.inactiveClubs.total > 0 ? 6 : 12}
+            >
+              <Paper
+                elevation={0}
+                sx={{
+                  p: { xs: 1.5, sm: 2 },
+                  borderRadius: 2,
                   border: `2px solid ${theme.palette.error.main}40`,
                   bgcolor: `${theme.palette.error.main}08`,
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 0.75, sm: 1 } }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: { xs: 0.75, sm: 1 },
+                  }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 } }}>
-                    <Warning sx={{ color: theme.palette.error.main, fontSize: { xs: 18, sm: 20 } }} />
-                    <Typography variant="subtitle2" fontWeight="bold" color="error.main" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    <Warning
+                      sx={{ color: theme.palette.error.main, fontSize: { xs: 18, sm: 20 } }}
+                    />
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight="bold"
+                      color="error.main"
+                      sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                    >
                       Crianças Desativadas
                     </Typography>
                   </Box>
-                  <Typography variant="h6" fontWeight="bold" color="error.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    color="error.main"
+                    sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+                  >
                     {data.inactiveChildren.total}
                   </Typography>
                 </Box>
                 {data.inactiveChildren.fromInactiveClubs !== undefined && (
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                  >
                     {data.inactiveChildren.fromInactiveClubs} de clubinhos desativados
                   </Typography>
                 )}
@@ -295,14 +439,28 @@ export const ClubsListView: React.FC = () => {
       )}
 
       {/* Filtros */}
-      <Paper elevation={0} sx={{ p: 2, borderRadius: 2, mb: 2, border: `1px solid ${theme.palette.divider}` }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: filtersExpanded ? 2 : 0 }}>
+      <Paper
+        elevation={0}
+        sx={{ p: 2, borderRadius: 2, mb: 2, border: `1px solid ${theme.palette.divider}` }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: filtersExpanded ? 2 : 0,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <FilterList />
-            <Typography variant="subtitle1" fontWeight="bold">Filtros</Typography>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Filtros
+            </Typography>
           </Box>
           <Box>
-            <Button size="small" startIcon={<Refresh />} onClick={handleReset}>Limpar</Button>
+            <Button size="small" startIcon={<Refresh />} onClick={handleReset}>
+              Limpar
+            </Button>
             <IconButton size="small" onClick={() => setFiltersExpanded(!filtersExpanded)}>
               {filtersExpanded ? <ExpandLess /> : <ExpandMore />}
             </IconButton>
@@ -369,7 +527,12 @@ export const ClubsListView: React.FC = () => {
                 type="number"
                 label="Mínimo de Crianças"
                 value={filters.minChildren || ''}
-                onChange={(e) => handleFilterChange('minChildren', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'minChildren',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -380,7 +543,12 @@ export const ClubsListView: React.FC = () => {
                 type="number"
                 label="Máximo de Crianças"
                 value={filters.maxChildren || ''}
-                onChange={(e) => handleFilterChange('maxChildren', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'maxChildren',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -391,7 +559,12 @@ export const ClubsListView: React.FC = () => {
                 type="number"
                 label="Performance Mínima"
                 value={filters.minPerformanceScore || ''}
-                onChange={(e) => handleFilterChange('minPerformanceScore', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'minPerformanceScore',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -402,7 +575,12 @@ export const ClubsListView: React.FC = () => {
                 type="number"
                 label="Performance Máxima"
                 value={filters.maxPerformanceScore || ''}
-                onChange={(e) => handleFilterChange('maxPerformanceScore', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'maxPerformanceScore',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -413,7 +591,12 @@ export const ClubsListView: React.FC = () => {
                 type="number"
                 label="Presença Mínima (%)"
                 value={filters.minPresenceRate || ''}
-                onChange={(e) => handleFilterChange('minPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'minPresenceRate',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -424,7 +607,12 @@ export const ClubsListView: React.FC = () => {
                 type="number"
                 label="Presença Máxima (%)"
                 value={filters.maxPresenceRate || ''}
-                onChange={(e) => handleFilterChange('maxPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'maxPresenceRate',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -435,7 +623,12 @@ export const ClubsListView: React.FC = () => {
                 type="number"
                 label="Mínimo de Decisões"
                 value={filters.minDecisions || ''}
-                onChange={(e) => handleFilterChange('minDecisions', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'minDecisions',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -446,7 +639,12 @@ export const ClubsListView: React.FC = () => {
                 type="number"
                 label="Mínimo de Professores"
                 value={filters.minTeachers || ''}
-                onChange={(e) => handleFilterChange('minTeachers', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'minTeachers',
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
                 size="small"
               />
             </Grid>
@@ -494,10 +692,10 @@ export const ClubsListView: React.FC = () => {
             </Paper>
           ) : (
             data.clubs.map((club) => (
-              <Card 
-                key={club.clubId} 
-                elevation={1} 
-                sx={{ 
+              <Card
+                key={club.clubId}
+                elevation={1}
+                sx={{
                   borderRadius: 1.5,
                   border: club.rank <= 3 ? `2px solid ${getMedalColor(club.rank)}40` : undefined,
                   bgcolor: club.rank <= 3 ? `${getMedalColor(club.rank)}08` : undefined,
@@ -517,24 +715,35 @@ export const ClubsListView: React.FC = () => {
                   },
                 }}
               >
-                <CardContent sx={{ 
-                  p: { xs: 1, sm: 2 },
-                  '&:last-child': { pb: { xs: 1, sm: 2 } },
-                  width: '100%',
-                  maxWidth: '100%',
-                }}>
+                <CardContent
+                  sx={{
+                    p: { xs: 1, sm: 2 },
+                    '&:last-child': { pb: { xs: 1, sm: 2 } },
+                    width: '100%',
+                    maxWidth: '100%',
+                  }}
+                >
                   <Stack spacing={1}>
                     {/* Header */}
                     <Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                         {club.rank <= 3 ? (
-                          <EmojiEvents sx={{ color: getMedalColor(club.rank), fontSize: { xs: 20, sm: 28 } }} />
+                          <EmojiEvents
+                            sx={{ color: getMedalColor(club.rank), fontSize: { xs: 20, sm: 28 } }}
+                          />
                         ) : (
-                          <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>
+                          <Typography
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}
+                          >
                             #{club.rank}
                           </Typography>
                         )}
-                        <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.85rem', sm: '1.125rem' } }}>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.85rem', sm: '1.125rem' } }}
+                        >
                           Clubinho #{club.clubNumber}
                         </Typography>
                       </Box>
@@ -546,10 +755,22 @@ export const ClubsListView: React.FC = () => {
                     <Grid container spacing={1}>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              display: 'block',
+                              mb: 0.25,
+                            }}
+                          >
                             Dia
                           </Typography>
-                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}
+                          >
                             {weekdayNames[club.weekday] || club.weekday}
                           </Typography>
                         </Box>
@@ -557,10 +778,25 @@ export const ClubsListView: React.FC = () => {
                       {club.time && (
                         <Grid item xs={6}>
                           <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                                display: 'block',
+                                mb: 0.25,
+                              }}
+                            >
                               Horário
                             </Typography>
-                            <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              sx={{
+                                fontSize: { xs: '0.7rem', sm: '1rem' },
+                                wordBreak: 'break-word',
+                              }}
+                            >
                               {club.time}
                             </Typography>
                           </Box>
@@ -568,10 +804,22 @@ export const ClubsListView: React.FC = () => {
                       )}
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              display: 'block',
+                              mb: 0.25,
+                            }}
+                          >
                             Cidade
                           </Typography>
-                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}
+                          >
                             {club.address.city}, {club.address.state}
                           </Typography>
                         </Box>
@@ -579,10 +827,25 @@ export const ClubsListView: React.FC = () => {
                       {club.coordinator && (
                         <Grid item xs={6}>
                           <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                                display: 'block',
+                                mb: 0.25,
+                              }}
+                            >
                               Coordenador
                             </Typography>
-                            <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' }, wordBreak: 'break-word' }}>
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              sx={{
+                                fontSize: { xs: '0.7rem', sm: '1rem' },
+                                wordBreak: 'break-word',
+                              }}
+                            >
                               {club.coordinator.name}
                             </Typography>
                           </Box>
@@ -590,30 +853,66 @@ export const ClubsListView: React.FC = () => {
                       )}
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              display: 'block',
+                              mb: 0.25,
+                            }}
+                          >
                             Crianças
                           </Typography>
-                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}
+                          >
                             {club.children.total} ({club.children.active} ativos)
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              display: 'block',
+                              mb: 0.25,
+                            }}
+                          >
                             Professores
                           </Typography>
-                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}
+                          >
                             {club.teachers.total}
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={12}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                              display: 'block',
+                              mb: 0.25,
+                            }}
+                          >
                             Gênero
                           </Typography>
-                          <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}
+                          >
                             M: {club.children.byGender.M} | F: {club.children.byGender.F}
                           </Typography>
                         </Box>
@@ -622,11 +921,26 @@ export const ClubsListView: React.FC = () => {
 
                     {/* Presença */}
                     <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          mb: 0.25,
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                        >
                           Presença
                         </Typography>
-                        <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}>
+                        <Typography
+                          variant="caption"
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '1rem' } }}
+                        >
                           {club.performance.presenceRate.toFixed(0)}%
                         </Typography>
                       </Box>
@@ -651,11 +965,11 @@ export const ClubsListView: React.FC = () => {
                         label={`${club.performance.performanceScore.toFixed(0)}`}
                         size="small"
                         color={getPerformanceColor(club.performance.performanceScore)}
-                        sx={{ 
+                        sx={{
                           fontSize: { xs: '0.65rem', sm: '0.75rem' },
                           height: { xs: 20, sm: 24 },
                           width: '100%',
-                          '& .MuiChip-label': { px: { xs: 0.5, sm: 1 } }
+                          '& .MuiChip-label': { px: { xs: 0.5, sm: 1 } },
                         }}
                       />
                     </Box>
@@ -676,11 +990,21 @@ export const ClubsListView: React.FC = () => {
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Dia/Horário</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Local</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Coordenador</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Crianças</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Professores</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Presença</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Performance</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Decisões</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
+                  Crianças
+                </TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
+                  Professores
+                </TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">
+                  Presença
+                </TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
+                  Performance
+                </TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">
+                  Decisões
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -694,23 +1018,48 @@ export const ClubsListView: React.FC = () => {
                     {club.rank <= 3 ? (
                       <EmojiEvents sx={{ color: getMedalColor(club.rank), fontSize: 28 }} />
                     ) : (
-                      <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>#{club.rank}</Typography>
+                      <Typography
+                        fontWeight="bold"
+                        sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                      >
+                        #{club.rank}
+                      </Typography>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                    >
                       Clubinho #{club.clubNumber}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Box>
-                      <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{weekdayNames[club.weekday] || club.weekday}</Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>{club.time}</Typography>
+                      <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        {weekdayNames[club.weekday] || club.weekday}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      >
+                        {club.time}
+                      </Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{club.address.city}, {club.address.state}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>{club.address.district}</Typography>
+                    <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      {club.address.city}, {club.address.state}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                    >
+                      {club.address.district}
+                    </Typography>
                   </TableCell>
                   <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                     {club.coordinator ? club.coordinator.name : '-'}
@@ -722,7 +1071,12 @@ export const ClubsListView: React.FC = () => {
                       size="small"
                       variant="outlined"
                     />
-                    <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                    >
                       M: {club.children.byGender.M} | F: {club.children.byGender.F}
                     </Typography>
                   </TableCell>
@@ -737,7 +1091,11 @@ export const ClubsListView: React.FC = () => {
                   </TableCell>
                   <TableCell align="right">
                     <Box>
-                      <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                      >
                         {club.performance.presenceRate.toFixed(1)}%
                       </Typography>
                       <LinearProgress
@@ -777,7 +1135,9 @@ export const ClubsListView: React.FC = () => {
 
           {data.clubs.length === 0 && (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Nenhum clubinho encontrado</Typography>
+              <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                Nenhum clubinho encontrado
+              </Typography>
             </Box>
           )}
         </TableContainer>
@@ -812,5 +1172,3 @@ export const ClubsListView: React.FC = () => {
     </Box>
   );
 };
-
-

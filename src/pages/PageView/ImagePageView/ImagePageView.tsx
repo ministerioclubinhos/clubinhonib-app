@@ -61,37 +61,37 @@ function SectionSkeleton() {
         }}
       >
         <Box textAlign="center" mb={3}>
-          <Skeleton 
-            variant="text" 
-            width={220} 
-            height={isMobile ? 24 : 32} 
-            sx={{ 
-              mx: 'auto', 
+          <Skeleton
+            variant="text"
+            width={220}
+            height={isMobile ? 24 : 32}
+            sx={{
+              mx: 'auto',
               borderRadius: 2,
-            }} 
+            }}
           />
-          <Skeleton 
-            variant="text" 
-            width="60%" 
-            sx={{ 
-              mx: 'auto', 
+          <Skeleton
+            variant="text"
+            width="60%"
+            sx={{
+              mx: 'auto',
               mt: 1,
               borderRadius: 1,
-            }} 
+            }}
           />
-          <Skeleton 
-            variant="text" 
-            width="50%" 
-            sx={{ 
-              mx: 'auto', 
+          <Skeleton
+            variant="text"
+            width="50%"
+            sx={{
+              mx: 'auto',
               mt: 1,
               borderRadius: 1,
-            }} 
+            }}
           />
-          <Box 
-            mt={2} 
-            display="flex" 
-            flexDirection="column" 
+          <Box
+            mt={2}
+            display="flex"
+            flexDirection="column"
             alignItems={{ xs: 'center', md: 'flex-end' }}
           >
             <Skeleton variant="text" width={180} sx={{ borderRadius: 1 }} />
@@ -100,9 +100,9 @@ function SectionSkeleton() {
         </Box>
         <Skeleton
           variant="rectangular"
-          sx={{ 
-            width: '100%', 
-            height: isMobile ? 200 : 400, 
+          sx={{
+            width: '100%',
+            height: isMobile ? 200 : 400,
             borderRadius: { xs: 2, md: 3 },
             mb: 2,
           }}
@@ -110,12 +110,12 @@ function SectionSkeleton() {
         <Grid container spacing={1} justifyContent="center">
           {[...Array(6)].map((_, i) => (
             <Grid item xs={4} sm={2} md={2} key={i}>
-              <Skeleton 
-                variant="rectangular" 
-                height={isMobile ? 60 : 80} 
-                sx={{ 
+              <Skeleton
+                variant="rectangular"
+                height={isMobile ? 60 : 80}
+                sx={{
                   borderRadius: { xs: 2, md: 3 },
-                }} 
+                }}
               />
             </Grid>
           ))}
@@ -198,7 +198,6 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
     return () => controller.abort();
   }, [page, idToFetch, defaultSectionId, dispatch, feed]);
 
-
   const handleBack = () => {
     navigate(-1);
   };
@@ -227,10 +226,10 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Alert 
-            severity="error" 
-            sx={{ 
-              borderRadius: { xs: 3, md: 4 }, 
+          <Alert
+            severity="error"
+            sx={{
+              borderRadius: { xs: 3, md: 4 },
               boxShadow: 3,
               fontSize: { xs: '0.9rem', md: '1rem' },
               p: { xs: 2, md: 3 },
@@ -259,10 +258,10 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
               borderRadius: { xs: 3, md: 4 },
             }}
           >
-            <Typography 
-              variant="h5" 
+            <Typography
+              variant="h5"
               color="text.secondary"
-              sx={{ 
+              sx={{
                 fontSize: { xs: '1.3rem', md: '1.5rem' },
                 mb: 2,
               }}
@@ -310,7 +309,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
               zIndex: 0,
             }}
           />
-          
+
           <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Box
               display="flex"
@@ -335,7 +334,6 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
                 </IconButton>
                 <PhotoLibraryIcon sx={{ fontSize: { xs: '2rem', md: '2.5rem' } }} />
               </Box>
-
             </Box>
 
             <Typography
@@ -379,13 +377,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
               </Typography>
             )}
 
-            <Box
-              display="flex"
-              alignItems="center"
-              gap={2}
-              mt={3}
-              flexWrap="wrap"
-            >
+            <Box display="flex" alignItems="center" gap={2} mt={3} flexWrap="wrap">
               <Chip
                 label={`${sectionsList.length} ${sectionsList.length === 1 ? 'Seção' : 'Seções'}`}
                 sx={{
@@ -414,11 +406,11 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                style={{ 
-                  marginBottom: index < sectionsList.length - 1 ? theme.spacing(2) : 0 
+                style={{
+                  marginBottom: index < sectionsList.length - 1 ? theme.spacing(2) : 0,
                 }}
               >
-                <SectionImagePageView 
+                <SectionImagePageView
                   caption={sectionItem.caption}
                   description={sectionItem.description}
                   mediaItems={sectionItem.mediaItems}
@@ -429,12 +421,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
             ))}
 
             {loadingMore && (
-              <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                py={4}
-              >
+              <Box display="flex" justifyContent="center" alignItems="center" py={4}>
                 <CircularProgress size={40} />
               </Box>
             )}
@@ -459,11 +446,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
                 borderRadius: { xs: 3, md: 4 },
               }}
             >
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ mb: 2 }}
-              >
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
                 📸 Nenhuma seção disponível
               </Typography>
               <Typography color="text.secondary">
@@ -473,7 +456,6 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
           </motion.div>
         )}
       </AnimatePresence>
-
     </Container>
   );
 }

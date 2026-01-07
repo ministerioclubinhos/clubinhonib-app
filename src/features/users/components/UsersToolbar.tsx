@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Box,
   Button,
@@ -15,10 +15,10 @@ import {
   FormGroup,
   Paper,
   Fab,
-} from "@mui/material";
-import { Add, Refresh } from "@mui/icons-material";
-import { UserFilters } from "../types";
-import { UserRole } from "@/store/slices/auth/authSlice";
+} from '@mui/material';
+import { Add, Refresh } from '@mui/icons-material';
+import { UserFilters } from '../types';
+import { UserRole } from '@/store/slices/auth/authSlice';
 
 type Props = {
   filters: UserFilters;
@@ -29,19 +29,13 @@ type Props = {
 };
 
 const roleLabels: Record<UserRole, string> = {
-  [UserRole.COORDINATOR]: "Coordenador",
-  [UserRole.TEACHER]: "Professor",
-  [UserRole.ADMIN]: "Administrador",
+  [UserRole.COORDINATOR]: 'Coordenador',
+  [UserRole.TEACHER]: 'Professor',
+  [UserRole.ADMIN]: 'Administrador',
 };
 
-export default function UsersToolbar({
-  filters,
-  onChange,
-  onCreate,
-  onRefresh,
-  isXs,
-}: Props) {
-  const roleOptions = ["all", UserRole.COORDINATOR, UserRole.TEACHER] as const;
+export default function UsersToolbar({ filters, onChange, onCreate, onRefresh, isXs }: Props) {
+  const roleOptions = ['all', UserRole.COORDINATOR, UserRole.TEACHER] as const;
 
   return (
     <Paper sx={{ p: { xs: 1.5, md: 2 }, mb: 2 }}>
@@ -52,9 +46,7 @@ export default function UsersToolbar({
             size="small"
             label="Buscar (nome, e-mail, telefone, papel)"
             value={filters.q}
-            onChange={(e) =>
-              onChange((prev) => ({ ...prev, q: e.target.value }))
-            }
+            onChange={(e) => onChange((prev) => ({ ...prev, q: e.target.value }))}
           />
         </Grid>
 
@@ -73,7 +65,7 @@ export default function UsersToolbar({
             >
               <MenuItem value="all">Todos</MenuItem>
               {roleOptions
-                .filter((role) => role !== "all")
+                .filter((role) => role !== 'all')
                 .map((role) => (
                   <MenuItem key={role} value={role}>
                     {roleLabels[role]}
@@ -86,10 +78,10 @@ export default function UsersToolbar({
         <Grid item xs={12} md={3}>
           <Box
             sx={{
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
               gap: { xs: 1, md: 3 },
-              alignItems: { xs: "flex-start", md: "center" },
+              alignItems: { xs: 'flex-start', md: 'center' },
             }}
           >
             <Tooltip title="Exibe apenas usuários que estão ativos no sistema">
@@ -97,9 +89,7 @@ export default function UsersToolbar({
                 control={
                   <Switch
                     checked={filters.onlyActive}
-                    onChange={(e) =>
-                      onChange((p) => ({ ...p, onlyActive: e.target.checked }))
-                    }
+                    onChange={(e) => onChange((p) => ({ ...p, onlyActive: e.target.checked }))}
                   />
                 }
                 label="Apenas ativos"
@@ -111,9 +101,7 @@ export default function UsersToolbar({
                 control={
                   <Switch
                     checked={filters.onlyCompleted}
-                    onChange={(e) =>
-                      onChange((p) => ({ ...p, onlyCompleted: e.target.checked }))
-                    }
+                    onChange={(e) => onChange((p) => ({ ...p, onlyCompleted: e.target.checked }))}
                   />
                 }
                 label="Apenas completos"
@@ -121,7 +109,7 @@ export default function UsersToolbar({
             </Tooltip>
           </Box>
         </Grid>
-        
+
         <Grid item xs={12} md={2}>
           {isXs ? (
             <>
@@ -130,9 +118,9 @@ export default function UsersToolbar({
                 aria-label="Criar usuário"
                 onClick={onCreate}
                 sx={{
-                  position: "fixed",
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 96px)",
-                  right: "calc(env(safe-area-inset-right, 0px) + 16px)",
+                  position: 'fixed',
+                  bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)',
+                  right: 'calc(env(safe-area-inset-right, 0px) + 16px)',
                   zIndex: 9999,
                   boxShadow: 6,
                 }}
@@ -144,13 +132,13 @@ export default function UsersToolbar({
                 aria-label="Recarregar"
                 onClick={onRefresh}
                 sx={{
-                  position: "fixed",
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
-                  right: "calc(env(safe-area-inset-right, 0px) + 16px)",
+                  position: 'fixed',
+                  bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+                  right: 'calc(env(safe-area-inset-right, 0px) + 16px)',
                   zIndex: 9999,
-                  bgcolor: "white",
+                  bgcolor: 'white',
                   boxShadow: 6,
-                  "&:hover": { bgcolor: "grey.100" },
+                  '&:hover': { bgcolor: 'grey.100' },
                 }}
               >
                 <Refresh />
@@ -159,9 +147,9 @@ export default function UsersToolbar({
           ) : (
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
                 gap: 1.25,
               }}
             >
@@ -171,11 +159,7 @@ export default function UsersToolbar({
                 </IconButton>
               </Tooltip>
               <Tooltip title="Criar Usuário">
-                <Button
-                  variant="contained"
-                  startIcon={<Add />}
-                  onClick={onCreate}
-                >
+                <Button variant="contained" startIcon={<Add />} onClick={onCreate}>
                   Criar
                 </Button>
               </Tooltip>

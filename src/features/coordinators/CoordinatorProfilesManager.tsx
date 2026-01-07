@@ -1,45 +1,36 @@
-import React from "react";
-import {
-  Box,
-  Alert,
-  CircularProgress,
-  useMediaQuery,
-  useTheme,
-  Snackbar,
-} from "@mui/material";
-import MuiAlert from "@mui/material/Alert";
-import type { SortingState } from "@tanstack/react-table";
-import CoordinatorToolbar from "./components/CoordinatorToolbar";
-import CoordinatorTable from "./components/CoordinatorTable";
-import CoordinatorCards from "./components/CoordinatorCards";
-import CoordinatorViewDialog from "./components/CoordinatorViewDialog";
-import CoordinatorLinkDialog from "./components/CoordinatorLinkDialog";
-import {
-  useCoordinatorMutations,
-  useCoordinatorProfiles,
-  useClubsIndex,
-} from "./hooks";
-import type { CoordinatorFilters, CoordinatorProfile } from "./types";
-import BackHeader from "@/components/common/header/BackHeader";
+import React from 'react';
+import { Box, Alert, CircularProgress, useMediaQuery, useTheme, Snackbar } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+import type { SortingState } from '@tanstack/react-table';
+import CoordinatorToolbar from './components/CoordinatorToolbar';
+import CoordinatorTable from './components/CoordinatorTable';
+import CoordinatorCards from './components/CoordinatorCards';
+import CoordinatorViewDialog from './components/CoordinatorViewDialog';
+import CoordinatorLinkDialog from './components/CoordinatorLinkDialog';
+import { useCoordinatorMutations, useCoordinatorProfiles, useClubsIndex } from './hooks';
+import type { CoordinatorFilters, CoordinatorProfile } from './types';
+import BackHeader from '@/components/common/header/BackHeader';
 
 export default function CoordinatorProfilesManager() {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
   const [pageSize, setPageSize] = React.useState<number>(12);
   const [pageIndex, setPageIndex] = React.useState<number>(0);
-  const [sorting, setSorting] = React.useState<SortingState>([
-    { id: "updatedAt", desc: true },
-  ]);
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'updatedAt', desc: true }]);
 
   const [filters, setFilters] = React.useState<CoordinatorFilters>({
-    searchString: "",
-    active: "all",
-    hasClubs: "all",
-    clubNumber: "",
+    searchString: '',
+    active: 'all',
+    hasClubs: 'all',
+    clubNumber: '',
   });
 
-  const { rows, total, loading, error, setError, fetchPage, refreshOne } =
-    useCoordinatorProfiles(pageIndex, pageSize, sorting, filters);
+  const { rows, total, loading, error, setError, fetchPage, refreshOne } = useCoordinatorProfiles(
+    pageIndex,
+    pageSize,
+    sorting,
+    filters
+  );
 
   const doRefresh = React.useCallback(() => {
     fetchPage();
@@ -55,39 +46,34 @@ export default function CoordinatorProfilesManager() {
   const [snack, setSnack] = React.useState<{
     open: boolean;
     message: string;
-    severity: "success" | "error" | "info" | "warning";
-  }>({ open: false, message: "", severity: "success" });
+    severity: 'success' | 'error' | 'info' | 'warning';
+  }>({ open: false, message: '', severity: 'success' });
 
   const showSnack = React.useCallback(
-    (message: string, severity: typeof snack.severity = "success") => {
+    (message: string, severity: typeof snack.severity = 'success') => {
       setSnack({ open: true, message, severity });
     },
     []
   );
 
   const closeSnack = (_?: unknown, reason?: string) => {
-    if (reason === "clickaway") return;
+    if (reason === 'clickaway') return;
     setSnack((s) => ({ ...s, open: false }));
   };
 
   const [viewing, setViewing] = React.useState<CoordinatorProfile | null>(null);
   const [linking, setLinking] = React.useState<CoordinatorProfile | null>(null);
-  const [linkNumber, setLinkNumber] = React.useState<string>("");
-  const [unlinkNumber, setUnlinkNumber] = React.useState<string>("");
+  const [linkNumber, setLinkNumber] = React.useState<string>('');
+  const [unlinkNumber, setUnlinkNumber] = React.useState<string>('');
 
-  const {
-    dialogLoading,
-    dialogError,
-    setDialogError,
-    assignClub,
-    unassignClub,
-  } = useCoordinatorMutations(fetchPage, refreshOne);
+  const { dialogLoading, dialogError, setDialogError, assignClub, unassignClub } =
+    useCoordinatorMutations(fetchPage, refreshOne);
 
   const closeLinkDialog = React.useCallback(() => {
     setLinking(null);
-    setDialogError("");
-    setLinkNumber("");
-    setUnlinkNumber("");
+    setDialogError('');
+    setLinkNumber('');
+    setUnlinkNumber('');
   }, [setDialogError]);
 
   const onLinkConfirm = async () => {
@@ -95,15 +81,15 @@ export default function CoordinatorProfilesManager() {
     const num = Number(linkNumber);
     const club = byNumber.get(num);
     if (!num || !club) {
-      setDialogError("Clubinho não encontrado pelo número informado.");
+      setDialogError('Clubinho não encontrado pelo número informado.');
       return;
     }
     try {
       const msg = await assignClub(linking.id, club.id);
-      showSnack(msg || "Club atribuído ao coordenador com sucesso", "success");
+      showSnack(msg || 'Club atribuído ao coordenador com sucesso', 'success');
       closeLinkDialog();
     } catch {
-      showSnack("Falha ao vincular clubinho", "error");
+      showSnack('Falha ao vincular clubinho', 'error');
     }
   };
 
@@ -112,15 +98,15 @@ export default function CoordinatorProfilesManager() {
     const num = Number(unlinkNumber);
     const club = byNumber.get(num);
     if (!num || !club) {
-      setDialogError("Clubinho não encontrado pelo número informado.");
+      setDialogError('Clubinho não encontrado pelo número informado.');
       return;
     }
     try {
       const msg = await unassignClub(linking.id, club.id);
-      showSnack(msg || "Club removido do coordenador com sucesso", "success");
+      showSnack(msg || 'Club removido do coordenador com sucesso', 'success');
       closeLinkDialog();
     } catch {
-      showSnack("Falha ao desvincular clubinho", "error");
+      showSnack('Falha ao desvincular clubinho', 'error');
     }
   };
 
@@ -136,8 +122,8 @@ export default function CoordinatorProfilesManager() {
       sx={{
         px: { xs: 2, md: 0 },
         py: { xs: 0, md: 0 },
-        minHeight: "100vh",
-        bgcolor: "#f9fafb"
+        minHeight: '100vh',
+        bgcolor: '#f9fafb',
       }}
     >
       <BackHeader title="Gerenciar Coordenadores" />
@@ -162,8 +148,8 @@ export default function CoordinatorProfilesManager() {
           severity="error"
           sx={{ mb: 2 }}
           onClose={() => {
-            setError("");
-            setDialogError("");
+            setError('');
+            setDialogError('');
           }}
         >
           {error || clubsError}
@@ -222,14 +208,9 @@ export default function CoordinatorProfilesManager() {
         open={snack.open}
         autoHideDuration={3500}
         onClose={closeSnack}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
-          elevation={6}
-          variant="filled"
-          severity={snack.severity}
-          onClose={closeSnack}
-        >
+        <MuiAlert elevation={6} variant="filled" severity={snack.severity} onClose={closeSnack}>
           {snack.message}
         </MuiAlert>
       </Snackbar>

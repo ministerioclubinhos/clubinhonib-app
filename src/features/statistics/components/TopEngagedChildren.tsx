@@ -48,16 +48,19 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
   if (error || !data) {
     return (
       <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
-        <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Erro ao carregar crianças mais engajadas</Typography>
+        <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+          Erro ao carregar crianças mais engajadas
+        </Typography>
       </Paper>
     );
   }
 
   // No mobile, mostrar apenas 3 inicialmente
   const initialMobileItems = 3;
-  const displayedChildren = isMobile && !showAllMobile 
-    ? (data.topEngagedChildren || []).slice(0, initialMobileItems)
-    : (data.topEngagedChildren || []);
+  const displayedChildren =
+    isMobile && !showAllMobile
+      ? (data.topEngagedChildren || []).slice(0, initialMobileItems)
+      : data.topEngagedChildren || [];
 
   const getMedalColor = (position: number) => {
     switch (position) {
@@ -88,13 +91,16 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
   };
 
   return (
-    <Paper elevation={3} sx={{ 
-      p: { xs: 2, sm: 3 }, 
-      borderRadius: 2,
-      width: '98%',
-      maxWidth: '98%',
-      overflow: 'hidden',
-    }}>
+    <Paper
+      elevation={3}
+      sx={{
+        p: { xs: 2, sm: 3 },
+        borderRadius: 2,
+        width: '98%',
+        maxWidth: '98%',
+        overflow: 'hidden',
+      }}
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 2, sm: 3 } }}>
         <Star sx={{ color: theme.palette.warning.main, fontSize: { xs: 24, sm: 28 } }} />
         <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
@@ -124,12 +130,19 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
               <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                 <Stack spacing={1.5}>
                   {/* Header */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
                       {index < 3 ? (
-                        <EmojiEvents sx={{ color: getMedalColor(index), fontSize: { xs: 20, sm: 24 } }} />
+                        <EmojiEvents
+                          sx={{ color: getMedalColor(index), fontSize: { xs: 20, sm: 24 } }}
+                        />
                       ) : (
-                        <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
                           {index + 1}
                         </Typography>
                       )}
@@ -137,14 +150,20 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                         sx={{
                           width: { xs: 32, sm: 36 },
                           height: { xs: 32, sm: 36 },
-                          bgcolor: child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main,
+                          bgcolor:
+                            child.gender === 'F'
+                              ? theme.palette.secondary.main
+                              : theme.palette.info.main,
                           fontSize: { xs: 12, sm: 14 },
                         }}
                       >
                         {getInitials(child.childName)}
                       </Avatar>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography
+                          fontWeight="medium"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
                           {child.childName}
                         </Typography>
                       </Box>
@@ -157,40 +176,70 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                   <Grid container spacing={1.5}>
                     <Grid item xs={6}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           Idade
                         </Typography>
-                        <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
                           {child.age} anos
                         </Typography>
                       </Box>
                     </Grid>
                     <Grid item xs={6}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           Cidade
                         </Typography>
-                        <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
                           {child.city ? `${child.city}, ${child.state}` : '-'}
                         </Typography>
                       </Box>
                     </Grid>
                     <Grid item xs={6}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           Tempo
                         </Typography>
-                        <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                          {child.monthsParticipating} {child.monthsParticipating === 1 ? 'mês' : 'meses'}
+                        <Typography
+                          variant="body2"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
+                          {child.monthsParticipating}{' '}
+                          {child.monthsParticipating === 1 ? 'mês' : 'meses'}
                         </Typography>
                       </Box>
                     </Grid>
                     <Grid item xs={6}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           Pagelas
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
                           {child.totalPagelas}
                         </Typography>
                       </Box>
@@ -198,9 +247,21 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                   </Grid>
 
                   {/* Presença e Engajamento */}
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1,
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      >
                         Presença: {child.presenceRate.toFixed(1)}%
                       </Typography>
                     </Box>
@@ -229,7 +290,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
               </CardContent>
             </Card>
           ))}
-          
+
           {/* Botão Ver Mais / Ver Menos no Mobile */}
           {isMobile && data.topEngagedChildren.length > initialMobileItems && (
             <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
@@ -243,10 +304,9 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                   px: 3,
                 }}
               >
-                {showAllMobile 
-                  ? `Ver menos (mostrando ${data.topEngagedChildren.length})` 
-                  : `Ver mais (${data.topEngagedChildren.length - initialMobileItems} restantes)`
-                }
+                {showAllMobile
+                  ? `Ver menos (mostrando ${data.topEngagedChildren.length})`
+                  : `Ver mais (${data.topEngagedChildren.length - initialMobileItems} restantes)`}
               </Button>
             </Box>
           )}
@@ -257,15 +317,33 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell width={60}><strong>Pos.</strong></TableCell>
-                <TableCell><strong>Nome</strong></TableCell>
-                <TableCell align="center"><strong>Idade</strong></TableCell>
-                <TableCell><strong>Cidade</strong></TableCell>
-                <TableCell align="center"><strong>Tempo</strong></TableCell>
-                <TableCell align="right"><strong>Pagelas</strong></TableCell>
-                <TableCell align="right"><strong>Presença %</strong></TableCell>
-                <TableCell align="center"><strong>Engajamento</strong></TableCell>
-                <TableCell align="center"><strong>Decisão</strong></TableCell>
+                <TableCell width={60}>
+                  <strong>Pos.</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Nome</strong>
+                </TableCell>
+                <TableCell align="center">
+                  <strong>Idade</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Cidade</strong>
+                </TableCell>
+                <TableCell align="center">
+                  <strong>Tempo</strong>
+                </TableCell>
+                <TableCell align="right">
+                  <strong>Pagelas</strong>
+                </TableCell>
+                <TableCell align="right">
+                  <strong>Presença %</strong>
+                </TableCell>
+                <TableCell align="center">
+                  <strong>Engajamento</strong>
+                </TableCell>
+                <TableCell align="center">
+                  <strong>Decisão</strong>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -282,7 +360,12 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                       {index < 3 ? (
                         <EmojiEvents sx={{ color: getMedalColor(index), fontSize: 24 }} />
                       ) : (
-                        <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{index + 1}</Typography>
+                        <Typography
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
+                          {index + 1}
+                        </Typography>
                       )}
                     </Box>
                   </TableCell>
@@ -292,24 +375,38 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                         sx={{
                           width: 32,
                           height: 32,
-                          bgcolor: child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main,
+                          bgcolor:
+                            child.gender === 'F'
+                              ? theme.palette.secondary.main
+                              : theme.palette.info.main,
                           fontSize: 14,
                         }}
                       >
                         {getInitials(child.childName)}
                       </Avatar>
-                      <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.childName}</Typography>
+                      <Typography
+                        fontWeight="medium"
+                        sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                      >
+                        {child.childName}
+                      </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell align="center" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.age} anos</TableCell>
+                  <TableCell align="center" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {child.age} anos
+                  </TableCell>
                   <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                     {child.city ? `${child.city}, ${child.state}` : '-'}
                   </TableCell>
                   <TableCell align="center" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                     {child.monthsParticipating} {child.monthsParticipating === 1 ? 'mês' : 'meses'}
                   </TableCell>
-                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.totalPagelas}</TableCell>
-                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.presenceRate.toFixed(1)}%</TableCell>
+                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {child.totalPagelas}
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {child.presenceRate.toFixed(1)}%
+                  </TableCell>
                   <TableCell align="center">
                     <Chip
                       label={child.engagementScore.toFixed(0)}
@@ -339,4 +436,3 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
     </Paper>
   );
 };
-

@@ -24,7 +24,9 @@ export default function ImageSectionEditorAdmin() {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const sectionData = useSelector((state: RootState) => state.imageSection.data) as SectionData | null;
+  const sectionData = useSelector(
+    (state: RootState) => state.imageSection.data
+  ) as SectionData | null;
 
   const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState<NotificationState>({
@@ -196,7 +198,7 @@ export default function ImageSectionEditorAdmin() {
                   Editar e publicar imagens compartilhadas dos Clubinhos
                 </Typography>
               </Box>
-              
+
               <Box
                 sx={{
                   display: 'flex',
@@ -222,7 +224,7 @@ export default function ImageSectionEditorAdmin() {
                 >
                   ← Voltar
                 </Button>
-                
+
                 <Button
                   variant="contained"
                   onClick={handleSave}
@@ -255,7 +257,6 @@ export default function ImageSectionEditorAdmin() {
               border: '1px solid #e5e7eb',
             }}
           >
-
             <LoadingSpinner open={isSaving} aria-label="Salvando a seção" />
 
             <NotificationModal
@@ -282,7 +283,7 @@ export default function ImageSectionEditorAdmin() {
               >
                 📋 Informações da Galeria Compartilhada
               </Typography>
-              
+
               <Box
                 sx={{
                   display: 'grid',
@@ -298,14 +299,14 @@ export default function ImageSectionEditorAdmin() {
                     {sectionData?.id || 'N/A'}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                     Status
                   </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
+                  <Typography
+                    variant="body2"
+                    sx={{
                       color: sectionData?.public ? '#059669' : '#dc2626',
                       fontWeight: 600,
                     }}
@@ -313,7 +314,7 @@ export default function ImageSectionEditorAdmin() {
                     {sectionData?.public ? '🌐 Público' : '🔒 Privado'}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                     Imagens Compartilhadas

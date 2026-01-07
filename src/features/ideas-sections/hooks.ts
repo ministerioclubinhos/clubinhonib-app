@@ -33,9 +33,10 @@ export function useIdeasSections() {
         setFilteredSections(sections);
       } else {
         setFilteredSections(
-          sections.filter((s) =>
-            (s.title ?? '').toLowerCase().includes(term) ||
-            (s.description ?? '').toLowerCase().includes(term)
+          sections.filter(
+            (s) =>
+              (s.title ?? '').toLowerCase().includes(term) ||
+              (s.description ?? '').toLowerCase().includes(term)
           )
         );
       }
@@ -84,4 +85,3 @@ export function useIdeasPages() {
     fetchPages,
   };
 }
-

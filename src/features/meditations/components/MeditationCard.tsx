@@ -22,7 +22,11 @@ import {
   ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
 import {
-  MeditationData, DayItem, WeekDay, WeekDayLabel, setMeditationData,
+  MeditationData,
+  DayItem,
+  WeekDay,
+  WeekDayLabel,
+  setMeditationData,
 } from '@/store/slices/meditation/meditationSlice';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -120,9 +124,7 @@ export default function MeditationCard({
           </Typography>
 
           <Stack direction="row" alignItems="center" justifyContent="space-between" mt={2} mb={1}>
-            <Typography fontWeight="bold">
-              Dias ({meditation.days.length})
-            </Typography>
+            <Typography fontWeight="bold">Dias ({meditation.days.length})</Typography>
 
             {isMobile && (
               <IconButton
@@ -153,9 +155,7 @@ export default function MeditationCard({
                     bgcolor: '#fafafa',
                   }}
                 >
-                  <Typography fontWeight="medium">
-                    {WeekDayLabel[day.day as WeekDay]}
-                  </Typography>
+                  <Typography fontWeight="medium">{WeekDayLabel[day.day as WeekDay]}</Typography>
                   <Tooltip title="Ver detalhes do dia">
                     <IconButton
                       size="small"

@@ -1,8 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Button,
-  IconButton, Divider, Paper, Grid,
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stack,
+  Button,
+  IconButton,
+  Divider,
+  Paper,
+  Grid,
 } from '@mui/material';
 import { ContentCopy, Close } from '@mui/icons-material';
 import { WeekMaterialPageData } from 'store/slices/week-material/weekMaterialSlice';
@@ -36,7 +46,7 @@ export default function WeekMaterialDetailsModal({
       setIsDeleting(true);
       await onDelete();
       setConfirmOpen(false);
-      onClose(); 
+      onClose();
     } finally {
       setIsDeleting(false);
     }
@@ -78,7 +88,13 @@ export default function WeekMaterialDetailsModal({
           {material && (
             <Stack spacing={4}>
               <Paper elevation={2} sx={{ p: 3, borderRadius: 2, bgcolor: '#fff' }}>
-                <Typography variant="h6" fontWeight="bold" color="primary" textAlign="center" mb={3}>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  color="primary"
+                  textAlign="center"
+                  mb={3}
+                >
                   Informações Gerais
                 </Typography>
                 <Grid container spacing={2}>
@@ -119,7 +135,11 @@ export default function WeekMaterialDetailsModal({
                 { label: 'Áudios', items: material.audios },
               ].map((section) =>
                 section.items.length > 0 ? (
-                  <Paper key={section.label} elevation={2} sx={{ p: 3, borderRadius: 2, bgcolor: '#fff' }}>
+                  <Paper
+                    key={section.label}
+                    elevation={2}
+                    sx={{ p: 3, borderRadius: 2, bgcolor: '#fff' }}
+                  >
                     <Typography
                       variant="h6"
                       fontWeight="bold"
@@ -193,12 +213,7 @@ export default function WeekMaterialDetailsModal({
               Excluir
             </Button>
           )}
-          <Button
-            variant="outlined"
-            onClick={onClose}
-            disabled={isDeleting}
-            sx={{ minWidth: 120 }}
-          >
+          <Button variant="outlined" onClick={onClose} disabled={isDeleting} sx={{ minWidth: 120 }}>
             Fechar
           </Button>
           <Button

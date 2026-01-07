@@ -1,27 +1,32 @@
-import React from "react";
-import { Box, Snackbar, Alert } from "@mui/material";
-import { useTheme, useMediaQuery } from "@mui/material";
-import { useContacts, useContactMutations, useContactSearch } from "./hooks";
-import ContactToolbar from "./components/ContactToolbar";
-import ContactGrid from "./components/ContactGrid";
-import ContactDetailsModal from "./components/ContactDetailsModal";
-import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
-import BackHeader from "@/components/common/header/BackHeader";
-import { Contact, SnackbarKind } from "./types";
+import React from 'react';
+import { Box, Snackbar, Alert } from '@mui/material';
+import { useTheme, useMediaQuery } from '@mui/material';
+import { useContacts, useContactMutations, useContactSearch } from './hooks';
+import ContactToolbar from './components/ContactToolbar';
+import ContactGrid from './components/ContactGrid';
+import ContactDetailsModal from './components/ContactDetailsModal';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
+import BackHeader from '@/components/common/header/BackHeader';
+import { Contact, SnackbarKind } from './types';
 
 export default function ContactsManager() {
   const theme = useTheme();
   const { contacts, loading, error, setError, fetchContacts } = useContacts();
   const { searchTerm, setSearchTerm, filtered } = useContactSearch(contacts);
-  const { busy, error: mError, setError: setMError, remove, markAsRead } =
-    useContactMutations(fetchContacts);
+  const {
+    busy,
+    error: mError,
+    setError: setMError,
+    remove,
+    markAsRead,
+  } = useContactMutations(fetchContacts);
 
   const [selected, setSelected] = React.useState<Contact | null>(null);
   const [toDelete, setToDelete] = React.useState<Contact | null>(null);
   const [snackbar, setSnackbar] = React.useState({
     open: false,
-    message: "",
-    severity: "success" as SnackbarKind,
+    message: '',
+    severity: 'success' as SnackbarKind,
   });
 
   const showSnackbar = (message: string, severity: SnackbarKind) =>
@@ -31,9 +36,9 @@ export default function ContactsManager() {
     if (!toDelete) return;
     try {
       await remove(toDelete.id);
-      showSnackbar("Contato excluído com sucesso", "success");
+      showSnackbar('Contato excluído com sucesso', 'success');
     } catch {
-      showSnackbar(mError || "Erro ao excluir contato", "error");
+      showSnackbar(mError || 'Erro ao excluir contato', 'error');
     } finally {
       setToDelete(null);
     }
@@ -43,9 +48,9 @@ export default function ContactsManager() {
     if (!selected) return;
     try {
       await markAsRead(selected.id);
-      showSnackbar("Contato marcado como lido", "success");
+      showSnackbar('Contato marcado como lido', 'success');
     } catch {
-      showSnackbar(mError || "Erro ao marcar como lido", "error");
+      showSnackbar(mError || 'Erro ao marcar como lido', 'error');
     }
   };
 
@@ -78,20 +83,20 @@ export default function ContactsManager() {
 
       <DeleteConfirmDialog
         open={!!toDelete}
-        title={toDelete?.name || ""}
+        title={toDelete?.name || ''}
         onClose={() => setToDelete(null)}
         onConfirm={handleDelete}
       />
 
       {!loading && error && (
-        <Snackbar open autoHideDuration={4000} onClose={() => setError("")}>
+        <Snackbar open autoHideDuration={4000} onClose={() => setError('')}>
           <Alert severity="error" variant="filled">
             {error}
           </Alert>
         </Snackbar>
       )}
       {mError && (
-        <Snackbar open autoHideDuration={4000} onClose={() => setMError("")}>
+        <Snackbar open autoHideDuration={4000} onClose={() => setMError('')}>
           <Alert severity="error" variant="filled">
             {mError}
           </Alert>

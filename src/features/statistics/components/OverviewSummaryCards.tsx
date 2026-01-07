@@ -21,13 +21,23 @@ const MetricCard: React.FC<MetricCardProps> = ({
   color,
 }) => {
   const theme = useTheme();
-  
+
   const getTrend = () => {
     if (!previousValue) return null;
     const change = ((currentValue - previousValue) / previousValue) * 100;
-    if (Math.abs(change) < 1) return { icon: <TrendingFlat />, color: theme.palette.grey[500], text: 'Estável' };
-    if (change > 0) return { icon: <TrendingUp />, color: theme.palette.success.main, text: `+${change.toFixed(1)}%` };
-    return { icon: <TrendingDown />, color: theme.palette.error.main, text: `${change.toFixed(1)}%` };
+    if (Math.abs(change) < 1)
+      return { icon: <TrendingFlat />, color: theme.palette.grey[500], text: 'Estável' };
+    if (change > 0)
+      return {
+        icon: <TrendingUp />,
+        color: theme.palette.success.main,
+        text: `+${change.toFixed(1)}%`,
+      };
+    return {
+      icon: <TrendingDown />,
+      color: theme.palette.error.main,
+      text: `${change.toFixed(1)}%`,
+    };
   };
 
   const trend = getTrend();
@@ -65,15 +75,22 @@ const MetricCard: React.FC<MetricCardProps> = ({
       />
 
       <Box sx={{ position: 'relative', zIndex: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: { xs: 1, sm: 1.5 } }}>
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
-            fontWeight={600} 
-            sx={{ 
-              textTransform: 'uppercase', 
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: { xs: 1, sm: 1.5 },
+          }}
+        >
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            fontWeight={600}
+            sx={{
+              textTransform: 'uppercase',
               letterSpacing: 1,
-              fontSize: { xs: '0.7rem', sm: '0.75rem' }
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
             }}
           >
             {title}
@@ -110,7 +127,11 @@ const MetricCard: React.FC<MetricCardProps> = ({
         >
           {currentValue.toLocaleString('pt-BR')}
           {suffix && (
-            <Typography component="span" variant="h6" sx={{ ml: 0.5, opacity: 0.7, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+            <Typography
+              component="span"
+              variant="h6"
+              sx={{ ml: 0.5, opacity: 0.7, fontSize: { xs: '1rem', sm: '1.25rem' } }}
+            >
               {suffix}
             </Typography>
           )}
@@ -175,18 +196,26 @@ export const OverviewSummaryCards: React.FC = () => {
       color: theme.palette.info.main,
     },
     // ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas
-    ...(data.summary.inactiveChildren !== undefined ? [{
-      title: 'Crianças Desativadas',
-      currentValue: data.summary.inactiveChildren,
-      icon: <TrendingDown />,
-      color: theme.palette.warning.main,
-    }] : []),
-    ...(data.summary.inactiveClubs !== undefined ? [{
-      title: 'Clubinhos Desativados',
-      currentValue: data.summary.inactiveClubs,
-      icon: <TrendingDown />,
-      color: theme.palette.error.main,
-    }] : []),
+    ...(data.summary.inactiveChildren !== undefined
+      ? [
+          {
+            title: 'Crianças Desativadas',
+            currentValue: data.summary.inactiveChildren,
+            icon: <TrendingDown />,
+            color: theme.palette.warning.main,
+          },
+        ]
+      : []),
+    ...(data.summary.inactiveClubs !== undefined
+      ? [
+          {
+            title: 'Clubinhos Desativados',
+            currentValue: data.summary.inactiveClubs,
+            icon: <TrendingDown />,
+            color: theme.palette.error.main,
+          },
+        ]
+      : []),
   ];
 
   // Calcular taxa de engajamento
@@ -213,11 +242,30 @@ export const OverviewSummaryCards: React.FC = () => {
           border: `2px solid ${theme.palette.divider}`,
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
-          <Typography variant="body2" fontWeight={600} color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 1.5,
+            flexWrap: 'wrap',
+            gap: 1,
+          }}
+        >
+          <Typography
+            variant="body2"
+            fontWeight={600}
+            color="text.secondary"
+            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+          >
             Taxa de Engajamento Mensal
           </Typography>
-          <Typography variant="h6" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            color="primary"
+            sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+          >
             {engagementRate.toFixed(1)}%
           </Typography>
         </Box>
@@ -238,4 +286,3 @@ export const OverviewSummaryCards: React.FC = () => {
     </Box>
   );
 };
-

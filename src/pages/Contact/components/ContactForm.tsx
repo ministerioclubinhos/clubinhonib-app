@@ -14,12 +14,7 @@ import { ContactFormData, ContactFormProps } from '../types';
 import { contactFormSchema } from '../validation';
 import PhoneMask from './PhoneMask';
 
-const ContactForm: React.FC<ContactFormProps> = ({
-  onSubmit,
-  loading,
-  submitted,
-  globalError,
-}) => {
+const ContactForm: React.FC<ContactFormProps> = ({ onSubmit, loading, submitted, globalError }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 

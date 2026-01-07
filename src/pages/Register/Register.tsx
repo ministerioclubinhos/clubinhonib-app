@@ -22,7 +22,6 @@ import { IMaskInput } from 'react-imask';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 
-
 interface RegisterProps {
   commonUser: boolean;
 }
@@ -41,7 +40,9 @@ const getSchema = (commonUser: boolean) =>
       confirmEmail: Yup.string()
         .oneOf([Yup.ref('email')], 'Os emails não coincidem')
         .required('Confirme o email'),
-      password: Yup.string().min(6, 'Senha deve ter pelo menos 6 caracteres').required('Senha obrigatória'),
+      password: Yup.string()
+        .min(6, 'Senha deve ter pelo menos 6 caracteres')
+        .required('Senha obrigatória'),
       confirmPassword: Yup.string()
         .oneOf([Yup.ref('password')], 'As senhas não coincidem')
         .required('Confirme a senha'),
@@ -54,7 +55,9 @@ const getSchema = (commonUser: boolean) =>
       .required('Telefone é obrigatório'),
     role: (commonUser
       ? Yup.mixed<RoleChoice>().oneOf(['', 'teacher', 'coordinator'])
-      : Yup.mixed<RoleChoice>().oneOf(['teacher', 'coordinator']).required('Selecione seu perfil')) as any,
+      : Yup.mixed<RoleChoice>()
+          .oneOf(['teacher', 'coordinator'])
+          .required('Selecione seu perfil')) as any,
   });
 
 interface FormData {
@@ -162,7 +165,15 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
             )}
 
             {success ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3, gap: 3 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  mt: 3,
+                  gap: 3,
+                }}
+              >
                 <Alert
                   severity="success"
                   sx={{
@@ -275,7 +286,9 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
                       fullWidth
                       margin="normal"
                       error={!!errors.role}
-                      helperText={errors.role?.message || 'Informe se você é Professor ou Coordenador'}
+                      helperText={
+                        errors.role?.message || 'Informe se você é Professor ou Coordenador'
+                      }
                     >
                       <MenuItem value="">
                         <em>Selecione</em>

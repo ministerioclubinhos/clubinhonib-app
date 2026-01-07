@@ -16,7 +16,11 @@ export interface PeriodDates {
  * @param period - Atalho de período (today, this_week, etc)
  * @returns Objeto com startDate e endDate no formato YYYY-MM-DD
  */
-export function getPeriodDates(period: PeriodShortcut | undefined, customStart?: string, customEnd?: string): PeriodDates | undefined {
+export function getPeriodDates(
+  period: PeriodShortcut | undefined,
+  customStart?: string,
+  customEnd?: string
+): PeriodDates | undefined {
   if (!period || period === 'custom') {
     // Se period é custom ou undefined, retorna as datas customizadas (se fornecidas)
     if (customStart && customEnd) {
@@ -46,7 +50,7 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
 
       return {
         startDate: formatDate(monday),
-        endDate: formatDate(sunday)
+        endDate: formatDate(sunday),
       };
     }
 
@@ -56,7 +60,7 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
 
       return {
         startDate: formatDate(firstDay),
-        endDate: formatDate(lastDay)
+        endDate: formatDate(lastDay),
       };
     }
 
@@ -66,7 +70,7 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
 
       return {
         startDate: formatDate(sevenDaysAgo),
-        endDate: formatDate(today)
+        endDate: formatDate(today),
       };
     }
 
@@ -76,7 +80,7 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
 
       return {
         startDate: formatDate(thirtyDaysAgo),
-        endDate: formatDate(today)
+        endDate: formatDate(today),
       };
     }
 
@@ -85,7 +89,7 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
 
       return {
         startDate: formatDate(firstDayOfYear),
-        endDate: formatDate(today)
+        endDate: formatDate(today),
       };
     }
 
@@ -109,21 +113,33 @@ function formatDate(date: Date): string {
  */
 export function getPeriodLabel(period: PeriodShortcut | undefined): string {
   switch (period) {
-    case 'today': return 'Hoje';
-    case 'this_week': return 'Esta Semana';
-    case 'this_month': return 'Este Mês';
-    case 'last_7_days': return 'Últimos 7 Dias';
-    case 'last_30_days': return 'Últimos 30 Dias';
-    case 'this_year': return 'Este Ano';
-    case 'custom': return 'Personalizado';
-    default: return 'Todos os Períodos';
+    case 'today':
+      return 'Hoje';
+    case 'this_week':
+      return 'Esta Semana';
+    case 'this_month':
+      return 'Este Mês';
+    case 'last_7_days':
+      return 'Últimos 7 Dias';
+    case 'last_30_days':
+      return 'Últimos 30 Dias';
+    case 'this_year':
+      return 'Este Ano';
+    case 'custom':
+      return 'Personalizado';
+    default:
+      return 'Todos os Períodos';
   }
 }
 
 /**
  * Retorna descrição detalhada do período selecionado
  */
-export function getPeriodDescription(period: PeriodShortcut | undefined, customStart?: string, customEnd?: string): string {
+export function getPeriodDescription(
+  period: PeriodShortcut | undefined,
+  customStart?: string,
+  customEnd?: string
+): string {
   const dates = getPeriodDates(period, customStart, customEnd);
 
   if (!dates) {

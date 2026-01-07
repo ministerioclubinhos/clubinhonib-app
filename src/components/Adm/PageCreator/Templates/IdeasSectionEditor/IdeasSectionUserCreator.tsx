@@ -24,7 +24,7 @@ export function IdeasSectionUserCreator() {
     title: '',
     description: '',
     medias: [],
-    public: true, 
+    public: true,
   });
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -61,7 +61,7 @@ export function IdeasSectionUserCreator() {
       return;
     }
 
-    const validMedias = sectionData.medias.filter(media => {
+    const validMedias = sectionData.medias.filter((media) => {
       if (media.uploadType === 'upload') {
         return media.file && media.title.trim();
       }
@@ -74,7 +74,8 @@ export function IdeasSectionUserCreator() {
     if (validMedias.length === 0) {
       setSnackbar({
         open: true,
-        message: 'Por favor, adicione pelo menos uma mídia (vídeo, imagem ou documento) para sua ideia',
+        message:
+          'Por favor, adicione pelo menos uma mídia (vídeo, imagem ou documento) para sua ideia',
         severity: 'error',
       });
       return;
@@ -92,7 +93,7 @@ export function IdeasSectionUserCreator() {
           mediaType: media.mediaType,
           uploadType: media.uploadType,
           hasFile: !!media.file,
-          hasUrl: !!media.url
+          hasUrl: !!media.url,
         });
 
         const baseItem = {
@@ -111,7 +112,8 @@ export function IdeasSectionUserCreator() {
 
           mediaTypeCounters[media.mediaType as keyof typeof mediaTypeCounters]++;
           const count = mediaTypeCounters[media.mediaType as keyof typeof mediaTypeCounters];
-          const fieldKey = count === 1 ? `${media.mediaType}_upload` : `${media.mediaType}${count}_upload`;
+          const fieldKey =
+            count === 1 ? `${media.mediaType}_upload` : `${media.mediaType}${count}_upload`;
 
           console.log(`📁 Adicionando arquivo: ${fieldKey}`, media.file.name);
           formData.append(fieldKey, media.file);
@@ -124,7 +126,7 @@ export function IdeasSectionUserCreator() {
           return {
             ...baseItem,
             url: media.url,
-            platformType: media.platformType
+            platformType: media.platformType,
           };
         }
 
@@ -132,18 +134,21 @@ export function IdeasSectionUserCreator() {
           uploadType: media.uploadType,
           hasFile: !!media.file,
           hasUrl: !!media.url,
-          mediaType: media.mediaType
+          mediaType: media.mediaType,
         });
 
         return baseItem;
       });
 
-      formData.append('sectionData', JSON.stringify({
-        title: sectionData.title,
-        description: sectionData.description,
-        public: true, 
-        medias: mediasPayload,
-      }));
+      formData.append(
+        'sectionData',
+        JSON.stringify({
+          title: sectionData.title,
+          description: sectionData.description,
+          public: true,
+          medias: mediasPayload,
+        })
+      );
 
       await api.post('/ideas-sections', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -189,19 +194,23 @@ export function IdeasSectionUserCreator() {
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       }}
     >
-      <Box sx={{
-        py: { xs: 2, md: 3 },
-        px: 0,
-        flexShrink: 0,
-        textAlign: 'center',
-        position: 'relative',
-      }}>
-        <Box sx={{
-          position: 'absolute',
-          top: { xs: 8, md: 24 },
-          left: { xs: 8, md: 24 },
-          zIndex: 2,
-        }}>
+      <Box
+        sx={{
+          py: { xs: 2, md: 3 },
+          px: 0,
+          flexShrink: 0,
+          textAlign: 'center',
+          position: 'relative',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: { xs: 8, md: 24 },
+            left: { xs: 8, md: 24 },
+            zIndex: 2,
+          }}
+        >
           <IconButton
             onClick={handleBack}
             sx={{
@@ -228,13 +237,13 @@ export function IdeasSectionUserCreator() {
           sx={{
             fontWeight: 'bold',
             fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.5rem' },
-            mb: { xs: 3, md: 2 }, 
+            mb: { xs: 3, md: 2 },
             color: 'white',
             textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-            mt: { xs: 4, md: 5 }, 
-            px: 0, 
-            maxWidth: '100%', 
-            mx: 0, 
+            mt: { xs: 4, md: 5 },
+            px: 0,
+            maxWidth: '100%',
+            mx: 0,
           }}
         >
           ✨ Criar e compartilhar ideia incrível
@@ -245,7 +254,7 @@ export function IdeasSectionUserCreator() {
           sx={{
             color: 'rgba(255,255,255,0.9)',
             fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' },
-            mb: { xs: 4, md: 2 }, 
+            mb: { xs: 4, md: 2 },
             maxWidth: '700px',
             mx: 'auto',
             lineHeight: 1.5,
@@ -253,74 +262,85 @@ export function IdeasSectionUserCreator() {
             textAlign: 'center',
           }}
         >
-          Jesus colocou no seu coração uma ideia brilhante?<br />
-          Pode ser uma brincadeira, um versículo, uma forma especial de contar<br />
-          uma história ou qualquer outra atividade para o seu Clubinho!<br /><br />
-          Agora você também pode enviar <strong>vídeos, imagens e documentos</strong><br />
+          Jesus colocou no seu coração uma ideia brilhante?
+          <br />
+          Pode ser uma brincadeira, um versículo, uma forma especial de contar
+          <br />
+          uma história ou qualquer outra atividade para o seu Clubinho!
+          <br />
+          <br />
+          Agora você também pode enviar <strong>vídeos, imagens e documentos</strong>
+          <br />
           para mostrar como fez e ajudar outros professores a colocarem em prática. 📹📸📄
         </Typography>
-
-
       </Box>
 
-      <Box sx={{
-        flex: 1,
-        p: { xs: 2, md: 4 },
-        bgcolor: 'background.default',
-        borderRadius: '24px 24px 0 0',
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <Box sx={{
-          maxWidth: '1200px', 
-          mx: 'auto',
-          bgcolor: 'background.paper',
-          borderRadius: '20px',
+      <Box
+        sx={{
+          flex: 1,
           p: { xs: 2, md: 4 },
-          boxShadow: '0 8px 40px rgba(0,0,0,0.15)',
-          border: '1px solid',
-          borderColor: 'divider',
+          bgcolor: 'background.default',
+          borderRadius: '24px 24px 0 0',
           position: 'relative',
-          width: { xs: '98%', md: '95%' }, 
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: -10,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '60px',
-            height: '6px',
-            bgcolor: 'divider',
-            borderRadius: '3px',
-          },
-        }}>
+          zIndex: 1,
+        }}
+      >
+        <Box
+          sx={{
+            maxWidth: '1200px',
+            mx: 'auto',
+            bgcolor: 'background.paper',
+            borderRadius: '20px',
+            p: { xs: 2, md: 4 },
+            boxShadow: '0 8px 40px rgba(0,0,0,0.15)',
+            border: '1px solid',
+            borderColor: 'divider',
+            position: 'relative',
+            width: { xs: '98%', md: '95%' },
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: -10,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '60px',
+              height: '6px',
+              bgcolor: 'divider',
+              borderRadius: '3px',
+            },
+          }}
+        >
           <IdeasMaterialSection
             section={sectionData}
             onUpdate={handleSectionUpdate}
             isCreationMode={true}
           />
 
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            mt: 4,
-            pt: 3,
-            borderTop: '1px solid',
-            borderColor: 'divider',
-            gap: 2,
-          }}>
-            <Box sx={{
+          <Box
+            sx={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: 1,
-              p: 2,
-              borderRadius: 2,
-              bgcolor: sectionData.medias.length > 0 ? 'success.50' : 'warning.50',
-              border: `1px solid ${sectionData.medias.length > 0 ? 'success.main' : 'warning.main'}`,
-              width: '100%',
-              maxWidth: 400,
-            }}>
+              mt: 4,
+              pt: 3,
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              gap: 2,
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                p: 2,
+                borderRadius: 2,
+                bgcolor: sectionData.medias.length > 0 ? 'success.50' : 'warning.50',
+                border: `1px solid ${sectionData.medias.length > 0 ? 'success.main' : 'warning.main'}`,
+                width: '100%',
+                maxWidth: 400,
+              }}
+            >
               <Typography
                 variant="body2"
                 sx={{
@@ -330,17 +350,21 @@ export function IdeasSectionUserCreator() {
                   flex: 1,
                 }}
               >
-                {sectionData.medias.length > 0 
+                {sectionData.medias.length > 0
                   ? `✅ ${sectionData.medias.length} mídia(s) adicionada(s)`
-                  : '⚠️ Adicione pelo menos uma mídia (vídeo, imagem ou documento)'
-                }
+                  : '⚠️ Adicione pelo menos uma mídia (vídeo, imagem ou documento)'}
               </Typography>
             </Box>
 
             <Button
               variant="contained"
               onClick={handleShareIdea}
-              disabled={loading || !sectionData.title.trim() || !sectionData.description.trim() || sectionData.medias.length === 0}
+              disabled={
+                loading ||
+                !sectionData.title.trim() ||
+                !sectionData.description.trim() ||
+                sectionData.medias.length === 0
+              }
               startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
               sx={{
                 px: { xs: 4, md: 6 },

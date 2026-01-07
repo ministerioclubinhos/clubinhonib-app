@@ -31,12 +31,13 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
   const { ideasSectionData } = useSelector((state: RootState) => state.ideas);
 
   const [sectionData, setSectionData] = useState<IdeasSection>(
-    existingSection || ideasSectionData || {
-      title: '',
-      description: '',
-      medias: [],
-      public: true,
-    }
+    existingSection ||
+      ideasSectionData || {
+        title: '',
+        description: '',
+        medias: [],
+        public: true,
+      }
   );
   const [selectedPage, setSelectedPage] = useState<{ id: string; title: string } | null>(null);
   const [pages, setPages] = useState<{ id: string; title: string }[]>([]);
@@ -109,7 +110,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
           mediaType: media.mediaType,
           uploadType: media.uploadType,
           hasFile: !!media.file,
-          hasUrl: !!media.url
+          hasUrl: !!media.url,
         });
 
         const baseItem = {
@@ -125,7 +126,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
             console.log(`📋 Mídia existente mantida: ${media.title}`, {
               id: media.id,
               url: media.url,
-              originalName: media.originalName
+              originalName: media.originalName,
             });
 
             return {
@@ -133,7 +134,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
               id: media.id,
               url: media.url,
               originalName: media.originalName,
-              size: media.size
+              size: media.size,
             };
           }
 
@@ -144,7 +145,8 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
 
           mediaTypeCounters[media.mediaType as keyof typeof mediaTypeCounters]++;
           const count = mediaTypeCounters[media.mediaType as keyof typeof mediaTypeCounters];
-          const fieldKey = count === 1 ? `${media.mediaType}_upload` : `${media.mediaType}${count}_upload`;
+          const fieldKey =
+            count === 1 ? `${media.mediaType}_upload` : `${media.mediaType}${count}_upload`;
 
           console.log(`📁 Adicionando arquivo: ${fieldKey}`, media.file.name);
           formData.append(fieldKey, media.file);
@@ -154,7 +156,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
               ...baseItem,
               id: media.id,
               fieldKey,
-              originalName: media.file.name
+              originalName: media.file.name,
             };
           }
 
@@ -169,14 +171,14 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
               ...baseItem,
               id: media.id,
               url: media.url,
-              platformType: media.platformType
+              platformType: media.platformType,
             };
           }
 
           return {
             ...baseItem,
             url: media.url,
-            platformType: media.platformType
+            platformType: media.platformType,
           };
         }
 
@@ -184,7 +186,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
           uploadType: media.uploadType,
           hasFile: !!media.file,
           hasUrl: !!media.url,
-          mediaType: media.mediaType
+          mediaType: media.mediaType,
         });
 
         return baseItem;
@@ -198,13 +200,16 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
       };
 
       console.log('📦 Payload final:', JSON.stringify(payloadData, null, 2));
-      console.log('📋 Medias payload:', mediasPayload.map(m => ({
-        title: m.title,
-        uploadType: m.uploadType,
-        hasFieldKey: !!(m as any).fieldKey,
-        fieldKey: (m as any).fieldKey,
-        hasUrl: !!(m as any).url
-      })));
+      console.log(
+        '📋 Medias payload:',
+        mediasPayload.map((m) => ({
+          title: m.title,
+          uploadType: m.uploadType,
+          hasFieldKey: !!(m as any).fieldKey,
+          fieldKey: (m as any).fieldKey,
+          hasUrl: !!(m as any).url,
+        }))
+      );
 
       formData.append('sectionData', JSON.stringify(payloadData));
 
@@ -241,25 +246,29 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
         bgcolor: 'background.default',
       }}
     >
-      <Box sx={{
-        py: { xs: 1, md: 4 },
-        px: 0,
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
-        flexShrink: 0,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-        borderRadius: '0 0 16px 16px',
-        width: { xs: '98%', md: 'auto' },
-        mx: { xs: 'auto', md: 0 },
-        position: 'relative',
-      }}>
-        <Box sx={{
-          position: 'absolute',
-          top: { xs: 12, md: 16 },
-          left: { xs: 12, md: 16 },
-          zIndex: 2,
-        }}>
+      <Box
+        sx={{
+          py: { xs: 1, md: 4 },
+          px: 0,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+          flexShrink: 0,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+          borderRadius: '0 0 16px 16px',
+          width: { xs: '98%', md: 'auto' },
+          mx: { xs: 'auto', md: 0 },
+          position: 'relative',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: { xs: 12, md: 16 },
+            left: { xs: 12, md: 16 },
+            zIndex: 2,
+          }}
+        >
           <IconButton
             onClick={handleBack}
             sx={{
@@ -300,17 +309,19 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
           🔧 Editar Seção de Ideias
         </Typography>
 
-        <Box sx={{
-          display: 'flex',
-          gap: { xs: 2, md: 3 },
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          mt: 2,
-          justifyContent: 'center',
-          maxWidth: '800px',
-          mx: 'auto',
-          flexDirection: { xs: 'column', sm: 'row' },
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: { xs: 2, md: 3 },
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            mt: 2,
+            justifyContent: 'center',
+            maxWidth: '800px',
+            mx: 'auto',
+            flexDirection: { xs: 'column', sm: 'row' },
+          }}
+        >
           <FormControl sx={{ minWidth: { xs: '100%', sm: 250 } }} required error={!selectedPage}>
             <InputLabel>Página de Destino *</InputLabel>
             <Select
@@ -319,7 +330,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
               size="small"
               onChange={(e) => {
                 const pageId = e.target.value;
-                const page = pages.find(p => p.id === pageId);
+                const page = pages.find((p) => p.id === pageId);
                 setSelectedPage(page || null);
               }}
               disabled={pagesLoading}
@@ -373,17 +384,19 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
         </Box>
 
         {selectedPage && (
-          <Box sx={{
-            mt: 2,
-            p: 2,
-            bgcolor: 'success.light',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            maxWidth: '400px',
-            mx: 'auto',
-          }}>
+          <Box
+            sx={{
+              mt: 2,
+              p: 2,
+              bgcolor: 'success.light',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              maxWidth: '400px',
+              mx: 'auto',
+            }}
+          >
             <Typography variant="body2" color="success.contrastText">
               📄 Publicando em: <strong>{selectedPage.title}</strong>
             </Typography>
@@ -391,29 +404,37 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
         )}
 
         {!selectedPage && (
-          <Typography variant="caption" color="error" sx={{ mt: 2, display: 'block', textAlign: 'center' }}>
+          <Typography
+            variant="caption"
+            color="error"
+            sx={{ mt: 2, display: 'block', textAlign: 'center' }}
+          >
             ⚠️ Este campo é obrigatório para vincular a seção
           </Typography>
         )}
       </Box>
 
-      <Box sx={{
-        flex: 1,
-        p: { xs: 2, md: 4 },
-        bgcolor: 'background.default',
-        minHeight: 'calc(100vh - 200px)',
-      }}>
-        <Box sx={{
-          maxWidth: '1200px',
-          mx: 'auto',
-          bgcolor: 'background.paper',
-          borderRadius: '16px',
+      <Box
+        sx={{
+          flex: 1,
           p: { xs: 2, md: 4 },
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          border: '1px solid',
-          borderColor: 'divider',
-          width: { xs: '98%', md: 'auto' },
-        }}>
+          bgcolor: 'background.default',
+          minHeight: 'calc(100vh - 200px)',
+        }}
+      >
+        <Box
+          sx={{
+            maxWidth: '1200px',
+            mx: 'auto',
+            bgcolor: 'background.paper',
+            borderRadius: '16px',
+            p: { xs: 2, md: 4 },
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+            border: '1px solid',
+            borderColor: 'divider',
+            width: { xs: '98%', md: 'auto' },
+          }}
+        >
           <IdeasMaterialSection
             section={sectionData}
             onUpdate={handleSectionUpdate}

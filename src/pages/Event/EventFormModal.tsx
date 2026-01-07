@@ -130,9 +130,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
       onClose();
     } catch (error) {
       const errMessage =
-        error instanceof Error && error.message
-          ? error.message
-          : 'Erro ao salvar evento.';
+        error instanceof Error && error.message ? error.message : 'Erro ao salvar evento.';
       setSnackbar({ open: true, message: errMessage, severity: 'error' });
     } finally {
       setLoading(false);

@@ -18,21 +18,48 @@ interface Props {
 }
 
 const DocumentMediaForm: React.FC<Props> = ({
-  mediaTitle, setMediaTitle, mediaDescription, setMediaDescription,
-  uploadType, setUploadType, url, setUrl, platformType, setPlatformType, file, setFile,
+  mediaTitle,
+  setMediaTitle,
+  mediaDescription,
+  setMediaDescription,
+  uploadType,
+  setUploadType,
+  url,
+  setUrl,
+  platformType,
+  setPlatformType,
+  file,
+  setFile,
 }) => {
   return (
     <Fragment>
       <Grid item xs={12} sm={6}>
-        <TextField fullWidth label="Título da Mídia" value={mediaTitle} onChange={(e) => setMediaTitle(e.target.value)} required />
+        <TextField
+          fullWidth
+          label="Título da Mídia"
+          value={mediaTitle}
+          onChange={(e) => setMediaTitle(e.target.value)}
+          required
+        />
       </Grid>
       <Grid item xs={12} sm={6}>
-        <TextField fullWidth label="Descrição da Mídia" value={mediaDescription} onChange={(e) => setMediaDescription(e.target.value)} multiline rows={2} />
+        <TextField
+          fullWidth
+          label="Descrição da Mídia"
+          value={mediaDescription}
+          onChange={(e) => setMediaDescription(e.target.value)}
+          multiline
+          rows={2}
+        />
       </Grid>
       <Grid item xs={12} sm={6}>
         <FormControl fullWidth>
           <InputLabel>Tipo de Upload</InputLabel>
-          <Select value={uploadType} label="Tipo de Upload" onChange={(e) => setUploadType(e.target.value as MediaUploadType)}>
+          <Select
+            value={uploadType}
+            label="Tipo de Upload"
+            onChange={(e) => setUploadType(e.target.value as MediaUploadType)}
+          >
             <MenuItem value={MediaUploadType.LINK}>Link</MenuItem>
             <MenuItem value={MediaUploadType.UPLOAD}>Upload</MenuItem>
           </Select>
@@ -42,12 +69,22 @@ const DocumentMediaForm: React.FC<Props> = ({
       {uploadType === MediaUploadType.LINK && (
         <Fragment>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth label="URL da Mídia" value={url} onChange={(e) => setUrl(e.target.value)} required />
+            <TextField
+              fullWidth
+              label="URL da Mídia"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              required
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Plataforma</InputLabel>
-              <Select value={platformType} label="Plataforma" onChange={(e) => setPlatformType(e.target.value as MediaPlatform)}>
+              <Select
+                value={platformType}
+                label="Plataforma"
+                onChange={(e) => setPlatformType(e.target.value as MediaPlatform)}
+              >
                 <MenuItem value={MediaPlatform.GOOGLE_DRIVE}>Google Drive</MenuItem>
                 <MenuItem value={MediaPlatform.ONEDRIVE}>OneDrive</MenuItem>
                 <MenuItem value={MediaPlatform.DROPBOX}>Dropbox</MenuItem>

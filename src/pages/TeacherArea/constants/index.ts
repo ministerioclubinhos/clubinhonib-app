@@ -1,4 +1,5 @@
-export const MOTIVATION_TEXT = '💬 Que tal aproveitar esta semana para compartilhar o amor de Jesus com as crianças da sua comunidade?';
+export const MOTIVATION_TEXT =
+  '💬 Que tal aproveitar esta semana para compartilhar o amor de Jesus com as crianças da sua comunidade?';
 
 export const SECTION_DATA = [
   {

@@ -28,21 +28,16 @@ export default function VideosManager() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const {
-    pages,
-    filtered,
-    loading,
-    error,
-    search,
-    setSearch,
-    fetchPages,
-    removePage,
-    setError,
-  } = useVideoPages();
+  const { pages, filtered, loading, error, search, setSearch, fetchPages, removePage, setError } =
+    useVideoPages();
 
   const [selectedPage, setSelectedPage] = useState<VideoPageData | null>(null);
   const [pageToDelete, setPageToDelete] = useState<VideoPageData | null>(null);
-  const [snackbar, setSnackbar] = useState<{open:boolean; message:string; severity:'success'|'error'}>({
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
     open: false,
     message: '',
     severity: 'success',
@@ -83,10 +78,14 @@ export default function VideosManager() {
       </Paper>
 
       {loading ? (
-        <Box textAlign="center" mt={10}><CircularProgress /></Box>
+        <Box textAlign="center" mt={10}>
+          <CircularProgress />
+        </Box>
       ) : error ? (
         <Box textAlign="center" mt={10}>
-          <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
+          <Alert severity="error" onClose={() => setError('')}>
+            {error}
+          </Alert>
         </Box>
       ) : filtered.length === 0 ? (
         <Box textAlign="center" mt={10}>
@@ -97,15 +96,7 @@ export default function VideosManager() {
       ) : (
         <Grid container spacing={3} justifyContent="center">
           {filtered.map((page) => (
-            <Grid
-              item
-              key={page.id}
-              xs={12}
-              sm={6}
-              md={4}
-              lg={3}
-              sx={{ display: 'flex' }}
-            >
+            <Grid item key={page.id} xs={12} sm={6} md={4} lg={3} sx={{ display: 'flex' }}>
               <VideoPageCard
                 page={page}
                 onView={() => setSelectedPage(page)}

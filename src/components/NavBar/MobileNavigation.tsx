@@ -7,7 +7,7 @@ import NavLinks from './NavLinks';
 const MobileNavigation: React.FC = () => {
   const [open, setOpen] = useState(false);
 
-  const toggleDrawer = () => setOpen(s => !s);
+  const toggleDrawer = () => setOpen((s) => !s);
   const closeDrawer = () => setOpen(false);
 
   return (

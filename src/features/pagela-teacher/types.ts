@@ -15,7 +15,6 @@ export type Pagela = {
 
 export type PageDto<T> = { items: T[]; total: number; page: number; limit: number };
 
-
 export type CreatePagelaPayload = {
   childId: string;
   teacherProfileId?: string | null;
@@ -28,6 +27,6 @@ export type CreatePagelaPayload = {
   notes?: string | null;
 };
 
-export type UpdatePagelaPayload = Partial<Omit<CreatePagelaPayload, "childId">> & {
+export type UpdatePagelaPayload = Partial<Omit<CreatePagelaPayload, 'childId'>> & {
   teacherProfileId?: string | null;
 };

@@ -53,6 +53,7 @@ src/pages/TeacherArea/
 ## 🎯 Organização por Categoria
 
 ### Banners
+
 - **IdeasSharingBanner**: Banner para compartilhar ideias
 - **SpecialFamilyCallout**: Banner para eventos especiais da família
 - **TeacherWeekBanner**: Banner dos materiais da semana
@@ -60,6 +61,7 @@ src/pages/TeacherArea/
 - **InformativeBanner**: Banner informativo geral
 
 ### Sections
+
 - **BannerSection**: Gerencia a exibição dos banners
 - **MotivationSection**: Seção de texto motivacional
 - **TeacherContent**: Conteúdo principal para professores logados
@@ -70,12 +72,15 @@ src/pages/TeacherArea/
 - **WeekMaterialsList**: Lista de materiais da semana
 
 ### Buttons
+
 - **FofinhoButton**: Botão principal de navegação
 
 ### Forms
+
 - **SiteFeedbackForm**: Formulário de feedback do site
 
 ### Modals
+
 - **AddImageModal**: Modal para adicionar imagens
 - **ConfirmModal**: Modal de confirmação
 - **NotificationModal**: Modal de notificações

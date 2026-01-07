@@ -13,13 +13,11 @@
 #### O Que Mudou
 
 1. **Indicadores POSITIVOS e NEGATIVOS só são gerados se estiver DENTRO do período letivo:**
-
    - Sem período letivo cadastrado → `indicators: []` (array vazio)
    - Fora do período letivo → `indicators: []` (array vazio)
    - Dentro do período letivo → Indicadores gerados normalmente
 
 2. **Comportamento Detalhado:**
-
    - **Sem Período Letivo Cadastrado:**
      - `status: 'ok'`
      - `indicators: []` (array vazio)
@@ -40,7 +38,6 @@
      - ✅ Indicadores gerados normalmente
 
 3. **Frontend Atualizado:**
-
    - Exibe mensagem informativa quando `indicators` está vazio
    - Mostra alerta explicativo para status `out_of_period`
    - Exibe `note` quando disponível para informar o usuário
@@ -49,6 +46,7 @@
 #### Mudanças Técnicas
 
 **Componentes (`ControlDashboard.tsx`):**
+
 - ✅ Adicionada lógica para exibir mensagem quando `indicators` está vazio
 - ✅ Alert informativo para status `out_of_period` explicando que indicadores não são gerados
 - ✅ Exibição do campo `note` quando disponível
@@ -57,6 +55,7 @@
 #### Estrutura de Resposta
 
 **Sem Período Letivo:**
+
 ```json
 {
   "status": "ok",
@@ -71,6 +70,7 @@
 ```
 
 **Fora do Período Letivo:**
+
 ```json
 {
   "status": "out_of_period",
@@ -90,6 +90,7 @@
 ```
 
 **Dentro do Período Letivo:**
+
 ```json
 {
   "status": "partial",
@@ -144,9 +145,11 @@
 #### Mudanças Técnicas
 
 **API (`api.ts`):**
+
 - ✅ Atualizado tipo `ClubCheckResult.children` com campos `activeCount?`, `inactiveCount?`, `note?`
 
 **Componentes (`ControlDashboard.tsx`):**
+
 - ✅ Adicionado chip na tabela mostrando crianças inativas
 - ✅ Adicionada seção "Informações sobre Crianças" nos detalhes expansíveis
 - ✅ Exibe contagem de crianças ativas e inativas
@@ -194,16 +197,19 @@ children: {
 #### Exemplo Prático
 
 **Cenário:**
+
 - Ano letivo: 01/03/2025 a 30/11/2025
 - Criança "João" entrou em 15/06/2025
 - Verificação na semana de 10/05/2025 (antes da entrada)
 
 **Resultado:**
+
 - ❌ João **NÃO** aparece na lista de crianças faltantes
 - ✅ João **NÃO** gera indicador negativo
 - ✅ Total de crianças considera apenas as que já tinham entrado
 
 **Cenário 2:**
+
 - Verificação na semana de 20/06/2025 (após a entrada)
 - Resultado:
   - ✅ João **aparece** na lista de crianças esperadas
@@ -249,6 +255,7 @@ children: {
 #### Mudanças Técnicas
 
 **Componente (`ControlDashboard.tsx`):**
+
 - ✅ Adicionados estados para filtros (`statusFilter`, `severityFilter`, `weekdayFilter`, `hasProblemsFilter`)
 - ✅ Implementado `useMemo` para filtrar clubes
 - ✅ Adicionada paginação local (`localPage`, `localRowsPerPage`)
@@ -310,18 +317,20 @@ children: {
 #### Mudanças Técnicas
 
 **API (`api.ts`):**
+
 - ✅ Atualizado tipo `indicators` em `ClubCheckResult` com campo `details?`
 - ✅ Adicionado tipo `DetailedIndicatorsResponse` para o novo endpoint
 - ✅ Adicionado método `getDetailedIndicators(year, week)`
 
 **Hooks (`hooks.ts`):**
+
 - ✅ Adicionado hook `useDetailedIndicators(year, week)`
 
 #### Estrutura dos Indicadores Melhorados
 
 ```typescript
 indicators?: Array<{
-  type: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' | 
+  type: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' |
         'exception' | 'no_weekday' | 'out_of_period';
   severity: 'success' | 'warning' | 'critical' | 'info';
   message: string;
@@ -386,15 +395,15 @@ const { data, isLoading } = useDetailedIndicators(2025, 47);
 if (data) {
   // Resumo executivo
   console.log(data.executiveSummary.overall.totalClubs);
-  
+
   // Indicadores críticos
-  data.indicators.critical.forEach(indicator => {
+  data.indicators.critical.forEach((indicator) => {
     console.log(indicator.message);
     console.log(indicator.details?.urgency);
   });
-  
+
   // Recomendações
-  data.recommendations?.forEach(rec => {
+  data.recommendations?.forEach((rec) => {
     console.log(rec.message);
   });
 }
@@ -436,14 +445,17 @@ interface CurrentWeekInfo {
 #### Mudanças Técnicas
 
 **API (`api.ts`):**
+
 - ✅ Adicionado tipo `CurrentWeekInfo`
 - ✅ Atualizado `WeekCheckResult` com campo `currentWeek?`
 - ✅ Adicionado método `getCurrentWeek()`
 
 **Hooks (`hooks.ts`):**
+
 - ✅ Adicionado hook `useCurrentWeek()`
 
 **Componentes:**
+
 - ✅ `ControlDashboard` - exibe informação da semana atual do ano letivo no cabeçalho
 - ✅ Mostra chip "Dentro do Período" ou "Fora do Período"
 - ✅ Exibe número da semana do ano letivo e ano letivo
@@ -504,17 +516,20 @@ interface CurrentWeekInfo {
 #### Mudanças Técnicas
 
 **API (`api.ts`):**
+
 - ✅ Adicionado tipo `PaginationMeta`
 - ✅ Adicionado tipo `PaginatedResponse<T>`
 - ✅ Atualizado `WeekCheckResult` com campo `pagination`
 - ✅ Atualizados métodos da API para aceitar `page` e `limit`
 
 **Hooks (`hooks.ts`):**
+
 - ✅ `useAcademicPeriods(page, limit)` - agora aceita paginação
 - ✅ `useWeekdayExceptions({ page, limit })` - agora aceita paginação
 - ✅ `useWeekCheck(year, week, page, limit)` - agora aceita paginação
 
 **Componentes:**
+
 - ✅ `ControlDashboard` - adicionada paginação na lista de clubes
 - ✅ `PeriodManagement` - adicionada paginação na lista de períodos
 - ✅ `ExceptionManagement` - adicionada paginação na lista de exceções
@@ -533,12 +548,12 @@ O frontend agora suporta a **regra de negócio mais importante**: verificação 
 
 ```typescript
 // Status atualizado
-export type ClubStatus = 
-  | 'ok' 
-  | 'partial' 
-  | 'missing' 
-  | 'exception' 
-  | 'inactive' 
+export type ClubStatus =
+  | 'ok'
+  | 'partial'
+  | 'missing'
+  | 'exception'
+  | 'inactive'
   | 'out_of_period'; // ⭐ NOVO
 
 // Config visual
@@ -601,6 +616,7 @@ summary: {
 ### 🎯 Regra de Negócio Implementada
 
 **Quando um clube está fora do período letivo:**
+
 - ❌ **Não gera alertas** de crianças faltantes
 - ❌ **Não considera como falha** nas estatísticas
 - ✅ **Exibe indicador informativo** "Fora do período letivo"
@@ -608,12 +624,12 @@ summary: {
 
 ### 📊 Impacto
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| **Alertas Desnecessários** | ❌ Gerava | ✅ Não gera |
-| **Férias Escolares** | ❌ Ignorava | ✅ Respeita |
-| **Estatísticas** | ❌ Incorretas | ✅ Precisas |
-| **UX** | ❌ Confusa | ✅ Clara |
+| Aspecto                    | Antes         | Depois      |
+| -------------------------- | ------------- | ----------- |
+| **Alertas Desnecessários** | ❌ Gerava     | ✅ Não gera |
+| **Férias Escolares**       | ❌ Ignorava   | ✅ Respeita |
+| **Estatísticas**           | ❌ Incorretas | ✅ Precisas |
+| **UX**                     | ❌ Confusa    | ✅ Clara    |
 
 ---
 
@@ -658,18 +674,21 @@ case 'inactive':
 ### 🐛 Bugs Corrigidos no Backend (Impacto no Frontend)
 
 #### 1. Query SQL Inválida ✅
+
 - **Problema Backend:** Navegação aninhada `child.club.id` causava erro
 - **Impacto Frontend:** Requests falhavam com erro 500
 - **Solução Backend:** Join explícito adicionado
 - **Resultado:** ✅ Endpoints agora respondem corretamente
 
 #### 2. Loop Infinito ✅
+
 - **Problema Backend:** Cálculo de data travava com weekday inválido
 - **Impacto Frontend:** Loading infinito ao verificar clubes
 - **Solução Backend:** Proteção com contador de iterações
 - **Resultado:** ✅ Timeout máximo de 7 iterações
 
 #### 3. Dados Inconsistentes ✅
+
 - **Problema Backend:** Clubes sem `weekday` causavam erro 500
 - **Impacto Frontend:** Aplicação travava ao carregar dashboard
 - **Solução Backend:** Novo status `inactive` com tratamento especial
@@ -677,11 +696,11 @@ case 'inactive':
 
 ### 📊 Melhorias de Performance
 
-| Métrica | Antes | Depois | Melhoria |
-|---------|-------|--------|----------|
-| Tempo de Resposta | Timeout/Erro | < 1s | ✅ 100% |
-| Erros 500 | Frequentes | 0 | ✅ 100% |
-| Compatibilidade | Dados perfeitos | Dados legados | ✅ Robusto |
+| Métrica           | Antes           | Depois        | Melhoria   |
+| ----------------- | --------------- | ------------- | ---------- |
+| Tempo de Resposta | Timeout/Erro    | < 1s          | ✅ 100%    |
+| Erros 500         | Frequentes      | 0             | ✅ 100%    |
+| Compatibilidade   | Dados perfeitos | Dados legados | ✅ Robusto |
 
 ---
 
@@ -720,7 +739,7 @@ case 'inactive':
 ```typescript
 // Estrutura GLOBAL implementada
 interface AcademicPeriod {
-  year: number;        // SEM clubId
+  year: number; // SEM clubId
   startDate: string;
   endDate: string;
   description: string;
@@ -728,10 +747,10 @@ interface AcademicPeriod {
 }
 
 interface WeekdayException {
-  exceptionDate: string;  // SEM clubId
+  exceptionDate: string; // SEM clubId
   reason: string;
   type: 'holiday' | 'event' | 'maintenance' | 'vacation' | 'other';
-  isRecurrent: boolean;   // NOVO campo
+  isRecurrent: boolean; // NOVO campo
   notes?: string;
 }
 ```
@@ -779,11 +798,13 @@ src/features/club-control/
 #### Como Ativar o Módulo
 
 1. Crie arquivo `.env` na raiz:
+
    ```bash
    VITE_CLUB_CONTROL_ENABLED=true
    ```
 
 2. Reinicie o servidor:
+
    ```bash
    npm run dev
    ```
@@ -857,14 +878,14 @@ User Interface
 
 ### Sincronização
 
-| Aspecto | Status |
-|---------|--------|
-| **API Types** | ✅ 100% Sincronizado |
-| **Endpoints** | ✅ 9/9 Implementados |
-| **Hooks** | ✅ 8/8 Funcionais |
-| **Components** | ✅ 3/3 Completos |
+| Aspecto          | Status                                   |
+| ---------------- | ---------------------------------------- |
+| **API Types**    | ✅ 100% Sincronizado                     |
+| **Endpoints**    | ✅ 9/9 Implementados                     |
+| **Hooks**        | ✅ 8/8 Funcionais                        |
+| **Components**   | ✅ 3/3 Completos                         |
 | **Status Types** | ✅ 5/5 Suportados (incluindo `inactive`) |
-| **Documentação** | ✅ 100% Atualizada |
+| **Documentação** | ✅ 100% Atualizada                       |
 
 ---
 
@@ -877,6 +898,7 @@ User Interface
 **Solução:** ✅ Implementado `enabled: BACKEND_ENABLED`
 
 **Como Desabilitar:**
+
 ```bash
 # Remova ou comente no .env
 # VITE_CLUB_CONTROL_ENABLED=true
@@ -889,6 +911,7 @@ User Interface
 **Solução:** ✅ Atualizar backend para v1.0.1+
 
 **Verificar:**
+
 ```bash
 GET http://localhost:3000/club-control/dashboard
 ```
@@ -933,7 +956,7 @@ GET http://localhost:3000/club-control/dashboard
 
 **Desenvolvido com 💙 para o Clubinho NIB**
 
-*Garantindo que nenhuma criança fique sem ser atendida!* 🎯
+_Garantindo que nenhuma criança fique sem ser atendida!_ 🎯
 
 ---
 
@@ -941,4 +964,3 @@ GET http://localhost:3000/club-control/dashboard
 **Versão Backend**: 1.4.0  
 **Status**: ✅ 100% SINCRONIZADO  
 **Data**: 15/11/2024
-

@@ -27,13 +27,13 @@ interface Props {
   onSelect: (page: IdeasPage) => void;
 }
 
-export default function IdeasPageSelectionModal({ 
-  open, 
-  pages, 
-  loading, 
-  error, 
-  onClose, 
-  onSelect 
+export default function IdeasPageSelectionModal({
+  open,
+  pages,
+  loading,
+  error,
+  onClose,
+  onSelect,
 }: Props) {
   const handleSelect = (page: IdeasPage) => {
     onSelect(page);
@@ -49,13 +49,13 @@ export default function IdeasPageSelectionModal({
       aria-labelledby="page-selection-title"
       sx={{ '& .MuiDialog-paper': { borderRadius: 3 } }}
     >
-      <DialogTitle 
+      <DialogTitle
         id="page-selection-title"
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          pr: 1 
+          pr: 1,
         }}
       >
         Selecionar Página de Ideias
@@ -65,12 +65,12 @@ export default function IdeasPageSelectionModal({
           </IconButton>
         </Tooltip>
       </DialogTitle>
-      
+
       <DialogContent sx={{ pb: 1 }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Escolha a página de ideias onde esta seção será publicada:
         </Typography>
-        
+
         {loading ? (
           <Box display="flex" justifyContent="center" py={4}>
             <CircularProgress />
@@ -80,9 +80,7 @@ export default function IdeasPageSelectionModal({
             {error}
           </Alert>
         ) : pages.length === 0 ? (
-          <Alert severity="info">
-            Nenhuma página de ideias encontrada.
-          </Alert>
+          <Alert severity="info">Nenhuma página de ideias encontrada.</Alert>
         ) : (
           <List sx={{ maxHeight: 400, overflow: 'auto' }}>
             {pages.map((page) => (
@@ -108,7 +106,7 @@ export default function IdeasPageSelectionModal({
                           {page.subtitle}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {page.sections?.length || 0} seção(ões) • 
+                          {page.sections?.length || 0} seção(ões) •
                           {page.public ? ' Público' : ' Privado'}
                         </Typography>
                       </Box>
@@ -121,7 +119,7 @@ export default function IdeasPageSelectionModal({
           </List>
         )}
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose} variant="outlined">
           Cancelar
@@ -130,4 +128,3 @@ export default function IdeasPageSelectionModal({
     </Dialog>
   );
 }
-

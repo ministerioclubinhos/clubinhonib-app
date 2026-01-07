@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Box, CircularProgress, Alert, Typography, Stack, Container } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from 'store/slices';
-import { setInformativeBanner, InformativeBannerData } from 'store/slices/informative/informativeBannerSlice';
+import {
+  setInformativeBanner,
+  InformativeBannerData,
+} from 'store/slices/informative/informativeBannerSlice';
 import { useInformativeBanners } from './hooks';
 import { deleteBannerApi } from './api';
 
@@ -57,7 +60,14 @@ export default function InformativeBannerLManager() {
 
   return (
     <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh' }}>
-      <Container sx={{ maxWidth: { xs: '100%', md: '100%' }, px: { xs: 2, md: 3 }, pt: { xs: 0, md: 4 }, pb: 4 }}>
+      <Container
+        sx={{
+          maxWidth: { xs: '100%', md: '100%' },
+          px: { xs: 2, md: 3 },
+          pt: { xs: 0, md: 4 },
+          pb: 4,
+        }}
+      >
         <BackHeader title="Banners Informativos" />
         <Stack
           direction={{ xs: 'column', md: 'row' }}
@@ -80,7 +90,11 @@ export default function InformativeBannerLManager() {
         ) : error ? (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
-            <Box component="span" sx={{ ml: 2, textDecoration: 'underline', cursor: 'pointer' }} onClick={fetchBanners}>
+            <Box
+              component="span"
+              sx={{ ml: 2, textDecoration: 'underline', cursor: 'pointer' }}
+              onClick={fetchBanners}
+            >
               Tentar novamente
             </Box>
           </Alert>

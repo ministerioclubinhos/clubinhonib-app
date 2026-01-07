@@ -25,11 +25,19 @@ export const useControlDashboard = (page: number = 1, limit: number = 20) => {
 // Hook para verificar semana específica (com paginação v1.1.0)
 // ⭐ v1.8.0: year e week são opcionais - se não fornecidos, calcula semana atual automaticamente
 // ⭐ v1.8.0: Limite padrão é 50 conforme documentação
-export const useWeekCheck = (year?: number, week?: number, page: number = 1, limit: number = 50) => {
+export const useWeekCheck = (
+  year?: number,
+  week?: number,
+  page: number = 1,
+  limit: number = 50
+) => {
   return useQuery({
     queryKey: ['weekCheck', year, week, page, limit],
     queryFn: async () => {
-      const params: { year?: number; week?: number; page?: number; limit?: number } = { page, limit };
+      const params: { year?: number; week?: number; page?: number; limit?: number } = {
+        page,
+        limit,
+      };
       if (year !== undefined && week !== undefined) {
         params.year = year;
         params.week = week;
@@ -81,13 +89,22 @@ export const useCurrentWeek = () => {
 // Hook para análise detalhada dos indicadores ⭐ NOVO v1.3.0
 // ⭐ v1.3.1: Suporta filtros avançados e paginação
 export const useDetailedIndicators = (
-  year: number, 
+  year: number,
   week: number,
   filters?: {
     status?: 'ok' | 'partial' | 'missing' | 'exception' | 'inactive' | 'out_of_period';
     severity?: 'critical' | 'warning' | 'info' | 'success';
     weekday?: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
-    indicatorType?: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' | 'exception' | 'no_weekday' | 'out_of_period' | 'club_inactive' | 'children_not_attending';
+    indicatorType?:
+      | 'all_ok'
+      | 'some_missing'
+      | 'no_pagela'
+      | 'no_children'
+      | 'exception'
+      | 'no_weekday'
+      | 'out_of_period'
+      | 'club_inactive'
+      | 'children_not_attending';
     hasProblems?: boolean;
     page?: number;
     limit?: number;
@@ -156,8 +173,13 @@ export const useCreatePeriod = () => {
 export const useUpdatePeriod = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ periodId, data }: { periodId: string; data: Partial<CreateAcademicPeriodDto> }) =>
-      clubControlApi.updatePeriod(periodId, data),
+    mutationFn: ({
+      periodId,
+      data,
+    }: {
+      periodId: string;
+      data: Partial<CreateAcademicPeriodDto>;
+    }) => clubControlApi.updatePeriod(periodId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academicPeriods'] });
       queryClient.invalidateQueries({ queryKey: ['academicPeriod'] });
@@ -184,7 +206,12 @@ export const useDeletePeriod = () => {
 // ========================================
 
 // Hook para listar exceções (com filtros e paginação v1.1.0)
-export const useWeekdayExceptions = (params?: { startDate?: string; endDate?: string; page?: number; limit?: number }) => {
+export const useWeekdayExceptions = (params?: {
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+}) => {
   return useQuery({
     queryKey: ['weekdayExceptions', params],
     queryFn: async () => {

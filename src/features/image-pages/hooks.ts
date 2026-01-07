@@ -25,7 +25,9 @@ export function useImagePages() {
     }
   }, []);
 
-  useEffect(() => { fetchPages(); }, [fetchPages]);
+  useEffect(() => {
+    fetchPages();
+  }, [fetchPages]);
 
   useEffect(() => {
     setIsFiltering(true);
@@ -34,23 +36,31 @@ export function useImagePages() {
       if (!term) {
         setFiltered(pages);
       } else {
-        setFiltered(
-          pages.filter((p) => (p.title ?? '').toLowerCase().includes(term)),
-        );
+        setFiltered(pages.filter((p) => (p.title ?? '').toLowerCase().includes(term)));
       }
       setIsFiltering(false);
     }, 300);
     return () => clearTimeout(t);
   }, [search, pages]);
 
-  const removePage = useCallback(async (id: string) => {
-    await apiDeleteImagePage(id);
-    await fetchPages();
-  }, [fetchPages]);
+  const removePage = useCallback(
+    async (id: string) => {
+      await apiDeleteImagePage(id);
+      await fetchPages();
+    },
+    [fetchPages]
+  );
 
-  const state = useMemo(() => ({
-    pages, filtered, loading, isFiltering, error,
-  }), [pages, filtered, loading, isFiltering, error]);
+  const state = useMemo(
+    () => ({
+      pages,
+      filtered,
+      loading,
+      isFiltering,
+      error,
+    }),
+    [pages, filtered, loading, isFiltering, error]
+  );
 
   return { ...state, search, setSearch, setError, fetchPages, removePage };
 }

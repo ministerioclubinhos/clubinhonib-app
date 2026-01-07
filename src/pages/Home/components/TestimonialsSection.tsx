@@ -9,7 +9,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
 
   useEffect(() => {
     if (testimonials.length === 0) return;
-    
+
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % testimonials.length);
     }, 5000);
@@ -43,7 +43,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
+          background:
+            'radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
           zIndex: 0,
         },
       }}
@@ -56,13 +57,14 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           left: 0,
           right: 0,
           height: '60px',
-          background: 'linear-gradient(to top, transparent 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 100%)',
+          background:
+            'linear-gradient(to top, transparent 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 100%)',
           zIndex: 2,
           borderTopLeftRadius: 0,
           borderTopRightRadius: 0,
         }}
       />
-      
+
       {/* Ondas Decorativas Superiores */}
       <motion.div
         style={{
@@ -71,7 +73,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           left: 0,
           right: 0,
           height: '40px',
-          background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
+          background:
+            'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
           clipPath: 'polygon(0 0%, 0 40%, 25% 60%, 50% 40%, 75% 70%, 100% 50%, 100% 0%)',
           zIndex: 1,
         }}
@@ -138,7 +141,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
             >
               <Card
                 sx={{
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 255, 0.9) 100%)',
+                  background:
+                    'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 255, 0.9) 100%)',
                   backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
                   borderRadius: 4,
@@ -206,7 +210,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                       fontSize: { xs: '0.9rem', md: '1rem' },
                     }}
                   >
-                    {testimonials[currentIndex].clubinho} - {testimonials[currentIndex].neighborhood}
+                    {testimonials[currentIndex].clubinho} -{' '}
+                    {testimonials[currentIndex].neighborhood}
                   </Typography>
                 </CardContent>
               </Card>
@@ -289,13 +294,14 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           left: 0,
           right: 0,
           height: '60px',
-          background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 100%)',
+          background:
+            'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.3) 100%)',
           zIndex: 2,
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
         }}
       />
-      
+
       {/* Ondas Decorativas Inferiores */}
       <motion.div
         style={{
@@ -304,7 +310,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           left: 0,
           right: 0,
           height: '40px',
-          background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
+          background:
+            'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
           clipPath: 'polygon(0 100%, 0 60%, 25% 40%, 50% 60%, 75% 30%, 100% 50%, 100% 100%)',
           zIndex: 1,
         }}

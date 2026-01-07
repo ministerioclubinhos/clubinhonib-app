@@ -209,13 +209,17 @@ const CommentsSection: React.FC = () => {
           </Box>
 
           <Box sx={{ mb: { xs: 2, md: 4 } }}>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 variant="contained"
-                startIcon={<ExpandMoreIcon sx={{ transform: formOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />}
+                startIcon={
+                  <ExpandMoreIcon
+                    sx={{
+                      transform: formOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.3s ease',
+                    }}
+                  />
+                }
                 onClick={() => setFormOpen(!formOpen)}
                 sx={{
                   mb: { xs: 2, md: 3 },
@@ -261,7 +265,11 @@ const CommentsSection: React.FC = () => {
                       variant="h6"
                       fontWeight="bold"
                       color="primary.main"
-                      sx={{ mb: { xs: 2, md: 3 }, textAlign: 'center', fontSize: { xs: '0.9rem', md: '1.25rem' } }}
+                      sx={{
+                        mb: { xs: 2, md: 3 },
+                        textAlign: 'center',
+                        fontSize: { xs: '0.9rem', md: '1.25rem' },
+                      }}
                     >
                       📝 Compartilhe sua experiência
                     </Typography>
@@ -291,7 +299,14 @@ const CommentsSection: React.FC = () => {
                               }
                               InputProps={{
                                 startAdornment: (
-                                  <Box sx={{ mr: 1, color: 'primary.main', display: 'flex', alignItems: 'center' }}>
+                                  <Box
+                                    sx={{
+                                      mr: 1,
+                                      color: 'primary.main',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                    }}
+                                  >
                                     {fieldIcons[field]}
                                   </Box>
                                 ),
@@ -318,10 +333,7 @@ const CommentsSection: React.FC = () => {
                     </Grid>
 
                     <Box sx={{ textAlign: 'center' }}>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <Button
                           variant="contained"
                           color="primary"
@@ -368,36 +380,38 @@ const CommentsSection: React.FC = () => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <Box sx={{
-                  position: 'relative',
-                  px: 1,
-                  '& .slick-prev:before, & .slick-next:before': {
-                    color: theme.palette.primary.main,
-                    fontSize: '28px'
-                  },
-                  '& .slick-prev': {
-                    left: { xs: 5, md: -30 },
-                    zIndex: 2,
-                  },
-                  '& .slick-next': {
-                    right: { xs: 5, md: -30 },
-                    zIndex: 2,
-                  },
-                  '& .slick-arrow': {
-                    width: { xs: 30, md: 40 },
-                    height: { xs: 30, md: 40 },
-                    backgroundColor: { xs: 'rgba(255,255,255,0.9)', md: 'transparent' },
-                    borderRadius: { xs: '50%', md: 0 },
-                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.2)', md: 'none' },
-                    '&:before': {
-                      fontSize: { xs: '20px', md: '28px' },
+                <Box
+                  sx={{
+                    position: 'relative',
+                    px: 1,
+                    '& .slick-prev:before, & .slick-next:before': {
                       color: theme.palette.primary.main,
+                      fontSize: '28px',
                     },
-                    '&:hover': {
-                      backgroundColor: { xs: 'rgba(255,255,255,1)', md: 'transparent' },
+                    '& .slick-prev': {
+                      left: { xs: 5, md: -30 },
+                      zIndex: 2,
                     },
-                  },
-                }}>
+                    '& .slick-next': {
+                      right: { xs: 5, md: -30 },
+                      zIndex: 2,
+                    },
+                    '& .slick-arrow': {
+                      width: { xs: 30, md: 40 },
+                      height: { xs: 30, md: 40 },
+                      backgroundColor: { xs: 'rgba(255,255,255,0.9)', md: 'transparent' },
+                      borderRadius: { xs: '50%', md: 0 },
+                      boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.2)', md: 'none' },
+                      '&:before': {
+                        fontSize: { xs: '20px', md: '28px' },
+                        color: theme.palette.primary.main,
+                      },
+                      '&:hover': {
+                        backgroundColor: { xs: 'rgba(255,255,255,1)', md: 'transparent' },
+                      },
+                    },
+                  }}
+                >
                   <Slider {...sliderSettings}>
                     {comments.map((comment, index) => (
                       <Box
@@ -432,8 +446,21 @@ const CommentsSection: React.FC = () => {
                               },
                             }}
                           >
-                            <CardContent sx={{ p: { xs: 1.5, md: 3 }, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
+                            <CardContent
+                              sx={{
+                                p: { xs: 1.5, md: 3 },
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  mb: { xs: 1.5, md: 2 },
+                                }}
+                              >
                                 <Avatar
                                   sx={{
                                     bgcolor: 'primary.main',
@@ -494,7 +521,12 @@ const CommentsSection: React.FC = () => {
 
                               {/* Footer com informações */}
                               <Box sx={{ mt: 'auto' }}>
-                                <Stack direction="row" spacing={{ xs: 0.5, md: 1 }} flexWrap="wrap" useFlexGap>
+                                <Stack
+                                  direction="row"
+                                  spacing={{ xs: 0.5, md: 1 }}
+                                  flexWrap="wrap"
+                                  useFlexGap
+                                >
                                   <Chip
                                     icon={<HomeIcon />}
                                     label={comment.clubinho}

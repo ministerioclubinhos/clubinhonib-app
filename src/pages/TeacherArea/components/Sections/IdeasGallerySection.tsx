@@ -28,10 +28,12 @@ const IdeasGallerySection: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState(false);
-  const filteredIdeas = routes.filter((route) => route.entityType === MediaTargetType.IdeasPage)
-    .filter((idea) =>
-      idea.title.toLowerCase().includes(search.toLowerCase()) ||
-      idea.subtitle.toLowerCase().includes(search.toLowerCase())
+  const filteredIdeas = routes
+    .filter((route) => route.entityType === MediaTargetType.IdeasPage)
+    .filter(
+      (idea) =>
+        idea.title.toLowerCase().includes(search.toLowerCase()) ||
+        idea.subtitle.toLowerCase().includes(search.toLowerCase())
     );
 
   const visibleCount = isMobile ? 2 : 4;
@@ -133,11 +135,7 @@ const IdeasGallerySection: React.FC = () => {
 
           {filteredIdeas.length > visibleCount && (
             <Box textAlign="center" mt={3}>
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => setExpanded((prev) => !prev)}
-              >
+              <Button size="small" variant="text" onClick={() => setExpanded((prev) => !prev)}>
                 {expanded ? 'Ver menos' : 'Ver mais'}
               </Button>
             </Box>

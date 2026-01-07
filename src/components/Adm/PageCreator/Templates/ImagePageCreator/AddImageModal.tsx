@@ -68,23 +68,29 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
     let medias: MediaItem[] = [];
 
     if (mode === MediaUploadType.UPLOAD && files.length > 0) {
-      medias = files.map((file) => ({
-        ...base,
-        file,
-        url: '',
-        originalName: file.name,
-        size: file.size,
-      } as MediaItem));
+      medias = files.map(
+        (file) =>
+          ({
+            ...base,
+            file,
+            url: '',
+            originalName: file.name,
+            size: file.size,
+          }) as MediaItem
+      );
     }
 
     if (mode === MediaUploadType.LINK && urlInput.trim()) {
       const urls = urlInput.split(',').map((url) => url.trim());
-      medias = urls.map((url) => ({
-        ...base,
-        url,
-        platformType: platformType,
-        file: undefined,
-      } as MediaItem));
+      medias = urls.map(
+        (url) =>
+          ({
+            ...base,
+            url,
+            platformType: platformType,
+            file: undefined,
+          }) as MediaItem
+      );
     }
 
     if (medias.length > 0) {
@@ -188,11 +194,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={
-            mode === MediaUploadType.UPLOAD
-              ? files.length === 0
-              : !urlInput.trim()
-          }
+          disabled={mode === MediaUploadType.UPLOAD ? files.length === 0 : !urlInput.trim()}
         >
           Adicionar
         </Button>

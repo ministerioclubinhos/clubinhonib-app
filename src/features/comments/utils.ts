@@ -4,6 +4,9 @@ export const debounce = <T extends (...args: any[]) => void>(fn: T, delay = 300)
     if (t) clearTimeout(t);
     t = setTimeout(() => fn(...args), delay);
   };
-  debounced.cancel = () => { if (t) clearTimeout(t); t = undefined; };
+  debounced.cancel = () => {
+    if (t) clearTimeout(t);
+    t = undefined;
+  };
   return debounced as T & { cancel: () => void };
 };
