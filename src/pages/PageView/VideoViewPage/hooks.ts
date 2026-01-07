@@ -39,9 +39,11 @@ export const useVideoPage = (idToFetch: string) => {
     (async () => {
       try {
         await load();
-      } finally {
+      } catch (error) {
         if (!mounted) return;
+        throw error;
       }
+      if (!mounted) return;
     })();
     return () => {
       mounted = false;

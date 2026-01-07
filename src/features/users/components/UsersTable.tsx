@@ -76,6 +76,7 @@ function UsersTableDesktop({
 }: Props) {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const user = useSelector((state: RootState) => state.auth.user);
 
   const columns = useMemo<ColumnDef<UserRow>[]>(() => {
     return [
@@ -161,7 +162,6 @@ function UsersTableDesktop({
         header: 'Ações',
         enableSorting: false,
         cell: ({ row }) => {
-          const { user } = useSelector((state: RootState) => state.auth);
           const wa = buildWhatsappLink(row.original.name, user?.name, row.original.phone);
           return (
             <Box sx={{ display: 'flex', gap: 0.5 }}>
