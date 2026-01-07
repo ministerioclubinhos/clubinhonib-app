@@ -14,6 +14,7 @@ permissions:
 
 jobs:
   deploy-preview:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     
     steps:
@@ -41,7 +42,7 @@ jobs:
       - name: Create branch in repository first
         id: create-repo-branch
         run: |
-          HEAD_REF=${{ github.head_ref }}
+          HEAD_REF=${{ github.event.pull_request.head.ref }}
           BRANCH_NAME_SANITIZED=$(echo "$HEAD_REF" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
           BRANCH_NAME="$BRANCH_NAME_SANITIZED"
           
@@ -508,28 +509,82 @@ jobs:
             }
 
       - name: Cleanup on PR close
-        if: github.event.action == 'closed'
+        if: false
+        run: echo "Cleanup moved to separate job"
+
+  cleanup-preview:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get Amplify App ID
+        id: get-app-id
         run: |
-          HEAD_REF=${{ github.head_ref }}
+          APP_ID=$(aws amplify list-apps --region ${{ env.AWS_REGION }} --query "apps[?name=='clubinhonib-app'].appId" --output text)
+          if [ -z "$APP_ID" ]; then
+            echo "❌ Amplify app 'clubinhonib-app' não encontrado!"
+            exit 1
+          fi
+          echo "app-id=$APP_ID" >> $GITHUB_OUTPUT
+          echo "✅ Amplify App ID: $APP_ID"
+
+      - name: Get Route 53 Hosted Zone ID
+        id: get-hosted-zone
+        run: |
+          HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name \
+            --dns-name "clubinhonib.com" \
+            --query 'HostedZones[0].Id' \
+            --output text 2>/dev/null | sed 's|/hostedzone/||' || echo "")
+          
+          if [ -z "$HOSTED_ZONE_ID" ]; then
+            HOSTED_ZONE_ID="Z04342831HLGP0JZ4VI5K"
+            echo "⚠️ Usando Hosted Zone ID padrão: $HOSTED_ZONE_ID"
+          fi
+          
+          echo "hosted-zone-id=$HOSTED_ZONE_ID" >> $GITHUB_OUTPUT
+          echo "✅ Hosted Zone ID: $HOSTED_ZONE_ID"
+
+      - name: Cleanup on PR close (merge included)
+        run: |
+          HEAD_REF=${{ github.event.pull_request.head.ref }}
           BRANCH_NAME_SANITIZED=$(echo "$HEAD_REF" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
           BRANCH_NAME="$BRANCH_NAME_SANITIZED"
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           HOSTED_ZONE_ID=${{ steps.get-hosted-zone.outputs.hosted-zone-id }}
           SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
           
-          echo "🧹 Limpando branch e subdomínio do PR fechado..."
+          echo "🧹 Limpando recursos do PR fechado (merge included)..."
+          echo " - Head ref: $HEAD_REF"
+          echo " - Preview branch: $BRANCH_NAME"
+          echo " - Subdomain: $SUBDOMAIN"
           
+          echo "🗑️ Deletando branch no Amplify..."
           aws amplify delete-branch \
             --app-id "$APP_ID" \
             --branch-name "$BRANCH_NAME" \
-            --region ${{ env.AWS_REGION }} || echo "Branch já foi removida ou não existe"
+            --region ${{ env.AWS_REGION }} || echo "Branch do Amplify já foi removida ou não existe"
           
           echo "🗑️ Removendo registro DNS do Route 53..."
           CHANGE_BATCH=$(printf '{"Changes":[{"Action":"DELETE","ResourceRecordSet":{"Name":"%s.","Type":"CNAME","TTL":300,"ResourceRecords":[{"Value":"%s.%s.amplifyapp.com."}]}}]}' "$SUBDOMAIN" "$BRANCH_NAME" "$APP_ID")
-          
           aws route53 change-resource-record-sets \
             --hosted-zone-id "$HOSTED_ZONE_ID" \
             --change-batch "$CHANGE_BATCH" || echo "Registro DNS já foi removido ou não existe"
+          
+          echo "🧹 (Opcional) removendo branch mirror do repo..."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git push origin --delete "$BRANCH_NAME" || echo "Branch mirror já foi removida ou não existe"
           
           echo "✅ Limpeza concluída"
 
