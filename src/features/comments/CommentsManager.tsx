@@ -53,7 +53,7 @@ export default function CommentsManager() {
 
   return (
     <Box sx={{ px: { xs: 2, md: 4 }, py: { xs: 2, md: 3 }, mt: { xs: 0, md: 2 }, bgcolor: "#f9fafb", minHeight: "100vh" }}>
-      <BackHeader title="Gerenciar Comentários" />
+      <BackHeader title="Gerenciar Comentáriosss" />
 
       <CommentsToolbar
         search={search}
@@ -83,7 +83,7 @@ export default function CommentsManager() {
           setToDelete(null);
         }}
       />
-      
+
       <ConfirmDialog
         open={!!toPublish}
         title="Confirmar Publicação"
