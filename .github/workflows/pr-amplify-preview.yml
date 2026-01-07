@@ -261,18 +261,21 @@ jobs:
             --query 'domainAssociation.subDomains[*].{prefix:prefix,branchName:branchName}' \
             --output json 2>/dev/null || echo "[]")
           
-          SUBDOMAIN_EXISTS=$(echo "$EXISTING_SUBDOMAINS" | jq -r ".[] | select(.prefix==\"$BRANCH_NAME\" and .prefix != null) | .prefix" || echo "")
+          echo "🔍 Subdomínios existentes:"
+          echo "$EXISTING_SUBDOMAINS" | jq .
+          
+          SUBDOMAIN_EXISTS=$(echo "$EXISTING_SUBDOMAINS" | jq -r ".[] | select(.prefix==\"$BRANCH_NAME\") | .prefix" || echo "")
           
           if [ -z "$SUBDOMAIN_EXISTS" ]; then
             echo "📝 Adicionando novo subdomínio ao Amplify..."
             
-            FILTERED_EXISTING=$(echo "$EXISTING_SUBDOMAINS" | jq '[.[] | select(.prefix != null and .branchName != null)]')
+            FILTERED_EXISTING=$(echo "$EXISTING_SUBDOMAINS" | jq '[.[] | select(.branchName != null and .branchName != "")]')
             
             UPDATED_SUBDOMAINS=$(echo "$FILTERED_EXISTING" | jq ". + [{\"prefix\": \"$BRANCH_NAME\", \"branchName\": \"$BRANCH_NAME\"}]")
             
-            SUBDOMAIN_SETTINGS=$(echo "$UPDATED_SUBDOMAINS" | jq -c '[.[] | {prefix: (.prefix // ""), branchName: (.branchName // "")} | select(.prefix != "" and .branchName != "")]')
+            SUBDOMAIN_SETTINGS=$(echo "$UPDATED_SUBDOMAINS" | jq -c '[.[] | {prefix: (if .prefix == null then "" else .prefix end), branchName: .branchName} | select(.branchName != null and .branchName != "")]')
             
-            echo "🔍 Subdomínios a serem atualizados:"
+            echo "🔍 Subdomínios a serem atualizados (preservando produção e staging):"
             echo "$SUBDOMAIN_SETTINGS" | jq .
             
             aws amplify update-domain-association \
