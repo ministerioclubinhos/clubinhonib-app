@@ -187,7 +187,7 @@ export const PeriodManagement: React.FC = () => {
 
   return (
     <Box>
-      {/* Header Otimizado */}
+      
       <Paper
         elevation={0}
         sx={{
@@ -223,7 +223,6 @@ export const PeriodManagement: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Alerta Informativo */}
       <Alert
         severity="info"
         icon={<Info />}
@@ -248,7 +247,7 @@ export const PeriodManagement: React.FC = () => {
       </Alert>
 
       <Grid container spacing={{ xs: 2, sm: 3 }}>
-        {/* Formulário de Cadastro */}
+        
         <Grid item xs={12} md={5}>
           <Paper
             elevation={0}
@@ -359,7 +358,6 @@ export const PeriodManagement: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Lista de Períodos */}
         <Grid item xs={12} md={7}>
           <Paper
             elevation={0}
@@ -405,7 +403,7 @@ export const PeriodManagement: React.FC = () => {
                   </Typography>
                 </Alert>
               ) : isMobile ? (
-                /* Versão Mobile: Cards */
+                
                 <Stack spacing={2}>
                   {periods
                     .sort((a, b) => b.year - a.year)
@@ -416,7 +414,7 @@ export const PeriodManagement: React.FC = () => {
                         <Card key={period.id} elevation={2} sx={{ borderRadius: 2 }}>
                           <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                             <Stack spacing={1.5}>
-                              {/* Header */}
+                              
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                   <Typography variant="h6" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
@@ -441,7 +439,6 @@ export const PeriodManagement: React.FC = () => {
 
                               <Divider />
 
-                              {/* Período */}
                               <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                   Período
@@ -454,7 +451,6 @@ export const PeriodManagement: React.FC = () => {
                                 </Typography>
                               </Box>
 
-                              {/* Descrição */}
                               {period.description && (
                                 <Box>
                                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
@@ -466,7 +462,6 @@ export const PeriodManagement: React.FC = () => {
                                 </Box>
                               )}
 
-                              {/* Ações */}
                               <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
                                 <Button
                                   size="small"
@@ -504,7 +499,7 @@ export const PeriodManagement: React.FC = () => {
                     })}
                 </Stack>
               ) : (
-                /* Versão Desktop: Tabela */
+                
                 <TableContainer sx={{ overflowX: 'auto' }}>
                   <Table sx={{ minWidth: 600 }}>
                     <TableHead>
@@ -597,7 +592,6 @@ export const PeriodManagement: React.FC = () => {
                 </TableContainer>
               )}
 
-              {/* ⭐ Paginação v1.1.0 - Funciona em ambos (mobile e desktop) */}
               {periodsData && periodsData.total > 0 && (
                 <Box sx={{ borderTop: 1, borderColor: 'divider', px: { xs: 1, sm: 0 } }}>
                   <TablePagination
@@ -633,7 +627,6 @@ export const PeriodManagement: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Dialog de Edição */}
       <Dialog 
         open={editDialog.open} 
         onClose={handleCloseEdit}
@@ -707,7 +700,6 @@ export const PeriodManagement: React.FC = () => {
         </form>
       </Dialog>
 
-      {/* Dialog de Exclusão */}
       <Dialog 
         open={deleteDialog.open} 
         onClose={() => setDeleteDialog({ open: false, periodId: '', description: '' })}

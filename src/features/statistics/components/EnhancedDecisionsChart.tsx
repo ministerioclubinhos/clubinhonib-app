@@ -55,7 +55,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
       }))
     : [];
 
-  // Calcular totais dos dados agregados se timeSeries estiver vazio
   const totalAccepted = chartData.length > 0 
     ? chartData.reduce((sum, item) => sum + (item.accepted || 0), 0)
     : (data.byGender?.reduce((sum, item) => sum + (item.accepted || 0), 0) || 0);
@@ -69,7 +68,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
     { name: 'Reconciliados', value: totalReconciled, color: theme.palette.info.main },
   ];
 
-  // Dados por gênero
   const genderData = data.byGender?.map((item) => ({
     name: item.gender === 'M' ? 'Masculino' : 'Feminino',
     total: item.total,
@@ -77,7 +75,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
     reconciled: item.reconciled,
   })) || [];
 
-  // Dados por faixa etária
   const ageGroupData = data.byAgeGroup?.map((item) => ({
     name: item.ageGroup,
     total: item.total,
@@ -85,7 +82,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
     reconciled: item.reconciled,
   })) || [];
 
-  // Top 10 clubinhos
   const topClubsData = data.byClub
     ?.sort((a, b) => b.total - a.total)
     .slice(0, 10)
@@ -96,7 +92,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
       reconciled: item.reconciled,
     })) || [];
 
-  // Dados por tempo de participação
   const participationData = data.byParticipationTime?.map((item) => ({
     name: item.timeRange,
     total: item.total,
@@ -156,7 +151,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
 
   return (
     <Box sx={{ width: '98%', maxWidth: '98%', overflowX: 'hidden', mx: 'auto' }}>
-      {/* Cards de Resumo */}
+      
       <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: 3, width: '100%', maxWidth: '100%' }}>
         <Grid item xs={12} sm={6} md={4} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper
@@ -280,9 +275,8 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
         </Grid>
       </Grid>
 
-      {/* Gráficos */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%' }}>
-        {/* Gráfico Temporal - Se houver dados temporais */}
+        
         {chartData && chartData.length > 0 && (
           <Grid item xs={12}>
           <Paper
@@ -347,7 +341,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
           </Grid>
         )}
 
-        {/* Gráfico por Gênero */}
         {genderData.length > 0 && (
           <Grid item xs={12} md={6}>
             <Paper
@@ -379,7 +372,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
           </Grid>
         )}
 
-        {/* Gráfico por Faixa Etária */}
         {ageGroupData.length > 0 && (
           <Grid item xs={12} md={6}>
             <Paper
@@ -411,7 +403,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
           </Grid>
         )}
 
-        {/* Top 10 Clubinhos */}
         {topClubsData.length > 0 && (
           <Grid item xs={12}>
             <Paper
@@ -443,7 +434,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
           </Grid>
         )}
 
-        {/* Gráfico por Tempo de Participação */}
         {participationData.length > 0 && (
           <Grid item xs={12} md={6}>
             <Paper
@@ -475,7 +465,6 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
           </Grid>
         )}
 
-        {/* Gráfico de Pizza */}
         <Grid item xs={12} md={6}>
           <Paper
             elevation={0}

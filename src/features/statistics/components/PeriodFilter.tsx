@@ -29,7 +29,6 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
   return (
     <Box>
       <Grid container spacing={2}>
-        {/* Atalho de Período */}
         <Grid item xs={12} sm={6} md={4}>
           <TextField
             fullWidth
@@ -40,7 +39,6 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
               const value = e.target.value as PeriodShortcut | '';
               onPeriodChange(value || undefined);
 
-              // Se mudou para um atalho (não custom), limpa as datas customizadas
               if (value && value !== 'custom') {
                 onStartDateChange(undefined);
                 onEndDateChange(undefined);
@@ -62,7 +60,6 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
           </TextField>
         </Grid>
 
-        {/* Data Início (apenas se custom) */}
         {isCustomPeriod && (
           <Grid item xs={12} sm={6} md={4}>
             <TextField
@@ -77,7 +74,6 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
           </Grid>
         )}
 
-        {/* Data Fim (apenas se custom) */}
         {isCustomPeriod && (
           <Grid item xs={12} sm={6} md={4}>
             <TextField
@@ -93,7 +89,6 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
         )}
       </Grid>
 
-      {/* Descrição do Período */}
       {showDescription && description && (
         <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Info sx={{ fontSize: 16, color: 'info.main' }} />

@@ -56,4 +56,3 @@ const FrequencyTab: React.FC = () => {
 
 export default FrequencyTab;
 
-

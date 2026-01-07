@@ -20,10 +20,8 @@ import { StatisticsFilters } from './api';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
 
-// Configurar locale globalmente
 dayjs.locale('pt-br');
 
-// Lazy-load dedicated tab components
 const OverviewTab = React.lazy(() => import('./tabs/OverviewTab'));
 const FrequencyTab = React.lazy(() => import('./tabs/FrequencyTab'));
 const ChildrenTab = React.lazy(() => import('./tabs/ChildrenTab'));
@@ -39,7 +37,6 @@ const OverviewSummaryCards = React.lazy(() =>
   import('./components').then((m) => ({ default: m.OverviewSummaryCards }))
 );
 
-// Criar um cliente do React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -76,8 +73,7 @@ const StatisticsPageContent: React.FC = () => {
   const initialTab = Number(searchParams.get('tab') ?? 0);
   const [activeTab, setActiveTab] = React.useState(Number.isNaN(initialTab) ? 0 : initialTab);
   const [filtersOpen, setFiltersOpen] = React.useState(false);
-  
-  // Configurar filtros padrão para o mês atual
+
   const getDefaultFilters = (): StatisticsFilters => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -86,7 +82,7 @@ const StatisticsPageContent: React.FC = () => {
     return {
       startDate: dayjs(firstDay).format('YYYY-MM-DD'),
       endDate: dayjs(lastDay).format('YYYY-MM-DD'),
-      groupBy: 'week', // Agrupamento semanal para melhor visualização mensal
+      groupBy: 'week', 
     };
   };
   
@@ -117,7 +113,7 @@ const StatisticsPageContent: React.FC = () => {
         px: { xs: 1, sm: 2, md: 3 }
       }}
     >
-      {/* Header */}
+      
       <Box sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
         <Typography
           variant="h4"
@@ -145,17 +141,14 @@ const StatisticsPageContent: React.FC = () => {
         </Typography>
       </Box>
 
-      {/* Overview Cards - lazy */}
       <Box sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
         <Suspense fallback={<Skeleton variant="rounded" height={120} />}>
           <OverviewSummaryCards />
         </Suspense>
       </Box>
 
-      {/* Atalhos Rápidos */}
       <QuickFilters onSelectFilter={handleFilterChange} currentFilters={filters} />
 
-      {/* Filtros - colapsáveis (fechados por padrão) */}
       <Box sx={{ mt: { xs: 1.5, sm: 2 }, mb: { xs: 1.5, sm: 2 } }}>
         <Button 
           variant="outlined" 
@@ -174,11 +167,10 @@ const StatisticsPageContent: React.FC = () => {
         />
       </Collapse>
 
-      {/* Tabs */}
       <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           {isMobile ? (
-            /* Versão Mobile: 2 Colunas */
+            
             <Box sx={{ p: 1 }}>
               <Grid container spacing={0.5}>
                 <Grid item xs={6}>
@@ -382,7 +374,7 @@ const StatisticsPageContent: React.FC = () => {
               </Grid>
             </Box>
           ) : (
-            /* Versão Desktop: Tabs Horizontal */
+            
             <Tabs
               value={activeTab}
               onChange={handleTabChange}
@@ -412,7 +404,6 @@ const StatisticsPageContent: React.FC = () => {
           )}
         </Box>
 
-        {/* Tab 1: Visão Geral */}
         <TabPanel value={activeTab} index={0}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={80} /><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={280} /></Box>}>
@@ -421,7 +412,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 2: Frequência */}
         <TabPanel value={activeTab} index={1}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={300} /></Box>}>
@@ -430,7 +420,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 3: Crianças */}
         <TabPanel value={activeTab} index={2}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Skeleton variant="rounded" height={400} />}>
@@ -439,7 +428,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 4: Clubinhos */}
         <TabPanel value={activeTab} index={3}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Skeleton variant="rounded" height={400} />}>
@@ -448,7 +436,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 5: Professores */}
         <TabPanel value={activeTab} index={4}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Skeleton variant="rounded" height={400} />}>
@@ -457,7 +444,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 6: Demográfico */}
         <TabPanel value={activeTab} index={5}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={280} /><Skeleton variant="rounded" height={320} /></Box>}>
@@ -466,7 +452,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 7: Geográfico */}
         <TabPanel value={activeTab} index={6}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Skeleton variant="rounded" height={420} />}>
@@ -475,7 +460,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 8: Decisões */}
         <TabPanel value={activeTab} index={7}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Skeleton variant="rounded" height={360} />}>
@@ -484,7 +468,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 9: Retenção */}
         <TabPanel value={activeTab} index={8}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={300} /></Box>}>
@@ -493,7 +476,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 10: Atividades */}
         <TabPanel value={activeTab} index={9}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Skeleton variant="rounded" height={360} />}>
@@ -502,7 +484,6 @@ const StatisticsPageContent: React.FC = () => {
           </Box>
         </TabPanel>
 
-        {/* Tab 11: Rankings */}
         <TabPanel value={activeTab} index={10}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={260} /><Skeleton variant="rounded" height={260} /></Box>}>
@@ -512,7 +493,6 @@ const StatisticsPageContent: React.FC = () => {
         </TabPanel>
       </Paper>
 
-      {/* Footer Info */}
       <Box sx={{ mt: { xs: 2, sm: 3, md: 4 }, textAlign: 'center', px: { xs: 1, sm: 0 } }}>
         <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           💡 Use os filtros acima para personalizar suas análises
@@ -525,7 +505,6 @@ const StatisticsPageContent: React.FC = () => {
   );
 };
 
-// Componente principal com QueryClientProvider
 const StatisticsPage: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>

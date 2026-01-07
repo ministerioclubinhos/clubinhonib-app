@@ -199,8 +199,7 @@ const WeekMaterialsBanner: React.FC = () => {
           </motion.div>
         </motion.div>
       </Container>
-      
-      {/* Divisão Suave */}
+
       <Box
         sx={{
           position: 'absolute',
@@ -214,8 +213,7 @@ const WeekMaterialsBanner: React.FC = () => {
           borderBottomRightRadius: 0,
         }}
       />
-      
-      {/* Ondas Decorativas */}
+
       <motion.div
         style={{
           position: 'absolute',

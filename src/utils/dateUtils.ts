@@ -33,7 +33,7 @@ const WEEKDAY_PT: Record<string, string> = {
   friday: "Sexta-feira",
   saturday: "Sábado",
   sunday: "Domingo",
-  // Suporte para maiúsculas também (retrocompatibilidade)
+  
   MONDAY: "Segunda-feira",
   TUESDAY: "Terça-feira", 
   WEDNESDAY: "Quarta-feira",
@@ -47,7 +47,6 @@ export const weekdayLabel = (weekday?: string | null): string => {
   if (!weekday) return "—";
   return WEEKDAY_PT[weekday] || weekday;
 };
-
 
 export const ageFrom = (birth?: string | null) => {
   if (!birth) return null;

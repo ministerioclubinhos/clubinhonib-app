@@ -36,7 +36,7 @@ export default function DownloadButton({
           fontSize: { xs: '1rem', md: '1.1rem' },
           minHeight: { xs: 44, md: 48 },
         };
-      default: // medium
+      default: 
         return {
           py: { xs: 1, md: 1.25 },
           px: { xs: 2, md: 2.5 },

@@ -1,11 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clubControlApi, CreateAcademicPeriodDto, CreateWeekdayExceptionDto } from './api';
 
-// ========================================
-// Hooks para Dashboard e Verificação
-// ========================================
-
-// Hook para dashboard (semana atual) - com paginação
 export const useControlDashboard = (page: number = 1, limit: number = 20) => {
   return useQuery({
     queryKey: ['controlDashboard', page, limit],
@@ -22,9 +17,6 @@ export const useControlDashboard = (page: number = 1, limit: number = 20) => {
   });
 };
 
-// Hook para verificar semana específica (com paginação v1.1.0)
-// ⭐ v1.8.0: year e week são opcionais - se não fornecidos, calcula semana atual automaticamente
-// ⭐ v1.8.0: Limite padrão é 50 conforme documentação
 export const useWeekCheck = (year?: number, week?: number, page: number = 1, limit: number = 50) => {
   return useQuery({
     queryKey: ['weekCheck', year, week, page, limit],
@@ -37,16 +29,15 @@ export const useWeekCheck = (year?: number, week?: number, page: number = 1, lim
       const response = await clubControlApi.checkWeek(params);
       return response.data;
     },
-    enabled: true, // ⭐ v1.8.0: Sempre habilitado, mesmo sem year/week (calcula automaticamente)
-    staleTime: 0, // ⭐ v1.8.0: staleTime 0 para garantir que dados sejam atualizados quando parâmetros mudarem
-    gcTime: 0, // ⭐ v1.8.1: gcTime 0 para garantir que não use dados em cache de outras semanas (React Query v5)
+    enabled: true, 
+    staleTime: 0, 
+    gcTime: 0, 
     refetchOnWindowFocus: false,
     retry: 1,
     retryDelay: 1000,
   });
 };
 
-// Hook para verificar clube específico
 export const useClubCheck = (clubId: string, year: number, week: number) => {
   return useQuery({
     queryKey: ['clubCheck', clubId, year, week],
@@ -62,7 +53,6 @@ export const useClubCheck = (clubId: string, year: number, week: number) => {
   });
 };
 
-// Hook para obter semana atual do ano letivo ⭐ NOVO v1.2.0
 export const useCurrentWeek = () => {
   return useQuery({
     queryKey: ['currentWeek'],
@@ -71,15 +61,13 @@ export const useCurrentWeek = () => {
       return response.data;
     },
     enabled: true,
-    staleTime: 5 * 60 * 1000, // 5 minutos (semana muda raramente)
+    staleTime: 5 * 60 * 1000, 
     refetchOnWindowFocus: false,
     retry: 1,
     retryDelay: 1000,
   });
 };
 
-// Hook para análise detalhada dos indicadores ⭐ NOVO v1.3.0
-// ⭐ v1.3.1: Suporta filtros avançados e paginação
 export const useDetailedIndicators = (
   year: number, 
   week: number,
@@ -100,18 +88,13 @@ export const useDetailedIndicators = (
       return response.data;
     },
     enabled: !!year && !!week,
-    staleTime: 2 * 60 * 1000, // 2 minutos
+    staleTime: 2 * 60 * 1000, 
     refetchOnWindowFocus: false,
     retry: 1,
     retryDelay: 1000,
   });
 };
 
-// ========================================
-// Hooks para Períodos GLOBAIS
-// ========================================
-
-// Hook para listar períodos (com paginação v1.1.0)
 export const useAcademicPeriods = (page: number = 1, limit: number = 20) => {
   return useQuery({
     queryKey: ['academicPeriods', page, limit],
@@ -126,7 +109,6 @@ export const useAcademicPeriods = (page: number = 1, limit: number = 20) => {
   });
 };
 
-// Hook para buscar período de um ano específico
 export const usePeriodByYear = (year: number) => {
   return useQuery({
     queryKey: ['academicPeriod', year],
@@ -141,7 +123,6 @@ export const usePeriodByYear = (year: number) => {
   });
 };
 
-// Mutation para criar período GLOBAL
 export const useCreatePeriod = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -152,7 +133,6 @@ export const useCreatePeriod = () => {
   });
 };
 
-// Mutation para atualizar período
 export const useUpdatePeriod = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -168,7 +148,6 @@ export const useUpdatePeriod = () => {
   });
 };
 
-// Mutation para deletar período
 export const useDeletePeriod = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -179,11 +158,6 @@ export const useDeletePeriod = () => {
   });
 };
 
-// ========================================
-// Hooks para Exceções GLOBAIS
-// ========================================
-
-// Hook para listar exceções (com filtros e paginação v1.1.0)
 export const useWeekdayExceptions = (params?: { startDate?: string; endDate?: string; page?: number; limit?: number }) => {
   return useQuery({
     queryKey: ['weekdayExceptions', params],
@@ -198,7 +172,6 @@ export const useWeekdayExceptions = (params?: { startDate?: string; endDate?: st
   });
 };
 
-// Hook para buscar exceção por data
 export const useExceptionByDate = (date: string) => {
   return useQuery({
     queryKey: ['weekdayException', date],
@@ -213,7 +186,6 @@ export const useExceptionByDate = (date: string) => {
   });
 };
 
-// Mutation para criar exceção GLOBAL
 export const useCreateException = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -226,7 +198,6 @@ export const useCreateException = () => {
   });
 };
 
-// Mutation para deletar exceção
 export const useDeleteException = () => {
   const queryClient = useQueryClient();
   return useMutation({

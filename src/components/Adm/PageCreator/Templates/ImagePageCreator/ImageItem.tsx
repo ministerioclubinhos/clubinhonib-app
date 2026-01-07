@@ -13,7 +13,7 @@ interface ImageItemProps {
 }
 
 const getGoogleDriveThumbnailUrl = (url: string): string | null => {
-  const match = url.match(/\/d\/(.*?)\//);
+  const match = url.match(/\/d\/(.*?)\
   return match ? `https://drive.google.com/thumbnail?id=${match[1]}` : null;
 };
 

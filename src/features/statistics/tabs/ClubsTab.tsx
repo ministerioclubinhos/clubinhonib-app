@@ -7,4 +7,3 @@ const ClubsTab: React.FC = () => {
 
 export default ClubsTab;
 
-

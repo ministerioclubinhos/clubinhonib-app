@@ -48,7 +48,6 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
     severity: 'success' as 'success' | 'error',
   });
 
-  // Carregar páginas disponíveis
   useEffect(() => {
     const loadPages = async () => {
       setPagesLoading(true);

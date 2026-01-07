@@ -12,15 +12,15 @@ export interface TeacherContentProps {
 }
 
 export interface SpecialFamilyCalloutProps {
-  // Add props if needed in the future
+  
 }
 
 export interface IdeasSharingBannerProps {
-  // Add props if needed in the future
+  
 }
 
 export interface InformativeBannerProps {
-  // Add props if needed in the future
+  
 }
 
 export interface SectionCardProps {

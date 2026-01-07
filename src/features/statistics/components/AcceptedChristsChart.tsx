@@ -39,7 +39,6 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
     );
   }
 
-  // Transformar os dados para o formato do gráfico
   const chartData = data.timeSeries.map((item) => ({
     date: item.date,
     total: item.series.total,
@@ -98,7 +97,6 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
         </LineChart>
       </ResponsiveContainer>
 
-      {/* Resumo */}
       <Box sx={{ mt: 3, display: 'flex', gap: 3, flexWrap: 'wrap' }}>
         <Box>
           <Typography variant="body2" color="text.secondary">

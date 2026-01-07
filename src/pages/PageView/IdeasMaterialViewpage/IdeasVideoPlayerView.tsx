@@ -227,7 +227,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
         transition={{ duration: 0.3 }}
         style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
       >
-        {/* Header com ícone */}
+        
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, sm: 2 } }}>
           <PlayCircleOutlineIcon sx={{ color: theme.palette.error.main, fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
           <Typography 
@@ -243,12 +243,10 @@ export default function IdeasVideoPlayerView({ video }: Props) {
           </Typography>
         </Box>
 
-        {/* Vídeo */}
         <Box sx={{ mb: { xs: 1.5, sm: 2 }, flex: 1 }}>
           {renderVideo()}
         </Box>
 
-        {/* Descrição */}
         {video.description && (
           <Typography 
             variant="body2" 
@@ -263,7 +261,6 @@ export default function IdeasVideoPlayerView({ video }: Props) {
           </Typography>
         )}
 
-        {/* Botão de download */}
         {shouldAllowDownload() && (
           <Box sx={{ mt: 'auto' }}>
             <DownloadButton 

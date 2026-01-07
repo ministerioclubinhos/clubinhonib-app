@@ -48,17 +48,16 @@ export const WeeklyAttendanceGrid: React.FC = () => {
     currentWeekInfo?.academicWeek || null
   );
   const [page, setPage] = React.useState(1);
-  // No mobile, usar 5 itens por padrão; no desktop, 20
+  
   const mobileLimit = 5;
   const desktopLimit = 20;
   const [limit, setLimit] = React.useState(isMobile ? mobileLimit : desktopLimit);
-  
-  // Atualizar limit quando isMobile mudar
+
   React.useEffect(() => {
     const newLimit = isMobile ? mobileLimit : desktopLimit;
     if (limit !== newLimit) {
       setLimit(newLimit);
-      setPage(1); // Resetar página ao mudar o limite
+      setPage(1); 
     }
   }, [isMobile, limit]);
 
@@ -259,7 +258,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
 
       {hasClubs && (
         <>
-      {/* Cards de Resumo */}
+      
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={2.4}>
           <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
@@ -317,7 +316,6 @@ export const WeeklyAttendanceGrid: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Barra de Frequência Geral */}
       <Paper
         elevation={0}
         sx={{
@@ -351,7 +349,6 @@ export const WeeklyAttendanceGrid: React.FC = () => {
         />
       </Paper>
 
-      {/* Versão Mobile: Cards */}
       {isMobile ? (
         <Stack spacing={1.5}>
           {data.clubs.map((club) => {
@@ -368,7 +365,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
               >
                 <CardContent sx={{ p: { xs: 1, sm: 2 }, '&:last-child': { pb: { xs: 1, sm: 2 } } }}>
                   <Stack spacing={1}>
-                    {/* Header */}
+                    
                     <Box>
                       <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.85rem', sm: '1.125rem' } }}>
                         Clubinho #{club.clubNumber}
@@ -377,7 +374,6 @@ export const WeeklyAttendanceGrid: React.FC = () => {
 
                     <Divider sx={{ my: 0.5 }} />
 
-                    {/* Informações */}
                     <Grid container spacing={1}>
                       <Grid item xs={6}>
                         <Box>
@@ -401,7 +397,6 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                       </Grid>
                     </Grid>
 
-                    {/* Pagelas e Status */}
                     <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
@@ -451,7 +446,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
           })}
         </Stack>
       ) : (
-        /* Versão Desktop: Tabela */
+        
         <TableContainer
           component={Paper}
           elevation={0}
@@ -517,7 +512,6 @@ export const WeeklyAttendanceGrid: React.FC = () => {
         </TableContainer>
       )}
 
-      {/* ⭐ Paginação v2.5.0 - Funciona em ambos (mobile e desktop) */}
       {data.pagination && (
         <Box sx={{ px: { xs: 1, sm: 0 }, mt: 2 }}>
           <TablePagination
