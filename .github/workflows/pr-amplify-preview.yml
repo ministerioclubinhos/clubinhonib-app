@@ -41,11 +41,11 @@ jobs:
       - name: Create branch in repository first
         id: create-repo-branch
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
           HEAD_REF=${{ github.head_ref }}
-          BRANCH_NAME="pr-$PR_NUMBER"
+          BRANCH_NAME_SANITIZED=$(echo "$HEAD_REF" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
+          BRANCH_NAME="$BRANCH_NAME_SANITIZED"
           
-          echo "📤 Criando branch $BRANCH_NAME no repositório..."
+          echo "📤 Criando branch $BRANCH_NAME no repositório (de $HEAD_REF)..."
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
@@ -184,6 +184,8 @@ jobs:
           HOSTED_ZONE_ID=${{ steps.get-hosted-zone.outputs.hosted-zone-id }}
           CLOUDFRONT_DOMAIN=${{ steps.get-cloudfront.outputs.cloudfront-domain }}
           SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
+          
+          echo "🌐 Subdomínio será: $SUBDOMAIN"
           
           echo "🌐 Criando registro DNS no Route 53 para $SUBDOMAIN → $CLOUDFRONT_DOMAIN..."
           
@@ -358,8 +360,12 @@ _Deploy automático do PR #${prNumber} via AWS Amplify_`;
       - name: Cleanup on PR close
         if: github.event.action == 'closed'
         run: |
-          BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
+          HEAD_REF=${{ github.head_ref }}
+          BRANCH_NAME_SANITIZED=$(echo "$HEAD_REF" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
+          BRANCH_NAME="$BRANCH_NAME_SANITIZED"
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
+          HOSTED_ZONE_ID=${{ steps.get-hosted-zone.outputs.hosted-zone-id }}
+          SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
           
           echo "🧹 Limpando branch e subdomínio do PR fechado..."
           
@@ -367,6 +373,28 @@ _Deploy automático do PR #${prNumber} via AWS Amplify_`;
             --app-id "$APP_ID" \
             --branch-name "$BRANCH_NAME" \
             --region ${{ env.AWS_REGION }} || echo "Branch já foi removida ou não existe"
+          
+          echo "🗑️ Removendo registro DNS do Route 53..."
+          CHANGE_BATCH=$(cat <<EOF
+{
+  "Changes": [{
+    "Action": "DELETE",
+    "ResourceRecordSet": {
+      "Name": "${SUBDOMAIN}.",
+      "Type": "CNAME",
+      "TTL": 300,
+      "ResourceRecords": [{
+        "Value": "${BRANCH_NAME}.${APP_ID}.amplifyapp.com."
+      }]
+    }
+  }]
+}
+EOF
+)
+          
+          aws route53 change-resource-record-sets \
+            --hosted-zone-id "$HOSTED_ZONE_ID" \
+            --change-batch "$CHANGE_BATCH" || echo "Registro DNS já foi removido ou não existe"
           
           echo "✅ Limpeza concluída"
 
