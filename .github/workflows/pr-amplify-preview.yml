@@ -101,24 +101,21 @@ jobs:
         run: |
           HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name \
             --dns-name "clubinhonib.com" \
-            --region ${{ env.AWS_REGION }} \
             --query 'HostedZones[0].Id' \
             --output text 2>/dev/null | sed 's|/hostedzone/||' || echo "")
           
           if [ -z "$HOSTED_ZONE_ID" ]; then
-            echo "❌ Hosted Zone para clubinhonib.com não encontrada no Route 53!"
-            exit 1
+            HOSTED_ZONE_ID="Z04342831HLGP0JZ4VI5K"
+            echo "⚠️ Usando Hosted Zone ID padrão: $HOSTED_ZONE_ID"
           fi
           
           echo "hosted-zone-id=$HOSTED_ZONE_ID" >> $GITHUB_OUTPUT
           echo "✅ Hosted Zone ID: $HOSTED_ZONE_ID"
 
-      - name: Get Amplify domain certificate ARN
-        id: get-domain-cert
+      - name: Ensure Amplify domain association exists
+        id: ensure-domain
         run: |
-          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
-          SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
           
           echo "🔍 Verificando associação de domínio no Amplify..."
           
@@ -136,30 +133,59 @@ jobs:
               --domain-name "clubinhonib.com" \
               --sub-domain-settings prefix=,branchName=main \
               --region ${{ env.AWS_REGION }} || true
-            echo "⏳ Aguardando associação de domínio..."
-            sleep 20
+            echo "⏳ Aguardando associação de domínio ser criada..."
+            sleep 30
           fi
           
-          DOMAIN_INFO=$(aws amplify get-domain-association \
-            --app-id "$APP_ID" \
-            --domain-name "clubinhonib.com" \
-            --region ${{ env.AWS_REGION }} \
-            --query 'domainAssociation.{certificateArn:certificateArn,subDomains:subDomains}' \
-            --output json)
+          echo "✅ Associação de domínio verificada"
+
+      - name: Get Amplify CloudFront domain for branch
+        id: get-cloudfront
+        run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
-          CERT_ARN=$(echo "$DOMAIN_INFO" | jq -r '.certificateArn // empty')
-          echo "certificate-arn=$CERT_ARN" >> $GITHUB_OUTPUT
-          echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
-          echo "✅ Certificado ARN: $CERT_ARN"
+          echo "🔍 Obtendo CloudFront domain para branch $BRANCH_NAME..."
+          
+          MAX_RETRIES=30
+          RETRY=0
+          CLOUDFRONT_DOMAIN=""
+          
+          while [ $RETRY -lt $MAX_RETRIES ]; do
+            BRANCH_INFO=$(aws amplify get-branch \
+              --app-id "$APP_ID" \
+              --branch-name "$BRANCH_NAME" \
+              --region ${{ env.AWS_REGION }} \
+              --query 'branch.{displayName:displayName,activeJobId:activeJobId}' \
+              --output json 2>/dev/null || echo "{}")
+            
+            if [ "$BRANCH_INFO" != "{}" ]; then
+              CLOUDFRONT_DOMAIN="${BRANCH_NAME}.${APP_ID}.amplifyapp.com"
+              break
+            fi
+            
+            echo "⏳ Aguardando branch estar pronta... ($RETRY/$MAX_RETRIES)"
+            sleep 10
+            RETRY=$((RETRY + 1))
+          done
+          
+          if [ -z "$CLOUDFRONT_DOMAIN" ]; then
+            CLOUDFRONT_DOMAIN="${BRANCH_NAME}.${APP_ID}.amplifyapp.com"
+            echo "⚠️ Usando formato padrão do Amplify: $CLOUDFRONT_DOMAIN"
+          fi
+          
+          echo "cloudfront-domain=$CLOUDFRONT_DOMAIN" >> $GITHUB_OUTPUT
+          echo "✅ CloudFront domain: $CLOUDFRONT_DOMAIN"
 
       - name: Create Route 53 DNS record for subdomain
         id: create-dns-record
         run: |
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           HOSTED_ZONE_ID=${{ steps.get-hosted-zone.outputs.hosted-zone-id }}
+          CLOUDFRONT_DOMAIN=${{ steps.get-cloudfront.outputs.cloudfront-domain }}
           SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
           
-          echo "🌐 Criando registro DNS no Route 53 para $SUBDOMAIN..."
+          echo "🌐 Criando registro DNS no Route 53 para $SUBDOMAIN → $CLOUDFRONT_DOMAIN..."
           
           EXISTING_RECORD=$(aws route53 list-resource-record-sets \
             --hosted-zone-id "$HOSTED_ZONE_ID" \
@@ -167,40 +193,41 @@ jobs:
             --output json 2>/dev/null || echo "[]")
           
           if [ "$EXISTING_RECORD" != "[]" ]; then
-            echo "✅ Registro DNS já existe para $SUBDOMAIN"
+            echo "✅ Registro DNS já existe para $SUBDOMAIN, atualizando..."
+            ACTION="UPSERT"
           else
             echo "📝 Criando novo registro DNS..."
-            
-            CHANGE_BATCH=$(cat <<EOF
+            ACTION="CREATE"
+          fi
+          
+          CHANGE_BATCH=$(cat <<EOF
 {
   "Changes": [{
-    "Action": "CREATE",
+    "Action": "${ACTION}",
     "ResourceRecordSet": {
       "Name": "${SUBDOMAIN}.",
       "Type": "CNAME",
       "TTL": 300,
       "ResourceRecords": [{
-        "Value": "${BRANCH_NAME}.${APP_ID}.amplifyapp.com"
+        "Value": "${CLOUDFRONT_DOMAIN}."
       }]
     }
   }]
 }
 EOF
 )
-            
-            CHANGE_ID=$(aws route53 change-resource-record-sets \
-              --hosted-zone-id "$HOSTED_ZONE_ID" \
-              --change-batch "$CHANGE_BATCH" \
-              --query 'ChangeInfo.Id' \
-              --output text)
-            
-            echo "⏳ Aguardando propagação DNS (Change ID: $CHANGE_ID)..."
-            aws route53 wait resource-record-sets-changed --id "$CHANGE_ID" || sleep 30
-            
-            echo "✅ Registro DNS criado no Route 53"
-          fi
+          
+          CHANGE_ID=$(aws route53 change-resource-record-sets \
+            --hosted-zone-id "$HOSTED_ZONE_ID" \
+            --change-batch "$CHANGE_BATCH" \
+            --query 'ChangeInfo.Id' \
+            --output text)
+          
+          echo "⏳ Aguardando propagação DNS (Change ID: $CHANGE_ID)..."
+          aws route53 wait resource-record-sets-changed --id "$CHANGE_ID" || sleep 30
           
           echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
+          echo "✅ Registro DNS criado/atualizado no Route 53"
 
       - name: Add subdomain to Amplify domain association
         id: add-subdomain-amplify
@@ -216,7 +243,7 @@ EOF
             --domain-name "clubinhonib.com" \
             --region ${{ env.AWS_REGION }} \
             --query 'domainAssociation.subDomains[*].{prefix:prefix,branchName:branchName}' \
-            --output json)
+            --output json 2>/dev/null || echo "[]")
           
           SUBDOMAIN_EXISTS=$(echo "$EXISTING_SUBDOMAINS" | jq -r ".[] | select(.prefix==\"$BRANCH_NAME\") | .prefix" || echo "")
           
@@ -234,7 +261,7 @@ EOF
               --region ${{ env.AWS_REGION }}
             
             echo "⏳ Aguardando configuração do subdomínio no Amplify..."
-            sleep 20
+            sleep 30
           else
             echo "✅ Subdomínio já existe no Amplify"
           fi
