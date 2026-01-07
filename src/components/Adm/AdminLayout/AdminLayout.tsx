@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, type ReactNode } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   AppBar,
@@ -136,18 +136,21 @@ function AdminLayout() {
     '/adm/pagelas',
   ]);
 
-  const canSeeItem = (item: NavItem): boolean => {
-    if (isAdmin) return true;
-    if (isCoordinator) return coordinatorAllowed.has(item.to);
-    return false;
-  };
+  const canSeeItem = useCallback(
+    (item: NavItem): boolean => {
+      if (isAdmin) return true;
+      if (isCoordinator) return coordinatorAllowed.has(item.to);
+      return false;
+    },
+    [isAdmin, isCoordinator]
+  );
 
   const sections = useMemo<Section[]>(() => {
     const filtered = allSections
       .map((sec) => ({ ...sec, items: sec.items.filter(canSeeItem) }))
       .filter((sec) => sec.items.length > 0);
     return filtered;
-  }, [allSections, isAdmin, isCoordinator, canSeeItem]);
+  }, [allSections, canSeeItem]);
 
   const sectionOfPath = (path: string): SectionId => {
     if (path.startsWith('/adm/paginas-') || path.startsWith('/adm/fotos-')) return 'pages';
