@@ -1,0 +1,1 @@
+import{j as o}from"./index-CUqXZ82V.js";import{G as t}from"./GeographicChart-D-n8CLY8.js";import"./hooks-DbXgi7GY.js";import"./BarChart-D0sRNF_8.js";const s=({filters:r})=>o.jsx(t,{filters:r});export{s as default};

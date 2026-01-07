@@ -1,0 +1,1 @@
+import{j as t}from"./index-CUqXZ82V.js";import{C as r}from"./ClubsListView-B5x0NRKZ.js";import"./hooks-DbXgi7GY.js";import"./PeriodFilter-DpH4Af4z.js";import"./EmojiEvents-B9lpDZZO.js";const a=()=>t.jsx(r,{});export{a as default};

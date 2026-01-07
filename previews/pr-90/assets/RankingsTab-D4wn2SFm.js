@@ -1,0 +1,1 @@
+import{j as o,B as r}from"./index-CUqXZ82V.js";import{C as a}from"./ClubRankings-IL-rDviE.js";import{T as i}from"./TopEngagedChildren-BCyI7vYr.js";import"./hooks-DbXgi7GY.js";import"./EmojiEvents-B9lpDZZO.js";const e=({filters:s})=>o.jsxs(r,{sx:{display:"flex",flexDirection:"column",gap:3},children:[o.jsx(a,{filters:s}),o.jsx(i,{filters:s})]});export{e as default};
