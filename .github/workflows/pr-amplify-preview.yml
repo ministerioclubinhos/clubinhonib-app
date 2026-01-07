@@ -253,29 +253,57 @@ jobs:
           SUBDOMAIN=${{ steps.create-dns-record.outputs.subdomain }}
           
           echo "🔗 Adicionando subdomínio $SUBDOMAIN ao Amplify..."
+          echo "🔒 PROTEGENDO: Subdomínios essenciais de produção e staging serão sempre preservados!"
           
-          EXISTING_SUBDOMAINS=$(aws amplify get-domain-association \
+          EXISTING_DOMAIN_INFO=$(aws amplify get-domain-association \
             --app-id "$APP_ID" \
             --domain-name "clubinhonib.com" \
             --region ${{ env.AWS_REGION }} \
-            --query 'domainAssociation.subDomains[*].{prefix:prefix,branchName:branchName}' \
-            --output json 2>/dev/null || echo "[]")
+            --output json 2>/dev/null || echo "{}")
+          
+          EXISTING_SUBDOMAINS=$(echo "$EXISTING_DOMAIN_INFO" | jq -r '.domainAssociation.subDomains[]? | {prefix: .subDomainSetting.prefix // "", branchName: .subDomainSetting.branchName} | select(.branchName != null and .branchName != "")' | jq -s '.')
+          
+          if [ "$EXISTING_SUBDOMAINS" = "[]" ] || [ -z "$EXISTING_SUBDOMAINS" ]; then
+            EXISTING_SUBDOMAINS='[]'
+          fi
           
           echo "🔍 Subdomínios existentes:"
           echo "$EXISTING_SUBDOMAINS" | jq .
           
-          SUBDOMAIN_EXISTS=$(echo "$EXISTING_SUBDOMAINS" | jq -r ".[] | select(.prefix==\"$BRANCH_NAME\") | .prefix" || echo "")
+          SUBDOMAIN_EXISTS=$(echo "$EXISTING_SUBDOMAINS" | jq -r ".[] | select(.prefix==\"$BRANCH_NAME\") | .prefix // empty" || echo "")
           
           if [ -z "$SUBDOMAIN_EXISTS" ]; then
             echo "📝 Adicionando novo subdomínio ao Amplify..."
             
-            FILTERED_EXISTING=$(echo "$EXISTING_SUBDOMAINS" | jq '[.[] | select(.branchName != null and .branchName != "")]')
+            ESSENTIAL_SUBDOMAINS='[
+              {"prefix": "", "branchName": "main"},
+              {"prefix": "www", "branchName": "main"},
+              {"prefix": "staging", "branchName": "staging"}
+            ]'
             
-            UPDATED_SUBDOMAINS=$(echo "$FILTERED_EXISTING" | jq ". + [{\"prefix\": \"$BRANCH_NAME\", \"branchName\": \"$BRANCH_NAME\"}]")
+            EXISTING_OTHER=$(echo "$EXISTING_SUBDOMAINS" | jq "[.[] | select(.prefix != \"\" and .prefix != \"www\" and .prefix != \"staging\")]")
             
-            SUBDOMAIN_SETTINGS=$(echo "$UPDATED_SUBDOMAINS" | jq -c '[.[] | {prefix: (if .prefix == null then "" else .prefix end), branchName: .branchName} | select(.branchName != null and .branchName != "")]')
+            NEW_PR_SUBDOMAIN="{\"prefix\": \"$BRANCH_NAME\", \"branchName\": \"$BRANCH_NAME\"}"
             
-            echo "🔍 Subdomínios a serem atualizados (preservando produção e staging):"
+            MERGED_SUBDOMAINS=$(echo "$ESSENTIAL_SUBDOMAINS $EXISTING_OTHER [$NEW_PR_SUBDOMAIN]" | jq -s 'flatten | unique_by(.prefix)')
+            
+            SUBDOMAIN_SETTINGS=$(echo "$MERGED_SUBDOMAINS" | jq -c '[.[] | {prefix: (.prefix // ""), branchName: .branchName} | select(.branchName != null and .branchName != "")]')
+            
+            echo "🔒 VALIDAÇÃO: Verificando se produção e staging estão preservados..."
+            PROD_ROOT=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "") | .branchName // empty')
+            PROD_WWW=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "www") | .branchName // empty')
+            STAGING=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "staging") | .branchName // empty')
+            
+            if [ "$PROD_ROOT" != "main" ] || [ "$PROD_WWW" != "main" ] || [ "$STAGING" != "staging" ]; then
+              echo "❌ ERRO CRÍTICO: Subdomínios essenciais não encontrados! Abortando para proteger produção e staging."
+              echo "   Produção (root): $PROD_ROOT (esperado: main)"
+              echo "   Produção (www): $PROD_WWW (esperado: main)"
+              echo "   Staging: $STAGING (esperado: staging)"
+              exit 1
+            fi
+            
+            echo "✅ Validação passada! Produção e staging preservados."
+            echo "🔍 Subdomínios a serem atualizados:"
             echo "$SUBDOMAIN_SETTINGS" | jq .
             
             aws amplify update-domain-association \
