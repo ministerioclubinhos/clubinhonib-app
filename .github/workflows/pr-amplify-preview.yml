@@ -27,23 +27,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build with staging environment variables
-        env:
-          VITE_API_URL: https://staging-api.clubinhonib.com
-          VITE_FEED_MINISTERIO_ID: afa51053-1296-4c89-9059-a8ad8bd1ec90
-          VITE_GOOGLE_CLIENT_ID: 135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com
-          VITE_SPECIAL_FAMILY_DAY_ID: a2f9913a-e123-46b2-b6f4-a4138686042f
-        run: npm run build
-
       - name: Get Amplify App ID
         id: get-app-id
         run: |
@@ -112,25 +95,6 @@ jobs:
           fi
           
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-
-      - name: Update branch environment variables in Amplify
-        run: |
-          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
-          APP_ID=${{ steps.get-app-id.outputs.app-id }}
-          
-          echo "⚙️ Configurando variáveis de ambiente para branch $BRANCH_NAME..."
-          
-          aws amplify update-branch \
-            --app-id "$APP_ID" \
-            --branch-name "$BRANCH_NAME" \
-            --environment-variables \
-              VITE_API_URL=https://staging-api.clubinhonib.com \
-              VITE_FEED_MINISTERIO_ID=afa51053-1296-4c89-9059-a8ad8bd1ec90 \
-              VITE_GOOGLE_CLIENT_ID=135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com \
-              VITE_SPECIAL_FAMILY_DAY_ID=a2f9913a-e123-46b2-b6f4-a4138686042f \
-            --region ${{ env.AWS_REGION }}
-          
-          echo "✅ Variáveis de ambiente configuradas"
 
       - name: Create subdomain for PR branch
         id: create-subdomain
