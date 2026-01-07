@@ -80,6 +80,7 @@ export const ClubsListView: React.FC = () => {
   const handleReset = () => {
     setFilters({
       page: 1,
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       limit: isMobile ? 5 : 20,
       sortBy: 'performanceScore',
       sortOrder: 'DESC',
