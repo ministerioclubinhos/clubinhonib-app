@@ -601,9 +601,58 @@ jobs:
           SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
           
           echo "🧹 Limpando recursos do PR fechado (merge included)..."
+          echo "🔒 PROTEGENDO: Subdomínios essenciais de produção e staging serão sempre preservados!"
           echo " - Head ref: $HEAD_REF"
           echo " - Preview branch: $BRANCH_NAME"
           echo " - Subdomain: $SUBDOMAIN"
+          
+          echo "🗑️ Removendo subdomínio do PR do Amplify domain association..."
+          EXISTING_DOMAIN_INFO=$(aws amplify get-domain-association \
+            --app-id "$APP_ID" \
+            --domain-name "clubinhonib.com" \
+            --region ${{ env.AWS_REGION }} \
+            --output json 2>/dev/null || echo "{}")
+          
+          EXISTING_SUBDOMAINS=$(echo "$EXISTING_DOMAIN_INFO" | jq -r '.domainAssociation.subDomains[]? | {prefix: .subDomainSetting.prefix // "", branchName: .subDomainSetting.branchName} | select(.branchName != null and .branchName != "")' | jq -s '.')
+          
+          if [ "$EXISTING_SUBDOMAINS" != "[]" ] && [ -n "$EXISTING_SUBDOMAINS" ]; then
+            ESSENTIAL_SUBDOMAINS='[
+              {"prefix": "", "branchName": "main"},
+              {"prefix": "www", "branchName": "main"},
+              {"prefix": "staging", "branchName": "staging"}
+            ]'
+            
+            EXISTING_OTHER=$(echo "$EXISTING_SUBDOMAINS" | jq "[.[] | select(.prefix != \"\" and .prefix != \"www\" and .prefix != \"staging\" and .prefix != \"$BRANCH_NAME\")]")
+            
+            MERGED_SUBDOMAINS=$(echo "$ESSENTIAL_SUBDOMAINS $EXISTING_OTHER" | jq -s 'flatten | unique_by(.prefix)')
+            
+            SUBDOMAIN_SETTINGS=$(echo "$MERGED_SUBDOMAINS" | jq -c '[.[] | {prefix: (.prefix // ""), branchName: .branchName} | select(.branchName != null and .branchName != "")]')
+            
+            echo "🔒 VALIDAÇÃO: Verificando se produção e staging estão preservados..."
+            PROD_ROOT=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "") | .branchName // empty')
+            PROD_WWW=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "www") | .branchName // empty')
+            STAGING=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "staging") | .branchName // empty')
+            
+            if [ "$PROD_ROOT" != "main" ] || [ "$PROD_WWW" != "main" ] || [ "$STAGING" != "staging" ]; then
+              echo "❌ ERRO CRÍTICO: Subdomínios essenciais não encontrados! Abortando cleanup para proteger produção e staging."
+              echo "   Produção (root): $PROD_ROOT (esperado: main)"
+              echo "   Produção (www): $PROD_WWW (esperado: main)"
+              echo "   Staging: $STAGING (esperado: staging)"
+              exit 1
+            fi
+            
+            echo "✅ Validação passada! Produção e staging preservados."
+            echo "🔍 Subdomínios após remoção do PR:"
+            echo "$SUBDOMAIN_SETTINGS" | jq .
+            
+            aws amplify update-domain-association \
+              --app-id "$APP_ID" \
+              --domain-name "clubinhonib.com" \
+              --sub-domain-settings "$SUBDOMAIN_SETTINGS" \
+              --region ${{ env.AWS_REGION }} || echo "Erro ao remover subdomínio do Amplify (pode não existir)"
+          else
+            echo "⚠️ Não foi possível obter subdomínios existentes. Pulando remoção do Amplify."
+          fi
           
           echo "🗑️ Deletando branch no Amplify..."
           aws amplify delete-branch \
@@ -622,5 +671,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git push origin --delete "$BRANCH_NAME" || echo "Branch mirror já foi removida ou não existe"
           
-          echo "✅ Limpeza concluída"
+          echo "✅ Limpeza concluída (produção e staging protegidos)"
 
