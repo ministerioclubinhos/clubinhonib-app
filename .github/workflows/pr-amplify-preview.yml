@@ -487,6 +487,45 @@ jobs:
           echo -e "$STATUS_MESSAGE"
           echo "🔗 URL: https://$SUBDOMAIN"
 
+      - name: Update PR description with preview URL
+        if: github.event_name == 'pull_request' && github.event.action != 'closed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const previewUrl = '${{ steps.wait-deployment.outputs.url }}';
+            const currentBody = context.payload.pull_request.body || '';
+            
+            const previewSection = '## 🔗 Preview\n\n' +
+              '🔗 **Preview available at:** [' + previewUrl + '](' + previewUrl + ')\n\n' +
+              '⚠️ **Note:** This preview is connected to the staging API.\n\n' +
+              '---\n\n';
+            
+            let newBody = currentBody;
+            
+            if (currentBody.includes('## 🔗 Preview')) {
+              const lines = currentBody.split('\n');
+              const previewIndex = lines.findIndex(line => line === '## 🔗 Preview');
+              const separatorIndex = lines.findIndex((line, index) => index > previewIndex && line === '---');
+              
+              if (separatorIndex !== -1) {
+                newBody = lines.slice(0, previewIndex).join('\n') + '\n' + 
+                         previewSection + 
+                         lines.slice(separatorIndex + 1).join('\n');
+              } else {
+                newBody = lines.slice(0, previewIndex).join('\n') + '\n' + previewSection;
+              }
+            } else {
+              newBody = previewSection + currentBody;
+            }
+            
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              body: newBody.trim(),
+            });
+
       - name: Comment PR with preview URL
         if: github.event_name == 'pull_request' && github.event.action != 'closed'
         uses: actions/github-script@v7
@@ -494,9 +533,7 @@ jobs:
           script: |
             const prNumber = context.payload.pull_request.number;
             const previewUrl = '${{ steps.wait-deployment.outputs.url }}';
-            const subdomain = '${{ steps.wait-deployment.outputs.subdomain }}';
             const status = '${{ steps.verify-deployment.outputs.status }}';
-            const statusMessage = '${{ steps.verify-deployment.outputs.status-message }}'.replace(/\\n/g, '\n');
             
             let statusEmoji = '🚀';
             let statusText = 'Preview deploy completed on AWS Amplify!';
