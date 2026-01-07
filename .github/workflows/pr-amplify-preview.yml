@@ -84,8 +84,8 @@ jobs:
               --app-id "$APP_ID" \
               --branch-name "$BRANCH_NAME" \
               --description "Preview branch for PR #$PR_NUMBER from $HEAD_REF" \
-              --enable-auto-build true \
-              --enable-pull-request-preview true \
+              --enable-auto-build \
+              --enable-pull-request-preview \
               --stage DEVELOPMENT \
               --region ${{ env.AWS_REGION }}
             
