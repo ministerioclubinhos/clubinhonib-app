@@ -46,7 +46,7 @@ jobs:
           BRANCH_NAME_SANITIZED=$(echo "$HEAD_REF" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
           BRANCH_NAME="$BRANCH_NAME_SANITIZED"
           
-          echo "📤 Criando branch $BRANCH_NAME no repositório (de $HEAD_REF)..."
+          echo "📤 Creating branch $BRANCH_NAME in repository (from $HEAD_REF)..."
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
@@ -60,7 +60,7 @@ jobs:
           
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "head-ref=$HEAD_REF" >> $GITHUB_OUTPUT
-          echo "✅ Branch $BRANCH_NAME criada no repositório"
+          echo "✅ Branch $BRANCH_NAME created in repository"
 
       - name: Create or update PR branch in Amplify
         id: create-branch
@@ -70,7 +70,7 @@ jobs:
           PR_NUMBER=${{ github.event.pull_request.number }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
-          echo "🔍 Verificando se branch $BRANCH_NAME existe..."
+          echo "🔍 Checking if branch $BRANCH_NAME exists..."
           EXISTING_BRANCH=$(aws amplify get-branch \
             --app-id "$APP_ID" \
             --branch-name "$BRANCH_NAME" \
@@ -79,7 +79,7 @@ jobs:
             --output text 2>/dev/null || echo "")
           
           if [ -z "$EXISTING_BRANCH" ]; then
-            echo "📦 Criando nova branch no Amplify: $BRANCH_NAME"
+            echo "📦 Creating new branch in Amplify: $BRANCH_NAME"
             aws amplify create-branch \
               --app-id "$APP_ID" \
               --branch-name "$BRANCH_NAME" \
@@ -89,10 +89,10 @@ jobs:
               --stage DEVELOPMENT \
               --region ${{ env.AWS_REGION }}
             
-            echo "⏳ Aguardando branch ser criada..."
+            echo "⏳ Waiting for branch to be created..."
             sleep 10
           else
-            echo "✅ Branch $BRANCH_NAME já existe"
+            echo "✅ Branch $BRANCH_NAME already exists"
           fi
           
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
@@ -103,13 +103,13 @@ jobs:
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
-          echo "🧩 Configurando variáveis de ambiente da branch $BRANCH_NAME no Amplify (staging)..."
+          echo "🧩 Configuring environment variables for branch $BRANCH_NAME in Amplify (staging)..."
           aws amplify update-branch \
             --app-id "$APP_ID" \
             --branch-name "$BRANCH_NAME" \
             --environment-variables VITE_API_URL=https://staging-api.clubinhonib.com,VITE_FEED_MINISTERIO_ID=afa51053-1296-4c89-9059-a8ad8bd1ec90,VITE_GOOGLE_CLIENT_ID=135271087774-favt17acohq7ope35eu48v41mi7lbshj.apps.googleusercontent.com,VITE_SPECIAL_FAMILY_DAY_ID=a2f9913a-e123-46b2-b6f4-a4138686042f \
             --region ${{ env.AWS_REGION }}
-          echo "✅ Variáveis configuradas"
+          echo "✅ Environment variables configured"
 
       - name: Start Amplify build explicitly
         id: start-build
@@ -117,13 +117,13 @@ jobs:
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
-          echo "🚀 Iniciando build do Amplify para a branch $BRANCH_NAME..."
+          echo "🚀 Starting Amplify build for branch $BRANCH_NAME..."
           aws amplify start-job \
             --app-id "$APP_ID" \
             --branch-name "$BRANCH_NAME" \
             --job-type RELEASE \
             --region ${{ env.AWS_REGION }} >/dev/null 2>&1 || true
-          echo "✅ Comando de start-job enviado (idempotente)"
+          echo "✅ Start-job command sent (idempotent)"
 
       - name: Get Route 53 Hosted Zone ID
         id: get-hosted-zone
@@ -146,7 +146,7 @@ jobs:
         run: |
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
-          echo "🔍 Verificando associação de domínio no Amplify..."
+          echo "🔍 Verifying domain association in Amplify..."
           
           DOMAIN_EXISTS=$(aws amplify get-domain-association \
             --app-id "$APP_ID" \
@@ -156,17 +156,17 @@ jobs:
             --output text 2>/dev/null || echo "")
           
           if [ -z "$DOMAIN_EXISTS" ]; then
-            echo "📝 Criando associação de domínio principal no Amplify..."
+            echo "📝 Creating main domain association in Amplify..."
             aws amplify create-domain-association \
               --app-id "$APP_ID" \
               --domain-name "clubinhonib.com" \
               --sub-domain-settings prefix=,branchName=main \
               --region ${{ env.AWS_REGION }} || true
-            echo "⏳ Aguardando associação de domínio ser criada..."
+            echo "⏳ Waiting for domain association to be created..."
             sleep 30
           fi
           
-          echo "✅ Associação de domínio verificada"
+          echo "✅ Domain association verified"
 
       - name: Get Amplify CloudFront domain for branch
         id: get-cloudfront
@@ -174,7 +174,7 @@ jobs:
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
-          echo "🔍 Obtendo CloudFront domain para branch $BRANCH_NAME..."
+          echo "🔍 Getting CloudFront domain for branch $BRANCH_NAME..."
           
           MAX_RETRIES=30
           RETRY=0
@@ -193,14 +193,14 @@ jobs:
               break
             fi
             
-            echo "⏳ Aguardando branch estar pronta... ($RETRY/$MAX_RETRIES)"
+            echo "⏳ Waiting for branch to be ready... ($RETRY/$MAX_RETRIES)"
             sleep 10
             RETRY=$((RETRY + 1))
           done
           
           if [ -z "$CLOUDFRONT_DOMAIN" ]; then
             CLOUDFRONT_DOMAIN="${BRANCH_NAME}.${APP_ID}.amplifyapp.com"
-            echo "⚠️ Usando formato padrão do Amplify: $CLOUDFRONT_DOMAIN"
+            echo "⚠️ Using default Amplify format: $CLOUDFRONT_DOMAIN"
           fi
           
           echo "cloudfront-domain=$CLOUDFRONT_DOMAIN" >> $GITHUB_OUTPUT
@@ -214,9 +214,9 @@ jobs:
           CLOUDFRONT_DOMAIN=${{ steps.get-cloudfront.outputs.cloudfront-domain }}
           SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
           
-          echo "🌐 Subdomínio será: $SUBDOMAIN"
+          echo "🌐 Subdomain will be: $SUBDOMAIN"
           
-          echo "🌐 Criando registro DNS no Route 53 para $SUBDOMAIN → $CLOUDFRONT_DOMAIN..."
+          echo "🌐 Creating DNS record in Route 53 for $SUBDOMAIN → $CLOUDFRONT_DOMAIN..."
           
           EXISTING_RECORD=$(aws route53 list-resource-record-sets \
             --hosted-zone-id "$HOSTED_ZONE_ID" \
@@ -224,10 +224,10 @@ jobs:
             --output json 2>/dev/null || echo "[]")
           
           if [ "$EXISTING_RECORD" != "[]" ]; then
-            echo "✅ Registro DNS já existe para $SUBDOMAIN, atualizando..."
+            echo "✅ DNS record already exists for $SUBDOMAIN, updating..."
             ACTION="UPSERT"
           else
-            echo "📝 Criando novo registro DNS..."
+            echo "📝 Creating new DNS record..."
             ACTION="CREATE"
           fi
           
@@ -239,11 +239,11 @@ jobs:
             --query 'ChangeInfo.Id' \
             --output text)
           
-          echo "⏳ Aguardando propagação DNS (Change ID: $CHANGE_ID)..."
+          echo "⏳ Waiting for DNS propagation (Change ID: $CHANGE_ID)..."
           aws route53 wait resource-record-sets-changed --id "$CHANGE_ID" || sleep 30
           
           echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
-          echo "✅ Registro DNS criado/atualizado no Route 53"
+          echo "✅ DNS record created/updated in Route 53"
 
       - name: Add subdomain to Amplify domain association
         id: add-subdomain-amplify
@@ -252,8 +252,8 @@ jobs:
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           SUBDOMAIN=${{ steps.create-dns-record.outputs.subdomain }}
           
-          echo "🔗 Adicionando subdomínio $SUBDOMAIN ao Amplify..."
-          echo "🔒 PROTEGENDO: Subdomínios essenciais de produção e staging serão sempre preservados!"
+          echo "🔗 Adding subdomain $SUBDOMAIN to Amplify..."
+          echo "🔒 PROTECTING: Essential production and staging subdomains will always be preserved!"
           
           EXISTING_DOMAIN_INFO=$(aws amplify get-domain-association \
             --app-id "$APP_ID" \
@@ -267,13 +267,13 @@ jobs:
             EXISTING_SUBDOMAINS='[]'
           fi
           
-          echo "🔍 Subdomínios existentes:"
+          echo "🔍 Existing subdomains:"
           echo "$EXISTING_SUBDOMAINS" | jq .
           
           SUBDOMAIN_EXISTS=$(echo "$EXISTING_SUBDOMAINS" | jq -r ".[] | select(.prefix==\"$BRANCH_NAME\") | .prefix // empty" || echo "")
           
           if [ -z "$SUBDOMAIN_EXISTS" ]; then
-            echo "📝 Adicionando novo subdomínio ao Amplify..."
+            echo "📝 Adding new subdomain to Amplify..."
             
             ESSENTIAL_SUBDOMAINS='[
               {"prefix": "", "branchName": "main"},
@@ -289,21 +289,21 @@ jobs:
             
             SUBDOMAIN_SETTINGS=$(echo "$MERGED_SUBDOMAINS" | jq -c '[.[] | {prefix: (.prefix // ""), branchName: .branchName} | select(.branchName != null and .branchName != "")]')
             
-            echo "🔒 VALIDAÇÃO: Verificando se produção e staging estão preservados..."
+            echo "🔒 VALIDATION: Verifying production and staging are preserved..."
             PROD_ROOT=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "") | .branchName // empty')
             PROD_WWW=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "www") | .branchName // empty')
             STAGING=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "staging") | .branchName // empty')
             
             if [ "$PROD_ROOT" != "main" ] || [ "$PROD_WWW" != "main" ] || [ "$STAGING" != "staging" ]; then
-              echo "❌ ERRO CRÍTICO: Subdomínios essenciais não encontrados! Abortando para proteger produção e staging."
-              echo "   Produção (root): $PROD_ROOT (esperado: main)"
-              echo "   Produção (www): $PROD_WWW (esperado: main)"
-              echo "   Staging: $STAGING (esperado: staging)"
+              echo "❌ CRITICAL ERROR: Essential subdomains not found! Aborting to protect production and staging."
+              echo "   Production (root): $PROD_ROOT (expected: main)"
+              echo "   Production (www): $PROD_WWW (expected: main)"
+              echo "   Staging: $STAGING (expected: staging)"
               exit 1
             fi
             
-            echo "✅ Validação passada! Produção e staging preservados."
-            echo "🔍 Subdomínios a serem atualizados:"
+            echo "✅ Validation passed! Production and staging preserved."
+            echo "🔍 Subdomains to be updated:"
             echo "$SUBDOMAIN_SETTINGS" | jq .
             
             aws amplify update-domain-association \
@@ -312,14 +312,14 @@ jobs:
               --sub-domain-settings "$SUBDOMAIN_SETTINGS" \
               --region ${{ env.AWS_REGION }}
             
-            echo "⏳ Aguardando configuração do subdomínio no Amplify..."
+            echo "⏳ Waiting for subdomain configuration in Amplify..."
             sleep 30
           else
-            echo "✅ Subdomínio já existe no Amplify"
+            echo "✅ Subdomain already exists in Amplify"
           fi
           
           echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
-          echo "✅ Subdomínio $SUBDOMAIN configurado no Amplify"
+          echo "✅ Subdomain $SUBDOMAIN configured in Amplify"
 
       - name: Wait for Amplify build to complete
         id: wait-build
@@ -327,7 +327,7 @@ jobs:
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           
-          echo "⏳ Aguardando build do Amplify iniciar..."
+          echo "⏳ Waiting for Amplify build to start..."
           sleep 30
           
           MAX_WAIT=600
@@ -346,14 +346,14 @@ jobs:
             JOB_TYPE=$(echo "$JOB_INFO" | jq -r '.jobSummaries[0].jobType // "RELEASE"')
             
             if [ "$JOB_STATUS" = "SUCCEED" ]; then
-              echo "✅ Build concluído com sucesso!"
+              echo "✅ Build completed successfully!"
               BUILD_COMPLETED=true
               break
             elif [ "$JOB_STATUS" = "FAILED" ]; then
-              echo "❌ Build falhou"
+              echo "❌ Build failed"
               exit 1
             elif [ "$JOB_STATUS" = "PENDING" ] || [ "$JOB_STATUS" = "RUNNING" ]; then
-              echo "⏳ Build em andamento... Status: $JOB_STATUS ($ELAPSED/$MAX_WAIT segundos)"
+              echo "⏳ Build in progress... Status: $JOB_STATUS ($ELAPSED/$MAX_WAIT seconds)"
             fi
             
             sleep 15
@@ -361,7 +361,7 @@ jobs:
           done
           
           if [ "$BUILD_COMPLETED" != "true" ]; then
-            echo "⚠️ Timeout aguardando build. Continuando..."
+            echo "⚠️ Timeout waiting for build. Continuing..."
           fi
           
           echo "build-completed=$BUILD_COMPLETED" >> $GITHUB_OUTPUT
@@ -373,8 +373,8 @@ jobs:
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
           SUBDOMAIN=${{ steps.add-subdomain-amplify.outputs.subdomain }}
           
-          echo "🌐 Verificando status do deployment no Amplify: $SUBDOMAIN"
-          echo "⏳ Aguardando domínio estar pronto e deployment completo..."
+          echo "🌐 Checking deployment status in Amplify: $SUBDOMAIN"
+          echo "⏳ Waiting for domain to be ready and deployment to complete..."
           
           MAX_WAIT=600
           ELAPSED=0
@@ -395,15 +395,15 @@ jobs:
               --region ${{ env.AWS_REGION }} \
               --output json 2>/dev/null || echo "{}")
             
-            SUBDOMAIN_STATUS=$(echo "$DOMAIN_INFO" | jq -r ".domainAssociation.subDomains[] | select(.prefix==\"$BRANCH_NAME\") | .verified // false")
+            SUBDOMAIN_STATUS=$(echo "$DOMAIN_INFO" | jq -r ".domainAssociation.subDomains[] | select(.subDomainSetting.prefix==\"$BRANCH_NAME\") | .verified // false")
             DOMAIN_STATUS=$(echo "$DOMAIN_INFO" | jq -r '.domainAssociation.domainStatus // "PENDING"')
             
             if [ "$SUBDOMAIN_STATUS" = "true" ] && [ "$DOMAIN_STATUS" = "AVAILABLE" ] && [ -z "$BRANCH_STATUS" ]; then
-              echo "✅ Deployment completo! Domínio verificado e branch sem jobs ativos."
+              echo "✅ Deployment complete! Domain verified and branch has no active jobs."
               DEPLOYMENT_READY=true
               break
             else
-              echo "⏳ Aguardando... Domínio: $DOMAIN_STATUS, Subdomínio verificado: $SUBDOMAIN_STATUS, Jobs ativos: $([ -n "$BRANCH_STATUS" ] && echo "sim" || echo "não") ($ELAPSED/$MAX_WAIT segundos)"
+              echo "⏳ Waiting... Domain: $DOMAIN_STATUS, Subdomain verified: $SUBDOMAIN_STATUS, Active jobs: $([ -n "$BRANCH_STATUS" ] && echo "yes" || echo "no") ($ELAPSED/$MAX_WAIT seconds)"
             fi
             
             sleep 15
@@ -411,7 +411,7 @@ jobs:
           done
           
           if [ "$DEPLOYMENT_READY" != "true" ]; then
-            echo "⚠️ Timeout aguardando deployment. Continuando..."
+            echo "⚠️ Timeout waiting for deployment. Continuing..."
           fi
           
           echo "deployment-ready=$DEPLOYMENT_READY" >> $GITHUB_OUTPUT
@@ -427,7 +427,7 @@ jobs:
           BUILD_COMPLETED=${{ steps.wait-build.outputs.build-completed }}
           DEPLOYMENT_READY=${{ steps.wait-deployment.outputs.deployment-ready }}
           
-          echo "🔍 Verificando status final do deployment usando APIs da AWS..."
+          echo "🔍 Verifying final deployment status using AWS APIs..."
           
           BRANCH_INFO=$(aws amplify get-branch \
             --app-id "$APP_ID" \
@@ -452,30 +452,30 @@ jobs:
           BRANCH_STAGE=$(echo "$BRANCH_INFO" | jq -r '.branch.stage // "DEVELOPMENT"')
           LATEST_JOB_STATUS=$(echo "$LATEST_JOB" | jq -r '.jobSummaries[0].status // "UNKNOWN"')
           DOMAIN_STATUS=$(echo "$DOMAIN_INFO" | jq -r '.domainAssociation.domainStatus // "UNKNOWN"')
-          SUBDOMAIN_VERIFIED=$(echo "$DOMAIN_INFO" | jq -r ".domainAssociation.subDomains[] | select(.prefix==\"$BRANCH_NAME\") | .verified // false")
+          SUBDOMAIN_VERIFIED=$(echo "$DOMAIN_INFO" | jq -r ".domainAssociation.subDomains[] | select(.subDomainSetting.prefix==\"$BRANCH_NAME\") | .verified // false")
           
           FINAL_STATUS="✅"
           STATUS_MESSAGE=""
           
           if [ "$BUILD_COMPLETED" = "true" ] && [ "$LATEST_JOB_STATUS" = "SUCCEED" ]; then
-            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Build concluído (Status: $LATEST_JOB_STATUS)\n"
+            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Build completed (Status: $LATEST_JOB_STATUS)\n"
           else
             STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Build: $LATEST_JOB_STATUS\n"
             FINAL_STATUS="⚠️"
           fi
           
           if [ "$DEPLOYMENT_READY" = "true" ] && [ "$SUBDOMAIN_VERIFIED" = "true" ] && [ "$DOMAIN_STATUS" = "AVAILABLE" ]; then
-            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Subdomínio verificado e disponível (Status: $DOMAIN_STATUS)\n"
+            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Subdomain verified and available (Status: $DOMAIN_STATUS)\n"
           else
-            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Domínio: $DOMAIN_STATUS, Verificado: $SUBDOMAIN_VERIFIED\n"
+            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Domain: $DOMAIN_STATUS, Verified: $SUBDOMAIN_VERIFIED\n"
             FINAL_STATUS="⚠️"
           fi
           
           BRANCH_URL=$(echo "$BRANCH_INFO" | jq -r '.branch.branchName // ""')
           if [ -n "$BRANCH_URL" ]; then
-            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Branch ativa no Amplify (Stage: $BRANCH_STAGE)\n"
+            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Branch active in Amplify (Stage: $BRANCH_STAGE)\n"
           else
-            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Branch não encontrada\n"
+            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Branch not found\n"
             FINAL_STATUS="⚠️"
           fi
           
@@ -483,7 +483,7 @@ jobs:
           STATUS_MSG_ESCAPED=$(echo -e "$STATUS_MESSAGE" | sed 's/$/\\n/' | tr -d '\n' | sed 's/\\n$//')
           echo "status-message=$STATUS_MSG_ESCAPED" >> $GITHUB_OUTPUT
           
-          echo "📊 Status Final (via AWS APIs):"
+          echo "📊 Final Status (via AWS APIs):"
           echo -e "$STATUS_MESSAGE"
           echo "🔗 URL: https://$SUBDOMAIN"
 
@@ -600,13 +600,19 @@ jobs:
           HOSTED_ZONE_ID=${{ steps.get-hosted-zone.outputs.hosted-zone-id }}
           SUBDOMAIN="${BRANCH_NAME}.clubinhonib.com"
           
-          echo "🧹 Limpando recursos do PR fechado (merge included)..."
-          echo "🔒 PROTEGENDO: Subdomínios essenciais de produção e staging serão sempre preservados!"
+          echo "🧹 Cleaning up resources from closed PR (merge included)..."
+          echo "🔒 PROTECTING: Essential production and staging subdomains will always be preserved!"
           echo " - Head ref: $HEAD_REF"
           echo " - Preview branch: $BRANCH_NAME"
           echo " - Subdomain: $SUBDOMAIN"
           
-          echo "🗑️ Removendo subdomínio do PR do Amplify domain association..."
+          if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "staging" ]; then
+            echo "❌ CRITICAL ERROR: Attempted to delete production or staging branch! Aborting cleanup."
+            echo "   Branch name: $BRANCH_NAME"
+            exit 1
+          fi
+          
+          echo "🗑️ Removing PR subdomain from Amplify domain association..."
           EXISTING_DOMAIN_INFO=$(aws amplify get-domain-association \
             --app-id "$APP_ID" \
             --domain-name "clubinhonib.com" \
@@ -628,48 +634,53 @@ jobs:
             
             SUBDOMAIN_SETTINGS=$(echo "$MERGED_SUBDOMAINS" | jq -c '[.[] | {prefix: (.prefix // ""), branchName: .branchName} | select(.branchName != null and .branchName != "")]')
             
-            echo "🔒 VALIDAÇÃO: Verificando se produção e staging estão preservados..."
+            echo "🔒 VALIDATION: Verifying production and staging are preserved..."
             PROD_ROOT=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "") | .branchName // empty')
             PROD_WWW=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "www") | .branchName // empty')
             STAGING=$(echo "$SUBDOMAIN_SETTINGS" | jq -r '.[] | select(.prefix == "staging") | .branchName // empty')
             
             if [ "$PROD_ROOT" != "main" ] || [ "$PROD_WWW" != "main" ] || [ "$STAGING" != "staging" ]; then
-              echo "❌ ERRO CRÍTICO: Subdomínios essenciais não encontrados! Abortando cleanup para proteger produção e staging."
-              echo "   Produção (root): $PROD_ROOT (esperado: main)"
-              echo "   Produção (www): $PROD_WWW (esperado: main)"
-              echo "   Staging: $STAGING (esperado: staging)"
+              echo "❌ CRITICAL ERROR: Essential subdomains not found! Aborting cleanup to protect production and staging."
+              echo "   Production (root): $PROD_ROOT (expected: main)"
+              echo "   Production (www): $PROD_WWW (expected: main)"
+              echo "   Staging: $STAGING (expected: staging)"
               exit 1
             fi
             
-            echo "✅ Validação passada! Produção e staging preservados."
-            echo "🔍 Subdomínios após remoção do PR:"
+            echo "✅ Validation passed! Production and staging preserved."
+            echo "🔍 Subdomains after PR removal:"
             echo "$SUBDOMAIN_SETTINGS" | jq .
             
             aws amplify update-domain-association \
               --app-id "$APP_ID" \
               --domain-name "clubinhonib.com" \
               --sub-domain-settings "$SUBDOMAIN_SETTINGS" \
-              --region ${{ env.AWS_REGION }} || echo "Erro ao remover subdomínio do Amplify (pode não existir)"
+              --region ${{ env.AWS_REGION }} || echo "Error removing subdomain from Amplify (may not exist)"
           else
-            echo "⚠️ Não foi possível obter subdomínios existentes. Pulando remoção do Amplify."
+            echo "⚠️ Could not get existing subdomains. Skipping Amplify removal."
           fi
           
-          echo "🗑️ Deletando branch no Amplify..."
-          aws amplify delete-branch \
-            --app-id "$APP_ID" \
-            --branch-name "$BRANCH_NAME" \
-            --region ${{ env.AWS_REGION }} || echo "Branch do Amplify já foi removida ou não existe"
+          echo "🗑️ Deleting branch in Amplify..."
+          if [ "$BRANCH_NAME" != "main" ] && [ "$BRANCH_NAME" != "staging" ]; then
+            aws amplify delete-branch \
+              --app-id "$APP_ID" \
+              --branch-name "$BRANCH_NAME" \
+              --region ${{ env.AWS_REGION }} || echo "Amplify branch already deleted or does not exist"
+          else
+            echo "❌ CRITICAL ERROR: Attempted to delete production or staging branch! Skipping deletion."
+            exit 1
+          fi
           
-          echo "🗑️ Removendo registro DNS do Route 53..."
+          echo "🗑️ Removing DNS record from Route 53..."
           CHANGE_BATCH=$(printf '{"Changes":[{"Action":"DELETE","ResourceRecordSet":{"Name":"%s.","Type":"CNAME","TTL":300,"ResourceRecords":[{"Value":"%s.%s.amplifyapp.com."}]}}]}' "$SUBDOMAIN" "$BRANCH_NAME" "$APP_ID")
           aws route53 change-resource-record-sets \
             --hosted-zone-id "$HOSTED_ZONE_ID" \
-            --change-batch "$CHANGE_BATCH" || echo "Registro DNS já foi removido ou não existe"
+            --change-batch "$CHANGE_BATCH" || echo "DNS record already deleted or does not exist"
           
-          echo "🧹 (Opcional) removendo branch mirror do repo..."
+          echo "🧹 (Optional) removing branch mirror from repo..."
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git push origin --delete "$BRANCH_NAME" || echo "Branch mirror já foi removida ou não existe"
+          git push origin --delete "$BRANCH_NAME" || echo "Branch mirror already deleted or does not exist"
           
-          echo "✅ Limpeza concluída (produção e staging protegidos)"
+          echo "✅ Cleanup completed (production and staging protected)"
 
