@@ -24,7 +24,7 @@ export default function WeekAudioPlayerView({ audio }: Props) {
     url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace(/\?dl=\d.*$/, '?raw=1');
 
   const getGoogleDrivePreviewUrl = (url: string): string | null => {
-    const match = url.match(/\/d\/(.*?)\
+  const match = url.match(/\/d\/(.*?)\//);
     if (match && match[1]) {
       return `https://drive.google.com/file/d/${match[1]}/preview`;
     }

@@ -34,7 +34,7 @@ export default function WeekVideoPlayer({ video }: Props) {
   };
 
   const getGoogleDriveEmbedUrl = (url: string): string | null => {
-    const match = url.match(/\/d\/(.*?)\
+  const match = url.match(/\/d\/(.*?)\//);
     return match ? `https://drive.google.com/file/d/${match[1]}/preview` : null;
   };
 
