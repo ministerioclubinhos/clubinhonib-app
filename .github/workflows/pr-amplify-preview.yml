@@ -270,13 +270,15 @@ jobs:
           BUILD_COMPLETED=false
           
           while [ $ELAPSED -lt $MAX_WAIT ]; do
-            JOB_STATUS=$(aws amplify list-jobs \
+            JOB_INFO=$(aws amplify list-jobs \
               --app-id "$APP_ID" \
               --branch-name "$BRANCH_NAME" \
               --region ${{ env.AWS_REGION }} \
               --max-results 1 \
-              --query 'jobSummaries[0].status' \
-              --output text 2>/dev/null || echo "PENDING")
+              --output json 2>/dev/null || echo "{}")
+            
+            JOB_STATUS=$(echo "$JOB_INFO" | jq -r '.jobSummaries[0].status // "PENDING"')
+            JOB_TYPE=$(echo "$JOB_INFO" | jq -r '.jobSummaries[0].jobType // "RELEASE"')
             
             if [ "$JOB_STATUS" = "SUCCEED" ]; then
               echo "✅ Build concluído com sucesso!"
@@ -299,81 +301,116 @@ jobs:
           
           echo "build-completed=$BUILD_COMPLETED" >> $GITHUB_OUTPUT
 
-      - name: Wait for DNS propagation and subdomain availability
-        id: wait-dns
+      - name: Wait for Amplify domain and deployment to be ready
+        id: wait-deployment
         run: |
+          BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
+          APP_ID=${{ steps.get-app-id.outputs.app-id }}
           SUBDOMAIN=${{ steps.add-subdomain-amplify.outputs.subdomain }}
           
-          echo "🌐 Verificando disponibilidade do subdomínio: $SUBDOMAIN"
-          echo "⏳ Aguardando propagação DNS e deploy..."
+          echo "🌐 Verificando status do deployment no Amplify: $SUBDOMAIN"
+          echo "⏳ Aguardando domínio estar pronto e deployment completo..."
           
           MAX_WAIT=600
           ELAPSED=0
-          DNS_READY=false
+          DEPLOYMENT_READY=false
           
           while [ $ELAPSED -lt $MAX_WAIT ]; do
-            if dig +short "$SUBDOMAIN" @8.8.8.8 | grep -q .; then
-              echo "✅ DNS resolvido! Verificando se o site está respondendo..."
-              
-              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$SUBDOMAIN" || echo "000")
-              
-              if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
-                echo "✅ Subdomínio disponível e respondendo! HTTP $HTTP_CODE"
-                DNS_READY=true
-                break
-              else
-                echo "⏳ DNS OK, mas site ainda não está respondendo (HTTP $HTTP_CODE)..."
-              fi
+            BRANCH_INFO=$(aws amplify get-branch \
+              --app-id "$APP_ID" \
+              --branch-name "$BRANCH_NAME" \
+              --region ${{ env.AWS_REGION }} \
+              --output json 2>/dev/null || echo "{}")
+            
+            BRANCH_STATUS=$(echo "$BRANCH_INFO" | jq -r '.branch.activeJobId // empty')
+            
+            DOMAIN_INFO=$(aws amplify get-domain-association \
+              --app-id "$APP_ID" \
+              --domain-name "clubinhonib.com" \
+              --region ${{ env.AWS_REGION }} \
+              --output json 2>/dev/null || echo "{}")
+            
+            SUBDOMAIN_STATUS=$(echo "$DOMAIN_INFO" | jq -r ".domainAssociation.subDomains[] | select(.prefix==\"$BRANCH_NAME\") | .verified // false")
+            DOMAIN_STATUS=$(echo "$DOMAIN_INFO" | jq -r '.domainAssociation.domainStatus // "PENDING"')
+            
+            if [ "$SUBDOMAIN_STATUS" = "true" ] && [ "$DOMAIN_STATUS" = "AVAILABLE" ] && [ -z "$BRANCH_STATUS" ]; then
+              echo "✅ Deployment completo! Domínio verificado e branch sem jobs ativos."
+              DEPLOYMENT_READY=true
+              break
             else
-              echo "⏳ DNS ainda não propagado... ($ELAPSED/$MAX_WAIT segundos)"
+              echo "⏳ Aguardando... Domínio: $DOMAIN_STATUS, Subdomínio verificado: $SUBDOMAIN_STATUS, Jobs ativos: $([ -n "$BRANCH_STATUS" ] && echo "sim" || echo "não") ($ELAPSED/$MAX_WAIT segundos)"
             fi
             
             sleep 15
             ELAPSED=$((ELAPSED + 15))
           done
           
-          if [ "$DNS_READY" != "true" ]; then
-            echo "⚠️ Timeout aguardando DNS. Subdomínio pode não estar totalmente disponível ainda."
+          if [ "$DEPLOYMENT_READY" != "true" ]; then
+            echo "⚠️ Timeout aguardando deployment. Continuando..."
           fi
           
-          echo "dns-ready=$DNS_READY" >> $GITHUB_OUTPUT
+          echo "deployment-ready=$DEPLOYMENT_READY" >> $GITHUB_OUTPUT
           echo "subdomain=$SUBDOMAIN" >> $GITHUB_OUTPUT
           echo "url=https://$SUBDOMAIN" >> $GITHUB_OUTPUT
 
-      - name: Verify final deployment status
+      - name: Verify final deployment status using AWS APIs
         id: verify-deployment
         run: |
           BRANCH_NAME=${{ steps.create-branch.outputs.branch-name }}
           APP_ID=${{ steps.get-app-id.outputs.app-id }}
-          SUBDOMAIN=${{ steps.wait-dns.outputs.subdomain }}
+          SUBDOMAIN=${{ steps.wait-deployment.outputs.subdomain }}
           BUILD_COMPLETED=${{ steps.wait-build.outputs.build-completed }}
-          DNS_READY=${{ steps.wait-dns.outputs.dns-ready }}
+          DEPLOYMENT_READY=${{ steps.wait-deployment.outputs.deployment-ready }}
           
-          echo "🔍 Verificando status final do deployment..."
+          echo "🔍 Verificando status final do deployment usando APIs da AWS..."
+          
+          BRANCH_INFO=$(aws amplify get-branch \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH_NAME" \
+            --region ${{ env.AWS_REGION }} \
+            --output json)
+          
+          DOMAIN_INFO=$(aws amplify get-domain-association \
+            --app-id "$APP_ID" \
+            --domain-name "clubinhonib.com" \
+            --region ${{ env.AWS_REGION }} \
+            --output json)
+          
+          LATEST_JOB=$(aws amplify list-jobs \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH_NAME" \
+            --region ${{ env.AWS_REGION }} \
+            --max-results 1 \
+            --output json)
+          
+          BRANCH_ACTIVE=$(echo "$BRANCH_INFO" | jq -r '.branch.enableAutoBuild // false')
+          BRANCH_STAGE=$(echo "$BRANCH_INFO" | jq -r '.branch.stage // "DEVELOPMENT"')
+          LATEST_JOB_STATUS=$(echo "$LATEST_JOB" | jq -r '.jobSummaries[0].status // "UNKNOWN"')
+          DOMAIN_STATUS=$(echo "$DOMAIN_INFO" | jq -r '.domainAssociation.domainStatus // "UNKNOWN"')
+          SUBDOMAIN_VERIFIED=$(echo "$DOMAIN_INFO" | jq -r ".domainAssociation.subDomains[] | select(.prefix==\"$BRANCH_NAME\") | .verified // false")
           
           FINAL_STATUS="✅"
           STATUS_MESSAGE=""
           
-          if [ "$BUILD_COMPLETED" = "true" ]; then
-            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Build concluído\n"
+          if [ "$BUILD_COMPLETED" = "true" ] && [ "$LATEST_JOB_STATUS" = "SUCCEED" ]; then
+            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Build concluído (Status: $LATEST_JOB_STATUS)\n"
           else
-            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Build ainda em andamento\n"
+            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Build: $LATEST_JOB_STATUS\n"
             FINAL_STATUS="⚠️"
           fi
           
-          if [ "$DNS_READY" = "true" ]; then
-            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Subdomínio disponível\n"
+          if [ "$DEPLOYMENT_READY" = "true" ] && [ "$SUBDOMAIN_VERIFIED" = "true" ] && [ "$DOMAIN_STATUS" = "AVAILABLE" ]; then
+            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Subdomínio verificado e disponível (Status: $DOMAIN_STATUS)\n"
           else
-            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Subdomínio ainda propagando\n"
+            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Domínio: $DOMAIN_STATUS, Verificado: $SUBDOMAIN_VERIFIED\n"
             FINAL_STATUS="⚠️"
           fi
           
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$SUBDOMAIN" || echo "000")
-          
-          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
-            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Site respondendo (HTTP $HTTP_CODE)\n"
+          BRANCH_URL=$(echo "$BRANCH_INFO" | jq -r '.branch.branchName // ""')
+          if [ -n "$BRANCH_URL" ]; then
+            STATUS_MESSAGE="${STATUS_MESSAGE}✅ Branch ativa no Amplify (Stage: $BRANCH_STAGE)\n"
           else
-            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Site retornou HTTP $HTTP_CODE\n"
+            STATUS_MESSAGE="${STATUS_MESSAGE}⚠️ Branch não encontrada\n"
             FINAL_STATUS="⚠️"
           fi
           
@@ -381,8 +418,9 @@ jobs:
           STATUS_MSG_ESCAPED=$(echo -e "$STATUS_MESSAGE" | sed 's/$/\\n/' | tr -d '\n' | sed 's/\\n$//')
           echo "status-message=$STATUS_MSG_ESCAPED" >> $GITHUB_OUTPUT
           
-          echo "📊 Status Final:"
+          echo "📊 Status Final (via AWS APIs):"
           echo -e "$STATUS_MESSAGE"
+          echo "🔗 URL: https://$SUBDOMAIN"
 
       - name: Comment PR with preview URL
         if: github.event_name == 'pull_request' && github.event.action != 'closed'
@@ -390,8 +428,8 @@ jobs:
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
-            const previewUrl = '${{ steps.wait-dns.outputs.url }}';
-            const subdomain = '${{ steps.wait-dns.outputs.subdomain }}';
+            const previewUrl = '${{ steps.wait-deployment.outputs.url }}';
+            const subdomain = '${{ steps.wait-deployment.outputs.subdomain }}';
             const status = '${{ steps.verify-deployment.outputs.status }}';
             const statusMessage = '${{ steps.verify-deployment.outputs.status-message }}'.replace(/\\n/g, '\n');
             const buildCompleted = '${{ steps.wait-build.outputs.build-completed }}' === 'true';
