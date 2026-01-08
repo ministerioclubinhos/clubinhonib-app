@@ -222,6 +222,7 @@ export const ControlDashboard: React.FC = () => {
     if (academicWeek !== null && academicWeek > 1) {
       setAcademicWeek(academicWeek - 1);
     } else if (academicWeek === 1 && academicYear !== null) {
+      // Handle transition to previous year if needed
     } else {
       if (currentWeekInfo?.academicYear && currentWeekInfo?.academicWeek) {
         if (currentWeekInfo.academicWeek > 1) {

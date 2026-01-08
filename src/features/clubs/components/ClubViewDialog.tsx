@@ -1,12 +1,10 @@
 import React from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
   Grid,
-  Divider,
   Chip,
   Box,
   Typography,
@@ -27,13 +25,7 @@ import {
   SchoolOutlined,
   PlaceOutlined,
   Update as UpdateIcon,
-  LocationCityOutlined,
-  MapOutlined,
-  LocalPostOfficeOutlined,
   AccessTime as AccessTimeIcon,
-  ContentCopy,
-  Phone as PhoneIcon,
-  WhatsApp,
 } from '@mui/icons-material';
 import { ClubResponseDto, WEEKDAYS } from '../types';
 import { fmtDate } from '@/utils/dates';
