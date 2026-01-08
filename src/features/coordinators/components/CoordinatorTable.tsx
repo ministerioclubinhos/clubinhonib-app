@@ -171,7 +171,7 @@ export default function CoordinatorTable({
         meta: { width: isXs ? 180 : 240 },
       },
     ],
-    [isMdUp, isXs, onLink, onView]
+    [isMdUp, isXs, onLink, onView, user]
   );
 
   const table = useReactTable({
