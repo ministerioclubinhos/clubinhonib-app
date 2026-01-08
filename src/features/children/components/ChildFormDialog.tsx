@@ -49,8 +49,6 @@ export default function ChildFormDialog({
 }: Props) {
   const isCreate = mode === 'create';
   const user = useSelector((state: RootState) => state.auth.user);
-
-  if (!value) return null;
   const isTeacher = user?.role === UserRole.TEACHER;
   const teacherClub = user?.teacherProfile?.club ?? null;
   const teacherClubId = teacherClub?.id ?? null;
@@ -58,24 +56,25 @@ export default function ChildFormDialog({
   const setField = <K extends keyof (CreateChildForm & EditChildForm)>(key: K, val: any) =>
     onChange({ ...(value as any), [key]: val } as any);
 
-  React.useEffect(() => {
-    if (!isTeacher) return;
-    if (!teacherClubId) return;
-    if ((value as any).clubId !== teacherClubId) {
-      setField('clubId', teacherClubId);
-    }
-  }, [isTeacher, teacherClubId]);
-
-  const effectiveClubId = (value as any).clubId ?? null;
+  const effectiveClubId = value ? ((value as any).clubId ?? null) : null;
 
   const [clubOptions, setClubOptions] = React.useState<
     Array<{ id: string; detalhe: string; coordinator: boolean }>
   >([]);
   const [loadingClubDetail, setLoadingClubDetail] = React.useState(false);
   const [clubDetailErr, setClubDetailErr] = React.useState<string>('');
+  const [showErrors, setShowErrors] = React.useState(false);
 
   React.useEffect(() => {
-    if (!isTeacher) return;
+    if (!value || !isTeacher) return;
+    if (!teacherClubId) return;
+    if ((value as any).clubId !== teacherClubId) {
+      setField('clubId', teacherClubId);
+    }
+  }, [isTeacher, teacherClubId, value]);
+
+  React.useEffect(() => {
+    if (!value || !isTeacher) return;
     if (clubOptions.length > 0) return;
     let cancelled = false;
     (async () => {
@@ -96,7 +95,7 @@ export default function ChildFormDialog({
     return () => {
       cancelled = true;
     };
-  }, [isTeacher]);
+  }, [isTeacher, value, clubOptions.length]);
 
   const selectedClubDetail = React.useMemo(() => {
     if (!effectiveClubId) return null;
@@ -104,7 +103,7 @@ export default function ChildFormDialog({
     return found?.detalhe ?? null;
   }, [effectiveClubId, clubOptions]);
 
-  const [showErrors, setShowErrors] = React.useState(false);
+  if (!value) return null;
 
   const req = {
     name: !!(value as any).name?.trim(),

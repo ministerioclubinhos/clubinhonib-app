@@ -61,6 +61,7 @@ export default function CoordinatorTable({
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const user = useSelector((state: RootState) => state.auth.user);
 
   const columns = useMemo<ColumnDef<CoordinatorProfile>[]>(
     () => [
@@ -132,10 +133,9 @@ export default function CoordinatorTable({
         header: 'Ações',
         enableSorting: false,
         cell: ({ row }) => {
-          const { user: loggedUser } = useSelector((state: RootState) => state.auth);
           const wa = buildWhatsappLink(
             row.original.user?.name,
-            loggedUser?.name,
+            user?.name,
             row.original.user?.phone
           );
 
