@@ -10,7 +10,6 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
-  useTheme,
 } from '@mui/material';
 import { ReactElement } from 'react';
 import VideoPageCreator from '@/components/Adm/PageCreator/Templates/VideoPageCreator/VideoPageCreator';

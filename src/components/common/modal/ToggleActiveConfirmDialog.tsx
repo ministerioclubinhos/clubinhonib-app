@@ -6,8 +6,6 @@ import {
   Button,
   Typography,
   useMediaQuery,
-  useTheme,
-  Stack,
 } from '@mui/material';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
@@ -30,8 +28,7 @@ export default function ToggleActiveConfirmDialog({
   onConfirm,
   loading = false,
 }: Props) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const fs = {
     title: { xs: '0.9rem', sm: '1.05rem' },
