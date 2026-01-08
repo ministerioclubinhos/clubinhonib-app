@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Snackbar, Alert } from '@mui/material';
-import { useTheme, useMediaQuery } from '@mui/material';
 import { useContacts, useContactMutations, useContactSearch } from './hooks';
 import ContactToolbar from './components/ContactToolbar';
 import ContactGrid from './components/ContactGrid';
@@ -10,7 +9,6 @@ import BackHeader from '@/components/common/header/BackHeader';
 import { Contact, SnackbarKind } from './types';
 
 export default function ContactsManager() {
-  const theme = useTheme();
   const { contacts, loading, error, setError, fetchContacts } = useContacts();
   const { searchTerm, setSearchTerm, filtered } = useContactSearch(contacts);
   const {

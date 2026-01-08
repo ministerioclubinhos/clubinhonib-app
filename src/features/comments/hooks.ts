@@ -17,7 +17,7 @@ export function useCommentsData() {
     try {
       const data = await apiGetComments();
       dispatch(setComments(data));
-    } catch (e: any) {
+    } catch {
       setError('Erro ao buscar comentários');
     } finally {
       setLoading(false);
@@ -87,7 +87,7 @@ export function useCommentActions(fetchComments: () => Promise<void> | void) {
       try {
         await apiPublishComment(c);
         await fetchComments();
-      } catch (e: any) {
+      } catch (e) {
         setActionError('Erro ao publicar comentário');
         throw e;
       } finally {
@@ -105,7 +105,7 @@ export function useCommentActions(fetchComments: () => Promise<void> | void) {
       try {
         await apiDeleteComment(c.id);
         await fetchComments();
-      } catch (e: any) {
+      } catch (e) {
         setActionError('Erro ao deletar comentário');
         throw e;
       } finally {
@@ -131,7 +131,7 @@ export function useCommentActions(fetchComments: () => Promise<void> | void) {
       try {
         await apiUpdateComment(c, payload);
         await fetchComments();
-      } catch (e: any) {
+      } catch (e) {
         setActionError('Erro ao salvar comentário');
         throw e;
       } finally {

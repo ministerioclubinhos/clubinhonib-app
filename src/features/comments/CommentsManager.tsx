@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { useMediaQuery, useTheme } from '@mui/material';
+import { useTheme } from '@mui/material';
 
 import { CommentData } from 'store/slices/comment/commentsSlice';
 import { useCommentActions, useCommentsData, useCommentsFilter } from './hooks';
@@ -35,8 +35,6 @@ export default function CommentsManager() {
     clubinho: false,
     neighborhood: false,
   });
-
-  const theme = useTheme();
 
   const openEdit = (c: CommentData) => {
     setToEdit(c);

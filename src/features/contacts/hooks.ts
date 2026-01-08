@@ -13,8 +13,9 @@ export function useContacts() {
     try {
       const data = await apiListContacts();
       setContacts(data);
-    } catch (e: any) {
-      setError(e?.response?.data?.message || e.message || 'Erro ao carregar contatos');
+    } catch (e: unknown) {
+      const error = e as { response?: { data?: { message?: string } }; message?: string };
+      setError(error?.response?.data?.message || error?.message || 'Erro ao carregar contatos');
     } finally {
       setLoading(false);
     }
@@ -67,8 +68,9 @@ export function useContactMutations(refresh: () => Promise<void> | void) {
       try {
         await apiDeleteContact(id);
         await refresh();
-      } catch (e: any) {
-        setError(e?.response?.data?.message || e.message || 'Erro ao excluir contato');
+      } catch (e: unknown) {
+        const error = e as { response?: { data?: { message?: string } }; message?: string };
+        setError(error?.response?.data?.message || error?.message || 'Erro ao excluir contato');
         throw e;
       } finally {
         setBusy(false);
@@ -84,8 +86,9 @@ export function useContactMutations(refresh: () => Promise<void> | void) {
       try {
         await apiMarkAsRead(id);
         await refresh();
-      } catch (e: any) {
-        setError(e?.response?.data?.message || e.message || 'Erro ao marcar como lido');
+      } catch (e: unknown) {
+        const error = e as { response?: { data?: { message?: string } }; message?: string };
+        setError(error?.response?.data?.message || error?.message || 'Erro ao marcar como lido');
         throw e;
       } finally {
         setBusy(false);

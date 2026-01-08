@@ -60,27 +60,6 @@ const academicWeekToCalendarWeek = (
   };
 };
 
-const calendarWeekToAcademicWeek = (
-  calendarYear: number,
-  calendarWeek: number,
-  periodStartDate: string | null
-): { academicYear: number; academicWeek: number } | null => {
-  if (!periodStartDate) return null;
-
-  const startDate = dayjs(periodStartDate);
-  const targetDate = dayjs().year(calendarYear).week(calendarWeek).startOf('week');
-
-  const weeksDiff = targetDate.diff(startDate.startOf('week'), 'week');
-  const academicWeek = weeksDiff + 1;
-
-  if (academicWeek < 1) return null;
-
-  return {
-    academicYear: startDate.year(),
-    academicWeek,
-  };
-};
-
 export const ControlDashboard: React.FC = () => {
   const theme = useTheme();
 
