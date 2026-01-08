@@ -125,7 +125,6 @@ export default function IdeasSectionCard({ section, onDelete, onEdit, onViewDeta
           {truncate(section.description)}
         </Typography>
 
-
         {mediaTypes.length > 0 && (
           <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5} mt={1}>
             {mediaTypes.map((type) => (

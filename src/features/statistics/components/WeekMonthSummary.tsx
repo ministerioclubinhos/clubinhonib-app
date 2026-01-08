@@ -29,8 +29,6 @@ export const WeekMonthSummary: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data, isLoading } = useOverview();
 
-  // Transformar dados das últimas 6 semanas para o formato do gráfico
-  // IMPORTANTE: Hooks devem ser chamados antes de qualquer early return
   const lastSixWeeksData = React.useMemo(() => {
     if (!data?.pagelas?.lastSixWeeks || data.pagelas.lastSixWeeks.length === 0) return [];
     return data.pagelas.lastSixWeeks.map((item) => ({
@@ -40,7 +38,6 @@ export const WeekMonthSummary: React.FC = () => {
     }));
   }, [data?.pagelas?.lastSixWeeks]);
 
-  // Transformar dados dos últimos 6 meses para o formato do gráfico
   const lastSixMonthsData = React.useMemo(() => {
     if (!data?.acceptedChrists?.lastSixMonths || data.acceptedChrists.lastSixMonths.length === 0) return [];
     return data.acceptedChrists.lastSixMonths.map((item) => ({
@@ -75,7 +72,7 @@ export const WeekMonthSummary: React.FC = () => {
   ];
 
   const getTrend = (weekValue: number, monthValue: number) => {
-    const weeklyAvg = monthValue / 4; // Aproximação de 4 semanas
+    const weeklyAvg = monthValue / 4; 
     if (weekValue > weeklyAvg * 1.1) {
       return { icon: <TrendingUp />, color: theme.palette.success.main, text: 'Acima da média' };
     }
@@ -90,7 +87,7 @@ export const WeekMonthSummary: React.FC = () => {
 
   return (
     <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
-      {/* Card Resumo Semana vs Mês */}
+      
       <Grid item xs={12} md={6} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
@@ -111,7 +108,6 @@ export const WeekMonthSummary: React.FC = () => {
             </Typography>
           </Box>
 
-          {/* Pagelas */}
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Pagelas Registradas
@@ -152,7 +148,6 @@ export const WeekMonthSummary: React.FC = () => {
             />
           </Box>
 
-          {/* Decisões */}
           <Box>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Decisões por Cristo
@@ -195,7 +190,6 @@ export const WeekMonthSummary: React.FC = () => {
             />
           </Box>
 
-          {/* Distribuição de Decisões */}
           <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
             <Typography variant="caption" color="text.secondary" gutterBottom display="block">
               Distribuição de Decisões (Ano Todo)
@@ -250,7 +244,6 @@ export const WeekMonthSummary: React.FC = () => {
         </Paper>
       </Grid>
 
-      {/* Gráfico de Últimas Semanas */}
       <Grid item xs={12} md={6} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
@@ -300,7 +293,6 @@ export const WeekMonthSummary: React.FC = () => {
         </Paper>
       </Grid>
 
-      {/* Gráfico de Últimos Meses - Decisões */}
       <Grid item xs={12} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
@@ -348,7 +340,6 @@ export const WeekMonthSummary: React.FC = () => {
           </ResponsiveContainer>
           </Box>
 
-          {/* Stats Rápidas */}
           <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mt: 2, width: '100%', maxWidth: '100%', margin: 0 }}>
             <Grid item xs={6} sm={3} sx={{ width: '100%', maxWidth: '100%' }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>

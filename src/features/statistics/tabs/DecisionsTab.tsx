@@ -12,4 +12,3 @@ const DecisionsTab: React.FC<DecisionsTabProps> = ({ filters }) => {
 
 export default DecisionsTab;
 
-

@@ -184,7 +184,6 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({
         })}
       </Box>
 
-      {/* Período Atual */}
       {currentFilters?.startDate && currentFilters?.endDate && (
         <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="caption" color="text.secondary">

@@ -53,11 +53,11 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
   const getMedalColor = (position: number) => {
     switch (position) {
       case 0:
-        return '#FFD700'; // Ouro
+        return '#FFD700'; 
       case 1:
-        return '#C0C0C0'; // Prata
+        return '#C0C0C0'; 
       case 2:
-        return '#CD7F32'; // Bronze
+        return '#CD7F32'; 
       default:
         return theme.palette.grey[400];
     }
@@ -86,7 +86,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
           </Typography>
         </Box>
       ) : isMobile ? (
-        /* Versão Mobile: Cards */
+        
         <Stack spacing={2}>
           {data.clubRankings.map((club, index) => (
             <Card
@@ -100,7 +100,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
             >
               <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                 <Stack spacing={1.5}>
-                  {/* Header */}
+                  
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       {index < 3 ? (
@@ -118,7 +118,6 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
 
                   <Divider />
 
-                  {/* Informações */}
                   <Grid container spacing={1.5}>
                     <Grid item xs={6}>
                       <Box>
@@ -171,7 +170,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
           ))}
         </Stack>
       ) : (
-        /* Versão Desktop: Tabela */
+        
         <TableContainer>
           <Table>
             <TableHead>

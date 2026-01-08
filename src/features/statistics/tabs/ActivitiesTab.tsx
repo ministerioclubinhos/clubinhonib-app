@@ -12,4 +12,3 @@ const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ filters }) => {
 
 export default ActivitiesTab;
 
-

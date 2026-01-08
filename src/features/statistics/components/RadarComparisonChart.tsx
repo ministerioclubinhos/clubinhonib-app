@@ -30,7 +30,6 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
     );
   }
 
-  // Dados do gráfico radar por gênero
   const genderData = [
     {
       metric: 'Presença',
@@ -49,7 +48,6 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
     },
   ];
 
-  // Dados de comparação por faixa etária (top 3)
   const topAgeGroups = data.byAgeGroup.slice(0, 3);
   const ageGroupData = [
     {
@@ -97,7 +95,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
 
   return (
     <Grid container spacing={3}>
-      {/* Comparação por Gênero */}
+      
       <Grid item xs={12} md={6}>
         <Paper
           elevation={0}
@@ -145,7 +143,6 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
             </RadarChart>
           </ResponsiveContainer>
 
-          {/* Stats rápidas */}
           <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
             {data.byGender.map((g) => (
               <Box key={g.gender} sx={{ textAlign: 'center' }}>
@@ -161,7 +158,6 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
         </Paper>
       </Grid>
 
-      {/* Comparação por Faixa Etária */}
       <Grid item xs={12} md={6}>
         <Paper
           elevation={0}
@@ -211,7 +207,6 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
             </RadarChart>
           </ResponsiveContainer>
 
-          {/* Stats rápidas */}
           <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
             {topAgeGroups.map((g, index) => {
               const colors = [

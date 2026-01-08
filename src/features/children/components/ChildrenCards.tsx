@@ -126,7 +126,7 @@ export default function ChildrenCards(props: Props) {
                   }
                 }}
               >
-                {/* Header - Compacto no mobile */}
+                
                 <Box sx={{ px: { xs: 0.75, sm: 1.25 }, pt: { xs: 0.5, sm: 1 }, pb: { xs: 0, sm: 0.5 }, mt: { xs: 0.25, sm: 0.5 } }}>
                   <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }} sx={{ mb: { xs: 0.25, sm: 0 } }}>
                     <Avatar
@@ -206,7 +206,6 @@ export default function ChildrenCards(props: Props) {
                     </ButtonBase>
                   </Stack>
 
-                  {/* Responsável - Compacto */}
                   <Box
                     sx={{
                       p: { xs: 0.375, sm: 0.75 },
@@ -247,7 +246,6 @@ export default function ChildrenCards(props: Props) {
                     </Stack>
                   </Box>
 
-                  {/* Info adicional - Apenas no modo comprimido */}
                   {!expanded && (
                     <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap rowGap={0.5} sx={{ mt: { xs: 0.5, sm: 0.5 }, pb: { xs: 0.5, sm: 0 } }}>
                       {c.gender && (
@@ -447,7 +445,6 @@ export default function ChildrenCards(props: Props) {
                   </Box>
                 )}
 
-                {/* Rodapé - Sempre visível */}
                 <Box
                   sx={{
                     display: "flex",

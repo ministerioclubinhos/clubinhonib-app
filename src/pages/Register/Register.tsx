@@ -22,7 +22,6 @@ import { IMaskInput } from 'react-imask';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 
-
 interface RegisterProps {
   commonUser: boolean;
 }

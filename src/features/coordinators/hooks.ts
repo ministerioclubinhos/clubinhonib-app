@@ -107,7 +107,6 @@ export function useCoordinatorMutations(
   const [dialogLoading, setDialogLoading] = useState(false);
   const [dialogError, setDialogError] = useState("");
 
-
   const assignClub = useCallback(
     async (coordinatorId: string, clubId: string): Promise<string> => {
       setDialogLoading(true); setDialogError("");

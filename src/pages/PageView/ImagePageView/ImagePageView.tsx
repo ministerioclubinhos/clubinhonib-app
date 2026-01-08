@@ -198,7 +198,6 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
     return () => controller.abort();
   }, [page, idToFetch, defaultSectionId, dispatch, feed]);
 
-
   const handleBack = () => {
     navigate(-1);
   };
@@ -280,7 +279,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
-      {/* Header da Galeria */}
+      
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -399,7 +398,6 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
         </Paper>
       </motion.div>
 
-      {/* Seções da Galeria */}
       <AnimatePresence>
         {sectionsList.length > 0 ? (
           <motion.div

@@ -14,7 +14,6 @@ import { LoadingSpinner } from '../components/Modals';
 import { NotificationModal } from '../components/Modals';
 import ImageSectionEditor from './ImageSectionEditor';
 
-
 interface NotificationState {
   open: boolean;
   message: string;
@@ -96,7 +95,7 @@ export default function ImageSectionPage() {
   }, [sectionData]);
 
   const saveSection = async (formData: FormData) => {
-    // Sempre cria nova seção (modo criação)
+    
     await api.post('/image-sections', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

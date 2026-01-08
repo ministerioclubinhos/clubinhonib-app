@@ -51,7 +51,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
         },
       }}
     >
-      {/* Decorative background element */}
+      
       <Box
         sx={{
           position: 'absolute',
@@ -174,7 +174,7 @@ export const OverviewSummaryCards: React.FC = () => {
       icon: <TrendingUp />,
       color: theme.palette.info.main,
     },
-    // ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas
+    
     ...(data.summary.inactiveChildren !== undefined ? [{
       title: 'Crianças Desativadas',
       currentValue: data.summary.inactiveChildren,
@@ -189,7 +189,6 @@ export const OverviewSummaryCards: React.FC = () => {
     }] : []),
   ];
 
-  // Calcular taxa de engajamento
   const engagementRate = (data.summary.activeChildrenThisMonth / data.summary.totalChildren) * 100;
 
   return (
@@ -202,7 +201,6 @@ export const OverviewSummaryCards: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Barra de Engajamento */}
       <Paper
         elevation={0}
         sx={{

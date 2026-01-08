@@ -24,7 +24,7 @@ interface Props {
 }
 
 const getGoogleDriveThumbnailUrl = (url: string): string | null => {
-  const match = url.match(/\/d\/(.*?)\//);
+const match = url.match(/\/d\/(.*?)\//);
   return match ? `https://drive.google.com/thumbnail?id=${match[1]}` : null;
 };
 
@@ -83,7 +83,7 @@ export default function WeekImageGallery({ image }: Props) {
             },
           }}
         >
-          {/* Header */}
+          
           <Box
             display="flex"
             alignItems="center"
@@ -132,7 +132,6 @@ export default function WeekImageGallery({ image }: Props) {
             </Box>
           </Box>
 
-          {/* Image */}
           <Box
             sx={{
               mb: 3,
@@ -203,7 +202,6 @@ export default function WeekImageGallery({ image }: Props) {
             )}
           </Box>
 
-          {/* Description */}
           {image.description && (
             <Typography
               variant="body2"
@@ -219,7 +217,6 @@ export default function WeekImageGallery({ image }: Props) {
             </Typography>
           )}
 
-          {/* Download Button */}
           <Box sx={{ mt: 'auto' }}>
             <DownloadButton
               url={image.url}
@@ -231,7 +228,6 @@ export default function WeekImageGallery({ image }: Props) {
         </Paper>
       </motion.div>
 
-      {/* Full Screen Image Dialog */}
       <Dialog
         open={open}
         onClose={() => setOpen(false)}

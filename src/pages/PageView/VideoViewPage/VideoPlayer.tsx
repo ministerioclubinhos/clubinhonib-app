@@ -105,7 +105,6 @@ const VideoPlayer = ({ video }: { video: MediaItem }) => {
     );
   };
 
-  // Main render logic
   if (video.uploadType === MediaUploadType.UPLOAD && video.url) {
     return renderUploadVideo();
   }

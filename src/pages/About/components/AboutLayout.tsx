@@ -37,7 +37,7 @@ const AboutLayout: React.FC<AboutLayoutProps> = ({ children }) => {
           px: { xs: 1, sm: 2, md: 3 },
         }}
       >
-        {/* Header Section */}
+        
         <Box
           sx={{
             textAlign: 'center',
@@ -64,7 +64,6 @@ const AboutLayout: React.FC<AboutLayoutProps> = ({ children }) => {
           </Typography>
         </Box>
 
-        {/* Content Grid */}
         <Box
           sx={{
             display: 'grid',

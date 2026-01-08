@@ -21,7 +21,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
         mt: { xs: -2, sm: 0 },
       }}
     >
-      {/* Background Image */}
+      
       <Box
         component="img"
         src={banner}
@@ -36,8 +36,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
           zIndex: 0,
         }}
       />
-      
-      {/* Overlay */}
+
       <Box
         sx={{
           position: 'absolute',
@@ -50,7 +49,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
         }}
       />
 
-      {/* Floating Particles */}
       {[...Array(20)].map((_, i) => (
         <motion.div
           key={i}
@@ -76,7 +74,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
         />
       ))}
 
-      {/* Content */}
       <Container
         maxWidth="lg"
         sx={{

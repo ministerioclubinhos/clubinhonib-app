@@ -18,4 +18,3 @@ const RetentionTab: React.FC<RetentionTabProps> = ({ filters }) => {
 
 export default RetentionTab;
 
-

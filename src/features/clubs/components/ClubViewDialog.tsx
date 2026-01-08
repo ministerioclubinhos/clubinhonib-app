@@ -46,7 +46,6 @@ type Props = {
   onClose: () => void;
 };
 
-
 function LineCard({
   icon,
   title,
@@ -70,7 +69,6 @@ function LineCard({
     </Paper>
   );
 }
-
 
 export default function ClubViewDialog({ open, loading, club, onClose }: Props) {
   const theme = useTheme();
@@ -218,7 +216,6 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
               </Grid>
             </Grid>
 
-            {/* Status */}
             <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
               <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={1}>
                 <Chip

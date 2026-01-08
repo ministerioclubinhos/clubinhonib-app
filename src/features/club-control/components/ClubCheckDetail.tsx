@@ -104,7 +104,7 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
           </Box>
         ) : clubCheck ? (
           <Box>
-            {/* Informações Gerais */}
+            
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Informações do Clube
@@ -124,7 +124,6 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
 
             <Divider sx={{ my: 2 }} />
 
-            {/* Estatísticas de Crianças */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Estatísticas
@@ -169,7 +168,6 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
 
             <Divider sx={{ my: 2 }} />
 
-            {/* Alertas */}
             {clubCheck.alerts && clubCheck.alerts.length > 0 && (
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -187,7 +185,6 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
               </Box>
             )}
 
-            {/* Exceção */}
             {clubCheck.isException && (
               <Alert severity="info" sx={{ mb: 3 }}>
                 <Typography variant="body2">
@@ -196,7 +193,6 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
               </Alert>
             )}
 
-            {/* Lista de Crianças Sem Pagela */}
             {clubCheck.children.missingList && clubCheck.children.missingList.length > 0 && (
               <Box>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -226,7 +222,6 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
               </Box>
             )}
 
-            {/* Sem Crianças Faltando */}
             {clubCheck.status === 'ok' && (
               <Alert severity="success" icon={<CheckCircle />}>
                 <Typography variant="body2">
@@ -249,7 +244,6 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
   );
 };
 
-// Helper component for statistics
 const Paper = ({ children, ...props }: any) => {
   return <Box {...props}>{children}</Box>;
 };

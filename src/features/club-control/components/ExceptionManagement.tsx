@@ -51,7 +51,7 @@ import dayjs from 'dayjs';
 const EXCEPTION_TYPES = [
   { value: 'holiday', label: 'Feriado', icon: <EventBusy />, color: '#ff9800' },
   { value: 'event', label: 'Evento', icon: <Event />, color: '#2196f3' },
-  { value: 'vacation', label: 'Férias', icon: <BeachAccess />, color: '#4caf50' }, // NOVO
+  { value: 'vacation', label: 'Férias', icon: <BeachAccess />, color: '#4caf50' }, 
   { value: 'maintenance', label: 'Manutenção', icon: <Build />, color: '#9c27b0' },
   { value: 'other', label: 'Outro', icon: <Help />, color: '#607d8b' },
 ];
@@ -64,7 +64,7 @@ export const ExceptionManagement: React.FC = () => {
     exceptionDate: '',
     reason: '',
     type: 'holiday' as 'holiday' | 'event' | 'maintenance' | 'vacation' | 'other',
-    isRecurrent: true, // NOVO campo
+    isRecurrent: true, 
     notes: '',
   });
   const [deleteDialog, setDeleteDialog] = React.useState<{
@@ -158,7 +158,7 @@ export const ExceptionManagement: React.FC = () => {
 
   return (
     <Box>
-      {/* Header Otimizado */}
+      
       <Paper
         elevation={0}
         sx={{
@@ -195,7 +195,6 @@ export const ExceptionManagement: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Alerta Informativo */}
       <Alert
         severity="info"
         icon={<Info />}
@@ -220,7 +219,7 @@ export const ExceptionManagement: React.FC = () => {
       </Alert>
 
       <Grid container spacing={{ xs: 2, sm: 3 }}>
-        {/* Formulário de Cadastro */}
+        
         <Grid item xs={12} md={5}>
           <Paper
             elevation={0}
@@ -367,7 +366,6 @@ export const ExceptionManagement: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Lista de Exceções */}
         <Grid item xs={12} md={7}>
           <Paper
             elevation={0}
@@ -413,7 +411,7 @@ export const ExceptionManagement: React.FC = () => {
                   </Typography>
                 </Alert>
               ) : isMobile ? (
-                /* Versão Mobile: Cards */
+                
                 <Stack spacing={2}>
                   {exceptions
                     .sort((a, b) => new Date(b.exceptionDate).getTime() - new Date(a.exceptionDate).getTime())
@@ -426,7 +424,7 @@ export const ExceptionManagement: React.FC = () => {
                         <Card key={exception.id} elevation={2} sx={{ borderRadius: 2, opacity: isPast ? 0.7 : 1 }}>
                           <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                             <Stack spacing={1.5}>
-                              {/* Header */}
+                              
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Box>
                                   <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
@@ -454,7 +452,6 @@ export const ExceptionManagement: React.FC = () => {
 
                               <Divider />
 
-                              {/* Tipo */}
                               <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                   Tipo
@@ -469,7 +466,6 @@ export const ExceptionManagement: React.FC = () => {
                                 </Box>
                               </Box>
 
-                              {/* Motivo */}
                               <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                   Motivo
@@ -484,7 +480,6 @@ export const ExceptionManagement: React.FC = () => {
                                 )}
                               </Box>
 
-                              {/* Ações */}
                               <Box>
                                 <Button
                                   size="small"
@@ -511,7 +506,7 @@ export const ExceptionManagement: React.FC = () => {
                     })}
                 </Stack>
               ) : (
-                /* Versão Desktop: Tabela */
+                
                 <TableContainer sx={{ maxHeight: 500 }}>
                   <Table stickyHeader>
                     <TableHead>
@@ -591,7 +586,6 @@ export const ExceptionManagement: React.FC = () => {
                 </TableContainer>
               )}
 
-              {/* ⭐ Paginação v1.1.0 - Funciona em ambos (mobile e desktop) */}
               {exceptionsData && exceptionsData.total > 0 && (
                 <Box sx={{ borderTop: 1, borderColor: 'divider', px: { xs: 1, sm: 0 } }}>
                   <TablePagination
@@ -625,7 +619,6 @@ export const ExceptionManagement: React.FC = () => {
             </Box>
           </Paper>
 
-          {/* Quick Add: Feriados Nacionais 2024/2025 */}
           <Paper
             elevation={0}
             sx={{

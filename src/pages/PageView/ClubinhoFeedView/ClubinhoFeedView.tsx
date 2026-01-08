@@ -37,7 +37,6 @@ interface ClubinhoFeedViewProps {
   feed?: boolean;
 }
 
-// Skeleton component baseado no SectionImagePageView
 function SectionSkeleton() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -111,7 +110,7 @@ function SectionSkeleton() {
 }
 
 export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps) {
-  // Estados baseados no SectionImagePageView
+  
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -125,10 +124,8 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const section = useSelector((state: RootState) => state.imageSectionPagination.section);
 
-  // ID fixo do feed baseado na lógica do SectionImagePageView
   const feedSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID;
 
-  // Intersection Observer baseado no SectionImagePageView
   const observer = useRef<IntersectionObserver | null>(null);
   const lastSectionRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -144,7 +141,6 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
 
   const sectionsList = useMemo(() => section?.sections ?? [], [section?.sections]);
 
-  // Fetch data baseado na lógica do SectionImagePageView
   useEffect(() => {
     const controller = new AbortController();
 
@@ -189,14 +185,13 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
     setPage(1);
     setHasMore(true);
     setError(null);
-    // Não limpa os dados, apenas força o reload
+    
   };
 
   const handleHome = () => {
     navigate('/');
   };
 
-  // Loading state baseado no SectionImagePageView
   if (loading) {
     return (
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
@@ -213,7 +208,6 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
     );
   }
 
-  // Error state baseado no SectionImagePageView
   if (error) {
     return (
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
@@ -243,7 +237,6 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
     );
   }
 
-  // Empty state baseado no SectionImagePageView
   if (!section) {
     return (
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
@@ -295,7 +288,7 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
-      {/* Header baseado no design do SectionImagePageView */}
+      
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

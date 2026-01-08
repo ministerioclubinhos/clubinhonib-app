@@ -7,4 +7,3 @@ const TeachersTab: React.FC = () => {
 
 export default TeachersTab;
 
-

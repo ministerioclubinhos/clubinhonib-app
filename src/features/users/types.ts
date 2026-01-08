@@ -22,7 +22,6 @@ export type CreateUserForm = {
   role: UserRole
 };
 
-
 export type UpadateUserForm = {
   name: string;
   role: UserRole;

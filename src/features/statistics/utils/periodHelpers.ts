@@ -1,24 +1,13 @@
 import { PeriodShortcut } from '../api';
 
-/**
- * ⭐ v2.11.0: Helpers para calcular datas dos atalhos de período
- *
- * Converte atalhos de período em datas de início e fim
- */
-
 export interface PeriodDates {
   startDate: string;
   endDate: string;
 }
 
-/**
- * Converte um atalho de período em datas de início e fim
- * @param period - Atalho de período (today, this_week, etc)
- * @returns Objeto com startDate e endDate no formato YYYY-MM-DD
- */
 export function getPeriodDates(period: PeriodShortcut | undefined, customStart?: string, customEnd?: string): PeriodDates | undefined {
   if (!period || period === 'custom') {
-    // Se period é custom ou undefined, retorna as datas customizadas (se fornecidas)
+    
     if (customStart && customEnd) {
       return { startDate: customStart, endDate: customEnd };
     }
@@ -35,9 +24,9 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
     }
 
     case 'this_week': {
-      // Semana começa na segunda-feira
+      
       const dayOfWeek = today.getDay();
-      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Se domingo (0), volta 6 dias
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; 
       const monday = new Date(today);
       monday.setDate(today.getDate() + mondayOffset);
 
@@ -62,7 +51,7 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
 
     case 'last_7_days': {
       const sevenDaysAgo = new Date(today);
-      sevenDaysAgo.setDate(today.getDate() - 6); // Últimos 7 dias (incluindo hoje)
+      sevenDaysAgo.setDate(today.getDate() - 6); 
 
       return {
         startDate: formatDate(sevenDaysAgo),
@@ -72,7 +61,7 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
 
     case 'last_30_days': {
       const thirtyDaysAgo = new Date(today);
-      thirtyDaysAgo.setDate(today.getDate() - 29); // Últimos 30 dias (incluindo hoje)
+      thirtyDaysAgo.setDate(today.getDate() - 29); 
 
       return {
         startDate: formatDate(thirtyDaysAgo),
@@ -94,9 +83,6 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
   }
 }
 
-/**
- * Formata uma data para o formato YYYY-MM-DD
- */
 function formatDate(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -104,9 +90,6 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-/**
- * Retorna o label amigável de um atalho de período
- */
 export function getPeriodLabel(period: PeriodShortcut | undefined): string {
   switch (period) {
     case 'today': return 'Hoje';
@@ -120,9 +103,6 @@ export function getPeriodLabel(period: PeriodShortcut | undefined): string {
   }
 }
 
-/**
- * Retorna descrição detalhada do período selecionado
- */
 export function getPeriodDescription(period: PeriodShortcut | undefined, customStart?: string, customEnd?: string): string {
   const dates = getPeriodDates(period, customStart, customEnd);
 
@@ -139,9 +119,6 @@ export function getPeriodDescription(period: PeriodShortcut | undefined, customS
   return `Período: ${formatDateBR(startDate)} a ${formatDateBR(endDate)}`;
 }
 
-/**
- * Formata data para formato brasileiro (DD/MM/YYYY)
- */
 function formatDateBR(dateStr: string): string {
   const [year, month, day] = dateStr.split('-');
   return `${day}/${month}/${year}`;

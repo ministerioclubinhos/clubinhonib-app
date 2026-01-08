@@ -318,7 +318,7 @@ export default function ChildrenBrowserPage() {
         }}
         onConfirm={async () => {
           if (!confirmToggleActive) return;
-          // Precisamos buscar o ChildResponseDto completo para usar o toggleActive
+          
           try {
             const fullChild = await apiFetchChild(confirmToggleActive.id);
             await toggleActive(fullChild.id, 1, 20, undefined, undefined);

@@ -15,7 +15,6 @@ export type Pagela = {
 
 export type PageDto<T> = { items: T[]; total: number; page: number; limit: number };
 
-
 export type CreatePagelaPayload = {
   childId: string;
   teacherProfileId?: string | null;

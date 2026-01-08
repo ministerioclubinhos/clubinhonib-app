@@ -44,8 +44,6 @@ import { buildWhatsappLink } from "@/utils/whatsapp";
 import { weekdayLabel } from "@/utils/dateUtils";
 import { CopyButton, initials } from "@/utils/components";
 
-
-
 type Props = {
   rows: TeacherProfile[];
   total: number;
@@ -179,7 +177,7 @@ export default function TeacherCards({
                     pt: 1,
                     pb: 0.5,
                     gap: { xs: 0.75, sm: 1 },
-                    mt: 0.5, // Espaço para a barra colorida
+                    mt: 0.5, 
                   }}
                 >
                   <Avatar
@@ -414,7 +412,6 @@ export default function TeacherCards({
                           </Stack>
                         </Paper>
 
-                        {/* Clubinho */}
                         {club && (
                           <Paper
                             variant="outlined"

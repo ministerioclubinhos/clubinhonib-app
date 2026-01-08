@@ -260,7 +260,6 @@ export function IdeasSectionUserCreator() {
           para mostrar como fez e ajudar outros professores a colocarem em prática. 📹📸📄
         </Typography>
 
-
       </Box>
 
       <Box sx={{

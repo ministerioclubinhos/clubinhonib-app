@@ -57,7 +57,6 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
     );
   }
 
-  // Preparar dados comparativos
   const comparisonData = {
     byGender: data.byGender.map((g) => ({
       category: g.gender === 'M' ? 'Masculino' : 'Feminino',
@@ -79,7 +78,6 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
     })),
   };
 
-  // Radar data para visualização global
   const radarData = [
     {
       metric: 'Presença',
@@ -160,7 +158,6 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         </Box>
       </Box>
 
-      {/* Médias Gerais */}
       <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(156, 39, 176, 0.08)', borderRadius: 2 }}>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           Taxas Médias Gerais
@@ -181,7 +178,6 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         </Grid>
       </Box>
 
-      {/* Gráfico Principal */}
       {viewMode === 'radar' && (
         <ResponsiveContainer width="100%" height={350}>
           <RadarChart data={radarData}>
@@ -202,9 +198,8 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         </ResponsiveContainer>
       )}
 
-      {/* Comparações Detalhadas */}
       <Grid container spacing={3} sx={{ mt: 2 }}>
-        {/* Por Gênero */}
+        
         <Grid item xs={12} md={4}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Gênero
@@ -222,7 +217,6 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
           </ResponsiveContainer>
         </Grid>
 
-        {/* Por Faixa Etária */}
         <Grid item xs={12} md={4}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Faixa Etária
@@ -240,7 +234,6 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
           </ResponsiveContainer>
         </Grid>
 
-        {/* Por Tempo de Participação */}
         <Grid item xs={12} md={4}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Tempo de Participação
@@ -266,7 +259,6 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         </Grid>
       </Grid>
 
-      {/* Insights */}
       <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           💡 Insights

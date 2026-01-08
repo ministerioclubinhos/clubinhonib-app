@@ -54,7 +54,7 @@ export default function WeekDocumentViewer({ document }: Props) {
           },
         }}
       >
-        {/* Header */}
+        
         <Box
           display="flex"
           alignItems="center"

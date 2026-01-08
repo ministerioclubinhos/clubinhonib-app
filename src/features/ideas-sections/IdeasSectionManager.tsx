@@ -51,7 +51,6 @@ export default function IdeasSectionManager() {
     fetchSections,
   } = useIdeasSections();
 
-
   const [sectionToDelete, setSectionToDelete] = useState<IdeasSectionType | null>(null);
   const [selectedSection, setSelectedSection] = useState<IdeasSectionType | null>(null);
 

@@ -2,11 +2,6 @@ import apiAxios from '@/config/axiosConfig';
 
 const BASE_URL = '/statistics';
 
-// ⭐ CRÍTICO: Semana do Ano Letivo vs Semana ISO
-// IMPORTANTE: TODOS os parâmetros year e week nos endpoints são do ANO LETIVO, não semana ISO!
-// TODAS as pagelas são armazenadas com semana do ANO LETIVO, não semana ISO.
-// Ao consultar estatísticas, sempre use semana do ano letivo.
-
 export interface TimeSeriesDataPoint {
   date: string;
   value: number;
@@ -159,7 +154,7 @@ export interface OverviewData {
     totalClubs: number;
     totalTeachers: number;
     activeChildrenThisMonth: number;
-    // ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas
+    
     inactiveChildren?: number;
     inactiveClubs?: number;
   };
@@ -196,9 +191,9 @@ export interface OverviewData {
       total: number;
     }>;
   };
-  // ⭐ v2.11.0: Novos campos de engajamento, indicadores e estatísticas rápidas
+  
   engagement?: {
-    avgEngagementScore: number; // Score médio de todas as crianças ativas
+    avgEngagementScore: number; 
     topPerformingClubs: Array<{
       clubId: string;
       clubNumber: number;
@@ -212,17 +207,17 @@ export interface OverviewData {
       clubNumber: number;
     }>;
     recentActivity: {
-      last7Days: number; // Total de pagelas nos últimos 7 dias
-      last30Days: number; // Total de pagelas nos últimos 30 dias
+      last7Days: number; 
+      last30Days: number; 
     };
   };
   indicators?: {
-    clubsWithLowAttendance: number; // Clubes com presença < 70%
-    childrenWithLowEngagement: number; // Crianças com engajamento < 50%
-    clubsMissingPagelas: number; // Clubes sem pagela na semana atual
+    clubsWithLowAttendance: number; 
+    childrenWithLowEngagement: number; 
+    clubsMissingPagelas: number; 
     growthRate: {
-      children: number; // % de crescimento nos últimos 3 meses
-      decisions: number; // % de crescimento de decisões
+      children: number; 
+      decisions: number; 
     };
   };
   quickStats?: {
@@ -243,17 +238,16 @@ export interface OverviewData {
   };
 }
 
-// ⭐ v2.11.0: Atalhos de período
 export type PeriodShortcut = 'today' | 'this_week' | 'this_month' | 'last_7_days' | 'last_30_days' | 'this_year' | 'custom';
 
 export interface StatisticsFilters {
-  // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
+  
   year?: number;
   week?: number;
   startDate?: string;
   endDate?: string;
   groupBy?: 'day' | 'week' | 'month' | 'year';
-  // ⭐ v2.11.0: Filtro de período com atalhos rápidos
+  
   period?: PeriodShortcut;
   clubId?: string;
   teacherId?: string;
@@ -272,7 +266,6 @@ export interface StatisticsFilters {
   decision?: string;
 }
 
-// Filtros específicos para Children
 export interface ChildrenFilters extends StatisticsFilters {
   ageGroup?: string;
   minPagelas?: number;
@@ -285,16 +278,15 @@ export interface ChildrenFilters extends StatisticsFilters {
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
-  // ⭐ v2.11.0: Novos filtros avançados
-  search?: string; // Busca por nome da criança
-  hasLowEngagement?: boolean; // Crianças com engajamento < 50%
-  isNewcomer?: boolean; // Crianças que entraram nos últimos 3 meses
-  isVeteran?: boolean; // Crianças com mais de 1 ano de participação
-  maxEngagementScore?: number; // Score máximo (para encontrar crianças em risco)
-  maxPresenceRate?: number; // Taxa máxima de presença (crianças faltosas)
+  
+  search?: string; 
+  hasLowEngagement?: boolean; 
+  isNewcomer?: boolean; 
+  isVeteran?: boolean; 
+  maxEngagementScore?: number; 
+  maxPresenceRate?: number; 
 }
 
-// Filtros específicos para Clubs
 export interface ClubsFilters {
   coordinatorId?: string;
   city?: string;
@@ -302,7 +294,7 @@ export interface ClubsFilters {
   district?: string;
   weekday?: string;
   year?: number;
-  period?: PeriodShortcut; // ⭐ v2.11.0: Atalho de período
+  period?: PeriodShortcut; 
   startDate?: string;
   endDate?: string;
   minChildren?: number;
@@ -312,22 +304,21 @@ export interface ClubsFilters {
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
-  // ⭐ v2.11.0: Novos filtros avançados
-  maxChildren?: number; // Máximo de crianças (clubes pequenos)
-  maxPresenceRate?: number; // Taxa máxima (clubes com problemas)
-  maxPerformanceScore?: number; // Score máximo (baixa performance)
-  minDecisions?: number; // Mínimo de decisões alcançadas
-  minTeachers?: number; // Mínimo de professores no clube
+  
+  maxChildren?: number; 
+  maxPresenceRate?: number; 
+  maxPerformanceScore?: number; 
+  minDecisions?: number; 
+  minTeachers?: number; 
 }
 
-// Filtros específicos para Teachers
 export interface TeachersFilters {
   clubId?: string;
   coordinatorId?: string;
   city?: string;
   state?: string;
   year?: number;
-  period?: PeriodShortcut; // ⭐ v2.11.0: Atalho de período
+  period?: PeriodShortcut; 
   startDate?: string;
   endDate?: string;
   minPagelas?: number;
@@ -339,14 +330,13 @@ export interface TeachersFilters {
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
-  // ⭐ v2.11.0: Novos filtros avançados
-  search?: string; // Busca por nome do professor
-  maxEffectivenessScore?: number; // Score máximo (professores que precisam apoio)
-  maxPresenceRate?: number; // Taxa máxima de presença
-  minDecisions?: number; // Mínimo de crianças com decisões
+  
+  search?: string; 
+  maxEffectivenessScore?: number; 
+  maxPresenceRate?: number; 
+  minDecisions?: number; 
 }
 
-// Response types
 export interface PaginationInfo {
   page: number;
   limit: number;
@@ -374,8 +364,8 @@ export interface ChildStat {
     district: string;
   } | null;
   monthsParticipating: number;
-  // ⭐ NOVO v2.6.0: Data de entrada
-  joinedAt?: string | null; // Data de entrada no clubinho
+  
+  joinedAt?: string | null; 
   stats: {
     totalPagelas: number;
     presenceRate: number;
@@ -386,8 +376,8 @@ export interface ChildStat {
     hasDecision: boolean;
     decisionType: string | null;
   };
-  // ⭐ CRÍTICO v2.6.0: Apenas crianças ativas são listadas
-  isActive: boolean; // Sempre true nas respostas (apenas ativas são retornadas)
+  
+  isActive: boolean; 
   rank: number;
 }
 
@@ -509,7 +499,7 @@ export interface ClubsStatsResponse {
   };
   clubs: ClubStat[];
   pagination: PaginationInfo;
-  // ⭐ v2.10.0: Informações sobre clubinhos e crianças desativadas
+  
   inactiveClubs?: {
     total: number;
     list: Array<{
@@ -543,8 +533,6 @@ export interface TeachersStatsResponse {
   pagination: PaginationInfo;
 }
 
-// Attendance Analysis Types
-// ⭐ Pagination Meta v2.5.0
 export interface PaginationMeta {
   page: number;
   limit: number;
@@ -572,7 +560,7 @@ export interface ClubAttendanceResponse {
     consecutiveWeeksPresent: number;
     consecutiveWeeksMissing: number;
   };
-  // ⭐ v2.7.0: missingWeeks pode estar vazio se não há período letivo
+  
   missingWeeks: Array<{
     year: number;
     week: number;
@@ -583,7 +571,7 @@ export interface ClubAttendanceResponse {
     };
     reason: string;
     severity: 'info' | 'warning' | 'critical';
-    // ⭐ NOVO: Campo expectedChildren pode estar presente
+    
     expectedChildren?: number;
   }>;
   alerts: Array<{
@@ -603,7 +591,7 @@ export interface ClubAttendanceResponse {
   }>;
   timelinePagination?: PaginationMeta;
   missingWeeksPagination?: PaginationMeta;
-  // ⭐ v2.7.0: Note informativo quando não há período letivo
+  
   note?: string;
 }
 
@@ -614,7 +602,7 @@ export interface WeeklyAttendanceResponse {
     start: string | null;
     end: string | null;
   };
-  // ⭐ v2.7.0: clubs pode estar vazio se não há período letivo ou está fora do período
+  
   clubs: Array<{
     clubId: string;
     clubNumber: number;
@@ -632,18 +620,18 @@ export interface WeeklyAttendanceResponse {
     attendanceRate: number;
   };
   pagination?: PaginationMeta;
-  // ⭐ v2.7.0: Period presente quando há período letivo cadastrado
+  
   period?: {
     year: number;
     startDate: string;
     endDate: string;
   };
-  // ⭐ v2.7.0: Note informativo quando clubs está vazio
+  
   note?: string;
 }
 
 export const statisticsApi = {
-  // Chart Data Endpoints
+  
   getPagelasChartData: (params?: StatisticsFilters) =>
     apiAxios.get<PagelasChartData>(`${BASE_URL}/pagelas/charts`, { params }),
 
@@ -653,11 +641,9 @@ export const statisticsApi = {
   getInsights: (params?: StatisticsFilters) =>
     apiAxios.get<InsightsData>(`${BASE_URL}/insights`, { params }),
 
-  // Overview
   getOverview: () =>
     apiAxios.get<OverviewData>(`${BASE_URL}/overview`),
 
-  // Complete Views
   getChildren: (params?: ChildrenFilters) =>
     apiAxios.get<ChildrenStatsResponse>(`${BASE_URL}/children`, { params }),
 
@@ -667,18 +653,12 @@ export const statisticsApi = {
   getTeachers: (params?: TeachersFilters) =>
     apiAxios.get<TeachersStatsResponse>(`${BASE_URL}/teachers`, { params }),
 
-  // Attendance Analysis (NOVOS!)
-  // ⭐ Paginação v2.5.0
-  // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
   getClubAttendance: (clubId: string, params: { year: number; startDate?: string; endDate?: string; page?: number; limit?: number }) =>
     apiAxios.get<ClubAttendanceResponse>(`${BASE_URL}/attendance/club/${clubId}`, { params }),
 
-  // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
-  // ⭐ v2.7.0: Se não há período letivo ou está fora do período, retorna clubs: []
   getWeeklyAttendance: (params: { year: number; week: number; page?: number; limit?: number }) =>
     apiAxios.get<WeeklyAttendanceResponse>(`${BASE_URL}/attendance/week`, { params }),
 
-  // Specific Views (Individual)
   getClubStats: (clubId: string, params?: { startDate?: string; endDate?: string; groupBy?: string }) =>
     apiAxios.get(`${BASE_URL}/clubs/${clubId}`, { params }),
 

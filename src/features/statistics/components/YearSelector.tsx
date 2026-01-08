@@ -13,16 +13,10 @@ import { CalendarToday } from '@mui/icons-material';
 interface YearSelectorProps {
   selectedYear: number;
   onYearChange: (year: number) => void;
-  yearsRange?: number; // Quantos anos para trás mostrar (padrão: 3)
+  yearsRange?: number; 
   showLabel?: boolean;
 }
 
-/**
- * ⭐ Componente para seleção de ano
- *
- * Permite selecionar o ano para consultas de estatísticas.
- * Por padrão, mostra os últimos 3 anos a partir do ano atual do sistema.
- */
 export const YearSelector: React.FC<YearSelectorProps> = ({
   selectedYear,
   onYearChange,
@@ -31,7 +25,6 @@ export const YearSelector: React.FC<YearSelectorProps> = ({
 }) => {
   const currentYear = new Date().getFullYear();
 
-  // Gera array de anos (atual até N anos atrás)
   const years = Array.from({ length: yearsRange }, (_, i) => currentYear - i);
 
   const handleChange = (event: SelectChangeEvent<number>) => {
@@ -69,9 +62,6 @@ export const YearSelector: React.FC<YearSelectorProps> = ({
   );
 };
 
-/**
- * Hook para gerenciar estado de ano selecionado
- */
 export const useYearSelection = (initialYear?: number) => {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = React.useState<number>(

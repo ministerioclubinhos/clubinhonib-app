@@ -50,14 +50,13 @@ export const ChildrenListView: React.FC = () => {
     sortBy: 'engagementScore',
     sortOrder: 'DESC',
   });
-  
-  // Atualizar limit quando isMobile mudar
+
   React.useEffect(() => {
     const newLimit = isMobile ? 5 : 20;
     if (filters.limit !== newLimit) {
       setFilters({ ...filters, limit: newLimit, page: 1 });
     }
-  }, [isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isMobile]); 
   const [filtersExpanded, setFiltersExpanded] = React.useState(false);
 
   const { data, isLoading } = useChildren(filters);
@@ -111,7 +110,7 @@ export const ChildrenListView: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
-      {/* Cards de Resumo */}
+      
       <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0 }}>
         <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{ 
@@ -193,7 +192,6 @@ export const ChildrenListView: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Filtros */}
       <Paper elevation={0} sx={{ p: 2, borderRadius: 2, mb: 2, border: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: filtersExpanded ? 2 : 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -213,7 +211,7 @@ export const ChildrenListView: React.FC = () => {
 
         <Collapse in={filtersExpanded}>
           <Grid container spacing={2}>
-            {/* ⭐ v2.11.0: Filtro de Período */}
+            
             <Grid item xs={12}>
               <PeriodFilter
                 period={filters.period}
@@ -234,7 +232,6 @@ export const ChildrenListView: React.FC = () => {
               />
             </Grid>
 
-            {/* ⭐ v2.11.0: Busca por nome */}
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
@@ -283,7 +280,6 @@ export const ChildrenListView: React.FC = () => {
               />
             </Grid>
 
-            {/* ⭐ v2.11.0: Filtros avançados */}
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
@@ -391,7 +387,6 @@ export const ChildrenListView: React.FC = () => {
         </Collapse>
       </Paper>
 
-      {/* Versão Mobile: Cards */}
       {isMobile ? (
         <Stack spacing={1.5} sx={{ width: '100%', maxWidth: '100%' }}>
           {data.children.length === 0 ? (
@@ -426,7 +421,7 @@ export const ChildrenListView: React.FC = () => {
                   maxWidth: '100%',
                 }}>
                   <Stack spacing={1}>
-                    {/* Header */}
+                    
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                         <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>
@@ -455,7 +450,6 @@ export const ChildrenListView: React.FC = () => {
 
                     <Divider sx={{ my: 0.5 }} />
 
-                    {/* Informações */}
                     <Grid container spacing={1}>
                       <Grid item xs={6}>
                         <Box>
@@ -502,7 +496,6 @@ export const ChildrenListView: React.FC = () => {
                       </Grid>
                     </Grid>
 
-                    {/* Presença */}
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
@@ -527,7 +520,6 @@ export const ChildrenListView: React.FC = () => {
                       />
                     </Box>
 
-                    {/* Engajamento e Status */}
                     <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
                       <Chip
                         icon={<Star sx={{ fontSize: { xs: 12, sm: 16 } }} />}
@@ -560,7 +552,7 @@ export const ChildrenListView: React.FC = () => {
           )}
         </Stack>
       ) : (
-        /* Versão Desktop: Tabela */
+        
         <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
           <Table>
             <TableHead>
@@ -676,7 +668,6 @@ export const ChildrenListView: React.FC = () => {
         </TableContainer>
       )}
 
-      {/* Paginação - Funciona em ambos (mobile e desktop) */}
       {data.pagination && (
         <Box sx={{ px: { xs: 1, sm: 0 }, mt: 2 }}>
           <TablePagination
@@ -705,5 +696,4 @@ export const ChildrenListView: React.FC = () => {
     </Box>
   );
 };
-
 

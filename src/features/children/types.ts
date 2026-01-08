@@ -52,7 +52,6 @@ export type ChildSimpleResponseDto = {
   acceptedChrists: AcceptedChristShortDto[];
 };
 
-
 export type Paginated<T> = {
   data: T[];
   meta?: {

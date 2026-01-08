@@ -46,7 +46,6 @@ const roleLabels: Record<UserRole, string> = {
   [UserRole.TEACHER]: "Professor",
 };
 
-
 function LineCard({
   icon,
   title,
@@ -148,7 +147,6 @@ const waLink = useMemo(() => (user ? buildWhatsappLink(user.name, loggedUser?.na
               </Box>
             </Stack>
 
-
           </Stack>
         )}
       </Box>
@@ -215,7 +213,6 @@ const waLink = useMemo(() => (user ? buildWhatsappLink(user.name, loggedUser?.na
               </Stack>
             </Paper>
 
-            {/* Datas */}
             <Grid container spacing={1.25}>
               <Grid item xs={12} sm={6}>
                 <LineCard icon={<AccessTime fontSize="small" />} title="Criado em">

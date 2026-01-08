@@ -18,4 +18,3 @@ const RankingsTab: React.FC<RankingsTabProps> = ({ filters }) => {
 
 export default RankingsTab;
 
-

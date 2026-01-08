@@ -104,7 +104,6 @@ export default function ImageSection({
                 </Button>
               </Box>
 
-
             </CardContent>
           </Grid>
         </Grid>

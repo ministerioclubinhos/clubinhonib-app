@@ -16,7 +16,6 @@ import { buildWhatsappLink } from "@/utils/whatsapp";
 import { weekdayLabel } from "@/utils/dateUtils";
 import { CopyButton, initials } from "@/utils/components";
 
-
 type Props = {
   rows: CoordinatorProfile[];
   total: number;
@@ -325,7 +324,7 @@ export default function CoordinatorCards(props: Props) {
                     <Divider sx={{ mx: { xs: 1, sm: 1.25 } }} />
                     <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
                       <Stack spacing={2}>
-                        {/* Datas */}
+                        
                         <Paper
                           variant="outlined"
                           sx={{

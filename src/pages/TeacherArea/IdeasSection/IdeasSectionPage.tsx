@@ -5,8 +5,6 @@ import { Container } from '@mui/material';
 import { IdeasSectionAdminEditor, IdeasSectionUserCreator } from '@/components/Adm/PageCreator/Templates/IdeasSectionEditor';
 import { RootState } from '@/store/slices';
 
-
-
 export default function IdeasSectionPage() {
   const location = useLocation();
   

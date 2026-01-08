@@ -276,7 +276,6 @@ export default function WeekMaterialsPageView({ idToFetch }: WeekMaterialsPageVi
                 }}
               />
 
-              {/* Decorative elements with animations */}
               <motion.div
                 className="pulse-circle"
                 animate={{
