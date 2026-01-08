@@ -17,9 +17,7 @@ export async function apiFetchClubs(args: {
 }) {
   const { page, limit, filters, sort } = args;
   const {
-    addressSearchString,
-    userSearchString,
-    clubSearchString,
+    searchString,
     isActive,
   } = filters || {};
 
@@ -30,9 +28,7 @@ export async function apiFetchClubs(args: {
     params: {
       page,
       limit,
-      addressSearchString: addressSearchString || undefined,
-      userSearchString: userSearchString || undefined,
-      clubSearchString: clubSearchString || undefined,
+      searchString: searchString || undefined,
       isActive: isActive !== undefined ? isActive : undefined,
       sort: sortField,
       order,

@@ -39,6 +39,8 @@ import {
 } from '@mui/icons-material';
 import { useTeachers } from '../hooks';
 import { TeachersFilters } from '../api';
+import { PeriodFilter } from './PeriodFilter';
+import { getPeriodDates } from '../utils/periodHelpers';
 
 export const TeachersListView: React.FC = () => {
   const theme = useTheme();
@@ -195,6 +197,39 @@ export const TeachersListView: React.FC = () => {
 
         <Collapse in={filtersExpanded}>
           <Grid container spacing={2}>
+            {/* ⭐ v2.11.0: Filtro de Período */}
+            <Grid item xs={12}>
+              <PeriodFilter
+                period={filters.period}
+                startDate={filters.startDate}
+                endDate={filters.endDate}
+                onPeriodChange={(period) => {
+                  const dates = getPeriodDates(period);
+                  setFilters({
+                    ...filters,
+                    period,
+                    startDate: dates?.startDate,
+                    endDate: dates?.endDate,
+                    page: 1,
+                  });
+                }}
+                onStartDateChange={(startDate) => handleFilterChange('startDate', startDate)}
+                onEndDateChange={(endDate) => handleFilterChange('endDate', endDate)}
+              />
+            </Grid>
+
+            {/* ⭐ v2.11.0: Busca por nome */}
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Buscar por nome"
+                placeholder="Digite o nome do professor..."
+                value={filters.search || ''}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                size="small"
+              />
+            </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
@@ -204,6 +239,63 @@ export const TeachersListView: React.FC = () => {
                 size="small"
               />
             </Grid>
+
+            {/* ⭐ v2.11.0: Filtros avançados */}
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Efetividade Mínima"
+                value={filters.minEffectivenessScore || ''}
+                onChange={(e) => handleFilterChange('minEffectivenessScore', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={2}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Efetividade Máxima"
+                value={filters.maxEffectivenessScore || ''}
+                onChange={(e) => handleFilterChange('maxEffectivenessScore', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Presença Mínima (%)"
+                value={filters.minPresenceRate || ''}
+                onChange={(e) => handleFilterChange('minPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Presença Máxima (%)"
+                value={filters.maxPresenceRate || ''}
+                onChange={(e) => handleFilterChange('maxPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Mínimo de Decisões"
+                value={filters.minDecisions || ''}
+                onChange={(e) => handleFilterChange('minDecisions', e.target.value ? Number(e.target.value) : undefined)}
+                size="small"
+              />
+            </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
@@ -218,7 +310,8 @@ export const TeachersListView: React.FC = () => {
                 <MenuItem value="totalPagelas">Total Pagelas</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+
+            <Grid item xs={12} sm={6} md={2}>
               <TextField
                 fullWidth
                 select
@@ -231,7 +324,8 @@ export const TeachersListView: React.FC = () => {
                 <MenuItem value="DESC">Decrescente</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+
+            <Grid item xs={12} sm={6} md={2}>
               <TextField
                 fullWidth
                 select

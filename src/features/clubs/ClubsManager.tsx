@@ -27,9 +27,7 @@ export default function ClubsManager() {
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [filters, setFilters] = useState<ClubFilters>({
-    addressSearchString: "",
-    userSearchString: "",
-    clubSearchString: "",
+    searchString: "",
   });
 
   const [pageSize, setPageSize] = useState<number>(12);

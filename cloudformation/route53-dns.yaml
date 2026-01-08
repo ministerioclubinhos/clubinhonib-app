@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Route53 DNS records for clubinho NIB Amplify App custom domain'
+
+Parameters:
+  HostedZoneId:
+    Type: String
+    Description: 'Route53 Hosted Zone ID for clubinhonib.com'
+    Default: 'Z04342831HLGP0JZ4VI5K'
+
+  RootDomainName:
+    Type: String
+    Description: 'Root domain name'
+    Default: 'clubinhonib.com'
+
+  StagingSubdomainPrefix:
+    Type: String
+    Description: 'Staging subdomain prefix'
+    Default: 'staging'
+
+  CloudFrontDistribution:
+    Type: String
+    Description: 'CloudFront distribution domain from Amplify'
+    Default: 'd1pcwdoezennml.cloudfront.net'
+
+  CertificateValidationName:
+    Type: String
+    Description: 'Certificate validation DNS record name'
+    Default: '_32bad6107fb1085ffdedee19bdf5ae28.clubinhonib.com'
+
+  CertificateValidationValue:
+    Type: String
+    Description: 'Certificate validation DNS record value'
+    Default: '_43173c6b467f067660b18e11087f1b62.xlfgrmvvlj.acm-validations.aws'
+
+Resources:
+  # Root domain A record (IPv4) - alias to CloudFront
+  RootDomainARecord:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub '${RootDomainName}.'
+      Type: A
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID (global constant)
+        DNSName: !Sub '${CloudFrontDistribution}.'
+        EvaluateTargetHealth: false
+
+  # Root domain AAAA record (IPv6) - alias to CloudFront
+  RootDomainAAAARecord:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub '${RootDomainName}.'
+      Type: AAAA
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID (global constant)
+        DNSName: !Sub '${CloudFrontDistribution}.'
+        EvaluateTargetHealth: false
+
+  # Staging subdomain CNAME record
+  StagingSubdomainRecord:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub '${StagingSubdomainPrefix}.${RootDomainName}.'
+      Type: CNAME
+      TTL: 300
+      ResourceRecords:
+        - !Ref CloudFrontDistribution
+
+  # Certificate validation CNAME record
+  CertificateValidationRecord:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub '${CertificateValidationName}.'
+      Type: CNAME
+      TTL: 300
+      ResourceRecords:
+        - !Sub '${CertificateValidationValue}.'
+
+Outputs:
+  RootDomainARecordName:
+    Description: 'Root domain A record name'
+    Value: !Ref RootDomainARecord
+    Export:
+      Name: !Sub '${AWS::StackName}-RootDomainA'
+
+  StagingDomainRecordName:
+    Description: 'Staging subdomain record name'
+    Value: !Ref StagingSubdomainRecord
+    Export:
+      Name: !Sub '${AWS::StackName}-StagingDomain'
+
+  CertificateValidationRecordName:
+    Description: 'Certificate validation record name'
+    Value: !Ref CertificateValidationRecord
+    Export:
+      Name: !Sub '${AWS::StackName}-CertValidation'

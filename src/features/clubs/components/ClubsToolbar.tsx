@@ -46,9 +46,7 @@ export default function ClubsToolbar({
 
   const handleClear = () => {
     onChange(() => ({
-      clubSearchString: "",
-      userSearchString: "",
-      addressSearchString: "",
+      searchString: "",
       isActive: undefined,
     }));
   };
@@ -71,36 +69,14 @@ export default function ClubsToolbar({
       </Typography>
 
       <Grid container spacing={{ xs: 1.5, md: 2 }} alignItems="center">
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={8}>
           <TextField
             fullWidth
             size="small"
-            label="Clubinho"
-            value={filters.clubSearchString ?? ""}
-            onChange={(e) => handleChange("clubSearchString", e.target.value)}
-            placeholder="Número, dia ou horário (ex.: 14:30)"
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            size="small"
-            label="Professor/Coordenador"
-            value={filters.userSearchString ?? ""}
-            onChange={(e) => handleChange("userSearchString", e.target.value)}
-            placeholder="Nome, e-mail ou telefone"
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            size="small"
-            label="Endereço"
-            value={filters.addressSearchString ?? ""}
-            onChange={(e) => handleChange("addressSearchString", e.target.value)}
-            placeholder="Rua, bairro ou cidade"
+            label="Buscar"
+            value={filters.searchString ?? ""}
+            onChange={(e) => handleChange("searchString", e.target.value)}
+            placeholder="Endereço / nº do clubinho.."
           />
         </Grid>
 

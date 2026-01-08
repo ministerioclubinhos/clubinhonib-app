@@ -1,4 +1,3 @@
-import axios from 'axios';
 import apiAxios from '@/config/axiosConfig';
 
 const BASE_URL = '/statistics';
@@ -197,7 +196,55 @@ export interface OverviewData {
       total: number;
     }>;
   };
+  // ⭐ v2.11.0: Novos campos de engajamento, indicadores e estatísticas rápidas
+  engagement?: {
+    avgEngagementScore: number; // Score médio de todas as crianças ativas
+    topPerformingClubs: Array<{
+      clubId: string;
+      clubNumber: number;
+      performanceScore: number;
+      city: string;
+    }>;
+    topEngagedChildren: Array<{
+      childId: string;
+      name: string;
+      engagementScore: number;
+      clubNumber: number;
+    }>;
+    recentActivity: {
+      last7Days: number; // Total de pagelas nos últimos 7 dias
+      last30Days: number; // Total de pagelas nos últimos 30 dias
+    };
+  };
+  indicators?: {
+    clubsWithLowAttendance: number; // Clubes com presença < 70%
+    childrenWithLowEngagement: number; // Crianças com engajamento < 50%
+    clubsMissingPagelas: number; // Clubes sem pagela na semana atual
+    growthRate: {
+      children: number; // % de crescimento nos últimos 3 meses
+      decisions: number; // % de crescimento de decisões
+    };
+  };
+  quickStats?: {
+    childrenByGender: {
+      M: number;
+      F: number;
+    };
+    clubsByState: Array<{
+      state: string;
+      count: number;
+    }>;
+    topCities: Array<{
+      city: string;
+      state: string;
+      totalChildren: number;
+      totalClubs: number;
+    }>;
+  };
 }
+
+// ⭐ v2.11.0: Atalhos de período
+export type PeriodShortcut = 'today' | 'this_week' | 'this_month' | 'last_7_days' | 'last_30_days' | 'this_year' | 'custom';
 
 export interface StatisticsFilters {
   // ⭐ CRÍTICO: year e week são do ANO LETIVO, não semana ISO!
@@ -206,6 +253,8 @@ export interface StatisticsFilters {
   startDate?: string;
   endDate?: string;
   groupBy?: 'day' | 'week' | 'month' | 'year';
+  // ⭐ v2.11.0: Filtro de período com atalhos rápidos
+  period?: PeriodShortcut;
   clubId?: string;
   teacherId?: string;
   coordinatorId?: string;
@@ -236,6 +285,13 @@ export interface ChildrenFilters extends StatisticsFilters {
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
+  // ⭐ v2.11.0: Novos filtros avançados
+  search?: string; // Busca por nome da criança
+  hasLowEngagement?: boolean; // Crianças com engajamento < 50%
+  isNewcomer?: boolean; // Crianças que entraram nos últimos 3 meses
+  isVeteran?: boolean; // Crianças com mais de 1 ano de participação
+  maxEngagementScore?: number; // Score máximo (para encontrar crianças em risco)
+  maxPresenceRate?: number; // Taxa máxima de presença (crianças faltosas)
 }
 
 // Filtros específicos para Clubs
@@ -246,6 +302,7 @@ export interface ClubsFilters {
   district?: string;
   weekday?: string;
   year?: number;
+  period?: PeriodShortcut; // ⭐ v2.11.0: Atalho de período
   startDate?: string;
   endDate?: string;
   minChildren?: number;
@@ -255,6 +312,12 @@ export interface ClubsFilters {
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
+  // ⭐ v2.11.0: Novos filtros avançados
+  maxChildren?: number; // Máximo de crianças (clubes pequenos)
+  maxPresenceRate?: number; // Taxa máxima (clubes com problemas)
+  maxPerformanceScore?: number; // Score máximo (baixa performance)
+  minDecisions?: number; // Mínimo de decisões alcançadas
+  minTeachers?: number; // Mínimo de professores no clube
 }
 
 // Filtros específicos para Teachers
@@ -264,6 +327,7 @@ export interface TeachersFilters {
   city?: string;
   state?: string;
   year?: number;
+  period?: PeriodShortcut; // ⭐ v2.11.0: Atalho de período
   startDate?: string;
   endDate?: string;
   minPagelas?: number;
@@ -275,6 +339,11 @@ export interface TeachersFilters {
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
+  // ⭐ v2.11.0: Novos filtros avançados
+  search?: string; // Busca por nome do professor
+  maxEffectivenessScore?: number; // Score máximo (professores que precisam apoio)
+  maxPresenceRate?: number; // Taxa máxima de presença
+  minDecisions?: number; // Mínimo de crianças com decisões
 }
 
 // Response types
