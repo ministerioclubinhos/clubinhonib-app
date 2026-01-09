@@ -107,7 +107,7 @@ export const ExceptionManagement: React.FC = () => {
 
       const dateFormatted = dayjs(formData.exceptionDate).format('DD/MM/YYYY');
       const weekday = dayjs(formData.exceptionDate).format('dddd');
-      
+
       setFormData({
         exceptionDate: '',
         reason: '',
@@ -136,7 +136,8 @@ export const ExceptionManagement: React.FC = () => {
       setDeleteDialog({ open: false, exceptionId: '', description: '' });
       setSnackbar({
         open: true,
-        message: 'Exceção excluída com sucesso! A data voltará a ser considerada como dia normal de funcionamento.',
+        message:
+          'Exceção excluída com sucesso! A data voltará a ser considerada como dia normal de funcionamento.',
         severity: 'success',
       });
     } catch (error: any) {
@@ -185,10 +186,18 @@ export const ExceptionManagement: React.FC = () => {
             <EventBusy sx={{ fontSize: { xs: 24, sm: 32 }, color: 'white' }} />
           </Box>
           <Box>
-            <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}
+            >
               🚫 Exceções GLOBAIS
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            >
               Datas em que TODOS os clubes não funcionarão
             </Typography>
           </Box>
@@ -280,7 +289,12 @@ export const ExceptionManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        type: e.target.value as 'holiday' | 'event' | 'maintenance' | 'vacation' | 'other',
+                        type: e.target.value as
+                          | 'holiday'
+                          | 'event'
+                          | 'maintenance'
+                          | 'vacation'
+                          | 'other',
                       })
                     }
                     required
@@ -313,7 +327,9 @@ export const ExceptionManagement: React.FC = () => {
                     control={
                       <Checkbox
                         checked={formData.isRecurrent}
-                        onChange={(e) => setFormData({ ...formData, isRecurrent: e.target.checked })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, isRecurrent: e.target.checked })
+                        }
                         icon={<Repeat />}
                         checkedIcon={<Repeat />}
                       />
@@ -361,7 +377,8 @@ export const ExceptionManagement: React.FC = () => {
 
             <Alert severity="warning" sx={{ mt: 2 }} icon={<Warning />}>
               <Typography variant="caption">
-                <strong>Atenção:</strong> Esta exceção será aplicada para TODOS os clubes que funcionam no dia da semana selecionado.
+                <strong>Atenção:</strong> Esta exceção será aplicada para TODOS os clubes que
+                funcionam no dia da semana selecionado.
               </Typography>
             </Alert>
           </Paper>
@@ -416,29 +433,55 @@ export const ExceptionManagement: React.FC = () => {
                 /* Versão Mobile: Cards */
                 <Stack spacing={2}>
                   {exceptions
-                    .sort((a, b) => new Date(b.exceptionDate).getTime() - new Date(a.exceptionDate).getTime())
+                    .sort(
+                      (a, b) =>
+                        new Date(b.exceptionDate).getTime() - new Date(a.exceptionDate).getTime()
+                    )
                     .map((exception) => {
                       const typeConfig = getTypeConfig(exception.type);
                       const isPast = dayjs(exception.exceptionDate).isBefore(dayjs(), 'day');
                       const weekday = dayjs(exception.exceptionDate).format('dddd');
-                      
+
                       return (
-                        <Card key={exception.id} elevation={2} sx={{ borderRadius: 2, opacity: isPast ? 0.7 : 1 }}>
+                        <Card
+                          key={exception.id}
+                          elevation={2}
+                          sx={{ borderRadius: 2, opacity: isPast ? 0.7 : 1 }}
+                        >
                           <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                             <Stack spacing={1.5}>
                               {/* Header */}
-                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                }}
+                              >
                                 <Box>
-                                  <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                  <Typography
+                                    variant="body2"
+                                    fontWeight="bold"
+                                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                  >
                                     {dayjs(exception.exceptionDate).format('DD/MM/YYYY')}
                                   </Typography>
-                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                  >
                                     {weekday}
                                   </Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                                   {isPast && (
-                                    <Chip label="Passado" size="small" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                                    <Chip
+                                      label="Passado"
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                    />
                                   )}
                                   {exception.isRecurrent && (
                                     <Chip
@@ -456,7 +499,11 @@ export const ExceptionManagement: React.FC = () => {
 
                               {/* Tipo */}
                               <Box>
-                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                >
                                   Tipo
                                 </Typography>
                                 <Box sx={{ mt: 0.5 }}>
@@ -464,21 +511,37 @@ export const ExceptionManagement: React.FC = () => {
                                     icon={typeConfig.icon}
                                     label={typeConfig.label}
                                     size="small"
-                                    sx={{ bgcolor: typeConfig.color + '20', color: typeConfig.color, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                    sx={{
+                                      bgcolor: typeConfig.color + '20',
+                                      color: typeConfig.color,
+                                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                                    }}
                                   />
                                 </Box>
                               </Box>
 
                               {/* Motivo */}
                               <Box>
-                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                >
                                   Motivo
                                 </Typography>
-                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                >
                                   {exception.reason}
                                 </Typography>
                                 {exception.notes && (
-                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    display="block"
+                                    sx={{ mt: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                  >
                                     {exception.notes}
                                   </Typography>
                                 )}
@@ -516,31 +579,57 @@ export const ExceptionManagement: React.FC = () => {
                   <Table stickyHeader>
                     <TableHead>
                       <TableRow>
-                        <TableCell><strong>Data</strong></TableCell>
-                        <TableCell><strong>Tipo</strong></TableCell>
-                        <TableCell><strong>Motivo</strong></TableCell>
-                        <TableCell align="center"><strong>Ações</strong></TableCell>
+                        <TableCell>
+                          <strong>Data</strong>
+                        </TableCell>
+                        <TableCell>
+                          <strong>Tipo</strong>
+                        </TableCell>
+                        <TableCell>
+                          <strong>Motivo</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <strong>Ações</strong>
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {exceptions
-                        .sort((a, b) => new Date(b.exceptionDate).getTime() - new Date(a.exceptionDate).getTime())
+                        .sort(
+                          (a, b) =>
+                            new Date(b.exceptionDate).getTime() -
+                            new Date(a.exceptionDate).getTime()
+                        )
                         .map((exception) => {
                           const typeConfig = getTypeConfig(exception.type);
                           const isPast = dayjs(exception.exceptionDate).isBefore(dayjs(), 'day');
                           const weekday = dayjs(exception.exceptionDate).format('dddd');
-                          
+
                           return (
                             <TableRow key={exception.id} hover sx={{ opacity: isPast ? 0.6 : 1 }}>
                               <TableCell>
-                                <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                <Typography
+                                  variant="body2"
+                                  fontWeight="bold"
+                                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                >
                                   {dayjs(exception.exceptionDate).format('DD/MM/YYYY')}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  display="block"
+                                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                >
                                   {weekday}
                                 </Typography>
                                 {isPast && (
-                                  <Chip label="Passado" size="small" sx={{ mt: 0.5 }} variant="outlined" />
+                                  <Chip
+                                    label="Passado"
+                                    size="small"
+                                    sx={{ mt: 0.5 }}
+                                    variant="outlined"
+                                  />
                                 )}
                                 {exception.isRecurrent && (
                                   <Chip
@@ -561,9 +650,19 @@ export const ExceptionManagement: React.FC = () => {
                                 />
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{exception.reason}</Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                >
+                                  {exception.reason}
+                                </Typography>
                                 {exception.notes && (
-                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    display="block"
+                                    sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                  >
                                     {exception.notes}
                                   </Typography>
                                 )}
@@ -606,7 +705,7 @@ export const ExceptionManagement: React.FC = () => {
                     }}
                     rowsPerPageOptions={[25, 50, 100]}
                     labelRowsPerPage="Exceções por página:"
-                    labelDisplayedRows={({ from, to, count }) => 
+                    labelDisplayedRows={({ from, to, count }) =>
                       `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
                     }
                     sx={{
@@ -636,7 +735,12 @@ export const ExceptionManagement: React.FC = () => {
               bgcolor: theme.palette.info.main + '05',
             }}
           >
-            <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant="subtitle2"
+              fontWeight="bold"
+              gutterBottom
+              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            >
               💡 Dica: Feriados Nacionais Comuns
             </Typography>
             <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>
@@ -676,8 +780,8 @@ export const ExceptionManagement: React.FC = () => {
         </Grid>
       </Grid>
 
-      <Dialog 
-        open={deleteDialog.open} 
+      <Dialog
+        open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, exceptionId: '', description: '' })}
         maxWidth="sm"
         fullWidth
@@ -695,23 +799,24 @@ export const ExceptionManagement: React.FC = () => {
               ℹ️ O que acontece após a exclusão:
             </Typography>
             <Typography variant="caption" display="block">
-              A data voltará a ser considerada como <strong>dia normal de funcionamento</strong> para 
-              <strong> TODOS os clubes</strong> que funcionam neste dia da semana. 
-              As pagelas desta data voltarão a ser cobradas normalmente.
+              A data voltará a ser considerada como <strong>dia normal de funcionamento</strong>{' '}
+              para
+              <strong> TODOS os clubes</strong> que funcionam neste dia da semana. As pagelas desta
+              data voltarão a ser cobradas normalmente.
             </Typography>
           </Alert>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
+          <Button
             onClick={() => setDeleteDialog({ open: false, exceptionId: '', description: '' })}
             variant="outlined"
           >
             Cancelar
           </Button>
-          <Button 
-            onClick={handleDelete} 
-            color="error" 
-            variant="contained" 
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
             disabled={deleteException.isPending}
             startIcon={deleteException.isPending ? <CircularProgress size={16} /> : <Delete />}
           >

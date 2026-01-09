@@ -58,4 +58,3 @@ export interface UpdateSectionPayload {
   sectionData: SectionData;
   files?: File[];
 }
-

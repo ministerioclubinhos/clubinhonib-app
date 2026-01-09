@@ -19,7 +19,8 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%)',
+          background:
+            'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%)',
           zIndex: 0,
         },
       }}
@@ -75,7 +76,9 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
               lineHeight: 1.6,
             }}
           >
-            Junte-se a mais de 20 anos de experiência evangelística. Seja um servo comprometido em levar a Palavra de Deus às crianças de forma alegre e criativa, criando ambientes acolhedores com princípios bíblicos.
+            Junte-se a mais de 20 anos de experiência evangelística. Seja um servo comprometido em
+            levar a Palavra de Deus às crianças de forma alegre e criativa, criando ambientes
+            acolhedores com princípios bíblicos.
           </Typography>
         </motion.div>
 
@@ -87,10 +90,7 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
         >
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
             {isAuthenticated ? (
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   variant="contained"
                   component={Link}
@@ -117,10 +117,7 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
                 </Button>
               </motion.div>
             ) : (
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   variant="contained"
                   component={Link}

@@ -1,18 +1,35 @@
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 import {
-  Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  TableSortLabel, Divider, Typography, Chip, Box, useTheme, useMediaQuery, TablePagination
-} from "@mui/material";
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  Divider,
+  Typography,
+  Chip,
+  Box,
+  useTheme,
+  useMediaQuery,
+  TablePagination,
+} from '@mui/material';
 import {
-  ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel,
-  SortingState, useReactTable
-} from "@tanstack/react-table";
-import { Visibility, Edit, Delete, AccessTime, ToggleOn, ToggleOff } from "@mui/icons-material";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import { ClubResponseDto, WEEKDAYS } from "../types";
-import { fmtDate } from "@/utils/dates";
-import ClubsCards from "./ClubsCards";
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  SortingState,
+  useReactTable,
+} from '@tanstack/react-table';
+import { Visibility, Edit, Delete, AccessTime, ToggleOn, ToggleOff } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import { ClubResponseDto, WEEKDAYS } from '../types';
+import { fmtDate } from '@/utils/dates';
+import ClubsCards from './ClubsCards';
 
 type Props = {
   isAdmin: boolean;
@@ -32,71 +49,81 @@ type Props = {
 
 export default function ClubsTable(props: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true });
   return isXs ? <ClubsCards {...props} /> : <ClubsTableDesktop {...props} />;
 }
 
 function ClubsTableDesktop(props: Props) {
   const {
     isAdmin,
-    rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
-    sorting, setSorting, onOpenView, onStartEdit, onAskDelete, onToggleActive,
+    rows,
+    total,
+    pageIndex,
+    pageSize,
+    setPageIndex,
+    setPageSize,
+    sorting,
+    setSorting,
+    onOpenView,
+    onStartEdit,
+    onAskDelete,
+    onToggleActive,
   } = props;
 
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   const columns = useMemo<ColumnDef<ClubResponseDto>[]>(() => {
     const base: ColumnDef<ClubResponseDto>[] = [
       {
-        accessorKey: "number",
-        header: "Nº",
+        accessorKey: 'number',
+        header: 'Nº',
         cell: ({ getValue }) => <Typography fontWeight={700}>{String(getValue())}</Typography>,
         meta: { width: 80 },
       },
       {
-        accessorKey: "weekday",
-        header: "Dia da semana",
+        accessorKey: 'weekday',
+        header: 'Dia da semana',
         cell: ({ getValue }) => {
-          const v = String(getValue() ?? "");
+          const v = String(getValue() ?? '');
           const label = WEEKDAYS.find((w) => w.value === v)?.label ?? v;
           return <Typography>{label}</Typography>;
         },
         meta: { width: 150 },
       },
       {
-        accessorKey: "time",
-        header: "Horário",
+        accessorKey: 'time',
+        header: 'Horário',
         cell: ({ row }) => {
           const t = row.original.time;
           return (
-            <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
-              <AccessTime fontSize="inherit" sx={{ fontSize: 16, color: "text.secondary" }} />
-              <Typography>{t || "—"}</Typography>
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+              <AccessTime fontSize="inherit" sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography>{t || '—'}</Typography>
             </Box>
           );
         },
         meta: { width: 120 },
       },
       {
-        id: "coordinator",
-        header: "Coordenador",
+        id: 'coordinator',
+        header: 'Coordenador',
         cell: ({ row }) => {
           const c = row.original.coordinator;
-          const label = c?.user?.name || c?.user?.email || "—";
+          const label = c?.user?.name || c?.user?.email || '—';
           return <Typography noWrap>{label}</Typography>;
         },
         meta: { width: 240 },
       },
       {
-        id: "teachers",
-        header: "Professores",
+        id: 'teachers',
+        header: 'Professores',
         cell: ({ row }) => {
           const list = row.original.teachers ?? [];
           if (!list.length) return <Chip label="Nenhum" size="small" />;
           return (
-            <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
               {list.map((t) => (
                 <Chip
                   key={t.id}
@@ -110,16 +137,16 @@ function ClubsTableDesktop(props: Props) {
         },
       },
       {
-        accessorKey: "isActive",
-        header: "Status",
+        accessorKey: 'isActive',
+        header: 'Status',
         cell: ({ getValue }) => {
           const active = getValue() as boolean;
           return (
             <Chip
               size="small"
-              label={active ? "Ativo" : "Inativo"}
-              color={active ? "success" : "default"}
-              variant={active ? "filled" : "outlined"}
+              label={active ? 'Ativo' : 'Inativo'}
+              color={active ? 'success' : 'default'}
+              variant={active ? 'filled' : 'outlined'}
             />
           );
         },
@@ -128,48 +155,59 @@ function ClubsTableDesktop(props: Props) {
       ...(isMdUp
         ? ([
             {
-              accessorKey: "createdAt",
-              header: "Criado em",
+              accessorKey: 'createdAt',
+              header: 'Criado em',
               cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
               meta: { width: 170 },
             },
             {
-              accessorKey: "updatedAt",
-              header: "Atualizado em",
+              accessorKey: 'updatedAt',
+              header: 'Atualizado em',
               cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
               meta: { width: 170 },
             },
           ] as ColumnDef<ClubResponseDto>[])
         : []),
       {
-        id: "actions",
-        header: "Ações",
+        id: 'actions',
+        header: 'Ações',
         enableSorting: false,
         cell: ({ row }) => (
-          <Box sx={{ display: "flex", gap: 0.5 }}>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
             <Tooltip title="Detalhes">
-              <IconButton size={isXs ? "small" : "medium"} onClick={() => onOpenView(row.original)}>
+              <IconButton size={isXs ? 'small' : 'medium'} onClick={() => onOpenView(row.original)}>
                 <Visibility fontSize="inherit" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Editar">
-              <IconButton size={isXs ? "small" : "medium"} onClick={() => onStartEdit(row.original)}>
+              <IconButton
+                size={isXs ? 'small' : 'medium'}
+                onClick={() => onStartEdit(row.original)}
+              >
                 <Edit fontSize="inherit" />
               </IconButton>
             </Tooltip>
             {isAdmin && (
               <>
-                <Tooltip title={row.original.isActive ? "Desativar" : "Ativar"}>
-                  <IconButton 
-                    size={isXs ? "small" : "medium"}
-                    color={row.original.isActive ? "success" : "default"}
+                <Tooltip title={row.original.isActive ? 'Desativar' : 'Ativar'}>
+                  <IconButton
+                    size={isXs ? 'small' : 'medium'}
+                    color={row.original.isActive ? 'success' : 'default'}
                     onClick={() => onToggleActive(row.original)}
                   >
-                    {row.original.isActive ? <ToggleOn fontSize="inherit" /> : <ToggleOff fontSize="inherit" />}
+                    {row.original.isActive ? (
+                      <ToggleOn fontSize="inherit" />
+                    ) : (
+                      <ToggleOff fontSize="inherit" />
+                    )}
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Excluir">
-                  <IconButton size={isXs ? "small" : "medium"} color="error" onClick={() => onAskDelete(row.original)}>
+                  <IconButton
+                    size={isXs ? 'small' : 'medium'}
+                    color="error"
+                    onClick={() => onAskDelete(row.original)}
+                  >
                     <Delete fontSize="inherit" />
                   </IconButton>
                 </Tooltip>
@@ -192,12 +230,12 @@ function ClubsTableDesktop(props: Props) {
     manualPagination: true,
     manualSorting: true,
     onSortingChange: (u) => {
-      const next = typeof u === "function" ? u(sorting) : u;
+      const next = typeof u === 'function' ? u(sorting) : u;
       setSorting(next);
       setPageIndex(0);
     },
     onPaginationChange: (u) => {
-      const next = typeof u === "function" ? u({ pageIndex, pageSize }) : u;
+      const next = typeof u === 'function' ? u({ pageIndex, pageSize }) : u;
       setPageIndex(next.pageIndex ?? 0);
       setPageSize(next.pageSize ?? 12);
     },
@@ -218,13 +256,13 @@ function ClubsTableDesktop(props: Props) {
                 {hg.headers.map((header) => {
                   const sorted = header.column.getIsSorted();
                   const width = (header.column.columnDef.meta as any)?.width;
-                  const isActions = header.column.id === "actions";
+                  const isActions = header.column.id === 'actions';
                   return (
                     <TableCell key={header.id} sx={{ width }}>
                       {!isActions ? (
                         <TableSortLabel
                           active={!!sorted}
-                          direction={sorted === "asc" ? "asc" : sorted === "desc" ? "desc" : "asc"}
+                          direction={sorted === 'asc' ? 'asc' : sorted === 'desc' ? 'desc' : 'asc'}
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           {flexRender(header.column.columnDef.header, header.getContext())}
@@ -242,14 +280,18 @@ function ClubsTableDesktop(props: Props) {
             {rowModel.rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length} align="center">
-                  <Typography variant="body2" color="text.secondary">Nenhum clubinho encontrado.</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Nenhum clubinho encontrado.
+                  </Typography>
                 </TableCell>
               </TableRow>
             ) : (
               rowModel.rows.map((row) => (
                 <TableRow key={row.id} hover>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -264,7 +306,10 @@ function ClubsTableDesktop(props: Props) {
         page={pageIndex}
         onPageChange={(_, p) => setPageIndex(p)}
         rowsPerPage={pageSize}
-        onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPageIndex(0); }}
+        onRowsPerPageChange={(e) => {
+          setPageSize(parseInt(e.target.value, 10));
+          setPageIndex(0);
+        }}
         rowsPerPageOptions={[12, 24, 50]}
         labelRowsPerPage="Linhas por página:"
         labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}

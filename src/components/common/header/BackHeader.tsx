@@ -1,14 +1,7 @@
-import React from "react";
-import {
-  Box,
-  Typography,
-  IconButton,
-  Tooltip,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { Box, Typography, IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 type BackHeaderProps = {
   title: string;
@@ -16,21 +9,17 @@ type BackHeaderProps = {
   desktopFontSize?: string | number;
 };
 
-const BackHeader: React.FC<BackHeaderProps> = ({
-  title,
-  mobileFontSize,
-  desktopFontSize,
-}) => {
+const BackHeader: React.FC<BackHeaderProps> = ({ title, mobileFontSize, desktopFontSize }) => {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
 
   return isXs ? (
     <Box
       sx={{
         mb: 3,
-        display: "flex",
-        alignItems: "center",
+        display: 'flex',
+        alignItems: 'center',
         gap: 1,
       }}
     >
@@ -40,9 +29,9 @@ const BackHeader: React.FC<BackHeaderProps> = ({
           onClick={() => navigate(-1)}
           aria-label="Voltar para a página anterior"
           sx={{
-            bgcolor: "white",
+            bgcolor: 'white',
             boxShadow: 1,
-            "&:hover": { bgcolor: "grey.100" },
+            '&:hover': { bgcolor: 'grey.100' },
           }}
         >
           <ArrowBack />
@@ -53,7 +42,7 @@ const BackHeader: React.FC<BackHeaderProps> = ({
         variant="h6"
         fontWeight={700}
         sx={{
-          color: "#1a3c34",
+          color: '#1a3c34',
           flex: 1,
           fontSize: mobileFontSize ?? undefined,
         }}
@@ -68,7 +57,7 @@ const BackHeader: React.FC<BackHeaderProps> = ({
       textAlign="center"
       sx={{
         mb: 3,
-        color: "#1a3c34",
+        color: '#1a3c34',
         fontSize: desktopFontSize ?? undefined,
       }}
     >

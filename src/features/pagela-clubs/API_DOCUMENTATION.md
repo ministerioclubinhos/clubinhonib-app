@@ -24,13 +24,13 @@ Esta documentação descreve os 3 endpoints principais utilizados no dashboard d
 
 ### Query Parameters
 
-| Parâmetro | Tipo | Obrigatório | Padrão | Descrição |
-|-----------|------|-------------|--------|-----------|
-| `page` | number | Não | `1` | Número da página (mínimo: 1) |
-| `limit` | number | Não | `10` | Itens por página (mínimo: 1) |
-| `searchString` | string | Não | - | Busca por:<br>- **Número do clube** (se for número inteiro, ex: "82")<br>- **Bairro** (district)<br>- **Cidade** (city) |
-| `sort` | string | Não | `number` | Campo para ordenação:<br>- `number` (padrão)<br>- `weekday`<br>- `time`<br>- `createdAt`<br>- `updatedAt`<br>- `city`<br>- `state` |
-| `order` | string | Não | `ASC` | Ordem de classificação: `ASC` ou `DESC` |
+| Parâmetro      | Tipo   | Obrigatório | Padrão   | Descrição                                                                                                                          |
+| -------------- | ------ | ----------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `page`         | number | Não         | `1`      | Número da página (mínimo: 1)                                                                                                       |
+| `limit`        | number | Não         | `10`     | Itens por página (mínimo: 1)                                                                                                       |
+| `searchString` | string | Não         | -        | Busca por:<br>- **Número do clube** (se for número inteiro, ex: "82")<br>- **Bairro** (district)<br>- **Cidade** (city)            |
+| `sort`         | string | Não         | `number` | Campo para ordenação:<br>- `number` (padrão)<br>- `weekday`<br>- `time`<br>- `createdAt`<br>- `updatedAt`<br>- `city`<br>- `state` |
+| `order`        | string | Não         | `ASC`    | Ordem de classificação: `ASC` ou `DESC`                                                                                            |
 
 ### Exemplo de Requisição
 
@@ -129,14 +129,14 @@ GET /clubs?searchString=Manaus
 
 ### Query Parameters
 
-| Parâmetro | Tipo | Obrigatório | Padrão | Descrição |
-|-----------|------|-------------|--------|-----------|
-| `page` | number | Não | `1` | Número da página (mínimo: 1) |
-| `limit` | number | Não | `20` | Itens por página (mínimo: 1) |
-| `searchString` | string | Não | - | Busca por:<br>- Nome da criança<br>- Nome do responsável<br>- Número do responsável (telefone) |
-| `clubNumber` | number | Não | - | Filtrar por número do clube<br>**IMPORTANTE:** Quando usado, retorna apenas crianças ativas por padrão |
-| `orderBy` | string | Não | `name` | Campo para ordenação:<br>- `name` (padrão)<br>- `birthDate`<br>- `joinedAt`<br>- `createdAt` |
-| `order` | string | Não | `ASC` | Ordem de classificação: `ASC` ou `DESC` |
+| Parâmetro      | Tipo   | Obrigatório | Padrão | Descrição                                                                                              |
+| -------------- | ------ | ----------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| `page`         | number | Não         | `1`    | Número da página (mínimo: 1)                                                                           |
+| `limit`        | number | Não         | `20`   | Itens por página (mínimo: 1)                                                                           |
+| `searchString` | string | Não         | -      | Busca por:<br>- Nome da criança<br>- Nome do responsável<br>- Número do responsável (telefone)         |
+| `clubNumber`   | number | Não         | -      | Filtrar por número do clube<br>**IMPORTANTE:** Quando usado, retorna apenas crianças ativas por padrão |
+| `orderBy`      | string | Não         | `name` | Campo para ordenação:<br>- `name` (padrão)<br>- `birthDate`<br>- `joinedAt`<br>- `createdAt`           |
+| `order`        | string | Não         | `ASC`  | Ordem de classificação: `ASC` ou `DESC`                                                                |
 
 ### Exemplo de Requisição
 
@@ -228,14 +228,14 @@ GET /children?searchString=11987654321
 
 ### Query Parameters
 
-| Parâmetro | Tipo | Obrigatório | Padrão | Descrição |
-|-----------|------|-------------|--------|-----------|
-| `page` | number | Não | `1` | Número da página (mínimo: 1) |
-| `limit` | number | Não | `20` | Itens por página (mínimo: 1, máximo: 200) |
-| `childId` | UUID | Não | - | Filtrar por ID da criança |
-| `searchString` | string | Não | - | Busca por semana e ano:<br>- **Ano** (ex: "2025") - número entre 2000-9999<br>- **Semana** (ex: "48") - número entre 1-53<br>- **Ano-Semana** (ex: "2025-48") - formato "ano-semana" |
-| `year` | number | Não | - | Filtrar por ano letivo (mínimo: 2000, máximo: 9999) |
-| `week` | number | Não | - | Filtrar por semana do ano letivo (mínimo: 1, máximo: 53) |
+| Parâmetro      | Tipo   | Obrigatório | Padrão | Descrição                                                                                                                                                                            |
+| -------------- | ------ | ----------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `page`         | number | Não         | `1`    | Número da página (mínimo: 1)                                                                                                                                                         |
+| `limit`        | number | Não         | `20`   | Itens por página (mínimo: 1, máximo: 200)                                                                                                                                            |
+| `childId`      | UUID   | Não         | -      | Filtrar por ID da criança                                                                                                                                                            |
+| `searchString` | string | Não         | -      | Busca por semana e ano:<br>- **Ano** (ex: "2025") - número entre 2000-9999<br>- **Semana** (ex: "48") - número entre 1-53<br>- **Ano-Semana** (ex: "2025-48") - formato "ano-semana" |
+| `year`         | number | Não         | -      | Filtrar por ano letivo (mínimo: 2000, máximo: 9999)                                                                                                                                  |
+| `week`         | number | Não         | -      | Filtrar por semana do ano letivo (mínimo: 1, máximo: 53)                                                                                                                             |
 
 ### Exemplo de Requisição
 
@@ -436,4 +436,3 @@ GET /pagelas/paginated?childId=bf0b0946-adc6-45b9-8c8e-37deec9e6191&searchString
 ## 🆘 Suporte
 
 Para dúvidas ou problemas, consulte a documentação completa da API ou entre em contato com a equipe de desenvolvimento.
-

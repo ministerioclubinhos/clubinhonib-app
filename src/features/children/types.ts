@@ -10,7 +10,7 @@ export type ChildListItemDto = {
 export type ChildResponseDto = {
   id: string;
   name: string;
-  gender: "M" | "F";
+  gender: 'M' | 'F';
   guardianName: string;
   guardianPhone: string;
   birthDate: string;
@@ -35,7 +35,7 @@ export type ChildResponseDto = {
 
 export type AcceptedChristShortDto = {
   id: string;
-  decision: "ACCEPTED" | "RECONCILED" | null;
+  decision: 'ACCEPTED' | 'RECONCILED' | null;
   createdAt: string;
   updatedAt: string;
   notes?: string | null;
@@ -51,7 +51,6 @@ export type ChildSimpleResponseDto = {
   isActive: boolean;
   acceptedChrists: AcceptedChristShortDto[];
 };
-
 
 export type Paginated<T> = {
   data: T[];
@@ -79,13 +78,14 @@ export type ChildFilters = {
   isActive?: boolean;
 };
 
-export type ChildSort =
-  | { id: 'name' | 'birthDate' | 'joinedAt' | 'createdAt' | 'updatedAt'; desc: boolean }
-  | null;
+export type ChildSort = {
+  id: 'name' | 'birthDate' | 'joinedAt' | 'createdAt' | 'updatedAt';
+  desc: boolean;
+} | null;
 
 export type CreateChildForm = {
   name: string;
-  gender: "M" | "F";
+  gender: 'M' | 'F';
   guardianName: string;
   guardianPhone: string;
   birthDate: string;

@@ -1,7 +1,12 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Box, TextField, Button, Grid, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { setDocumentData, setMedia, clearDocumentData, clearMedia } from 'store/slices/documents/documentSlice';
+import {
+  setDocumentData,
+  setMedia,
+  clearDocumentData,
+  clearMedia,
+} from 'store/slices/documents/documentSlice';
 import { RootState } from 'store/slices';
 import { MediaItem, MediaType, MediaUploadType, MediaPlatform } from '../types';
 import DocumentMediaForm from './DocumentMediaForm';
@@ -28,7 +33,11 @@ const DocumentForm: React.FC<Props> = ({ isEditing, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [showMediaForm, setShowMediaForm] = useState(isEditing);
 
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error',
+  });
 
   useEffect(() => {
     if (isEditing && documentData) {
@@ -71,13 +80,42 @@ const DocumentForm: React.FC<Props> = ({ isEditing, onSuccess }) => {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim()) return setSnackbar({ open: true, message: 'O nome do documento é obrigatório.', severity: 'error' });
-    if (!description.trim()) return setSnackbar({ open: true, message: 'A descrição do documento é obrigatória.', severity: 'error' });
-    if (!mediaTitle.trim()) return setSnackbar({ open: true, message: 'O título da mídia é obrigatório.', severity: 'error' });
-    if (!uploadType) return setSnackbar({ open: true, message: 'O tipo de upload é obrigatório.', severity: 'error' });
-    if (uploadType === MediaUploadType.LINK && !url.trim()) return setSnackbar({ open: true, message: 'A URL da mídia é obrigatória.', severity: 'error' });
+    if (!name.trim())
+      return setSnackbar({
+        open: true,
+        message: 'O nome do documento é obrigatório.',
+        severity: 'error',
+      });
+    if (!description.trim())
+      return setSnackbar({
+        open: true,
+        message: 'A descrição do documento é obrigatória.',
+        severity: 'error',
+      });
+    if (!mediaTitle.trim())
+      return setSnackbar({
+        open: true,
+        message: 'O título da mídia é obrigatório.',
+        severity: 'error',
+      });
+    if (!uploadType)
+      return setSnackbar({
+        open: true,
+        message: 'O tipo de upload é obrigatório.',
+        severity: 'error',
+      });
+    if (uploadType === MediaUploadType.LINK && !url.trim())
+      return setSnackbar({
+        open: true,
+        message: 'A URL da mídia é obrigatória.',
+        severity: 'error',
+      });
     if (uploadType === MediaUploadType.UPLOAD && !file && (!isEditing || !mediaData?.isLocalFile))
-      return setSnackbar({ open: true, message: 'O arquivo da mídia é obrigatório.', severity: 'error' });
+      return setSnackbar({
+        open: true,
+        message: 'O arquivo da mídia é obrigatório.',
+        severity: 'error',
+      });
 
     setLoading(true);
     try {
@@ -132,32 +170,58 @@ const DocumentForm: React.FC<Props> = ({ isEditing, onSuccess }) => {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
-          <TextField fullWidth label="Nome do Documento" value={name} onChange={(e) => setName(e.target.value)} required />
+          <TextField
+            fullWidth
+            label="Nome do Documento"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField fullWidth label="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} multiline rows={2} required />
+          <TextField
+            fullWidth
+            label="Descrição"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            multiline
+            rows={2}
+            required
+          />
         </Grid>
 
         {!showMediaForm && !isEditing && (
           <Grid item xs={12}>
-            <Button variant="outlined" onClick={() => setShowMediaForm(true)}>Adicionar Documento</Button>
+            <Button variant="outlined" onClick={() => setShowMediaForm(true)}>
+              Adicionar Documento
+            </Button>
           </Grid>
         )}
 
         {showMediaForm && (
           <Fragment>
             <Grid item xs={12} display="flex" justifyContent="space-between" alignItems="center">
-              <Box component="h3" fontSize="1.25rem" fontWeight="bold">Mídia do Documento</Box>
-              <Button variant="text" color="error" onClick={clearMediaFields}>Remover</Button>
+              <Box component="h3" fontSize="1.25rem" fontWeight="bold">
+                Mídia do Documento
+              </Box>
+              <Button variant="text" color="error" onClick={clearMediaFields}>
+                Remover
+              </Button>
             </Grid>
 
             <DocumentMediaForm
-              mediaTitle={mediaTitle} setMediaTitle={setMediaTitle}
-              mediaDescription={mediaDescription} setMediaDescription={setMediaDescription}
-              uploadType={uploadType} setUploadType={setUploadType}
-              url={url} setUrl={setUrl}
-              platformType={platformType} setPlatformType={setPlatformType}
-              file={file} setFile={setFile}
+              mediaTitle={mediaTitle}
+              setMediaTitle={setMediaTitle}
+              mediaDescription={mediaDescription}
+              setMediaDescription={setMediaDescription}
+              uploadType={uploadType}
+              setUploadType={setUploadType}
+              url={url}
+              setUrl={setUrl}
+              platformType={platformType}
+              setPlatformType={setPlatformType}
+              file={file}
+              setFile={setFile}
             />
           </Fragment>
         )}
@@ -174,7 +238,11 @@ const DocumentForm: React.FC<Props> = ({ isEditing, onSuccess }) => {
         </Grid>
       </Grid>
 
-      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+      >
         <Alert severity={snackbar.severity} variant="filled">
           {snackbar.message}
         </Alert>

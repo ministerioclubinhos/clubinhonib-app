@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Card,
   CardContent,
@@ -11,25 +11,25 @@ import {
   Box,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
-import { Delete, Edit, EventNote } from "@mui/icons-material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import SpaIcon from "@mui/icons-material/Spa";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
-import type { Pagela } from "../types";
-import { toLabelWeek } from "../utils";
-import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+} from '@mui/material';
+import { Delete, Edit, EventNote } from '@mui/icons-material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SpaIcon from '@mui/icons-material/Spa';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import type { Pagela } from '../types';
+import { toLabelWeek } from '../utils';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 function formatPtBrDate(iso: string | null | undefined) {
-  if (!iso) return "—";
-  const [y, m, d] = iso.split("-").map(Number);
+  if (!iso) return '—';
+  const [y, m, d] = iso.split('-').map(Number);
   if (!y || !m || !d) return iso;
   const dt = new Date(Date.UTC(y, m - 1, d));
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
   }).format(dt);
 }
 
@@ -43,50 +43,50 @@ export default function PagelaCard({
   onDelete: (r: Pagela) => Promise<void>;
 }) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
 
   const chipMobileSx = {
-    width: "100%",
+    width: '100%',
     px: 0.5,
     height: 28,
     borderRadius: 2,
-    "& .MuiChip-label": {
+    '& .MuiChip-label': {
       px: 0.5,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
       fontWeight: 700,
-      fontSize: "0.75rem",
+      fontSize: '0.75rem',
     },
-    "& .MuiChip-icon": { mr: 0.5 },
+    '& .MuiChip-icon': { mr: 0.5 },
   } as const;
 
   const Chips = () =>
     isXs ? (
       <Box
         sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
           columnGap: 0.5,
-          width: "100%",
+          width: '100%',
         }}
       >
-        <Tooltip title={row.present ? "Presente" : "Ausente"}>
+        <Tooltip title={row.present ? 'Presente' : 'Ausente'}>
           <Chip
             size="small"
-            color={row.present ? "success" : "default"}
+            color={row.present ? 'success' : 'default'}
             icon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
-            label={row.present ? "Pres." : "Aus."}
+            label={row.present ? 'Pres.' : 'Aus.'}
             sx={chipMobileSx}
           />
         </Tooltip>
         <Tooltip title="Meditação">
           <Chip
             size="small"
-            color={row.didMeditation ? "success" : "default"}
+            color={row.didMeditation ? 'success' : 'default'}
             icon={<SpaIcon sx={{ fontSize: 16 }} />}
             label="Med."
             sx={chipMobileSx}
@@ -95,7 +95,7 @@ export default function PagelaCard({
         <Tooltip title="Versículo">
           <Chip
             size="small"
-            color={row.recitedVerse ? "success" : "default"}
+            color={row.recitedVerse ? 'success' : 'default'}
             icon={<MenuBookIcon sx={{ fontSize: 16 }} />}
             label="Vers."
             sx={chipMobileSx}
@@ -106,21 +106,21 @@ export default function PagelaCard({
       <Stack direction="row" spacing={0.75} flexWrap="wrap">
         <Chip
           size="small"
-          color={row.present ? "success" : "default"}
+          color={row.present ? 'success' : 'default'}
           icon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
-          label={row.present ? "Presente" : "Ausente"}
+          label={row.present ? 'Presente' : 'Ausente'}
           sx={{ fontWeight: 700 }}
         />
         <Chip
           size="small"
-          color={row.didMeditation ? "success" : "default"}
+          color={row.didMeditation ? 'success' : 'default'}
           icon={<SpaIcon sx={{ fontSize: 16 }} />}
           label="Meditação"
           sx={{ fontWeight: 700 }}
         />
         <Chip
           size="small"
-          color={row.recitedVerse ? "success" : "default"}
+          color={row.recitedVerse ? 'success' : 'default'}
           icon={<MenuBookIcon sx={{ fontSize: 16 }} />}
           label="Versículo"
           sx={{ fontWeight: 700 }}
@@ -136,17 +136,16 @@ export default function PagelaCard({
         variant="outlined"
         sx={{
           borderRadius: 4,
-          height: "100%",
-          overflow: "hidden",
-          transition: "transform .12s ease, box-shadow .12s ease",
-          "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
+          height: '100%',
+          overflow: 'hidden',
+          transition: 'transform .12s ease, box-shadow .12s ease',
+          '&:hover': { transform: 'translateY(-2px)', boxShadow: 4 },
         }}
       >
         <Box
           sx={{
             height: 6,
-            background:
-              "linear-gradient(90deg, #a0e3a2 0%, #b8d6ff 50%, #ffb8e6 100%)",
+            background: 'linear-gradient(90deg, #a0e3a2 0%, #b8d6ff 50%, #ffb8e6 100%)',
           }}
         />
         <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
@@ -155,10 +154,10 @@ export default function PagelaCard({
               <Typography
                 fontWeight={900}
                 sx={{
-                  display: "-webkit-box",
+                  display: '-webkit-box',
                   WebkitLineClamp: 1,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
                 }}
                 title={weekTitle}
               >
@@ -167,11 +166,7 @@ export default function PagelaCard({
 
               <Stack direction="row" spacing={0.5}>
                 <Tooltip title="Editar">
-                  <IconButton
-                    size="small"
-                    onClick={() => onEdit(row)}
-                    aria-label="Editar pagela"
-                  >
+                  <IconButton size="small" onClick={() => onEdit(row)} aria-label="Editar pagela">
                     <Edit fontSize="inherit" />
                   </IconButton>
                 </Tooltip>
@@ -191,7 +186,7 @@ export default function PagelaCard({
               direction="row"
               spacing={0.75}
               alignItems="center"
-              sx={{ color: "text.secondary" }}
+              sx={{ color: 'text.secondary' }}
             >
               <EventNote fontSize="small" />
               <Typography variant="caption">

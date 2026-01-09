@@ -9,12 +9,12 @@ interface DownloadButtonProps {
   fullWidth?: boolean;
 }
 
-export default function DownloadButton({ 
-  url, 
-  filename, 
-  disabled, 
+export default function DownloadButton({
+  url,
+  filename,
+  disabled,
   size = 'small',
-  fullWidth = false 
+  fullWidth = false,
 }: DownloadButtonProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

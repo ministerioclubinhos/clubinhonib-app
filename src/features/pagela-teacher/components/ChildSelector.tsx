@@ -1,9 +1,17 @@
-import * as React from "react";
+import * as React from 'react';
 import {
-  Autocomplete, Avatar, Box, CircularProgress, ListItem, ListItemAvatar,
-  ListItemText, TextField, Typography, Chip
-} from "@mui/material";
-import { ChildSimpleResponseDto } from "@/features/children/types";
+  Autocomplete,
+  Avatar,
+  Box,
+  CircularProgress,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  TextField,
+  Typography,
+  Chip,
+} from '@mui/material';
+import { ChildSimpleResponseDto } from '@/features/children/types';
 
 type Props = {
   loading: boolean;
@@ -42,27 +50,35 @@ export default function ChildSelector({ loading, items, value, onChange, onSearc
         />
       )}
       renderOption={(props, option) => (
-        <ListItem {...props} key={option.id} secondaryAction={
-          option.guardianPhone ? <Chip size="small" label={option.guardianPhone} /> : null
-        }>
+        <ListItem
+          {...props}
+          key={option.id}
+          secondaryAction={
+            option.guardianPhone ? <Chip size="small" label={option.guardianPhone} /> : null
+          }
+        >
           <ListItemAvatar>
-            <Avatar sx={{ bgcolor: "success.main", color: "#fff" }}>
-              {option.name?.charAt(0)?.toUpperCase() || "C"}
+            <Avatar sx={{ bgcolor: 'success.main', color: '#fff' }}>
+              {option.name?.charAt(0)?.toUpperCase() || 'C'}
             </Avatar>
           </ListItemAvatar>
           <ListItemText
-            primary={<Typography fontWeight={700} noWrap>{option.name}</Typography>}
+            primary={
+              <Typography fontWeight={700} noWrap>
+                {option.name}
+              </Typography>
+            }
             secondary={
               <Box component="span">
                 <Typography component="span" variant="body2" color="text.secondary" noWrap>
-                  Resp.: {option.guardianName || "—"}
+                  Resp.: {option.guardianName || '—'}
                 </Typography>
               </Box>
             }
           />
         </ListItem>
       )}
-      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
     />
   );
 }

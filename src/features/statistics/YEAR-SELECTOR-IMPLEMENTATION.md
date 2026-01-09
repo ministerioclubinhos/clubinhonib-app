@@ -9,15 +9,18 @@
 ## 📝 Contexto do Problema
 
 ### Situação Original
+
 O sistema está configurado com data de **2025** (conforme `date` command), mas o banco de dados possui dados de **2024**. Quando os usuários consultam estatísticas usando os atalhos rápidos (ex: "Este Mês"), o sistema corretamente calcula datas para **2025-12-01 a 2025-12-31**, o que retorna arrays vazios porque não há dados futuros.
 
 ### Análise Realizada
+
 1. ✅ **Backend**: Verificado e funcional - calcula períodos corretamente usando `new Date()`
 2. ✅ **Frontend**: Verificado e funcional - calcula períodos corretamente usando `new Date()`
 3. ✅ **Alinhamento**: Frontend 100% alinhado com backend
 4. ⚠️ **Descoberta**: Sistema está em 2025, mas dados estão em 2024
 
 ### Não é um Bug!
+
 O código está **100% correto**. Tanto frontend quanto backend usam corretamente `new Date()` para obter a data atual do sistema. O "problema" é temporal: o sistema está no futuro (2025) em relação aos dados (2024).
 
 ---
@@ -25,6 +28,7 @@ O código está **100% correto**. Tanto frontend quanto backend usam corretament
 ## 🎯 Solução Implementada
 
 ### Nova Funcionalidade: **Year Selector**
+
 Permite aos usuários selecionar o ano de consulta, possibilitando visualizar dados históricos mesmo quando o sistema está em um ano futuro.
 
 ---
@@ -32,11 +36,13 @@ Permite aos usuários selecionar o ano de consulta, possibilitando visualizar da
 ## 📁 Arquivos Criados/Modificados
 
 ### 1. **YearSelector.tsx** (NOVO)
+
 **Localização**: `/src/features/statistics/components/YearSelector.tsx`
 
 **Descrição**: Componente React para seleção de ano
 
 **Características**:
+
 - Dropdown de seleção de ano com Material-UI
 - Mostra os últimos N anos (padrão: 3)
 - Marca o ano atual com "(Atual)"
@@ -44,22 +50,22 @@ Permite aos usuários selecionar o ano de consulta, possibilitando visualizar da
 - Totalmente responsivo
 
 **Props**:
+
 ```typescript
 interface YearSelectorProps {
-  selectedYear: number;           // Ano atualmente selecionado
-  onYearChange: (year: number) => void;  // Callback quando o ano muda
-  yearsRange?: number;             // Quantos anos para trás (padrão: 3)
-  showLabel?: boolean;             // Mostrar label "Ano:" (padrão: true)
+  selectedYear: number; // Ano atualmente selecionado
+  onYearChange: (year: number) => void; // Callback quando o ano muda
+  yearsRange?: number; // Quantos anos para trás (padrão: 3)
+  showLabel?: boolean; // Mostrar label "Ano:" (padrão: true)
 }
 ```
 
 **Hook Exportado**:
+
 ```typescript
 export const useYearSelection = (initialYear?: number) => {
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = React.useState<number>(
-    initialYear || currentYear
-  );
+  const [selectedYear, setSelectedYear] = React.useState<number>(initialYear || currentYear);
   return {
     selectedYear,
     setSelectedYear,
@@ -69,6 +75,7 @@ export const useYearSelection = (initialYear?: number) => {
 ```
 
 **Exemplo de Uso**:
+
 ```tsx
 import { YearSelector, useYearSelection } from './YearSelector';
 
@@ -89,28 +96,32 @@ function MyComponent() {
 ---
 
 ### 2. **QuickFilters.tsx** (MODIFICADO)
+
 **Localização**: `/src/features/statistics/components/QuickFilters.tsx`
 
 **Mudanças**:
 
 #### a) Imports adicionados:
+
 ```typescript
 import { YearSelector } from './YearSelector';
 import { Divider } from '@mui/material';
 ```
 
 #### b) Props expandidas:
+
 ```typescript
 interface QuickFiltersProps {
   onSelectFilter: (filters: StatisticsFilters) => void;
   currentFilters?: StatisticsFilters;
-  showYearSelector?: boolean;  // ⭐ NOVO - controla exibição do year selector
-  selectedYear?: number;        // ⭐ NOVO - ano selecionado (controlado)
-  onYearChange?: (year: number) => void;  // ⭐ NOVO - callback de mudança
+  showYearSelector?: boolean; // ⭐ NOVO - controla exibição do year selector
+  selectedYear?: number; // ⭐ NOVO - ano selecionado (controlado)
+  onYearChange?: (year: number) => void; // ⭐ NOVO - callback de mudança
 }
 ```
 
 #### c) Estado e lógica adicionados:
+
 ```typescript
 const [internalYear, setInternalYear] = React.useState(new Date().getFullYear());
 
@@ -125,22 +136,25 @@ const effectiveYear = selectedYear || internalYear;
 ```
 
 #### d) UI modificada:
+
 ```tsx
-<Box sx={{
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',  // ⭐ NOVO - distribui título e year selector
-  mb: { xs: 1.5, sm: 2 },
-  flexWrap: 'wrap',
-  gap: 1
-}}>
+<Box
+  sx={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between', // ⭐ NOVO - distribui título e year selector
+    mb: { xs: 1.5, sm: 2 },
+    flexWrap: 'wrap',
+    gap: 1,
+  }}
+>
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
     <EventAvailable sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.text.secondary }} />
     <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
       Atalhos Rápidos
     </Typography>
   </Box>
-  {showYearSelector && (  // ⭐ NOVO - renderização condicional
+  {showYearSelector && ( // ⭐ NOVO - renderização condicional
     <YearSelector
       selectedYear={effectiveYear}
       onYearChange={handleYearChange}
@@ -152,6 +166,7 @@ const effectiveYear = selectedYear || internalYear;
 ```
 
 **Comportamento**:
+
 - Por padrão, `showYearSelector={true}` (exibe o seletor)
 - Pode ser usado de forma controlada (passando `selectedYear` e `onYearChange`)
 - Ou não-controlada (usando estado interno)
@@ -160,14 +175,17 @@ const effectiveYear = selectedYear || internalYear;
 ---
 
 ### 3. **index.ts** (MODIFICADO)
+
 **Localização**: `/src/features/statistics/components/index.ts`
 
 **Mudança**:
+
 ```typescript
 export { YearSelector, useYearSelection } from './YearSelector';
 ```
 
 **Motivo**: Permite importação simplificada do componente em qualquer lugar do app:
+
 ```typescript
 import { YearSelector, useYearSelection } from '@/features/statistics/components';
 ```
@@ -177,17 +195,20 @@ import { YearSelector, useYearSelection } from '@/features/statistics/components
 ## 🎨 Design e UX
 
 ### Visual
+
 - Integrado harmoniosamente ao design existente
 - Usa Material-UI consistente com o resto do app
 - Ícone de calendário para indicação visual clara
 - Marca o ano atual com "(Atual)"
 
 ### Responsividade
+
 - Layout flex com `flexWrap: 'wrap'`
 - Em telas pequenas, o year selector vai para linha seguinte
 - Tamanhos de fonte e espaçamentos adaptados para mobile
 
 ### Posicionamento
+
 - Alinhado à direita do título "Atalhos Rápidos"
 - `justifyContent: 'space-between'` distribui bem o espaço
 - Não interfere com os botões de filtro rápido
@@ -197,6 +218,7 @@ import { YearSelector, useYearSelection } from '@/features/statistics/components
 ## 🔧 Integração Técnica
 
 ### Como Funciona
+
 1. **Estado de Ano**: Componente pai mantém controle do ano selecionado
 2. **Mudança de Ano**: Quando o usuário muda o ano, o callback `onYearChange` é chamado
 3. **Responsabilidade**: O componente pai deve recalcular os filtros para o ano selecionado
@@ -205,6 +227,7 @@ import { YearSelector, useYearSelection } from '@/features/statistics/components
 ### Padrão de Uso Recomendado
 
 #### Opção 1: Controlled (Recomendado para páginas principais)
+
 ```tsx
 function OverviewPage() {
   const { selectedYear, setSelectedYear } = useYearSelection();
@@ -213,7 +236,7 @@ function OverviewPage() {
   const handleYearChange = (year: number) => {
     setSelectedYear(year);
     // Opcional: recalcular filtros para o novo ano
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       year: year,
     }));
@@ -232,6 +255,7 @@ function OverviewPage() {
 ```
 
 #### Opção 2: Uncontrolled (Rápido para testes)
+
 ```tsx
 function SimplePage() {
   const [filters, setFilters] = React.useState<StatisticsFilters>({});
@@ -252,12 +276,15 @@ function SimplePage() {
 ## ✅ Validação
 
 ### Testes de Compilação TypeScript
+
 ```bash
 npx tsc --noEmit
 ```
+
 **Resultado**: ✅ Nenhum erro relacionado a `YearSelector.tsx` ou `QuickFilters.tsx`
 
 ### Arquivos Verificados
+
 - ✅ `YearSelector.tsx` - Compilação OK
 - ✅ `QuickFilters.tsx` - Compilação OK
 - ✅ `index.ts` - Export OK
@@ -268,6 +295,7 @@ npx tsc --noEmit
 ## 📊 Impacto
 
 ### Benefícios
+
 1. **Acesso a Dados Históricos**: Usuários podem consultar estatísticas de anos anteriores
 2. **UX Melhorada**: Solução visual clara para o "problema" de dados vazios
 3. **Flexibilidade**: Componente reutilizável em múltiplas páginas
@@ -276,6 +304,7 @@ npx tsc --noEmit
 ### Casos de Uso Práticos
 
 #### 1. Consultar dados de 2024 em 2025
+
 ```
 Usuário seleciona: Ano 2024
 Clica em: "Este Mês"
@@ -284,6 +313,7 @@ Resultado: Dados de dezembro/2024 são exibidos
 ```
 
 #### 2. Comparar anos
+
 ```
 Usuário vê dados de 2024
 Muda para 2023
@@ -291,6 +321,7 @@ Compara estatísticas ano a ano
 ```
 
 #### 3. Relatórios anuais
+
 ```
 Usuário seleciona: Ano 2024
 Clica em: "Este Ano"
@@ -303,12 +334,14 @@ Exibe: Gráfico mensal de todo 2024
 ## 🚀 Próximos Passos (Opcional)
 
 ### Para Implementadores
+
 1. **Integrar em outras páginas**: Adicionar `YearSelector` em páginas de listagem (Children, Clubs, Teachers)
 2. **Persistência**: Salvar ano selecionado em localStorage ou query params
 3. **Integração com PeriodFilter**: Combinar year selector com period filter para experiência completa
 4. **Analytics**: Rastrear uso do year selector para entender comportamento do usuário
 
 ### Exemplo de Integração Completa
+
 ```tsx
 import { QuickFilters, PeriodFilter, useYearSelection } from '@/features/statistics/components';
 

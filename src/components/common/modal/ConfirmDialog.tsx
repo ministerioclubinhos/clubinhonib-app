@@ -1,9 +1,16 @@
-import * as React from "react";
+import * as React from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, Typography, IconButton, Box, CircularProgress
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  IconButton,
+  Box,
+  CircularProgress,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 export type ConfirmDialogProps = {
   open: boolean;
@@ -12,9 +19,9 @@ export type ConfirmDialogProps = {
   children?: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
-  confirmColor?: "primary" | "secondary" | "success" | "error" | "warning" | "info" | "inherit";
-  confirmVariant?: "contained" | "outlined" | "text";
-  cancelVariant?: "text" | "outlined" | "contained";
+  confirmColor?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info' | 'inherit';
+  confirmVariant?: 'contained' | 'outlined' | 'text';
+  cancelVariant?: 'text' | 'outlined' | 'contained';
   onConfirm: () => void | Promise<unknown>;
   onClose: () => void;
   loading?: boolean;
@@ -22,7 +29,7 @@ export type ConfirmDialogProps = {
   disableBackdropClose?: boolean;
   disableEscapeKeyDown?: boolean;
   fullWidth?: boolean;
-  maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   showCloseIcon?: boolean;
   startAdornment?: React.ReactNode;
   titleSx?: any;
@@ -35,11 +42,11 @@ export default function ConfirmDialog({
   title,
   content,
   children,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
-  confirmColor = "primary",
-  confirmVariant = "contained",
-  cancelVariant = "text",
+  confirmText = 'Confirmar',
+  cancelText = 'Cancelar',
+  confirmColor = 'primary',
+  confirmVariant = 'contained',
+  cancelVariant = 'text',
   onConfirm,
   onClose,
   loading,
@@ -47,7 +54,7 @@ export default function ConfirmDialog({
   disableBackdropClose,
   disableEscapeKeyDown,
   fullWidth = true,
-  maxWidth = "xs",
+  maxWidth = 'xs',
   showCloseIcon = true,
   startAdornment,
   titleSx,
@@ -58,17 +65,17 @@ export default function ConfirmDialog({
 
   const isLoading = loading ?? internalLoading;
 
-  const handleClose = (_: any, reason?: "backdropClick" | "escapeKeyDown") => {
-    if (isLoading) return; 
-    if (disableBackdropClose && reason === "backdropClick") return;
-    if (disableEscapeKeyDown && reason === "escapeKeyDown") return;
+  const handleClose = (_: any, reason?: 'backdropClick' | 'escapeKeyDown') => {
+    if (isLoading) return;
+    if (disableBackdropClose && reason === 'backdropClick') return;
+    if (disableEscapeKeyDown && reason === 'escapeKeyDown') return;
     onClose();
   };
 
   const handleConfirm = async () => {
     try {
       const result = onConfirm?.();
-      const isPromise = result && typeof (result as any).then === "function";
+      const isPromise = result && typeof (result as any).then === 'function';
       if (loading === undefined && isPromise) {
         setInternalLoading(true);
         await (result as Promise<unknown>);
@@ -92,9 +99,11 @@ export default function ConfirmDialog({
     >
       {!!title && (
         <DialogTitle sx={{ pr: showCloseIcon ? 6 : 3, ...titleSx }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {startAdornment}
-            <Typography variant="h6" component="div">{title}</Typography>
+            <Typography variant="h6" component="div">
+              {title}
+            </Typography>
           </Box>
 
           {showCloseIcon && (
@@ -103,7 +112,7 @@ export default function ConfirmDialog({
               onClick={onClose}
               edge="end"
               disabled={isLoading}
-              sx={{ position: "absolute", right: 8, top: 8 }}
+              sx={{ position: 'absolute', right: 8, top: 8 }}
             >
               <CloseIcon />
             </IconButton>
@@ -114,19 +123,23 @@ export default function ConfirmDialog({
       {(content || children) && (
         <DialogContent sx={{ pt: title ? 1 : 2, ...contentSx }}>
           {content ? (
-            typeof content === "string"
-              ? <Typography>{content}</Typography>
-              : content
-          ) : children}
+            typeof content === 'string' ? (
+              <Typography>{content}</Typography>
+            ) : (
+              content
+            )
+          ) : (
+            children
+          )}
         </DialogContent>
       )}
 
-      <DialogActions sx={{ justifyContent: "flex-end", gap: 1, ...actionsSx }}>
+      <DialogActions sx={{ justifyContent: 'flex-end', gap: 1, ...actionsSx }}>
         <Button
           onClick={onClose}
           variant={cancelVariant}
           disabled={isLoading}
-          sx={{ color: cancelVariant === "text" ? "#757575" : undefined }}
+          sx={{ color: cancelVariant === 'text' ? '#757575' : undefined }}
         >
           {cancelText}
         </Button>

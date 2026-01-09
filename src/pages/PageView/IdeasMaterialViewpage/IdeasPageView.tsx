@@ -76,7 +76,7 @@ function MediaSection({
     icon,
     items,
     color,
-    emoji
+    emoji,
   }: {
     type: string;
     icon: React.ReactNode;
@@ -98,7 +98,7 @@ function MediaSection({
           transition: 'all 0.3s ease',
           '&:hover': {
             boxShadow: '0 3px 12px rgba(0,0,0,0.15)',
-          }
+          },
         }}
       >
         <CardContent sx={{ p: { xs: '5px', sm: 2, md: 3 } }}>
@@ -130,7 +130,9 @@ function MediaSection({
                     color: color,
                   }}
                 >
-                  {emoji} {type === 'videos' ? 'Vídeos' : type === 'documents' ? 'Documentos' : 'Imagens'} ({items.length})
+                  {emoji}{' '}
+                  {type === 'videos' ? 'Vídeos' : type === 'documents' ? 'Documentos' : 'Imagens'} (
+                  {items.length})
                 </Typography>
               </Box>
               <Chip
@@ -160,20 +162,9 @@ function MediaSection({
 
           <Collapse in={isExpanded} timeout="auto" unmountOnExit>
             <Divider sx={{ my: { xs: '5px', sm: 2 } }} />
-            <Grid
-              container
-              spacing={{ xs: 1, sm: 2, md: 3 }}
-              sx={{ mt: { xs: '5px', sm: 1 } }}
-            >
+            <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} sx={{ mt: { xs: '5px', sm: 1 } }}>
               {items.map((item, index) => (
-                <Grid
-                  item
-                  xs={12}
-                  sm={6}
-                  md={4}
-                  lg={3}
-                  key={item.id || index}
-                >
+                <Grid item xs={12} sm={6} md={4} lg={3} key={item.id || index}>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -190,7 +181,7 @@ function MediaSection({
                         transition: 'all 0.3s ease',
                         '&:hover': {
                           boxShadow: '0 3px 12px rgba(0,0,0,0.15)',
-                        }
+                        },
                       }}
                     >
                       {type === 'videos' && <IdeasVideoPlayerView video={item} />}
@@ -399,12 +390,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
           background: 'linear-gradient(180deg, #e3f2fd 0%, #bbdefb 100%)',
         }}
       >
-        <Typography
-          variant="h5"
-          align="center"
-          color="text.secondary"
-          sx={{ maxWidth: 400 }}
-        >
+        <Typography variant="h5" align="center" color="text.secondary" sx={{ maxWidth: 400 }}>
           Nenhuma página de ideias encontrada.
         </Typography>
       </Box>
@@ -432,7 +418,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
           whileHover={{
             scale: 1.02,
             boxShadow: '0 12px 40px rgba(33, 150, 243, 0.2)',
-            transition: { duration: 0.3 }
+            transition: { duration: 0.3 },
           }}
           transition={{ duration: 0.3 }}
         >
@@ -452,11 +438,19 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
                 '& .pulse-circle': {
                   transform: 'scale(1.2)',
                   opacity: 0.8,
-                }
+                },
               },
             }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, position: 'relative', zIndex: 10 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                mb: 2,
+                position: 'relative',
+                zIndex: 10,
+              }}
+            >
               <IconButton
                 onClick={handleBack}
                 sx={{
@@ -518,7 +512,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
                 transition={{
                   duration: 4,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
                 style={{
                   position: 'absolute',
@@ -540,8 +534,8 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
                 transition={{
                   duration: 3.5,
                   repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1
+                  ease: 'easeInOut',
+                  delay: 1,
                 }}
                 style={{
                   position: 'absolute',
@@ -560,13 +554,13 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
                   background: [
                     'linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%)',
                     'linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                    'linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%)'
-                  ]
+                    'linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                  ],
                 }}
                 transition={{
                   duration: 6,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
                 style={{
                   position: 'absolute',
@@ -629,15 +623,17 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
         </motion.div>
       </motion.div>
 
-      <Box sx={{
-        flex: 1,
-        p: { xs: 2, md: 4 },
-        bgcolor: 'background.default',
-        borderRadius: '24px 24px 0 0',
-        position: 'relative',
-        zIndex: 1,
-        minHeight: 'calc(100vh - 200px)',
-      }}>
+      <Box
+        sx={{
+          flex: 1,
+          p: { xs: 2, md: 4 },
+          bgcolor: 'background.default',
+          borderRadius: '24px 24px 0 0',
+          position: 'relative',
+          zIndex: 1,
+          minHeight: 'calc(100vh - 200px)',
+        }}
+      >
         <Container
           maxWidth="xl"
           sx={{

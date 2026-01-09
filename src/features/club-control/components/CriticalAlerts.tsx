@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Alert,
-  AlertTitle,
-  Typography,
-  Chip,
-  Stack,
-  useTheme,
-} from '@mui/material';
+import { Box, Alert, AlertTitle, Typography, Chip, Stack, useTheme } from '@mui/material';
 import { Cancel } from '@mui/icons-material';
 
 interface CriticalAlert {
@@ -63,4 +55,3 @@ export const CriticalAlerts: React.FC<CriticalAlertsProps> = ({ alerts }) => {
     </Box>
   );
 };
-

@@ -43,5 +43,6 @@ const imageSectionPaginationSlice = createSlice({
   },
 });
 
-export const { setSectionData, appendSections, updatePagination } = imageSectionPaginationSlice.actions;
+export const { setSectionData, appendSections, updatePagination } =
+  imageSectionPaginationSlice.actions;
 export default imageSectionPaginationSlice.reducer;

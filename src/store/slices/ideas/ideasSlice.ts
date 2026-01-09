@@ -53,5 +53,6 @@ const ideasSlice = createSlice({
   },
 });
 
-export const { setIdeasData, clearIdeasData, setIdeasSectionData, clearIdeasSectionData } = ideasSlice.actions;
+export const { setIdeasData, clearIdeasData, setIdeasSectionData, clearIdeasSectionData } =
+  ideasSlice.actions;
 export default ideasSlice.reducer;

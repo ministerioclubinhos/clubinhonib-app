@@ -21,7 +21,9 @@ export default function MediaPreviewDialog({ mediaUrl, onClose }: Props) {
           />
         </Box>
       </DialogContent>
-      <DialogActions><Button onClick={onClose}>Fechar</Button></DialogActions>
+      <DialogActions>
+        <Button onClick={onClose}>Fechar</Button>
+      </DialogActions>
     </Dialog>
   );
 }

@@ -29,6 +29,7 @@
 ### 1. **Integração com Período Letivo** ⭐ CRÍTICO
 
 #### Impacto nas Estatísticas
+
 ```
 ❌ ANTES (v2.3.0): Estatísticas calculadas sobre ano inteiro
    - weeksExpected = 52 semanas
@@ -43,6 +44,7 @@
 ```
 
 #### Tabela: academic_periods
+
 ```
 - SEM club_id (GLOBAL)
 - year UNIQUE
@@ -54,6 +56,7 @@
 ### 2. **Exceções Globais Integradas** ⭐ CRÍTICO
 
 #### Impacto nas Estatísticas
+
 ```
 ❌ ANTES (v2.3.0): Exceções não consideradas
    - weeksExpected = 40 semanas
@@ -68,6 +71,7 @@
 ```
 
 #### Tabela: weekday_exceptions
+
 ```
 - SEM club_id (GLOBAL)
 - exceptionDate UNIQUE
@@ -77,6 +81,7 @@
 ```
 
 #### Exemplo Prático Real
+
 ```
 Ano: 2024
 Período Letivo: 05/02 a 15/12 = 40 semanas
@@ -84,7 +89,7 @@ Exceções (feriados): 5 datas
 
 weeksExpected = 35 semanas ✅
 - Não conta: janeiro (antes do período)
-- Não conta: férias dezembro (após período)  
+- Não conta: férias dezembro (após período)
 - Não conta: 5 feriados (exceções)
 
 Se clube lançou 33 pagelas:
@@ -111,6 +116,7 @@ Estatísticas (statistics)     ←→  Controle (club-control)
 ### 3. **Endpoints Atualizados**
 
 #### Backend de Controle (GLOBAL)
+
 ```typescript
 // Períodos GLOBAIS
 GET  /club-control/periods              // Todos períodos
@@ -124,6 +130,7 @@ POST /club-control/exceptions           // Criar exceção global
 ```
 
 #### Backend de Estatísticas (por clube)
+
 ```typescript
 // Análise de Frequência (respeita períodos e exceções GLOBAIS)
 GET /statistics/attendance/club/:id     // Timeline anual
@@ -135,21 +142,23 @@ GET /statistics/attendance/week         // Grid semanal
 ### 4. **Hooks do Frontend**
 
 #### Hooks de Controle (GLOBAL)
+
 ```typescript
 // Períodos
-useAcademicPeriods()          // Listar TODOS períodos
-usePeriodByYear(year)         // Período específico
+useAcademicPeriods(); // Listar TODOS períodos
+usePeriodByYear(year); // Período específico
 
 // Exceções
-useWeekdayExceptions(params)  // Listar TODAS exceções
-useExceptionByDate(date)      // Exceção específica
+useWeekdayExceptions(params); // Listar TODAS exceções
+useExceptionByDate(date); // Exceção específica
 ```
 
 #### Hooks de Estatísticas (por clube)
+
 ```typescript
 // Análise que RESPEITA períodos/exceções globais
-useClubAttendance(clubId, {year, startDate, endDate})
-useWeeklyAttendance({year, week})
+useClubAttendance(clubId, { year, startDate, endDate });
+useWeeklyAttendance({ year, week });
 ```
 
 ---
@@ -157,6 +166,7 @@ useWeeklyAttendance({year, week})
 ## 📋 Regras de Negócio
 
 ### 1. Período Letivo GLOBAL
+
 ```
 ✅ UM período por ano para TODOS os clubes
 ✅ Cadastrado uma vez no módulo de controle
@@ -166,6 +176,7 @@ useWeeklyAttendance({year, week})
 ```
 
 ### 2. Exceções GLOBAIS
+
 ```
 ✅ UMA exceção por data para TODOS
 ✅ Se 15/11 (quarta) → TODOS clubes de quarta não funcionam
@@ -175,6 +186,7 @@ useWeeklyAttendance({year, week})
 ```
 
 ### 3. Funcionamento Semanal
+
 ```
 ✅ Clubes funcionam 1x por semana (seg-sáb)
 ✅ NUNCA domingo
@@ -184,6 +196,7 @@ useWeeklyAttendance({year, week})
 ```
 
 ### 4. Sistema de Alertas
+
 ```
 ℹ️  INFO      → Informações gerais
 ⚠️  WARNING   → 1-3 semanas faltantes
@@ -195,6 +208,7 @@ useWeeklyAttendance({year, week})
 ## 🎯 Fluxo Completo
 
 ### 1. Configuração (Módulo de Controle)
+
 ```bash
 # Admin cadastra período GLOBAL
 POST /club-control/periods
@@ -217,6 +231,7 @@ POST /club-control/exceptions
 ```
 
 ### 2. Análise (Módulo de Estatísticas)
+
 ```bash
 # Ver timeline de clube (respeita período e exceções)
 GET /statistics/attendance/club/uuid?year=2024
@@ -240,6 +255,7 @@ Response:
 ```
 
 ### 3. Verificação (Módulo de Controle)
+
 ```bash
 # Dashboard tempo real
 GET /club-control/dashboard
@@ -270,10 +286,11 @@ Response:
 ## 📊 Componentes Atualizados
 
 ### ClubAttendanceTimeline
+
 ```typescript
 // Usa período e exceções GLOBAIS
 const { data } = useClubAttendance(clubId, {
-  year: 2024
+  year: 2024,
 });
 
 // Exibe:
@@ -284,11 +301,12 @@ const { data } = useClubAttendance(clubId, {
 ```
 
 ### WeeklyAttendanceGrid
+
 ```typescript
 // Respeita exceções GLOBAIS
 const { data } = useWeeklyAttendance({
   year: 2024,
-  week: 45
+  week: 45,
 });
 
 // Exibe:
@@ -304,29 +322,22 @@ const { data } = useWeeklyAttendance({
 ### Mensagens ao Usuário
 
 #### No Componente de Frequência
+
 ```tsx
 <Alert severity="info">
   <Typography variant="body2" fontWeight="bold">
     ⚠️ PERÍODOS E EXCEÇÕES GLOBAIS
   </Typography>
-  <Typography variant="caption">
-    • Período letivo é GLOBAL para todos os clubes
-  </Typography>
-  <Typography variant="caption">
-    • Exceções (feriados) afetam TODOS os clubes
-  </Typography>
-  <Typography variant="caption">
-    • Configure no Módulo de Controle
-  </Typography>
+  <Typography variant="caption">• Período letivo é GLOBAL para todos os clubes</Typography>
+  <Typography variant="caption">• Exceções (feriados) afetam TODOS os clubes</Typography>
+  <Typography variant="caption">• Configure no Módulo de Controle</Typography>
 </Alert>
 ```
 
 #### Link para Módulo de Controle
+
 ```tsx
-<Button
-  variant="outlined"
-  onClick={() => navigate('/adm/controle-clubes')}
->
+<Button variant="outlined" onClick={() => navigate('/adm/controle-clubes')}>
   ⚙️ Gerenciar Períodos e Exceções
 </Button>
 ```
@@ -336,6 +347,7 @@ const { data } = useWeeklyAttendance({
 ## 🔗 Links Entre Módulos
 
 ### De Estatísticas → Controle
+
 ```tsx
 // Ao ver semana faltante
 <Button onClick={() => navigate('/adm/controle-clubes')}>
@@ -349,11 +361,16 @@ const { data } = useWeeklyAttendance({
 ```
 
 ### De Controle → Estatísticas
+
 ```tsx
 // Ao ver clube com problemas
-<Button onClick={() => navigate('/adm/estatisticas', {
-  state: { tab: 'frequencia', clubId }
-})}>
+<Button
+  onClick={() =>
+    navigate('/adm/estatisticas', {
+      state: { tab: 'frequencia', clubId },
+    })
+  }
+>
   Ver Histórico Completo
 </Button>
 ```
@@ -363,22 +380,26 @@ const { data } = useWeeklyAttendance({
 ## ✅ Checklist de Sincronização
 
 ### Documentação
+
 - [x] ✅ README.md atualizado
 - [x] ✅ GLOBAL_SYNC.md criado
 - [x] ✅ Integração documentada
 - [x] ✅ Regras de negócio explicadas
 
 ### API e Hooks
+
 - [x] ✅ Hooks de controle importados
 - [x] ✅ Endpoints corretos documentados
 - [x] ✅ Estrutura GLOBAL reconhecida
 
 ### Componentes
+
 - [x] ✅ ClubAttendanceTimeline respeita GLOBAL
 - [x] ✅ WeeklyAttendanceGrid respeita GLOBAL
 - [x] ✅ Mensagens informativas adicionadas
 
 ### Links
+
 - [x] ✅ Navegação entre módulos
 - [x] ✅ Botões de acesso rápido
 - [x] ✅ Context compartilhado se necessário
@@ -388,6 +409,7 @@ const { data } = useWeeklyAttendance({
 ## 🎉 Benefícios da Sincronização
 
 ### Antes (Estrutura por Clube)
+
 ```
 ❌ 12 clubes × 1 período = 12 cadastros
 ❌ 12 clubes × 10 feriados = 120 cadastros
@@ -397,6 +419,7 @@ const { data } = useWeeklyAttendance({
 ```
 
 ### Depois (Estrutura GLOBAL)
+
 ```
 ✅ 1 período global = 1 cadastro
 ✅ 10 feriados globais = 10 cadastros
@@ -411,12 +434,14 @@ const { data } = useWeeklyAttendance({
 ## 📚 Documentação Relacionada
 
 ### Módulo de Controle
+
 - `../club-control/README.md` - Documentação completa
 - `../club-control/SYNC_COMPLETE.md` - Status de sincronização
 - `../club-control/api.ts` - API endpoints (GLOBAL)
 - `../club-control/hooks.ts` - React Query hooks
 
 ### Módulo de Estatísticas
+
 - `./README.md` - Este arquivo (atualizado)
 - `./INTEGRATION_GUIDE.md` - Guia de integração
 - `./COMPLETE_IMPLEMENTATION.md` - Implementação completa
@@ -439,7 +464,7 @@ const { data } = useWeeklyAttendance({
 
 **Desenvolvido com 💙 para o Clubinho NIB**
 
-*Estatísticas + Controle = Gestão Completa e Eficiente!* ✨
+_Estatísticas + Controle = Gestão Completa e Eficiente!_ ✨
 
 ---
 
@@ -447,5 +472,3 @@ const { data } = useWeeklyAttendance({
 **Status**: ✅ 100% SINCRONIZADO  
 **Estrutura**: ⚡ GLOBAL (períodos e exceções)  
 **Data**: 06/11/2024
-
-

@@ -1,8 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions,
-  Stack, Button, IconButton, Divider, Paper, Grid, useMediaQuery
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stack,
+  Button,
+  IconButton,
+  Divider,
+  Paper,
+  Grid,
+  useMediaQuery,
 } from '@mui/material';
 import { Close, ContentCopy } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
@@ -65,14 +76,21 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
                 Informações Gerais
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 4 }}>
-                <Grid container spacing={2} sx={{ maxWidth: 800, width: '100%', px: { xs: 2, md: 0 } }}>
+                <Grid
+                  container
+                  spacing={2}
+                  sx={{ maxWidth: 800, width: '100%', px: { xs: 2, md: 0 } }}
+                >
                   <Grid item xs={12} md={6}>
                     <Typography variant="body1" sx={{ color: '#333', wordBreak: 'break-word' }}>
                       <strong>Título:</strong> {page.title || 'Sem Título'}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body1" sx={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    <Typography
+                      variant="body1"
+                      sx={{ color: '#333', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                    >
                       <strong>Descrição:</strong> {page.description || 'Sem Descrição'}
                     </Typography>
                   </Grid>
@@ -99,7 +117,13 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
 
             {(page.sections?.length ?? 0) > 0 && (
               <Box sx={{ width: { xs: '98%', md: '95%' }, mx: 'auto' }}>
-                <Typography variant="h6" fontWeight="bold" color="primary" textAlign="center" mb={2}>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  color="primary"
+                  textAlign="center"
+                  mb={2}
+                >
                   Seções
                 </Typography>
                 <Stack spacing={4}>
@@ -108,46 +132,93 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
                       <Grid item xs={12} md={6} key={section.id}>
                         <Paper
                           elevation={2}
-                          sx={{ p: 3, borderRadius: 3, bgcolor: '#fff', height: '100%', display: 'flex', flexDirection: 'column' }}
+                          sx={{
+                            p: 3,
+                            borderRadius: 3,
+                            bgcolor: '#fff',
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                          }}
                         >
-                          <Typography variant="h6" fontWeight="medium" color="#333" textAlign="center" mb={2}>
+                          <Typography
+                            variant="h6"
+                            fontWeight="medium"
+                            color="#333"
+                            textAlign="center"
+                            mb={2}
+                          >
                             {section.caption || 'Sem Título'}
                           </Typography>
 
                           <Stack spacing={1.5}>
-                            <Typography variant="body1" sx={{ color: '#333', whiteSpace: 'pre-wrap' }}>
+                            <Typography
+                              variant="body1"
+                              sx={{ color: '#333', whiteSpace: 'pre-wrap' }}
+                            >
                               <strong>Descrição:</strong> {section.description || 'Sem Descrição'}
                             </Typography>
                             <Typography variant="body1" sx={{ color: '#333' }}>
-                              <strong>Visibilidade:</strong> {section.public ? 'Pública' : 'Privada'}
+                              <strong>Visibilidade:</strong>{' '}
+                              {section.public ? 'Pública' : 'Privada'}
                             </Typography>
                             <Typography variant="body1" sx={{ color: '#333' }}>
-                            <strong>Criado em:</strong> {fmtDate(section.createdAt)}
+                              <strong>Criado em:</strong> {fmtDate(section.createdAt)}
                             </Typography>
                             <Typography variant="body1" sx={{ color: '#333' }}>
-                            <strong>Atualizado em:</strong> {fmtDate(section.updatedAt)}
+                              <strong>Atualizado em:</strong> {fmtDate(section.updatedAt)}
                             </Typography>
                           </Stack>
 
                           {(section.mediaItems?.length ?? 0) > 0 && (
                             <Box mt={3}>
-                              <Typography variant="subtitle1" fontWeight="bold" color="primary" textAlign="center" mb={2}>
+                              <Typography
+                                variant="subtitle1"
+                                fontWeight="bold"
+                                color="primary"
+                                textAlign="center"
+                                mb={2}
+                              >
                                 Itens de Mídia
                               </Typography>
                               <Stack spacing={2}>
                                 {section.mediaItems.map((item) => (
                                   <Box
                                     key={item.id}
-                                    sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 2, bgcolor: '#f9f9f9' }}
+                                    sx={{
+                                      p: 2,
+                                      border: '1px solid #e0e0e0',
+                                      borderRadius: 2,
+                                      bgcolor: '#f9f9f9',
+                                    }}
                                   >
-                                    <Typography variant="body1" sx={{ color: '#333', wordBreak: 'break-word' }}>
-                                      <strong>Título:</strong> {item.title || item.originalName || 'Sem Título'}
+                                    <Typography
+                                      variant="body1"
+                                      sx={{ color: '#333', wordBreak: 'break-word' }}
+                                    >
+                                      <strong>Título:</strong>{' '}
+                                      {item.title || item.originalName || 'Sem Título'}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: '#555', mt: 0.5, whiteSpace: 'pre-wrap' }}>
-                                      <strong>Descrição:</strong> {item.description || 'Sem Descrição'}
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ color: '#555', mt: 0.5, whiteSpace: 'pre-wrap' }}
+                                    >
+                                      <strong>Descrição:</strong>{' '}
+                                      {item.description || 'Sem Descrição'}
                                     </Typography>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 1, flexWrap: 'wrap' }}>
-                                      <Typography variant="body2" sx={{ color: '#555', wordBreak: 'break-word' }}>
+                                    <Box
+                                      sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        mt: 1,
+                                        gap: 1,
+                                        flexWrap: 'wrap',
+                                      }}
+                                    >
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ color: '#555', wordBreak: 'break-word' }}
+                                      >
                                         <strong>URL:</strong> {item.url}
                                       </Typography>
                                       <IconButton
@@ -184,12 +255,7 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
           justifyContent: 'center',
         }}
       >
-        <Button
-          variant="outlined"
-          onClick={onClose}
-          sx={{ minWidth: 120 }}
-          fullWidth={isMobile}
-        >
+        <Button variant="outlined" onClick={onClose} sx={{ minWidth: 120 }} fullWidth={isMobile}>
           Fechar
         </Button>
         <Button

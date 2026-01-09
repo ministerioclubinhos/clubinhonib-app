@@ -1,7 +1,18 @@
 import React from 'react';
 import {
-  Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
-  Button, Divider, Grid, Paper, Stack, Chip
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Button,
+  Divider,
+  Grid,
+  Paper,
+  Stack,
+  Chip,
 } from '@mui/material';
 import { Close, ContentCopy } from '@mui/icons-material';
 import { IdeasPageData, IdeasSection } from 'store/slices/ideas/ideasSlice';
@@ -89,25 +100,45 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
             <Grid item xs={12} sm={6} md={4} key={media.id}>
               <Box
                 sx={{
-                  p: 2, borderRadius: 2, border: '1px solid #ddd', bgcolor: '#fff',
-                  height: '100%', display: 'flex', flexDirection: 'column', gap: 1,
+                  p: 2,
+                  borderRadius: 2,
+                  border: '1px solid #ddd',
+                  bgcolor: '#fff',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
                 }}
               >
                 {renderMediaPreview(media)}
-                <Typography variant="body1" fontWeight="medium">{media.title}</Typography>
-                <Typography variant="body2" color="text.secondary">{media.description}</Typography>
-                <Typography variant="body2" color="text.secondary"><strong>Upload:</strong> {media.uploadType}</Typography>
-                <Typography variant="body2" color="text.secondary"><strong>Local:</strong> {media.isLocalFile ? 'Sim' : 'Não'}</Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {media.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {media.description}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Upload:</strong> {media.uploadType}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Local:</strong> {media.isLocalFile ? 'Sim' : 'Não'}
+                </Typography>
                 {media.originalName && (
-                  <Typography variant="body2" color="text.secondary"><strong>Arquivo:</strong> {media.originalName}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Arquivo:</strong> {media.originalName}
+                  </Typography>
                 )}
                 {media.size && (
-                  <Typography variant="body2" color="text.secondary"><strong>Tamanho:</strong> {(media.size / 1024).toFixed(1)} KB</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Tamanho:</strong> {(media.size / 1024).toFixed(1)} KB
+                  </Typography>
                 )}
                 <Box display="flex" alignItems="center" gap={1} mt={1} flexWrap="wrap">
                   <Typography variant="body2" sx={{ wordBreak: 'break-word', flex: 1 }}>
                     <strong>URL:</strong>{' '}
-                    <a href={media.url} target="_blank" rel="noopener noreferrer">{media.url}</a>
+                    <a href={media.url} target="_blank" rel="noopener noreferrer">
+                      {media.url}
+                    </a>
                   </Typography>
                   <IconButton
                     size="small"
@@ -128,11 +159,18 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" aria-labelledby="dialog-title">
-      <IconButton onClick={onClose} sx={{ position: 'absolute', top: 16, right: 16 }} aria-label="Fechar modal">
+      <IconButton
+        onClick={onClose}
+        sx={{ position: 'absolute', top: 16, right: 16 }}
+        aria-label="Fechar modal"
+      >
         <Close />
       </IconButton>
 
-      <DialogTitle id="dialog-title" sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.75rem', pb: 2 }}>
+      <DialogTitle
+        id="dialog-title"
+        sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.75rem', pb: 2 }}
+      >
         Detalhes da Página de Ideias
       </DialogTitle>
 
@@ -145,10 +183,14 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
               </Typography>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body1"><strong>Título:</strong> {page.title}</Typography>
+                  <Typography variant="body1">
+                    <strong>Título:</strong> {page.title}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body1"><strong>Subtítulo:</strong> {page.subtitle}</Typography>
+                  <Typography variant="body1">
+                    <strong>Subtítulo:</strong> {page.subtitle}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -156,10 +198,14 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body1"><strong>Criado em:</strong> {formatPtBrDate(page.createdAt)}</Typography>
+                  <Typography variant="body1">
+                    <strong>Criado em:</strong> {formatPtBrDate(page.createdAt)}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body1"><strong>Atualizado em:</strong> {formatPtBrDate(page.updatedAt)}</Typography>
+                  <Typography variant="body1">
+                    <strong>Atualizado em:</strong> {formatPtBrDate(page.updatedAt)}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12}>
                   <Chip
@@ -173,28 +219,41 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
 
             <Divider />
 
-            {Array.isArray(page.sections) && page.sections.map((section) => (
-              <Paper key={section.id} elevation={2} sx={{ p: 4, borderRadius: 2 }}>
-                <Typography variant="h5" textAlign="center" fontWeight="bold" color="primary" mb={2}>
-                  {section.title}
-                </Typography>
-                <Typography variant="body1" mb={2}><strong>Descrição:</strong> {section.description}</Typography>
-                <Chip
-                  label={section.public ? 'Seção Pública' : 'Seção Privada'}
-                  color={section.public ? 'success' : 'default'}
-                  size="small"
-                  sx={{ mb: 3 }}
-                  aria-label={`Seção ${section.public ? 'pública' : 'privada'}`}
-                />
-                {['document', 'video', 'image', 'audio'].map((type) => renderMediaGroup(section, type))}
-              </Paper>
-            ))}
+            {Array.isArray(page.sections) &&
+              page.sections.map((section) => (
+                <Paper key={section.id} elevation={2} sx={{ p: 4, borderRadius: 2 }}>
+                  <Typography
+                    variant="h5"
+                    textAlign="center"
+                    fontWeight="bold"
+                    color="primary"
+                    mb={2}
+                  >
+                    {section.title}
+                  </Typography>
+                  <Typography variant="body1" mb={2}>
+                    <strong>Descrição:</strong> {section.description}
+                  </Typography>
+                  <Chip
+                    label={section.public ? 'Seção Pública' : 'Seção Privada'}
+                    color={section.public ? 'success' : 'default'}
+                    size="small"
+                    sx={{ mb: 3 }}
+                    aria-label={`Seção ${section.public ? 'pública' : 'privada'}`}
+                  />
+                  {['document', 'video', 'image', 'audio'].map((type) =>
+                    renderMediaGroup(section, type)
+                  )}
+                </Paper>
+              ))}
           </Stack>
         )}
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: 'center', mt: 2, pb: 3 }}>
-        <Button onClick={onClose} variant="outlined" aria-label="Fechar modal">Fechar</Button>
+        <Button onClick={onClose} variant="outlined" aria-label="Fechar modal">
+          Fechar
+        </Button>
         {hasRoutePath(page) && (
           <Button
             variant="contained"

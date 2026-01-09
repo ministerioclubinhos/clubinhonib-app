@@ -1,8 +1,8 @@
-import api from "@/config/axiosConfig";
-import { FeedbackData } from "@/store/slices/feedback/feedbackSlice";
+import api from '@/config/axiosConfig';
+import { FeedbackData } from '@/store/slices/feedback/feedbackSlice';
 
 export async function apiListFeedbacks(): Promise<FeedbackData[]> {
-  const { data } = await api.get<FeedbackData[]>("/site-feedbacks");
+  const { data } = await api.get<FeedbackData[]>('/site-feedbacks');
   return Array.isArray(data) ? data : [];
 }
 

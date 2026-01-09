@@ -1,15 +1,15 @@
 import React from 'react';
-import { 
-  Box, 
-  Paper, 
-  Typography, 
-  CircularProgress, 
-  useTheme, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
+import {
+  Box,
+  Paper,
+  Typography,
+  CircularProgress,
+  useTheme,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
   TableRow,
   Card,
   CardContent,
@@ -18,7 +18,16 @@ import {
   Divider,
   Grid,
 } from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 import { usePagelasChartData } from '../hooks';
 import { StatisticsFilters } from '../api';
 
@@ -50,13 +59,16 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
   }
 
   // Ordenar por total descendente e pegar top 10
-  const topCities = [...data.byCity]
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 10);
+  const topCities = [...data.byCity].sort((a, b) => b.total - a.total).slice(0, 10);
 
   return (
     <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
-      <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+      <Typography
+        variant="h6"
+        fontWeight="bold"
+        gutterBottom
+        sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+      >
         🗺️ Análise Geográfica - Top 10 Cidades
       </Typography>
 
@@ -64,7 +76,11 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={topCities} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis type="number" stroke={theme.palette.text.secondary} style={{ fontSize: { xs: 10, sm: 12 } }} />
+            <XAxis
+              type="number"
+              stroke={theme.palette.text.secondary}
+              style={{ fontSize: { xs: 10, sm: 12 } }}
+            />
             <YAxis
               type="category"
               dataKey="city"
@@ -92,7 +108,12 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
       </Box>
 
       <Box sx={{ mt: { xs: 2, sm: 3 } }}>
-        <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+        <Typography
+          variant="subtitle2"
+          fontWeight="bold"
+          gutterBottom
+          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+        >
           Detalhes por Cidade
         </Typography>
         {isMobile ? (
@@ -104,7 +125,11 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
                   <Stack spacing={1.5}>
                     {/* Header */}
                     <Box>
-                      <Typography variant="subtitle2" fontWeight="bold" sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}
+                      >
                         {city.city}, {city.state}
                       </Typography>
                     </Box>
@@ -115,30 +140,54 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
                     <Grid container spacing={1.5}>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          >
                             Total
                           </Typography>
-                          <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                          >
                             {city.total}
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          >
                             Crianças
                           </Typography>
-                          <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                          >
                             {city.uniqueChildren}
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={12}>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          >
                             Presença
                           </Typography>
-                          <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                          >
                             {city.presenceRate.toFixed(1)}%
                           </Typography>
                         </Box>
@@ -155,21 +204,41 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell><strong>Cidade</strong></TableCell>
-                  <TableCell><strong>Estado</strong></TableCell>
-                  <TableCell align="right"><strong>Total</strong></TableCell>
-                  <TableCell align="right"><strong>Crianças</strong></TableCell>
-                  <TableCell align="right"><strong>Presença %</strong></TableCell>
+                  <TableCell>
+                    <strong>Cidade</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Estado</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>Total</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>Crianças</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>Presença %</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {topCities.map((city, index) => (
                   <TableRow key={index} hover>
-                    <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{city.city}</TableCell>
-                    <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{city.state}</TableCell>
-                    <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{city.total}</TableCell>
-                    <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{city.uniqueChildren}</TableCell>
-                    <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{city.presenceRate.toFixed(1)}%</TableCell>
+                    <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      {city.city}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      {city.state}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      {city.total}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      {city.uniqueChildren}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      {city.presenceRate.toFixed(1)}%
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -180,4 +249,3 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
     </Paper>
   );
 };
-

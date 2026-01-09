@@ -2,17 +2,18 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Container } from '@mui/material';
-import { IdeasSectionAdminEditor, IdeasSectionUserCreator } from '@/components/Adm/PageCreator/Templates/IdeasSectionEditor';
+import {
+  IdeasSectionAdminEditor,
+  IdeasSectionUserCreator,
+} from '@/components/Adm/PageCreator/Templates/IdeasSectionEditor';
 import { RootState } from '@/store/slices';
-
-
 
 export default function IdeasSectionPage() {
   const location = useLocation();
-  
+
   const ideasSectionData = useSelector((state: RootState) => state.ideas.ideasSectionData);
   const actualEditMode = !!ideasSectionData;
-  
+
   const isPublicCreation = location.pathname === '/compartilhar-ideia';
 
   useEffect(() => {

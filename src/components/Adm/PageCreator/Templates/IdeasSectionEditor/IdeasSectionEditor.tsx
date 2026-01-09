@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
   Box,
-  TextField,
   Button,
   Typography,
   Snackbar,
@@ -12,7 +11,7 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { IdeasMaterialSection } from '../IdeasMaterialPageCreator/IdeasMaterialSection';
 import { IdeasSection, clearIdeasSectionData } from 'store/slices/ideas/ideasSlice';
@@ -27,17 +26,11 @@ interface IdeasSectionEditorProps {
 
 export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEditorProps) {
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useDispatch();
-  
+
   const existingSection = useSelector((state: RootState) => state.ideas.ideasSectionData);
 
-  const {
-    pages,
-    loading: pagesLoading,
-    error: pagesError,
-    fetchPages,
-  } = useIdeasPages();
+  const { pages, loading: pagesLoading, fetchPages } = useIdeasPages();
 
   const [sectionData, setSectionData] = useState<IdeasSection>({
     title: '',
@@ -132,17 +125,17 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
         const res = await api.post('/ideas-sections', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        
+
         if (!res?.data) throw new Error('Erro ao criar seção');
-        
+
         setSnackbar({
           open: true,
           message: 'Seção criada com sucesso!',
           severity: 'success',
         });
-        
+
         dispatch(clearIdeasSectionData());
-        
+
         const currentPath = window.location.pathname;
         if (currentPath === '/compartilhar-ideia') {
           navigate('/area-do-professor');
@@ -157,15 +150,15 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
             headers: { 'Content-Type': 'multipart/form-data' },
           }
         );
-        
+
         if (!res?.data) throw new Error('Erro ao salvar seção');
-        
+
         setSnackbar({
           open: true,
           message: 'Seção salva e publicada com sucesso!',
           severity: 'success',
         });
-        
+
         dispatch(clearIdeasSectionData());
         navigate('/adm/ideias-compartilhadas');
       } else {
@@ -191,15 +184,17 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
         flexDirection: 'column',
       }}
     >
-      <Box sx={{ 
-        p: { xs: 3, md: 4 },
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
-        flexShrink: 0,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-        borderRadius: '0 0 16px 16px',
-      }}>
+      <Box
+        sx={{
+          p: { xs: 3, md: 4 },
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+          flexShrink: 0,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+          borderRadius: '0 0 16px 16px',
+        }}
+      >
         <Typography
           variant="h4"
           sx={{
@@ -216,7 +211,7 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
         >
           {fromTemplatePage ? 'Criar e compartilhar ideia incrível' : 'Editar Seção de Ideias'}
         </Typography>
-        
+
         {fromTemplatePage && (
           <Typography
             variant="body1"
@@ -235,17 +230,19 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
             Compartilhe uma ideia incrível que você teve nessa semana no seu Clubinho
           </Typography>
         )}
-        
-        <Box sx={{ 
-          display: 'flex', 
-          gap: 3, 
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          mt: 2,
-          justifyContent: 'center',
-          maxWidth: '800px',
-          mx: 'auto',
-        }}>
+
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 3,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            mt: 2,
+            justifyContent: 'center',
+            maxWidth: '800px',
+            mx: 'auto',
+          }}
+        >
           {!fromTemplatePage && (
             <FormControl sx={{ minWidth: 200 }} required error={!selectedPage}>
               <InputLabel>Página de Destino *</InputLabel>
@@ -255,7 +252,7 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
                 size="small"
                 onChange={(e) => {
                   const pageId = e.target.value;
-                  const page = pages.find(p => p.id === pageId);
+                  const page = pages.find((p) => p.id === pageId);
                   setSelectedPage(page || null);
                 }}
                 disabled={pagesLoading}
@@ -293,32 +290,42 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
             onClick={handleSaveSection}
             disabled={loading}
             startIcon={loading ? <CircularProgress size={16} /> : null}
-            sx={{ 
+            sx={{
               ml: fromTemplatePage ? 0 : 'auto',
               px: 4,
               py: 1.5,
               fontSize: '1rem',
               fontWeight: 'bold',
               borderRadius: '12px',
-              background: fromTemplatePage ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : undefined,
+              background: fromTemplatePage
+                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                : undefined,
               '&:hover': {
-                background: fromTemplatePage ? 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)' : undefined,
+                background: fromTemplatePage
+                  ? 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+                  : undefined,
               },
             }}
           >
-            {loading ? 'Salvando...' : fromTemplatePage ? 'Compartilhar Ideia' : 'Salvar e Publicar'}
+            {loading
+              ? 'Salvando...'
+              : fromTemplatePage
+                ? 'Compartilhar Ideia'
+                : 'Salvar e Publicar'}
           </Button>
         </Box>
 
         {selectedPage && !fromTemplatePage && (
-          <Box sx={{ 
-            mt: 1, 
-            p: 1.5, 
-            bgcolor: 'primary.light', 
-            borderRadius: 1,
-            display: 'flex',
-            alignItems: 'center',
-          }}>
+          <Box
+            sx={{
+              mt: 1,
+              p: 1.5,
+              bgcolor: 'primary.light',
+              borderRadius: 1,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
             <Typography variant="body2" color="primary.contrastText">
               📄 Publicando em: <strong>{selectedPage.title}</strong>
             </Typography>
@@ -332,22 +339,26 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
         )}
       </Box>
 
-      <Box sx={{ 
-        flex: 1, 
-        p: { xs: 3, md: 4 },
-        bgcolor: 'background.default',
-        minHeight: 'calc(100vh - 200px)',
-      }}>
-        <Box sx={{
-          maxWidth: '1000px',
-          mx: 'auto',
-          bgcolor: 'background.paper',
-          borderRadius: '16px',
+      <Box
+        sx={{
+          flex: 1,
           p: { xs: 3, md: 4 },
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          border: '1px solid',
-          borderColor: 'divider',
-        }}>
+          bgcolor: 'background.default',
+          minHeight: 'calc(100vh - 200px)',
+        }}
+      >
+        <Box
+          sx={{
+            maxWidth: '1000px',
+            mx: 'auto',
+            bgcolor: 'background.paper',
+            borderRadius: '16px',
+            p: { xs: 3, md: 4 },
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
           <IdeasMaterialSection
             section={sectionData}
             onUpdate={handleSectionUpdate}

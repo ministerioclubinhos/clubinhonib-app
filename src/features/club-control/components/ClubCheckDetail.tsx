@@ -161,7 +161,8 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
                   <Typography variant="h5" fontWeight="bold" color="secondary">
                     {clubCheck.children.total > 0
                       ? Math.round((clubCheck.children.withPagela / clubCheck.children.total) * 100)
-                      : 0}%
+                      : 0}
+                    %
                   </Typography>
                 </Paper>
               </Box>
@@ -230,7 +231,8 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
             {clubCheck.status === 'ok' && (
               <Alert severity="success" icon={<CheckCircle />}>
                 <Typography variant="body2">
-                  🎉 <strong>Parabéns!</strong> Todas as {clubCheck.children.total} crianças tiveram pagela lançada!
+                  🎉 <strong>Parabéns!</strong> Todas as {clubCheck.children.total} crianças tiveram
+                  pagela lançada!
                 </Typography>
               </Alert>
             )}
@@ -253,4 +255,3 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
 const Paper = ({ children, ...props }: any) => {
   return <Box {...props}>{children}</Box>;
 };
-

@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Grid,
-  CircularProgress,
-  Alert,
-  Button,
-} from '@mui/material';
+import { Box, Typography, Grid, CircularProgress, Alert, Button } from '@mui/material';
 
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 import { IdeasPageData } from 'store/slices/ideas/ideasSlice';
@@ -69,9 +62,7 @@ export default function IdeasManager() {
           </Button>
         </Alert>
       ) : filtered.length === 0 ? (
-        <Alert severity="info">
-          Nenhuma página encontrada para o termo pesquisado.
-        </Alert>
+        <Alert severity="info">Nenhuma página encontrada para o termo pesquisado.</Alert>
       ) : (
         <Grid container spacing={3}>
           {filtered.map((page) => (

@@ -1,13 +1,6 @@
-import { 
-  Typography, 
-  Box, 
-  Alert,
-  Paper,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
-import { MediaItem, MediaUploadType, MediaPlatform } from "@/store/slices/types";
-import { getYouTubeId } from "@/utils/video";
+import { Typography, Box, Alert, Paper, useTheme, useMediaQuery } from '@mui/material';
+import { MediaItem, MediaUploadType, MediaPlatform } from '@/store/slices/types';
+import { getYouTubeId } from '@/utils/video';
 
 const VideoPlayer = ({ video }: { video: MediaItem }) => {
   const theme = useTheme();
@@ -47,7 +40,9 @@ const VideoPlayer = ({ video }: { video: MediaItem }) => {
     switch (video.platformType) {
       case MediaPlatform.YOUTUBE: {
         const id = getYouTubeId(video.url);
-        embedUrl = id ? `https://www.youtube.com/embed/${id}?autoplay=0&mute=0&rel=0&modestbranding=1` : '';
+        embedUrl = id
+          ? `https://www.youtube.com/embed/${id}?autoplay=0&mute=0&rel=0&modestbranding=1`
+          : '';
         break;
       }
       case MediaPlatform.GOOGLE_DRIVE: {
@@ -67,9 +62,9 @@ const VideoPlayer = ({ video }: { video: MediaItem }) => {
 
     if (!embedUrl) {
       return (
-        <Alert 
-          severity="error" 
-          sx={{ 
+        <Alert
+          severity="error"
+          sx={{
             borderRadius: { xs: 3, md: 4 },
             fontSize: { xs: '0.9rem', md: '1rem' },
           }}
@@ -115,9 +110,9 @@ const VideoPlayer = ({ video }: { video: MediaItem }) => {
   }
 
   return (
-    <Alert 
-      severity="warning" 
-      sx={{ 
+    <Alert
+      severity="warning"
+      sx={{
         borderRadius: { xs: 3, md: 4 },
         fontSize: { xs: '0.9rem', md: '1rem' },
       }}

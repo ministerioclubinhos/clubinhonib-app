@@ -36,7 +36,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
           zIndex: 0,
         }}
       />
-      
+
       {/* Overlay */}
       <Box
         sx={{
@@ -130,7 +130,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
               letterSpacing: '0.02em',
             }}
           >
-            Ministério de evangelismo que leva a palavra de Deus para as crianças que precisam conhecer o amor de Jesus
+            Ministério de evangelismo que leva a palavra de Deus para as crianças que precisam
+            conhecer o amor de Jesus
           </Typography>
         </motion.div>
 
@@ -141,10 +142,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
         >
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
             {isAuthenticated && (
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   variant="contained"
                   component={Link}

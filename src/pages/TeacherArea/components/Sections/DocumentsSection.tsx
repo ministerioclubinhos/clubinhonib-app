@@ -1,13 +1,5 @@
 import React, { Fragment, useState } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Grid,
-  Card,
-  CardContent,
-  Button,
-} from '@mui/material';
+import { Box, Typography, Paper, Grid, Card, CardContent, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -15,26 +7,19 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import api from '@/config/axiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
-import {
-  setDocumentData,
-  clearDocumentData,
-} from 'store/slices/documents/documentSlice';
+import { setDocumentData, clearDocumentData } from 'store/slices/documents/documentSlice';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
 import { RouteData } from 'store/slices/route/routeSlice';
 
 const DocumentsSection: React.FC = () => {
   const dispatch = useDispatch();
-  const documentData = useSelector(
-    (state: RootState) => state.document.documentData
-  );
+  const documentData = useSelector((state: RootState) => state.document.documentData);
   const routes = useSelector((state: RootState) => state.routes.routes);
   const [openModal, setOpenModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const documentRoutes = routes.filter(
-    (route) => route.entityType === 'Document'
-  );
+  const documentRoutes = routes.filter((route) => route.entityType === 'Document');
 
   const handleOpenModal = async (route: RouteData) => {
     try {
@@ -56,19 +41,14 @@ const DocumentsSection: React.FC = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const truncateDescription = (
-    description: string | undefined,
-    maxLength: number
-  ) => {
+  const truncateDescription = (description: string | undefined, maxLength: number) => {
     if (!description) return 'Sem descrição';
     return description.length > maxLength
       ? `${description.substring(0, maxLength)}...`
       : description;
   };
 
-  const displayedRoutes = isExpanded
-    ? documentRoutes
-    : documentRoutes.slice(0, 4);
+  const displayedRoutes = isExpanded ? documentRoutes : documentRoutes.slice(0, 4);
 
   return (
     <Paper
@@ -144,9 +124,7 @@ const DocumentsSection: React.FC = () => {
               <Button
                 variant="outlined"
                 color="primary"
-                endIcon={
-                  isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />
-                }
+                endIcon={isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 onClick={handleToggleExpand}
               >
                 {isExpanded ? 'Ver menos' : 'Ver mais documentos'}
@@ -155,11 +133,7 @@ const DocumentsSection: React.FC = () => {
           )}
         </Fragment>
       ) : (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          textAlign="center"
-        >
+        <Typography variant="body2" color="text.secondary" textAlign="center">
           Nenhum documento disponível no momento.
         </Typography>
       )}

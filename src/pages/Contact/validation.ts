@@ -5,9 +5,7 @@ export const contactFormSchema = Yup.object().shape({
     .required('Nome é obrigatório')
     .min(2, 'Nome deve ter pelo menos 2 caracteres')
     .matches(/^[A-Za-zÀ-ÿ\s]+$/, 'Nome deve conter apenas letras'),
-  email: Yup.string()
-    .required('Email é obrigatório')
-    .email('Email inválido'),
+  email: Yup.string().required('Email é obrigatório').email('Email inválido'),
   telefone: Yup.string()
     .required('Telefone é obrigatório')
     .test('valid-phone', 'Telefone inválido (ex.: (11) 91234-5678)', (val) => {

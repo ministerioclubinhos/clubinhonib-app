@@ -1,13 +1,4 @@
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  useTheme, 
-  useMediaQuery,
-  Chip,
-  Stack,
-  Alert,
-} from '@mui/material';
+import { Box, Typography, Paper, useTheme, useMediaQuery, Chip, Stack, Alert } from '@mui/material';
 import { motion } from 'framer-motion';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import DownloadButton from './DownloadButton';
@@ -190,12 +181,7 @@ export default function WeekVideoPlayer({ video }: Props) {
         }}
       >
         {/* Header */}
-        <Box
-          display="flex"
-          alignItems="center"
-          gap={2}
-          mb={3}
-        >
+        <Box display="flex" alignItems="center" gap={2} mb={3}>
           <Box
             sx={{
               p: 2,
@@ -209,7 +195,7 @@ export default function WeekVideoPlayer({ video }: Props) {
           >
             <PlayCircleOutlineIcon sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} />
           </Box>
-          
+
           <Box flex={1}>
             <Typography
               variant="h6"
@@ -223,7 +209,7 @@ export default function WeekVideoPlayer({ video }: Props) {
             >
               {video.title}
             </Typography>
-            
+
             {fileSize && (
               <Chip
                 label={fileSize}
@@ -239,9 +225,7 @@ export default function WeekVideoPlayer({ video }: Props) {
         </Box>
 
         {/* Video Player */}
-        <Box sx={{ mb: 3 }}>
-          {renderVideo()}
-        </Box>
+        <Box sx={{ mb: 3 }}>{renderVideo()}</Box>
 
         {/* Description */}
         {video.description && (
@@ -264,7 +248,9 @@ export default function WeekVideoPlayer({ video }: Props) {
           <Box sx={{ mt: 'auto' }}>
             <DownloadButton
               url={
-                video.platformType === MediaPlatform.DROPBOX ? getDropboxRawUrl(video.url) : video.url
+                video.platformType === MediaPlatform.DROPBOX
+                  ? getDropboxRawUrl(video.url)
+                  : video.url
               }
               filename={video.originalName || video.title || 'video'}
               size={isMobile ? 'medium' : 'large'}

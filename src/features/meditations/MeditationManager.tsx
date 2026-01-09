@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import {
-  Box,
-  Grid,
-  CircularProgress,
-  Alert,
-  Container,
-} from '@mui/material';
+import { Box, Grid, CircularProgress, Alert, Container } from '@mui/material';
 
 import type { MeditationData, DayItem } from '@/store/slices/meditation/meditationSlice';
 import MeditationCard from './components/MeditationCard';
@@ -16,16 +10,8 @@ import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 import ImagePageToolbar from '../image-pages/components/ImagePageToolbar';
 
 export default function MeditationManager() {
-  const {
-    meditations,
-    loading,
-    filtering,
-    error,
-    setError,
-    search,
-    setSearch,
-    removeMeditation,
-  } = useMeditationsList();
+  const { meditations, loading, filtering, error, setError, search, setSearch, removeMeditation } =
+    useMeditationsList();
 
   const [selectedDay, setSelectedDay] = useState<DayItem | null>(null);
   const [meditationToDelete, setMeditationToDelete] = useState<MeditationData | null>(null);

@@ -1,6 +1,6 @@
-import React from "react";
-import { Grid, TextField } from "@mui/material";
-import { AddressResponseDto } from "../../types";
+import React from 'react';
+import { Grid, TextField } from '@mui/material';
+import { AddressResponseDto } from '../../types';
 
 type Props = {
   value: Partial<AddressResponseDto>;
@@ -9,8 +9,7 @@ type Props = {
 
 export default function AddressFields({ value = {}, onChange }: Props) {
   const v = value || {};
-  const set = (key: keyof AddressResponseDto, val: string) =>
-    onChange({ ...v, [key]: val });
+  const set = (key: keyof AddressResponseDto, val: string) => onChange({ ...v, [key]: val });
 
   return (
     <>
@@ -18,8 +17,8 @@ export default function AddressFields({ value = {}, onChange }: Props) {
         <TextField
           label="Rua"
           fullWidth
-          value={v.street ?? ""}
-          onChange={(e) => set("street", e.target.value)}
+          value={v.street ?? ''}
+          onChange={(e) => set('street', e.target.value)}
         />
       </Grid>
 
@@ -27,8 +26,8 @@ export default function AddressFields({ value = {}, onChange }: Props) {
         <TextField
           label="Número"
           fullWidth
-          value={v.number ?? ""}
-          onChange={(e) => set("number", e.target.value)}
+          value={v.number ?? ''}
+          onChange={(e) => set('number', e.target.value)}
         />
       </Grid>
 
@@ -36,8 +35,8 @@ export default function AddressFields({ value = {}, onChange }: Props) {
         <TextField
           label="Bairro"
           fullWidth
-          value={v.district ?? ""}
-          onChange={(e) => set("district", e.target.value)}
+          value={v.district ?? ''}
+          onChange={(e) => set('district', e.target.value)}
         />
       </Grid>
 
@@ -46,8 +45,8 @@ export default function AddressFields({ value = {}, onChange }: Props) {
           label="Complemento"
           fullWidth
           placeholder="Bloco, apto, referência…"
-          value={v.complement ?? ""}
-          onChange={(e) => set("complement", e.target.value)}
+          value={v.complement ?? ''}
+          onChange={(e) => set('complement', e.target.value)}
         />
       </Grid>
 
@@ -55,8 +54,8 @@ export default function AddressFields({ value = {}, onChange }: Props) {
         <TextField
           label="Cidade"
           fullWidth
-          value={v.city ?? ""}
-          onChange={(e) => set("city", e.target.value)}
+          value={v.city ?? ''}
+          onChange={(e) => set('city', e.target.value)}
         />
       </Grid>
 
@@ -66,8 +65,8 @@ export default function AddressFields({ value = {}, onChange }: Props) {
           fullWidth
           inputProps={{ maxLength: 2 }}
           placeholder="UF"
-          value={v.state ?? ""}
-          onChange={(e) => set("state", e.target.value.toUpperCase())}
+          value={v.state ?? ''}
+          onChange={(e) => set('state', e.target.value.toUpperCase())}
         />
       </Grid>
 
@@ -76,8 +75,8 @@ export default function AddressFields({ value = {}, onChange }: Props) {
           label="CEP"
           fullWidth
           placeholder="00000-000"
-          value={v.postalCode ?? ""}
-          onChange={(e) => set("postalCode", e.target.value)}
+          value={v.postalCode ?? ''}
+          onChange={(e) => set('postalCode', e.target.value)}
         />
       </Grid>
     </>

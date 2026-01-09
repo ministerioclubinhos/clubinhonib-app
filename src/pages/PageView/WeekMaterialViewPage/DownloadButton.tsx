@@ -10,12 +10,12 @@ interface DownloadButtonProps {
   fullWidth?: boolean;
 }
 
-export default function DownloadButton({ 
-  url, 
-  filename, 
-  disabled = false, 
+export default function DownloadButton({
+  url,
+  filename,
+  disabled = false,
   size = 'medium',
-  fullWidth = false 
+  fullWidth = false,
 }: DownloadButtonProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -66,28 +66,22 @@ export default function DownloadButton({
           borderRadius: 3,
           textTransform: 'none',
           fontWeight: 'bold',
-          background: disabled 
+          background: disabled
             ? 'linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%)'
             : 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
           color: disabled ? 'grey.500' : 'white',
-          boxShadow: disabled 
-            ? 'none'
-            : '0 4px 16px rgba(33, 150, 243, 0.3)',
+          boxShadow: disabled ? 'none' : '0 4px 16px rgba(33, 150, 243, 0.3)',
           transition: 'all 0.3s ease',
           '&:hover': {
-            background: disabled 
+            background: disabled
               ? 'linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%)'
               : 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
             transform: 'translateY(-2px)',
-            boxShadow: disabled 
-              ? 'none'
-              : '0 6px 20px rgba(33, 150, 243, 0.4)',
+            boxShadow: disabled ? 'none' : '0 6px 20px rgba(33, 150, 243, 0.4)',
           },
           '&:active': {
             transform: 'translateY(0px)',
-            boxShadow: disabled 
-              ? 'none'
-              : '0 2px 8px rgba(33, 150, 243, 0.3)',
+            boxShadow: disabled ? 'none' : '0 2px 8px rgba(33, 150, 243, 0.3)',
           },
           '&.Mui-disabled': {
             background: 'linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%)',

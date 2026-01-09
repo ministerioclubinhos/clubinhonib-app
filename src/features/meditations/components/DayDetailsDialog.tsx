@@ -1,6 +1,12 @@
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Typography, Stack, Box, Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+  Stack,
+  Box,
+  Button,
 } from '@mui/material';
 import { DayItem, WeekDay, WeekDayLabel } from '@/store/slices/meditation/meditationSlice';
 
@@ -25,18 +31,28 @@ export default function DayDetailsDialog({ day, onClose }: Props) {
       <DialogContent>
         <Stack spacing={2} mt={1}>
           <Box>
-            <Typography variant="subtitle2" color="text.secondary">Tema do Dia</Typography>
-            <Typography variant="body1" fontWeight="medium">{day?.topic}</Typography>
+            <Typography variant="subtitle2" color="text.secondary">
+              Tema do Dia
+            </Typography>
+            <Typography variant="body1" fontWeight="medium">
+              {day?.topic}
+            </Typography>
           </Box>
           <Box>
-            <Typography variant="subtitle2" color="text.secondary">Versículo</Typography>
-            <Typography variant="body1" fontStyle="italic">{day?.verse}</Typography>
+            <Typography variant="subtitle2" color="text.secondary">
+              Versículo
+            </Typography>
+            <Typography variant="body1" fontStyle="italic">
+              {day?.verse}
+            </Typography>
           </Box>
         </Stack>
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
-        <Button variant="outlined" onClick={onClose}>Fechar</Button>
+        <Button variant="outlined" onClick={onClose}>
+          Fechar
+        </Button>
       </DialogActions>
     </Dialog>
   );

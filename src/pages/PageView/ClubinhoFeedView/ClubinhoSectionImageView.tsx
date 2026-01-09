@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Grid, 
-  Modal, 
-  IconButton, 
-  Tooltip, 
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Modal,
+  IconButton,
+  Tooltip,
   Skeleton,
   useTheme,
   useMediaQuery,
@@ -125,7 +125,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -8 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
     >
       <Card
         elevation={6}
@@ -156,7 +156,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
             >
               <ImageIcon sx={{ fontSize: { xs: '1.5rem', md: '1.8rem' } }} />
             </Avatar>
-            
+
             <Box flex={1}>
               <Box display="flex" alignItems="center" gap={2} mb={1}>
                 <Typography
@@ -233,10 +233,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
         {/* Hero Image com efeito parallax */}
         {heroSrc && (
           <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.6 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.6 }}>
               <CardMedia
                 component="img"
                 image={heroSrc}
@@ -250,7 +247,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
                 }}
               />
             </motion.div>
-            
+
             {/* Overlay gradient */}
             <Box
               sx={{
@@ -273,7 +270,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
               {thumbnails.map((item, index) => {
                 const src = getMediaPreviewUrl(item as MediaItem);
                 const actualIndex = index + 1;
-                
+
                 return (
                   <Grid item xs={4} sm={2} md={2} key={item.id || index}>
                     <motion.div
@@ -304,10 +301,10 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
                             display: 'block',
                           }}
                         />
-                        
+
                         {/* Platform Icon com animação */}
                         <motion.div
-                          animate={{ 
+                          animate={{
                             scale: hoveredImage === actualIndex ? 1.2 : 1,
                             rotate: hoveredImage === actualIndex ? 5 : 0,
                           }}
@@ -368,10 +365,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
 
             {mediaItems.length > 7 && !showAll && (
               <Box textAlign="center" mt={3}>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Typography
                     variant="button"
                     color="primary"

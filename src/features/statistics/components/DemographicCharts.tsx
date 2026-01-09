@@ -1,6 +1,18 @@
 import React from 'react';
 import { Box, Paper, Typography, CircularProgress, Grid, useTheme } from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 import { usePagelasChartData } from '../hooks';
 import { StatisticsFilters } from '../api';
 
@@ -160,4 +172,3 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
     </Grid>
   );
 };
-

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   useTheme,
   Avatar,
   Skeleton,
-} from "@mui/material";
+} from '@mui/material';
 import {
   WhatsApp,
   PhoneIphone,
@@ -31,10 +31,10 @@ import {
   MenuBook,
   ToggleOn,
   ToggleOff,
-} from "@mui/icons-material";
-import { ChildResponseDto } from "../types";
-import { fmtDate } from "@/utils/dates";
-import { buildWhatsappLink } from "@/utils/whatsapp";
+} from '@mui/icons-material';
+import { ChildResponseDto } from '../types';
+import { fmtDate } from '@/utils/dates';
+import { buildWhatsappLink } from '@/utils/whatsapp';
 
 const calcAge = (iso?: string) => {
   if (!iso) return undefined;
@@ -48,14 +48,14 @@ const calcAge = (iso?: string) => {
 };
 
 const initials = (name?: string) =>
-  (name || "")
+  (name || '')
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map(s => s[0]?.toUpperCase())
-    .join("") || "C";
+    .map((s) => s[0]?.toUpperCase())
+    .join('') || 'C';
 
-function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
+function CopyButton({ value, title = 'Copiar' }: { value?: string; title?: string }) {
   const copyToClipboard = (text?: string) => {
     if (!text) return;
     navigator.clipboard?.writeText(String(text)).catch(() => {});
@@ -69,10 +69,18 @@ function CopyButton({ value, title = "Copiar" }: { value?: string; title?: strin
   );
 }
 
-function LineCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function LineCard({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2, height: "100%" }}>
-      <Stack spacing={0.5} sx={{ height: "100%" }}>
+    <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2, height: '100%' }}>
+      <Stack spacing={0.5} sx={{ height: '100%' }}>
         <Stack direction="row" spacing={0.75} alignItems="center">
           {icon}
           <Typography variant="caption" color="text.secondary">
@@ -85,18 +93,25 @@ function LineCard({ icon, title, children }: { icon: React.ReactNode; title: str
   );
 }
 
-type Props = { 
-  open: boolean; 
-  loading: boolean; 
-  child: ChildResponseDto | null; 
-  onClose: () => void; 
+type Props = {
+  open: boolean;
+  loading: boolean;
+  child: ChildResponseDto | null;
+  onClose: () => void;
   onEdit?: (id: string) => void;
   onToggleActive?: (child: ChildResponseDto) => void;
 };
 
-export default function ChildViewDialog({ open, loading, child, onClose, onEdit, onToggleActive }: Props) {
+export default function ChildViewDialog({
+  open,
+  loading,
+  child,
+  onClose,
+  onEdit,
+  onToggleActive,
+}: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const age = useMemo(() => calcAge(child?.birthDate), [child?.birthDate]);
 
@@ -116,7 +131,7 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
           child.address.postalCode,
         ]
           .filter(Boolean)
-          .join(", ")
+          .join(', ')
       )}`
     : undefined;
 
@@ -128,10 +143,10 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
       maxWidth="lg"
       PaperProps={{
         sx: {
-          width: { xs: "98%", sm: "44rem" },
+          width: { xs: '98%', sm: '44rem' },
           m: 0,
           borderRadius: { xs: 2, sm: 3 },
-          overflow: "hidden",
+          overflow: 'hidden',
         },
       }}
     >
@@ -140,9 +155,9 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
           px: { xs: 2, sm: 3 },
           pt: { xs: 2, sm: 3 },
           pb: { xs: 1.25, sm: 1.5 },
-          background: "linear-gradient(135deg, rgba(3,155,229,.08) 0%, rgba(156,39,176,.08) 100%)",
+          background: 'linear-gradient(135deg, rgba(3,155,229,.08) 0%, rgba(156,39,176,.08) 100%)',
           borderBottom: 1,
-          borderColor: "divider",
+          borderColor: 'divider',
         }}
       >
         {!child ? (
@@ -154,8 +169,8 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
                 sx={{
                   width: 48,
                   height: 48,
-                  bgcolor: child.gender === "F" ? "secondary.main" : "primary.main",
-                  color: "white",
+                  bgcolor: child.gender === 'F' ? 'secondary.main' : 'primary.main',
+                  color: 'white',
                   fontWeight: 700,
                 }}
               >
@@ -164,18 +179,29 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
               <Box sx={{ minWidth: 0 }}>
                 <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
                   <Typography variant="h6" fontWeight={800} noWrap={!isXs} title={child.name}>
-                    {child.name || "—"}
+                    {child.name || '—'}
                   </Typography>
-                  <Chip size="small" label={child.gender === "F" ? "Feminino" : "Masculino"} color="default" />
-                  {typeof age === "number" && <Chip size="small" label={`${age} anos`} color="default" />}
-                  <Chip 
-                    size="small" 
-                    label={child.isActive ? "Ativo" : "Inativo"} 
-                    color={child.isActive ? "success" : "default"} 
-                    variant={child.isActive ? "filled" : "outlined"} 
+                  <Chip
+                    size="small"
+                    label={child.gender === 'F' ? 'Feminino' : 'Masculino'}
+                    color="default"
+                  />
+                  {typeof age === 'number' && (
+                    <Chip size="small" label={`${age} anos`} color="default" />
+                  )}
+                  <Chip
+                    size="small"
+                    label={child.isActive ? 'Ativo' : 'Inativo'}
+                    color={child.isActive ? 'success' : 'default'}
+                    variant={child.isActive ? 'filled' : 'outlined'}
                   />
                   {child.club ? (
-                    <Chip size="small" label={`Clubinho #${child.club.number}${child.club.weekday ? ` • ${child.club.weekday}` : ""}`} color="primary" variant="outlined" />
+                    <Chip
+                      size="small"
+                      label={`Clubinho #${child.club.number}${child.club.weekday ? ` • ${child.club.weekday}` : ''}`}
+                      color="primary"
+                      variant="outlined"
+                    />
                   ) : (
                     <Chip size="small" label="Sem clubinho" variant="outlined" />
                   )}
@@ -200,12 +226,24 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
                   <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap">
                     {child.guardianPhone ? (
                       <>
-                        <Link href={waLink || undefined} target="_blank" underline="hover" sx={{ fontSize: ".95rem" }}>
+                        <Link
+                          href={waLink || undefined}
+                          target="_blank"
+                          underline="hover"
+                          sx={{ fontSize: '.95rem' }}
+                        >
                           {child.guardianPhone}
                         </Link>
-                        <Tooltip title={waLink ? "Abrir WhatsApp" : "Sem número"}>
+                        <Tooltip title={waLink ? 'Abrir WhatsApp' : 'Sem número'}>
                           <span>
-                            <IconButton size="small" color="success" component="a" href={waLink || undefined} target="_blank" disabled={!waLink}>
+                            <IconButton
+                              size="small"
+                              color="success"
+                              component="a"
+                              href={waLink || undefined}
+                              target="_blank"
+                              disabled={!waLink}
+                            >
                               <WhatsApp fontSize="small" />
                             </IconButton>
                           </span>
@@ -230,13 +268,13 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
               <Grid item xs={12} sm={6}>
                 <LineCard icon={<Cake fontSize="small" />} title="Nascimento">
                   <Typography>
-                    {fmtDate(child.birthDate)} {typeof age === "number" && `(${age} anos)`}
+                    {fmtDate(child.birthDate)} {typeof age === 'number' && `(${age} anos)`}
                   </Typography>
                 </LineCard>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <LineCard icon={<PhoneIcon fontSize="small" />} title="No Clubinho desde">
-                  <Typography>{fmtDate(child.joinedAt || "")}</Typography>
+                  <Typography>{fmtDate(child.joinedAt || '')}</Typography>
                 </LineCard>
               </Grid>
             </Grid>
@@ -245,18 +283,24 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
             <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                 <Home fontSize="small" />
-                <Typography variant="caption" color="text.secondary">Endereço</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Endereço
+                </Typography>
               </Stack>
               {child.address ? (
                 <Grid container spacing={1.25}>
                   <Grid item xs={12} sm={8}>
-                    <Typography>{child.address.street} {child.address.number}</Typography>
+                    <Typography>
+                      {child.address.street} {child.address.number}
+                    </Typography>
                   </Grid>
                   <Grid item xs={12} sm={4}>
                     <Typography>{child.address.district}</Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Typography>{child.address.city}/{child.address.state}</Typography>
+                    <Typography>
+                      {child.address.city}/{child.address.state}
+                    </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <Typography>{child.address.postalCode}</Typography>
@@ -269,7 +313,13 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
                   <Grid item xs={12}>
                     <Stack direction="row" spacing={1}>
                       {mapsHref && (
-                        <Button size="small" component="a" href={mapsHref} target="_blank" startIcon={<Map fontSize="small" />}>
+                        <Button
+                          size="small"
+                          component="a"
+                          href={mapsHref}
+                          target="_blank"
+                          startIcon={<Map fontSize="small" />}
+                        >
                           Abrir no Maps
                         </Button>
                       )}
@@ -284,13 +334,19 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
 
             {/* Status */}
             <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
-              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" flexWrap="wrap">
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                justifyContent="space-between"
+                flexWrap="wrap"
+              >
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Chip
                     size="small"
-                    label={child.isActive ? "Ativo" : "Inativo"}
-                    color={child.isActive ? "success" : "default"}
-                    variant={child.isActive ? "filled" : "outlined"}
+                    label={child.isActive ? 'Ativo' : 'Inativo'}
+                    color={child.isActive ? 'success' : 'default'}
+                    variant={child.isActive ? 'filled' : 'outlined'}
                   />
                   <Typography variant="body2" color="text.secondary">
                     Status da criança
@@ -299,12 +355,12 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
                 {onToggleActive && (
                   <Button
                     variant="outlined"
-                    color={child.isActive ? "warning" : "success"}
+                    color={child.isActive ? 'warning' : 'success'}
                     startIcon={child.isActive ? <ToggleOff /> : <ToggleOn />}
                     onClick={() => onToggleActive(child)}
                     size="small"
                   >
-                    {child.isActive ? "Desativar" : "Ativar"}
+                    {child.isActive ? 'Desativar' : 'Ativar'}
                   </Button>
                 )}
               </Stack>
@@ -331,12 +387,17 @@ export default function ChildViewDialog({ open, loading, child, onClose, onEdit,
         sx={{
           p: { xs: 1.5, sm: 2 },
           gap: 1,
-          flexWrap: "wrap",
-          justifyContent: "space-between",
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
         }}
       >
         {child && (
-          <Button fullWidth={isXs} onClick={() => onEdit?.(child.id)} variant="outlined" color="primary">
+          <Button
+            fullWidth={isXs}
+            onClick={() => onEdit?.(child.id)}
+            variant="outlined"
+            color="primary"
+          >
             Editar
           </Button>
         )}

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Container, Grid, Card, CardContent, CardMedia } from '@mui/material';
 import { motion } from 'framer-motion';
@@ -41,7 +40,8 @@ const CardsSection: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%)',
+          background:
+            'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%)',
           zIndex: 0,
         },
       }}
@@ -80,22 +80,23 @@ const CardsSection: React.FC = () => {
         </motion.div>
 
         <Grid container spacing={{ xs: 3, md: 4 }}>
-        {cards.map((card, index) => (
+          {cards.map((card, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={card.id}>
-            <motion.div
+              <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <a
-                href={`/${card.path}`}
-                style={{ textDecoration: 'none', display: 'block', height: '100%' }}
               >
+                <a
+                  href={`/${card.path}`}
+                  style={{ textDecoration: 'none', display: 'block', height: '100%' }}
+                >
                   <Card
                     sx={{
                       height: '100%',
-                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 255, 0.8) 100%)',
+                      background:
+                        'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 255, 0.8) 100%)',
                       backdropFilter: 'blur(10px)',
                       border: '1px solid rgba(102, 126, 234, 0.2)',
                       borderRadius: 4,
@@ -120,11 +121,11 @@ const CardsSection: React.FC = () => {
                       },
                     }}
                   >
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={card.image ?? ''}
-                    alt={card.title ?? 'Imagem do card'}
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={card.image ?? ''}
+                      alt={card.title ?? 'Imagem do card'}
                       sx={{
                         objectFit: 'cover',
                         transition: 'transform 0.3s ease',
@@ -133,7 +134,14 @@ const CardsSection: React.FC = () => {
                         },
                       }}
                     />
-                    <CardContent sx={{ p: { xs: 2, md: 3 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <CardContent
+                      sx={{
+                        p: { xs: 2, md: 3 },
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                      }}
+                    >
                       <Typography
                         variant="h6"
                         sx={{
@@ -145,8 +153,8 @@ const CardsSection: React.FC = () => {
                           flex: 1,
                         }}
                       >
-                      {card.title ?? 'Sem título'}
-                    </Typography>
+                        {card.title ?? 'Sem título'}
+                      </Typography>
                       <Typography
                         variant="body2"
                         sx={{
@@ -157,15 +165,15 @@ const CardsSection: React.FC = () => {
                       >
                         {card.description?.length > 80
                           ? `${card.description.slice(0, 77)}...`
-                        : card.description}
-                    </Typography>
-                  </CardContent>
+                          : card.description}
+                      </Typography>
+                    </CardContent>
                   </Card>
-              </a>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
+                </a>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     </Box>
   );

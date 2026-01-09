@@ -48,7 +48,9 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
             }}
             size="small"
             InputProps={{
-              startAdornment: <CalendarToday sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />,
+              startAdornment: (
+                <CalendarToday sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />
+              ),
             }}
           >
             <MenuItem value="">Todos os Períodos</MenuItem>

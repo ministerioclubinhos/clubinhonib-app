@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 import {
   apiCreateClub,
   apiDeleteClub,
@@ -8,7 +8,7 @@ import {
   apiListTeachersSimple,
   apiUpdateClub,
   apiToggleClubActive,
-} from "./api";
+} from './api';
 import {
   ClubResponseDto,
   CreateClubForm,
@@ -17,7 +17,7 @@ import {
   ClubFilters,
   ClubSort,
   CoordinatorOption,
-} from "./types";
+} from './types';
 
 export function useClubs(
   pageIndex: number,
@@ -28,11 +28,11 @@ export function useClubs(
   const [rows, setRows] = useState<ClubResponseDto[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const fetchPage = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError('');
     try {
       const data = await apiFetchClubs({
         page: pageIndex + 1,
@@ -43,7 +43,7 @@ export function useClubs(
       setRows(Array.isArray(data?.data) ? data.data : []);
       setTotal(Number(data?.total ?? 0));
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Erro ao listar clubes");
+      setError(err?.response?.data?.message || err.message || 'Erro ao listar clubes');
     } finally {
       setLoading(false);
     }
@@ -73,20 +73,31 @@ export function useClubDetails() {
 }
 
 export function useClubMutations(
-  fetchClubs: (page: number, limit: number, filters?: ClubFilters, sort?: ClubSort) => Promise<void> | void
+  fetchClubs: (
+    page: number,
+    limit: number,
+    filters?: ClubFilters,
+    sort?: ClubSort
+  ) => Promise<void> | void
 ) {
   const [dialogLoading, setDialogLoading] = useState(false);
-  const [dialogError, setDialogError] = useState("");
+  const [dialogError, setDialogError] = useState('');
 
   const createClub = useCallback(
-    async (payload: CreateClubForm, page: number, limit: number, filters?: ClubFilters, sort?: ClubSort) => {
+    async (
+      payload: CreateClubForm,
+      page: number,
+      limit: number,
+      filters?: ClubFilters,
+      sort?: ClubSort
+    ) => {
       setDialogLoading(true);
-      setDialogError("");
+      setDialogError('');
       try {
         await apiCreateClub(payload);
         await fetchClubs(page, limit, filters, sort);
       } catch (err: any) {
-        setDialogError(err?.response?.data?.message || err.message || "Erro ao criar clubinho");
+        setDialogError(err?.response?.data?.message || err.message || 'Erro ao criar clubinho');
       } finally {
         setDialogLoading(false);
       }
@@ -97,19 +108,19 @@ export function useClubMutations(
   const updateClub = useCallback(
     async (
       id: string,
-      payload: Omit<EditClubForm, "id">,
+      payload: Omit<EditClubForm, 'id'>,
       page: number,
       limit: number,
       filters?: ClubFilters,
       sort?: ClubSort
     ) => {
       setDialogLoading(true);
-      setDialogError("");
+      setDialogError('');
       try {
         await apiUpdateClub(id, payload);
         await fetchClubs(page, limit, filters, sort);
       } catch (err: any) {
-        setDialogError(err?.response?.data?.message || err.message || "Erro ao atualizar clubinho");
+        setDialogError(err?.response?.data?.message || err.message || 'Erro ao atualizar clubinho');
       } finally {
         setDialogLoading(false);
       }
@@ -120,12 +131,12 @@ export function useClubMutations(
   const deleteClub = useCallback(
     async (id: string, page: number, limit: number, filters?: ClubFilters, sort?: ClubSort) => {
       setDialogLoading(true);
-      setDialogError("");
+      setDialogError('');
       try {
         await apiDeleteClub(id);
         await fetchClubs(page, limit, filters, sort);
       } catch (err: any) {
-        setDialogError(err?.response?.data?.message || err.message || "Erro ao remover clubinho");
+        setDialogError(err?.response?.data?.message || err.message || 'Erro ao remover clubinho');
       } finally {
         setDialogLoading(false);
       }
@@ -136,12 +147,14 @@ export function useClubMutations(
   const toggleActive = useCallback(
     async (id: string, page: number, limit: number, filters?: ClubFilters, sort?: ClubSort) => {
       setDialogLoading(true);
-      setDialogError("");
+      setDialogError('');
       try {
         await apiToggleClubActive(id);
         await fetchClubs(page, limit, filters, sort);
       } catch (err: any) {
-        setDialogError(err?.response?.data?.message || err.message || "Erro ao alterar status do clubinho");
+        setDialogError(
+          err?.response?.data?.message || err.message || 'Erro ao alterar status do clubinho'
+        );
       } finally {
         setDialogLoading(false);
       }
@@ -149,7 +162,15 @@ export function useClubMutations(
     [fetchClubs]
   );
 
-  return { dialogLoading, dialogError, setDialogError, createClub, updateClub, deleteClub, toggleActive };
+  return {
+    dialogLoading,
+    dialogError,
+    setDialogError,
+    createClub,
+    updateClub,
+    deleteClub,
+    toggleActive,
+  };
 }
 
 export function useOptions() {

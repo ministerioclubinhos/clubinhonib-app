@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -12,9 +12,9 @@ import {
   Stack,
   useTheme,
   useMediaQuery,
-} from "@mui/material";
-import { TeacherProfile } from "../types";
-import { fmtDate } from "@/utils/dates";
+} from '@mui/material';
+import { TeacherProfile } from '../types';
+import { fmtDate } from '@/utils/dates';
 
 type Props = {
   open: boolean;
@@ -24,14 +24,11 @@ type Props = {
 
 export default function TeacherViewDialog({ open, teacher, onClose }: Props) {
   const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
-  const clubNumber =
-    teacher?.club?.number != null ? `#${teacher.club.number}` : "—";
+  const clubNumber = teacher?.club?.number != null ? `#${teacher.club.number}` : '—';
   const coordName =
-    teacher?.club?.coordinator?.user?.name ||
-    teacher?.club?.coordinator?.user?.email ||
-    "—";
+    teacher?.club?.coordinator?.user?.name || teacher?.club?.coordinator?.user?.email || '—';
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -42,10 +39,10 @@ export default function TeacherViewDialog({ open, teacher, onClose }: Props) {
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                {teacher.user.name || teacher.user.email || "—"}
+                {teacher.user.name || teacher.user.email || '—'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {teacher.user.email || "—"}
+                {teacher.user.email || '—'}
               </Typography>
             </Grid>
 

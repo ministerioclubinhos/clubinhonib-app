@@ -10,8 +10,10 @@ interface IdeasSharingBannerProps {
   forceColumnLayout?: boolean;
 }
 
-const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full', forceColumnLayout = false }) => {
-
+const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({
+  variant = 'full',
+  forceColumnLayout = false,
+}) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -47,7 +49,11 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
             : { xs: 'auto', sm: 'auto', md: shouldUseColumnLayout ? 350 : 200 },
           minHeight: isMobile
             ? { xs: 400, sm: 400, md: 400 }
-            : { xs: 400, sm: shouldUseColumnLayout ? 300 : 200, md: shouldUseColumnLayout ? 280 : 200 },
+            : {
+                xs: 400,
+                sm: shouldUseColumnLayout ? 300 : 200,
+                md: shouldUseColumnLayout ? 280 : 200,
+              },
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -90,30 +96,35 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
             sx={{
               fontWeight: 'bold',
               color: 'white',
-              fontSize: isCompact ? { xs: '1rem', sm: '1.1rem', md: '1.6rem' } : { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
+              fontSize: isCompact
+                ? { xs: '1rem', sm: '1.1rem', md: '1.6rem' }
+                : { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
               mb: 2,
             }}
-          >{forceColumnLayout}
-            ✨ Compartilhe a Inspiração que Deus Te Deu!
+          >
+            {forceColumnLayout}✨ Compartilhe a Inspiração que Deus Te Deu!
           </Typography>
 
           <Typography
             variant="h6"
             sx={{
               color: 'rgba(255,255,255,0.95)',
-              fontSize: isCompact ? { xs: '0.85rem', sm: '0.95rem', md: '1.1rem' } : { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
+              fontSize: isCompact
+                ? { xs: '0.85rem', sm: '0.95rem', md: '1.1rem' }
+                : { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
               maxWidth: isCompact ? '800px' : '800px',
               lineHeight: 1.4,
               fontWeight: 400,
               mb: 0,
             }}
           >
-            💡 Criou uma brincadeira incrível ou descobriu uma forma especial de contar uma história bíblica?
+            💡 Criou uma brincadeira incrível ou descobriu uma forma especial de contar uma história
+            bíblica?
             <br />
-            🌟 Compartilhe sua criatividade com outros professores! Sua ideia pode transformar vidas! ✨
+            🌟 Compartilhe sua criatividade com outros professores! Sua ideia pode transformar
+            vidas! ✨
           </Typography>
-
         </Box>
 
         <Box
@@ -138,7 +149,9 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
               color: '#667eea',
               px: isCompact ? { xs: 3, md: 4 } : { xs: 4, md: 8 },
               py: isCompact ? { xs: 1.5, md: 2 } : { xs: 2, md: 3 },
-              fontSize: isCompact ? { xs: '0.9rem', sm: '1rem', md: '1.3rem' } : { xs: '1rem', sm: '1.2rem', md: '1.4rem' },
+              fontSize: isCompact
+                ? { xs: '0.9rem', sm: '1rem', md: '1.3rem' }
+                : { xs: '1rem', sm: '1.2rem', md: '1.4rem' },
               fontWeight: 'bold',
               borderRadius: '16px',
               boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
@@ -154,7 +167,9 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
             endIcon={
               <Share
                 sx={{
-                  fontSize: isCompact ? { xs: '1rem', md: '1.3rem' } : { xs: '1.2rem', md: '1.8rem' }
+                  fontSize: isCompact
+                    ? { xs: '1rem', md: '1.3rem' }
+                    : { xs: '1.2rem', md: '1.8rem' },
                 }}
               />
             }
@@ -167,7 +182,9 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
             sx={{
               color: 'rgba(255,255,255,0.8)',
               textAlign: 'center',
-              fontSize: isCompact ? { xs: '0.7rem', sm: '0.75rem', md: '0.9rem' } : { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+              fontSize: isCompact
+                ? { xs: '0.7rem', sm: '0.75rem', md: '0.9rem' }
+                : { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
               maxWidth: '200px',
             }}
           >

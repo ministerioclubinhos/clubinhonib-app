@@ -253,6 +253,7 @@
 ### Banner de Período:
 
 **Mês Atual (Padrão):**
+
 ```
 ┌─────────────────────────────────────────┐
 │ 🔵 AZUL                                 │
@@ -262,6 +263,7 @@
 ```
 
 **Outro Período:**
+
 ```
 ┌─────────────────────────────────────────┐
 │ 🟣 ROXO                                 │
@@ -271,6 +273,7 @@
 ```
 
 **Múltiplos Meses:**
+
 ```
 ┌─────────────────────────────────────────┐
 │ 🟣 ROXO                                 │
@@ -320,7 +323,7 @@ Estágio 1: Novatos (0-3 meses)
 │ 🌱 Total: 150 | 120 crianças | 78.5% presença │
 │ [82% meditação] [75% recitação] [1.5m média]  │
 
-Estágio 2: Iniciantes (3-6 meses)  
+Estágio 2: Iniciantes (3-6 meses)
 ████████████████████████████ 75% ↓ 79.2% conversão
 │ 🌿 Total: 112 | 95 crianças | 85.2% presença │
 │ [87% meditação] [82% recitação] [4.5m média] │
@@ -367,6 +370,7 @@ Estágio 4: Veteranos (1+ ano)
 ### Estados dos Botões:
 
 **Inativo:**
+
 ```
 ┌──────────────┐
 │ 📅 Esta Semana│  ← Outlined, cor do ícone
@@ -374,6 +378,7 @@ Estágio 4: Veteranos (1+ ano)
 ```
 
 **Ativo:**
+
 ```
 ┌──────────────┐
 │ 📆 Este Mês  │  ← Contained, cor sólida
@@ -381,6 +386,7 @@ Estágio 4: Veteranos (1+ ano)
 ```
 
 **Hover:**
+
 ```
 ┌──────────────┐
 │ 📊 Últimos 7 │  ← Background levemente colorido
@@ -448,7 +454,7 @@ Decisões: [✓ Aceitou] [✓ Reconciliado] [-]
    50│██               ████
      └───────────────────────
      Jan Feb Mar Abr Mai Jun
-     
+
      ═══ Aceitaram (verde)
      ═══ Reconciliados (azul)
 
@@ -465,6 +471,7 @@ Decisões: [✓ Aceitou] [✓ Reconciliado] [-]
 ## 🎨 RESPONSIVIDADE
 
 ### Desktop (>960px):
+
 ```
 ┌──────────────────────────────────────────┐
 │  [Card] [Card] [Card] [Card]             │ ← Grid 4 colunas
@@ -474,6 +481,7 @@ Decisões: [✓ Aceitou] [✓ Reconciliado] [-]
 ```
 
 ### Mobile (<960px):
+
 ```
 ┌────────────┐
 │  [Card]    │ ← 1 coluna
@@ -495,6 +503,7 @@ Tabs: Scrolláveis → 📈 👥 🗺️ ✝️ ...
 ## 🎯 FLUXO DE INTERAÇÃO
 
 ### Usuário Abre a Página:
+
 ```
 1. ⚡ Vê cards de resumo animados
 2. 📅 Vê "NOVEMBRO DE 2025" em azul
@@ -505,6 +514,7 @@ Tabs: Scrolláveis → 📈 👥 🗺️ ✝️ ...
 ```
 
 ### Usuário Muda para "Últimos 30 Dias":
+
 ```
 1. 🖱️ Clica em "Últimos 30 Dias"
 2. ⚡ Filtros atualizam instantaneamente
@@ -515,6 +525,7 @@ Tabs: Scrolláveis → 📈 👥 🗺️ ✝️ ...
 ```
 
 ### Usuário Expande Filtros Avançados:
+
 ```
 1. 🖱️ Clica em ⬇️
 2. 📂 Revela mais opções
@@ -524,6 +535,7 @@ Tabs: Scrolláveis → 📈 👥 🗺️ ✝️ ...
 ```
 
 ### Usuário Navega nas Abas:
+
 ```
 1. 🖱️ Clica em "👨‍🏫 Professores"
 2. ✨ Transição suave
@@ -537,6 +549,7 @@ Tabs: Scrolláveis → 📈 👥 🗺️ ✝️ ...
 ## 💎 DESTAQUES VISUAIS
 
 ### Animações:
+
 ```
 Hover em Card:
 ┌─────┐          ┌─────┐
@@ -549,6 +562,7 @@ Hover em Lista:
 ```
 
 ### Gradientes:
+
 ```
 Card Background:
 ╔═══════════════════╗
@@ -563,6 +577,7 @@ Título:
 ```
 
 ### Elementos Decorativos:
+
 ```
 Card com círculo decorativo:
 ┌─────────────────┐
@@ -614,24 +629,24 @@ Chips de Performance:
 
 ## 🎯 LEGENDA DE ÍCONES
 
-| Ícone | Significado |
-|-------|-------------|
-| 📊 | Gráficos, estatísticas |
-| 📈 | Crescimento, tendências |
-| 👥 | Pessoas, grupos |
-| 🏆 | Rankings, conquistas |
-| 🥇🥈🥉 | Medalhas (1º, 2º, 3º) |
-| ⏱️ | Tempo, retenção |
-| 🗺️ | Geografia, localização |
-| ✝️ | Decisões espirituais |
-| 👨‍🏫 | Professores |
+| Ícone  | Significado                   |
+| ------ | ----------------------------- |
+| 📊     | Gráficos, estatísticas        |
+| 📈     | Crescimento, tendências       |
+| 👥     | Pessoas, grupos               |
+| 🏆     | Rankings, conquistas          |
+| 🥇🥈🥉 | Medalhas (1º, 2º, 3º)         |
+| ⏱️     | Tempo, retenção               |
+| 🗺️     | Geografia, localização        |
+| ✝️     | Decisões espirituais          |
+| 👨‍🏫     | Professores                   |
 | 🌱🌿🌳 | Crescimento (novato→veterano) |
-| ⚡ | Atalhos rápidos |
-| 📅 | Calendário, datas |
-| 🔍 | Filtros, busca |
-| 💡 | Insights, dicas |
-| ↑↓ | Tendências |
-| ✓ | Confirmação, sucesso |
+| ⚡     | Atalhos rápidos               |
+| 📅     | Calendário, datas             |
+| 🔍     | Filtros, busca                |
+| 💡     | Insights, dicas               |
+| ↑↓     | Tendências                    |
+| ✓      | Confirmação, sucesso          |
 
 ---
 
@@ -662,6 +677,7 @@ Caption: Legendas (0.75rem)
 ## ✅ CHECKLIST FINAL
 
 ### Extração da API:
+
 - [x] 100% do /overview (12 campos)
 - [x] 100% do /pagelas/charts (7 agrupamentos)
 - [x] 95% do /accepted-christs/charts (6 agrupamentos)
@@ -669,12 +685,14 @@ Caption: Legendas (0.75rem)
 - [x] Total: 40+ campos únicos extraídos
 
 ### Visualizações:
+
 - [x] 9 tipos de gráficos diferentes
 - [x] 25+ visualizações únicas
 - [x] 17 componentes criados
 - [x] 8 abas organizadas
 
 ### UX/UI:
+
 - [x] 6 atalhos rápidos
 - [x] 19 filtros implementados
 - [x] Banner dinâmico (cor muda!)
@@ -685,6 +703,7 @@ Caption: Legendas (0.75rem)
 - [x] Cores inteligentes
 
 ### Qualidade:
+
 - [x] TypeScript 100%
 - [x] Zero erros de lint
 - [x] Código limpo
@@ -704,7 +723,7 @@ Caption: Legendas (0.75rem)
 **Filtros:** 19/19 (100%)  
 **Atalhos:** 6 pré-configurados  
 **Visualizações:** 25+ únicas  
-**Documentação:** 6 guias completos  
+**Documentação:** 6 guias completos
 
 **Status:** ✅ PRODUÇÃO  
 **Qualidade:** ⭐⭐⭐⭐⭐ (5 estrelas)
@@ -713,8 +732,6 @@ Caption: Legendas (0.75rem)
 
 **Desenvolvido com 💙 para o Clubinho NIB**
 
-*A página de estatísticas mais completa e bonita que você já viu!* 🚀📊✨💎🏆
+_A página de estatísticas mais completa e bonita que você já viu!_ 🚀📊✨💎🏆
 
 **#DataVisualization #ReactJS #MaterialUI #Recharts #TypeScript**
-
-

@@ -1,12 +1,10 @@
-import React from "react";
+import React from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
   Grid,
-  Divider,
   Chip,
   Box,
   Typography,
@@ -19,7 +17,7 @@ import {
   useMediaQuery,
   useTheme,
   Avatar,
-} from "@mui/material";
+} from '@mui/material';
 import {
   CalendarToday,
   NumbersOutlined,
@@ -27,17 +25,11 @@ import {
   SchoolOutlined,
   PlaceOutlined,
   Update as UpdateIcon,
-  LocationCityOutlined,
-  MapOutlined,
-  LocalPostOfficeOutlined,
   AccessTime as AccessTimeIcon,
-  ContentCopy,
-  Phone as PhoneIcon,
-  WhatsApp,
-} from "@mui/icons-material";
-import { ClubResponseDto, WEEKDAYS } from "../types";
-import { fmtDate } from "@/utils/dates";
-import { CopyButton, initials } from "@/utils/components";
+} from '@mui/icons-material';
+import { ClubResponseDto, WEEKDAYS } from '../types';
+import { fmtDate } from '@/utils/dates';
+import { CopyButton, initials } from '@/utils/components';
 
 type Props = {
   open: boolean;
@@ -45,7 +37,6 @@ type Props = {
   club: ClubResponseDto | null;
   onClose: () => void;
 };
-
 
 function LineCard({
   icon,
@@ -71,13 +62,11 @@ function LineCard({
   );
 }
 
-
 export default function ClubViewDialog({ open, loading, club, onClose }: Props) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  
-  const weekdayLabel =
-    club && WEEKDAYS.find((w) => w.value === club.weekday)?.label;
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const weekdayLabel = club && WEEKDAYS.find((w) => w.value === club.weekday)?.label;
 
   const address = club?.address;
   const teachers = club?.teachers ?? [];
@@ -90,10 +79,10 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
       maxWidth="lg"
       PaperProps={{
         sx: {
-          width: isXs ? "98%" : "44rem",
+          width: isXs ? '98%' : '44rem',
           m: 0,
           borderRadius: { xs: 2, sm: 3 },
-          overflow: "hidden",
+          overflow: 'hidden',
         },
       }}
     >
@@ -102,10 +91,9 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
           px: { xs: 2, sm: 3 },
           pt: { xs: 2, sm: 3 },
           pb: { xs: 1.25, sm: 1.5 },
-          background:
-            "linear-gradient(135deg, rgba(76,175,80,.08) 0%, rgba(2,136,209,.08) 100%)",
+          background: 'linear-gradient(135deg, rgba(76,175,80,.08) 0%, rgba(2,136,209,.08) 100%)',
           borderBottom: 1,
-          borderColor: "divider",
+          borderColor: 'divider',
         }}
       >
         {!club ? (
@@ -117,8 +105,8 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                 sx={{
                   width: 48,
                   height: 48,
-                  bgcolor: "success.main",
-                  color: "success.contrastText",
+                  bgcolor: 'success.main',
+                  color: 'success.contrastText',
                   fontWeight: 700,
                 }}
                 aria-label="avatar do clubinho"
@@ -126,12 +114,7 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                 {initials(`Clubinho ${club.number}`)}
               </Avatar>
               <Box sx={{ minWidth: 0 }}>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  flexWrap="wrap"
-                >
+                <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
                   <Typography
                     variant="h6"
                     fontWeight={800}
@@ -160,9 +143,9 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                   )}
                   <Chip
                     size="small"
-                    label={club.isActive ? "Ativo" : "Inativo"}
-                    color={club.isActive ? "success" : "default"}
-                    variant={club.isActive ? "filled" : "outlined"}
+                    label={club.isActive ? 'Ativo' : 'Inativo'}
+                    color={club.isActive ? 'success' : 'default'}
+                    variant={club.isActive ? 'filled' : 'outlined'}
                   />
                 </Stack>
               </Box>
@@ -174,7 +157,7 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
       <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
         {loading && !club && (
           <Box textAlign="center" my={2}>
-            <Skeleton height={28} width="60%" sx={{ mx: "auto", mb: 2 }} />
+            <Skeleton height={28} width="60%" sx={{ mx: 'auto', mb: 2 }} />
             <Skeleton height={20} />
             <Skeleton height={20} />
             <Skeleton height={120} sx={{ mt: 2 }} />
@@ -197,23 +180,17 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
               </Grid>
               <Grid item xs={12} sm={6}>
                 <LineCard icon={<CalendarToday fontSize="small" />} title="Dia da semana">
-                  <Typography variant="body1">
-                    {weekdayLabel || "—"}
-                  </Typography>
+                  <Typography variant="body1">{weekdayLabel || '—'}</Typography>
                 </LineCard>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <LineCard icon={<AccessTimeIcon fontSize="small" />} title="Horário">
-                  <Typography variant="body1">
-                    {club.time || "—"}
-                  </Typography>
+                  <Typography variant="body1">{club.time || '—'}</Typography>
                 </LineCard>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <LineCard icon={<UpdateIcon fontSize="small" />} title="Atualizado em">
-                  <Typography variant="body1">
-                    {fmtDate(club.updatedAt)}
-                  </Typography>
+                  <Typography variant="body1">{fmtDate(club.updatedAt)}</Typography>
                 </LineCard>
               </Grid>
             </Grid>
@@ -224,14 +201,14 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                 <Chip
                   size="small"
                   label={`Professores: ${teachers.length}`}
-                  color={teachers.length > 0 ? "info" : "default"}
-                  variant={teachers.length > 0 ? "filled" : "outlined"}
+                  color={teachers.length > 0 ? 'info' : 'default'}
+                  variant={teachers.length > 0 ? 'filled' : 'outlined'}
                 />
                 <Chip
                   size="small"
-                  label={`Coordenador: ${club.coordinator ? "Vinculado" : "Não vinculado"}`}
-                  color={club.coordinator ? "success" : "default"}
-                  variant={club.coordinator ? "filled" : "outlined"}
+                  label={`Coordenador: ${club.coordinator ? 'Vinculado' : 'Não vinculado'}`}
+                  color={club.coordinator ? 'success' : 'default'}
+                  variant={club.coordinator ? 'filled' : 'outlined'}
                 />
               </Stack>
             </Paper>
@@ -263,7 +240,9 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                   {club.coordinator ? (
                     <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                       <Typography variant="body1" fontWeight={600}>
-                        {club.coordinator.user?.name || club.coordinator.user?.email || club.coordinator.id}
+                        {club.coordinator.user?.name ||
+                          club.coordinator.user?.email ||
+                          club.coordinator.id}
                       </Typography>
                       {club.coordinator.user?.phone && (
                         <>
@@ -322,8 +301,8 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
         sx={{
           p: { xs: 1.5, sm: 2 },
           gap: 1,
-          flexWrap: "wrap",
-          justifyContent: "space-between",
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
         }}
       >
         <Button fullWidth={isXs} onClick={onClose} variant="outlined">

@@ -8,9 +8,9 @@ import {
   useMediaQuery,
   useTheme,
   Stack,
-} from "@mui/material";
-import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
-import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
+} from '@mui/material';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
 
 interface Props {
   open: boolean;
@@ -28,14 +28,14 @@ export default function DeleteConfirmDialog({
   loading = false,
 }: Props) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const fs = {
-    title: { xs: "0.95rem", sm: "1.05rem" },
-    body: { xs: "0.88rem", sm: "0.95rem" },
-    strong: { xs: "0.9rem", sm: "1rem" },
-    danger: { xs: "0.8rem", sm: "0.9rem" },
-    btn: { xs: "0.95rem", sm: "1rem" },
+    title: { xs: '0.95rem', sm: '1.05rem' },
+    body: { xs: '0.88rem', sm: '0.95rem' },
+    strong: { xs: '0.9rem', sm: '1rem' },
+    danger: { xs: '0.8rem', sm: '0.9rem' },
+    btn: { xs: '0.95rem', sm: '1rem' },
   } as const;
 
   return (
@@ -58,19 +58,15 @@ export default function DeleteConfirmDialog({
         sx={{
           bgcolor: (t) => t.palette.error.main,
           color: (t) => t.palette.error.contrastText,
-          display: "flex",
-          alignItems: "center",
+          display: 'flex',
+          alignItems: 'center',
           gap: 1,
           py: 2,
-          px: 2
+          px: 2,
         }}
       >
-        <WarningAmberRoundedIcon fontSize={isMobile ? "small" : "small"} />
-        <Typography
-          component="span"
-          fontWeight={900}
-          sx={{ fontSize: fs.title, px: 0 }}
-        >
+        <WarningAmberRoundedIcon fontSize={isMobile ? 'small' : 'small'} />
+        <Typography component="span" fontWeight={900} sx={{ fontSize: fs.title, px: 0 }}>
           Atenção! Ação Irreversível
         </Typography>
       </DialogTitle>
@@ -83,20 +79,20 @@ export default function DeleteConfirmDialog({
           Você está prestes a excluir permanentemente:
           <br />
           <strong style={{ fontSize: isMobile ? fs.strong.xs : fs.strong.sm }}>
-            {title ?? "este item"}
+            {title ?? 'este item'}
           </strong>
           .
         </Typography>
 
         <Typography
           sx={{
-            color: "error.main",
+            color: 'error.main',
             fontWeight: 700,
             fontSize: fs.danger,
           }}
         >
-          Esta operação não pode ser desfeita. Todos os dados relacionados
-          serão perdidos para sempre.
+          Esta operação não pode ser desfeita. Todos os dados relacionados serão perdidos para
+          sempre.
         </Typography>
       </DialogContent>
 
@@ -113,7 +109,7 @@ export default function DeleteConfirmDialog({
               size="large"
               sx={{ fontWeight: 800, fontSize: fs.btn, py: 1.1 }}
             >
-              {loading ? "Excluindo..." : "Excluir"}
+              {loading ? 'Excluindo...' : 'Excluir'}
             </Button>
             <Button
               onClick={onClose}
@@ -128,11 +124,7 @@ export default function DeleteConfirmDialog({
           </Stack>
         ) : (
           <>
-            <Button
-              onClick={onClose}
-              disabled={loading}
-              sx={{ fontSize: fs.btn }}
-            >
+            <Button onClick={onClose} disabled={loading} sx={{ fontSize: fs.btn }}>
               Cancelar
             </Button>
             <Button
@@ -143,7 +135,7 @@ export default function DeleteConfirmDialog({
               disabled={loading}
               sx={{ fontWeight: 700, fontSize: fs.btn }}
             >
-              {loading ? "Excluindo..." : "Excluir"}
+              {loading ? 'Excluindo...' : 'Excluir'}
             </Button>
           </>
         )}

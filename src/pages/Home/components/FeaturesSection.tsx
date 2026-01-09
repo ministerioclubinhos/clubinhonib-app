@@ -18,7 +18,8 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ features }) => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%)',
+          background:
+            'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%)',
           zIndex: 0,
         },
       }}
@@ -68,7 +69,8 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ features }) => {
                 <Card
                   sx={{
                     height: '100%',
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 255, 0.8) 100%)',
+                    background:
+                      'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 255, 0.8) 100%)',
                     backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(102, 126, 234, 0.2)',
                     borderRadius: 4,

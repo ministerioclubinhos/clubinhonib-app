@@ -18,7 +18,7 @@ export const useContactForm = () => {
         message: data.mensagem,
       });
       setSubmitted(true);
-    } catch (error) {
+    } catch {
       setGlobalError('Erro ao enviar a mensagem. Tente novamente mais tarde.');
     } finally {
       setLoading(false);

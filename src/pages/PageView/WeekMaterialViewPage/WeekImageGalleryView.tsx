@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  useTheme, 
+import {
+  Box,
+  Typography,
+  Paper,
+  useTheme,
   useMediaQuery,
   Chip,
   Stack,
@@ -84,12 +84,7 @@ export default function WeekImageGallery({ image }: Props) {
           }}
         >
           {/* Header */}
-          <Box
-            display="flex"
-            alignItems="center"
-            gap={2}
-            mb={3}
-          >
+          <Box display="flex" alignItems="center" gap={2} mb={3}>
             <Box
               sx={{
                 p: 2,
@@ -103,7 +98,7 @@ export default function WeekImageGallery({ image }: Props) {
             >
               <ImageIcon sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} />
             </Box>
-            
+
             <Box flex={1}>
               <Typography
                 variant="h6"
@@ -117,7 +112,7 @@ export default function WeekImageGallery({ image }: Props) {
               >
                 {image.title}
               </Typography>
-              
+
               {fileSize && (
                 <Chip
                   label={fileSize}
@@ -140,11 +135,14 @@ export default function WeekImageGallery({ image }: Props) {
               overflow: 'hidden',
               position: 'relative',
               cursor: canVisualize && finalUrl ? 'pointer' : 'default',
-              '&:hover': canVisualize && finalUrl ? {
-                '& .zoom-overlay': {
-                  opacity: 1,
-                },
-              } : {},
+              '&:hover':
+                canVisualize && finalUrl
+                  ? {
+                      '& .zoom-overlay': {
+                        opacity: 1,
+                      },
+                    }
+                  : {},
             }}
             onClick={handleImageClick}
           >
@@ -196,7 +194,8 @@ export default function WeekImageGallery({ image }: Props) {
                 }}
               >
                 <Typography color="text.secondary" textAlign="center">
-                  📷<br />
+                  📷
+                  <br />
                   Visualização não disponível
                 </Typography>
               </Box>
@@ -270,7 +269,7 @@ export default function WeekImageGallery({ image }: Props) {
           >
             <CloseIcon />
           </IconButton>
-          
+
           {finalUrl && (
             <Zoom in={open} timeout={300}>
               <Box

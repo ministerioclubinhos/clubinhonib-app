@@ -1,18 +1,11 @@
 import React from 'react';
-import {
-  Container,
-  Typography,
-  Paper,
-  Divider,
-  Box,
-  CircularProgress,
-} from '@mui/material';
+import { Container, Typography, Paper, Divider, Box, CircularProgress } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
-import { 
+import {
   InformativeBanner,
   FofinhoButton,
-  SpecialFamilyCallout, 
+  SpecialFamilyCallout,
   IdeasSharingBanner,
   BannerSection,
   MotivationSection,
@@ -33,13 +26,10 @@ const TeacherArea: React.FC = () => {
       {/* Special Family Callout - Commented out for now */}
       {/* <SpecialFamilyCallout /> */}
 
-      <BannerSection 
-        showWeekBanner={showWeek} 
-        showMeditationBanner={showMeditation} 
-      />
+      <BannerSection showWeekBanner={showWeek} showMeditationBanner={showMeditation} />
 
-      <FofinhoButton 
-        references={['materials', 'childrenArea', 'photos', 'rate', 'events', 'help']} 
+      <FofinhoButton
+        references={['materials', 'childrenArea', 'photos', 'rate', 'events', 'help']}
       />
 
       <MotivationSection motivationText={MOTIVATION_TEXT} />

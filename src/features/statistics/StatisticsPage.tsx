@@ -76,20 +76,20 @@ const StatisticsPageContent: React.FC = () => {
   const initialTab = Number(searchParams.get('tab') ?? 0);
   const [activeTab, setActiveTab] = React.useState(Number.isNaN(initialTab) ? 0 : initialTab);
   const [filtersOpen, setFiltersOpen] = React.useState(false);
-  
+
   // Configurar filtros padrão para o mês atual
   const getDefaultFilters = (): StatisticsFilters => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
+
     return {
       startDate: dayjs(firstDay).format('YYYY-MM-DD'),
       endDate: dayjs(lastDay).format('YYYY-MM-DD'),
       groupBy: 'week', // Agrupamento semanal para melhor visualização mensal
     };
   };
-  
+
   const [filters, setFilters] = React.useState<StatisticsFilters>(getDefaultFilters());
 
   const handleTabChange = (event: React.SyntheticEvent | null, newValue: number) => {
@@ -110,11 +110,11 @@ const StatisticsPageContent: React.FC = () => {
   };
 
   return (
-    <Container 
-      maxWidth="xl" 
-      sx={{ 
+    <Container
+      maxWidth="xl"
+      sx={{
         py: { xs: 2, sm: 3, md: 4 },
-        px: { xs: 1, sm: 2, md: 3 }
+        px: { xs: 1, sm: 2, md: 3 },
       }}
     >
       {/* Header */}
@@ -133,14 +133,18 @@ const StatisticsPageContent: React.FC = () => {
         >
           📊 Estatísticas do Clubinho NIB
         </Typography>
-        <Typography 
-          variant="body1" 
+        <Typography
+          variant="body1"
           color="text.secondary"
           sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
         >
           Análise completa de dados, insights e relatórios
           {filters.startDate && filters.endDate && (
-            <> - {dayjs(filters.startDate).format('MMM/YYYY')} a {dayjs(filters.endDate).format('MMM/YYYY')}</>
+            <>
+              {' '}
+              - {dayjs(filters.startDate).format('MMM/YYYY')} a{' '}
+              {dayjs(filters.endDate).format('MMM/YYYY')}
+            </>
           )}
         </Typography>
       </Box>
@@ -157,9 +161,9 @@ const StatisticsPageContent: React.FC = () => {
 
       {/* Filtros - colapsáveis (fechados por padrão) */}
       <Box sx={{ mt: { xs: 1.5, sm: 2 }, mb: { xs: 1.5, sm: 2 } }}>
-        <Button 
-          variant="outlined" 
-          size="small" 
+        <Button
+          variant="outlined"
+          size="small"
           onClick={() => setFiltersOpen((v) => !v)}
           fullWidth={isMobile}
         >
@@ -191,7 +195,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 0 ? 600 : 400,
                       color: activeTab === 0 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 0 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 0
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -209,7 +216,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 1 ? 600 : 400,
                       color: activeTab === 1 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 1 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 1
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -227,7 +237,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 2 ? 600 : 400,
                       color: activeTab === 2 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 2 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 2
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -245,7 +258,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 3 ? 600 : 400,
                       color: activeTab === 3 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 3 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 3
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -263,7 +279,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 4 ? 600 : 400,
                       color: activeTab === 4 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 4 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 4
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -281,7 +300,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 5 ? 600 : 400,
                       color: activeTab === 5 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 5 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 5
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -299,7 +321,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 6 ? 600 : 400,
                       color: activeTab === 6 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 6 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 6
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -317,7 +342,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 7 ? 600 : 400,
                       color: activeTab === 7 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 7 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 7
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -335,7 +363,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 8 ? 600 : 400,
                       color: activeTab === 8 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 8 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 8
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -353,7 +384,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 9 ? 600 : 400,
                       color: activeTab === 9 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 9 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 9
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -371,7 +405,10 @@ const StatisticsPageContent: React.FC = () => {
                       textTransform: 'none',
                       fontWeight: activeTab === 10 ? 600 : 400,
                       color: activeTab === 10 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 10 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderBottom:
+                        activeTab === 10
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : '2px solid transparent',
                       width: '100%',
                       '&:hover': {
                         bgcolor: 'action.hover',
@@ -415,7 +452,15 @@ const StatisticsPageContent: React.FC = () => {
         {/* Tab 1: Visão Geral */}
         <TabPanel value={activeTab} index={0}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={80} /><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={280} /></Box>}>
+            <Suspense
+              fallback={
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Skeleton variant="rounded" height={80} />
+                  <Skeleton variant="rounded" height={300} />
+                  <Skeleton variant="rounded" height={280} />
+                </Box>
+              }
+            >
               <OverviewTab filters={filters} />
             </Suspense>
           </Box>
@@ -424,7 +469,14 @@ const StatisticsPageContent: React.FC = () => {
         {/* Tab 2: Frequência */}
         <TabPanel value={activeTab} index={1}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={300} /></Box>}>
+            <Suspense
+              fallback={
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Skeleton variant="rounded" height={300} />
+                  <Skeleton variant="rounded" height={300} />
+                </Box>
+              }
+            >
               <FrequencyTab />
             </Suspense>
           </Box>
@@ -460,7 +512,14 @@ const StatisticsPageContent: React.FC = () => {
         {/* Tab 6: Demográfico */}
         <TabPanel value={activeTab} index={5}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={280} /><Skeleton variant="rounded" height={320} /></Box>}>
+            <Suspense
+              fallback={
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Skeleton variant="rounded" height={280} />
+                  <Skeleton variant="rounded" height={320} />
+                </Box>
+              }
+            >
               <DemographicTab filters={filters} />
             </Suspense>
           </Box>
@@ -487,7 +546,14 @@ const StatisticsPageContent: React.FC = () => {
         {/* Tab 9: Retenção */}
         <TabPanel value={activeTab} index={8}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={300} /></Box>}>
+            <Suspense
+              fallback={
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Skeleton variant="rounded" height={300} />
+                  <Skeleton variant="rounded" height={300} />
+                </Box>
+              }
+            >
               <RetentionTab filters={filters} />
             </Suspense>
           </Box>
@@ -505,7 +571,14 @@ const StatisticsPageContent: React.FC = () => {
         {/* Tab 11: Rankings */}
         <TabPanel value={activeTab} index={10}>
           <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={260} /><Skeleton variant="rounded" height={260} /></Box>}>
+            <Suspense
+              fallback={
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Skeleton variant="rounded" height={260} />
+                  <Skeleton variant="rounded" height={260} />
+                </Box>
+              }
+            >
               <RankingsTab filters={filters} />
             </Suspense>
           </Box>
@@ -514,10 +587,18 @@ const StatisticsPageContent: React.FC = () => {
 
       {/* Footer Info */}
       <Box sx={{ mt: { xs: 2, sm: 3, md: 4 }, textAlign: 'center', px: { xs: 1, sm: 0 } }}>
-        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+        >
           💡 Use os filtros acima para personalizar suas análises
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+        >
           Última atualização: {dayjs().format('DD/MM/YYYY HH:mm')}
         </Typography>
       </Box>
@@ -535,4 +616,3 @@ const StatisticsPage: React.FC = () => {
 };
 
 export default StatisticsPage;
-

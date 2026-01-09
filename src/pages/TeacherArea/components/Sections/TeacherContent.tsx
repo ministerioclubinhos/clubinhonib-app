@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { Box, Typography, Grid, Card, CardContent, useMediaQuery, useTheme, IconButton } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  useMediaQuery,
+  useTheme,
+  IconButton,
+} from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InfoIcon from '@mui/icons-material/Info';
@@ -81,7 +90,8 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
               mb: 1,
             }}
           >
-            Bem-vindo ao site do Clubinho onde consegue encontrar materiais, ideias e recursos para enriquecer suas aulas!
+            Bem-vindo ao site do Clubinho onde consegue encontrar materiais, ideias e recursos para
+            enriquecer suas aulas!
           </Typography>
 
           <Typography
@@ -96,15 +106,20 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
               letterSpacing: '0.2px',
             }}
           >
-            Tudo atualizado semanalmente e alinhado ao calendário bíblico para sua missão evangelística! ✨
+            Tudo atualizado semanalmente e alinhado ao calendário bíblico para sua missão
+            evangelística! ✨
           </Typography>
         </Box>
       </Box>
 
       <Grid container spacing={3} sx={{ mt: 4 }}>
         {SECTION_DATA.map((section, idx) => {
-          const IconComponent = section.icon === 'CheckCircle' ? CheckCircleIcon :
-            section.icon === 'Info' ? InfoIcon : LightbulbIcon;
+          const IconComponent =
+            section.icon === 'CheckCircle'
+              ? CheckCircleIcon
+              : section.icon === 'Info'
+                ? InfoIcon
+                : LightbulbIcon;
 
           const isExpanded = expandedCard === idx;
           const isCompressed = isMobile && !isExpanded;
@@ -149,7 +164,12 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
                   />
 
                   <CardContent sx={{ position: 'relative', zIndex: 1, p: { xs: 1.5, md: 2 } }}>
-                    <Box display="flex" alignItems="center" justifyContent="space-between" mb={isCompressed ? 0 : 1.5}>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      mb={isCompressed ? 0 : 1.5}
+                    >
                       <Box display="flex" alignItems="center" flex={1}>
                         <Box
                           sx={{

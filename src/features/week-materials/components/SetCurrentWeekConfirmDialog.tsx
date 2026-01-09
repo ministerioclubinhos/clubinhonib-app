@@ -1,6 +1,11 @@
 import {
-  Dialog, DialogTitle, DialogContent, DialogContentText,
-  DialogActions, Button, IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -12,7 +17,10 @@ interface Props {
 }
 
 export default function SetCurrentWeekConfirmDialog({
-  open, materialTitle, onClose, onConfirm,
+  open,
+  materialTitle,
+  onClose,
+  onConfirm,
 }: Props) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>

@@ -1,11 +1,22 @@
-import React from "react";
+import React from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid,
-  TextField, Alert, Box, FormControl, InputLabel, Select, MenuItem
-} from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
-import { CreateUserForm } from "../types";
-import { UserRole } from "@/store/slices/auth/authSlice";
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Grid,
+  TextField,
+  Alert,
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import { CreateUserForm } from '../types';
+import { UserRole } from '@/store/slices/auth/authSlice';
 
 type Props = {
   open: boolean;
@@ -18,13 +29,19 @@ type Props = {
 };
 
 const roleLabels: Record<UserRole, string> = {
-  [UserRole.COORDINATOR]: "Coordenador",
-  [UserRole.TEACHER]: "Professor",
-  [UserRole.ADMIN]: "Administrador", 
+  [UserRole.COORDINATOR]: 'Coordenador',
+  [UserRole.TEACHER]: 'Professor',
+  [UserRole.ADMIN]: 'Administrador',
 };
 
 export default function UserCreateDialog({
-  open, value, onChange, loading, error, onCancel, onConfirm,
+  open,
+  value,
+  onChange,
+  loading,
+  error,
+  onCancel,
+  onConfirm,
 }: Props) {
   if (!value) return null;
 
@@ -34,7 +51,11 @@ export default function UserCreateDialog({
     <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
       <DialogTitle>Criar Usuário</DialogTitle>
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         <Grid container spacing={{ xs: 1.5, md: 2 }} sx={{ mt: 1 }}>
           <Grid item xs={12} md={6}>
@@ -70,7 +91,7 @@ export default function UserCreateDialog({
               fullWidth
               label="Confirmar Senha"
               type="password"
-              value={value.confirmPassword || ""}
+              value={value.confirmPassword || ''}
               onChange={(e) => onChange({ ...value, confirmPassword: e.target.value })}
             />
           </Grid>
@@ -81,9 +102,7 @@ export default function UserCreateDialog({
               <Select
                 label="Papel"
                 value={value.role ?? UserRole.TEACHER}
-                onChange={(e) =>
-                  onChange({ ...value, role: e.target.value as UserRole })
-                }
+                onChange={(e) => onChange({ ...value, role: e.target.value as UserRole })}
               >
                 {roleOptions.map((role) => (
                   <MenuItem key={role} value={role}>
@@ -98,7 +117,7 @@ export default function UserCreateDialog({
             <TextField
               fullWidth
               label="Telefone"
-              value={value.phone || ""}
+              value={value.phone || ''}
               onChange={(e) => onChange({ ...value, phone: e.target.value })}
             />
           </Grid>
@@ -112,7 +131,7 @@ export default function UserCreateDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onCancel} sx={{ color: "text.secondary" }}>
+        <Button onClick={onCancel} sx={{ color: 'text.secondary' }}>
           Cancelar
         </Button>
         <Button variant="contained" onClick={onConfirm} disabled={loading}>

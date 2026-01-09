@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Grid, 
-  Modal, 
-  IconButton, 
-  Tooltip, 
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Modal,
+  IconButton,
+  Tooltip,
   Skeleton,
   useTheme,
   useMediaQuery,
@@ -41,16 +41,26 @@ export interface SectionItemProps extends Omit<SectionData, 'id' | 'public'> {}
 const formatDateTime = (value: string | Date) => {
   const date = new Date(value);
   const monthNames = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
   ];
-  
+
   const day = date.getDate();
   const month = monthNames[date.getMonth()];
   const year = date.getFullYear();
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
-  
+
   return {
     date: `${day} de ${month} de ${year}`,
     time: `${hours}:${minutes}`,
@@ -136,7 +146,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -8 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
       style={{ marginBottom: theme.spacing(4) }}
     >
       <Card
@@ -157,16 +167,16 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
       >
         {/* Header com Avatar e Info */}
         <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 }, pb: 2 }}>
-          <Box 
-            display="flex" 
-            alignItems="flex-start" 
-            gap={{ xs: 2, sm: 3 }} 
+          <Box
+            display="flex"
+            alignItems="flex-start"
+            gap={{ xs: 2, sm: 3 }}
             mb={{ xs: 2, sm: 3 }}
             flexDirection={{ xs: 'column', sm: 'row' }}
           >
-            <Box 
-              display="flex" 
-              alignItems="center" 
+            <Box
+              display="flex"
+              alignItems="center"
               gap={{ xs: 2, sm: 3 }}
               width={{ xs: '100%', sm: 'auto' }}
             >
@@ -180,12 +190,12 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
               >
                 <ImageIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
               </Avatar>
-            
+
               <Box flex={1}>
-                <Box 
-                  display="flex" 
-                  alignItems={{ xs: 'flex-start', sm: 'center' }} 
-                  gap={{ xs: 1, sm: 2 }} 
+                <Box
+                  display="flex"
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  gap={{ xs: 1, sm: 2 }}
                   mb={1}
                   flexDirection={{ xs: 'column', sm: 'row' }}
                 >
@@ -244,8 +254,8 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
                   {created && (
                     <Box display="flex" alignItems="center" gap={1}>
                       <ScheduleIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         color="text.secondary"
                         sx={{
                           fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -259,8 +269,8 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
                   {updated && updated.date !== created?.date && (
                     <Box display="flex" alignItems="center" gap={1}>
                       <UpdateIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         color="text.secondary"
                         sx={{
                           fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -280,10 +290,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
         {/* Hero Image com efeito parallax */}
         {heroSrc && (
           <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.6 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.6 }}>
               <CardMedia
                 component="img"
                 image={heroSrc}
@@ -297,7 +304,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
                 }}
               />
             </motion.div>
-            
+
             {/* Overlay gradient */}
             <Box
               sx={{
@@ -320,7 +327,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
               {thumbnails.map((item, index) => {
                 const src = getMediaPreviewUrl(item as MediaItem);
                 const actualIndex = index + 1;
-                
+
                 return (
                   <Grid item xs={4} sm={2} md={2} key={item.id || index}>
                     <motion.div
@@ -351,10 +358,10 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
                             display: 'block',
                           }}
                         />
-                        
+
                         {/* Platform Icon com animação */}
                         <motion.div
-                          animate={{ 
+                          animate={{
                             scale: hoveredImage === actualIndex ? 1.2 : 1,
                             rotate: hoveredImage === actualIndex ? 5 : 0,
                           }}
@@ -415,10 +422,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
 
             {mediaItems.length > 7 && !showAll && (
               <Box textAlign="center" mt={3}>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Typography
                     variant="button"
                     color="primary"

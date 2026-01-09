@@ -1,4 +1,4 @@
-export const TZ = "America/Manaus";
+export const TZ = 'America/Manaus';
 
 export type MinimalUser = { id: string; name?: string; email?: string; phone?: string };
 
@@ -7,9 +7,11 @@ export type ClubSimple = { id: string; number?: number; weekday?: string };
 export type TeacherProfile = {
   id: string;
   user: MinimalUser;
-  club?: (ClubSimple & {
-    coordinator?: { user?: MinimalUser } | null;
-  }) | null;
+  club?:
+    | (ClubSimple & {
+        coordinator?: { user?: MinimalUser } | null;
+      })
+    | null;
   active?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -24,13 +26,13 @@ export type Page<T> = {
 };
 
 export type TeacherQuery = {
-  searchString?: string; 
+  searchString?: string;
   q?: string;
   active?: boolean;
   hasClub?: boolean;
   clubNumber?: number;
   page?: number;
   limit?: number;
-  sort?: "updatedAt" | "createdAt" | "name" | "clubNumber";
-  order?: "asc" | "desc";
+  sort?: 'updatedAt' | 'createdAt' | 'name' | 'clubNumber';
+  order?: 'asc' | 'desc';
 };

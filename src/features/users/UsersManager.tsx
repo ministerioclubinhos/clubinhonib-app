@@ -1,44 +1,44 @@
-import React from "react";
-import { Box, Alert, CircularProgress } from "@mui/material";
-import { useTheme, useMediaQuery } from "@mui/material";
+import React from 'react';
+import { Box, Alert, CircularProgress } from '@mui/material';
+import { useTheme, useMediaQuery } from '@mui/material';
 
-import UsersToolbar from "./components/UsersToolbar";
-import UsersTable from "./components/UsersTable";
-import UserViewDialog from "./components/UserViewDialog";
-import UserCreateDialog from "./components/UserCreateDialog";
-import UserEditDialog from "./components/UserEditDialog";
+import UsersToolbar from './components/UsersToolbar';
+import UsersTable from './components/UsersTable';
+import UserViewDialog from './components/UserViewDialog';
+import UserCreateDialog from './components/UserCreateDialog';
+import UserEditDialog from './components/UserEditDialog';
 
-import {
-  CreateUserForm,
-  SortParam,
-  UserFilters,
-  UserRow,
-  UpadateUserForm,
-} from "./types";
+import { CreateUserForm, SortParam, UserFilters, UserRow, UpadateUserForm } from './types';
 
-import { useUserMutations, useUsers } from "./hooks";
-import { UserRole } from "@/store/slices/auth/authSlice";
-import BackHeader from "@/components/common/header/BackHeader";
-import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import { useUserMutations, useUsers } from './hooks';
+import { UserRole } from '@/store/slices/auth/authSlice';
+import BackHeader from '@/components/common/header/BackHeader';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 export default function UsersManager() {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [pageSize, setPageSize] = React.useState(12);
   const [pageIndex, setPageIndex] = React.useState(0);
-  const [sorting, setSorting] = React.useState<SortParam>({ id: "updatedAt", desc: true });
+  const [sorting, setSorting] = React.useState<SortParam>({ id: 'updatedAt', desc: true });
   const [filters, setFilters] = React.useState<UserFilters>({
-    q: "",
-    role: "all",
+    q: '',
+    role: 'all',
     onlyActive: false,
     onlyCompleted: false,
   });
 
-  const { rows, total, loading, error, setError, fetchPage } =
-    useUsers(pageIndex, pageSize, sorting, filters);
+  const { rows, total, loading, error, setError, fetchPage } = useUsers(
+    pageIndex,
+    pageSize,
+    sorting,
+    filters
+  );
 
-  const doRefresh = React.useCallback(() => { fetchPage(); }, [fetchPage]);
+  const doRefresh = React.useCallback(() => {
+    fetchPage();
+  }, [fetchPage]);
 
   const { dialogLoading, dialogError, setDialogError, createUser, updateUser, deleteUser } =
     useUserMutations(fetchPage);
@@ -54,8 +54,8 @@ export default function UsersManager() {
 
   const onCreateConfirm = async () => {
     if (!creating) return;
-    if (creating.password !== (creating.confirmPassword || "")) {
-      setDialogError("As senhas não coincidem.");
+    if (creating.password !== (creating.confirmPassword || '')) {
+      setDialogError('As senhas não coincidem.');
       return;
     }
     await createUser(creating);
@@ -69,11 +69,11 @@ export default function UsersManager() {
 
     if (wantsPassword) {
       if (!editing.password) {
-        setDialogError("Informe a nova senha.");
+        setDialogError('Informe a nova senha.');
         return;
       }
       if (editing.password !== editing.confirmPassword) {
-        setDialogError("As senhas não coincidem.");
+        setDialogError('As senhas não coincidem.');
         return;
       }
     }
@@ -97,19 +97,24 @@ export default function UsersManager() {
   };
 
   return (
-    <Box sx={{ px: { xs: 2, md: 0 }, py: { xs: 0, md: 0 }, minHeight: "100vh", bgcolor: "#f9fafb" }}>
+    <Box
+      sx={{ px: { xs: 2, md: 0 }, py: { xs: 0, md: 0 }, minHeight: '100vh', bgcolor: '#f9fafb' }}
+    >
       <BackHeader title="Gerenciador de Usuários" />
 
       <UsersToolbar
         filters={filters}
-        onChange={(next) => { setFilters(next); setPageIndex(0); }}
+        onChange={(next) => {
+          setFilters(next);
+          setPageIndex(0);
+        }}
         onCreate={() =>
           setCreating({
-            name: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-            phone: "",
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            phone: '',
             role: UserRole.TEACHER,
           })
         }
@@ -118,11 +123,15 @@ export default function UsersManager() {
       />
 
       {loading && !rows.length && (
-        <Box textAlign="center" my={6}><CircularProgress /></Box>
+        <Box textAlign="center" my={6}>
+          <CircularProgress />
+        </Box>
       )}
 
       {error && !loading && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>{error}</Alert>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+          {error}
+        </Alert>
       )}
 
       <UsersTable
@@ -133,7 +142,7 @@ export default function UsersManager() {
         setPageIndex={setPageIndex}
         setPageSize={setPageSize}
         sorting={sorting ? ([sorting] as any) : []}
-        setSorting={(s) => setSorting(Array.isArray(s) ? s[0] ?? null : (s as any))}
+        setSorting={(s) => setSorting(Array.isArray(s) ? (s[0] ?? null) : (s as any))}
         onView={(user) => setViewing(user)}
         onEdit={(user) =>
           setEditing({
@@ -144,8 +153,8 @@ export default function UsersManager() {
             active: user.active,
             completed: user.completed,
             commonUser: user.commonUser,
-            password: "",
-            confirmPassword: "",
+            password: '',
+            confirmPassword: '',
             editPassword: false,
           })
         }
@@ -160,7 +169,10 @@ export default function UsersManager() {
         onChange={(v) => setCreating(v)}
         loading={dialogLoading}
         error={dialogError}
-        onCancel={() => { setCreating(null); setDialogError(""); }}
+        onCancel={() => {
+          setCreating(null);
+          setDialogError('');
+        }}
         onConfirm={onCreateConfirm}
       />
 
@@ -170,13 +182,16 @@ export default function UsersManager() {
         onChange={(v) => setEditing((prev) => (prev ? { ...prev, ...v } : null))}
         loading={dialogLoading}
         error={dialogError}
-        onCancel={() => { setEditing(null); setDialogError(""); }}
+        onCancel={() => {
+          setEditing(null);
+          setDialogError('');
+        }}
         onConfirm={onEditConfirm}
       />
 
       <DeleteConfirmDialog
         open={!!confirmDelete}
-        title={confirmDelete?.name || "Usuário"}
+        title={confirmDelete?.name || 'Usuário'}
         onClose={() => setConfirmDelete(null)}
         onConfirm={onDeleteConfirm}
       />

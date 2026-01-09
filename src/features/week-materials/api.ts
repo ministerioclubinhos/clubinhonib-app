@@ -4,7 +4,7 @@ import { WeekMaterialPageData } from '@/store/slices/week-material/weekMaterialS
 export async function listWeekMaterials(): Promise<WeekMaterialPageData[]> {
   const { data } = await api.get<WeekMaterialPageData[]>('/week-material-pages');
   return [...data].sort(
-    (a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
+    (a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
   );
 }
 

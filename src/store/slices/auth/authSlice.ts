@@ -148,7 +148,9 @@ const authSlice = createSlice({
       try {
         localStorage.setItem('accessToken', state.accessToken!);
         localStorage.setItem('refreshToken', state.refreshToken!);
-      } catch { }
+      } catch {
+        // Ignore localStorage errors
+      }
     },
     logout: (state) => {
       state.accessToken = null;
@@ -161,7 +163,9 @@ const authSlice = createSlice({
       try {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-      } catch { }
+      } catch {
+        // Ignore localStorage errors
+      }
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
@@ -209,7 +213,9 @@ const authSlice = createSlice({
         try {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
-        } catch { }
+        } catch {
+          // Ignore localStorage errors
+        }
       });
   },
 });

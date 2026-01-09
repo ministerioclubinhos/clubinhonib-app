@@ -22,21 +22,16 @@ const Home: React.FC = () => {
       <HeroSection isAuthenticated={isAuthenticated} />
 
       {isAuthenticated && <WeekMaterialsBanner />}
-      
+
       <CardsSection />
 
       <FeaturesSection features={FEATURES} />
 
-      {comments && comments.length > 0 && (
-        <TestimonialsSection testimonials={comments} />
-      )}
-      
+      {comments && comments.length > 0 && <TestimonialsSection testimonials={comments} />}
+
       <CTASection isAuthenticated={isAuthenticated} />
     </Box>
   );
 };
 
 export default Home;
-
-
-;

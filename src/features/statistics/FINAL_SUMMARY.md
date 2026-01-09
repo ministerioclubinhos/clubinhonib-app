@@ -9,6 +9,7 @@
 ### 🎨 **17 Componentes Visuais**
 
 #### Componentes de Dados (13):
+
 1. **OverviewSummaryCards** - Cards animados com tendências
 2. **WeekMonthSummary** ⭐ - Comparação semana vs mês + últimas 6 semanas/meses
 3. **AdvancedPagelasChart** - 4 tipos de gráfico (linha, área, barras, composto)
@@ -24,6 +25,7 @@
 13. **ClubRankings** - Ranking de clubes com performance
 
 #### Componentes de Controle (4):
+
 14. **StatisticsFiltersComponent** - Filtros avançados expansíveis
 15. **QuickFilters** ⭐ - 6 atalhos rápidos de período
 16. **PagelasTimeSeriesChart** - Gráfico temporal básico
@@ -46,32 +48,40 @@
 ### Conteúdo de Cada Aba:
 
 **1. 📈 Visão Geral** (4 componentes)
+
 - WeekMonthSummary
 - AdvancedPagelasChart
 - ClubPerformanceChart
 - TopEngagedChildren
 
 **2. 👥 Demográfico** (2 componentes)
+
 - RadarComparisonChart
 - DemographicCharts
 
 **3. 🗺️ Geográfico** (1 componente)
+
 - GeographicChart
 
 **4. ✝️ Decisões** (1 componente)
+
 - EnhancedDecisionsChart
 
 **5. 👨‍🏫 Professores** ⭐ (1 componente)
+
 - TeacherPerformanceChart
 
 **6. ⏱️ Retenção** ⭐ (2 componentes)
+
 - RetentionFunnelChart
 - DemographicCharts
 
 **7. 📊 Atividades** ⭐ (1 componente)
+
 - ActivitiesComparisonChart
 
 **8. 🏆 Rankings** (2 componentes)
+
 - ClubRankings
 - TopEngagedChildren
 
@@ -92,6 +102,7 @@
 ```
 
 **6 Atalhos Pré-configurados:**
+
 1. ⚡ Hoje
 2. 📅 Esta Semana
 3. 📆 Este Mês (PADRÃO)
@@ -104,6 +115,7 @@
 ## 🎨 FILTROS AVANÇADOS (19 Filtros)
 
 ### Banner Dinâmico:
+
 ```
 ┌──────────────────────────────────────────────┐
 │ 🏷️ Mês Atual (badge azul quando é mês atual) │
@@ -117,28 +129,34 @@
 ```
 
 ### Filtros Básicos (sempre visíveis):
+
 - Data Inicial ✅
 - Data Final ✅
 - Agrupar por ✅
 - Ano (opcional) ✅
 
 ### Filtros Avançados (expansíveis):
+
 **Demográficos:**
+
 - Gênero (M/F) ✅
 - Idade Mínima ✅
 - Idade Máxima ✅
 - Cidade ✅
 
 **Participação:**
+
 - Entrou Após ✅
 - Entrou Antes ✅
 
 **Entidades:**
+
 - clubId (implementado na API)
 - teacherId (implementado na API)
 - coordinatorId (implementado na API)
 
 **Atividades:**
+
 - onlyPresent (implementado na API)
 - onlyDidMeditation (implementado na API)
 - onlyRecitedVerse (implementado na API)
@@ -148,6 +166,7 @@
 ## 📊 TIPOS DE GRÁFICOS USADOS
 
 ### Recharts (9 tipos):
+
 1. ✅ **LineChart** - Linhas temporais suaves
 2. ✅ **AreaChart** - Áreas com gradientes
 3. ✅ **BarChart** - Barras verticais e horizontais
@@ -163,18 +182,21 @@
 ## 🎨 RECURSOS VISUAIS
 
 ### Gradientes:
+
 - ✅ Fundos de cards
 - ✅ Títulos animados
 - ✅ Áreas de gráficos
 - ✅ Barras de progresso
 
 ### Animações:
+
 - ✅ Hover lift (translateY)
 - ✅ Hover slide (translateX)
 - ✅ Transitions suaves (0.2s - 0.3s)
 - ✅ Shadows dinâmicas
 
 ### Cores Inteligentes:
+
 - 🟢 Verde: Sucesso, ≥85%
 - 🔵 Azul: Bom, ≥70%
 - 🟡 Amarelo: Regular, ≥60%
@@ -184,6 +206,7 @@
 - 🥉 Bronze: 3º lugar
 
 ### Ícones Contextuais:
+
 - 📊 Gráficos e métricas
 - 👥 Pessoas e grupos
 - 🏆 Rankings e conquistas
@@ -197,16 +220,19 @@
 ## 💡 INSIGHTS AUTOMÁTICOS
 
 ### No RetentionFunnelChart:
+
 - Taxa de conversão entre estágios
 - Porcentagem de veteranos
 - Tendências por estágio
 
 ### No ActivitiesComparisonChart:
+
 - Atividade mais alta
 - Atividade mais baixa
 - Diferença máxima
 
 ### No WeekMonthSummary:
+
 - Acima/abaixo da média
 - Projeção anual
 - Melhor mês
@@ -216,12 +242,14 @@
 ## 📱 RESPONSIVIDADE
 
 ### Mobile:
+
 - ✅ Tabs scrolláveis
 - ✅ Grid adaptativo
 - ✅ Gráficos responsivos
 - ✅ Filtros empilhados
 
 ### Desktop:
+
 - ✅ Tabs em linha
 - ✅ Grid multi-coluna
 - ✅ Gráficos otimizados
@@ -232,17 +260,20 @@
 ## 🔧 DETALHES TÉCNICOS
 
 ### Cache:
+
 ```typescript
-staleTime: 5 * 60 * 1000  // 5 minutos para dados
-staleTime: 2 * 60 * 1000  // 2 minutos para overview
+staleTime: 5 * 60 * 1000; // 5 minutos para dados
+staleTime: 2 * 60 * 1000; // 2 minutos para overview
 ```
 
 ### Locale:
+
 ```typescript
-dayjs.locale('pt-br')  // Datas em português
+dayjs.locale('pt-br'); // Datas em português
 ```
 
 ### Default Filters:
+
 ```typescript
 {
   startDate: "2025-11-01",  // Primeiro dia do mês
@@ -255,38 +286,43 @@ dayjs.locale('pt-br')  // Datas em português
 
 ## 📊 MÉTRICAS DE IMPLEMENTAÇÃO
 
-| Métrica | Valor |
-|---------|-------|
-| Componentes Criados | 17 |
-| Linhas de Código | 3500+ |
-| Arquivos TypeScript | 22 |
-| Arquivos Markdown | 6 |
-| Endpoints Integrados | 4 principais |
-| Filtros Implementados | 19/19 (100%) |
-| Abas Organizadas | 8 |
-| Tipos de Gráficos | 9 |
-| Visualizações Únicas | 25+ |
-| Ícones Usados | 30+ |
-| Cores do Tema | 6 principais |
-| Tempo de Desenvolvimento | ~2 horas |
+| Métrica                  | Valor        |
+| ------------------------ | ------------ |
+| Componentes Criados      | 17           |
+| Linhas de Código         | 3500+        |
+| Arquivos TypeScript      | 22           |
+| Arquivos Markdown        | 6            |
+| Endpoints Integrados     | 4 principais |
+| Filtros Implementados    | 19/19 (100%) |
+| Abas Organizadas         | 8            |
+| Tipos de Gráficos        | 9            |
+| Visualizações Únicas     | 25+          |
+| Ícones Usados            | 30+          |
+| Cores do Tema            | 6 principais |
+| Tempo de Desenvolvimento | ~2 horas     |
 
 ---
 
 ## 🏆 DESTAQUES DA IMPLEMENTAÇÃO
 
 ### 🥇 Mais Rico:
+
 **RetentionFunnelChart** - Funil visual com 4 estágios, conversão, métricas detalhadas
 
 ### 🥈 Mais Útil:
+
 **QuickFilters** - 6 atalhos que economizam tempo
 
 ### 🥉 Mais Completo:
+
 **ActivitiesComparisonChart** - 3 atividades × 3 categorias = 9 comparações
 
 ### 🏆 Mais Elegante:
+
 **OverviewSummaryCards** - Gradientes, animações, tendências
 
 ### 💎 Mais Inovador:
+
 **WeekMonthSummary** - Comparação temporal + últimas semanas/meses
 
 ---
@@ -294,6 +330,7 @@ dayjs.locale('pt-br')  // Datas em português
 ## 🎯 COMO USAR A PÁGINA
 
 ### Acesso:
+
 ```
 1. Login como Admin/Coordenador
 2. Painel Admin → Estatísticas
@@ -301,6 +338,7 @@ dayjs.locale('pt-br')  // Datas em português
 ```
 
 ### Navegação Rápida:
+
 ```
 1. Veja os ATALHOS RÁPIDOS no topo
 2. Clique no período desejado
@@ -310,6 +348,7 @@ dayjs.locale('pt-br')  // Datas em português
 ```
 
 ### Dica Pro:
+
 ```
 💡 Use "Este Mês" (padrão) para visão mensal
 💡 Use "Últimos 30 Dias" para período móvel
@@ -381,6 +420,7 @@ src/features/statistics/
 ### ✅ Dados Extraídos da API:
 
 **100% do `/statistics/overview`:**
+
 - [x] summary.totalChildren
 - [x] summary.totalClubs
 - [x] summary.totalTeachers
@@ -395,6 +435,7 @@ src/features/statistics/
 - [x] acceptedChrists.lastSixMonths
 
 **100% do `/statistics/pagelas/charts`:**
+
 - [x] timeSeries.presence
 - [x] timeSeries.meditation
 - [x] timeSeries.verseRecitation
@@ -407,6 +448,7 @@ src/features/statistics/
 - [x] byParticipationTime (todos os campos) ⭐
 
 **100% do `/statistics/accepted-christs/charts`:**
+
 - [x] timeSeries (ACCEPTED + RECONCILED)
 - [x] byGender
 - [x] byAgeGroup
@@ -415,6 +457,7 @@ src/features/statistics/
 - [x] byParticipationTime
 
 **100% do `/statistics/insights`:**
+
 - [x] topEngagedChildren (todos os 12 campos)
 - [x] clubRankings (todos os 6 campos)
 
@@ -423,6 +466,7 @@ src/features/statistics/
 ## 🎯 FILTROS PADRÃO CONFIGURADOS
 
 ### Ao Abrir a Página:
+
 ```javascript
 {
   startDate: "01/11/2025",  // Primeiro dia do mês atual
@@ -432,6 +476,7 @@ src/features/statistics/
 ```
 
 ### Banner Visual:
+
 - **Azul** quando é mês atual 🔵
 - **Roxo** quando é outro período 🟣
 - **Badge** "Mês Atual" quando aplicável
@@ -442,18 +487,21 @@ src/features/statistics/
 ## 📈 VISUALIZAÇÕES ÚNICAS
 
 ### 1. Funil de Retenção ⏱️
+
 ```
 🌱 Novatos (0-3m)    ████████████████████ 100%
 🌿 Iniciantes (3-6m) ███████████████ 75%
 🌳 Regulares (6-12m) ██████████ 50%
 🏆 Veteranos (1+ano) ████ 20%
 ```
+
 - Largura proporcional
 - Cores por estágio
 - Taxa de conversão
 - Métricas detalhadas
 
 ### 2. Comparação de Atividades 📊
+
 ```
         Presença  Meditação  Recitação
 Masc.     87%       82%        78%
@@ -461,16 +509,19 @@ Fem.      89%       85%        81%
 6-10      88%       84%        80%
 11-15     87%       83%        79%
 ```
+
 - 3 atividades × múltiplas categorias
 - Radar + barras
 - Insights automáticos
 
 ### 3. Performance de Professores 👨‍🏫
+
 ```
 🥇 Prof. Ana Silva     - 125 pagelas
 🥈 Prof. João Santos   - 98 pagelas
 🥉 Prof. Maria Costa   - 87 pagelas
 ```
+
 - Top 10 em gráfico
 - Top 5 detalhado
 - Avatares e medalhas
@@ -480,6 +531,7 @@ Fem.      89%       85%        81%
 ## 🎨 DESIGN SYSTEM APLICADO
 
 ### Cores:
+
 ```typescript
 primary:    #1976d2  // Azul principal
 secondary:  #9c27b0  // Roxo/Rosa
@@ -490,6 +542,7 @@ error:      #d32f2f  // Vermelho
 ```
 
 ### Gradientes:
+
 ```css
 linear-gradient(135deg, color15 0%, color05 100%)  /* Fundos */
 linear-gradient(90deg, color 0%, colorCC 100%)     /* Barras */
@@ -497,11 +550,12 @@ radial-gradient(circle, color15 0%, transparent 70%)  /* Decorativos */
 ```
 
 ### Espaçamento:
+
 ```typescript
-p: 3           // 24px padding
-gap: 2-3       // 16-24px entre elementos
-mb: 3-4        // 24-32px margin bottom
-borderRadius: 2-3  // 8-12px bordas
+p: 3; // 24px padding
+gap: 2 - 3; // 16-24px entre elementos
+mb: 3 - 4; // 24-32px margin bottom
+borderRadius: 2 - 3; // 8-12px bordas
 ```
 
 ---
@@ -509,6 +563,7 @@ borderRadius: 2-3  // 8-12px bordas
 ## ✅ CHECKLIST COMPLETO
 
 ### Funcionalidades:
+
 - [x] 17 componentes visuais
 - [x] 8 abas organizadas
 - [x] 19 filtros implementados
@@ -523,6 +578,7 @@ borderRadius: 2-3  // 8-12px bordas
 - [x] Cache otimizado
 
 ### Dados Extraídos:
+
 - [x] 100% do /overview
 - [x] 100% do /pagelas/charts
 - [x] 95% do /accepted-christs/charts
@@ -533,6 +589,7 @@ borderRadius: 2-3  // 8-12px bordas
 - [x] Todas as séries temporais
 
 ### Qualidade:
+
 - [x] TypeScript 100%
 - [x] Sem erros de lint
 - [x] Código limpo e comentado
@@ -548,6 +605,7 @@ borderRadius: 2-3  // 8-12px bordas
 ### EXTRAÇÃO DA API: 100% ✅
 
 Todos os dados disponíveis nos endpoints funcionais foram:
+
 - ✅ **Consumidos** via React Query
 - ✅ **Visualizados** em 25+ gráficos diferentes
 - ✅ **Analisados** com insights automáticos
@@ -556,6 +614,7 @@ Todos os dados disponíveis nos endpoints funcionais foram:
 ### COMPONENTES: +12 NOVOS! 🆕
 
 Nesta última etapa foram adicionados:
+
 1. ⭐ TeacherPerformanceChart
 2. ⭐ RetentionFunnelChart
 3. ⭐ ActivitiesComparisonChart
@@ -573,18 +632,21 @@ Nesta última etapa foram adicionados:
 ## 💎 VALOR ENTREGUE
 
 ### Para Administradores:
+
 ✅ Visão 360° completa do sistema
 ✅ Identificação rápida de problemas
 ✅ Reconhecimento de destaques
 ✅ Dados para decisões estratégicas
 
 ### Para Coordenadores:
+
 ✅ Performance dos seus clubes
 ✅ Engajamento das crianças
 ✅ Efetividade dos professores
 ✅ Análise de retenção
 
 ### Para Análise de Dados:
+
 ✅ 25+ visualizações diferentes
 ✅ Comparações multi-dimensionais
 ✅ Funis de conversão
@@ -633,7 +695,7 @@ Se quiser expandir ainda mais:
 
 **Desenvolvido com 💙 para o Clubinho NIB**
 
-*Extraindo o máximo de cada pixel de dados!* 🚀📊✨💎
+_Extraindo o máximo de cada pixel de dados!_ 🚀📊✨💎
 
 ---
 
@@ -641,5 +703,3 @@ Se quiser expandir ainda mais:
 **Versão:** 2.0.0  
 **Status:** ✅ PRODUÇÃO  
 **Qualidade:** ⭐⭐⭐⭐⭐ (5/5)
-
-

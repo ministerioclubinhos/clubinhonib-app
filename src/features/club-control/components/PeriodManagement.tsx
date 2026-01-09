@@ -275,10 +275,18 @@ export const PeriodManagement: React.FC = () => {
                 <Add sx={{ color: 'white', fontSize: { xs: 20, sm: 24 } }} />
               </Box>
               <Box>
-                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+                >
                   Novo Período Letivo
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   Válido para todos os clubes
                 </Typography>
               </Box>
@@ -353,7 +361,8 @@ export const PeriodManagement: React.FC = () => {
 
             <Alert severity="warning" sx={{ mt: 2 }}>
               <Typography variant="caption">
-                <strong>Atenção:</strong> Este período será aplicado para TODOS os clubes do sistema.
+                <strong>Atenção:</strong> Este período será aplicado para TODOS os clubes do
+                sistema.
               </Typography>
             </Alert>
           </Paper>
@@ -397,7 +406,12 @@ export const PeriodManagement: React.FC = () => {
                 </Box>
               ) : !periods || periods.length === 0 ? (
                 <Alert severity="info" sx={{ borderRadius: 2 }}>
-                  <Typography variant="body2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight="bold"
+                    gutterBottom
+                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                  >
                     Nenhum período cadastrado
                   </Typography>
                   <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
@@ -411,19 +425,38 @@ export const PeriodManagement: React.FC = () => {
                     .sort((a, b) => b.year - a.year)
                     .map((period) => {
                       const isCurrent = period.year === new Date().getFullYear();
-                      
+
                       return (
                         <Card key={period.id} elevation={2} sx={{ borderRadius: 2 }}>
                           <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                             <Stack spacing={1.5}>
                               {/* Header */}
-                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                }}
+                              >
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Typography variant="h6" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                                  <Typography
+                                    variant="h6"
+                                    fontWeight="bold"
+                                    color="primary"
+                                    sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
+                                  >
                                     {period.year}
                                   </Typography>
                                   {isCurrent && (
-                                    <Chip label="ATUAL" size="small" color="primary" sx={{ fontWeight: 'bold', fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                                    <Chip
+                                      label="ATUAL"
+                                      size="small"
+                                      color="primary"
+                                      sx={{
+                                        fontWeight: 'bold',
+                                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                                      }}
+                                    />
                                   )}
                                 </Box>
                                 {period.isActive ? (
@@ -435,7 +468,12 @@ export const PeriodManagement: React.FC = () => {
                                     sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                                   />
                                 ) : (
-                                  <Chip label="Inativo" size="small" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
+                                  <Chip
+                                    label="Inativo"
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                  />
                                 )}
                               </Box>
 
@@ -443,24 +481,44 @@ export const PeriodManagement: React.FC = () => {
 
                               {/* Período */}
                               <Box>
-                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                >
                                   Período
                                 </Typography>
-                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                                  {dayjs(period.startDate).format('DD/MM/YYYY')} até {dayjs(period.endDate).format('DD/MM/YYYY')}
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                >
+                                  {dayjs(period.startDate).format('DD/MM/YYYY')} até{' '}
+                                  {dayjs(period.endDate).format('DD/MM/YYYY')}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                                  ({dayjs(period.endDate).diff(dayjs(period.startDate), 'day')} dias)
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                >
+                                  ({dayjs(period.endDate).diff(dayjs(period.startDate), 'day')}{' '}
+                                  dias)
                                 </Typography>
                               </Box>
 
                               {/* Descrição */}
                               {period.description && (
                                 <Box>
-                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                  >
                                     Descrição
                                   </Typography>
-                                  <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                  >
                                     {period.description}
                                   </Typography>
                                 </Box>
@@ -509,11 +567,21 @@ export const PeriodManagement: React.FC = () => {
                   <Table sx={{ minWidth: 600 }}>
                     <TableHead>
                       <TableRow>
-                        <TableCell sx={{ minWidth: 80 }}><strong>Ano</strong></TableCell>
-                        <TableCell sx={{ minWidth: 150 }}><strong>Período</strong></TableCell>
-                        <TableCell sx={{ minWidth: 150 }}><strong>Descrição</strong></TableCell>
-                        <TableCell sx={{ minWidth: 100 }}><strong>Status</strong></TableCell>
-                        <TableCell align="center" sx={{ minWidth: 100 }}><strong>Ações</strong></TableCell>
+                        <TableCell sx={{ minWidth: 80 }}>
+                          <strong>Ano</strong>
+                        </TableCell>
+                        <TableCell sx={{ minWidth: 150 }}>
+                          <strong>Período</strong>
+                        </TableCell>
+                        <TableCell sx={{ minWidth: 150 }}>
+                          <strong>Descrição</strong>
+                        </TableCell>
+                        <TableCell sx={{ minWidth: 100 }}>
+                          <strong>Status</strong>
+                        </TableCell>
+                        <TableCell align="center" sx={{ minWidth: 100 }}>
+                          <strong>Ações</strong>
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -521,35 +589,66 @@ export const PeriodManagement: React.FC = () => {
                         .sort((a, b) => b.year - a.year)
                         .map((period) => {
                           const isCurrent = period.year === new Date().getFullYear();
-                          
+
                           return (
                             <TableRow key={period.id} hover>
                               <TableCell>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Typography variant="h6" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                                  <Typography
+                                    variant="h6"
+                                    fontWeight="bold"
+                                    color="primary"
+                                    sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+                                  >
                                     {period.year}
                                   </Typography>
                                   {isCurrent && (
-                                    <Chip label="ATUAL" size="small" color="primary" sx={{ fontWeight: 'bold' }} />
+                                    <Chip
+                                      label="ATUAL"
+                                      size="small"
+                                      color="primary"
+                                      sx={{ fontWeight: 'bold' }}
+                                    />
                                   )}
                                 </Box>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                >
                                   {dayjs(period.startDate).format('DD/MM/YYYY')}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                >
                                   até
                                 </Typography>
-                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                >
                                   {dayjs(period.endDate).format('DD/MM/YYYY')}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                                  ({dayjs(period.endDate).diff(dayjs(period.startDate), 'day')} dias)
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  display="block"
+                                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                                >
+                                  ({dayjs(period.endDate).diff(dayjs(period.startDate), 'day')}{' '}
+                                  dias)
                                 </Typography>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{period.description || '-'}</Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                                >
+                                  {period.description || '-'}
+                                </Typography>
                               </TableCell>
                               <TableCell>
                                 {period.isActive ? (
@@ -612,7 +711,7 @@ export const PeriodManagement: React.FC = () => {
                     }}
                     rowsPerPageOptions={[10, 20, 50]}
                     labelRowsPerPage="Períodos por página:"
-                    labelDisplayedRows={({ from, to, count }) => 
+                    labelDisplayedRows={({ from, to, count }) =>
                       `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
                     }
                     sx={{
@@ -634,12 +733,7 @@ export const PeriodManagement: React.FC = () => {
       </Grid>
 
       {/* Dialog de Edição */}
-      <Dialog 
-        open={editDialog.open} 
-        onClose={handleCloseEdit}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={editDialog.open} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Edit sx={{ color: theme.palette.primary.main, fontSize: 28 }} />
           Editar Período Letivo
@@ -681,23 +775,22 @@ export const PeriodManagement: React.FC = () => {
                   fullWidth
                   label="Descrição"
                   value={editFormData.description}
-                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, description: e.target.value })
+                  }
                   placeholder="Ex: Ano Letivo 2024 - Atualizado"
                 />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button 
-              onClick={handleCloseEdit}
-              variant="outlined"
-            >
+            <Button onClick={handleCloseEdit} variant="outlined">
               Cancelar
             </Button>
-            <Button 
+            <Button
               type="submit"
-              color="primary" 
-              variant="contained" 
+              color="primary"
+              variant="contained"
               disabled={updatePeriod.isPending}
               startIcon={updatePeriod.isPending ? <CircularProgress size={16} /> : <Edit />}
             >
@@ -708,8 +801,8 @@ export const PeriodManagement: React.FC = () => {
       </Dialog>
 
       {/* Dialog de Exclusão */}
-      <Dialog 
-        open={deleteDialog.open} 
+      <Dialog
+        open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, periodId: '', description: '' })}
         maxWidth="sm"
         fullWidth
@@ -727,22 +820,22 @@ export const PeriodManagement: React.FC = () => {
               ⚠️ Atenção: Esta ação não pode ser desfeita!
             </Typography>
             <Typography variant="caption" display="block">
-              A exclusão deste período afetará <strong>TODOS os clubes</strong> do sistema. 
-              As semanas relacionadas a este período não serão mais monitoradas.
+              A exclusão deste período afetará <strong>TODOS os clubes</strong> do sistema. As
+              semanas relacionadas a este período não serão mais monitoradas.
             </Typography>
           </Alert>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
+          <Button
             onClick={() => setDeleteDialog({ open: false, periodId: '', description: '' })}
             variant="outlined"
           >
             Cancelar
           </Button>
-          <Button 
-            onClick={handleDelete} 
-            color="error" 
-            variant="contained" 
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
             disabled={deletePeriod.isPending}
             startIcon={deletePeriod.isPending ? <CircularProgress size={16} /> : <Delete />}
           >

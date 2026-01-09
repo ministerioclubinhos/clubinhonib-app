@@ -69,16 +69,16 @@ const getEventStatus = (dateISO: string) => {
 const createEventArrangement = (eventos: any[]) => {
   const hoje = dayjs();
 
-  const eventosHoje = eventos.filter(e => dayjs(e.date).isSame(hoje, 'day'));
-  const eventosFuturos = eventos.filter(e => dayjs(e.date).isAfter(hoje, 'day'));
-  const eventosPassados = eventos.filter(e => dayjs(e.date).isBefore(hoje, 'day'));
+  const eventosHoje = eventos.filter((e) => dayjs(e.date).isSame(hoje, 'day'));
+  const eventosFuturos = eventos.filter((e) => dayjs(e.date).isAfter(hoje, 'day'));
+  const eventosPassados = eventos.filter((e) => dayjs(e.date).isBefore(hoje, 'day'));
 
-  const eventosFuturosOrdenados = eventosFuturos.sort((a, b) =>
-    dayjs(a.date).valueOf() - dayjs(b.date).valueOf()
+  const eventosFuturosOrdenados = eventosFuturos.sort(
+    (a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf()
   );
 
-  const eventosPassadosOrdenados = eventosPassados.sort((a, b) =>
-    dayjs(b.date).valueOf() - dayjs(a.date).valueOf()
+  const eventosPassadosOrdenados = eventosPassados.sort(
+    (a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf()
   );
 
   const arrangement = {
@@ -98,7 +98,8 @@ const createEventArrangement = (eventos: any[]) => {
 };
 
 const getLayoutConfig = (arrangement: any) => {
-  const { temHoje, temPassado, temFuturo, proximoEvento, segundoFuturo, terceiroFuturo } = arrangement;
+  const { temHoje, temPassado, temFuturo, proximoEvento, segundoFuturo, terceiroFuturo } =
+    arrangement;
 
   if (temHoje) {
     if (temPassado && temFuturo) {
@@ -106,32 +107,52 @@ const getLayoutConfig = (arrangement: any) => {
         type: 'today_with_past_future',
         slots: [
           { type: 'anterior', event: arrangement.eventoAnterior, label: 'Evento Anterior' },
-          { type: 'hoje', event: arrangement.eventoHoje, label: 'Evento de Hoje', priority: 'high' },
-          { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' }
-        ]
+          {
+            type: 'hoje',
+            event: arrangement.eventoHoje,
+            label: 'Evento de Hoje',
+            priority: 'high',
+          },
+          { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' },
+        ],
       };
     } else if (temPassado && !temFuturo) {
       return {
         type: 'today_with_past_only',
         slots: [
           { type: 'anterior', event: arrangement.eventoAnterior, label: 'Evento Anterior' },
-          { type: 'hoje', event: arrangement.eventoHoje, label: 'Evento de Hoje', priority: 'high' }
-        ]
+          {
+            type: 'hoje',
+            event: arrangement.eventoHoje,
+            label: 'Evento de Hoje',
+            priority: 'high',
+          },
+        ],
       };
     } else if (!temPassado && temFuturo) {
       return {
         type: 'today_with_future_only',
         slots: [
-          { type: 'hoje', event: arrangement.eventoHoje, label: 'Evento de Hoje', priority: 'high' },
-          { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' }
-        ]
+          {
+            type: 'hoje',
+            event: arrangement.eventoHoje,
+            label: 'Evento de Hoje',
+            priority: 'high',
+          },
+          { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' },
+        ],
       };
     } else {
       return {
         type: 'today_only',
         slots: [
-          { type: 'hoje', event: arrangement.eventoHoje, label: 'Evento de Hoje', priority: 'high' }
-        ]
+          {
+            type: 'hoje',
+            event: arrangement.eventoHoje,
+            label: 'Evento de Hoje',
+            priority: 'high',
+          },
+        ],
       };
     }
   } else {
@@ -142,16 +163,16 @@ const getLayoutConfig = (arrangement: any) => {
           slots: [
             { type: 'anterior', event: arrangement.eventoAnterior, label: 'Evento Anterior' },
             { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' },
-            { type: 'posterior', event: segundoFuturo, label: 'Evento Posterior' }
-          ]
+            { type: 'posterior', event: segundoFuturo, label: 'Evento Posterior' },
+          ],
         };
       } else {
         return {
           type: 'no_today_with_past_one_future',
           slots: [
             { type: 'anterior', event: arrangement.eventoAnterior, label: 'Evento Anterior' },
-            { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' }
-          ]
+            { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' },
+          ],
         };
       }
     } else if (!temPassado && temFuturo) {
@@ -161,38 +182,34 @@ const getLayoutConfig = (arrangement: any) => {
           slots: [
             { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' },
             { type: 'posterior', event: segundoFuturo, label: 'Evento Posterior' },
-            { type: 'terceiro', event: terceiroFuturo, label: 'Próximo Evento' }
-          ]
+            { type: 'terceiro', event: terceiroFuturo, label: 'Próximo Evento' },
+          ],
         };
       } else if (segundoFuturo) {
         return {
           type: 'no_today_two_future',
           slots: [
             { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' },
-            { type: 'posterior', event: segundoFuturo, label: 'Evento Posterior' }
-          ]
+            { type: 'posterior', event: segundoFuturo, label: 'Evento Posterior' },
+          ],
         };
       } else {
         return {
           type: 'no_today_one_future',
-          slots: [
-            { type: 'proximo', event: proximoEvento, label: 'Próximo Evento' }
-          ]
+          slots: [{ type: 'proximo', event: proximoEvento, label: 'Próximo Evento' }],
         };
       }
     } else if (temPassado && !temFuturo) {
       return {
         type: 'no_today_past_only',
-        slots: [
-          { type: 'anterior', event: arrangement.eventoAnterior, label: 'Evento Anterior' }
-        ]
+        slots: [{ type: 'anterior', event: arrangement.eventoAnterior, label: 'Evento Anterior' }],
       };
     }
   }
 
   return {
     type: 'empty',
-    slots: []
+    slots: [],
   };
 };
 
@@ -431,7 +448,9 @@ const Eventos: React.FC = () => {
                 backgroundImage: evento.media ? `url(${evento.media.url})` : 'none',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                backgroundColor: evento.media ? 'transparent' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundColor: evento.media
+                  ? 'transparent'
+                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -457,7 +476,8 @@ const Eventos: React.FC = () => {
                     fontWeight: 700,
                     fontSize: '0.75rem',
                     backdropFilter: 'blur(10px)',
-                    backgroundColor: chipProps.variant === 'filled' ? undefined : 'rgba(255, 255, 255, 0.9)',
+                    backgroundColor:
+                      chipProps.variant === 'filled' ? undefined : 'rgba(255, 255, 255, 0.9)',
                   }}
                 />
               </Box>
@@ -491,7 +511,14 @@ const Eventos: React.FC = () => {
                   >
                     <CalendarTodayIcon fontSize="small" sx={{ color: '#6b7280' }} />
                   </Box>
-                  <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#6b7280',
+                      fontWeight: 500,
+                      fontSize: { xs: '0.75rem', md: '0.875rem' },
+                    }}
+                  >
                     {dataFormatada}
                   </Typography>
                 </Box>
@@ -509,7 +536,14 @@ const Eventos: React.FC = () => {
                   >
                     <PlaceIcon fontSize="small" sx={{ color: '#6b7280' }} />
                   </Box>
-                  <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#6b7280',
+                      fontWeight: 500,
+                      fontSize: { xs: '0.75rem', md: '0.875rem' },
+                    }}
+                  >
                     {evento.location}
                   </Typography>
                 </Box>
@@ -803,7 +837,9 @@ const Eventos: React.FC = () => {
                         },
                       }}
                     >
-                      {mostrarAntigos ? 'Esconder Eventos Antigos' : `Ver ${arrangement.eventosAntigosRestantes.length} Eventos Antigos`}
+                      {mostrarAntigos
+                        ? 'Esconder Eventos Antigos'
+                        : `Ver ${arrangement.eventosAntigosRestantes.length} Eventos Antigos`}
                     </Button>
                   )}
                 </Box>
@@ -812,13 +848,15 @@ const Eventos: React.FC = () => {
           </Container>
         </Paper>
 
-        <Box sx={{
-          width: '95%',
-          maxWidth: '1600px',
-          mx: 'auto',
-          py: { xs: 4, md: 6 },
-          px: { xs: 0.5, md: 1 }
-        }}>
+        <Box
+          sx={{
+            width: '95%',
+            maxWidth: '1600px',
+            mx: 'auto',
+            py: { xs: 4, md: 6 },
+            px: { xs: 0.5, md: 1 },
+          }}
+        >
           {naoTemEventos ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -846,11 +884,7 @@ const Eventos: React.FC = () => {
                 >
                   Nenhum evento encontrado
                 </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ mb: 4, opacity: 0.8 }}
-                >
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 4, opacity: 0.8 }}>
                   Não há eventos cadastrados no momento. Volte em breve!
                 </Typography>
                 {isAdmin && (
@@ -859,13 +893,13 @@ const Eventos: React.FC = () => {
                     startIcon={<AddIcon />}
                     onClick={handleAddNewEvent}
                     size="large"
-                        sx={{
-                          borderRadius: 3,
-                          py: { xs: 1, md: 1.5 },
-                          px: { xs: 2, md: 4 },
-                          fontWeight: 600,
-                          textTransform: 'none',
-                          fontSize: { xs: '0.8rem', md: '1.1rem' },
+                    sx={{
+                      borderRadius: 3,
+                      py: { xs: 1, md: 1.5 },
+                      px: { xs: 2, md: 4 },
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: { xs: '0.8rem', md: '1.1rem' },
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
                       '&:hover': {
@@ -1003,11 +1037,16 @@ const Eventos: React.FC = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{
                         duration: 0.8,
-                        type: "spring",
+                        type: 'spring',
                         stiffness: 100,
-                        damping: 15
+                        damping: 15,
                       }}
-                      style={{ width: '100%', maxWidth: '800px', margin: '0 auto', marginBottom: '2rem' }}
+                      style={{
+                        width: '100%',
+                        maxWidth: '800px',
+                        margin: '0 auto',
+                        marginBottom: '2rem',
+                      }}
                     >
                       <Paper
                         elevation={0}
@@ -1018,11 +1057,13 @@ const Eventos: React.FC = () => {
                           position: 'relative',
                           background: 'rgba(255, 255, 255, 0.98)',
                           border: '2px solid rgba(239, 68, 68, 0.3)',
-                          boxShadow: '0 24px 48px rgba(239, 68, 68, 0.2), 0 12px 24px rgba(0, 0, 0, 0.15)',
+                          boxShadow:
+                            '0 24px 48px rgba(239, 68, 68, 0.2), 0 12px 24px rgba(0, 0, 0, 0.15)',
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           '&:hover': {
                             transform: 'translateY(-6px)',
-                            boxShadow: '0 32px 64px rgba(239, 68, 68, 0.25), 0 16px 32px rgba(0, 0, 0, 0.2)',
+                            boxShadow:
+                              '0 32px 64px rgba(239, 68, 68, 0.25), 0 16px 32px rgba(0, 0, 0, 0.2)',
                           },
                         }}
                       >
@@ -1038,9 +1079,7 @@ const Eventos: React.FC = () => {
                           }}
                         />
 
-                        <Box sx={{ p: 0 }}>
-                          {renderCard(arrangement.eventoHoje, 'hoje')}
-                        </Box>
+                        <Box sx={{ p: 0 }}>{renderCard(arrangement.eventoHoje, 'hoje')}</Box>
                       </Paper>
                     </motion.div>
 
@@ -1054,9 +1093,9 @@ const Eventos: React.FC = () => {
                               transition={{
                                 duration: 0.6,
                                 delay: 0.3,
-                                type: "spring",
+                                type: 'spring',
                                 stiffness: 100,
-                                damping: 15
+                                damping: 15,
                               }}
                               style={{ width: '100%' }}
                             >
@@ -1070,11 +1109,13 @@ const Eventos: React.FC = () => {
                                   position: 'relative',
                                   background: 'rgba(255, 255, 255, 0.98)',
                                   border: '1px solid rgba(59, 130, 246, 0.3)',
-                                  boxShadow: '0 16px 32px rgba(59, 130, 246, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1)',
+                                  boxShadow:
+                                    '0 16px 32px rgba(59, 130, 246, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1)',
                                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                   '&:hover': {
                                     transform: 'translateY(-4px)',
-                                    boxShadow: '0 20px 40px rgba(59, 130, 246, 0.2), 0 12px 24px rgba(0, 0, 0, 0.15)',
+                                    boxShadow:
+                                      '0 20px 40px rgba(59, 130, 246, 0.2), 0 12px 24px rgba(0, 0, 0, 0.15)',
                                   },
                                 }}
                               >
@@ -1107,9 +1148,9 @@ const Eventos: React.FC = () => {
                               transition={{
                                 duration: 0.6,
                                 delay: 0.4,
-                                type: "spring",
+                                type: 'spring',
                                 stiffness: 100,
-                                damping: 15
+                                damping: 15,
                               }}
                               style={{ width: '100%' }}
                             >
@@ -1151,9 +1192,9 @@ const Eventos: React.FC = () => {
                           transition={{
                             duration: 0.6,
                             delay: 0.1,
-                            type: "spring",
+                            type: 'spring',
                             stiffness: 100,
-                            damping: 15
+                            damping: 15,
                           }}
                           style={{ width: '100%' }}
                         >
@@ -1167,11 +1208,13 @@ const Eventos: React.FC = () => {
                               position: 'relative',
                               background: 'rgba(255, 255, 255, 0.98)',
                               border: '1px solid rgba(59, 130, 246, 0.3)',
-                              boxShadow: '0 16px 32px rgba(59, 130, 246, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1)',
+                              boxShadow:
+                                '0 16px 32px rgba(59, 130, 246, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1)',
                               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                               '&:hover': {
                                 transform: 'translateY(-4px)',
-                                boxShadow: '0 20px 40px rgba(59, 130, 246, 0.2), 0 12px 24px rgba(0, 0, 0, 0.15)',
+                                boxShadow:
+                                  '0 20px 40px rgba(59, 130, 246, 0.2), 0 12px 24px rgba(0, 0, 0, 0.15)',
                               },
                             }}
                           >
@@ -1203,9 +1246,9 @@ const Eventos: React.FC = () => {
                           transition={{
                             duration: 0.6,
                             delay: 0.2,
-                            type: "spring",
+                            type: 'spring',
                             stiffness: 100,
-                            damping: 15
+                            damping: 15,
                           }}
                           style={{ width: '100%' }}
                         >
@@ -1238,15 +1281,17 @@ const Eventos: React.FC = () => {
                 )}
               </Box>
 
-
-              {(arrangement.eventosRestantes.length > 0 || arrangement.segundoFuturo || arrangement.terceiroFuturo) && (
+              {(arrangement.eventosRestantes.length > 0 ||
+                arrangement.segundoFuturo ||
+                arrangement.terceiroFuturo) && (
                 <Accordion
                   defaultExpanded
                   sx={{
                     mb: 4,
                     borderRadius: 4,
                     overflow: 'hidden',
-                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
+                    background:
+                      'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
                     backdropFilter: 'blur(10px)',
                     border: '2px solid rgba(16, 185, 129, 0.2)',
                     '&:before': { display: 'none' },
@@ -1268,7 +1313,11 @@ const Eventos: React.FC = () => {
                       fontWeight={700}
                       sx={{ color: '#065f46', fontSize: { xs: '0.9rem', md: '1.25rem' } }}
                     >
-                      Mais Eventos Futuros ({arrangement.eventosRestantes.length + (arrangement.segundoFuturo ? 1 : 0) + (arrangement.terceiroFuturo ? 1 : 0)})
+                      Mais Eventos Futuros (
+                      {arrangement.eventosRestantes.length +
+                        (arrangement.segundoFuturo ? 1 : 0) +
+                        (arrangement.terceiroFuturo ? 1 : 0)}
+                      )
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails sx={{ p: 4 }}>
@@ -1319,7 +1368,8 @@ const Eventos: React.FC = () => {
                   sx={{
                     p: { xs: 3, md: 4 },
                     borderRadius: 4,
-                    background: 'linear-gradient(135deg, rgba(156, 163, 175, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
+                    background:
+                      'linear-gradient(135deg, rgba(156, 163, 175, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
                     backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(156, 163, 175, 0.2)',
                     mb: 4,
@@ -1343,7 +1393,8 @@ const Eventos: React.FC = () => {
                     mb: 4,
                     borderRadius: 4,
                     overflow: 'hidden',
-                    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
+                    background:
+                      'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%)',
                     backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(99, 102, 241, 0.2)',
                     '&:before': { display: 'none' },
@@ -1365,14 +1416,25 @@ const Eventos: React.FC = () => {
                       fontWeight={700}
                       sx={{ color: '#3730a3', fontSize: { xs: '0.9rem', md: '1.25rem' } }}
                     >
-                      🗓️ Todos os Eventos Futuros ({arrangement.eventosRestantes.length + (arrangement.proximoEvento ? 1 : 0) + (arrangement.segundoFuturo ? 1 : 0) + (arrangement.terceiroFuturo ? 1 : 0)})
+                      🗓️ Todos os Eventos Futuros (
+                      {arrangement.eventosRestantes.length +
+                        (arrangement.proximoEvento ? 1 : 0) +
+                        (arrangement.segundoFuturo ? 1 : 0) +
+                        (arrangement.terceiroFuturo ? 1 : 0)}
+                      )
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails sx={{ p: 4 }}>
                     <Grid container spacing={{ xs: 3, md: 4 }}>
                       {/* Mostrar todos os eventos futuros */}
                       {arrangement.proximoEvento && (
-                        <Grid item xs={12} sm={6} md={4} key={`proximo-${arrangement.proximoEvento.id}`}>
+                        <Grid
+                          item
+                          xs={12}
+                          sm={6}
+                          md={4}
+                          key={`proximo-${arrangement.proximoEvento.id}`}
+                        >
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -1383,7 +1445,13 @@ const Eventos: React.FC = () => {
                         </Grid>
                       )}
                       {arrangement.segundoFuturo && (
-                        <Grid item xs={12} sm={6} md={4} key={`segundo-${arrangement.segundoFuturo.id}`}>
+                        <Grid
+                          item
+                          xs={12}
+                          sm={6}
+                          md={4}
+                          key={`segundo-${arrangement.segundoFuturo.id}`}
+                        >
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -1394,7 +1462,13 @@ const Eventos: React.FC = () => {
                         </Grid>
                       )}
                       {arrangement.terceiroFuturo && (
-                        <Grid item xs={12} sm={6} md={4} key={`terceiro-${arrangement.terceiroFuturo.id}`}>
+                        <Grid
+                          item
+                          xs={12}
+                          sm={6}
+                          md={4}
+                          key={`terceiro-${arrangement.terceiroFuturo.id}`}
+                        >
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}

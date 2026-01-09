@@ -1,8 +1,24 @@
 import { useState, useEffect } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, FormControl, InputLabel, Select, MenuItem,
-  IconButton, Grid, Typography, Tabs, Tab, Box, Paper, useTheme, useMediaQuery
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Grid,
+  Typography,
+  Tabs,
+  Tab,
+  Box,
+  Paper,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -19,7 +35,7 @@ interface AddImageModalProps {
 export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   const [tab, setTab] = useState<MediaUploadType>(MediaUploadType.UPLOAD);
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -27,9 +43,9 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
   const [platformType, setPlatformType] = useState<MediaPlatform>(MediaPlatform.ANY);
 
   useEffect(() => {
-    const objectUrls = files.map(file => URL.createObjectURL(file));
+    const objectUrls = files.map((file) => URL.createObjectURL(file));
     setPreviews(objectUrls);
-    return () => objectUrls.forEach(url => URL.revokeObjectURL(url));
+    return () => objectUrls.forEach((url) => URL.revokeObjectURL(url));
   }, [files]);
 
   const reset = () => {
@@ -44,25 +60,31 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
     let medias: MediaItem[] = [];
 
     if (tab === MediaUploadType.UPLOAD && files.length > 0) {
-      medias = files.map(file => ({
-        uploadType: MediaUploadType.UPLOAD,
-        mediaType: MediaType.IMAGE,
-        isLocalFile: true,
-        url: '', 
-        file, 
-        originalName: file.name,
-        size: file.size,
-      } as MediaItem));
+      medias = files.map(
+        (file) =>
+          ({
+            uploadType: MediaUploadType.UPLOAD,
+            mediaType: MediaType.IMAGE,
+            isLocalFile: true,
+            url: '',
+            file,
+            originalName: file.name,
+            size: file.size,
+          }) as MediaItem
+      );
     }
 
     if (tab === MediaUploadType.LINK && urlInput.trim()) {
-      medias = urlInput.split(',').map(url => ({
-        uploadType: MediaUploadType.LINK,
-        mediaType: MediaType.IMAGE,
-        isLocalFile: false,
-        url: url.trim(),
-        platformType,
-      } as MediaItem));
+      medias = urlInput.split(',').map(
+        (url) =>
+          ({
+            uploadType: MediaUploadType.LINK,
+            mediaType: MediaType.IMAGE,
+            isLocalFile: false,
+            url: url.trim(),
+            platformType,
+          }) as MediaItem
+      );
     }
 
     if (medias.length > 0) {
@@ -74,11 +96,11 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
   };
 
   return (
-    <Dialog 
-      open={isOpen} 
-      onClose={onClose} 
-      fullWidth 
-      maxWidth={isMobile ? "sm" : "md"}
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      fullWidth
+      maxWidth={isMobile ? 'sm' : 'md'}
       fullScreen={isMobile}
       sx={{
         '& .MuiDialog-paper': {
@@ -101,7 +123,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
       >
         📸 Adicionar Imagens
       </DialogTitle>
-      
+
       <DialogContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
         {/* Tabs com design moderno */}
         <Paper
@@ -112,10 +134,10 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
             overflow: 'hidden',
           }}
         >
-          <Tabs 
-            value={tab} 
-            onChange={(_, newValue) => setTab(newValue)} 
-            variant={isMobile ? "fullWidth" : "standard"}
+          <Tabs
+            value={tab}
+            onChange={(_, newValue) => setTab(newValue)}
+            variant={isMobile ? 'fullWidth' : 'standard'}
             centered={!isMobile}
             sx={{
               '& .MuiTab-root': {
@@ -134,12 +156,12 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
               },
             }}
           >
-            <Tab 
-              icon={<CloudUploadIcon />} 
+            <Tab
+              icon={<CloudUploadIcon />}
               iconPosition="start"
-              label="Upload de Arquivos" 
+              label="Upload de Arquivos"
               value={MediaUploadType.UPLOAD}
-              sx={{ 
+              sx={{
                 gap: 1,
                 flexDirection: { xs: 'column', sm: 'row' },
                 '& .MuiTab-iconWrapper': {
@@ -147,12 +169,12 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                 },
               }}
             />
-            <Tab 
-              icon={<LinkIcon />} 
+            <Tab
+              icon={<LinkIcon />}
               iconPosition="start"
-              label="Links Externos" 
+              label="Links Externos"
               value={MediaUploadType.LINK}
-              sx={{ 
+              sx={{
                 gap: 1,
                 flexDirection: { xs: 'column', sm: 'row' },
                 '& .MuiTab-iconWrapper': {
@@ -186,7 +208,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                   variant="contained"
                   component="label"
                   fullWidth
-                  size={isMobile ? "medium" : "large"}
+                  size={isMobile ? 'medium' : 'large'}
                   startIcon={<CloudUploadIcon />}
                   sx={{
                     py: { xs: 2, md: 2.5 },
@@ -209,11 +231,11 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                     multiple
                     onChange={(e) => {
                       const selected = Array.from(e.target.files || []);
-                      setFiles(prev => [...prev, ...selected]);
+                      setFiles((prev) => [...prev, ...selected]);
                     }}
                   />
                 </Button>
-                
+
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -237,7 +259,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                   >
                     📋 Imagens Selecionadas ({files.length})
                   </Typography>
-                  
+
                   <Grid container spacing={{ xs: 1, md: 2 }}>
                     {previews.map((preview, index) => (
                       <Grid item xs={6} sm={4} md={3} key={index}>
@@ -261,8 +283,8 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                             <img
                               src={preview}
                               alt={`Pré-visualização ${index + 1}`}
-                              style={{ 
-                                width: '100%', 
+                              style={{
+                                width: '100%',
                                 height: 120,
                                 objectFit: 'cover',
                               }}
@@ -288,7 +310,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                             >
                               <DeleteIcon color="error" fontSize="small" />
                             </IconButton>
-                            
+
                             {/* Nome do arquivo */}
                             <Box
                               sx={{
@@ -349,13 +371,13 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                 >
                   🔗 Configurações de Link
                 </Typography>
-                
+
                 <FormControl fullWidth sx={{ mb: 2 }}>
                   <InputLabel>Plataforma de Origem</InputLabel>
                   <Select
                     value={platformType}
                     label="Plataforma de Origem"
-                    size={isMobile ? "small" : "medium"}
+                    size={isMobile ? 'small' : 'medium'}
                     sx={{
                       borderRadius: 2,
                     }}
@@ -376,7 +398,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                   placeholder="Cole as URLs aqui, separadas por vírgula..."
                   multiline
                   rows={isMobile ? 3 : 4}
-                  size={isMobile ? "small" : "medium"}
+                  size={isMobile ? 'small' : 'medium'}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -390,17 +412,17 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
         </AnimatePresence>
       </DialogContent>
 
-      <DialogActions 
-        sx={{ 
-          px: { xs: 2, md: 3 }, 
+      <DialogActions
+        sx={{
+          px: { xs: 2, md: 3 },
           pb: { xs: 2, md: 3 },
           gap: 1,
         }}
       >
-        <Button 
-          onClick={onClose} 
+        <Button
+          onClick={onClose}
           color="inherit"
-          size={isMobile ? "medium" : "large"}
+          size={isMobile ? 'medium' : 'large'}
           sx={{
             borderRadius: 2,
             px: { xs: 3, md: 4 },
@@ -416,7 +438,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
             (tab === MediaUploadType.UPLOAD && files.length === 0) ||
             (tab === MediaUploadType.LINK && !urlInput.trim())
           }
-          size={isMobile ? "medium" : "large"}
+          size={isMobile ? 'medium' : 'large'}
           sx={{
             borderRadius: 2,
             px: { xs: 3, md: 4 },

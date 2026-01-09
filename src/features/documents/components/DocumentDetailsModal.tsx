@@ -1,7 +1,16 @@
 import React, { Fragment } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button,
-  Box, Grid, Divider, IconButton, Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+  Button,
+  Box,
+  Grid,
+  Divider,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
@@ -17,7 +26,12 @@ interface Props {
 const DetailField = ({ label, value }: { label: string; value?: string | number | null }) => (
   <Fragment>
     <Box display="flex" alignItems="center" py={1.2}>
-      <Typography variant="body2" fontWeight={600} color="grey.600" sx={{ mr: 1, whiteSpace: 'nowrap' }}>
+      <Typography
+        variant="body2"
+        fontWeight={600}
+        color="grey.600"
+        sx={{ mr: 1, whiteSpace: 'nowrap' }}
+      >
         {label}:
       </Typography>
       <Typography
@@ -43,10 +57,14 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <Box display="flex" justifyContent="space-between" alignItems="center" px={3} pt={2}>
-        <DialogTitle sx={{ fontWeight: 'bold', color: 'primary.main', flexGrow: 1, p: 0, textAlign: 'center' }}>
+        <DialogTitle
+          sx={{ fontWeight: 'bold', color: 'primary.main', flexGrow: 1, p: 0, textAlign: 'center' }}
+        >
           Detalhes do Documento
         </DialogTitle>
-        <IconButton onClick={onClose}><CloseIcon /></IconButton>
+        <IconButton onClick={onClose}>
+          <CloseIcon />
+        </IconButton>
       </Box>
 
       <DialogContent dividers sx={{ px: 4, py: 3 }}>
@@ -80,7 +98,10 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
             <DetailField label="Plataforma" value={platformLabel(document?.media?.platformType)} />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <DetailField label="Tipo de Upload" value={uploadTypeLabel(document?.media?.uploadType)} />
+            <DetailField
+              label="Tipo de Upload"
+              value={uploadTypeLabel(document?.media?.uploadType)}
+            />
           </Grid>
           <Grid item xs={12} sm={4}>
             <DetailField label="Tipo de Mídia" value={mediaTypeLabel(document?.media?.mediaType)} />
@@ -88,10 +109,20 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
 
           <Grid item xs={12}>
             <Box display="flex" alignItems="center" py={1.2}>
-              <Typography variant="body2" fontWeight={600} color="grey.600" sx={{ mr: 1, whiteSpace: 'nowrap' }}>
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                color="grey.600"
+                sx={{ mr: 1, whiteSpace: 'nowrap' }}
+              >
                 URL:
               </Typography>
-              <Typography variant="body1" fontWeight={500} color="text.primary" sx={{ wordBreak: 'break-all', flex: 1 }}>
+              <Typography
+                variant="body1"
+                fontWeight={500}
+                color="text.primary"
+                sx={{ wordBreak: 'break-all', flex: 1 }}
+              >
                 {url || 'N/A'}
               </Typography>
               {url && (
@@ -108,7 +139,9 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
       </DialogContent>
 
       <DialogActions sx={{ px: 4, py: 2 }}>
-        <Button onClick={onClose} variant="contained" color="primary">Fechar</Button>
+        <Button onClick={onClose} variant="contained" color="primary">
+          Fechar
+        </Button>
       </DialogActions>
     </Dialog>
   );

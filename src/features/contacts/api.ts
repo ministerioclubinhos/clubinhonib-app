@@ -1,8 +1,8 @@
-import api from "@/config/axiosConfig";
-import { Contact } from "./types";
+import api from '@/config/axiosConfig';
+import { Contact } from './types';
 
 export async function apiListContacts() {
-  const { data } = await api.get<Contact[]>("/contact");
+  const { data } = await api.get<Contact[]>('/contact');
   return data;
 }
 

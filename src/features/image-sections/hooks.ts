@@ -33,9 +33,10 @@ export function useImageSections() {
         setFilteredSections(sections);
       } else {
         setFilteredSections(
-          sections.filter((s) =>
-            (s.caption ?? '').toLowerCase().includes(term) ||
-            (s.description ?? '').toLowerCase().includes(term)
+          sections.filter(
+            (s) =>
+              (s.caption ?? '').toLowerCase().includes(term) ||
+              (s.description ?? '').toLowerCase().includes(term)
           )
         );
       }

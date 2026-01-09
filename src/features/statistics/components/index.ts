@@ -23,4 +23,3 @@ export { ClubAttendanceTimeline } from './ClubAttendanceTimeline';
 export { WeeklyAttendanceGrid } from './WeeklyAttendanceGrid';
 export { PeriodFilter } from './PeriodFilter'; // ⭐ v2.11.0
 export { YearSelector, useYearSelection } from './YearSelector';
-

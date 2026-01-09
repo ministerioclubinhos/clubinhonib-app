@@ -17,13 +17,14 @@ export const getMediaPreviewUrl = (media: MediaItem): string => {
 
   if (media.uploadType === MediaUploadType.LINK) {
     switch (media.platformType) {
-      case MediaPlatform.GOOGLE_DRIVE:
+      case MediaPlatform.GOOGLE_DRIVE: {
         if (media.mediaType === MediaType.IMAGE) {
           const thumbnailUrl = getGoogleDriveThumbnailUrl(media.url);
           return thumbnailUrl || media.url;
         }
         const previewUrl = getGoogleDrivePreviewUrl(media.url);
         return previewUrl || media.url;
+      }
 
       case MediaPlatform.DROPBOX:
         return media.url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');

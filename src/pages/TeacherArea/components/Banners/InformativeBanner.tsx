@@ -28,8 +28,7 @@ const InformativeBanner: React.FC = () => {
   const informativeRoutes = useMemo(
     () =>
       routes.filter(
-        (route) =>
-          route.entityType === MediaTargetType.Informative && route.public === true
+        (route) => route.entityType === MediaTargetType.Informative && route.public === true
       ),
     [routes]
   );
@@ -100,7 +99,7 @@ const InformativeBanner: React.FC = () => {
             justifyContent: 'center',
             alignItems: 'center',
             width: '100%',
-            height: '100%', 
+            height: '100%',
             textAlign: 'center',
             boxSizing: 'border-box',
           }}

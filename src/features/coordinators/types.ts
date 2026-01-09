@@ -1,4 +1,4 @@
-export const TZ = "America/Manaus";
+export const TZ = 'America/Manaus';
 
 export type MinimalUser = {
   id: string;
@@ -44,7 +44,7 @@ export type PageDto<T> = {
 
 export type CoordinatorFilters = {
   searchString: string;
-  active: "all" | "active" | "inactive";
-  hasClubs: "all" | "yes" | "no";
-  clubNumber?: number | "";
+  active: 'all' | 'active' | 'inactive';
+  hasClubs: 'all' | 'yes' | 'no';
+  clubNumber?: number | '';
 };

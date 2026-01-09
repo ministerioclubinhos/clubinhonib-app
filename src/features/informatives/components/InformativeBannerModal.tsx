@@ -76,9 +76,7 @@ export default function InformativeBannerModal({
       onClose();
     } catch (err: any) {
       const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        'Erro ao salvar banner. Tente novamente.';
+        err?.response?.data?.message || err?.message || 'Erro ao salvar banner. Tente novamente.';
       setErrMsg(String(msg));
     } finally {
       setLoading(false);
@@ -87,7 +85,9 @@ export default function InformativeBannerModal({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{isEditing ? 'Editar Banner Informativo' : 'Criar Banner Informativo'}</DialogTitle>
+      <DialogTitle>
+        {isEditing ? 'Editar Banner Informativo' : 'Criar Banner Informativo'}
+      </DialogTitle>
       <DialogContent>
         <Box mt={1}>
           {errMsg && (

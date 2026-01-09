@@ -12,7 +12,11 @@ interface IdeasMaterialSectionProps {
   isCreationMode?: boolean;
 }
 
-export function IdeasMaterialSection({ section, onUpdate, isCreationMode = false }: IdeasMaterialSectionProps) {
+export function IdeasMaterialSection({
+  section,
+  onUpdate,
+  isCreationMode = false,
+}: IdeasMaterialSectionProps) {
   const [title, setTitle] = useState(section.title || '');
   const [description, setDescription] = useState(section.description || '');
   const [medias, setMedias] = useState<MediaItem[]>(section.medias || []);
@@ -50,22 +54,26 @@ export function IdeasMaterialSection({ section, onUpdate, isCreationMode = false
   const videos = medias.filter((i) => i.mediaType === MediaType.VIDEO);
 
   return (
-    <Box sx={{
-      p: 0,
-      '& .MuiTextField-root': {
-        '& .MuiOutlinedInput-root': {
-          borderRadius: '12px',
+    <Box
+      sx={{
+        p: 0,
+        '& .MuiTextField-root': {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+          },
         },
-      },
-    }}>
-      <Box sx={{
-        display: 'flex',
-        gap: 3,
-        mb: 4,
-        flexDirection: { xs: 'column', md: 'row' }
-      }}>
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 3,
+          mb: 4,
+          flexDirection: { xs: 'column', md: 'row' },
+        }}
+      >
         <TextField
-          label={isCreationMode ? "Título da sua ideia brilhante" : "Título da Seção"}
+          label={isCreationMode ? 'Título da sua ideia brilhante' : 'Título da Seção'}
           fullWidth
           value={title}
           onChange={handleTitleChange}
@@ -79,7 +87,11 @@ export function IdeasMaterialSection({ section, onUpdate, isCreationMode = false
           }}
         />
         <TextField
-          label={isCreationMode ? "Descreva sua ideia (brincadeira, versículo, história, etc.)" : "Descrição da Seção"}
+          label={
+            isCreationMode
+              ? 'Descreva sua ideia (brincadeira, versículo, história, etc.)'
+              : 'Descrição da Seção'
+          }
           fullWidth
           multiline
           rows={4}

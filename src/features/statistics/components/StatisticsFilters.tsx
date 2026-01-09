@@ -28,7 +28,7 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
   onReset,
 }) => {
   const [expanded, setExpanded] = React.useState(false);
-  
+
   // Configurar locale em português
   React.useEffect(() => {
     dayjs.locale('pt-br');
@@ -49,16 +49,29 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
     const now = new Date();
     const firstDay = dayjs(new Date(now.getFullYear(), now.getMonth(), 1)).format('YYYY-MM-DD');
     const lastDay = dayjs(new Date(now.getFullYear(), now.getMonth() + 1, 0)).format('YYYY-MM-DD');
-    
+
     return filters.startDate === firstDay && filters.endDate === lastDay;
   }, [filters.startDate, filters.endDate]);
 
   return (
     <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, mb: { xs: 2, sm: 3 } }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2,
+          flexWrap: 'wrap',
+          gap: 1,
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
           <FilterList sx={{ fontSize: { xs: 20, sm: 24 } }} />
-          <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+          >
             Filtros
           </Typography>
           {isCurrentMonth && (
@@ -72,12 +85,7 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
           )}
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            size="small"
-            startIcon={<Refresh />}
-            onClick={onReset}
-            variant="outlined"
-          >
+          <Button size="small" startIcon={<Refresh />} onClick={onReset} variant="outlined">
             Resetar
           </Button>
           <IconButton size="small" onClick={() => setExpanded(!expanded)}>
@@ -88,30 +96,40 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
 
       {/* Info do período selecionado */}
       {filters.startDate && filters.endDate && (
-        <Box 
+        <Box
           key={`${filters.startDate}-${filters.endDate}`}
-          sx={{ 
-            mb: 2, 
-            p: 1.5, 
-            bgcolor: isCurrentMonth ? 'rgba(25, 118, 210, 0.08)' : 'rgba(156, 39, 176, 0.08)', 
-            borderRadius: 1, 
-            border: 1, 
-            borderColor: isCurrentMonth ? 'primary.main' : 'secondary.main' 
+          sx={{
+            mb: 2,
+            p: 1.5,
+            bgcolor: isCurrentMonth ? 'rgba(25, 118, 210, 0.08)' : 'rgba(156, 39, 176, 0.08)',
+            borderRadius: 1,
+            border: 1,
+            borderColor: isCurrentMonth ? 'primary.main' : 'secondary.main',
           }}
         >
-          <Typography variant="body2" sx={{ color: isCurrentMonth ? 'primary.dark' : 'secondary.dark' }}>
-            📅 <strong>Período Selecionado:</strong> {dayjs(filters.startDate).format('DD/MM/YYYY')} até {dayjs(filters.endDate).format('DD/MM/YYYY')}
+          <Typography
+            variant="body2"
+            sx={{ color: isCurrentMonth ? 'primary.dark' : 'secondary.dark' }}
+          >
+            📅 <strong>Período Selecionado:</strong> {dayjs(filters.startDate).format('DD/MM/YYYY')}{' '}
+            até {dayjs(filters.endDate).format('DD/MM/YYYY')}
             {(() => {
               const start = dayjs(filters.startDate);
               const end = dayjs(filters.endDate);
               const sameMonth = start.format('YYYY-MM') === end.format('YYYY-MM');
-              
+
               if (isCurrentMonth) {
                 return <span> ({start.format('MMMM [de] YYYY').toUpperCase()})</span>;
               } else if (sameMonth) {
                 return <span> ({start.format('MMMM/YYYY').toUpperCase()})</span>;
               } else {
-                return <span> ({start.format('MMM/YYYY').toUpperCase()} a {end.format('MMM/YYYY').toUpperCase()})</span>;
+                return (
+                  <span>
+                    {' '}
+                    ({start.format('MMM/YYYY').toUpperCase()} a{' '}
+                    {end.format('MMM/YYYY').toUpperCase()})
+                  </span>
+                );
               }
             })()}
           </Typography>
@@ -129,7 +147,13 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
             onChange={(e) => handleChange('startDate', e.target.value)}
             size="small"
             InputLabelProps={{ shrink: true }}
-            helperText={isCurrentMonth ? "Primeiro dia do mês atual" : filters.startDate ? dayjs(filters.startDate).format('DD/MM/YYYY') : ""}
+            helperText={
+              isCurrentMonth
+                ? 'Primeiro dia do mês atual'
+                : filters.startDate
+                  ? dayjs(filters.startDate).format('DD/MM/YYYY')
+                  : ''
+            }
           />
         </Grid>
 
@@ -142,7 +166,13 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
             onChange={(e) => handleChange('endDate', e.target.value)}
             size="small"
             InputLabelProps={{ shrink: true }}
-            helperText={isCurrentMonth ? "Último dia do mês atual" : filters.endDate ? dayjs(filters.endDate).format('DD/MM/YYYY') : ""}
+            helperText={
+              isCurrentMonth
+                ? 'Último dia do mês atual'
+                : filters.endDate
+                  ? dayjs(filters.endDate).format('DD/MM/YYYY')
+                  : ''
+            }
           />
         </Grid>
 
@@ -168,7 +198,9 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
             select
             label="Ano (opcional)"
             value={filters.year || ''}
-            onChange={(e) => handleChange('year', e.target.value ? Number(e.target.value) : undefined)}
+            onChange={(e) =>
+              handleChange('year', e.target.value ? Number(e.target.value) : undefined)
+            }
             size="small"
           >
             <MenuItem value="">Nenhum</MenuItem>
@@ -211,7 +243,9 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
               type="number"
               label="Idade Mínima"
               value={filters.minAge || ''}
-              onChange={(e) => handleChange('minAge', e.target.value ? Number(e.target.value) : undefined)}
+              onChange={(e) =>
+                handleChange('minAge', e.target.value ? Number(e.target.value) : undefined)
+              }
               size="small"
               inputProps={{ min: 0, max: 100 }}
             />
@@ -223,7 +257,9 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
               type="number"
               label="Idade Máxima"
               value={filters.maxAge || ''}
-              onChange={(e) => handleChange('maxAge', e.target.value ? Number(e.target.value) : undefined)}
+              onChange={(e) =>
+                handleChange('maxAge', e.target.value ? Number(e.target.value) : undefined)
+              }
               size="small"
               inputProps={{ min: 0, max: 100 }}
             />
@@ -273,4 +309,3 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
     </Paper>
   );
 };
-

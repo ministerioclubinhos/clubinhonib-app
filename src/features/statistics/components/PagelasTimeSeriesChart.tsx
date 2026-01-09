@@ -57,10 +57,7 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
     verseRecitation: data.timeSeries.verseRecitation[index]?.value || 0,
   }));
 
-  const handleSeriesToggle = (
-    event: React.MouseEvent<HTMLElement>,
-    newSeries: string[]
-  ) => {
+  const handleSeriesToggle = (event: React.MouseEvent<HTMLElement>, newSeries: string[]) => {
     if (newSeries.length > 0) {
       setSelectedSeries(newSeries);
     }
@@ -87,7 +84,16 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
 
   return (
     <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
         <Typography variant="h6" fontWeight="bold">
           📊 Evolução de Pagelas ao Longo do Tempo
         </Typography>
@@ -108,11 +114,7 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={combinedData}>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-          <XAxis
-            dataKey="date"
-            stroke={theme.palette.text.secondary}
-            style={{ fontSize: 12 }}
-          />
+          <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: 12 }} />
           <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: 12 }} />
           <Tooltip
             contentStyle={{
@@ -139,4 +141,3 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
     </Paper>
   );
 };
-

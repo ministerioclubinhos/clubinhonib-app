@@ -1,5 +1,5 @@
-import api from "@/config/axiosConfig";
-import { CreateUserForm, UsersPage, UserRow, UpadateUserForm } from "./types";
+import api from '@/config/axiosConfig';
+import { CreateUserForm, UsersPage, UserRow, UpadateUserForm } from './types';
 
 export async function apiListUsers(params: {
   page: number;
@@ -9,27 +9,18 @@ export async function apiListUsers(params: {
   active?: boolean;
   completed?: boolean;
   sort?: string;
-  order?: "ASC" | "DESC";
+  order?: 'ASC' | 'DESC';
 }): Promise<UsersPage> {
-  const {
-    page,
-    limit,
-    q,
-    role,
-    active,
-    completed,
-    sort = "updatedAt",
-    order = "DESC",
-  } = params;
+  const { page, limit, q, role, active, completed, sort = 'updatedAt', order = 'DESC' } = params;
 
-  const { data } = await api.get<UsersPage>("/users", {
+  const { data } = await api.get<UsersPage>('/users', {
     params: {
       page,
       limit,
       q: q || undefined,
-      role: role && role !== "all" ? role : undefined,
-      active: active ? "true" : undefined,
-      completed: completed ? "true" : undefined,
+      role: role && role !== 'all' ? role : undefined,
+      active: active ? 'true' : undefined,
+      completed: completed ? 'true' : undefined,
       sort,
       order,
     },
@@ -39,11 +30,11 @@ export async function apiListUsers(params: {
 }
 
 export async function apiCreateUser(
-  payload: Omit<CreateUserForm, "confirmPassword">
+  payload: Omit<CreateUserForm, 'confirmPassword'>
 ): Promise<UserRow> {
   const { name, email, password, phone, role } = payload;
 
-  const { data } = await api.post<UserRow>("/users", {
+  const { data } = await api.post<UserRow>('/users', {
     name,
     email,
     password,
@@ -54,21 +45,10 @@ export async function apiCreateUser(
   return data;
 }
 
-export async function apiUpdateUser(
-  id: string,
-  payload: UpadateUserForm
-): Promise<UserRow> {
+export async function apiUpdateUser(id: string, payload: UpadateUserForm): Promise<UserRow> {
   console.log(payload);
-  
-  const {
-    name,
-    role,
-    phone,
-    active,
-    completed,
-    commonUser,
-    password,
-  } = payload;  
+
+  const { name, role, phone, active, completed, commonUser, password } = payload;
 
   const { data } = await api.put<UserRow>(`/users/${id}`, {
     name,

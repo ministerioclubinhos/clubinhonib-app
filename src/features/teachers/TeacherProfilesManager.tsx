@@ -1,16 +1,16 @@
-import React from "react";
-import { Box, Alert, CircularProgress } from "@mui/material";
-import { useTheme, useMediaQuery } from "@mui/material";
+import React from 'react';
+import { Box, Alert, CircularProgress } from '@mui/material';
+import { useTheme, useMediaQuery } from '@mui/material';
 
-import TeacherToolbar from "./components/TeacherToolbar";
-import TeacherTable from "./components/TeacherTable";
-import TeacherCards from "./components/TeacherCards";
-import TeacherViewDialog from "./components/TeacherViewDialog";
-import TeacherEditDialog from "./components/TeacherEditDialog";
+import TeacherToolbar from './components/TeacherToolbar';
+import TeacherTable from './components/TeacherTable';
+import TeacherCards from './components/TeacherCards';
+import TeacherViewDialog from './components/TeacherViewDialog';
+import TeacherEditDialog from './components/TeacherEditDialog';
 
-import { useClubsIndex, useTeacherMutations, useTeacherProfiles } from "./hooks";
-import { TeacherProfile } from "./types";
-import BackHeader from "@/components/common/header/BackHeader";
+import { useClubsIndex, useTeacherMutations, useTeacherProfiles } from './hooks';
+import { TeacherProfile } from './types';
+import BackHeader from '@/components/common/header/BackHeader';
 
 export type TeacherFilters = {
   q?: string;
@@ -21,27 +21,31 @@ export type TeacherFilters = {
 
 export default function TeacherProfilesManager() {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [pageSize, setPageSize] = React.useState<number>(12);
   const [pageIndex, setPageIndex] = React.useState<number>(0);
-  const [sorting, setSorting] = React.useState([{ id: "updatedAt", desc: true }]);
+  const [sorting, setSorting] = React.useState([{ id: 'updatedAt', desc: true }]);
 
   const [filters, setFilters] = React.useState<TeacherFilters>({
-    q: "",
+    q: '',
     active: undefined,
     hasClub: undefined,
     clubNumber: undefined,
   });
 
-  const { rows, total, loading, error, setError, fetchPage, refreshOne } =
-    useTeacherProfiles(pageIndex, pageSize, sorting as any, {
+  const { rows, total, loading, error, setError, fetchPage, refreshOne } = useTeacherProfiles(
+    pageIndex,
+    pageSize,
+    sorting as any,
+    {
       q: filters.q || undefined,
       searchString: undefined,
       active: filters.active,
       hasClub: filters.hasClub,
       clubNumber: filters.clubNumber,
-    });
+    }
+  );
 
   const doRefresh = React.useCallback(() => {
     fetchPage();
@@ -54,8 +58,10 @@ export default function TeacherProfilesManager() {
     refresh: refreshClubs,
   } = useClubsIndex();
 
-  const { dialogLoading, dialogError, setDialogError, setClub, clearClub } =
-    useTeacherMutations(fetchPage, refreshOne);
+  const { dialogLoading, dialogError, setDialogError, setClub, clearClub } = useTeacherMutations(
+    fetchPage,
+    refreshOne
+  );
 
   const [viewing, setViewing] = React.useState<TeacherProfile | null>(null);
   const [editing, setEditing] = React.useState<TeacherProfile | null>(null);
@@ -65,16 +71,15 @@ export default function TeacherProfilesManager() {
       if (!teacher || !clubNumberInput) return;
       const club = byNumber.get(clubNumberInput);
       if (!club) {
-        setDialogError("Clubinho não encontrado pelo número informado.");
+        setDialogError('Clubinho não encontrado pelo número informado.');
         return;
       }
       try {
         await setClub(teacher.id, club.id);
         setEditing(null);
-        setDialogError("");
+        setDialogError('');
         await Promise.all([fetchPage(), refreshClubs()]);
-      } catch {
-      }
+      } catch {}
     },
     [byNumber, setClub, fetchPage, refreshClubs, setDialogError]
   );
@@ -84,10 +89,9 @@ export default function TeacherProfilesManager() {
       try {
         await clearClub(teacherId);
         setEditing((e) => (e?.id === teacherId ? null : e));
-        setDialogError("");
+        setDialogError('');
         await Promise.all([fetchPage(), refreshClubs()]);
-      } catch {
-      }
+      } catch {}
     },
     [clearClub, fetchPage, refreshClubs, setDialogError]
   );
@@ -114,8 +118,8 @@ export default function TeacherProfilesManager() {
       sx={{
         px: { xs: 2, md: 0 },
         py: { xs: 0, md: 0 },
-        minHeight: "100vh",
-        bgcolor: "#f9fafb"
+        minHeight: '100vh',
+        bgcolor: '#f9fafb',
       }}
     >
       <BackHeader title="Gerenciador de Professores" />
@@ -138,8 +142,8 @@ export default function TeacherProfilesManager() {
           severity="error"
           sx={{ mb: 2 }}
           onClose={() => {
-            setError("");
-            setDialogError("");
+            setError('');
+            setDialogError('');
           }}
         >
           {error || clubsError}
@@ -176,11 +180,7 @@ export default function TeacherProfilesManager() {
         />
       )}
 
-      <TeacherViewDialog
-        open={!!viewing}
-        teacher={viewing}
-        onClose={() => setViewing(null)}
-      />
+      <TeacherViewDialog open={!!viewing} teacher={viewing} onClose={() => setViewing(null)} />
 
       <TeacherEditDialog
         open={!!editing}
@@ -191,7 +191,7 @@ export default function TeacherProfilesManager() {
         onClearClub={() => editing && onClearClub(editing.id)}
         onClose={() => {
           setEditing(null);
-          setDialogError("");
+          setDialogError('');
         }}
       />
     </Box>

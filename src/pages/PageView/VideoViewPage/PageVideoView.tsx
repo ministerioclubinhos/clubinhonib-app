@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -11,16 +11,16 @@ import {
   IconButton,
   useTheme,
   useMediaQuery,
-} from "@mui/material";
+} from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import VideoCard from "./VideoCard";
-import { useAuthRole } from "@/utils/useAuthRole";
-import { useVideoPage } from "./hooks";
-import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import VideoCard from './VideoCard';
+import { useAuthRole } from '@/utils/useAuthRole';
+import { useVideoPage } from './hooks';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 interface VideoPageViewProps {
-  idToFetch: string
+  idToFetch: string;
 }
 
 export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
@@ -42,7 +42,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
 
   const handleDelete = async () => {
     if (isDeleting) return;
-    await deletePage(() => navigate("/"));
+    await deletePage(() => navigate('/'));
     setConfirmOpen(false);
   };
 
@@ -164,7 +164,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
           whileHover={{
             scale: 1.02,
             boxShadow: '0 12px 40px rgba(255, 87, 34, 0.2)',
-            transition: { duration: 0.3 }
+            transition: { duration: 0.3 },
           }}
           transition={{ duration: 0.3 }}
         >
@@ -184,11 +184,19 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
                 '& .pulse-circle': {
                   transform: 'scale(1.2)',
                   opacity: 0.8,
-                }
+                },
               },
             }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, position: 'relative', zIndex: 10 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                mb: 2,
+                position: 'relative',
+                zIndex: 10,
+              }}
+            >
               <IconButton
                 onClick={handleBack}
                 sx={{
@@ -250,7 +258,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
                 transition={{
                   duration: 4,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
                 style={{
                   position: 'absolute',
@@ -272,8 +280,8 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
                 transition={{
                   duration: 3.5,
                   repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1
+                  ease: 'easeInOut',
+                  delay: 1,
                 }}
                 style={{
                   position: 'absolute',
@@ -292,13 +300,13 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
                   background: [
                     'linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%)',
                     'linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                    'linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%)'
-                  ]
+                    'linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                  ],
                 }}
                 transition={{
                   duration: 6,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
                 style={{
                   position: 'absolute',
@@ -363,15 +371,17 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
         </motion.div>
       </motion.div>
 
-      <Box sx={{
-        flex: 1,
-        p: { xs: 2, md: 4 },
-        bgcolor: 'background.default',
-        borderRadius: '24px 24px 0 0',
-        position: 'relative',
-        zIndex: 1,
-        minHeight: 'calc(100vh - 200px)',
-      }}>
+      <Box
+        sx={{
+          flex: 1,
+          p: { xs: 2, md: 4 },
+          bgcolor: 'background.default',
+          borderRadius: '24px 24px 0 0',
+          position: 'relative',
+          zIndex: 1,
+          minHeight: 'calc(100vh - 200px)',
+        }}
+      >
         <Container
           maxWidth="xl"
           sx={{
@@ -397,7 +407,6 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
             },
           }}
         >
-
           <AnimatePresence>
             {totalVideos > 0 ? (
               <motion.div
@@ -433,11 +442,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
                     borderRadius: { xs: 3, md: 4 },
                   }}
                 >
-                  <Typography
-                    variant="h6"
-                    color="text.secondary"
-                    sx={{ mb: 2 }}
-                  >
+                  <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
                     📹 Nenhum vídeo disponível
                   </Typography>
                   <Typography color="text.secondary">

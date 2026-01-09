@@ -11,7 +11,14 @@ import {
   Chip,
   Stack,
 } from '@mui/material';
-import { Delete, Visibility, Image as ImageIcon, Edit as EditIcon, Public, Lock } from '@mui/icons-material';
+import {
+  Delete,
+  Visibility,
+  Image as ImageIcon,
+  Edit as EditIcon,
+  Public,
+  Lock,
+} from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { SectionData } from '@/store/slices/image-section/imageSectionSlice';
 import { truncate } from '../utils';
@@ -30,10 +37,7 @@ export default function ImagePageCard({ section, onDelete, onEdit, onViewDetails
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.2 }}
-    >
+    <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
       <Card
         variant="outlined"
         sx={{
@@ -45,7 +49,7 @@ export default function ImagePageCard({ section, onDelete, onEdit, onViewDetails
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
           border: '1px solid #e5e7eb',
           transition: 'all 0.3s ease',
-          '&:hover': { 
+          '&:hover': {
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
             borderColor: '#3b82f6',
           },
@@ -121,7 +125,7 @@ export default function ImagePageCard({ section, onDelete, onEdit, onViewDetails
                 bgcolor: 'rgba(255,255,255,0.9)',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255,255,255,0.2)',
-                '&:hover': { 
+                '&:hover': {
                   bgcolor: 'rgba(255,255,255,1)',
                   transform: 'scale(1.1)',
                 },
@@ -178,14 +182,10 @@ export default function ImagePageCard({ section, onDelete, onEdit, onViewDetails
             flexDirection: 'column',
           }}
         >
-          <Stack
-            direction={isMobile ? 'column' : 'row'}
-            spacing={1}
-            sx={{ width: '100%' }}
-          >
+          <Stack direction={isMobile ? 'column' : 'row'} spacing={1} sx={{ width: '100%' }}>
             <Button
               variant="contained"
-              size={isMobile ? "medium" : "small"}
+              size={isMobile ? 'medium' : 'small'}
               startIcon={<Visibility fontSize="small" />}
               onClick={() => onViewDetails(section)}
               fullWidth
@@ -206,10 +206,10 @@ export default function ImagePageCard({ section, onDelete, onEdit, onViewDetails
             >
               {isMobile ? '👁️ Ver Galeria' : 'Ver detalhes'}
             </Button>
-            
+
             <Button
               variant="outlined"
-              size={isMobile ? "medium" : "small"}
+              size={isMobile ? 'medium' : 'small'}
               startIcon={<EditIcon fontSize="small" />}
               onClick={() => onEdit(section)}
               fullWidth

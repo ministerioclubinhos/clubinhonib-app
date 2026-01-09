@@ -217,11 +217,12 @@ export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
               {video.uploadType === MediaUploadType.LINK ? (
                 <Box sx={{ aspectRatio: '16/9', mt: 1 }}>
                   <iframe
-                    src={video.platformType === MediaPlatform.YOUTUBE ? 
-                      video.url.includes('embed') ? 
-                        `${video.url}&autoplay=0&mute=0` : 
-                        video.url.replace(/watch\?v=/, 'embed/') + '?autoplay=0&mute=0' :
-                      video.url
+                    src={
+                      video.platformType === MediaPlatform.YOUTUBE
+                        ? video.url.includes('embed')
+                          ? `${video.url}&autoplay=0&mute=0`
+                          : video.url.replace(/watch\?v=/, 'embed/') + '?autoplay=0&mute=0'
+                        : video.url
                     }
                     title={video.title}
                     allowFullScreen

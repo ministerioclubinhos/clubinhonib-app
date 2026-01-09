@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Button,
   IconButton,
@@ -10,8 +10,8 @@ import {
   Box,
   MenuItem,
   Fab,
-} from "@mui/material";
-import { Refresh, Clear } from "@mui/icons-material";
+} from '@mui/material';
+import { Refresh, Clear } from '@mui/icons-material';
 
 export type TeacherFilters = {
   q?: string;
@@ -27,26 +27,19 @@ type Props = {
   isXs?: boolean;
 };
 
-export default function TeacherToolbar({
-  filters,
-  onChange,
-  onRefreshClick,
-  isXs,
-}: Props) {
-  const handleChange = <K extends keyof TeacherFilters>(
-    key: K,
-    value: TeacherFilters[K]
-  ) => onChange((prev) => ({ ...prev, [key]: value }));
+export default function TeacherToolbar({ filters, onChange, onRefreshClick, isXs }: Props) {
+  const handleChange = <K extends keyof TeacherFilters>(key: K, value: TeacherFilters[K]) =>
+    onChange((prev) => ({ ...prev, [key]: value }));
 
   const handleHasClubChange = (v: string) =>
-    handleChange("hasClub", v === "" ? undefined : (v === "true") as any);
+    handleChange('hasClub', v === '' ? undefined : ((v === 'true') as any));
 
   const handleClubNumberChange = (v: string) =>
-    handleChange("clubNumber", v === "" ? undefined : Number(v));
+    handleChange('clubNumber', v === '' ? undefined : Number(v));
 
   const handleClear = () => {
     onChange(() => ({
-      q: "",
+      q: '',
       active: undefined,
       hasClub: undefined,
       clubNumber: undefined,
@@ -61,8 +54,8 @@ export default function TeacherToolbar({
             fullWidth
             size="small"
             label="Buscar (nome, e-mail ou telefone)"
-            value={filters.q ?? ""}
-            onChange={(e) => handleChange("q", e.target.value)}
+            value={filters.q ?? ''}
+            onChange={(e) => handleChange('q', e.target.value)}
             placeholder="Ex.: Maria, maria@ex.com, (92) 9...."
           />
         </Grid>
@@ -73,9 +66,7 @@ export default function TeacherToolbar({
             fullWidth
             size="small"
             label="Com Clubinho?"
-            value={
-              filters.hasClub === undefined ? "" : filters.hasClub ? "true" : "false"
-            }
+            value={filters.hasClub === undefined ? '' : filters.hasClub ? 'true' : 'false'}
             onChange={(e) => handleHasClubChange(e.target.value)}
           >
             <MenuItem value="">Todos</MenuItem>
@@ -90,7 +81,7 @@ export default function TeacherToolbar({
             size="small"
             label="Nº do Clubinho"
             type="number"
-            value={filters.clubNumber ?? ""}
+            value={filters.clubNumber ?? ''}
             onChange={(e) => handleClubNumberChange(e.target.value)}
             inputProps={{ min: 1 }}
           />
@@ -104,9 +95,9 @@ export default function TeacherToolbar({
                 aria-label="Limpar filtros"
                 onClick={handleClear}
                 sx={{
-                  position: "fixed",
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 96px)",
-                  right: "calc(env(safe-area-inset-right, 0px) + 16px)",
+                  position: 'fixed',
+                  bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)',
+                  right: 'calc(env(safe-area-inset-right, 0px) + 16px)',
                   zIndex: 9999,
                   boxShadow: 6,
                 }}
@@ -118,25 +109,20 @@ export default function TeacherToolbar({
                 aria-label="Recarregar"
                 onClick={onRefreshClick}
                 sx={{
-                  position: "fixed",
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
-                  right: "calc(env(safe-area-inset-right, 0px) + 16px)",
+                  position: 'fixed',
+                  bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+                  right: 'calc(env(safe-area-inset-right, 0px) + 16px)',
                   zIndex: 9999,
-                  bgcolor: "white",
+                  bgcolor: 'white',
                   boxShadow: 6,
-                  "&:hover": { bgcolor: "grey.100" },
+                  '&:hover': { bgcolor: 'grey.100' },
                 }}
               >
                 <Refresh />
               </Fab>
             </>
           ) : (
-            <Stack
-              direction="row"
-              spacing={1.5}
-              justifyContent="flex-end"
-              alignItems="center"
-            >
+            <Stack direction="row" spacing={1.5} justifyContent="flex-end" alignItems="center">
               <Button
                 variant="contained"
                 color="secondary"

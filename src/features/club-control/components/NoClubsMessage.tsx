@@ -1,15 +1,6 @@
 import React from 'react';
-import {
-  Paper,
-  Typography,
-  Box,
-  Stack,
-  useTheme,
-} from '@mui/material';
-import {
-  Info,
-  CalendarToday,
-} from '@mui/icons-material';
+import { Paper, Typography, Box, Stack, useTheme } from '@mui/material';
+import { Info, CalendarToday } from '@mui/icons-material';
 import { WeekCheckResult } from '../api';
 
 interface NoClubsMessageProps {
@@ -74,11 +65,17 @@ export const NoClubsMessage: React.FC<NoClubsMessageProps> = ({ data }) => {
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <CalendarToday sx={{ fontSize: 20, color: theme.palette.warning.main }} />
                 <Box>
-                  <Typography variant="body2" fontWeight="bold" color="text.primary" sx={{ mb: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight="bold"
+                    color="text.primary"
+                    sx={{ mb: 0.5 }}
+                  >
                     Período Letivo Cadastrado
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {new Date(data.period.startDate).toLocaleDateString('pt-BR')} a {new Date(data.period.endDate).toLocaleDateString('pt-BR')}
+                    {new Date(data.period.startDate).toLocaleDateString('pt-BR')} a{' '}
+                    {new Date(data.period.endDate).toLocaleDateString('pt-BR')}
                   </Typography>
                 </Box>
               </Stack>
@@ -89,4 +86,3 @@ export const NoClubsMessage: React.FC<NoClubsMessageProps> = ({ data }) => {
     </Paper>
   );
 };
-

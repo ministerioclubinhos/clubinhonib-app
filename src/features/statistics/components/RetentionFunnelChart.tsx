@@ -34,7 +34,9 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
   if (!data || !data.byParticipationTime || data.byParticipationTime.length === 0) {
     return (
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-        <Typography color="text.secondary">Sem dados de retenção para o período selecionado</Typography>
+        <Typography color="text.secondary">
+          Sem dados de retenção para o período selecionado
+        </Typography>
       </Paper>
     );
   }
@@ -267,8 +269,8 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
             </Typography>
             <Typography variant="h6" fontWeight="bold" color="success.main">
               {(
-                (retentionData.find((s) => s.timeRange === '1+ ano')?.uniqueChildren || 0) /
-                retentionData.reduce((sum, s) => sum + s.uniqueChildren, 0) *
+                ((retentionData.find((s) => s.timeRange === '1+ ano')?.uniqueChildren || 0) /
+                  retentionData.reduce((sum, s) => sum + s.uniqueChildren, 0)) *
                 100
               ).toFixed(1)}
               %
@@ -279,4 +281,3 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
     </Paper>
   );
 };
-

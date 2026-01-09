@@ -34,7 +34,9 @@ interface ActivitiesComparisonChartProps {
 
 type ViewMode = 'radar' | 'bar';
 
-export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps> = ({ filters }) => {
+export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps> = ({
+  filters,
+}) => {
   const theme = useTheme();
   const { data, isLoading } = usePagelasChartData(filters);
   const [viewMode, setViewMode] = React.useState<ViewMode>('radar');
@@ -91,7 +93,8 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
     },
     {
       metric: 'Recitação',
-      value: data.byGender.reduce((sum, g) => sum + g.verseRecitationRate, 0) / data.byGender.length,
+      value:
+        data.byGender.reduce((sum, g) => sum + g.verseRecitationRate, 0) / data.byGender.length,
     },
   ];
 
@@ -135,7 +138,15 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
       }}
     >
       <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2,
+          }}
+        >
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
               <CompareArrows sx={{ fontSize: 28, color: theme.palette.secondary.main }} />
@@ -186,7 +197,10 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         <ResponsiveContainer width="100%" height={350}>
           <RadarChart data={radarData}>
             <PolarGrid stroke={theme.palette.divider} />
-            <PolarAngleAxis dataKey="metric" tick={{ fill: theme.palette.text.secondary, fontSize: 12 }} />
+            <PolarAngleAxis
+              dataKey="metric"
+              tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+            />
             <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 11 }} />
             <Radar
               name="Taxa Média"
@@ -212,8 +226,16 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={comparisonData.byGender}>
               <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-              <XAxis dataKey="category" stroke={theme.palette.text.secondary} style={{ fontSize: 10 }} />
-              <YAxis domain={[0, 100]} stroke={theme.palette.text.secondary} style={{ fontSize: 10 }} />
+              <XAxis
+                dataKey="category"
+                stroke={theme.palette.text.secondary}
+                style={{ fontSize: 10 }}
+              />
+              <YAxis
+                domain={[0, 100]}
+                stroke={theme.palette.text.secondary}
+                style={{ fontSize: 10 }}
+              />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="Presença" fill={theme.palette.success.main} />
               <Bar dataKey="Meditação" fill={theme.palette.info.main} />
@@ -230,8 +252,16 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={comparisonData.byAgeGroup}>
               <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-              <XAxis dataKey="category" stroke={theme.palette.text.secondary} style={{ fontSize: 10 }} />
-              <YAxis domain={[0, 100]} stroke={theme.palette.text.secondary} style={{ fontSize: 10 }} />
+              <XAxis
+                dataKey="category"
+                stroke={theme.palette.text.secondary}
+                style={{ fontSize: 10 }}
+              />
+              <YAxis
+                domain={[0, 100]}
+                stroke={theme.palette.text.secondary}
+                style={{ fontSize: 10 }}
+              />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="Presença" fill={theme.palette.success.main} />
               <Bar dataKey="Meditação" fill={theme.palette.info.main} />
@@ -256,7 +286,11 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
                 textAnchor="end"
                 height={60}
               />
-              <YAxis domain={[0, 100]} stroke={theme.palette.text.secondary} style={{ fontSize: 10 }} />
+              <YAxis
+                domain={[0, 100]}
+                stroke={theme.palette.text.secondary}
+                style={{ fontSize: 10 }}
+              />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="Presença" fill={theme.palette.success.main} />
               <Bar dataKey="Meditação" fill={theme.palette.info.main} />
@@ -293,7 +327,11 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               Diferença Máxima
             </Typography>
             <Typography variant="body1" fontWeight="bold">
-              {(Math.max(...radarData.map((d) => d.value)) - Math.min(...radarData.map((d) => d.value))).toFixed(1)}%
+              {(
+                Math.max(...radarData.map((d) => d.value)) -
+                Math.min(...radarData.map((d) => d.value))
+              ).toFixed(1)}
+              %
             </Typography>
           </Grid>
         </Grid>
@@ -301,4 +339,3 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
     </Paper>
   );
 };
-

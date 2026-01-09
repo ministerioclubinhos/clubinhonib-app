@@ -14,6 +14,7 @@ Este diretório contém os templates e scripts para deploy da aplicação Clubin
 ### Pré-requisitos
 
 1. **AWS CLI configurado** com o perfil `clubinho-aws`:
+
    ```bash
    aws configure --profile clubinho-aws
    ```
@@ -27,21 +28,24 @@ Este diretório contém os templates e scripts para deploy da aplicação Clubin
      - `workflow` (Update GitHub Action workflows)
    - **IMPORTANTE**: Guarde o token, será usado no passo 4 dos pós-deploy
 
-3. **Repositório GitHub** configurado (atualmente aponta para `https://github.com/diego-seven/clubinhonib-app`)
+4. **Repositório GitHub** configurado (atualmente aponta para `https://github.com/diego-seven/clubinhonib-app`)
 
 ### Deploy da Stack
 
 #### Criar a stack (primeira vez):
+
 ```bash
 ./deploy.sh create clubinhonib-amplify-stack
 ```
 
 #### Atualizar a stack (deploy de mudanças):
+
 ```bash
 ./deploy.sh update clubinhonib-amplify-stack
 ```
 
 #### Deletar a stack:
+
 ```bash
 ./deploy.sh delete clubinhonib-amplify-stack
 ```
@@ -49,24 +53,29 @@ Este diretório contém os templates e scripts para deploy da aplicação Clubin
 ## 🏗️ O que a stack cria
 
 ### AWS Amplify App
+
 - **Nome**: `clubinhonib-app`
 - **Build settings** otimizadas para Vite + React
 - **Auto-build** habilitado para branches
 - **NOTA**: O repositório GitHub será conectado manualmente no console
 
 ### Branches configuradas
+
 - **Branches serão criadas manualmente** no console após conectar o repositório
 - **`main`** → Produção (será configurado para `clubinhonib.com`)
 - **`staging`** → Staging (será configurado para `staging.clubinhonib.com`)
 
 ### Environment Variables
+
 Cada branch tem suas próprias variáveis de ambiente:
+
 - `VITE_API_URL`
 - `VITE_FEED_MINISTERIO_ID`
 - `VITE_GOOGLE_CLIENT_ID`
 - `VITE_SPECIAL_FAMILY_DAY_ID`
 
 ### Domínios
+
 - **Produção**: `https://clubinhonib.com`
 - **Staging**: `https://staging.clubinhonib.com`
 
@@ -98,11 +107,12 @@ Após o deploy bem-sucedido, você precisará:
      - `clubinhonib.com` → branch `main`
      - `staging.clubinhonib.com` → branch `staging`
 
-2. **Configurar domínio no Route 53** (se necessário):
+4. **Configurar domínio no Route 53** (se necessário):
    - Verifique se `clubinhonib.com` está configurado no Route 53
    - O Amplify criará os registros necessários automaticamente
 
-3. **Fazer push das branches**:
+5. **Fazer push das branches**:
+
    ```bash
    git checkout main
    git push origin main
@@ -114,6 +124,7 @@ Após o deploy bem-sucedido, você precisará:
 ## 📊 Monitoramento
 
 ### Ver status da stack:
+
 ```bash
 aws cloudformation describe-stacks \
   --stack-name clubinhonib-amplify-stack \
@@ -122,6 +133,7 @@ aws cloudformation describe-stacks \
 ```
 
 ### Ver outputs da stack:
+
 ```bash
 aws cloudformation describe-stacks \
   --stack-name clubinhonib-amplify-stack \
@@ -131,6 +143,7 @@ aws cloudformation describe-stacks \
 ```
 
 ### Logs de build:
+
 - Acesse o AWS Amplify Console
 - Vá para a app `clubinhonib-app`
 - Clique em "Build settings" > "Build history"
@@ -138,15 +151,18 @@ aws cloudformation describe-stacks \
 ## 🔍 Troubleshooting
 
 ### Stack falha ao criar:
+
 - Verifique se o perfil `clubinho-aws` tem permissões adequadas
 - Confirme que o domínio `clubinhonib.com` está na conta AWS correta
 
 ### Build falha no Amplify:
+
 - Verifique os logs no Amplify Console
 - Confirme que todas as environment variables estão configuradas
 - Verifique se o repositório GitHub está acessível
 
 ### Domínio não funciona:
+
 - Aguarde a propagação do DNS (pode levar até 24h)
 - Verifique se os registros CNAME estão criados no Route 53
 - Confirme que o domínio não está sendo usado por outro serviço
@@ -154,6 +170,7 @@ aws cloudformation describe-stacks \
 ## 🏷️ Outputs da Stack
 
 A stack exporta os seguintes valores:
+
 - `AmplifyAppId` - ID da aplicação Amplify
 - `ProductionBranchName` - Nome da branch de produção
 - `StagingBranchName` - Nome da branch de staging
@@ -170,6 +187,7 @@ Para modificar configurações:
 4. **Domínios**: Modifique a seção `DomainAssociation`
 
 Após mudanças, execute:
+
 ```bash
 ./deploy.sh update clubinhonib-amplify-stack
 ```

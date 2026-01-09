@@ -22,4 +22,3 @@ export const selectIsCoordinator = createSelector(
   [(state: RootState) => state.auth],
   (auth) => auth.isAuthenticated && auth.user?.role === UserRole.COORDINATOR
 );
-

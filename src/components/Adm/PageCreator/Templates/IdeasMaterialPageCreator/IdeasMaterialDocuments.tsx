@@ -21,7 +21,6 @@ import { Delete, Edit, Visibility } from '@mui/icons-material';
 import { validateMediaURL } from 'utils/validateMediaURL';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
-import { getMediaPreviewUrl } from 'utils/getMediaPreviewUrl';
 
 interface DocumentsProps {
   documents: MediaItem[];
@@ -231,44 +230,52 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
       <Grid container spacing={3} sx={{ mt: 3 }}>
         {documents.map((doc, index) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-            <Box sx={{ 
-              p: 3, 
-              border: '1px solid', 
-              borderColor: 'divider',
-              borderRadius: '16px',
-              bgcolor: 'background.paper',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-                transform: 'translateY(-2px)',
-              },
-            }}>
+            <Box
+              sx={{
+                p: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: '16px',
+                bgcolor: 'background.paper',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                  transform: 'translateY(-2px)',
+                },
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-                <Box sx={{ 
-                  p: 1.5, 
-                  bgcolor: 'primary.light', 
-                  borderRadius: '12px',
-                  mr: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: '48px',
-                  height: '48px',
-                }}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    bgcolor: 'primary.light',
+                    borderRadius: '12px',
+                    mr: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: '48px',
+                    height: '48px',
+                  }}
+                >
                   <Typography sx={{ fontSize: '1.2rem' }}>📄</Typography>
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography fontWeight="bold" sx={{ mb: 1, fontSize: '1.1rem' }}>
                     {doc.title}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ 
-                    mb: 1,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      mb: 1,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
                     {doc.description}
                   </Typography>
                 </Box>

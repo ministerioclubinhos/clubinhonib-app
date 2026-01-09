@@ -50,7 +50,7 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
   const [currentEditingIndex, setCurrentEditingIndex] = useState<number | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState('');
-  const [onConfirmAction, setOnConfirmAction] = useState<() => void>(() => { });
+  const [onConfirmAction, setOnConfirmAction] = useState<() => void>(() => {});
   const [isSaving, setIsSaving] = useState(false);
   const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
   const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
@@ -146,11 +146,11 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
 
       const response = fromTemplatePage
         ? await api.post('/image-pages', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        })
+            headers: { 'Content-Type': 'multipart/form-data' },
+          })
         : await api.patch(`/image-pages/${imageData?.id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
 
       await dispatch(fetchRoutes());
       navigate(`/${response.data.route.path}`);
@@ -203,9 +203,9 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
           prev.map((section, i) =>
             i === sectionIndex
               ? {
-                ...section,
-                mediaItems: section.mediaItems.filter((_, j) => j !== mediaIndex),
-              }
+                  ...section,
+                  mediaItems: section.mediaItems.filter((_, j) => j !== mediaIndex),
+                }
               : section
           )
         )
@@ -249,7 +249,6 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
         textAlign="center"
         sx={{ fontSize: { xs: '1.2rem', md: '2.5rem' } }}
       >
-
         {fromTemplatePage ? 'Criar Galeria de Fotos' : 'Editar Galeria de Fotos'}
       </Typography>
 

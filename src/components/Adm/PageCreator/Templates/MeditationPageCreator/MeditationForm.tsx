@@ -20,11 +20,7 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import {
-  DayItem,
-  WeekDay,
-  WeekDayLabel,
-} from '@/store/slices/meditation/meditationSlice';
+import { DayItem, WeekDay, WeekDayLabel } from '@/store/slices/meditation/meditationSlice';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 
 interface Props {

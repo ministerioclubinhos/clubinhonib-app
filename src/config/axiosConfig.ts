@@ -1,9 +1,5 @@
 import axios from 'axios';
-import type {
-  InternalAxiosRequestConfig,
-  AxiosError,
-  AxiosResponse,
-} from 'axios';
+import type { InternalAxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 import { store } from '@/store/slices';
 import { logout, login } from '@/store/slices/auth/authSlice';
 

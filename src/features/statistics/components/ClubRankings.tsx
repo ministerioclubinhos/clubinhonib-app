@@ -101,16 +101,26 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
               <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                 <Stack spacing={1.5}>
                   {/* Header */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       {index < 3 ? (
-                        <EmojiEvents sx={{ color: getMedalColor(index), fontSize: { xs: 20, sm: 24 } }} />
+                        <EmojiEvents
+                          sx={{ color: getMedalColor(index), fontSize: { xs: 20, sm: 24 } }}
+                        />
                       ) : (
-                        <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
                           {index + 1}
                         </Typography>
                       )}
-                      <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}>
+                      <Typography
+                        fontWeight="bold"
+                        sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}
+                      >
                         Clubinho #{club.clubNumber}
                       </Typography>
                     </Box>
@@ -122,37 +132,65 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
                   <Grid container spacing={1.5}>
                     <Grid item xs={6}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           Crianças
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
                           {club.totalChildren}
                         </Typography>
                       </Box>
                     </Grid>
                     <Grid item xs={6}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           Presença
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
                           {club.avgPresenceRate.toFixed(1)}%
                         </Typography>
                       </Box>
                     </Grid>
                     <Grid item xs={6}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           Decisões
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
                           {club.totalDecisions}
                         </Typography>
                       </Box>
                     </Grid>
                     <Grid item xs={6}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                        >
                           Performance
                         </Typography>
                         <Chip
@@ -176,12 +214,24 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell width={60}><strong>Pos.</strong></TableCell>
-                <TableCell><strong>Clubinho</strong></TableCell>
-                <TableCell align="right"><strong>Crianças</strong></TableCell>
-                <TableCell align="right"><strong>Presença %</strong></TableCell>
-                <TableCell align="right"><strong>Decisões</strong></TableCell>
-                <TableCell align="right"><strong>Performance</strong></TableCell>
+                <TableCell width={60}>
+                  <strong>Pos.</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Clubinho</strong>
+                </TableCell>
+                <TableCell align="right">
+                  <strong>Crianças</strong>
+                </TableCell>
+                <TableCell align="right">
+                  <strong>Presença %</strong>
+                </TableCell>
+                <TableCell align="right">
+                  <strong>Decisões</strong>
+                </TableCell>
+                <TableCell align="right">
+                  <strong>Performance</strong>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -198,16 +248,29 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
                       {index < 3 ? (
                         <EmojiEvents sx={{ color: getMedalColor(index), fontSize: 24 }} />
                       ) : (
-                        <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{index + 1}</Typography>
+                        <Typography
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                        >
+                          {index + 1}
+                        </Typography>
                       )}
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Clubinho #{club.clubNumber}</Typography>
+                    <Typography fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      Clubinho #{club.clubNumber}
+                    </Typography>
                   </TableCell>
-                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{club.totalChildren}</TableCell>
-                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{club.avgPresenceRate.toFixed(1)}%</TableCell>
-                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{club.totalDecisions}</TableCell>
+                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {club.totalChildren}
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {club.avgPresenceRate.toFixed(1)}%
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    {club.totalDecisions}
+                  </TableCell>
                   <TableCell align="right">
                     <Chip
                       label={`${club.performanceScore.toFixed(1)}%`}
@@ -225,4 +288,3 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
     </Paper>
   );
 };
-

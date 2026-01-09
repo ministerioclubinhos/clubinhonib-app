@@ -189,7 +189,12 @@ export const useCurrentWeek = (): { data?: CurrentWeekInfo; isLoading: boolean; 
   });
 };
 
-export const useWeeklyAttendance = (params: { year: number; week: number; page?: number; limit?: number }) => {
+export const useWeeklyAttendance = (params: {
+  year: number;
+  week: number;
+  page?: number;
+  limit?: number;
+}) => {
   return useQuery({
     queryKey: ['weeklyAttendance', JSON.stringify(params)],
     queryFn: async () => {
@@ -201,4 +206,3 @@ export const useWeeklyAttendance = (params: { year: number; week: number; page?:
     refetchOnWindowFocus: false,
   });
 };
-

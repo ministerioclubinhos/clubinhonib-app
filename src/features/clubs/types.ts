@@ -1,17 +1,22 @@
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from '@/store/slices/auth/authSlice';
 
 export type Weekday =
-  | "monday" | "tuesday" | "wednesday" | "thursday"
-  | "friday" | "saturday" | "sunday";
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday';
 
 export const WEEKDAYS: { value: Weekday; label: string }[] = [
-  { value: "monday", label: "Segunda" },
-  { value: "tuesday", label: "Terça" },
-  { value: "wednesday", label: "Quarta" },
-  { value: "thursday", label: "Quinta" },
-  { value: "friday", label: "Sexta" },
-  { value: "saturday", label: "Sábado" },
-  { value: "sunday", label: "Domingo" },
+  { value: 'monday', label: 'Segunda' },
+  { value: 'tuesday', label: 'Terça' },
+  { value: 'wednesday', label: 'Quarta' },
+  { value: 'thursday', label: 'Quinta' },
+  { value: 'friday', label: 'Sexta' },
+  { value: 'saturday', label: 'Sábado' },
+  { value: 'sunday', label: 'Domingo' },
 ];
 
 export type UserPublicDto = {
@@ -66,9 +71,9 @@ export type ClubResponseDto = {
 };
 
 export type SimpleClubResponseDto = {
-  id: string,
-  detalhe: string,
-  coordinator: boolean
+  id: string;
+  detalhe: string;
+  coordinator: boolean;
 };
 
 export type Paginated<T> = {
@@ -85,7 +90,11 @@ export type CreateClubForm = {
   time?: string | null;
   isActive?: boolean;
   address: Partial<AddressResponseDto> & {
-    street: string; district: string; city: string; state: string; postalCode: string;
+    street: string;
+    district: string;
+    city: string;
+    state: string;
+    postalCode: string;
   };
   coordinatorProfileId?: string | null;
   teacherProfileIds?: string[];
@@ -99,9 +108,10 @@ export type ClubFilters = {
   isActive?: boolean;
 };
 
-export type ClubSort =
-  | { id: "number" | "weekday" | "time" | "createdAt" | "updatedAt" | "city" | "state"; desc: boolean }
-  | null;
+export type ClubSort = {
+  id: 'number' | 'weekday' | 'time' | 'createdAt' | 'updatedAt' | 'city' | 'state';
+  desc: boolean;
+} | null;
 
 export type CoordinatorOption = { coordinatorProfileId: string; name: string };
-export type TeacherOption = { teacherProfileId: string; name: string, vinculado: boolean };
+export type TeacherOption = { teacherProfileId: string; name: string; vinculado: boolean };

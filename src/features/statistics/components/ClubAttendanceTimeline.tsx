@@ -64,10 +64,10 @@ export const ClubAttendanceTimeline: React.FC = () => {
   const [expandedMissingWeeks, setExpandedMissingWeeks] = React.useState(false);
 
   const { data: clubsData } = useClubs({ page: 1, limit: 100 });
-  const { data, isLoading } = useClubAttendance(selectedClubId, { 
-    year, 
-    page: timelinePage, 
-    limit: timelineLimit 
+  const { data, isLoading } = useClubAttendance(selectedClubId, {
+    year,
+    page: timelinePage,
+    limit: timelineLimit,
   });
 
   // Selecionar primeiro clube automaticamente
@@ -120,15 +120,18 @@ export const ClubAttendanceTimeline: React.FC = () => {
 
   const translateAlertType = (type: string) => {
     const translations: Record<string, string> = {
-      'missing_weeks': 'Semanas Faltantes',
-      'low_attendance': 'Baixa Frequência',
-      'no_pagela': 'Sem Pagela',
-      'incomplete_pagela': 'Pagela Incompleta',
-      'exception': 'Exceção',
-      'out_of_period': 'Fora do Período',
+      missing_weeks: 'Semanas Faltantes',
+      low_attendance: 'Baixa Frequência',
+      no_pagela: 'Sem Pagela',
+      incomplete_pagela: 'Pagela Incompleta',
+      exception: 'Exceção',
+      out_of_period: 'Fora do Período',
     };
-    
-    return translations[type.toLowerCase()] || type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+
+    return (
+      translations[type.toLowerCase()] ||
+      type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+    );
   };
 
   if (isLoading) {
@@ -144,7 +147,15 @@ export const ClubAttendanceTimeline: React.FC = () => {
   return (
     <Box>
       {/* Seleção de Clubinho */}
-      <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2, sm: 3 }, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          mb: { xs: 2, sm: 3 },
+          borderRadius: 2,
+          border: `1px solid ${theme.palette.divider}`,
+        }}
+      >
         <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
           <Grid item xs={12} md={6}>
             <TextField
@@ -158,7 +169,8 @@ export const ClubAttendanceTimeline: React.FC = () => {
               {clubsData?.clubs && clubsData.clubs.length > 0 ? (
                 clubsData.clubs.map((club) => (
                   <MenuItem key={club.clubId} value={club.clubId}>
-                    Clubinho #{club.clubNumber} - {weekdayNames[club.weekday] || club.weekday} - {club.address.city}
+                    Clubinho #{club.clubNumber} - {weekdayNames[club.weekday] || club.weekday} -{' '}
+                    {club.address.city}
                   </MenuItem>
                 ))
               ) : (
@@ -189,7 +201,9 @@ export const ClubAttendanceTimeline: React.FC = () => {
 
       {!selectedClubId ? (
         <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-          <Typography color="text.secondary">Selecione um clubinho para ver a frequência</Typography>
+          <Typography color="text.secondary">
+            Selecione um clubinho para ver a frequência
+          </Typography>
         </Paper>
       ) : !data ? (
         <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
@@ -211,10 +225,19 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   border: `2px solid ${theme.palette.success.main}30`,
                 }}
               >
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   Taxa de Frequência
                 </Typography>
-                <Typography variant="h5" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, mb: 0.5 }}>
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  color="success.main"
+                  sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, mb: 0.5 }}
+                >
                   {data.attendance.attendanceRate.toFixed(1)}%
                 </Typography>
                 <Chip
@@ -222,11 +245,11 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   label={`${data.attendance.weeksWithPagela}/${data.attendance.weeksExpected}`}
                   size="small"
                   color="success"
-                  sx={{ 
+                  sx={{
                     mt: { xs: 0.5, sm: 1 },
                     fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     height: { xs: 20, sm: 24 },
-                    '& .MuiChip-icon': { fontSize: { xs: 14, sm: 16 } }
+                    '& .MuiChip-icon': { fontSize: { xs: 14, sm: 16 } },
                   }}
                 />
               </Paper>
@@ -242,10 +265,19 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   border: `2px solid ${theme.palette.warning.main}30`,
                 }}
               >
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   Semanas Faltantes
                 </Typography>
-                <Typography variant="h5" fontWeight="bold" color="warning.main" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, mb: 0.5 }}>
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  color="warning.main"
+                  sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, mb: 0.5 }}
+                >
                   {data.attendance.weeksMissing}
                 </Typography>
                 <Chip
@@ -253,11 +285,11 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   label={data.attendance.weeksMissing === 0 ? 'Nenhuma' : 'Atenção!'}
                   size="small"
                   color={data.attendance.weeksMissing === 0 ? 'success' : 'warning'}
-                  sx={{ 
+                  sx={{
                     mt: { xs: 0.5, sm: 1 },
                     fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     height: { xs: 20, sm: 24 },
-                    '& .MuiChip-icon': { fontSize: { xs: 14, sm: 16 } }
+                    '& .MuiChip-icon': { fontSize: { xs: 14, sm: 16 } },
                   }}
                 />
               </Paper>
@@ -273,16 +305,33 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   border: `2px solid ${theme.palette.primary.main}30`,
                 }}
               >
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   Sequência Atual
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, mb: 0.5 }}>
-                  <Typography variant="h5" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, mb: 0.5 }}
+                >
+                  <Typography
+                    variant="h5"
+                    fontWeight="bold"
+                    color="primary"
+                    sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}
+                  >
                     {data.attendance.consecutiveWeeksPresent}
                   </Typography>
-                  <TrendingUp sx={{ color: theme.palette.success.main, fontSize: { xs: 18, sm: 20 } }} />
+                  <TrendingUp
+                    sx={{ color: theme.palette.success.main, fontSize: { xs: 18, sm: 20 } }}
+                  />
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   semanas consecutivas
                 </Typography>
               </Paper>
@@ -298,13 +347,26 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   border: `2px solid ${theme.palette.info.main}30`,
                 }}
               >
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   Período
                 </Typography>
-                <Typography variant="h6" fontWeight="bold" color="info.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, mb: 0.5 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  color="info.main"
+                  sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, mb: 0.5 }}
+                >
                   {data.period.activeWeeks} semanas
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   de {data.period.totalWeeks} do ano
                 </Typography>
               </Paper>
@@ -313,8 +375,13 @@ export const ClubAttendanceTimeline: React.FC = () => {
 
           {/* ⭐ v2.7.0: Note informativo quando não há período letivo */}
           {data.note && (
-            <Alert severity="warning" sx={{ mb: { xs: 2, sm: 3 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-              <AlertTitle sx={{ fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>⚠️ Aviso</AlertTitle>
+            <Alert
+              severity="warning"
+              sx={{ mb: { xs: 2, sm: 3 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            >
+              <AlertTitle sx={{ fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                ⚠️ Aviso
+              </AlertTitle>
               {data.note}
             </Alert>
           )}
@@ -330,7 +397,9 @@ export const ClubAttendanceTimeline: React.FC = () => {
                       icon={getSeverityIcon(alert.severity)}
                       sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, height: '100%' }}
                     >
-                      <AlertTitle sx={{ fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                      <AlertTitle
+                        sx={{ fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                      >
                         {translateAlertType(alert.type)}
                       </AlertTitle>
                       {alert.message}
@@ -364,10 +433,18 @@ export const ClubAttendanceTimeline: React.FC = () => {
               onClick={() => setExpandedTimeline(!expandedTimeline)}
             >
               <Box>
-                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+                >
                   📅 Timeline Semanal - {year}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                >
                   {dayjs(data.period.startDate).format('DD/MM/YYYY')} até{' '}
                   {dayjs(data.period.endDate).format('DD/MM/YYYY')}
                 </Typography>
@@ -376,16 +453,15 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 {expandedTimeline ? <ExpandLess /> : <ExpandMore />}
               </IconButton>
             </Box>
-            
+
             <Collapse in={expandedTimeline}>
               <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-
                 {/* Grid de Semanas - Compacto */}
                 <Box
                   sx={{
                     display: 'grid',
-                    gridTemplateColumns: isMobile 
-                      ? 'repeat(auto-fill, minmax(45px, 1fr))' 
+                    gridTemplateColumns: isMobile
+                      ? 'repeat(auto-fill, minmax(45px, 1fr))'
                       : 'repeat(auto-fill, minmax(55px, 1fr))',
                     gap: { xs: 0.5, sm: 1 },
                   }}
@@ -411,16 +487,30 @@ export const ClubAttendanceTimeline: React.FC = () => {
                         },
                       }}
                     >
-                      <Typography variant="caption" fontWeight="bold" display="block" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                      <Typography
+                        variant="caption"
+                        fontWeight="bold"
+                        display="block"
+                        sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                      >
                         S{week.week}
                       </Typography>
                       {week.hasPagela ? (
-                        <CheckCircle sx={{ fontSize: { xs: 16, sm: 20 }, color: theme.palette.success.main }} />
+                        <CheckCircle
+                          sx={{ fontSize: { xs: 16, sm: 20 }, color: theme.palette.success.main }}
+                        />
                       ) : (
-                        <Cancel sx={{ fontSize: { xs: 16, sm: 20 }, color: theme.palette.error.main }} />
+                        <Cancel
+                          sx={{ fontSize: { xs: 16, sm: 20 }, color: theme.palette.error.main }}
+                        />
                       )}
                       {week.hasPagela && week.totalPagelas && (
-                        <Typography variant="caption" display="block" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                        <Typography
+                          variant="caption"
+                          display="block"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                        >
                           {week.totalPagelas}
                         </Typography>
                       )}
@@ -429,14 +519,36 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 </Box>
 
                 {/* Legenda - Compacta */}
-                <Box sx={{ mt: { xs: 2, sm: 3 }, display: 'flex', gap: { xs: 1.5, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Box
+                  sx={{
+                    mt: { xs: 2, sm: 3 },
+                    display: 'flex',
+                    gap: { xs: 1.5, sm: 2 },
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <CheckCircle sx={{ color: theme.palette.success.main, fontSize: { xs: 16, sm: 18 } }} />
-                    <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Com Pagela</Typography>
+                    <CheckCircle
+                      sx={{ color: theme.palette.success.main, fontSize: { xs: 16, sm: 18 } }}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                    >
+                      Com Pagela
+                    </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Cancel sx={{ color: theme.palette.error.main, fontSize: { xs: 16, sm: 18 } }} />
-                    <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Sem Pagela</Typography>
+                    <Cancel
+                      sx={{ color: theme.palette.error.main, fontSize: { xs: 16, sm: 18 } }}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                    >
+                      Sem Pagela
+                    </Typography>
                   </Box>
                 </Box>
 
@@ -455,7 +567,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                       }}
                       rowsPerPageOptions={[10, 20, 50, 100]}
                       labelRowsPerPage="Semanas por página:"
-                      labelDisplayedRows={({ from, to, count }) => 
+                      labelDisplayedRows={({ from, to, count }) =>
                         `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
                       }
                       sx={{
@@ -497,18 +609,25 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   justifyContent: 'space-between',
                   cursor: 'pointer',
                   bgcolor: theme.palette.grey[50],
-                  borderBottom: expandedMissingWeeks ? `1px solid ${theme.palette.divider}` : 'none',
+                  borderBottom: expandedMissingWeeks
+                    ? `1px solid ${theme.palette.divider}`
+                    : 'none',
                 }}
                 onClick={() => setExpandedMissingWeeks(!expandedMissingWeeks)}
               >
-                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                  ⚠️ Semanas Faltantes ({data.missingWeeksPagination?.total || data.missingWeeks.length})
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+                >
+                  ⚠️ Semanas Faltantes (
+                  {data.missingWeeksPagination?.total || data.missingWeeks.length})
                 </Typography>
                 <IconButton size="small">
                   {expandedMissingWeeks ? <ExpandLess /> : <ExpandMore />}
                 </IconButton>
               </Box>
-              
+
               <Collapse in={expandedMissingWeeks}>
                 <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 1.5 } }}>
@@ -522,12 +641,28 @@ export const ClubAttendanceTimeline: React.FC = () => {
                           border: `1px solid ${getSeverityColor(week.severity)}40`,
                         }}
                       >
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: 1 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                            gap: 1,
+                          }}
+                        >
                           <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="subtitle2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="bold"
+                              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                            >
                               Semana {week.week} - {dayjs(week.expectedDate).format('DD/MM/YYYY')}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                            >
                               {dayjs(week.weekRange.start).format('DD/MM')} até{' '}
                               {dayjs(week.weekRange.end).format('DD/MM/YYYY')}
                             </Typography>
@@ -559,7 +694,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                         onPageChange={(event, newPage) => setMissingWeeksPage(newPage + 1)}
                         rowsPerPage={data.missingWeeksPagination.limit}
                         rowsPerPageOptions={[]}
-                        labelDisplayedRows={({ from, to, count }) => 
+                        labelDisplayedRows={({ from, to, count }) =>
                           `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
                         }
                         sx={{
@@ -570,9 +705,10 @@ export const ClubAttendanceTimeline: React.FC = () => {
                             gap: 1,
                             px: { xs: 0, sm: 2 },
                           },
-                          '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                          },
+                          '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows':
+                            {
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            },
                         }}
                       />
                     </Box>
@@ -591,10 +727,20 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 bgcolor: theme.palette.success.main + '08',
               }}
             >
-              <Typography variant="h6" fontWeight="bold" color="success.main" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+              <Typography
+                variant="h6"
+                fontWeight="bold"
+                color="success.main"
+                gutterBottom
+                sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+              >
                 ✅ Nenhuma Semana Faltante
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+              >
                 Este clubinho teve pagela em todas as semanas esperadas do período letivo.
               </Typography>
             </Paper>
@@ -604,5 +750,3 @@ export const ClubAttendanceTimeline: React.FC = () => {
     </Box>
   );
 };
-
-

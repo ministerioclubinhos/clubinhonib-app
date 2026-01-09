@@ -1,13 +1,32 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Box, Button, Paper, Grid, Stack, Snackbar, Alert,
-  Dialog, DialogTitle, DialogContent, IconButton, TextField,
-  CircularProgress, Tooltip, useMediaQuery, useTheme, Fab
+  Box,
+  Button,
+  Paper,
+  Grid,
+  Stack,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+  TextField,
+  CircularProgress,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
+  Fab,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch } from 'react-redux';
-import { clearDocumentData, clearMedia, setDocumentData, setMedia } from 'store/slices/documents/documentSlice';
+import {
+  clearDocumentData,
+  clearMedia,
+  setDocumentData,
+  setMedia,
+} from 'store/slices/documents/documentSlice';
 import { AppDispatch } from 'store/slices';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,12 +57,14 @@ const DocumentsManager: React.FC = () => {
   const [detailsModalOpen, setDetailsModalOpen] = useState<DocumentItem | null>(null);
   const [previewModalOpen, setPreviewModalOpen] = useState<DocumentItem | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState<DocumentItem | null>(null);
-  const [deleteModalOpen, setDeleteModalOpen] = useState<Pick<DocumentItem, 'id' | 'name'> | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<Pick<DocumentItem, 'id' | 'name'> | null>(
+    null
+  );
 
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
-    severity: 'success' as 'success' | 'error'
+    severity: 'success' as 'success' | 'error',
   });
 
   const fetchDocuments = async () => {
@@ -55,7 +76,9 @@ const DocumentsManager: React.FC = () => {
     }
   };
 
-  useEffect(() => { fetchDocuments(); }, []);
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
 
   const filteredDocuments = useMemo(() => {
     const term = searchTerm.toLowerCase();
@@ -108,7 +131,16 @@ const DocumentsManager: React.FC = () => {
   const handleCloseSnackbar = () => setSnackbar((p) => ({ ...p, open: false }));
 
   return (
-    <Box sx={{ px: { xs: 2, md: 4 }, pt: { xs: 0, md: 4 }, mt: { xs: 0, md: 4 }, mb: { xs: 4, md: 2 }, width: '95%', mx: 'auto' }}>
+    <Box
+      sx={{
+        px: { xs: 2, md: 4 },
+        pt: { xs: 0, md: 4 },
+        mt: { xs: 0, md: 4 },
+        mb: { xs: 4, md: 2 },
+        width: '95%',
+        mx: 'auto',
+      }}
+    >
       <BackHeader title="Gerenciar Documentos" />
 
       <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
@@ -150,7 +182,9 @@ const DocumentsManager: React.FC = () => {
       )}
 
       {isFiltering ? (
-        <Box display="flex" justifyContent="center" mt={5}><CircularProgress /></Box>
+        <Box display="flex" justifyContent="center" mt={5}>
+          <CircularProgress />
+        </Box>
       ) : (
         <Grid container spacing={3}>
           {filteredDocuments.map((doc) => (
@@ -168,18 +202,34 @@ const DocumentsManager: React.FC = () => {
       )}
 
       <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 2 }}>
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 2 }}
+        >
           {isEditing ? 'Editar Documento' : 'Novo Documento'}
-          <IconButton onClick={() => setFormOpen(false)} size="small"><CloseIcon /></IconButton>
+          <IconButton onClick={() => setFormOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
         </DialogTitle>
         <DialogContent>
           <DocumentForm isEditing={isEditing} onSuccess={handleFormSuccess} />
         </DialogContent>
       </Dialog>
 
-      <DocumentDetailsModal open={!!detailsModalOpen} document={detailsModalOpen} onClose={() => setDetailsModalOpen(null)} />
-      <DocumentPreviewModal open={!!previewModalOpen} document={previewModalOpen} onClose={() => setPreviewModalOpen(null)} />
-      <DocumentViewModal open={!!viewModalOpen} document={viewModalOpen} onClose={() => setViewModalOpen(null)} />
+      <DocumentDetailsModal
+        open={!!detailsModalOpen}
+        document={detailsModalOpen}
+        onClose={() => setDetailsModalOpen(null)}
+      />
+      <DocumentPreviewModal
+        open={!!previewModalOpen}
+        document={previewModalOpen}
+        onClose={() => setPreviewModalOpen(null)}
+      />
+      <DocumentViewModal
+        open={!!viewModalOpen}
+        document={viewModalOpen}
+        onClose={() => setViewModalOpen(null)}
+      />
 
       <DeleteConfirmDialog
         open={!!deleteModalOpen}
@@ -189,7 +239,9 @@ const DocumentsManager: React.FC = () => {
       />
 
       <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar}>
-        <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
+        <Alert severity={snackbar.severity} variant="filled">
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </Box>
   );

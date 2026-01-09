@@ -1,44 +1,32 @@
-import React, { useCallback, useState } from "react";
-import {
-  Alert,
-  Box,
-  CircularProgress,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
-import ChildrenToolbar from "./components/ChildrenToolbar";
-import ChildrenTable from "./components/ChildrenTable";
-import ChildViewDialog from "./components/ChildViewDialog";
-import ChildFormDialog from "./components/ChildFormDialog";
-import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
-import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
-import { useChildDetails, useChildMutations, useChildren } from "./hooks";
-import {
-  ChildFilters,
-  ChildResponseDto,
-  ChildSort,
-  CreateChildForm,
-  EditChildForm,
-} from "./types";
-import BackHeader from "@/components/common/header/BackHeader";
+import React, { useCallback, useState } from 'react';
+import { Alert, Box, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
+import ChildrenToolbar from './components/ChildrenToolbar';
+import ChildrenTable from './components/ChildrenTable';
+import ChildViewDialog from './components/ChildViewDialog';
+import ChildFormDialog from './components/ChildFormDialog';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
+import ToggleActiveConfirmDialog from '@/components/common/modal/ToggleActiveConfirmDialog';
+import { useChildDetails, useChildMutations, useChildren } from './hooks';
+import { ChildFilters, ChildResponseDto, ChildSort, CreateChildForm, EditChildForm } from './types';
+import BackHeader from '@/components/common/header/BackHeader';
 
 export default function ChildrenManager() {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [filters, setFilters] = useState<ChildFilters>({
-    searchString: "",
+    searchString: '',
     clubNumber: undefined,
-    birthDateFrom: "",
-    birthDateTo: "",
-    joinedFrom: "",
-    joinedTo: "",
+    birthDateFrom: '',
+    birthDateTo: '',
+    joinedFrom: '',
+    joinedTo: '',
   });
 
   const [pageSize, setPageSize] = useState<number>(12);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [sorting, setSorting] = useState<ChildSort>({
-    id: "updatedAt",
+    id: 'updatedAt',
     desc: true,
   });
 
@@ -52,12 +40,7 @@ export default function ChildrenManager() {
     fetchPage();
   }, [fetchPage]);
 
-  const {
-    viewing,
-    setViewing,
-    loading: viewingLoading,
-    fetchChild,
-  } = useChildDetails();
+  const { viewing, setViewing, loading: viewingLoading, fetchChild } = useChildDetails();
   const handleOpenView = (row: ChildResponseDto) => {
     setViewing(row);
     fetchChild(row.id);
@@ -78,19 +61,19 @@ export default function ChildrenManager() {
   const [creating, setCreating] = useState<CreateChildForm | null>(null);
   const openCreate = () =>
     setCreating({
-      name: "",
-      gender: "M",
-      guardianName: "",
-      guardianPhone: "",
-      birthDate: "",
+      name: '',
+      gender: 'M',
+      guardianName: '',
+      guardianPhone: '',
+      birthDate: '',
       joinedAt: null,
       clubId: null,
       address: {
-        street: "",
-        district: "",
-        city: "",
-        state: "",
-        postalCode: "",
+        street: '',
+        district: '',
+        city: '',
+        state: '',
+        postalCode: '',
       } as any,
     });
   const submitCreate = async () => {
@@ -123,19 +106,11 @@ export default function ChildrenManager() {
     setEditing(null);
   };
 
-  const [confirmDelete, setConfirmDelete] = useState<ChildResponseDto | null>(
-    null
-  );
+  const [confirmDelete, setConfirmDelete] = useState<ChildResponseDto | null>(null);
   const askDelete = (row: ChildResponseDto) => setConfirmDelete(row);
   const submitDelete = async () => {
     if (!confirmDelete) return;
-    await deleteChild(
-      confirmDelete.id,
-      pageIndex + 1,
-      pageSize,
-      filters,
-      sorting
-    );
+    await deleteChild(confirmDelete.id, pageIndex + 1, pageSize, filters, sorting);
     setConfirmDelete(null);
   };
 
@@ -156,8 +131,8 @@ export default function ChildrenManager() {
       sx={{
         px: { xs: 2, md: 0 },
         py: { xs: 0, md: 0 },
-        minHeight: "100vh",
-        bgcolor: "#f9fafb"
+        minHeight: '100vh',
+        bgcolor: '#f9fafb',
       }}
     >
       <BackHeader title="Gerenciar Crianças" />
@@ -179,7 +154,7 @@ export default function ChildrenManager() {
         </Box>
       )}
       {error && !loading && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
           {error}
         </Alert>
       )}
@@ -192,7 +167,7 @@ export default function ChildrenManager() {
         setPageIndex={setPageIndex}
         setPageSize={setPageSize}
         sorting={sorting ? ([sorting] as any) : []}
-        setSorting={(s) => setSorting(Array.isArray(s) ? s[0] ?? null : (s as any))}
+        setSorting={(s) => setSorting(Array.isArray(s) ? (s[0] ?? null) : (s as any))}
         onOpenView={handleOpenView}
         onStartEdit={startEdit}
         onAskDelete={askDelete}
@@ -205,7 +180,7 @@ export default function ChildrenManager() {
         child={viewing}
         onClose={() => setViewing(null)}
         onEdit={(id) => {
-          const child = rows.find(c => c.id === id);
+          const child = rows.find((c) => c.id === id);
           if (child) {
             setViewing(null);
             startEdit(child);
@@ -224,7 +199,7 @@ export default function ChildrenManager() {
         onChange={(v) => setCreating(v as CreateChildForm)}
         onCancel={() => {
           setCreating(null);
-          setDialogError("");
+          setDialogError('');
         }}
         onSubmit={submitCreate}
         error={dialogError}
@@ -238,7 +213,7 @@ export default function ChildrenManager() {
         onChange={(v) => setEditing(v as EditChildForm)}
         onCancel={() => {
           setEditing(null);
-          setDialogError("");
+          setDialogError('');
         }}
         onSubmit={submitEdit}
         error={dialogError}
@@ -247,21 +222,21 @@ export default function ChildrenManager() {
 
       <DeleteConfirmDialog
         open={!!confirmDelete}
-        title={confirmDelete?.name || ""}
+        title={confirmDelete?.name || ''}
         onClose={() => {
           setConfirmDelete(null);
-          setDialogError("");
+          setDialogError('');
         }}
         onConfirm={submitDelete}
       />
 
       <ToggleActiveConfirmDialog
         open={!!confirmToggleActive}
-        title={confirmToggleActive?.name || ""}
+        title={confirmToggleActive?.name || ''}
         isActive={confirmToggleActive?.isActive ?? false}
         onClose={() => {
           setConfirmToggleActive(null);
-          setDialogError("");
+          setDialogError('');
         }}
         onConfirm={submitToggleActive}
         loading={dialogLoading}

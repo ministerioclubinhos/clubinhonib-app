@@ -10,19 +10,22 @@
 Este módulo funciona com **configurações GLOBAIS**, não por clube:
 
 ### 📅 Período Letivo GLOBAL
+
 - **Um único período por ano** para TODOS os clubes
 - Exemplo: Se 2024 vai de 05/02 a 15/12, vale para TODOS
 - A primeira semana dentro do período é a "semana 1" do ano letivo
 
-### 📌 Exceções GLOBAIS  
+### 📌 Exceções GLOBAIS
+
 - **Uma exceção por data** afeta TODOS os clubes daquele dia da semana
 - Exemplo: Feriado em 15/11 (quarta) → TODOS os clubes de quarta não funcionam
 - Campo `isRecurrent`: exceções que se repetem todo ano (feriados nacionais)
 
 ### 🎯 Benefícios
-- ✅ **Simplicidade**: Cadastra uma vez, vale para todos  
-- ✅ **Consistência**: Todos seguem o mesmo calendário  
-- ✅ **Manutenção**: Muito mais fácil gerenciar  
+
+- ✅ **Simplicidade**: Cadastra uma vez, vale para todos
+- ✅ **Consistência**: Todos seguem o mesmo calendário
+- ✅ **Manutenção**: Muito mais fácil gerenciar
 - ✅ **Escalabilidade**: Funciona com qualquer quantidade de clubes
 
 ---
@@ -43,6 +46,7 @@ Este módulo funciona com **configurações GLOBAIS**, não por clube:
 O **Módulo de Controle** é um sistema para verificação em tempo real de pagelas, garantindo que **nenhuma criança fique sem ser atendida**.
 
 ### Objetivos
+
 - ✅ Verificar se TODAS as crianças de cada clube receberam pagela
 - ✅ Identificar clubes e crianças sem registro
 - ✅ Gerenciar período letivo GLOBAL (um por ano)
@@ -54,6 +58,7 @@ O **Módulo de Controle** é um sistema para verificação em tempo real de page
 ## ⭐ Funcionalidades
 
 ### 1. **Painel de Controle** 📊
+
 - Verificação semanal de todos os clubes
 - Navegação entre semanas
 - Cards KPI:
@@ -66,6 +71,7 @@ O **Módulo de Controle** é um sistema para verificação em tempo real de page
 - Alertas críticos
 
 ### 2. **Gestão de Período Letivo GLOBAL** 📅
+
 - **UM período por ano para TODOS os clubes**
 - Cadastro com:
   - Ano de referência
@@ -76,6 +82,7 @@ O **Módulo de Controle** é um sistema para verificação em tempo real de page
 - Exclusão de períodos
 
 ### 3. **Gestão de Exceções GLOBAIS** 🚫
+
 - **UMA exceção por data para TODOS os clubes**
 - Cadastro com:
   - Data da exceção
@@ -110,6 +117,7 @@ src/features/club-control/
 ## 🔌 API Endpoints
 
 ### Base URL
+
 ```
 http://localhost:3000/club-control
 ```
@@ -117,6 +125,7 @@ http://localhost:3000/club-control
 ### Resumo (9 Endpoints - ESTRUTURA GLOBAL)
 
 #### Períodos GLOBAIS
+
 ```typescript
 POST   /club-control/periods              // Criar período GLOBAL
 GET    /club-control/periods              // Listar todos os períodos
@@ -126,6 +135,7 @@ DELETE /club-control/periods/:id          // Deletar período
 ```
 
 #### Exceções GLOBAIS
+
 ```typescript
 POST   /club-control/exceptions           // Criar exceção GLOBAL
 GET    /club-control/exceptions           // Listar exceções (com filtros)
@@ -135,6 +145,7 @@ DELETE /club-control/exceptions/:id       // Deletar exceção
 ```
 
 #### Verificação (por clube)
+
 ```typescript
 GET /club-control/check/club/:clubId?year=2024&week=45  // Verificar clube
 GET /club-control/check/week?year=2024&week=45          // Verificar todos
@@ -146,9 +157,11 @@ GET /club-control/dashboard                             // Dashboard atual
 ## 🧩 Componentes
 
 ### 1. `ControlDashboard`
+
 **Painel de verificação semanal (permanece igual)**
 
 **Features:**
+
 - Navegação de semanas
 - Cards KPI animados
 - Tabela expansível
@@ -159,15 +172,18 @@ GET /club-control/dashboard                             // Dashboard atual
 ---
 
 ### 2. `PeriodManagement` ⚡ ATUALIZADO
+
 **Gestão GLOBAL de períodos (SEM seleção de clube)**
 
 **Mudanças:**
+
 - ❌ Removido: Seletor de clube
 - ✅ Adicionado: Alerta informativo sobre estrutura GLOBAL
 - ✅ Adicionado: Chip "ATUAL" para ano corrente
 - ✅ Adicionado: Aviso ao cadastrar/deletar
 
 **Features:**
+
 - Formulário de cadastro global
 - Lista de períodos cadastrados
 - Validação de datas
@@ -176,9 +192,11 @@ GET /club-control/dashboard                             // Dashboard atual
 ---
 
 ### 3. `ExceptionManagement` ⚡ ATUALIZADO
+
 **Gestão GLOBAL de exceções (SEM seleção de clube)**
 
 **Mudanças:**
+
 - ❌ Removido: Seletor de clube
 - ✅ Adicionado: Campo `isRecurrent` (checkbox)
 - ✅ Adicionado: Tipo "Férias"
@@ -187,6 +205,7 @@ GET /club-control/dashboard                             // Dashboard atual
 - ✅ Adicionado: Indicador de dia da semana
 
 **Features:**
+
 - Formulário de cadastro global
 - Quick-add de feriados
 - Lista de exceções
@@ -200,6 +219,7 @@ GET /club-control/dashboard                             // Dashboard atual
 ### Para Administradores
 
 #### 1. **Início do Ano - Configurar Período Letivo**
+
 ```
 1. Acesse "Períodos Letivos"
 2. Preencha:
@@ -212,6 +232,7 @@ GET /club-control/dashboard                             // Dashboard atual
 ```
 
 #### 2. **Cadastrar Feriados e Exceções**
+
 ```
 1. Acesse "Exceções"
 2. Use Quick-Add para feriados comuns OU
@@ -229,6 +250,7 @@ GET /club-control/dashboard                             // Dashboard atual
 ### Para Coordenadores
 
 #### 1. **Segunda-feira de Manhã**
+
 ```
 1. Acesse "Painel de Controle"
 2. Veja os cards KPI no topo
@@ -239,6 +261,7 @@ GET /club-control/dashboard                             // Dashboard atual
 ```
 
 #### 2. **Navegação de Semanas**
+
 ```
 - Use botões < > para navegar
 - "Ir para Atual" volta para semana corrente
@@ -251,6 +274,7 @@ GET /club-control/dashboard                             // Dashboard atual
 ## 🎨 Mudanças Visuais
 
 ### PeriodManagement
+
 ```
 ANTES:
 ┌─────────────────────────┐
@@ -267,6 +291,7 @@ DEPOIS:
 ```
 
 ### ExceptionManagement
+
 ```
 ANTES:
 ┌─────────────────────────┐
@@ -289,10 +314,11 @@ DEPOIS:
 ## 🔧 Tipos TypeScript Atualizados
 
 ### Academic Period (GLOBAL)
+
 ```typescript
 interface AcademicPeriod {
   id: string;
-  year: number;              // SEM clubId!
+  year: number; // SEM clubId!
   startDate: string;
   endDate: string;
   description: string;
@@ -301,13 +327,14 @@ interface AcademicPeriod {
 ```
 
 ### Weekday Exception (GLOBAL)
+
 ```typescript
 interface WeekdayException {
   id: string;
-  exceptionDate: string;     // SEM clubId!
+  exceptionDate: string; // SEM clubId!
   reason: string;
   type: 'holiday' | 'event' | 'maintenance' | 'vacation' | 'other';
-  isRecurrent: boolean;      // NOVO CAMPO
+  isRecurrent: boolean; // NOVO CAMPO
   notes?: string;
   isActive: boolean;
 }
@@ -318,6 +345,7 @@ interface WeekdayException {
 ## 📊 Tabelas do Banco de Dados
 
 ### academic_periods
+
 ```sql
 CREATE TABLE academic_periods (
   id VARCHAR(36) PRIMARY KEY,
@@ -333,6 +361,7 @@ CREATE TABLE academic_periods (
 ```
 
 ### weekday_exceptions
+
 ```sql
 CREATE TABLE weekday_exceptions (
   id VARCHAR(36) PRIMARY KEY,
@@ -353,17 +382,20 @@ CREATE TABLE weekday_exceptions (
 ## 🎯 Regras de Negócio
 
 ### 1. Período Letivo
+
 - ✅ **UM período por ano** para TODOS os clubes
 - ✅ Primeira semana do período = "Semana 1" do ano letivo
 - ✅ Fora do período não há monitoramento
 
 ### 2. Exceções
+
 - ✅ **UMA exceção por data** afeta TODOS os clubes
 - ✅ Se 15/11 é quarta, TODOS os clubes de quarta não funcionam
 - ✅ `isRecurrent=true` → exceção se repete todo ano
 - ✅ Exceções não afetam estatísticas
 
 ### 3. Verificação
+
 - ✅ Verificação em tempo real por clube
 - ✅ Lista de crianças sem pagela
 - ✅ Status: OK, Parcial, Faltando, Exceção
@@ -392,6 +424,7 @@ CREATE TABLE weekday_exceptions (
 ## 🎉 Benefícios da Estrutura GLOBAL
 
 ### Antes (Por Clube)
+
 ```
 ❌ Cadastrar período para cada clube (12+ cadastros)
 ❌ Cadastrar feriado para cada clube (12+ × 10 = 120+ cadastros)
@@ -401,6 +434,7 @@ CREATE TABLE weekday_exceptions (
 ```
 
 ### Depois (GLOBAL)
+
 ```
 ✅ Cadastrar período UMA vez (1 cadastro)
 ✅ Cadastrar feriado UMA vez (10 cadastros)
@@ -431,7 +465,7 @@ CREATE TABLE weekday_exceptions (
 
 **Desenvolvido com 💙 para o Clubinho NIB**
 
-*Garantindo que nenhuma criança fique sem ser atendida!* 🎯
+_Garantindo que nenhuma criança fique sem ser atendida!_ 🎯
 
 ---
 

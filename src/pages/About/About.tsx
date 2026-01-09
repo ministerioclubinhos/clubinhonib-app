@@ -6,11 +6,7 @@ const About: React.FC = () => {
   return (
     <AboutLayout>
       {ABOUT_SECTIONS.map((section, index) => (
-        <AboutSection
-          key={section.id}
-          section={section}
-          index={index}
-        />
+        <AboutSection key={section.id} section={section} index={index} />
       ))}
     </AboutLayout>
   );

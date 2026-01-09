@@ -25,31 +25,38 @@ export function useMeditationsList() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   useEffect(() => {
     setFiltering(true);
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
       const q = search.trim().toLowerCase();
-      const filtered = !q ? all : all.filter(m => m.topic.toLowerCase().includes(q));
+      const filtered = !q ? all : all.filter((m) => m.topic.toLowerCase().includes(q));
       setItems(filtered);
       setFiltering(false);
     }, 300);
-    return () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); };
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    };
   }, [search, all]);
 
-  const remove = useCallback(async (m: MeditationData) => {
-    setLoading(true);
-    try {
-      await deleteMeditation(m.id);
-      await load();
-    } catch {
-      setError('Erro ao deletar meditação.');
-    } finally {
-      setLoading(false);
-    }
-  }, [load]);
+  const remove = useCallback(
+    async (m: MeditationData) => {
+      setLoading(true);
+      try {
+        await deleteMeditation(m.id);
+        await load();
+      } catch {
+        setError('Erro ao deletar meditação.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [load]
+  );
 
   return {
     meditations: items,

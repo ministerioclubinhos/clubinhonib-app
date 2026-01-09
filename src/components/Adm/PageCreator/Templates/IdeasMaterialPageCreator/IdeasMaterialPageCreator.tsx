@@ -61,11 +61,14 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
     }
   }, [fromTemplatePage, ideasData, dispatch]);
 
-  const errors = useMemo(() => ({
-    title: !pageTitle.trim(),
-    description: !pageDescription.trim(),
-    sections: sections.length === 0,
-  }), [pageTitle, pageDescription, sections]);
+  const errors = useMemo(
+    () => ({
+      title: !pageTitle.trim(),
+      description: !pageDescription.trim(),
+      sections: sections.length === 0,
+    }),
+    [pageTitle, pageDescription, sections]
+  );
 
   const handleAddSection = () => {
     const newSection: IdeasSection = {
@@ -146,7 +149,9 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
 
       const response = await (fromTemplatePage
         ? api.post('/ideas-pages', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-        : api.patch(`/ideas-pages/${ideasData?.id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }));
+        : api.patch(`/ideas-pages/${ideasData?.id}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }));
 
       if (!response?.data) throw new Error('Erro ao salvar');
 
@@ -223,7 +228,9 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
             <Accordion
               key={index}
               expanded={expandedSectionIndex === index}
-              onChange={() => setExpandedSectionIndex(expandedSectionIndex === index ? null : index)}
+              onChange={() =>
+                setExpandedSectionIndex(expandedSectionIndex === index ? null : index)
+              }
               sx={{ mb: 2, borderRadius: 2 }}
             >
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -238,10 +245,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
                 />
               </AccordionDetails>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
-                <IconButton
-                  color="error"
-                  onClick={() => handleDeleteSectionClick(index)}
-                >
+                <IconButton color="error" onClick={() => handleDeleteSectionClick(index)}>
                   <DeleteIcon />
                 </IconButton>
               </Box>

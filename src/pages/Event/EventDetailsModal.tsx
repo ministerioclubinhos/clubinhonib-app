@@ -83,7 +83,12 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ open, onClose, ev
         </Box>
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
-        <Button onClick={onClose} color="primary" variant="text" sx={{ fontFamily: 'Roboto, sans-serif' }}>
+        <Button
+          onClick={onClose}
+          color="primary"
+          variant="text"
+          sx={{ fontFamily: 'Roboto, sans-serif' }}
+        >
           Fechar
         </Button>
       </DialogActions>

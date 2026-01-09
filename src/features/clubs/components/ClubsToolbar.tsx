@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Button,
   IconButton,
@@ -14,11 +14,11 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from "@mui/material";
-import { Add, Refresh, CleaningServices } from "@mui/icons-material";
-import { useSelector } from "react-redux";
-import { ClubFilters } from "../types";
-import { selectIsAdmin } from "@/store/selectors/routeSelectors";
+} from '@mui/material';
+import { Add, Refresh, CleaningServices } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
+import { ClubFilters } from '../types';
+import { selectIsAdmin } from '@/store/selectors/routeSelectors';
 
 type Props = {
   filters: ClubFilters;
@@ -37,16 +37,13 @@ export default function ClubsToolbar({
 }: Props) {
   const isAdmin = useSelector(selectIsAdmin);
 
-  const handleChange = <K extends keyof ClubFilters>(
-    key: K,
-    value: ClubFilters[K]
-  ) => {
+  const handleChange = <K extends keyof ClubFilters>(key: K, value: ClubFilters[K]) => {
     onChange((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleClear = () => {
     onChange(() => ({
-      searchString: "",
+      searchString: '',
       isActive: undefined,
     }));
   };
@@ -60,11 +57,7 @@ export default function ClubsToolbar({
       }}
       elevation={3}
     >
-      <Typography
-        variant="subtitle1"
-        fontWeight={700}
-        sx={{ mb: 2, color: "text.primary" }}
-      >
+      <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2, color: 'text.primary' }}>
         Pesquisar
       </Typography>
 
@@ -74,8 +67,8 @@ export default function ClubsToolbar({
             fullWidth
             size="small"
             label="Buscar"
-            value={filters.searchString ?? ""}
-            onChange={(e) => handleChange("searchString", e.target.value)}
+            value={filters.searchString ?? ''}
+            onChange={(e) => handleChange('searchString', e.target.value)}
             placeholder="Endereço / nº do clubinho.."
           />
         </Grid>
@@ -85,10 +78,10 @@ export default function ClubsToolbar({
             <InputLabel>Status</InputLabel>
             <Select
               label="Status"
-              value={filters.isActive === undefined ? "" : filters.isActive ? "true" : "false"}
+              value={filters.isActive === undefined ? '' : filters.isActive ? 'true' : 'false'}
               onChange={(e) => {
                 const val = e.target.value;
-                handleChange("isActive", val === "" ? undefined : val === "true");
+                handleChange('isActive', val === '' ? undefined : val === 'true');
               }}
             >
               <MenuItem value="">Todos</MenuItem>
@@ -104,7 +97,7 @@ export default function ClubsToolbar({
               <Box sx={{ height: 64 }} />
               <Box
                 sx={{
-                  position: "fixed",
+                  position: 'fixed',
                   bottom: 16,
                   right: 16,
                   zIndex: 9999,
@@ -150,12 +143,7 @@ export default function ClubsToolbar({
               </Box>
             </>
           ) : (
-            <Stack
-              direction="row"
-              spacing={1.5}
-              justifyContent="flex-end"
-              alignItems="center"
-            >
+            <Stack direction="row" spacing={1.5} justifyContent="flex-end" alignItems="center">
               <Button
                 variant="contained"
                 color="secondary"
@@ -172,11 +160,7 @@ export default function ClubsToolbar({
               </Tooltip>
 
               {isAdmin && (
-                <Button
-                  variant="contained"
-                  startIcon={<Add />}
-                  onClick={onCreateClick}
-                >
+                <Button variant="contained" startIcon={<Add />} onClick={onCreateClick}>
                   Criar
                 </Button>
               )}

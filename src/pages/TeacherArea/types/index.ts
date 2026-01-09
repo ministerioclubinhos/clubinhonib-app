@@ -11,17 +11,14 @@ export interface TeacherContentProps {
   userName?: string;
 }
 
-export interface SpecialFamilyCalloutProps {
-  // Add props if needed in the future
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SpecialFamilyCalloutProps {}
 
-export interface IdeasSharingBannerProps {
-  // Add props if needed in the future
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface IdeasSharingBannerProps {}
 
-export interface InformativeBannerProps {
-  // Add props if needed in the future
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface InformativeBannerProps {}
 
 export interface SectionCardProps {
   icon: React.ReactNode;

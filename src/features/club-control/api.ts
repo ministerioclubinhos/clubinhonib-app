@@ -69,7 +69,16 @@ export interface ClubCheckResult {
   }>;
   // ⭐ Indicadores melhorados v1.3.0 e v1.4.0
   indicators?: Array<{
-    type: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' | 'exception' | 'no_weekday' | 'out_of_period' | 'club_inactive' | 'children_not_attending';
+    type:
+      | 'all_ok'
+      | 'some_missing'
+      | 'no_pagela'
+      | 'no_children'
+      | 'exception'
+      | 'no_weekday'
+      | 'out_of_period'
+      | 'club_inactive'
+      | 'children_not_attending';
     severity: 'success' | 'warning' | 'critical' | 'info';
     message: string;
     details?: {
@@ -446,7 +455,7 @@ export const clubControlApi = {
   // ========================================
   // Academic Periods (GLOBAL - sem clubId)
   // ========================================
-  
+
   // POST /club-control/periods - Criar período GLOBAL
   createPeriod: (data: CreateAcademicPeriodDto) =>
     apiAxios.post<AcademicPeriod>(`${BASE_URL}/periods`, data),
@@ -456,16 +465,14 @@ export const clubControlApi = {
     apiAxios.get<PaginatedResponse<AcademicPeriod>>(`${BASE_URL}/periods`, { params }),
 
   // GET /club-control/periods/:year - Buscar período por ano
-  getPeriodByYear: (year: number) =>
-    apiAxios.get<AcademicPeriod>(`${BASE_URL}/periods/${year}`),
+  getPeriodByYear: (year: number) => apiAxios.get<AcademicPeriod>(`${BASE_URL}/periods/${year}`),
 
   // PUT /club-control/periods/:id - Atualizar período
   updatePeriod: (periodId: string, data: Partial<CreateAcademicPeriodDto>) =>
     apiAxios.put<AcademicPeriod>(`${BASE_URL}/periods/${periodId}`, data),
 
   // DELETE /club-control/periods/:id - Deletar período
-  deletePeriod: (periodId: string) =>
-    apiAxios.delete(`${BASE_URL}/periods/${periodId}`),
+  deletePeriod: (periodId: string) => apiAxios.delete(`${BASE_URL}/periods/${periodId}`),
 
   // ========================================
   // Weekday Exceptions (GLOBAL - sem clubId)
@@ -476,8 +483,12 @@ export const clubControlApi = {
     apiAxios.post<WeekdayException>(`${BASE_URL}/exceptions`, data),
 
   // GET /club-control/exceptions - Listar exceções (com filtros e paginação v1.1.0)
-  getExceptions: (params?: { startDate?: string; endDate?: string; page?: number; limit?: number }) =>
-    apiAxios.get<PaginatedResponse<WeekdayException>>(`${BASE_URL}/exceptions`, { params }),
+  getExceptions: (params?: {
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  }) => apiAxios.get<PaginatedResponse<WeekdayException>>(`${BASE_URL}/exceptions`, { params }),
 
   // GET /club-control/exceptions/:date - Buscar exceção por data
   getExceptionByDate: (date: string) =>
@@ -509,21 +520,28 @@ export const clubControlApi = {
     apiAxios.get<WeekCheckResult>(`${BASE_URL}/dashboard`, { params }),
 
   // GET /club-control/current-week - Obter semana atual do ano letivo ⭐ NOVO v1.2.0
-  getCurrentWeek: () =>
-    apiAxios.get<CurrentWeekInfo>(`${BASE_URL}/current-week`),
+  getCurrentWeek: () => apiAxios.get<CurrentWeekInfo>(`${BASE_URL}/current-week`),
 
   // GET /club-control/indicators/detailed - Análise detalhada dos indicadores ⭐ NOVO v1.3.0
   // ⭐ v1.3.1: Suporta filtros avançados e paginação
-  getDetailedIndicators: (params: { 
-    year: number; 
+  getDetailedIndicators: (params: {
+    year: number;
     week: number;
     status?: 'ok' | 'partial' | 'missing' | 'exception' | 'inactive' | 'out_of_period';
     severity?: 'critical' | 'warning' | 'info' | 'success';
     weekday?: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
-    indicatorType?: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' | 'exception' | 'no_weekday' | 'out_of_period' | 'club_inactive' | 'children_not_attending';
+    indicatorType?:
+      | 'all_ok'
+      | 'some_missing'
+      | 'no_pagela'
+      | 'no_children'
+      | 'exception'
+      | 'no_weekday'
+      | 'out_of_period'
+      | 'club_inactive'
+      | 'children_not_attending';
     hasProblems?: boolean;
     page?: number;
     limit?: number;
-  }) =>
-    apiAxios.get<DetailedIndicatorsResponse>(`${BASE_URL}/indicators/detailed`, { params }),
+  }) => apiAxios.get<DetailedIndicatorsResponse>(`${BASE_URL}/indicators/detailed`, { params }),
 };

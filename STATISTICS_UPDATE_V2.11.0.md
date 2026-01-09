@@ -17,6 +17,7 @@ O módulo de estatísticas foi **100% atualizado** para estar em conformidade co
 ### 1. **Tipos da API Atualizados** (`src/features/statistics/api.ts`)
 
 #### ChildrenFilters - 6 Novos Campos:
+
 - ✅ `search`: Busca por nome da criança
 - ✅ `hasLowEngagement`: Crianças com engajamento < 50%
 - ✅ `isNewcomer`: Crianças que entraram nos últimos 3 meses
@@ -25,6 +26,7 @@ O módulo de estatísticas foi **100% atualizado** para estar em conformidade co
 - ✅ `maxPresenceRate`: Taxa máxima de presença (crianças faltosas)
 
 #### ClubsFilters - 5 Novos Campos:
+
 - ✅ `maxChildren`: Máximo de crianças (clubes pequenos)
 - ✅ `maxPresenceRate`: Taxa máxima (clubes com problemas)
 - ✅ `maxPerformanceScore`: Score máximo (baixa performance)
@@ -32,12 +34,14 @@ O módulo de estatísticas foi **100% atualizado** para estar em conformidade co
 - ✅ `minTeachers`: Mínimo de professores no clube
 
 #### TeachersFilters - 4 Novos Campos:
+
 - ✅ `search`: Busca por nome do professor
 - ✅ `maxEffectivenessScore`: Score máximo (professores que precisam apoio)
 - ✅ `maxPresenceRate`: Taxa máxima de presença
 - ✅ `minDecisions`: Mínimo de crianças com decisões
 
 #### OverviewData - 3 Novos Objetos:
+
 - ✅ `engagement`: Métricas de engajamento (avgEngagementScore, topPerformingClubs, topEngagedChildren, recentActivity)
 - ✅ `indicators`: Indicadores adicionais (clubsWithLowAttendance, childrenWithLowEngagement, clubsMissingPagelas, growthRate)
 - ✅ `quickStats`: Estatísticas rápidas (childrenByGender, clubsByState, topCities)
@@ -49,6 +53,7 @@ O módulo de estatísticas foi **100% atualizado** para estar em conformidade co
 #### ✅ ChildrenListView (`src/features/statistics/components/ChildrenListView.tsx`)
 
 **Novos Filtros Implementados:**
+
 - Campo de busca por nome
 - Filtro de categoria (Newcomers / Veteranos / Baixo Engajamento)
 - Filtros de engajamento (mínimo e máximo)
@@ -56,6 +61,7 @@ O módulo de estatísticas foi **100% atualizado** para estar em conformidade co
 - Filtros de idade (mínimo e máximo)
 
 **Interface Atualizada:**
+
 ```tsx
 // Exemplo de uso do novo filtro de categoria
 <TextField select label="Categoria">
@@ -69,6 +75,7 @@ O módulo de estatísticas foi **100% atualizado** para estar em conformidade co
 #### ✅ ClubsListView (`src/features/statistics/components/ClubsListView.tsx`)
 
 **Novos Filtros Implementados:**
+
 - Mínimo/Máximo de crianças
 - Performance mínima/máxima
 - Presença mínima/máxima
@@ -76,6 +83,7 @@ O módulo de estatísticas foi **100% atualizado** para estar em conformidade co
 - Mínimo de professores
 
 **10 Campos de Filtro Disponíveis:**
+
 1. Cidade
 2. Dia da Semana
 3. Mínimo de Crianças
@@ -90,12 +98,14 @@ O módulo de estatísticas foi **100% atualizado** para estar em conformidade co
 #### ✅ TeachersListView (`src/features/statistics/components/TeachersListView.tsx`)
 
 **Novos Filtros Implementados:**
+
 - Campo de busca por nome
 - Efetividade mínima/máxima
 - Presença mínima/máxima
 - Mínimo de decisões
 
 **9 Campos de Filtro Disponíveis:**
+
 1. Buscar por nome
 2. Cidade
 3. Efetividade Mínima
@@ -181,67 +191,74 @@ interface OverviewData {
 ## 🎨 Casos de Uso Práticos
 
 ### 1. Encontrar Crianças em Risco
+
 ```typescript
 const filters: ChildrenFilters = {
   hasLowEngagement: true,
   minPagelas: 5,
   sortBy: 'engagementScore',
-  sortOrder: 'ASC'
+  sortOrder: 'ASC',
 };
 ```
 
 ### 2. Identificar Newcomers para Acompanhamento
+
 ```typescript
 const filters: ChildrenFilters = {
   isNewcomer: true,
   sortBy: 'joinedAt',
-  sortOrder: 'DESC'
+  sortOrder: 'DESC',
 };
 ```
 
 ### 3. Reconhecer Veteranos Engajados
+
 ```typescript
 const filters: ChildrenFilters = {
   isVeteran: true,
   minEngagementScore: 80,
   sortBy: 'engagementScore',
-  sortOrder: 'DESC'
+  sortOrder: 'DESC',
 };
 ```
 
 ### 4. Buscar Crianças por Nome
+
 ```typescript
 const filters: ChildrenFilters = {
   search: 'Maria',
-  city: 'São Paulo'
+  city: 'São Paulo',
 };
 ```
 
 ### 5. Clubes Pequenos com Baixa Performance
+
 ```typescript
 const filters: ClubsFilters = {
   maxChildren: 20,
   maxPerformanceScore: 60,
   sortBy: 'performanceScore',
-  sortOrder: 'ASC'
+  sortOrder: 'ASC',
 };
 ```
 
 ### 6. Professores que Precisam Suporte
+
 ```typescript
 const filters: TeachersFilters = {
   maxEffectivenessScore: 60,
   isActive: true,
   sortBy: 'effectivenessScore',
-  sortOrder: 'ASC'
+  sortOrder: 'ASC',
 };
 ```
 
 ### 7. Buscar Professor por Nome
+
 ```typescript
 const filters: TeachersFilters = {
   search: 'João',
-  clubId: 'uuid'
+  clubId: 'uuid',
 };
 ```
 
@@ -321,14 +338,14 @@ Os seguintes endpoints precisam ser atualizados no backend para suportar os novo
 
 ## 📈 Estatísticas da Atualização
 
-| Métrica | Valor |
-|---------|-------|
-| **Novos Filtros** | 15 |
-| **Componentes Atualizados** | 3 |
-| **Novos Campos OverviewData** | 3 objetos |
-| **Arquivos Modificados** | 4 |
-| **Linhas de Código Adicionadas** | ~250 |
-| **Erros TypeScript** | 0 (no módulo) |
+| Métrica                          | Valor         |
+| -------------------------------- | ------------- |
+| **Novos Filtros**                | 15            |
+| **Componentes Atualizados**      | 3             |
+| **Novos Campos OverviewData**    | 3 objetos     |
+| **Arquivos Modificados**         | 4             |
+| **Linhas de Código Adicionadas** | ~250          |
+| **Erros TypeScript**             | 0 (no módulo) |
 
 ---
 
@@ -396,6 +413,7 @@ function CoordinatorDashboard({ coordinatorId }) {
 ## ✅ Checklist de Implementação
 
 ### Frontend ✅
+
 - [x] Atualizar tipos da API
 - [x] Adicionar novos filtros em ChildrenFilters
 - [x] Adicionar novos filtros em ClubsFilters
@@ -410,6 +428,7 @@ function CoordinatorDashboard({ coordinatorId }) {
 - [ ] Criar QuickStatsCards
 
 ### Backend 🚧
+
 - [ ] Implementar filtros em GET /statistics/children
 - [ ] Implementar filtros em GET /statistics/clubs
 - [ ] Implementar filtros em GET /statistics/teachers
