@@ -28,6 +28,8 @@ export default function CommentCard({
         position: "relative",
         display: "flex",
         flexDirection: "column",
+        height: "100%",
+        width: "100%",
       }}
     >
       <Tooltip title="Excluir Comentário">

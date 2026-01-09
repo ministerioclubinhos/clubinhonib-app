@@ -49,7 +49,7 @@ import { UserRole } from "@/store/slices/auth/authSlice";
 const drawerWidth = 240;
 
 type NavItem = { label: string; to: string; icon: ReactNode };
-type SectionId = "pages" | "conteudos" | "clubinho" | "operacional";
+type SectionId = "pages" | "conteudos" | "clubinho"| "pessoas" | "operacional";
 type Section = { id: SectionId; title: string; items: NavItem[] };
 type MobileTab = "tudo" | SectionId;
 
@@ -104,12 +104,18 @@ function AdminLayout() {
         items: [
           { label: "Clubinhos", to: "/adm/clubinhos", icon: <Groups /> },
           { label: "Pagelas", to: "/adm/pagelas", icon: <Groups /> },
+        ],
+      },
+     {
+        id: "pessoas",
+        title: "Pessoas",
+        items: [
           { label: "Usuários", to: "/adm/usuarios", icon: <Group /> },
           { label: "Professores", to: "/adm/professores", icon: <School /> },
           { label: "Coordenadores", to: "/adm/coordenadores", icon: <SupervisorAccount /> },
           { label: "Crianças", to: "/adm/criancas", icon: <Groups /> },
         ],
-      },
+      }, 
       {
         id: "operacional",
         title: "Operacional",
@@ -156,14 +162,18 @@ function AdminLayout() {
       return "conteudos";
     }
     if (
-      path.startsWith("/adm/usuarios") ||
       path.startsWith("/adm/clubinhos") ||
-      path.startsWith("/adm/pagelas") ||
+      path.startsWith("/adm/pagelas")
+    ) {
+      return "clubinho";
+    }
+    if (
+      path.startsWith("/adm/usuarios") ||
       path.startsWith("/adm/professores") ||
       path.startsWith("/adm/coordenadores") ||
       path.startsWith("/adm/criancas")
     ) {
-      return "clubinho";
+      return "pessoas";
     }
     return "operacional";
   };
@@ -192,6 +202,7 @@ function AdminLayout() {
     pages: "pages",
     conteudos: "conteúdos",
     clubinho: "clubinho",
+    pessoas: "pessoas",
     operacional: "operacional",
   };
 
@@ -214,7 +225,7 @@ function AdminLayout() {
               gap: 0.5,
             }}
           >
-            {(["tudo", "pages", "conteudos", "clubinho", "operacional"] as MobileTab[]).map((tab) => (
+            {(["tudo", "pages", "conteudos", "clubinho","pessoas","operacional"] as MobileTab[]).map((tab) => (
               <Button
                 key={tab}
                 size="small"

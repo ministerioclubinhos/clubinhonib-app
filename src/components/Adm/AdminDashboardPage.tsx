@@ -46,7 +46,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { UserRole } from "@/store/slices/auth/authSlice";
 
-type SectionId = "all" | "pages" | "conteudos" | "clubinho" | "operacional";
+type SectionId = "all" | "pages" | "conteudos" | "clubinho" | "Pessoas" | "operacional";
 
 interface CardData {
   title: string;
@@ -69,10 +69,11 @@ const cardData: CardData[] = [
   { title: "Páginas de Vídeos", description: "Adicione vídeos ou links do YouTube para o site.", icon: <VideoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-videos", section: "pages" },
   { title: "Páginas de Ideias", description: "Gerencie páginas de ideias para professores.", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/paginas-ideias", section: "pages" },
 
-  { title: "Usuários", description: "Gerencie usuários do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/usuarios", section: "clubinho" },
-  { title: "Professores", description: "Gerencie professores do clubinho.", icon: <School fontSize="large" color="primary" />, path: "/adm/professores", section: "clubinho" },
-  { title: "Coordenadores", description: "Gerencie coordenadores do clubinho.", icon: <SupervisorAccount fontSize="large" color="primary" />, path: "/adm/coordenadores", section: "clubinho" },
-  { title: "Crianças", description: "Gerencie crianças do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/criancas", section: "clubinho" },
+  { title: "Usuários", description: "Gerencie usuários do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/usuarios", section: "Pessoas" },
+  { title: "Professores", description: "Gerencie professores do clubinho.", icon: <School fontSize="large" color="primary" />, path: "/adm/professores", section: "Pessoas" },
+  { title: "Coordenadores", description: "Gerencie coordenadores do clubinho.", icon: <SupervisorAccount fontSize="large" color="primary" />, path: "/adm/coordenadores", section: "Pessoas" },
+  { title: "Crianças", description: "Gerencie crianças do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/criancas", section: "Pessoas" },
+
   { title: "Clubinhos", description: "Gerencie clubinhos.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/clubinhos", section: "clubinho" },
   { title: "Pagelas", description: "Gerencie pagelas.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/pagelas", section: "clubinho" },
 
@@ -88,11 +89,11 @@ const sectionLabels: Record<SectionId, string> = {
   pages: "pages",
   conteudos: "conteúdos",
   clubinho: "clubinho",
+  Pessoas: "pessoas",
   operacional: "operacional",
 };
 
-const order: Exclude<SectionId, "all">[] = ["pages", "conteudos", "clubinho", "operacional"];
-
+const order: Exclude<SectionId, "all">[] = ["pages", "conteudos", "clubinho", "Pessoas", "operacional"];
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -139,6 +140,7 @@ export default function AdminDashboardPage() {
       pages: [],
       conteudos: [],
       clubinho: [],
+      Pessoas: [],
       operacional: [],
     };
     for (const c of visibleCards) {
@@ -154,7 +156,7 @@ export default function AdminDashboardPage() {
   }, [section, normalizedQuery, visibleCards]);
 
   const hasResults =
-    grouped.pages.length + grouped.conteudos.length + grouped.clubinho.length + grouped.operacional.length >
+    grouped.pages.length + grouped.conteudos.length + grouped.clubinho.length + grouped.Pessoas.length + grouped.operacional.length >
     0;
 
   const MobileList: React.FC = () => {
@@ -199,7 +201,7 @@ export default function AdminDashboardPage() {
                 gap: 0.5,
               }}
             >
-              {(["all", "pages", "conteudos", "clubinho", "operacional"] as SectionId[]).map((key) => (
+              {(["all", "pages", "conteudos", "clubinho","Pessoas", "operacional"] as SectionId[]).map((key) => (
                 <Button
                   key={key}
                   size="small"
@@ -360,7 +362,7 @@ export default function AdminDashboardPage() {
               }}
               sx={{ maxWidth: 360, mr: 1 }}
             />
-            {(["all", "pages", "conteudos", "clubinho", "operacional"] as SectionId[]).map((key) => (
+            {(["all", "pages", "conteudos", "clubinho","Pessoas", "operacional"] as SectionId[]).map((key) => (
               <Button
                 key={key}
                 variant={section === key ? "contained" : "outlined"}

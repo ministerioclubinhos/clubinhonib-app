@@ -90,7 +90,6 @@ const CommentsSection: React.FC = () => {
       setErrors({ name: false, comment: false, clubinho: false, neighborhood: false });
       setFormOpen(false);
       setSuccessSnackbarOpen(true);
-      await fetchComments();
     } catch (error) {
       console.error('Erro ao enviar comentário:', error);
     } finally {

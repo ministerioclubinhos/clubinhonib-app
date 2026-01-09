@@ -47,13 +47,13 @@ const Footer: React.FC = () => {
         </Stack>
 
         <Stack direction="row" spacing={2} justifyContent="center">
-          <IconButton aria-label="Facebook" component="a" href="https://facebook.com" target="_blank" rel="noopener noreferrer" color="inherit">
+          <IconButton aria-label="Facebook" component="a" href="https://facebook.com/novaigrejabatista/" target="_blank" rel="noopener noreferrer" color="inherit">
             <FacebookIcon fontSize="small" />
           </IconButton>
-          <IconButton aria-label="Instagram" component="a" href="https://instagram.com" target="_blank" rel="noopener noreferrer" color="inherit">
+          <IconButton aria-label="Instagram" component="a" href="https://instagram.com/novaigrejabatista/" target="_blank" rel="noopener noreferrer" color="inherit">
             <InstagramIcon fontSize="small" />
           </IconButton>
-          <IconButton aria-label="YouTube" component="a" href="https://youtube.com" target="_blank" rel="noopener noreferrer" color="inherit">
+          <IconButton aria-label="YouTube" component="a" href="https://youtube.com/@novaigrejabatista" target="_blank" rel="noopener noreferrer" color="inherit">
             <YouTubeIcon fontSize="small" />
           </IconButton>
         </Stack>
