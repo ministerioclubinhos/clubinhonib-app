@@ -12,10 +12,6 @@ export async function apiDeleteComment(id: string) {
 
 export async function apiPublishComment(c: CommentData) {
   await api.put(`/comments/${c.id}`, {
-    name: c.name,
-    comment: c.comment,
-    clubinho: c.clubinho,
-    neighborhood: c.neighborhood,
     published: true,
   });
 }
