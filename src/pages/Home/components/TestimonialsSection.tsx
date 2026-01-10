@@ -217,12 +217,13 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           <IconButton
             onClick={prevTestimonial}
             sx={{
-              position: 'absolute',
-              left: { xs: -20, md: -60 },
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(255, 255, 255, 0.9)',
-              color: '#667eea',
+            position: 'absolute',
+            left: { xs: -6, md: -60 },
+            top: '50%',
+            transform: 'translateY(-50%)',
+            background: 'rgba(255, 255, 255, 0.9)',
+            color: '#667eea',
+            zIndex: 5,
               '&:hover': {
                 background: 'rgba(255, 255, 255, 1)',
                 transform: 'translateY(-50%) scale(1.1)',
@@ -237,11 +238,12 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
             onClick={nextTestimonial}
             sx={{
               position: 'absolute',
-              right: { xs: -20, md: -60 },
+              right: { xs: -6, md: -60 },
               top: '50%',
               transform: 'translateY(-50%)',
               background: 'rgba(255, 255, 255, 0.9)',
               color: '#667eea',
+              zIndex: 5,
               '&:hover': {
                 background: 'rgba(255, 255, 255, 1)',
                 transform: 'translateY(-50%) scale(1.1)',
