@@ -70,8 +70,11 @@ const CommentsSection: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    
+    if (rawComments && rawComments.length > 0) return;
+
     fetchComments();
-  }, [fetchComments]);
+  }, [rawComments, fetchComments]);
 
   const handleSubmit = async () => {
     const newErrors = {
