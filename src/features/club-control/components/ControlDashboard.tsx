@@ -289,7 +289,7 @@ export const ControlDashboard: React.FC = () => {
             🔧 Possíveis Soluções:
           </Typography>
           <Typography variant="body2" component="ul" sx={{ pl: 2, m: 0 }}>
-            <li>Verifique se o backend está rodando em <code>http:
+            <li>Verifique se o backend está rodando em <code>http://localhost:3000</code></li>
             <li>Verifique se o módulo de controle está implementado no backend</li>
             <li>Teste o endpoint manualmente: <code>GET /club-control/dashboard</code></li>
             <li>Verifique o console do navegador (F12) para mais detalhes</li>
