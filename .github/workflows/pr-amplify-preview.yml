@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   deploy-preview:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    if: (github.event_name == 'workflow_dispatch' && github.ref_name != 'main' && github.ref_name != 'staging') || (github.event_name == 'pull_request' && github.event.action != 'closed' && github.head_ref != 'main' && github.head_ref != 'staging')
     runs-on: ubuntu-latest
     
     steps:
@@ -579,7 +579,7 @@ jobs:
         run: echo "Cleanup moved to separate job"
 
   cleanup-preview:
-    if: github.event_name == 'pull_request' && (github.event.action == 'closed' || github.event.pull_request.merged == true)
+    if: github.event_name == 'pull_request' && (github.event.action == 'closed' || github.event.pull_request.merged == true) && github.head_ref != 'main' && github.head_ref != 'staging'
     runs-on: ubuntu-latest
     permissions:
       contents: write
