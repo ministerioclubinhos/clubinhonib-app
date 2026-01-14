@@ -70,8 +70,11 @@ const CommentsSection: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    
+    if (rawComments && rawComments.length > 0) return;
+
     fetchComments();
-  }, [fetchComments]);
+  }, [rawComments, fetchComments]);
 
   const handleSubmit = async () => {
     const newErrors = {
@@ -90,7 +93,6 @@ const CommentsSection: React.FC = () => {
       setErrors({ name: false, comment: false, clubinho: false, neighborhood: false });
       setFormOpen(false);
       setSuccessSnackbarOpen(true);
-      await fetchComments();
     } catch (error) {
       console.error('Erro ao enviar comentário:', error);
     } finally {
