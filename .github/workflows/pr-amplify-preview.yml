@@ -579,7 +579,7 @@ jobs:
         run: echo "Cleanup moved to separate job"
 
   cleanup-preview:
-    if: github.event_name == 'pull_request' && (github.event.action == 'closed' || github.event.pull_request.merged == true) && github.head_ref != 'main' && github.head_ref != 'staging'
+    if: github.event_name == 'pull_request' && (github.event.action == 'closed' || github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -714,4 +714,3 @@ jobs:
           git push origin --delete "$BRANCH_NAME" || echo "Branch mirror already deleted or does not exist"
           
           echo "✅ Cleanup completed (production and staging protected)"
-
