@@ -38,7 +38,7 @@ export default function IdeasDocumentViewer({ document }: Props) {
         transition={{ duration: 0.3 }}
         style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
       >
-        {/* Header com ícone */}
+        
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, sm: 2 } }}>
           <PictureAsPdfIcon sx={{ color: theme.palette.error.main, fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
           <Typography 
@@ -54,7 +54,6 @@ export default function IdeasDocumentViewer({ document }: Props) {
           </Typography>
         </Box>
 
-        {/* Descrição */}
         {document.description && (
           <Typography 
             variant="body2" 

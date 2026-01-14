@@ -2,11 +2,6 @@ import apiAxios from '@/config/axiosConfig';
 
 const BASE_URL = '/club-control';
 
-// ========================================
-// ESTRUTURA GLOBAL - Sem ClubId
-// ========================================
-
-// Types - Academic Period (GLOBAL)
 export interface AcademicPeriod {
   id: string;
   year: number;
@@ -18,7 +13,6 @@ export interface AcademicPeriod {
   updatedAt?: string;
 }
 
-// Types - Weekday Exception (GLOBAL)
 export interface WeekdayException {
   id: string;
   exceptionDate: string;
@@ -26,12 +20,11 @@ export interface WeekdayException {
   type: 'holiday' | 'event' | 'maintenance' | 'vacation' | 'other';
   notes?: string;
   isActive: boolean;
-  isRecurrent: boolean; // Novo campo: se repete todo ano
+  isRecurrent: boolean; 
   createdAt?: string;
   updatedAt?: string;
 }
 
-// Types - Club Check Result (permanece igual)
 export interface ClubCheckResult {
   clubId: string;
   clubNumber: number;
@@ -49,25 +42,25 @@ export interface ClubCheckResult {
       childId: string;
       childName: string;
     }>;
-    // ⭐ NOVO v1.4.0: Status de crianças
-    activeCount?: number; // Crianças ativas (isActive = true)
-    inactiveCount?: number; // Crianças inativas (isActive = false)
-    // ⭐ NOVO: Crianças que não frequentam mais
-    notAttendingCount?: number; // Total de crianças que não frequentam mais
+    
+    activeCount?: number; 
+    inactiveCount?: number; 
+    
+    notAttendingCount?: number; 
     notAttendingList?: Array<{
       childId: string;
       childName: string;
       isActive: boolean;
     }>;
-    note?: string; // Nota sobre regras aplicadas
+    note?: string; 
   };
-  status: 'ok' | 'pending' | 'partial' | 'missing' | 'exception' | 'inactive' | 'out_of_period'; // ⭐ v1.8.2: Adicionado 'pending'
+  status: 'ok' | 'pending' | 'partial' | 'missing' | 'exception' | 'inactive' | 'out_of_period'; 
   alerts?: Array<{
     type: string;
     severity: 'critical' | 'warning' | 'info' | 'success';
     message: string;
   }>;
-  // ⭐ Indicadores melhorados v1.3.0 e v1.4.0
+  
   indicators?: Array<{
     type: 'all_ok' | 'some_missing' | 'no_pagela' | 'no_children' | 'exception' | 'no_weekday' | 'out_of_period' | 'club_inactive' | 'children_not_attending';
     severity: 'success' | 'warning' | 'critical' | 'info';
@@ -81,14 +74,14 @@ export interface ClubCheckResult {
       isPerfect: boolean;
       needsAttention: boolean;
       urgency?: 'low' | 'medium' | 'high' | 'critical';
-      // ⭐ v1.4.0: Para children_not_attending
+      
       childrenList?: Array<{
         childId: string;
         childName: string;
         isActive: boolean;
         reason?: string;
       }>;
-      // ⭐ v1.4.0: Para club_inactive
+      
       childrenNotAttending?: number;
       note?: string;
     };
@@ -102,10 +95,9 @@ export interface ClubCheckResult {
     startDate: string;
     endDate: string;
   };
-  note?: string; // ⭐ v1.8.2: Nota informativa (ex: "Pendente, mas ainda dentro do prazo")
+  note?: string; 
 }
 
-// Types - Pagination (v1.1.0)
 export interface PaginationMeta {
   page: number;
   limit: number;
@@ -115,7 +107,6 @@ export interface PaginationMeta {
   hasPreviousPage: boolean;
 }
 
-// Types - Paginated Response
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -123,7 +114,6 @@ export interface PaginatedResponse<T> {
   limit?: number;
 }
 
-// Types - Current Week Info (v1.2.0)
 export interface CurrentWeekInfo {
   academicYear: number | null;
   academicWeek: number | null;
@@ -132,7 +122,6 @@ export interface CurrentWeekInfo {
   periodEndDate: string | null;
 }
 
-// Types - Detailed Indicators Response (v1.3.0)
 export interface DetailedIndicatorsResponse {
   executiveSummary: {
     week: {
@@ -150,7 +139,7 @@ export interface DetailedIndicatorsResponse {
       clubsOutOfPeriod?: number;
       clubsWithProblems?: number;
       clubsWarning?: number;
-      // ⭐ v1.5.0: Informações sobre clubinhos desativados
+      
       totalClubsInactive?: number;
     };
     children: {
@@ -159,7 +148,7 @@ export interface DetailedIndicatorsResponse {
       missing: number;
       completionRate: number;
       missingRate: number;
-      // ⭐ v1.5.0: Crianças que não frequentam mais
+      
       notAttending?: {
         total: number;
         fromInactiveClubs: number;
@@ -192,16 +181,16 @@ export interface DetailedIndicatorsResponse {
         isPerfect: boolean;
         needsAttention?: boolean;
         urgency?: 'low' | 'medium' | 'high' | 'critical';
-        // ⭐ v1.4.0: Para children_not_attending
+        
         childrenList?: Array<{
           childId: string;
           childName: string;
           isActive: boolean;
           reason?: string;
         }>;
-        // ⭐ v1.4.0: Para club_inactive
+        
         childrenNotAttending?: number;
-        // ⭐ NOVO: Data da última pagela
+        
         lastPagelaDate?: string | null;
         note?: string;
       };
@@ -221,16 +210,16 @@ export interface DetailedIndicatorsResponse {
         isPerfect: boolean;
         needsAttention?: boolean;
         urgency?: 'low' | 'medium' | 'high' | 'critical';
-        // ⭐ v1.4.0: Para children_not_attending
+        
         childrenList?: Array<{
           childId: string;
           childName: string;
           isActive: boolean;
           reason?: string;
         }>;
-        // ⭐ v1.4.0: Para club_inactive
+        
         childrenNotAttending?: number;
-        // ⭐ NOVO: Data da última pagela
+        
         lastPagelaDate?: string | null;
         note?: string;
       };
@@ -285,14 +274,14 @@ export interface DetailedIndicatorsResponse {
           isPerfect: boolean;
           needsAttention: boolean;
           urgency?: 'low' | 'medium' | 'high' | 'critical';
-          // ⭐ v1.4.0: Para children_not_attending
+          
           childrenList?: Array<{
             childId: string;
             childName: string;
             isActive: boolean;
             reason?: string;
           }>;
-          // ⭐ v1.4.0: Para club_inactive
+          
           childrenNotAttending?: number;
           note?: string;
         };
@@ -315,14 +304,14 @@ export interface DetailedIndicatorsResponse {
           isPerfect: boolean;
           needsAttention: boolean;
           urgency?: 'low' | 'medium' | 'high' | 'critical';
-          // ⭐ v1.4.0: Para children_not_attending
+          
           childrenList?: Array<{
             childId: string;
             childName: string;
             isActive: boolean;
             reason?: string;
           }>;
-          // ⭐ v1.4.0: Para club_inactive
+          
           childrenNotAttending?: number;
           note?: string;
         };
@@ -347,17 +336,17 @@ export interface DetailedIndicatorsResponse {
       problemsRate: number;
     };
   };
-  recommendations?: string[]; // ⭐ v1.3.0: Array de strings conforme documentação
+  recommendations?: string[]; 
   currentWeek?: CurrentWeekInfo;
-  pagination?: PaginationMeta; // ⭐ v1.3.1: Paginação quando page e limit são especificados
-  // ⭐ v1.5.0: Lista de clubinhos desativados
+  pagination?: PaginationMeta; 
+  
   inactiveClubs?: Array<{
     clubId: string;
     clubNumber: number;
     weekday: string;
     isActive: false;
   }>;
-  // ⭐ v1.5.0: Crianças que não frequentam mais
+  
   childrenNotAttending?: {
     total: number;
     list: Array<{
@@ -368,53 +357,52 @@ export interface DetailedIndicatorsResponse {
   };
 }
 
-// Types - Week Check Result (atualizado para v1.2.0 com currentWeek e v1.5.0 com note)
 export interface WeekCheckResult {
-  year: number | string; // Dashboard: number, check/week: string
-  week: number | string; // Dashboard: number, check/week: string
+  year: number | string; 
+  week: number | string; 
   period?: {
     year: number;
-    week?: number; // Opcional: pode não estar presente quando clubs está vazio
+    week?: number; 
     weekRange?: {
       start: string;
       end: string;
     };
-    startDate?: string; // ⭐ NOVO v1.5.0: Para quando clubs está vazio
-    endDate?: string; // ⭐ NOVO v1.5.0: Para quando clubs está vazio
+    startDate?: string; 
+    endDate?: string; 
   };
   summary: {
     totalClubs: number;
     clubsOk: number;
-    clubsPending?: number; // ⭐ v1.8.2: NOVO - Clubes pendentes (ainda dentro do prazo)
+    clubsPending?: number; 
     clubsPartial: number;
     clubsMissing: number;
     clubsException: number;
     clubsInactive: number;
     clubsOutOfPeriod: number;
     overallCompleteness?: number;
-    // ⭐ v1.5.0: Informações sobre clubinhos e crianças desativadas
+    
     totalClubsInactive?: number;
     totalChildrenNotAttending?: number;
     inactiveClubsCount?: number;
   };
   clubs: ClubCheckResult[];
-  pagination?: PaginationMeta; // ⭐ NOVO v1.1.0
+  pagination?: PaginationMeta; 
   criticalAlerts?: Array<{
     clubId: string;
     clubNumber: number;
     message: string;
     missingChildren: number;
   }>;
-  currentWeek?: CurrentWeekInfo; // ⭐ NOVO v1.2.0
-  note?: string; // ⭐ NOVO v1.5.0: Mensagem quando clubs está vazio
-  // ⭐ v1.5.0: Lista de clubinhos desativados
+  currentWeek?: CurrentWeekInfo; 
+  note?: string; 
+  
   inactiveClubs?: Array<{
     clubId: string;
     clubNumber: number;
     weekday: string;
     isActive: false;
   }>;
-  // ⭐ v1.5.0: Crianças que não frequentam mais
+  
   childrenNotAttending?: {
     total: number;
     list: Array<{
@@ -425,7 +413,6 @@ export interface WeekCheckResult {
   };
 }
 
-// DTOs - ESTRUTURA GLOBAL
 export interface CreateAcademicPeriodDto {
   year: number;
   startDate: string;
@@ -441,79 +428,50 @@ export interface CreateWeekdayExceptionDto {
   notes?: string;
 }
 
-// API Service - ESTRUTURA GLOBAL
 export const clubControlApi = {
-  // ========================================
-  // Academic Periods (GLOBAL - sem clubId)
-  // ========================================
-  
-  // POST /club-control/periods - Criar período GLOBAL
+
   createPeriod: (data: CreateAcademicPeriodDto) =>
     apiAxios.post<AcademicPeriod>(`${BASE_URL}/periods`, data),
 
-  // GET /club-control/periods - Listar períodos (com paginação v1.1.0)
   getPeriods: (params?: { page?: number; limit?: number }) =>
     apiAxios.get<PaginatedResponse<AcademicPeriod>>(`${BASE_URL}/periods`, { params }),
 
-  // GET /club-control/periods/:year - Buscar período por ano
   getPeriodByYear: (year: number) =>
     apiAxios.get<AcademicPeriod>(`${BASE_URL}/periods/${year}`),
 
-  // PUT /club-control/periods/:id - Atualizar período
   updatePeriod: (periodId: string, data: Partial<CreateAcademicPeriodDto>) =>
     apiAxios.put<AcademicPeriod>(`${BASE_URL}/periods/${periodId}`, data),
 
-  // DELETE /club-control/periods/:id - Deletar período
   deletePeriod: (periodId: string) =>
     apiAxios.delete(`${BASE_URL}/periods/${periodId}`),
 
-  // ========================================
-  // Weekday Exceptions (GLOBAL - sem clubId)
-  // ========================================
-
-  // POST /club-control/exceptions - Criar exceção GLOBAL
   createException: (data: CreateWeekdayExceptionDto) =>
     apiAxios.post<WeekdayException>(`${BASE_URL}/exceptions`, data),
 
-  // GET /club-control/exceptions - Listar exceções (com filtros e paginação v1.1.0)
   getExceptions: (params?: { startDate?: string; endDate?: string; page?: number; limit?: number }) =>
     apiAxios.get<PaginatedResponse<WeekdayException>>(`${BASE_URL}/exceptions`, { params }),
 
-  // GET /club-control/exceptions/:date - Buscar exceção por data
   getExceptionByDate: (date: string) =>
     apiAxios.get<WeekdayException>(`${BASE_URL}/exceptions/${date}`),
 
-  // PATCH /club-control/exceptions/:id - Atualizar exceção
   updateException: (exceptionId: string, data: Partial<CreateWeekdayExceptionDto>) =>
     apiAxios.patch<WeekdayException>(`${BASE_URL}/exceptions/${exceptionId}`, data),
 
-  // DELETE /club-control/exceptions/:id - Deletar exceção
   deleteException: (exceptionId: string) =>
     apiAxios.delete(`${BASE_URL}/exceptions/${exceptionId}`),
 
-  // ========================================
-  // Control and Verification (permanece igual)
-  // ========================================
-
-  // GET /club-control/check/club/:clubId - Verificar clube específico
   checkClub: (clubId: string, params: { year: number; week: number }) =>
     apiAxios.get<ClubCheckResult>(`${BASE_URL}/check/club/${clubId}`, { params }),
 
-  // GET /club-control/check/week - Verificar todos os clubes (com paginação v1.1.0)
-  // ⭐ v1.8.0: year e week são opcionais - se não fornecidos, calcula semana atual automaticamente
   checkWeek: (params?: { year?: number; week?: number; page?: number; limit?: number }) =>
     apiAxios.get<WeekCheckResult>(`${BASE_URL}/check/week`, { params }),
 
-  // GET /club-control/dashboard - Dashboard da semana atual (com paginação)
   getDashboard: (params?: { page?: number; limit?: number }) =>
     apiAxios.get<WeekCheckResult>(`${BASE_URL}/dashboard`, { params }),
 
-  // GET /club-control/current-week - Obter semana atual do ano letivo ⭐ NOVO v1.2.0
   getCurrentWeek: () =>
     apiAxios.get<CurrentWeekInfo>(`${BASE_URL}/current-week`),
 
-  // GET /club-control/indicators/detailed - Análise detalhada dos indicadores ⭐ NOVO v1.3.0
-  // ⭐ v1.3.1: Suporta filtros avançados e paginação
   getDetailedIndicators: (params: { 
     year: number; 
     week: number;

@@ -40,7 +40,7 @@ import {
   ExpandMore,
   ExpandLess,
   PersonOff,
-  HourglassEmpty, // ⭐ v1.8.2: Para status 'pending'
+  HourglassEmpty, 
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { ClubCheckResult, WeekCheckResult } from '../api';
@@ -218,7 +218,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
         />
       </Box>
 
-      {/* Filtros locais para a lista de clubes */}
       <Box
         sx={{
           p: { xs: 1.5, sm: 2 },
@@ -298,8 +297,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
             </FormControl>
           </Grid>
         </Grid>
-        
-        {/* Chips de filtros ativos */}
+
         {(statusFilter !== 'all' || severityFilter !== 'all' || weekdayFilter !== 'all' || hasProblemsFilter !== null) && (
           <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
             <Typography variant="caption" color="text.secondary">
@@ -357,7 +355,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
         )}
       </Box>
 
-      {/* Versão Mobile: Cards */}
       {isMobile ? (
         <Box sx={{ p: { xs: 1, sm: 2 } }}>
           {clubs.map((club) => {
@@ -383,7 +380,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                   onClick={() => onToggleExpanded(club.clubId)}
                 >
                   <Stack spacing={1.5}>
-                    {/* Header do Card */}
+                    
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flex: 1 }}>
                         <Box
@@ -416,7 +413,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </IconButton>
                     </Box>
 
-                    {/* Informações Principais */}
                     <Grid container spacing={1.5}>
                       <Grid item xs={6}>
                         <Box>
@@ -472,7 +468,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Grid>
                     </Grid>
 
-                    {/* Completude */}
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
@@ -497,7 +492,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       />
                     </Box>
 
-                    {/* Status */}
                     <Box>
                       <Chip
                         icon={statusConfig.icon}
@@ -515,10 +509,9 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                   </Stack>
                 </CardContent>
 
-                {/* Detalhes Expansíveis */}
                 <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                   <Box sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: 'grey.50', borderTop: `1px solid ${theme.palette.divider}` }}>
-                    {/* Alertas */}
+                    
                     {club.alerts && club.alerts.length > 0 && (
                       <Box sx={{ mb: 2 }}>
                         {club.alerts.map((alert, index) => (
@@ -531,7 +524,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Box>
                     )}
 
-                    {/* Indicators */}
                     {club.indicators && club.indicators.length > 0 && (
                       <Box sx={{ mb: 2 }}>
                         {club.indicators.map((indicator, index) => (
@@ -592,7 +584,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Box>
                     )}
 
-                    {/* Informações sobre Crianças */}
                     {(club.children.activeCount !== undefined || club.children.inactiveCount !== undefined || club.children.note) && (
                       <Paper 
                         elevation={0} 
@@ -636,7 +627,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Paper>
                     )}
 
-                    {/* Lista de Crianças Faltantes */}
                     {club.children.missing > 0 && club.children.missingList && (
                       <Paper elevation={0} sx={{ p: 1.5, borderRadius: 2, border: '2px solid #ff980050' }}>
                         <Typography variant="subtitle2" fontWeight="bold" color="error" gutterBottom sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
@@ -666,7 +656,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Paper>
                     )}
 
-                    {/* Exceção */}
                     {club.exception && (
                       <Alert severity="info" sx={{ mt: 2 }}>
                         <AlertTitle sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>ℹ️ Exceção Cadastrada</AlertTitle>
@@ -682,7 +671,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
           })}
         </Box>
       ) : (
-        /* Versão Desktop: Tabela */
+        
         <TableContainer 
           sx={{ 
             maxHeight: 800,
@@ -803,7 +792,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                             />
                           </Badge>
                         )}
-                        {/* ⭐ Indicador de crianças inativas v1.4.0 */}
+                        
                         {club.children.inactiveCount !== undefined && club.children.inactiveCount > 0 && (
                           <Tooltip title={`${club.children.inactiveCount} criança(s) inativa(s) não considerada(s)`}>
                             <Chip
@@ -857,12 +846,11 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                     </TableCell>
                   </TableRow>
 
-                  {/* Detalhes Expansíveis */}
                   <TableRow>
                     <TableCell colSpan={6} sx={{ p: 0, border: 'none' }}>
                       <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                         <Box sx={{ p: 3, bgcolor: 'grey.50' }}>
-                          {/* Alertas */}
+                          
                           {club.alerts && club.alerts.length > 0 && (
                             <Box sx={{ mb: 2 }}>
                               {club.alerts.map((alert, index) => (
@@ -873,8 +861,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                             </Box>
                           )}
 
-                          {/* Indicators v1.5.0: Só são gerados dentro do período letivo */}
-                          {/* ⭐ v1.4.0: Suporte para club_inactive e children_not_attending */}
                           {club.indicators && club.indicators.length > 0 && (
                             <Box sx={{ mb: 2 }}>
                               {club.indicators.map((indicator, index) => (
@@ -886,7 +872,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                                   <Typography variant="body2" fontWeight="bold">
                                     {indicator.message}
                                   </Typography>
-                                  {/* ⭐ v1.4.0: Exibir lista de crianças para children_not_attending */}
+                                  
                                   {indicator.type === 'children_not_attending' && indicator.details?.childrenList && indicator.details.childrenList.length > 0 && (
                                     <Box sx={{ mt: 1.5 }}>
                                       <Typography variant="caption" fontWeight="bold" display="block" gutterBottom>
@@ -921,13 +907,13 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                                       </List>
                                     </Box>
                                   )}
-                                  {/* ⭐ v1.4.0: Exibir detalhes para club_inactive */}
+                                  
                                   {indicator.type === 'club_inactive' && indicator.details?.note && (
                                     <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                                       {indicator.details.note}
                                     </Typography>
                                   )}
-                                  {/* Exibir nota geral se presente */}
+                                  
                                   {indicator.details?.note && indicator.type !== 'club_inactive' && (
                                     <Typography variant="caption" display="block" sx={{ mt: 1, fontStyle: 'italic' }}>
                                       {indicator.details.note}
@@ -938,7 +924,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                             </Box>
                           )}
 
-                          {/* ⭐ Informações sobre Crianças Ativas/Inativas v1.4.0 */}
                           {(club.children.activeCount !== undefined || club.children.inactiveCount !== undefined || club.children.note) && (
                             <Paper 
                               elevation={0} 
@@ -982,7 +967,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                             </Paper>
                           )}
 
-                          {/* Lista de Crianças Faltantes */}
                           {club.children.missing > 0 && club.children.missingList && (
                             <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '2px solid #ff980050' }}>
                               <Typography variant="subtitle2" fontWeight="bold" color="error" gutterBottom>
@@ -1011,7 +995,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                             </Paper>
                           )}
 
-                          {/* Exceção */}
                           {club.exception && (
                             <Alert severity="info" sx={{ mt: 2 }}>
                               <AlertTitle>ℹ️ Exceção Cadastrada</AlertTitle>
@@ -1030,7 +1013,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
         </TableContainer>
       )}
 
-      {/* ⭐ Paginação do Backend para lista de clubes - Funciona em ambos (mobile e desktop) */}
       {(data?.pagination || (clubs.length > 0)) && (
         <Box sx={{ borderTop: 1, borderColor: 'divider', px: { xs: 1, sm: 0 } }}>
           <TablePagination

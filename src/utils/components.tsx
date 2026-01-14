@@ -2,7 +2,6 @@ import React from "react";
 import { IconButton, Tooltip } from "@mui/material";
 import { ContentCopy } from "@mui/icons-material";
 
-// Componente utilitário para copiar texto para a área de transferência
 export function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
   const copyToClipboard = (text?: string) => {
     if (!text) return;
@@ -21,7 +20,6 @@ export function CopyButton({ value, title = "Copiar" }: { value?: string; title?
   );
 }
 
-// Função utilitária para gerar iniciais a partir de um nome
 export const initials = (name?: string) =>
   (name || "")
     .trim()

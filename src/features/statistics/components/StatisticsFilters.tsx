@@ -28,8 +28,7 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
   onReset,
 }) => {
   const [expanded, setExpanded] = React.useState(false);
-  
-  // Configurar locale em português
+
   React.useEffect(() => {
     dayjs.locale('pt-br');
   }, []);
@@ -44,7 +43,6 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
-  // Verificar se está usando o mês atual
   const isCurrentMonth = React.useMemo(() => {
     const now = new Date();
     const firstDay = dayjs(new Date(now.getFullYear(), now.getMonth(), 1)).format('YYYY-MM-DD');
@@ -86,7 +84,6 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
         </Box>
       </Box>
 
-      {/* Info do período selecionado */}
       {filters.startDate && filters.endDate && (
         <Box 
           key={`${filters.startDate}-${filters.endDate}`}
@@ -118,7 +115,6 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
         </Box>
       )}
 
-      {/* Filtros Básicos - Sempre visíveis */}
       <Grid container spacing={{ xs: 1.5, sm: 2 }}>
         <Grid item xs={12} sm={6} md={3}>
           <TextField
@@ -181,7 +177,6 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
         </Grid>
       </Grid>
 
-      {/* Filtros Avançados - Expandíveis */}
       <Collapse in={expanded}>
         <Grid container spacing={2} sx={{ mt: 1 }}>
           <Grid item xs={12}>

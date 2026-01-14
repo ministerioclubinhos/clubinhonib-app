@@ -27,11 +27,8 @@ const TeacherArea: React.FC = () => {
 
   return (
     <Container maxWidth={false} sx={CONTAINER_STYLES.main}>
-      {/* Informative Banner */}
+      
       <InformativeBanner />
-
-      {/* Special Family Callout - Commented out for now */}
-      {/* <SpecialFamilyCallout /> */}
 
       <BannerSection 
         showWeekBanner={showWeek} 

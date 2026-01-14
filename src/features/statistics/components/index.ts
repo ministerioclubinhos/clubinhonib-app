@@ -21,6 +21,6 @@ export { ClubsListView } from './ClubsListView';
 export { TeachersListView } from './TeachersListView';
 export { ClubAttendanceTimeline } from './ClubAttendanceTimeline';
 export { WeeklyAttendanceGrid } from './WeeklyAttendanceGrid';
-export { PeriodFilter } from './PeriodFilter'; // ⭐ v2.11.0
+export { PeriodFilter } from './PeriodFilter'; 
 export { YearSelector, useYearSelection } from './YearSelector';
 

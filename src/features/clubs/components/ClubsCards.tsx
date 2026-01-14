@@ -33,7 +33,6 @@ type Props = {
   onToggleActive: (club: ClubResponseDto) => void;
 };
 
-
 export default function ClubsCards(props: Props) {
   const { isAdmin, rows, total, pageIndex, pageSize, setPageIndex, setPageSize, sorting, setSorting, onOpenView, onStartEdit, onAskDelete, onToggleActive } = props;
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -123,7 +122,7 @@ export default function ClubsCards(props: Props) {
                   }
                 }}
               >
-                {/* Header - Compacto no mobile */}
+                
                 <Box sx={{ px: { xs: 0.75, sm: 1.25 }, pt: { xs: 0.5, sm: 1 }, pb: { xs: 0.25, sm: 0.5 }, mt: { xs: 0.25, sm: 0.5 } }}>
                   <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }} sx={{ mb: { xs: 0.375, sm: 0 } }}>
                     <Avatar
@@ -214,7 +213,6 @@ export default function ClubsCards(props: Props) {
                     </ButtonBase>
                   </Stack>
 
-                  {/* Coordenador - Compacto */}
                   <Box
                     sx={{
                       p: { xs: 0.375, sm: 0.75 },
@@ -255,7 +253,6 @@ export default function ClubsCards(props: Props) {
                     </Stack>
                   </Box>
 
-                  {/* Info adicional - Apenas no modo comprimido */}
                   {!expanded && (
                     <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap rowGap={0.25} sx={{ mt: { xs: 0.25, sm: 0.5 }, pb: { xs: 0.25, sm: 0 } }}>
                       <Chip
@@ -296,7 +293,7 @@ export default function ClubsCards(props: Props) {
                     <Divider sx={{ mx: { xs: 1.5, sm: 2 } }} />
                     <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                       <Stack spacing={2}>
-                        {/* Professores */}
+                        
                         <Paper
                           variant="outlined"
                           sx={{
@@ -336,7 +333,6 @@ export default function ClubsCards(props: Props) {
                           </Stack>
                         </Paper>
 
-                        {/* Endereço */}
                         {c.address && (
                           <Paper
                             variant="outlined"
@@ -378,7 +374,6 @@ export default function ClubsCards(props: Props) {
                           </Paper>
                         )}
 
-                        {/* Informações adicionais */}
                         <Paper
                           variant="outlined"
                           sx={{
@@ -411,7 +406,6 @@ export default function ClubsCards(props: Props) {
                   </Box>
                 )}
 
-                {/* Rodapé - Sempre visível */}
                 <Box
                   sx={{
                     display: "flex",

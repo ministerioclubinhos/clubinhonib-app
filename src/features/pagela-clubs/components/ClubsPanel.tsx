@@ -166,7 +166,7 @@ export function ClubsPanel({
                                     <CardActionArea onClick={() => onSelect(c)}>
                                         {isMobile ? (
                                             <Stack spacing={0.75} sx={{ p: 1.25 }}>
-                                                {/* Primeira linha: Avatar, dia da semana, quantidade de professores */}
+                                                
                                                 <Stack direction="row" alignItems="center" spacing={1.5}>
                                                     <Avatar
                                                         sx={{
@@ -193,7 +193,6 @@ export function ClubsPanel({
                                                     />
                                                 </Stack>
 
-                                                {/* Segunda linha: Nome do coordenador */}
                                                 {c.coordinator?.user?.name && (
                                                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                                                         <Chip
@@ -209,7 +208,6 @@ export function ClubsPanel({
                                                     </Box>
                                                 )}
 
-                                                {/* Terceira linha: 2 primeiros professores e "+n" */}
                                                 <Box
                                                     sx={{
                                                         display: "flex",
@@ -249,7 +247,6 @@ export function ClubsPanel({
                                                     )}
                                                 </Box>
 
-                                                {/* Quarta linha: Endereço (cidade e bairro) */}
                                                 <Typography
                                                     variant="body2"
                                                     color="text.secondary"
@@ -262,7 +259,7 @@ export function ClubsPanel({
                                             </Stack>
                                         ) : (
                                             <Stack spacing={0.75} sx={{ p: 1.25 }}>
-                                                {/* Primeira linha: Avatar, dia da semana, quantidade de professores */}
+                                                
                                                 <Stack direction="row" alignItems="center" spacing={1.5}>
                                                     <Avatar
                                                         sx={{
@@ -289,7 +286,6 @@ export function ClubsPanel({
                                                     />
                                                 </Stack>
 
-                                                {/* Segunda linha: Nome do coordenador */}
                                                 {c.coordinator?.user?.name && (
                                                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                                                         <Chip
@@ -305,7 +301,6 @@ export function ClubsPanel({
                                                     </Box>
                                                 )}
 
-                                                {/* Terceira linha: 2 primeiros professores e "+n" */}
                                                 <Box
                                                     sx={{
                                                         display: "flex",
@@ -345,7 +340,6 @@ export function ClubsPanel({
                                                             )}
                                                 </Box>
 
-                                                {/* Quarta linha: Endereço (cidade e bairro) */}
                                                         <Typography
                                                             variant="body2"
                                                             color="text.secondary"

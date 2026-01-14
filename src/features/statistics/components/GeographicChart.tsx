@@ -49,7 +49,6 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
     );
   }
 
-  // Ordenar por total descendente e pegar top 10
   const topCities = [...data.byCity]
     .sort((a, b) => b.total - a.total)
     .slice(0, 10);
@@ -96,13 +95,13 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
           Detalhes por Cidade
         </Typography>
         {isMobile ? (
-          /* Versão Mobile: Cards */
+          
           <Stack spacing={2}>
             {topCities.map((city, index) => (
               <Card key={index} elevation={2} sx={{ borderRadius: 2 }}>
                 <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                   <Stack spacing={1.5}>
-                    {/* Header */}
+                    
                     <Box>
                       <Typography variant="subtitle2" fontWeight="bold" sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}>
                         {city.city}, {city.state}
@@ -111,7 +110,6 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
 
                     <Divider />
 
-                    {/* Informações */}
                     <Grid container spacing={1.5}>
                       <Grid item xs={6}>
                         <Box>
@@ -150,7 +148,7 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
             ))}
           </Stack>
         ) : (
-          /* Versão Desktop: Tabela */
+          
           <TableContainer>
             <Table size="small">
               <TableHead>

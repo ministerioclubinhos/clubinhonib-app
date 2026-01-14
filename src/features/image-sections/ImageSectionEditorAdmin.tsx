@@ -129,7 +129,6 @@ export default function ImageSectionEditorAdmin() {
     dispatch(setData({ ...(sectionData || {}), ...updatedData } as SectionData));
   };
 
-  // Se não há dados para editar, redireciona para o manager
   useEffect(() => {
     if (!sectionData) {
       navigate('/adm/fotos-clubinhos');
@@ -137,7 +136,7 @@ export default function ImageSectionEditorAdmin() {
   }, [sectionData, navigate]);
 
   if (!sectionData) {
-    return null; // Evita flash de conteúdo antes do redirecionamento
+    return null; 
   }
 
   return (
@@ -155,7 +154,7 @@ export default function ImageSectionEditorAdmin() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          {/* Header Administrativo */}
+          
           <Paper
             elevation={2}
             sx={{
@@ -245,7 +244,6 @@ export default function ImageSectionEditorAdmin() {
             </Box>
           </Paper>
 
-          {/* Painel Principal */}
           <Paper
             elevation={1}
             sx={{
@@ -265,7 +263,6 @@ export default function ImageSectionEditorAdmin() {
               onClose={() => setNotification({ ...notification, open: false })}
             />
 
-            {/* Informações da Seção */}
             <Box
               sx={{
                 mb: 2,

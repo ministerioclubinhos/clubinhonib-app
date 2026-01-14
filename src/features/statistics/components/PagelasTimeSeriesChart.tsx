@@ -48,7 +48,6 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
     );
   }
 
-  // Combinar dados de todas as séries em um array único
   const combinedData = data.timeSeries.total.map((item, index) => ({
     date: item.date,
     total: item.value,

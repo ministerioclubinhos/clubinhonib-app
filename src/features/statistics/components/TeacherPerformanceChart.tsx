@@ -51,7 +51,6 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
     );
   }
 
-  // Ordenar por total e pegar top 10
   const topTeachers = [...data.byTeacher]
     .sort((a, b) => b.total - a.total)
     .slice(0, 10);
@@ -124,7 +123,6 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
         </Typography>
       </Box>
 
-      {/* Gráfico de Barras */}
       <ResponsiveContainer width="100%" height={350}>
         <BarChart data={topTeachers}>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
@@ -155,7 +153,6 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
         </BarChart>
       </ResponsiveContainer>
 
-      {/* Lista Detalhada - Top 5 */}
       <Box sx={{ mt: 3 }}>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           Top 5 Professores Detalhados
@@ -181,7 +178,7 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  {/* Avatar */}
+                  
                   <Avatar
                     sx={{
                       width: 48,
@@ -198,7 +195,6 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                     {index === 0 ? <EmojiEvents /> : getInitials(teacher.teacherName)}
                   </Avatar>
 
-                  {/* Info */}
                   <Box sx={{ flex: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                       <Typography variant="subtitle1" fontWeight="bold">
@@ -227,7 +223,6 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                       )}
                     </Box>
 
-                    {/* Barra de Progresso */}
                     <LinearProgress
                       variant="determinate"
                       value={Math.min((teacher.total / topTeachers[0].total) * 100, 100)}
@@ -254,7 +249,6 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
         </Grid>
       </Box>
 
-      {/* Estatísticas Gerais */}
       <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
