@@ -3,6 +3,7 @@ import { TextField, MenuItem, Grid, Box, Typography } from '@mui/material';
 import { CalendarToday, Info } from '@mui/icons-material';
 import { PeriodShortcut } from '../api';
 import { getPeriodDescription } from '../utils/periodHelpers';
+import { SimpleDatePicker } from '@/components/common/inputs';
 
 interface PeriodFilterProps {
   period?: PeriodShortcut;
@@ -62,28 +63,24 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
 
         {isCustomPeriod && (
           <Grid item xs={12} sm={6} md={4}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Data Início"
+            <SimpleDatePicker
               value={startDate || ''}
-              onChange={(e) => onStartDateChange(e.target.value || undefined)}
+              onChange={(value) => onStartDateChange(value || undefined)}
+              label="Data Início"
               size="small"
-              InputLabelProps={{ shrink: true }}
+              margin="none"
             />
           </Grid>
         )}
 
         {isCustomPeriod && (
           <Grid item xs={12} sm={6} md={4}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Data Fim"
+            <SimpleDatePicker
               value={endDate || ''}
-              onChange={(e) => onEndDateChange(e.target.value || undefined)}
+              onChange={(value) => onEndDateChange(value || undefined)}
+              label="Data Fim"
               size="small"
-              InputLabelProps={{ shrink: true }}
+              margin="none"
             />
           </Grid>
         )}

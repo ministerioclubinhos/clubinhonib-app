@@ -34,6 +34,7 @@ import { Delete, Add, CalendarMonth, CheckCircle, Info, Warning, Edit } from '@m
 import { useCreatePeriod, useAcademicPeriods, useDeletePeriod, useUpdatePeriod } from '../hooks';
 import { AcademicPeriod } from '../api';
 import dayjs from 'dayjs';
+import { SimpleDatePicker } from '@/components/common/inputs';
 
 export const PeriodManagement: React.FC = () => {
   const theme = useTheme();
@@ -299,27 +300,23 @@ export const PeriodManagement: React.FC = () => {
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data de Início"
+                  <SimpleDatePicker
                     value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, startDate: value })}
+                    label="Data de Início"
                     required
-                    InputLabelProps={{ shrink: true }}
+                    margin="none"
                     helperText="Primeiro dia do ano letivo"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data de Término"
+                  <SimpleDatePicker
                     value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, endDate: value })}
+                    label="Data de Término"
                     required
-                    InputLabelProps={{ shrink: true }}
+                    margin="none"
                     helperText="Último dia do ano letivo"
                   />
                 </Grid>
@@ -648,25 +645,21 @@ export const PeriodManagement: React.FC = () => {
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Data de Início"
+                <SimpleDatePicker
                   value={editFormData.startDate}
-                  onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, startDate: value })}
+                  label="Data de Início"
                   required
-                  InputLabelProps={{ shrink: true }}
+                  margin="none"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Data de Término"
+                <SimpleDatePicker
                   value={editFormData.endDate}
-                  onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, endDate: value })}
+                  label="Data de Término"
                   required
-                  InputLabelProps={{ shrink: true }}
+                  margin="none"
                 />
               </Grid>
               <Grid item xs={12}>

@@ -63,12 +63,12 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={topCities} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis type="number" stroke={theme.palette.text.secondary} style={{ fontSize: { xs: 10, sm: 12 } }} />
+            <XAxis type="number" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 10 : 12 }} />
             <YAxis
               type="category"
               dataKey="city"
               stroke={theme.palette.text.secondary}
-              style={{ fontSize: { xs: 10, sm: 12 } }}
+              style={{ fontSize: isMobile ? 10 : 12 }}
               width={isMobile ? 80 : 100}
             />
             <Tooltip

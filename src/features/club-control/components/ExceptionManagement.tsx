@@ -33,6 +33,7 @@ import {
   Stack,
   Divider,
 } from '@mui/material';
+import { SimpleDatePicker } from '@/components/common/inputs';
 import {
   Delete,
   Add,
@@ -258,14 +259,12 @@ export const ExceptionManagement: React.FC = () => {
             <form onSubmit={handleSubmit}>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data da Exceção"
+                  <SimpleDatePicker
                     value={formData.exceptionDate}
-                    onChange={(e) => setFormData({ ...formData, exceptionDate: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, exceptionDate: value })}
+                    label="Data da Exceção"
                     required
-                    InputLabelProps={{ shrink: true }}
+                    margin="none"
                     helperText="Data em que NENHUM clube funcionará"
                   />
                 </Grid>

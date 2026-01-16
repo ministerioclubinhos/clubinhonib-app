@@ -176,7 +176,7 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
                 {clubCheck.alerts.map((alert, index) => (
                   <Alert
                     key={index}
-                    severity={alert.severity === 'success' ? 'success' : alert.severity}
+                    severity={alert.severity === 'critical' ? 'error' : alert.severity}
                     sx={{ mb: 1 }}
                   >
                     {alert.message}
@@ -185,10 +185,10 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
               </Box>
             )}
 
-            {clubCheck.isException && (
+            {clubCheck.exception && (
               <Alert severity="info" sx={{ mb: 3 }}>
                 <Typography variant="body2">
-                  <strong>Exceção Cadastrada:</strong> {clubCheck.exceptionReason}
+                  <strong>Exceção Cadastrada:</strong> {clubCheck.exception.reason}
                 </Typography>
               </Alert>
             )}
