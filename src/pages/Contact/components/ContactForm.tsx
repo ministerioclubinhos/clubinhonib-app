@@ -12,7 +12,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ContactFormData, ContactFormProps } from '../types';
 import { contactFormSchema } from '../validation';
-import PhoneMask from './PhoneMask';
+import { PhoneInput } from '@/components/common/inputs';
 
 const ContactForm: React.FC<ContactFormProps> = ({
   onSubmit,
@@ -98,29 +98,11 @@ const ContactForm: React.FC<ContactFormProps> = ({
           )}
         />
 
-        <Controller
+        <PhoneInput
           name="telefone"
           control={control}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              label="Telefone"
-              fullWidth
-              margin="normal"
-              error={!!errors.telefone}
-              helperText={errors.telefone?.message}
-              slotProps={{
-                input: {
-                  inputComponent: PhoneMask as any,
-                },
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                },
-              }}
-            />
-          )}
+          error={!!errors.telefone}
+          helperText={errors.telefone?.message}
         />
 
         <Controller

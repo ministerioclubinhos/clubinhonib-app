@@ -322,7 +322,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 {data.alerts.map((alert, index) => (
                   <Grid item xs={12} sm={6} key={index}>
                     <Alert
-                      severity={alert.severity}
+                      severity={alert.severity === 'critical' ? 'error' : alert.severity}
                       icon={getSeverityIcon(alert.severity)}
                       sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, height: '100%' }}
                     >

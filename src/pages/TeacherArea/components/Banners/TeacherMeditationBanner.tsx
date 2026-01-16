@@ -22,7 +22,7 @@ import {
 import { MediaType, MediaUploadType } from '@/store/slices/types';
 import api from '@/config/axiosConfig';
 import { motion } from 'framer-motion';
-import { BANNER_HEIGHTS } from './constants';
+import { BANNER_HEIGHTS } from '../../constants';
 
 export default function TeacherMeditationBanner() {
   const dispatch = useDispatch<AppDispatch>();

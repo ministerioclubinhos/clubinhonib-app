@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/store/slices';
 import { setComments } from 'store/slices/comment/commentsSlice';
@@ -7,10 +7,12 @@ import api from '@/config/axiosConfig';
 export const useComments = () => {
   const comments = useSelector((state: RootState) => state.comments.comments);
   const dispatch = useDispatch<AppDispatch>();
+  const hasFetched = useRef(false);
 
   useEffect(() => {
-  
-    if (comments && comments.length > 0) return;
+    if (hasFetched.current || (comments && comments.length > 0)) return;
+
+    hasFetched.current = true;
 
     const fetchComments = async () => {
       try {

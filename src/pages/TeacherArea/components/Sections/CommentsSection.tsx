@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -69,10 +69,12 @@ const CommentsSection: React.FC = () => {
     }
   }, [dispatch]);
 
-  useEffect(() => {
-    
-    if (rawComments && rawComments.length > 0) return;
+  const hasFetched = useRef(false);
 
+  useEffect(() => {
+    if (hasFetched.current || (rawComments && rawComments.length > 0)) return;
+
+    hasFetched.current = true;
     fetchComments();
   }, [rawComments, fetchComments]);
 

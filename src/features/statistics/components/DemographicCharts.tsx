@@ -62,9 +62,10 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
-                label={({ genderLabel, total, percent }) =>
-                  `${genderLabel}: ${total} (${(percent * 100).toFixed(0)}%)`
-                }
+                label={(props) => {
+                  const { payload, percent } = props as unknown as { payload: { genderLabel: string; total: number }; percent: number };
+                  return `${payload.genderLabel}: ${payload.total} (${(percent * 100).toFixed(0)}%)`;
+                }}
               >
                 {genderData.map((entry, index) => (
                   <Cell

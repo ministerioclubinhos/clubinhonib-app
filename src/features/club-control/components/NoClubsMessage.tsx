@@ -78,7 +78,7 @@ export const NoClubsMessage: React.FC<NoClubsMessageProps> = ({ data }) => {
                     Período Letivo Cadastrado
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {new Date(data.period.startDate).toLocaleDateString('pt-BR')} a {new Date(data.period.endDate).toLocaleDateString('pt-BR')}
+                    {data.period.startDate ? new Date(data.period.startDate).toLocaleDateString('pt-BR') : '-'} a {data.period.endDate ? new Date(data.period.endDate).toLocaleDateString('pt-BR') : '-'}
                   </Typography>
                 </Box>
               </Stack>

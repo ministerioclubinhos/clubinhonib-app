@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, Typography, TextField, Button, Grid, IconButton } from '@mui/material';
 import { Delete } from '@mui/icons-material';
+import { SimpleDatePicker } from '@/components/common/inputs';
 
 interface EventItem {
   title: string;
@@ -121,13 +122,11 @@ export default function EventPageCreator() {
           />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <TextField
-            label="Data do Evento"
-            type="date"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
+          <SimpleDatePicker
             value={newEvent.date}
-            onChange={(e) => setNewEvent((prev) => ({ ...prev, date: e.target.value }))}
+            onChange={(value) => setNewEvent((prev) => ({ ...prev, date: value }))}
+            label="Data do Evento"
+            margin="none"
             error={errors.newEventDate}
             helperText={errors.newEventDate ? 'Campo obrigatório' : ''}
           />
