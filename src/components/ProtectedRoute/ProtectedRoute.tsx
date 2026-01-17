@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState as RootStateType } from "@/store/slices";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 
 interface ProtectedRouteProps {
   requiredRole?: UserRole | UserRole[];

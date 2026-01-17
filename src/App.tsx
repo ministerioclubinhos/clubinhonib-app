@@ -29,7 +29,8 @@ import AdminDashboardPage from './components/Adm/AdminDashboardPage';
 import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 
 import { fetchRoutes } from './store/slices/route/routeSlice';
-import { UserRole, initAuth } from './store/slices/auth/authSlice';
+import { initAuth } from './store/slices/auth/authSlice';
+import { UserRole } from "@/types/shared";
 
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
@@ -64,6 +65,7 @@ import VideosManager from './features/video-pages/VideosManager';
 import WeekMaterialManager from './features/week-materials/WeekMaterialManager';
 import StatisticsPage from './features/statistics/StatisticsPage';
 import ClubControlPage from './features/club-control/ClubControlPage';
+import { ProfilesManager, ProfilePage } from './features/profile';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
@@ -119,6 +121,7 @@ function App() {
                 <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
                 <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
                 <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
+                <Route path="/meu-perfil" element={<ProfilePage />} />
               </Route>
 
               <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>
@@ -138,6 +141,7 @@ function App() {
                   <Route path="paginas-ideias" element={<IdeasManager />} />
                   <Route path="criar-pagina" element={<SelecPageTemplate />} />
                   <Route path="usuarios" element={<UsersManager />} />
+                  <Route path="perfis" element={<ProfilesManager />} />
                   <Route path="coordenadores" element={<CoordinatorProfilesManager />} />
                   <Route path="professores" element={<TeacherProfilesManager />} />
                   <Route path="criancas" element={<ChildrenManager />} />

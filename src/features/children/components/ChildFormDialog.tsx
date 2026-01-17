@@ -5,7 +5,7 @@ import {
   FormControl, InputLabel, Select, MenuItem, Stack, Skeleton, Box, FormHelperText
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 import { CreateChildForm, EditChildForm } from "../types";
 import { apiFetchSimpleClubs } from "@/features/clubs/api";
 import ClubAutocomplete from "@/features/clubs/components/form/ClubAutocomplete";

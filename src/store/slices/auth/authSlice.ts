@@ -1,35 +1,14 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import apiAxios from '@/config/axiosConfig';
 
-export enum UserRole {
-  ADMIN = 'admin',
-  COORDINATOR = 'coordinator',
-  TEACHER = 'teacher',
-}
+import { PersonalData, UserPreferences, ProfileImage, UserRole, TeacherProfileLite, CoordinatorProfileLite } from '@/types/shared';
 
-interface ClubLite {
-  id: string;
-  number: number;
-  weekday: string;
-}
-
-interface TeacherProfileLite {
-  id: string;
-  active: boolean;
-  club: ClubLite | null;
-}
-
-interface CoordinatorProfileLite {
-  id: string;
-  active: boolean;
-  clubs: ClubLite[];
-}
-
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
   role: UserRole;
+  cpf?: string | null;
   active?: boolean;
   commonUser?: boolean;
   phone?: string;
@@ -38,6 +17,9 @@ interface User {
   completed?: boolean;
   teacherProfile?: TeacherProfileLite | null;
   coordinatorProfile?: CoordinatorProfileLite | null;
+  personalData?: PersonalData;
+  preferences?: UserPreferences;
+  image?: ProfileImage;
 }
 
 interface GoogleUser {

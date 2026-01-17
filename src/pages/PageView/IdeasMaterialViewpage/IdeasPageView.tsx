@@ -38,7 +38,7 @@ import { setIdeasData, IdeasPageData } from 'store/slices/ideas/ideasSlice';
 import IdeasDocumentViewer from './IdeasDocumentViewer';
 import IdeasImageGalleryView from './IdeasImageGalleryView';
 import IdeasVideoPlayerView from './IdeasVideoPlayerView';
-import { UserRole } from '@/store/slices/auth/authSlice';
+import { UserRole } from '@/types/shared';
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 interface IdeasPageViewProps {

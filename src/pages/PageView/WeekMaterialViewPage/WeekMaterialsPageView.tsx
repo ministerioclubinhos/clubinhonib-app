@@ -35,7 +35,7 @@ import WeekImageGalleryView from './WeekImageGalleryView';
 import WeekAudioPlayerView from './WeekAudioPlayerView';
 import WeekVideoPlayerView from './WeekVideoPlayerView';
 import { MediaItem } from 'store/slices/types';
-import { UserRole } from '@/store/slices/auth/authSlice';
+import { UserRole } from '@/types/shared';
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 interface WeekMaterialsPageViewProps {

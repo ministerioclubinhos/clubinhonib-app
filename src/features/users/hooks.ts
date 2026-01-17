@@ -10,7 +10,7 @@ import {
   SortParam,
   UserFilters,
   UserRow,
-  UpadateUserForm,
+  UpdateUserForm,
 } from "./types";
 
 export function useUsers(
@@ -101,7 +101,7 @@ export function useUserMutations(refreshPage: () => Promise<void> | void) {
   }, [refreshPage]);
 
   const updateUser = useCallback(
-    async (id: string, form: UpadateUserForm & { confirmPassword?: string }) => {
+    async (id: string, form: UpdateUserForm & { confirmPassword?: string }) => {
       setDialogLoading(true);
       setDialogError("");
 

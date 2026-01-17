@@ -21,7 +21,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import api from '@/config/axiosConfig';
 import { RootState, AppDispatch } from '@/store/slices';
 import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import { UserRole } from 'store/slices/auth/authSlice';
+import { UserRole } from '@/types/shared';
 import ClubinhoSectionImageView from './ClubinhoSectionImageView/ClubinhoSectionImageView';
 import HomeIcon from '@mui/icons-material/Home';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -58,26 +58,26 @@ function SectionSkeleton() {
         }}
       >
         <Box textAlign="center" mb={3}>
-          <Skeleton 
-            variant="text" 
-            width={220} 
-            height={32} 
-            sx={{ mx: 'auto', borderRadius: 2 }} 
+          <Skeleton
+            variant="text"
+            width={220}
+            height={32}
+            sx={{ mx: 'auto', borderRadius: 2 }}
           />
-          <Skeleton 
-            variant="text" 
-            width="60%" 
-            sx={{ mx: 'auto', mt: 1, borderRadius: 1 }} 
+          <Skeleton
+            variant="text"
+            width="60%"
+            sx={{ mx: 'auto', mt: 1, borderRadius: 1 }}
           />
-          <Skeleton 
-            variant="text" 
-            width="50%" 
-            sx={{ mx: 'auto', mt: 1, borderRadius: 1 }} 
+          <Skeleton
+            variant="text"
+            width="50%"
+            sx={{ mx: 'auto', mt: 1, borderRadius: 1 }}
           />
-          <Box 
-            mt={2} 
-            display="flex" 
-            flexDirection="column" 
+          <Box
+            mt={2}
+            display="flex"
+            flexDirection="column"
             alignItems={{ xs: 'center', md: 'flex-end' }}
           >
             <Skeleton variant="text" width={180} sx={{ borderRadius: 1 }} />
@@ -86,9 +86,9 @@ function SectionSkeleton() {
         </Box>
         <Skeleton
           variant="rectangular"
-          sx={{ 
-            width: '100%', 
-            height: { xs: 200, sm: 400, md: 600 }, 
+          sx={{
+            width: '100%',
+            height: { xs: 200, sm: 400, md: 600 },
             borderRadius: 2,
             mb: 2,
           }}
@@ -96,10 +96,10 @@ function SectionSkeleton() {
         <Grid container spacing={1} justifyContent="center">
           {[...Array(6)].map((_, i) => (
             <Grid item xs={4} sm={2} md={2} key={i}>
-              <Skeleton 
-                variant="rectangular" 
-                height={80} 
-                sx={{ borderRadius: 1 }} 
+              <Skeleton
+                variant="rectangular"
+                height={80}
+                sx={{ borderRadius: 1 }}
               />
             </Grid>
           ))}
@@ -110,7 +110,7 @@ function SectionSkeleton() {
 }
 
 export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps) {
-  
+
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -185,7 +185,7 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
     setPage(1);
     setHasMore(true);
     setError(null);
-    
+
   };
 
   const handleHome = () => {
@@ -216,10 +216,10 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Alert 
-            severity="error" 
-            sx={{ 
-              borderRadius: { xs: 3, md: 4 }, 
+          <Alert
+            severity="error"
+            sx={{
+              borderRadius: { xs: 3, md: 4 },
               boxShadow: 2,
               fontSize: { xs: '0.9rem', md: '1rem' },
               p: { xs: 2, md: 3 },
@@ -254,10 +254,10 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
               background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
             }}
           >
-            <Typography 
-              variant="h5" 
+            <Typography
+              variant="h5"
               color="text.secondary"
-              sx={{ 
+              sx={{
                 fontSize: { xs: '1.3rem', md: '1.5rem' },
                 mb: 2,
               }}
@@ -267,8 +267,8 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
             <Typography color="text.secondary" sx={{ mb: 3 }}>
               O feed de notícias do Clubinho ainda não possui conteúdo.
             </Typography>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={handleRefresh}
               startIcon={<RefreshIcon />}
               sx={{
@@ -288,7 +288,7 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
-      
+
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -318,7 +318,7 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
               zIndex: 0,
             }}
           />
-          
+
           <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Box
               display="flex"
@@ -353,9 +353,9 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
                 </Typography>
               </Box>
 
-              <Box 
-                display="flex" 
-                gap={{ xs: 1, sm: 1 }} 
+              <Box
+                display="flex"
+                gap={{ xs: 1, sm: 1 }}
                 alignItems="center"
                 flexWrap="wrap"
                 width={{ xs: '100%', sm: 'auto' }}
@@ -459,11 +459,11 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                style={{ 
-                  marginBottom: index < sectionsList.length - 1 ? theme.spacing(2) : 0 
+                style={{
+                  marginBottom: index < sectionsList.length - 1 ? theme.spacing(2) : 0
                 }}
               >
-                <ClubinhoSectionImageView 
+                <ClubinhoSectionImageView
                   caption={sectionItem.caption}
                   description={sectionItem.description}
                   mediaItems={sectionItem.mediaItems}
@@ -509,8 +509,8 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
               <Typography color="text.secondary" sx={{ mb: 3 }}>
                 O feed de notícias ainda não possui publicações.
               </Typography>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={handleRefresh}
                 startIcon={<RefreshIcon />}
                 sx={{

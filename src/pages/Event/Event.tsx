@@ -44,7 +44,7 @@ import api from '@/config/axiosConfig';
 import { setEvents } from '@/store/slices/events/eventsSlice';
 import EventDetailsModal from './EventDetailsModal';
 import EventFormModal from './EventFormModal';
-import { UserRole } from '@/store/slices/auth/authSlice';
+import { UserRole } from '@/types/shared';
 import { motion, AnimatePresence } from 'framer-motion';
 
 dayjs.locale('pt-br');
@@ -648,7 +648,7 @@ const Eventos: React.FC = () => {
           background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
         }}
       >
-        
+
         <Paper
           elevation={0}
           sx={{
@@ -858,13 +858,13 @@ const Eventos: React.FC = () => {
                     startIcon={<AddIcon />}
                     onClick={handleAddNewEvent}
                     size="large"
-                        sx={{
-                          borderRadius: 3,
-                          py: { xs: 1, md: 1.5 },
-                          px: { xs: 2, md: 4 },
-                          fontWeight: 600,
-                          textTransform: 'none',
-                          fontSize: { xs: '0.8rem', md: '1.1rem' },
+                    sx={{
+                      borderRadius: 3,
+                      py: { xs: 1, md: 1.5 },
+                      px: { xs: 2, md: 4 },
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: { xs: '0.8rem', md: '1.1rem' },
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
                       '&:hover': {
@@ -886,7 +886,7 @@ const Eventos: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              
+
               {isMobile && isAdmin && (
                 <Box
                   sx={{
@@ -992,10 +992,10 @@ const Eventos: React.FC = () => {
               )}
 
               <Box sx={{ width: '100%', mb: 6 }}>
-                
+
                 {arrangement.temHoje ? (
                   <Box sx={{ width: '100%' }}>
-                    
+
                     <motion.div
                       initial={{ opacity: 0, y: 30, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1076,7 +1076,7 @@ const Eventos: React.FC = () => {
                                   },
                                 }}
                               >
-                                
+
                                 <Box
                                   sx={{
                                     position: 'absolute',
@@ -1367,7 +1367,7 @@ const Eventos: React.FC = () => {
                   </AccordionSummary>
                   <AccordionDetails sx={{ p: 4 }}>
                     <Grid container spacing={{ xs: 3, md: 4 }}>
-                      
+
                       {arrangement.proximoEvento && (
                         <Grid item xs={12} sm={6} md={4} key={`proximo-${arrangement.proximoEvento.id}`}>
                           <motion.div

@@ -3,8 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, Stack } from '@mui/material';
 import { RootState } from '@/store/slices';
-import { logout, UserRole } from '@/store/slices/auth/authSlice';
+import { logout } from '@/store/slices/auth/authSlice';
+import { UserRole } from "@/types/shared";
 import api from '@/config/axiosConfig';
+import UserMenu from './UserMenu';
+import CompleteProfileAlert from './CompleteProfileAlert';
+import { useProfileAlerts } from '@/features/profile/hooks/useProfileAlerts';
 
 interface Props {
   closeMenu?: () => void;
@@ -75,26 +79,17 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
       {renderLink('/sobre', 'Sobre')}
       {renderLink('/eventos', 'Eventos')}
       {renderLink('/contato', 'Contato')}
-      {isAuthenticated ? (
-        <Fragment>
-          {renderLink('/area-do-professor', 'Área do Professor')}
-          {(isTeacher) && renderLink('/area-das-criancas', 'Área das crianças')}
-          {(isAdmin || isCoordinator) && renderLink('/adm', 'Administração')}
-          <Button
-            onClick={handleLogout}
-            variant="contained"
-            color="error"
-            fullWidth={!!isMobile}
-            sx={{ fontWeight: 'bold', minHeight: 44, textTransform: 'none', maxWidth: '100%' }}
-          >
-            Sair
-          </Button>
-        </Fragment>
+      {isAuthenticated && user ? (
+        <React.Fragment>
+          {!isMobile && <CompleteProfileAlert alerts={useProfileAlerts()} />}
+          <UserMenu user={user} onCloseMobile={handleClick} isMobile={isMobile} />
+        </React.Fragment>
       ) : (
         renderLink('/login', 'Área do Professor')
       )}
     </Stack>
   );
 };
+
 
 export default NavLinks;

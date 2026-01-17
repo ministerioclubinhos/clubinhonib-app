@@ -1,11 +1,12 @@
 import React from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid,
-  TextField, Alert, Box, FormControl, InputLabel, Select, MenuItem
+  TextField, Alert, Box, FormControl, InputLabel, Select, MenuItem,
+  FormControlLabel, Switch
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { CreateUserForm } from "../types";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 import { SimplePhoneInput } from "@/components/common/inputs";
 
 type Props = {
@@ -21,7 +22,7 @@ type Props = {
 const roleLabels: Record<UserRole, string> = {
   [UserRole.COORDINATOR]: "Coordenador",
   [UserRole.TEACHER]: "Professor",
-  [UserRole.ADMIN]: "Administrador", 
+  [UserRole.ADMIN]: "Administrador",
 };
 
 export default function UserCreateDialog({
@@ -100,6 +101,18 @@ export default function UserCreateDialog({
               value={value.phone || ""}
               onChange={(phone) => onChange({ ...value, phone })}
               margin="none"
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6} display="flex" alignItems="center">
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={value.active ?? true}
+                  onChange={(e) => onChange({ ...value, active: e.target.checked })}
+                />
+              }
+              label="Ativo"
             />
           </Grid>
         </Grid>

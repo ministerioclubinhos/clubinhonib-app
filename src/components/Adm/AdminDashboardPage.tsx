@@ -44,7 +44,7 @@ import {
 
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 
 type SectionId = "all" | "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "interacoes" | "operacional";
 
@@ -62,6 +62,7 @@ const cardData: CardData[] = [
   { title: "Documentos", description: "Gerencie documentos para professores.", icon: <Description fontSize="large" color="primary" />, path: "/adm/documentos", section: "conteudos" },
   { title: "Informativos", description: "Gerencie banners informativos do site.", icon: <Campaign fontSize="large" color="primary" />, path: "/adm/informativos", section: "conteudos" },
 
+  { title: "Perfis", description: "Gerencie todos os perfis do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/perfis", section: "pessoas" },
   { title: "Usuários", description: "Gerencie usuários do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/usuarios", section: "pessoas" },
   { title: "Professores", description: "Gerencie professores do clubinho.", icon: <School fontSize="large" color="primary" />, path: "/adm/professores", section: "pessoas" },
   { title: "Coordenadores", description: "Gerencie coordenadores do clubinho.", icon: <SupervisorAccount fontSize="large" color="primary" />, path: "/adm/coordenadores", section: "pessoas" },
@@ -126,6 +127,8 @@ export default function AdminDashboardPage() {
     "/adm/professores",
     "/adm/clubinhos",
     "/adm/pagelas",
+    "/adm/usuarios",
+    "/adm/perfis",
   ]);
 
   const canSeeCard = (card: CardData): boolean => {

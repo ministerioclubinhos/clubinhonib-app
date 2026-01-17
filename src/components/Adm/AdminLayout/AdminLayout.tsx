@@ -44,7 +44,7 @@ import {
 
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 
 const drawerWidth = 240;
 
@@ -80,6 +80,7 @@ function AdminLayout() {
         id: "pessoas",
         title: "Pessoas",
         items: [
+          { label: "Perfis", to: "/adm/perfis", icon: <Group /> },
           { label: "Usuários", to: "/adm/usuarios", icon: <Group /> },
           { label: "Professores", to: "/adm/professores", icon: <School /> },
           { label: "Coordenadores", to: "/adm/coordenadores", icon: <SupervisorAccount /> },
@@ -150,6 +151,8 @@ function AdminLayout() {
     "/adm/professores",
     "/adm/clubinhos",
     "/adm/pagelas",
+    "/adm/usuarios",
+    "/adm/perfis",
   ]);
 
   const canSeeItem = (item: NavItem): boolean => {
@@ -170,7 +173,9 @@ function AdminLayout() {
       path.startsWith("/adm/usuarios") ||
       path.startsWith("/adm/professores") ||
       path.startsWith("/adm/coordenadores") ||
-      path.startsWith("/adm/criancas")
+      path.startsWith("/adm/coordenadores") ||
+      path.startsWith("/adm/criancas") ||
+      path.startsWith("/adm/perfis")
     ) {
       return "pessoas";
     }

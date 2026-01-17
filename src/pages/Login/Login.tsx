@@ -21,10 +21,10 @@ import { RootState as RootStateType, AppDispatch as AppDispatchType } from '@/st
 import {
   login,
   LoginResponse,
-  UserRole,
   setGoogleUser,
   fetchCurrentUser,
 } from '@/store/slices/auth/authSlice';
+import { UserRole } from '@/types/shared';
 
 const log = (message: string, ...args: any[]) => {
   if (import.meta.env.DEV) console.log(message, ...args);
@@ -36,7 +36,7 @@ const mapLoginError = (err: unknown): string => {
     const raw = (err.response?.data as any)?.message;
     const serverMsg = Array.isArray(raw) ? raw.join(' ') : String(raw ?? '');
 
-    if (status === 401 ) {
+    if (status === 401) {
       return 'Email ou senha inválidos.';
     }
 
@@ -80,7 +80,7 @@ const Login: React.FC = () => {
   const bootstrapAfterLogin = async (accessToken: string) => {
     try {
       api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-    } catch {}
+    } catch { }
     try {
       await dispatch(fetchCurrentUser()).unwrap();
     } catch (e) {
