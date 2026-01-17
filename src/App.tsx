@@ -133,7 +133,7 @@ function App() {
                   <Route path="paginas-materiais-semanais" element={<WeekMaterialManager />} />
                   <Route path="paginas-fotos" element={<ImagePageManager />} />
                   <Route path="fotos-clubinhos" element={<ImageSectionManager />} />
-                  <Route path="ideias-compartilhadas" element={<IdeasSectionManager  />} />
+                  <Route path="ideias-compartilhadas" element={<IdeasSectionManager />} />
                   <Route path="paginas-videos" element={<VideosManager />} />
                   <Route path="paginas-ideias" element={<IdeasManager />} />
                   <Route path="criar-pagina" element={<SelecPageTemplate />} />
@@ -144,7 +144,7 @@ function App() {
                   <Route path="clubinhos" element={<ClubsManager />} />
                   <Route path="pagelas" element={<PagelaClubsManager />} />
                   <Route path="estatisticas" element={<StatisticsPage />} />
-                  <Route path="controle-clubes" element={<ClubControlPage />} />
+                  <Route path="controle-clubinhos" element={<ClubControlPage />} />
 
                   <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
                   <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
@@ -152,7 +152,7 @@ function App() {
                   <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
                   <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
                   <Route path="editar-imagens-clubinho" element={<ImageSectionEditorAdmin />} />
-                  <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage  />} />
+                  <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage />} />
                 </Route>
               </Route>
 

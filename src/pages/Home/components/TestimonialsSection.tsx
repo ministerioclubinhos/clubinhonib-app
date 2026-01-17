@@ -31,7 +31,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
     <Box
       sx={{
         py: { xs: 6, md: 10 },
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        background: 'linear-gradient(135deg, #81d742 0%, #67bf1b 50%, #5aa814 100%)',
         position: 'relative',
         overflow: 'hidden',
         width: '100%',
@@ -152,7 +152,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                     left: 0,
                     right: 0,
                     height: '4px',
-                    background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+                    background: 'linear-gradient(90deg, #e74c3c, #c0392b)',
                   },
                 }}
               >
@@ -165,9 +165,9 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                     <FormatQuote
                       sx={{
                         fontSize: 60,
-                        color: '#667eea',
+                        color: '#e74c3c',
                         mb: 2,
-                        opacity: 0.3,
+                        opacity: 0.4,
                       }}
                     />
                   </motion.div>
@@ -189,7 +189,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                   <Typography
                     variant="h6"
                     sx={{
-                      color: '#667eea',
+                      color: '#2c3e50',
                       fontWeight: 700,
                       mb: 1,
                       fontSize: { xs: '1.1rem', md: '1.3rem' },
@@ -222,7 +222,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
             top: '50%',
             transform: 'translateY(-50%)',
             background: 'rgba(255, 255, 255, 0.9)',
-            color: '#667eea',
+            color: '#2c3e50',
             zIndex: 5,
               '&:hover': {
                 background: 'rgba(255, 255, 255, 1)',
@@ -242,7 +242,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
               top: '50%',
               transform: 'translateY(-50%)',
               background: 'rgba(255, 255, 255, 0.9)',
-              color: '#667eea',
+              color: '#2c3e50',
               zIndex: 5,
               '&:hover': {
                 background: 'rgba(255, 255, 255, 1)',
@@ -271,7 +271,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                   width: '12px',
                   height: '12px',
                   borderRadius: '50%',
-                  background: index === currentIndex ? '#FFD700' : 'rgba(255, 255, 255, 0.5)',
+                  background: index === currentIndex ? '#e74c3c' : 'rgba(255, 255, 255, 0.5)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                 }}
