@@ -33,6 +33,7 @@ import {
   Stack,
   Divider,
 } from '@mui/material';
+import { SimpleDatePicker } from '@/components/common/inputs';
 import {
   Delete,
   Add,
@@ -51,7 +52,7 @@ import dayjs from 'dayjs';
 const EXCEPTION_TYPES = [
   { value: 'holiday', label: 'Feriado', icon: <EventBusy />, color: '#ff9800' },
   { value: 'event', label: 'Evento', icon: <Event />, color: '#2196f3' },
-  { value: 'vacation', label: 'Férias', icon: <BeachAccess />, color: '#4caf50' }, // NOVO
+  { value: 'vacation', label: 'Férias', icon: <BeachAccess />, color: '#4caf50' },
   { value: 'maintenance', label: 'Manutenção', icon: <Build />, color: '#9c27b0' },
   { value: 'other', label: 'Outro', icon: <Help />, color: '#607d8b' },
 ];
@@ -64,7 +65,7 @@ export const ExceptionManagement: React.FC = () => {
     exceptionDate: '',
     reason: '',
     type: 'holiday' as 'holiday' | 'event' | 'maintenance' | 'vacation' | 'other',
-    isRecurrent: true, // NOVO campo
+    isRecurrent: true,
     notes: '',
   });
   const [deleteDialog, setDeleteDialog] = React.useState<{
@@ -107,7 +108,7 @@ export const ExceptionManagement: React.FC = () => {
 
       const dateFormatted = dayjs(formData.exceptionDate).format('DD/MM/YYYY');
       const weekday = dayjs(formData.exceptionDate).format('dddd');
-      
+
       setFormData({
         exceptionDate: '',
         reason: '',
@@ -118,7 +119,7 @@ export const ExceptionManagement: React.FC = () => {
 
       setSnackbar({
         open: true,
-        message: `Exceção cadastrada com sucesso! A data ${dateFormatted} (${weekday}) não terá funcionamento para TODOS os clubes deste dia.`,
+        message: `Exceção cadastrada com sucesso! A data ${dateFormatted} (${weekday}) não terá funcionamento para TODOS os clubinhos deste dia.`,
         severity: 'success',
       });
     } catch (error: any) {
@@ -158,7 +159,7 @@ export const ExceptionManagement: React.FC = () => {
 
   return (
     <Box>
-      {/* Header Otimizado */}
+
       <Paper
         elevation={0}
         sx={{
@@ -189,13 +190,12 @@ export const ExceptionManagement: React.FC = () => {
               🚫 Exceções GLOBAIS
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-              Datas em que TODOS os clubes não funcionarão
+              Datas em que TODOS os clubinhos não funcionarão
             </Typography>
           </Box>
         </Box>
       </Paper>
 
-      {/* Alerta Informativo */}
       <Alert
         severity="info"
         icon={<Info />}
@@ -209,10 +209,10 @@ export const ExceptionManagement: React.FC = () => {
           ⚠️ ESTRUTURA GLOBAL
         </Typography>
         <Typography variant="caption" display="block">
-          • Uma exceção por data afeta <strong>TODOS os clubes</strong> daquele dia da semana
+          • Uma exceção por data afeta <strong>TODOS os clubinhos</strong> daquele dia da semana
         </Typography>
         <Typography variant="caption" display="block">
-          • Ex: Feriado em 15/11 (quarta) → todos os clubes de quarta não funcionam
+          • Ex: Feriado em 15/11 (quarta) → todos os clubinhos de quarta não funcionam
         </Typography>
         <Typography variant="caption" display="block">
           • Exceções <strong>não afetam</strong> estatísticas de regularidade
@@ -220,7 +220,7 @@ export const ExceptionManagement: React.FC = () => {
       </Alert>
 
       <Grid container spacing={{ xs: 2, sm: 3 }}>
-        {/* Formulário de Cadastro */}
+
         <Grid item xs={12} md={5}>
           <Paper
             elevation={0}
@@ -251,7 +251,7 @@ export const ExceptionManagement: React.FC = () => {
                   Nova Exceção Global
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Válida para todos os clubes
+                  Válida para todos os clubinhos
                 </Typography>
               </Box>
             </Box>
@@ -259,14 +259,12 @@ export const ExceptionManagement: React.FC = () => {
             <form onSubmit={handleSubmit}>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data da Exceção"
+                  <SimpleDatePicker
                     value={formData.exceptionDate}
-                    onChange={(e) => setFormData({ ...formData, exceptionDate: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, exceptionDate: value })}
+                    label="Data da Exceção"
                     required
-                    InputLabelProps={{ shrink: true }}
+                    margin="none"
                     helperText="Data em que NENHUM clube funcionará"
                   />
                 </Grid>
@@ -361,13 +359,12 @@ export const ExceptionManagement: React.FC = () => {
 
             <Alert severity="warning" sx={{ mt: 2 }} icon={<Warning />}>
               <Typography variant="caption">
-                <strong>Atenção:</strong> Esta exceção será aplicada para TODOS os clubes que funcionam no dia da semana selecionado.
+                <strong>Atenção:</strong> Esta exceção será aplicada para TODOS os clubinhos que funcionam no dia da semana selecionado.
               </Typography>
             </Alert>
           </Paper>
         </Grid>
 
-        {/* Lista de Exceções */}
         <Grid item xs={12} md={7}>
           <Paper
             elevation={0}
@@ -413,7 +410,7 @@ export const ExceptionManagement: React.FC = () => {
                   </Typography>
                 </Alert>
               ) : isMobile ? (
-                /* Versão Mobile: Cards */
+
                 <Stack spacing={2}>
                   {exceptions
                     .sort((a, b) => new Date(b.exceptionDate).getTime() - new Date(a.exceptionDate).getTime())
@@ -421,12 +418,12 @@ export const ExceptionManagement: React.FC = () => {
                       const typeConfig = getTypeConfig(exception.type);
                       const isPast = dayjs(exception.exceptionDate).isBefore(dayjs(), 'day');
                       const weekday = dayjs(exception.exceptionDate).format('dddd');
-                      
+
                       return (
                         <Card key={exception.id} elevation={2} sx={{ borderRadius: 2, opacity: isPast ? 0.7 : 1 }}>
                           <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                             <Stack spacing={1.5}>
-                              {/* Header */}
+
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Box>
                                   <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
@@ -454,7 +451,6 @@ export const ExceptionManagement: React.FC = () => {
 
                               <Divider />
 
-                              {/* Tipo */}
                               <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                   Tipo
@@ -469,7 +465,6 @@ export const ExceptionManagement: React.FC = () => {
                                 </Box>
                               </Box>
 
-                              {/* Motivo */}
                               <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                   Motivo
@@ -484,7 +479,6 @@ export const ExceptionManagement: React.FC = () => {
                                 )}
                               </Box>
 
-                              {/* Ações */}
                               <Box>
                                 <Button
                                   size="small"
@@ -511,7 +505,7 @@ export const ExceptionManagement: React.FC = () => {
                     })}
                 </Stack>
               ) : (
-                /* Versão Desktop: Tabela */
+
                 <TableContainer sx={{ maxHeight: 500 }}>
                   <Table stickyHeader>
                     <TableHead>
@@ -529,7 +523,7 @@ export const ExceptionManagement: React.FC = () => {
                           const typeConfig = getTypeConfig(exception.type);
                           const isPast = dayjs(exception.exceptionDate).isBefore(dayjs(), 'day');
                           const weekday = dayjs(exception.exceptionDate).format('dddd');
-                          
+
                           return (
                             <TableRow key={exception.id} hover sx={{ opacity: isPast ? 0.6 : 1 }}>
                               <TableCell>
@@ -591,7 +585,6 @@ export const ExceptionManagement: React.FC = () => {
                 </TableContainer>
               )}
 
-              {/* ⭐ Paginação v1.1.0 - Funciona em ambos (mobile e desktop) */}
               {exceptionsData && exceptionsData.total > 0 && (
                 <Box sx={{ borderTop: 1, borderColor: 'divider', px: { xs: 1, sm: 0 } }}>
                   <TablePagination
@@ -606,7 +599,7 @@ export const ExceptionManagement: React.FC = () => {
                     }}
                     rowsPerPageOptions={[25, 50, 100]}
                     labelRowsPerPage="Exceções por página:"
-                    labelDisplayedRows={({ from, to, count }) => 
+                    labelDisplayedRows={({ from, to, count }) =>
                       `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
                     }
                     sx={{
@@ -625,7 +618,6 @@ export const ExceptionManagement: React.FC = () => {
             </Box>
           </Paper>
 
-          {/* Quick Add: Feriados Nacionais 2024/2025 */}
           <Paper
             elevation={0}
             sx={{
@@ -676,8 +668,8 @@ export const ExceptionManagement: React.FC = () => {
         </Grid>
       </Grid>
 
-      <Dialog 
-        open={deleteDialog.open} 
+      <Dialog
+        open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, exceptionId: '', description: '' })}
         maxWidth="sm"
         fullWidth
@@ -695,23 +687,23 @@ export const ExceptionManagement: React.FC = () => {
               ℹ️ O que acontece após a exclusão:
             </Typography>
             <Typography variant="caption" display="block">
-              A data voltará a ser considerada como <strong>dia normal de funcionamento</strong> para 
-              <strong> TODOS os clubes</strong> que funcionam neste dia da semana. 
+              A data voltará a ser considerada como <strong>dia normal de funcionamento</strong> para
+              <strong> TODOS os clubinhos</strong> que funcionam neste dia da semana.
               As pagelas desta data voltarão a ser cobradas normalmente.
             </Typography>
           </Alert>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
+          <Button
             onClick={() => setDeleteDialog({ open: false, exceptionId: '', description: '' })}
             variant="outlined"
           >
             Cancelar
           </Button>
-          <Button 
-            onClick={handleDelete} 
-            color="error" 
-            variant="contained" 
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
             disabled={deleteException.isPending}
             startIcon={deleteException.isPending ? <CircularProgress size={16} /> : <Delete />}
           >

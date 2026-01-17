@@ -53,7 +53,6 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
     );
   }
 
-  // No mobile, mostrar apenas 3 inicialmente
   const initialMobileItems = 3;
   const displayedChildren = isMobile && !showAllMobile 
     ? (data.topEngagedChildren || []).slice(0, initialMobileItems)
@@ -62,11 +61,11 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
   const getMedalColor = (position: number) => {
     switch (position) {
       case 0:
-        return '#FFD700'; // Ouro
+        return '#FFD700'; 
       case 1:
-        return '#C0C0C0'; // Prata
+        return '#C0C0C0'; 
       case 2:
-        return '#CD7F32'; // Bronze
+        return '#CD7F32'; 
       default:
         return theme.palette.grey[400];
     }
@@ -109,7 +108,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
           </Typography>
         </Box>
       ) : isMobile ? (
-        /* Versão Mobile: Cards */
+        
         <Stack spacing={2}>
           {displayedChildren.map((child, index) => (
             <Card
@@ -123,7 +122,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
             >
               <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                 <Stack spacing={1.5}>
-                  {/* Header */}
+                  
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
                       {index < 3 ? (
@@ -153,7 +152,6 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
 
                   <Divider />
 
-                  {/* Informações */}
                   <Grid container spacing={1.5}>
                     <Grid item xs={6}>
                       <Box>
@@ -197,7 +195,6 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                     </Grid>
                   </Grid>
 
-                  {/* Presença e Engajamento */}
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
@@ -213,7 +210,6 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                     />
                   </Box>
 
-                  {/* Decisão */}
                   {child.hasDecision && (
                     <Box>
                       <Chip
@@ -229,8 +225,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
               </CardContent>
             </Card>
           ))}
-          
-          {/* Botão Ver Mais / Ver Menos no Mobile */}
+
           {isMobile && data.topEngagedChildren.length > initialMobileItems && (
             <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
               <Button
@@ -252,7 +247,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
           )}
         </Stack>
       ) : (
-        /* Versão Desktop: Tabela */
+        
         <TableContainer>
           <Table>
             <TableHead>

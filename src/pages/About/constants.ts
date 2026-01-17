@@ -4,7 +4,7 @@ export const ABOUT_SECTIONS: AboutSection[] = [
   {
     id: 'quem-somos',
     title: 'Quem Somos',
-    content: 'Somos um ministério evangelístico infantil dedicado a levar o amor de Cristo às crianças. Nossa equipe é formada por servos comprometidos com o ensino bíblico, espalhados em escolas, abrigos, praças e residências, sempre com o objetivo de compartilhar o evangelho de forma criativa e envolvente.',
+    content: 'Somos um ministério evangelístico infantil dedicado a levar o amor de Cristo às crianças. Nossa equipe é formada por servos comprometidos com o ensino bíblico, espalhados em escolas, clubinhos, praças e residências, sempre com o objetivo de compartilhar o evangelho de forma criativa e envolvente.',
     isMain: true,
   },
   {

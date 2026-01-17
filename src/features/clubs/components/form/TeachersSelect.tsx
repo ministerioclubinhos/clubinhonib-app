@@ -229,7 +229,6 @@ export default function TeachersSelect({
           </Stack>
         </ListSubheader>
 
-        {/* LISTA */}
         {visibleOptions.length === 0 && (
           <MenuItem disabled dense>
             <ListItemText

@@ -379,7 +379,6 @@ export const ControlDashboard: React.FC = () => {
         childrenMissing={childrenMissing}
       />
 
-      {/* ⭐ v1.5.0: Informações sobre clubinhos e crianças desativadas - Colapsável */}
       {(data.inactiveClubs && data.inactiveClubs.length > 0) || (data.childrenNotAttending && data.childrenNotAttending.total > 0) ? (
         <Paper 
           elevation={0} 

@@ -1,7 +1,6 @@
 import React from "react";
 import { Card, Typography } from "@mui/material";
 
-
 export function EmptyState({ title, subtitle }: { title: string; subtitle?: string }) {
 return (
 <Card variant="outlined" sx={{ p: 2, textAlign: "center" }}>

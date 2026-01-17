@@ -10,6 +10,7 @@ import { CreateChildForm, EditChildForm } from "../types";
 import { apiFetchSimpleClubs } from "@/features/clubs/api";
 import ClubAutocomplete from "@/features/clubs/components/form/ClubAutocomplete";
 import { RootState } from "@/store/slices";
+import { SimpleDatePicker, SimplePhoneInput } from "@/components/common/inputs";
 
 type Props = {
   mode: "create" | "edit";
@@ -131,14 +132,12 @@ export default function ChildFormDialog({
           </Grid>
 
           <Grid item xs={12} md={3}>
-            <TextField
-              fullWidth
-              required
-              label="Nascimento (obrigatório)"
-              type="date"
-              InputLabelProps={{ shrink: true }}
+            <SimpleDatePicker
               value={(value as any).birthDate ?? ""}
-              onChange={(e) => setField("birthDate", e.target.value)}
+              onChange={(value) => setField("birthDate", value)}
+              label="Nascimento (obrigatório)"
+              required
+              margin="none"
               error={showErrors && !req.birthDate}
               helperText={showErrors && !req.birthDate ? "Informe a data de nascimento" : undefined}
             />
@@ -157,22 +156,19 @@ export default function ChildFormDialog({
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Telefone"
+            <SimplePhoneInput
               value={(value as any).guardianPhone ?? ""}
-              onChange={(e) => setField("guardianPhone", e.target.value)}
+              onChange={(value) => setField("guardianPhone", value)}
+              margin="none"
             />
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="No clubinho desde"
-              type="date"
-              InputLabelProps={{ shrink: true }}
+            <SimpleDatePicker
               value={(value as any).joinedAt ?? ""}
-              onChange={(e) => setField("joinedAt", e.target.value || null)}
+              onChange={(value) => setField("joinedAt", value || null)}
+              label="No clubinho desde"
+              margin="none"
             />
           </Grid>
 

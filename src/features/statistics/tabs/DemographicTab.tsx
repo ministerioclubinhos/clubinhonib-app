@@ -18,4 +18,3 @@ const DemographicTab: React.FC<DemographicTabProps> = ({ filters }) => {
 
 export default DemographicTab;
 
-

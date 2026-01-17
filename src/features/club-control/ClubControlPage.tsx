@@ -4,7 +4,6 @@ import { Dashboard, CalendarMonth, EventBusy, Assessment } from '@mui/icons-mate
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ControlDashboard, PeriodManagement, ExceptionManagement } from './components';
 
-// Cliente do React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -39,7 +38,7 @@ const ClubControlPageContent: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>
-      {/* Header Principal */}
+      
       <Paper
         elevation={0}
         sx={{
@@ -86,7 +85,6 @@ const ClubControlPageContent: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Tabs de Navegação */}
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
@@ -141,7 +139,6 @@ const ClubControlPageContent: React.FC = () => {
         </Tabs>
       </Paper>
 
-      {/* Conteúdo das Tabs */}
       <TabPanel value={tabValue} index={0}>
         <Box sx={{ px: { xs: 0, sm: 0 } }}>
           <ControlDashboard />
@@ -163,7 +160,6 @@ const ClubControlPageContent: React.FC = () => {
   );
 };
 
-// Componente principal com QueryClientProvider
 const ClubControlPage: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>

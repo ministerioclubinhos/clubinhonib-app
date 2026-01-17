@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import { CleaningServices, Refresh, Add, Event, Close } from "@mui/icons-material";
 import { ChildFilters } from "../types";
+import { SimpleDatePicker } from "@/components/common/inputs";
 
 type Props = {
   filters: ChildFilters;
@@ -119,31 +120,28 @@ function DateFilterInput(props: {
           </ToggleButtonGroup>
 
           {mode === "single" ? (
-            <TextField
-              fullWidth
-              label="Data"
-              type="date"
-              InputLabelProps={{ shrink: true }}
+            <SimpleDatePicker
               value={tmpFrom || ""}
-              onChange={(e) => setTmpFrom(e.target.value)}
+              onChange={(value) => setTmpFrom(value)}
+              label="Data"
+              size="small"
+              margin="none"
             />
           ) : (
             <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
-              <TextField
-                fullWidth
-                label="De"
-                type="date"
-                InputLabelProps={{ shrink: true }}
+              <SimpleDatePicker
                 value={tmpFrom || ""}
-                onChange={(e) => setTmpFrom(e.target.value)}
+                onChange={(value) => setTmpFrom(value)}
+                label="De"
+                size="small"
+                margin="none"
               />
-              <TextField
-                fullWidth
-                label="Até"
-                type="date"
-                InputLabelProps={{ shrink: true }}
+              <SimpleDatePicker
                 value={tmpTo || ""}
-                onChange={(e) => setTmpTo(e.target.value)}
+                onChange={(value) => setTmpTo(value)}
+                label="Até"
+                size="small"
+                margin="none"
               />
             </Box>
           )}

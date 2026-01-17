@@ -34,8 +34,6 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data, isLoading } = usePagelasChartData(filters);
 
-  // IMPORTANTE: Hooks devem ser chamados antes de qualquer early return
-  // Ordenar clubinhos por performance e garantir que os dados estão no formato correto
   const topClubs = React.useMemo(() => {
     if (!data?.byClub || data.byClub.length === 0) return [];
     const sorted = [...data.byClub]
@@ -90,11 +88,11 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
   const getMedalColor = (position: number) => {
     switch (position) {
       case 0:
-        return '#FFD700'; // Ouro
+        return '#FFD700'; 
       case 1:
-        return '#C0C0C0'; // Prata
+        return '#C0C0C0'; 
       case 2:
-        return '#CD7F32'; // Bronze
+        return '#CD7F32'; 
       default:
         return theme.palette.grey[400];
     }
@@ -161,7 +159,6 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
         </Typography>
       </Box>
 
-      {/* Gráfico de Barras Vertical */}
       {topClubs.length > 0 ? (
         <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
           <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
@@ -206,7 +203,6 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
         </Box>
       )}
 
-      {/* Lista Detalhada */}
       <Box sx={{ mt: { xs: 2, sm: 3 } }}>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           Top 5 Clubinhos
@@ -229,7 +225,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
-                {/* Posição/Medalha */}
+                
                 <Avatar
                   sx={{
                     width: { xs: 36, sm: 40 },
@@ -242,7 +238,6 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
                   {index < 3 ? <EmojiEvents sx={{ fontSize: { xs: 20, sm: 24 } }} /> : index + 1}
                 </Avatar>
 
-                {/* Informações do Clubinho */}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
                     <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>

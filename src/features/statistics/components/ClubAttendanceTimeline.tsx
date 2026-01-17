@@ -55,11 +55,11 @@ export const ClubAttendanceTimeline: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const [selectedClubId, setSelectedClubId] = React.useState<string>('');
   const [year, setYear] = React.useState(currentYear);
-  // ⭐ Paginação v2.5.0
+  
   const [timelinePage, setTimelinePage] = React.useState(1);
   const [timelineLimit, setTimelineLimit] = React.useState(20);
   const [missingWeeksPage, setMissingWeeksPage] = React.useState(1);
-  // Estados para colapsar seções
+  
   const [expandedTimeline, setExpandedTimeline] = React.useState(true);
   const [expandedMissingWeeks, setExpandedMissingWeeks] = React.useState(false);
 
@@ -70,14 +70,12 @@ export const ClubAttendanceTimeline: React.FC = () => {
     limit: timelineLimit 
   });
 
-  // Selecionar primeiro clube automaticamente
   React.useEffect(() => {
     if (!selectedClubId && clubsData?.clubs && clubsData.clubs.length > 0) {
       setSelectedClubId(clubsData.clubs[0].clubId);
     }
   }, [clubsData, selectedClubId]);
 
-  // ⭐ Reset página ao mudar clube/ano v2.5.0
   React.useEffect(() => {
     setTimelinePage(1);
     setMissingWeeksPage(1);
@@ -143,7 +141,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
 
   return (
     <Box>
-      {/* Seleção de Clubinho */}
+      
       <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2, sm: 3 }, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
         <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
           <Grid item xs={12} md={6}>
@@ -199,7 +197,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
         </Paper>
       ) : (
         <>
-          {/* Cards de Resumo - Compactos */}
+          
           <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
             <Grid item xs={6} sm={3}>
               <Paper
@@ -311,7 +309,6 @@ export const ClubAttendanceTimeline: React.FC = () => {
             </Grid>
           </Grid>
 
-          {/* ⭐ v2.7.0: Note informativo quando não há período letivo */}
           {data.note && (
             <Alert severity="warning" sx={{ mb: { xs: 2, sm: 3 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
               <AlertTitle sx={{ fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>⚠️ Aviso</AlertTitle>
@@ -319,14 +316,13 @@ export const ClubAttendanceTimeline: React.FC = () => {
             </Alert>
           )}
 
-          {/* Alertas - Todos lado a lado */}
           {data.alerts && data.alerts.length > 0 && (
             <Box sx={{ mb: { xs: 2, sm: 3 } }}>
               <Grid container spacing={{ xs: 1, sm: 1.5 }}>
                 {data.alerts.map((alert, index) => (
                   <Grid item xs={12} sm={6} key={index}>
                     <Alert
-                      severity={alert.severity}
+                      severity={alert.severity === 'critical' ? 'error' : alert.severity}
                       icon={getSeverityIcon(alert.severity)}
                       sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, height: '100%' }}
                     >
@@ -341,7 +337,6 @@ export const ClubAttendanceTimeline: React.FC = () => {
             </Box>
           )}
 
-          {/* Timeline Visual - Colapsável */}
           <Paper
             elevation={0}
             sx={{
@@ -380,7 +375,6 @@ export const ClubAttendanceTimeline: React.FC = () => {
             <Collapse in={expandedTimeline}>
               <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
 
-                {/* Grid de Semanas - Compacto */}
                 <Box
                   sx={{
                     display: 'grid',
@@ -428,7 +422,6 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   ))}
                 </Box>
 
-                {/* Legenda - Compacta */}
                 <Box sx={{ mt: { xs: 2, sm: 3 }, display: 'flex', gap: { xs: 1.5, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <CheckCircle sx={{ color: theme.palette.success.main, fontSize: { xs: 16, sm: 18 } }} />
@@ -440,7 +433,6 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   </Box>
                 </Box>
 
-                {/* ⭐ Paginação Timeline v2.5.0 */}
                 {data.timelinePagination && (
                   <Box sx={{ mt: { xs: 1.5, sm: 2 }, px: { xs: 0, sm: 0 } }}>
                     <TablePagination
@@ -477,7 +469,6 @@ export const ClubAttendanceTimeline: React.FC = () => {
             </Collapse>
           </Paper>
 
-          {/* ⭐ v2.7.0: missingWeeks pode estar vazio se não há período letivo - Colapsável */}
           {data.missingWeeks && data.missingWeeks.length > 0 ? (
             <Paper
               elevation={0}
@@ -549,7 +540,6 @@ export const ClubAttendanceTimeline: React.FC = () => {
                     ))}
                   </Box>
 
-                  {/* ⭐ Paginação Missing Weeks v2.5.0 */}
                   {data.missingWeeksPagination && data.missingWeeksPagination.totalPages > 1 && (
                     <Box sx={{ mt: { xs: 1.5, sm: 2 }, px: { xs: 0, sm: 0 } }}>
                       <TablePagination
@@ -604,5 +594,4 @@ export const ClubAttendanceTimeline: React.FC = () => {
     </Box>
   );
 };
-
 

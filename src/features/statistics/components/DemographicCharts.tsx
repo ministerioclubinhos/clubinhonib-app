@@ -47,7 +47,7 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
 
   return (
     <Grid container spacing={3}>
-      {/* Gráfico por Gênero */}
+      
       <Grid item xs={12} md={6}>
         <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -62,9 +62,10 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
-                label={({ genderLabel, total, percent }) =>
-                  `${genderLabel}: ${total} (${(percent * 100).toFixed(0)}%)`
-                }
+                label={(props) => {
+                  const { payload, percent } = props as unknown as { payload: { genderLabel: string; total: number }; percent: number };
+                  return `${payload.genderLabel}: ${payload.total} (${(percent * 100).toFixed(0)}%)`;
+                }}
               >
                 {genderData.map((entry, index) => (
                   <Cell
@@ -85,7 +86,6 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
         </Paper>
       </Grid>
 
-      {/* Gráfico por Faixa Etária */}
       <Grid item xs={12} md={6}>
         <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -119,7 +119,6 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
         </Paper>
       </Grid>
 
-      {/* Gráfico por Tempo de Participação */}
       <Grid item xs={12}>
         <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>

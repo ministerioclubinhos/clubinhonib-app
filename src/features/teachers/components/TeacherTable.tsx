@@ -20,7 +20,6 @@ import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 import { RootState } from "@/store/slices";
 import { buildWhatsappLink } from "@/utils/whatsapp";
 
-/** Props da tabela */
 type Props = {
   rows: TeacherProfile[];
   total: number;

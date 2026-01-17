@@ -35,7 +35,7 @@ const ContactLayout: React.FC<ContactLayoutProps> = ({ children }) => {
           px: { xs: 1, sm: 2, md: 3 },
         }}
       >
-        {/* Header Section */}
+
         <Box
           sx={{
             textAlign: 'center',
@@ -46,18 +46,18 @@ const ContactLayout: React.FC<ContactLayoutProps> = ({ children }) => {
           <Typography
             variant="h2"
             component="h1"
-             sx={{
-               fontSize: { xs: '1.8rem', sm: '2.5rem', md: '2.8rem', lg: '3rem' },
-               fontWeight: 800,
-               background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-               backgroundClip: 'text',
-               WebkitBackgroundClip: 'text',
-               WebkitTextFillColor: 'transparent',
-               textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-               fontFamily: "'Poppins', sans-serif",
-               mb: { xs: 1.5, sm: 2 },
-               lineHeight: 1.2,
-             }}
+            sx={{
+              fontSize: { xs: '1.8rem', sm: '2.5rem', md: '2.8rem', lg: '3rem' },
+              fontWeight: 800,
+              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              fontFamily: "'Poppins', sans-serif",
+              mb: { xs: 1.5, sm: 2 },
+              lineHeight: 1.2,
+            }}
           >
             Fale Conosco
           </Typography>
@@ -73,11 +73,10 @@ const ContactLayout: React.FC<ContactLayoutProps> = ({ children }) => {
               px: { xs: 1, sm: 0 },
             }}
           >
-            Entre em contato para saber mais informações sobre o Clubinho NIB
+            Entre em contato para saber mais informações sobre o Clubinhos NIB
           </Typography>
         </Box>
 
-        {/* Form Card */}
         <Card
           sx={{
             background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 255, 0.8) 100%)',

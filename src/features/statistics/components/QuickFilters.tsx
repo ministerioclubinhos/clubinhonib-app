@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Paper, Typography, Button, ButtonGroup, Chip, useTheme } from '@mui/material';
+import { Box, Paper, Typography, Button, ButtonGroup, Chip, useTheme, Divider } from '@mui/material';
 import {
   CalendarToday,
   DateRange,
@@ -9,14 +9,34 @@ import {
 } from '@mui/icons-material';
 import { StatisticsFilters } from '../api';
 import dayjs from 'dayjs';
+import { YearSelector } from './YearSelector';
 
 interface QuickFiltersProps {
   onSelectFilter: (filters: StatisticsFilters) => void;
   currentFilters?: StatisticsFilters;
+  showYearSelector?: boolean;
+  selectedYear?: number;
+  onYearChange?: (year: number) => void;
 }
 
-export const QuickFilters: React.FC<QuickFiltersProps> = ({ onSelectFilter, currentFilters }) => {
+export const QuickFilters: React.FC<QuickFiltersProps> = ({
+  onSelectFilter,
+  currentFilters,
+  showYearSelector = true,
+  selectedYear,
+  onYearChange,
+}) => {
   const theme = useTheme();
+  const [internalYear, setInternalYear] = React.useState(new Date().getFullYear());
+
+  const handleYearChange = (year: number) => {
+    setInternalYear(year);
+    if (onYearChange) {
+      onYearChange(year);
+    }
+  };
+
+  const effectiveYear = selectedYear || internalYear;
 
   const quickFilters = [
     {
@@ -110,11 +130,21 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({ onSelectFilter, curr
         border: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 1.5, sm: 2 } }}>
-        <EventAvailable sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.text.secondary }} />
-        <Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-          Atalhos Rápidos
-        </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 1.5, sm: 2 }, flexWrap: 'wrap', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <EventAvailable sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.text.secondary }} />
+          <Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+            Atalhos Rápidos
+          </Typography>
+        </Box>
+        {showYearSelector && (
+          <YearSelector
+            selectedYear={effectiveYear}
+            onYearChange={handleYearChange}
+            yearsRange={3}
+            showLabel={true}
+          />
+        )}
       </Box>
 
       <Box
@@ -154,7 +184,6 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({ onSelectFilter, curr
         })}
       </Box>
 
-      {/* Período Atual */}
       {currentFilters?.startDate && currentFilters?.endDate && (
         <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="caption" color="text.secondary">

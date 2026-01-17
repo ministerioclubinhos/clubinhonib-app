@@ -15,6 +15,7 @@ import { FilterList, ExpandMore, ExpandLess, Refresh, CalendarMonth } from '@mui
 import { StatisticsFilters as Filters } from '../api';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
+import { SimpleDatePicker } from '@/components/common/inputs';
 
 interface StatisticsFiltersProps {
   filters: Filters;
@@ -28,8 +29,7 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
   onReset,
 }) => {
   const [expanded, setExpanded] = React.useState(false);
-  
-  // Configurar locale em português
+
   React.useEffect(() => {
     dayjs.locale('pt-br');
   }, []);
@@ -44,7 +44,6 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
-  // Verificar se está usando o mês atual
   const isCurrentMonth = React.useMemo(() => {
     const now = new Date();
     const firstDay = dayjs(new Date(now.getFullYear(), now.getMonth(), 1)).format('YYYY-MM-DD');
@@ -86,7 +85,6 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
         </Box>
       </Box>
 
-      {/* Info do período selecionado */}
       {filters.startDate && filters.endDate && (
         <Box 
           key={`${filters.startDate}-${filters.endDate}`}
@@ -118,30 +116,25 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
         </Box>
       )}
 
-      {/* Filtros Básicos - Sempre visíveis */}
       <Grid container spacing={{ xs: 1.5, sm: 2 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            fullWidth
-            type="date"
-            label="Data Inicial"
+          <SimpleDatePicker
             value={filters.startDate || ''}
-            onChange={(e) => handleChange('startDate', e.target.value)}
+            onChange={(value) => handleChange('startDate', value)}
+            label="Data Inicial"
             size="small"
-            InputLabelProps={{ shrink: true }}
+            margin="none"
             helperText={isCurrentMonth ? "Primeiro dia do mês atual" : filters.startDate ? dayjs(filters.startDate).format('DD/MM/YYYY') : ""}
           />
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            fullWidth
-            type="date"
-            label="Data Final"
+          <SimpleDatePicker
             value={filters.endDate || ''}
-            onChange={(e) => handleChange('endDate', e.target.value)}
+            onChange={(value) => handleChange('endDate', value)}
+            label="Data Final"
             size="small"
-            InputLabelProps={{ shrink: true }}
+            margin="none"
             helperText={isCurrentMonth ? "Último dia do mês atual" : filters.endDate ? dayjs(filters.endDate).format('DD/MM/YYYY') : ""}
           />
         </Grid>
@@ -181,7 +174,6 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
         </Grid>
       </Grid>
 
-      {/* Filtros Avançados - Expandíveis */}
       <Collapse in={expanded}>
         <Grid container spacing={2} sx={{ mt: 1 }}>
           <Grid item xs={12}>
@@ -246,26 +238,22 @@ export const StatisticsFiltersComponent: React.FC<StatisticsFiltersProps> = ({
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Entrou Após"
+            <SimpleDatePicker
               value={filters.joinedAfter || ''}
-              onChange={(e) => handleChange('joinedAfter', e.target.value)}
+              onChange={(value) => handleChange('joinedAfter', value)}
+              label="Entrou Após"
               size="small"
-              InputLabelProps={{ shrink: true }}
+              margin="none"
             />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Entrou Antes"
+            <SimpleDatePicker
               value={filters.joinedBefore || ''}
-              onChange={(e) => handleChange('joinedBefore', e.target.value)}
+              onChange={(value) => handleChange('joinedBefore', value)}
+              label="Entrou Antes"
               size="small"
-              InputLabelProps={{ shrink: true }}
+              margin="none"
             />
           </Grid>
         </Grid>

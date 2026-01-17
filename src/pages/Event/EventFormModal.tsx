@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import api from '@/config/axiosConfig';
+import { SimpleDatePicker } from '@/components/common/inputs';
 
 interface EventFormModalProps {
   open: boolean;
@@ -165,14 +166,12 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
               fullWidth
               required
             />
-            <TextField
-              label="Data"
-              type="date"
+            <SimpleDatePicker
               value={date}
-              onChange={(e) => setDate(e.target.value)}
-              fullWidth
+              onChange={(value) => setDate(value)}
+              label="Data"
               required
-              InputLabelProps={{ shrink: true }}
+              margin="none"
             />
             <TextField
               label="Local"

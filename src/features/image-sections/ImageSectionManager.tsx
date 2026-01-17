@@ -40,9 +40,9 @@ export default function ImageSectionManager() {
   useEffect(() => { fetchSections(); }, [fetchSections]);
 
   const handleEdit = (section: SectionData) => {
-    // Define os dados da seção no Redux para o modo de edição
+    
     dispatch(setData(section));
-    // Redireciona para a página de edição de imagens
+    
     navigate('/adm/editar-imagens-clubinho');
   };
 

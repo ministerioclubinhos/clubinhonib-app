@@ -12,4 +12,3 @@ const GeographicTab: React.FC<GeographicTabProps> = ({ filters }) => {
 
 export default GeographicTab;
 
-

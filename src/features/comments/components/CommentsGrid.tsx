@@ -24,9 +24,9 @@ export default function CommentsGrid({
     return (<Box textAlign="center" mt={10}><Alert severity="info">Nenhum comentário encontrado.</Alert></Box>);
 
   return (
-    <Grid container spacing={3} justifyContent="center">
+    <Grid container spacing={3} justifyContent="center" alignItems="stretch">
       {comments.map((comment) => (
-        <Grid item key={comment.id || `${comment.createdAt}-${comment.name}`} xs={12} sm={6} md={4} lg={3}>
+        <Grid item key={comment.id || `${comment.createdAt}-${comment.name}`} xs={12} sm={6} md={4} lg={3} sx={{ display: "flex" }}>
           <CommentCard
             comment={comment}
             onView={onView}

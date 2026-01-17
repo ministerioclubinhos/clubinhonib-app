@@ -46,7 +46,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { UserRole } from "@/store/slices/auth/authSlice";
 
-type SectionId = "all" | "pages" | "conteudos" | "clubinho" | "operacional";
+type SectionId = "all" | "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "interacoes" | "operacional";
 
 interface CardData {
   title: string;
@@ -62,37 +62,42 @@ const cardData: CardData[] = [
   { title: "Documentos", description: "Gerencie documentos para professores.", icon: <Description fontSize="large" color="primary" />, path: "/adm/documentos", section: "conteudos" },
   { title: "Informativos", description: "Gerencie banners informativos do site.", icon: <Campaign fontSize="large" color="primary" />, path: "/adm/informativos", section: "conteudos" },
 
-  { title: "Páginas de Materiais", description: "Gerencie conteúdos semanais.", icon: <EventNote fontSize="large" color="primary" />, path: "/adm/paginas-materiais-semanais", section: "pages" },
-  { title: "Páginas de Fotos", description: "Organize e edite galerias de imagens do site.", icon: <PhotoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-fotos", section: "pages" },
-  { title: "Fotos dos Clubinhos", description: "Organize e edite galerias de fotos dos Clubinhos.", icon: <Collections fontSize="large" color="primary" />, path: "/adm/fotos-clubinhos", section: "pages" },
-  { title: "Ideias compartilhadas", description: "Gerencie Ideias compartilhadas pelos Clubinhos", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/ideias-compartilhadas", section: "pages" },
-  { title: "Páginas de Vídeos", description: "Adicione vídeos ou links do YouTube para o site.", icon: <VideoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-videos", section: "pages" },
-  { title: "Páginas de Ideias", description: "Gerencie páginas de ideias para professores.", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/paginas-ideias", section: "pages" },
+  { title: "Usuários", description: "Gerencie usuários do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/usuarios", section: "pessoas" },
+  { title: "Professores", description: "Gerencie professores do clubinho.", icon: <School fontSize="large" color="primary" />, path: "/adm/professores", section: "pessoas" },
+  { title: "Coordenadores", description: "Gerencie coordenadores do clubinho.", icon: <SupervisorAccount fontSize="large" color="primary" />, path: "/adm/coordenadores", section: "pessoas" },
+  { title: "Crianças", description: "Gerencie crianças do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/criancas", section: "pessoas" },
 
-  { title: "Usuários", description: "Gerencie usuários do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/usuarios", section: "clubinho" },
-  { title: "Professores", description: "Gerencie professores do clubinho.", icon: <School fontSize="large" color="primary" />, path: "/adm/professores", section: "clubinho" },
-  { title: "Coordenadores", description: "Gerencie coordenadores do clubinho.", icon: <SupervisorAccount fontSize="large" color="primary" />, path: "/adm/coordenadores", section: "clubinho" },
-  { title: "Crianças", description: "Gerencie crianças do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/criancas", section: "clubinho" },
-  { title: "Clubinhos", description: "Gerencie clubinhos.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/clubinhos", section: "clubinho" },
-  { title: "Pagelas", description: "Gerencie pagelas.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/pagelas", section: "clubinho" },
+  { title: "Clubinhos", description: "Gerencie clubinhos.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/clubinhos", section: "clubinhos" },
+  { title: "Pagelas", description: "Gerencie pagelas.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/pagelas", section: "clubinhos" },
 
+  { title: "Galerias de Fotos", description: "Organize e edite galerias de imagens do site.", icon: <PhotoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-fotos", section: "midias" },
+  { title: "Fotos dos Clubinhos", description: "Organize e edite galerias de fotos dos Clubinhos.", icon: <Collections fontSize="large" color="primary" />, path: "/adm/fotos-clubinhos", section: "midias" },
+  { title: "Vídeos", description: "Adicione vídeos ou links do YouTube para o site.", icon: <VideoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-videos", section: "midias" },
+
+  { title: "Materiais de Visita", description: "Gerencie conteúdos semanais.", icon: <EventNote fontSize="large" color="primary" />, path: "/adm/paginas-materiais-semanais", section: "materiais" },
+  { title: "Páginas de Ideias", description: "Gerencie páginas de ideias para professores.", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/paginas-ideias", section: "materiais" },
+  { title: "Ideias Compartilhadas", description: "Gerencie Ideias compartilhadas pelos Clubinhos", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/ideias-compartilhadas", section: "materiais" },
+
+  { title: "Comentários", description: "Gerencie comentários dos usuários.", icon: <Comment fontSize="large" color="primary" />, path: "/adm/comentarios", section: "interacoes" },
+  { title: "Contatos", description: "Gerencie contatos enviados para o Clubinho.", icon: <ContactPhone fontSize="large" color="primary" />, path: "/adm/contatos", section: "interacoes" },
+  { title: "Feedbacks", description: "Gerencie feedbacks enviados para o Clubinho.", icon: <RateReview fontSize="large" color="primary" />, path: "/adm/feedbacks", section: "interacoes" },
+
+  { title: "Controle de Clubinhos", description: "Verificação em tempo real de pagelas por clube.", icon: <Checklist fontSize="large" color="primary" />, path: "/adm/controle-clubinhos", section: "operacional" },
   { title: "Estatísticas", description: "Visualize estatísticas e análises completas.", icon: <BarChart fontSize="large" color="primary" />, path: "/adm/estatisticas", section: "operacional" },
-  { title: "Controle de Clubes", description: "Verificação em tempo real de pagelas por clube.", icon: <Checklist fontSize="large" color="primary" />, path: "/adm/controle-clubes", section: "operacional" },
-  { title: "Comentários", description: "Gerencie comentários dos usuários.", icon: <Comment fontSize="large" color="primary" />, path: "/adm/comentarios", section: "operacional" },
-  { title: "Contatos", description: "Gerencie contatos enviados para o Clubinho.", icon: <ContactPhone fontSize="large" color="primary" />, path: "/adm/contatos", section: "operacional" },
-  { title: "Feedbacks", description: "Gerencie feedbacks enviados para o Clubinho.", icon: <RateReview fontSize="large" color="primary" />, path: "/adm/feedbacks", section: "operacional" },
 ];
 
 const sectionLabels: Record<SectionId, string> = {
   all: "tudo",
-  pages: "pages",
+  pessoas: "pessoas",
+  clubinhos: "clubinhos",
   conteudos: "conteúdos",
-  clubinho: "clubinho",
+  midias: "mídias",
+  materiais: "materiais",
+  interacoes: "interações",
   operacional: "operacional",
 };
 
-const order: Exclude<SectionId, "all">[] = ["pages", "conteudos", "clubinho", "operacional"];
-
+const order: Exclude<SectionId, "all">[] = ["pessoas", "clubinhos", "conteudos", "midias", "materiais", "interacoes", "operacional"];
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -136,9 +141,12 @@ export default function AdminDashboardPage() {
 
   const grouped = React.useMemo(() => {
     const g: Record<Exclude<SectionId, "all">, CardData[]> = {
-      pages: [],
+      pessoas: [],
+      clubinhos: [],
       conteudos: [],
-      clubinho: [],
+      midias: [],
+      materiais: [],
+      interacoes: [],
       operacional: [],
     };
     for (const c of visibleCards) {
@@ -154,7 +162,7 @@ export default function AdminDashboardPage() {
   }, [section, normalizedQuery, visibleCards]);
 
   const hasResults =
-    grouped.pages.length + grouped.conteudos.length + grouped.clubinho.length + grouped.operacional.length >
+    grouped.pessoas.length + grouped.clubinhos.length + grouped.conteudos.length + grouped.midias.length + grouped.materiais.length + grouped.interacoes.length + grouped.operacional.length >
     0;
 
   const MobileList: React.FC = () => {
@@ -199,7 +207,7 @@ export default function AdminDashboardPage() {
                 gap: 0.5,
               }}
             >
-              {(["all", "pages", "conteudos", "clubinho", "operacional"] as SectionId[]).map((key) => (
+              {(["all", "pessoas", "clubinhos", "conteudos", "midias", "materiais", "interacoes", "operacional"] as SectionId[]).map((key) => (
                 <Button
                   key={key}
                   size="small"
@@ -360,7 +368,7 @@ export default function AdminDashboardPage() {
               }}
               sx={{ maxWidth: 360, mr: 1 }}
             />
-            {(["all", "pages", "conteudos", "clubinho", "operacional"] as SectionId[]).map((key) => (
+            {(["all", "pessoas", "clubinhos", "conteudos", "midias", "materiais", "interacoes", "operacional"] as SectionId[]).map((key) => (
               <Button
                 key={key}
                 variant={section === key ? "contained" : "outlined"}

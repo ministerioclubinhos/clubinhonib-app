@@ -143,7 +143,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
           },
         }}
       >
-        {/* Header com Avatar e Info */}
+        
         <CardContent sx={{ p: { xs: 3, md: 4 }, pb: 2 }}>
           <Box display="flex" alignItems="flex-start" gap={3} mb={3}>
             <Avatar
@@ -207,7 +207,6 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
                 </Typography>
               )}
 
-              {/* Metadata com ícones */}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 {created && (
                   <Box display="flex" alignItems="center" gap={1}>
@@ -230,7 +229,6 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
           </Box>
         </CardContent>
 
-        {/* Hero Image com efeito parallax */}
         {heroSrc && (
           <Box sx={{ position: 'relative', overflow: 'hidden' }}>
             <motion.div
@@ -250,8 +248,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
                 }}
               />
             </motion.div>
-            
-            {/* Overlay gradient */}
+
             <Box
               sx={{
                 position: 'absolute',
@@ -266,7 +263,6 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
           </Box>
         )}
 
-        {/* Thumbnails Grid com hover effects */}
         {thumbnails.length > 0 && (
           <CardContent sx={{ p: { xs: 2, md: 3 } }}>
             <Grid container spacing={1.5}>
@@ -304,8 +300,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
                             display: 'block',
                           }}
                         />
-                        
-                        {/* Platform Icon com animação */}
+
                         <motion.div
                           animate={{ 
                             scale: hoveredImage === actualIndex ? 1.2 : 1,
@@ -331,7 +326,6 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
                           </Box>
                         </motion.div>
 
-                        {/* Hover overlay */}
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: hoveredImage === actualIndex ? 1 : 0 }}
@@ -391,7 +385,6 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
           </CardContent>
         )}
 
-        {/* Modal com Swiper melhorado */}
         <Modal
           open={openModal}
           onClose={() => setOpenModal(false)}

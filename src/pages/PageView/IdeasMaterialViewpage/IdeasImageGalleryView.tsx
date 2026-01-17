@@ -43,7 +43,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
         transition={{ duration: 0.3 }}
         style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
       >
-        {/* Header com ícone */}
+        
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, mb: { xs: 1.5, sm: 2 } }}>
           <ImageIcon sx={{ color: theme.palette.warning.main, fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
           <Typography 
@@ -59,7 +59,6 @@ export default function IdeasImageGalleryView({ image }: Props) {
           </Typography>
         </Box>
 
-        {/* Imagem */}
         <Box 
           sx={{ 
             position: 'relative',
@@ -128,7 +127,6 @@ export default function IdeasImageGalleryView({ image }: Props) {
           )}
         </Box>
 
-        {/* Descrição */}
         {image.description && (
           <Typography 
             variant="body2" 
@@ -143,7 +141,6 @@ export default function IdeasImageGalleryView({ image }: Props) {
           </Typography>
         )}
 
-        {/* Botão de download */}
         <Box sx={{ mt: 'auto' }}>
           <DownloadButton 
             url={image.url} 

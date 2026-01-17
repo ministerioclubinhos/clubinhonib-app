@@ -1,5 +1,6 @@
 import api from "@/config/axiosConfig";
 import { CreateUserForm, UsersPage, UserRow, UpadateUserForm } from "./types";
+import { extractPhoneDigits } from "@/components/common/inputs";
 
 export async function apiListUsers(params: {
   page: number;
@@ -47,7 +48,7 @@ export async function apiCreateUser(
     name,
     email,
     password,
-    phone,
+    phone: phone ? extractPhoneDigits(phone) : undefined,
     role,
   });
 
@@ -73,7 +74,7 @@ export async function apiUpdateUser(
   const { data } = await api.put<UserRow>(`/users/${id}`, {
     name,
     role,
-    phone,
+    phone: phone ? extractPhoneDigits(phone) : undefined,
     active,
     completed,
     commonUser,

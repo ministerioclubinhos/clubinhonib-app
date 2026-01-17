@@ -27,8 +27,8 @@ const Home: React.FC = () => {
 
       <FeaturesSection features={FEATURES} />
 
-      {comments && comments.length > 0 && (
-        <TestimonialsSection testimonials={comments} />
+      {comments && comments.filter(c => c.id).length > 0 && (
+        <TestimonialsSection testimonials={comments.filter(c => c.id) as any} />
       )}
       
       <CTASection isAuthenticated={isAuthenticated} />
@@ -37,6 +37,5 @@ const Home: React.FC = () => {
 };
 
 export default Home;
-
 
 ;

@@ -61,8 +61,6 @@ function CopyButton({ value, title = "Copiar" }: { value?: string; title?: strin
   );
 }
 
-
-
 export default function UsersCards(props: Props) {
   const {
     rows, total, pageIndex, pageSize, setPageIndex, setPageSize,
@@ -164,7 +162,7 @@ export default function UsersCards(props: Props) {
                     pt: 1,
                     pb: 0.5,
                     gap: { xs: 0.75, sm: 1 },
-                    mt: 0.5, // Espaço para a barra colorida
+                    mt: 0.5, 
                   }}
                 >
                   <Avatar
@@ -354,7 +352,7 @@ export default function UsersCards(props: Props) {
                     <Divider sx={{ mx: { xs: 1, sm: 1.25 } }} />
                     <CardContent sx={{ p: { xs: 1.25, sm: 1.5 } }}>
                       <Stack spacing={2}>
-                        {/* Datas */}
+                        
                         <Paper
                           variant="outlined"
                           sx={{
@@ -383,7 +381,6 @@ export default function UsersCards(props: Props) {
                           </Stack>
                         </Paper>
 
-                        {/* Informações adicionais */}
                         <Paper
                           variant="outlined"
                           sx={{

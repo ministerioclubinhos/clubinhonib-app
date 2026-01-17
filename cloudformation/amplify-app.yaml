@@ -1,0 +1,169 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for Clubinhos NIB Amplify App with production and staging environments'
+
+Parameters:
+  RepositoryUrl:
+    Type: String
+    Description: 'GitHub repository URL'
+    Default: 'https://github.com/clubinhonib/clubinhonib-app'
+
+  GitHubAccessToken:
+    Type: String
+    Description: 'GitHub Personal Access Token (Classic) para o Amplify clonar o repositório'
+    NoEcho: true
+
+  RepositoryBranch:
+    Type: String
+    Description: 'Main branch name'
+    Default: 'main'
+
+  StagingBranch:
+    Type: String
+    Description: 'Staging branch name'
+    Default: 'staging'
+
+  RootDomainName:
+    Type: String
+    Description: 'Domínio raiz para produção (ex: clubinhonib.com)'
+    Default: 'clubinhonib.com'
+
+  StagingSubdomainPrefix:
+    Type: String
+    Description: 'Prefixo do subdomínio de staging (ex: staging)'
+    Default: 'staging'
+
+
+Resources:
+  # Amplify App
+  AmplifyApp:
+    Type: 'AWS::Amplify::App'
+    Properties:
+      Name: 'clubinhonib-app'
+      Description: 'Clubinhos NIB React Application'
+      Repository: !Ref RepositoryUrl
+      AccessToken: !Ref GitHubAccessToken
+      CustomRules:
+        # SPA routing: qualquer rota "sem extensão" deve servir index.html (permite refresh em /rota)
+        - Source: '</^[^.]+$|\\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>'
+          Target: /index.html
+          Status: '200'
+        # Fallback extra: qualquer 404 volta para index.html
+        - Source: '/<*>'
+          Target: /index.html
+          Status: '404-200'
+      BuildSpec: |
+        version: 1
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - echo "Using Node $(node -v) before nvm..."
+                - nvm install 20
+                - nvm use 20
+                - node -v
+                - corepack enable || true
+                - if [ -f package-lock.json ]; then npm ci; else npm i; fi
+                - |
+                  if [ -z "$VITE_API_URL" ] || [ -z "$VITE_FEED_MINISTERIO_ID" ] || [ -z "$VITE_GOOGLE_CLIENT_ID" ] || [ -z "$VITE_SPECIAL_FAMILY_DAY_ID" ]; then
+                    echo "Erro: Uma ou mais variáveis de ambiente necessárias não estão definidas no Amplify Console"
+                    echo "Variáveis necessárias: VITE_API_URL, VITE_FEED_MINISTERIO_ID, VITE_GOOGLE_CLIENT_ID, VITE_SPECIAL_FAMILY_DAY_ID"
+                    exit 1
+                  fi
+                - |
+                  cat > .env <<EOF
+                  VITE_API_URL=$VITE_API_URL
+                  VITE_FEED_MINISTERIO_ID=$VITE_FEED_MINISTERIO_ID
+                  VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+                  VITE_SPECIAL_FAMILY_DAY_ID=$VITE_SPECIAL_FAMILY_DAY_ID
+                  EOF
+            build:
+              commands:
+                - echo "Iniciando build da aplicação..."
+                - npm run build
+                - echo "Build concluído. Verificando se os arquivos foram gerados..."
+                - ls -la dist/
+                - |
+                  if [ ! -d "dist" ] || [ ! -f "dist/index.html" ]; then
+                    echo "Erro: Build falhou - diretório dist ou index.html não encontrado"
+                    exit 1
+                  fi
+                - echo "Build bem-sucedido! Arquivos prontos para deploy."
+          artifacts:
+            baseDirectory: dist
+            files:
+              - '**/*'
+          cache:
+            paths:
+              - node_modules/**/*
+
+  # Production Branch
+  ProductionBranch:
+    Type: 'AWS::Amplify::Branch'
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      BranchName: !Ref RepositoryBranch
+      Description: 'Production branch'
+      EnableAutoBuild: true
+      Stage: PRODUCTION
+
+  # Staging Branch
+  StagingBranchResource:
+    Type: 'AWS::Amplify::Branch'
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      BranchName: !Ref StagingBranch
+      Description: 'Staging branch'
+      EnableAutoBuild: true
+      Stage: BETA
+
+  DomainAssociation:
+    Type: 'AWS::Amplify::Domain'
+    DependsOn:
+      - ProductionBranch
+      - StagingBranchResource
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      DomainName: !Ref RootDomainName
+      SubDomainSettings:
+        # Produção: domínio raiz
+        - BranchName: !Ref RepositoryBranch
+          Prefix: ''
+        # Produção: www.<dominio>
+        - BranchName: !Ref RepositoryBranch
+          Prefix: 'www'
+        # Staging: staging.<dominio>
+        - BranchName: !Ref StagingBranch
+          Prefix: !Ref StagingSubdomainPrefix
+
+  # DNS/validação do domínio e deploy são orquestrados pelo script cloudformation/deploy.sh (ação: deploy)
+
+Outputs:
+  AmplifyAppId:
+    Description: 'Amplify App ID'
+    Value: !GetAtt AmplifyApp.AppId
+    Export:
+      Name: !Sub '${AWS::StackName}-AppId'
+
+  ProductionBranchName:
+    Description: 'Production branch name'
+    Value: !Ref RepositoryBranch
+    Export:
+      Name: !Sub '${AWS::StackName}-ProductionBranch'
+
+  StagingBranchName:
+    Description: 'Staging branch name'
+    Value: !Ref StagingBranchResource
+    Export:
+      Name: !Sub '${AWS::StackName}-StagingBranch'
+
+  ProductionDomain:
+    Description: 'Production domain URL'
+    Value: !Sub 'https://${RootDomainName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ProductionDomain'
+
+  StagingDomain:
+    Description: 'Staging domain URL'
+    Value: !Sub 'https://${StagingSubdomainPrefix}.${RootDomainName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-StagingDomain'

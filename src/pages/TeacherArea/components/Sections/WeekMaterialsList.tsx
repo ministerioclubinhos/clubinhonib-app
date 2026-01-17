@@ -24,7 +24,6 @@ import { RootState } from 'store/slices';
 import { MediaTargetType } from 'store/slices/types';
 import { FofinhoButton } from '../Buttons';
 
-
 const WeekMaterialsList = () => {
     const navigate = useNavigate();
     const theme = useTheme();
@@ -37,7 +36,6 @@ const WeekMaterialsList = () => {
                 route.entityType === MediaTargetType.WeekMaterialsPage && route.public
         )
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
 
     const [filter, setFilter] = useState('');
     const [filteredRoutes, setFilteredRoutes] = useState(weekMaterialsRoutes);
@@ -263,7 +261,6 @@ const WeekMaterialsList = () => {
                             />
                             <FofinhoButton references={['teacherArea']} />
                         </Box>
-
 
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}

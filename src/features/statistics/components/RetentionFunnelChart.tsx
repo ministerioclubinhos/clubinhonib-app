@@ -81,7 +81,6 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
         </Typography>
       </Box>
 
-      {/* Funil Visual */}
       <Box sx={{ mb: 3 }}>
         {retentionData.map((stage, index) => {
           const config = timeRangeConfig[stage.timeRange as keyof typeof timeRangeConfig] || {
@@ -93,7 +92,7 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
 
           return (
             <Box key={stage.timeRange} sx={{ mb: 2 }}>
-              {/* Header do Estágio */}
+              
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
                 <Typography variant="h6" sx={{ minWidth: 30 }}>
                   {config.icon}
@@ -110,7 +109,6 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
                 {getTrendIcon(index)}
               </Box>
 
-              {/* Barra do Funil */}
               <Box
                 sx={{
                   position: 'relative',
@@ -160,7 +158,6 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
                 </Grid>
               </Box>
 
-              {/* Métricas Detalhadas */}
               <Box sx={{ mt: 1, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <Chip
                   icon={<Group />}
@@ -186,7 +183,6 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
         })}
       </Box>
 
-      {/* Análise de Conversão */}
       <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(25, 118, 210, 0.08)', borderRadius: 2 }}>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           📈 Análise de Conversão
@@ -231,7 +227,6 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
         </Grid>
       </Box>
 
-      {/* Resumo Final */}
       <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={3}>

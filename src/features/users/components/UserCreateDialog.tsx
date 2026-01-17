@@ -6,6 +6,7 @@ import {
 import CircularProgress from "@mui/material/CircularProgress";
 import { CreateUserForm } from "../types";
 import { UserRole } from "@/store/slices/auth/authSlice";
+import { SimplePhoneInput } from "@/components/common/inputs";
 
 type Props = {
   open: boolean;
@@ -95,11 +96,10 @@ export default function UserCreateDialog({
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Telefone"
+            <SimplePhoneInput
               value={value.phone || ""}
-              onChange={(e) => onChange({ ...value, phone: e.target.value })}
+              onChange={(phone) => onChange({ ...value, phone })}
+              margin="none"
             />
           </Grid>
         </Grid>

@@ -34,6 +34,7 @@ import { Delete, Add, CalendarMonth, CheckCircle, Info, Warning, Edit } from '@m
 import { useCreatePeriod, useAcademicPeriods, useDeletePeriod, useUpdatePeriod } from '../hooks';
 import { AcademicPeriod } from '../api';
 import dayjs from 'dayjs';
+import { SimpleDatePicker } from '@/components/common/inputs';
 
 export const PeriodManagement: React.FC = () => {
   const theme = useTheme();
@@ -104,7 +105,7 @@ export const PeriodManagement: React.FC = () => {
 
       setSnackbar({
         open: true,
-        message: `Período letivo ${formData.year} cadastrado com sucesso! Este período vale para TODOS os clubes.`,
+        message: `Período letivo ${formData.year} cadastrado com sucesso! Este período vale para TODOS os clubinhos.`,
         severity: 'success',
       });
     } catch (error: any) {
@@ -187,7 +188,7 @@ export const PeriodManagement: React.FC = () => {
 
   return (
     <Box>
-      {/* Header Otimizado */}
+
       <Paper
         elevation={0}
         sx={{
@@ -217,13 +218,12 @@ export const PeriodManagement: React.FC = () => {
               📅 Período Letivo GLOBAL
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Um único período por ano válido para TODOS os clubes
+              Um único período por ano válido para TODOS os clubinhos
             </Typography>
           </Box>
         </Box>
       </Paper>
 
-      {/* Alerta Informativo */}
       <Alert
         severity="info"
         icon={<Info />}
@@ -237,7 +237,7 @@ export const PeriodManagement: React.FC = () => {
           ⚠️ ESTRUTURA GLOBAL
         </Typography>
         <Typography variant="caption" display="block">
-          • Um período por ano vale para <strong>TODOS os clubes</strong>
+          • Um período por ano vale para <strong>TODOS os clubinhos</strong>
         </Typography>
         <Typography variant="caption" display="block">
           • A primeira semana do período é a "Semana 1" do ano letivo
@@ -248,7 +248,7 @@ export const PeriodManagement: React.FC = () => {
       </Alert>
 
       <Grid container spacing={{ xs: 2, sm: 3 }}>
-        {/* Formulário de Cadastro */}
+
         <Grid item xs={12} md={5}>
           <Paper
             elevation={0}
@@ -279,7 +279,7 @@ export const PeriodManagement: React.FC = () => {
                   Novo Período Letivo
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                  Válido para todos os clubes
+                  Válido para todos os clubinhos
                 </Typography>
               </Box>
             </Box>
@@ -300,27 +300,23 @@ export const PeriodManagement: React.FC = () => {
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data de Início"
+                  <SimpleDatePicker
                     value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, startDate: value })}
+                    label="Data de Início"
                     required
-                    InputLabelProps={{ shrink: true }}
+                    margin="none"
                     helperText="Primeiro dia do ano letivo"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Data de Término"
+                  <SimpleDatePicker
                     value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, endDate: value })}
+                    label="Data de Término"
                     required
-                    InputLabelProps={{ shrink: true }}
+                    margin="none"
                     helperText="Último dia do ano letivo"
                   />
                 </Grid>
@@ -353,13 +349,12 @@ export const PeriodManagement: React.FC = () => {
 
             <Alert severity="warning" sx={{ mt: 2 }}>
               <Typography variant="caption">
-                <strong>Atenção:</strong> Este período será aplicado para TODOS os clubes do sistema.
+                <strong>Atenção:</strong> Este período será aplicado para TODOS os clubinhos do sistema.
               </Typography>
             </Alert>
           </Paper>
         </Grid>
 
-        {/* Lista de Períodos */}
         <Grid item xs={12} md={7}>
           <Paper
             elevation={0}
@@ -405,18 +400,18 @@ export const PeriodManagement: React.FC = () => {
                   </Typography>
                 </Alert>
               ) : isMobile ? (
-                /* Versão Mobile: Cards */
+
                 <Stack spacing={2}>
                   {periods
                     .sort((a, b) => b.year - a.year)
                     .map((period) => {
                       const isCurrent = period.year === new Date().getFullYear();
-                      
+
                       return (
                         <Card key={period.id} elevation={2} sx={{ borderRadius: 2 }}>
                           <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                             <Stack spacing={1.5}>
-                              {/* Header */}
+
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                   <Typography variant="h6" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
@@ -441,7 +436,6 @@ export const PeriodManagement: React.FC = () => {
 
                               <Divider />
 
-                              {/* Período */}
                               <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                   Período
@@ -454,7 +448,6 @@ export const PeriodManagement: React.FC = () => {
                                 </Typography>
                               </Box>
 
-                              {/* Descrição */}
                               {period.description && (
                                 <Box>
                                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
@@ -466,7 +459,6 @@ export const PeriodManagement: React.FC = () => {
                                 </Box>
                               )}
 
-                              {/* Ações */}
                               <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
                                 <Button
                                   size="small"
@@ -504,7 +496,7 @@ export const PeriodManagement: React.FC = () => {
                     })}
                 </Stack>
               ) : (
-                /* Versão Desktop: Tabela */
+
                 <TableContainer sx={{ overflowX: 'auto' }}>
                   <Table sx={{ minWidth: 600 }}>
                     <TableHead>
@@ -521,7 +513,7 @@ export const PeriodManagement: React.FC = () => {
                         .sort((a, b) => b.year - a.year)
                         .map((period) => {
                           const isCurrent = period.year === new Date().getFullYear();
-                          
+
                           return (
                             <TableRow key={period.id} hover>
                               <TableCell>
@@ -597,7 +589,6 @@ export const PeriodManagement: React.FC = () => {
                 </TableContainer>
               )}
 
-              {/* ⭐ Paginação v1.1.0 - Funciona em ambos (mobile e desktop) */}
               {periodsData && periodsData.total > 0 && (
                 <Box sx={{ borderTop: 1, borderColor: 'divider', px: { xs: 1, sm: 0 } }}>
                   <TablePagination
@@ -612,7 +603,7 @@ export const PeriodManagement: React.FC = () => {
                     }}
                     rowsPerPageOptions={[10, 20, 50]}
                     labelRowsPerPage="Períodos por página:"
-                    labelDisplayedRows={({ from, to, count }) => 
+                    labelDisplayedRows={({ from, to, count }) =>
                       `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
                     }
                     sx={{
@@ -633,9 +624,8 @@ export const PeriodManagement: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Dialog de Edição */}
-      <Dialog 
-        open={editDialog.open} 
+      <Dialog
+        open={editDialog.open}
         onClose={handleCloseEdit}
         maxWidth="sm"
         fullWidth
@@ -655,25 +645,21 @@ export const PeriodManagement: React.FC = () => {
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Data de Início"
+                <SimpleDatePicker
                   value={editFormData.startDate}
-                  onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, startDate: value })}
+                  label="Data de Início"
                   required
-                  InputLabelProps={{ shrink: true }}
+                  margin="none"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Data de Término"
+                <SimpleDatePicker
                   value={editFormData.endDate}
-                  onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, endDate: value })}
+                  label="Data de Término"
                   required
-                  InputLabelProps={{ shrink: true }}
+                  margin="none"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -688,16 +674,16 @@ export const PeriodManagement: React.FC = () => {
             </Grid>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button 
+            <Button
               onClick={handleCloseEdit}
               variant="outlined"
             >
               Cancelar
             </Button>
-            <Button 
+            <Button
               type="submit"
-              color="primary" 
-              variant="contained" 
+              color="primary"
+              variant="contained"
               disabled={updatePeriod.isPending}
               startIcon={updatePeriod.isPending ? <CircularProgress size={16} /> : <Edit />}
             >
@@ -707,9 +693,8 @@ export const PeriodManagement: React.FC = () => {
         </form>
       </Dialog>
 
-      {/* Dialog de Exclusão */}
-      <Dialog 
-        open={deleteDialog.open} 
+      <Dialog
+        open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, periodId: '', description: '' })}
         maxWidth="sm"
         fullWidth
@@ -727,22 +712,22 @@ export const PeriodManagement: React.FC = () => {
               ⚠️ Atenção: Esta ação não pode ser desfeita!
             </Typography>
             <Typography variant="caption" display="block">
-              A exclusão deste período afetará <strong>TODOS os clubes</strong> do sistema. 
+              A exclusão deste período afetará <strong>TODOS os clubinhos</strong> do sistema.
               As semanas relacionadas a este período não serão mais monitoradas.
             </Typography>
           </Alert>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
+          <Button
             onClick={() => setDeleteDialog({ open: false, periodId: '', description: '' })}
             variant="outlined"
           >
             Cancelar
           </Button>
-          <Button 
-            onClick={handleDelete} 
-            color="error" 
-            variant="contained" 
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
             disabled={deletePeriod.isPending}
             startIcon={deletePeriod.isPending ? <CircularProgress size={16} /> : <Delete />}
           >

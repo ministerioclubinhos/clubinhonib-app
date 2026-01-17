@@ -24,6 +24,7 @@ import MeditationForm from './MeditationForm';
 import { AxiosError } from 'axios';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
 import MediaManager from './MediaManager';
+import { SimpleDatePicker } from '@/components/common/inputs';
 
 interface Props {
   fromTemplatePage?: boolean;
@@ -208,21 +209,17 @@ export default function MeditationPageCreator({ fromTemplatePage }: Props) {
             onChange={(e) => setTopic(e.target.value)}
           />
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Data de Início"
-              InputLabelProps={{ shrink: true }}
+            <SimpleDatePicker
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(value) => setStartDate(value)}
+              label="Data de Início"
+              margin="none"
             />
-            <TextField
-              fullWidth
-              type="date"
-              label="Data de Término"
-              InputLabelProps={{ shrink: true }}
+            <SimpleDatePicker
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={(value) => setEndDate(value)}
+              label="Data de Término"
+              margin="none"
             />
           </Stack>
 

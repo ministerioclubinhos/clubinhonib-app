@@ -2,23 +2,21 @@ import { useQuery } from '@tanstack/react-query';
 import { statisticsApi, StatisticsFilters } from './api';
 import { clubControlApi, CurrentWeekInfo } from '../club-control/api';
 
-// Hook para dados de gráficos de Pagelas
 export const usePagelasChartData = (filters?: StatisticsFilters) => {
   return useQuery({
-    queryKey: ['pagelasCharts', filters],
+    queryKey: ['pagelasCharts', JSON.stringify(filters)],
     queryFn: async () => {
       const response = await statisticsApi.getPagelasChartData(filters);
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 };
 
-// Hook para dados de gráficos de Accepted Christs
 export const useAcceptedChristsChartData = (filters?: StatisticsFilters) => {
   return useQuery({
-    queryKey: ['acceptedChristsCharts', filters],
+    queryKey: ['acceptedChristsCharts', JSON.stringify(filters)],
     queryFn: async () => {
       const response = await statisticsApi.getAcceptedChristsChartData(filters);
       return response.data;
@@ -28,10 +26,9 @@ export const useAcceptedChristsChartData = (filters?: StatisticsFilters) => {
   });
 };
 
-// Hook para insights
 export const useInsights = (filters?: StatisticsFilters) => {
   return useQuery({
-    queryKey: ['insights', filters],
+    queryKey: ['insights', JSON.stringify(filters)],
     queryFn: async () => {
       const response = await statisticsApi.getInsights(filters);
       return response.data;
@@ -41,7 +38,6 @@ export const useInsights = (filters?: StatisticsFilters) => {
   });
 };
 
-// Hook para overview geral
 export const useOverview = () => {
   return useQuery({
     queryKey: ['overview'],
@@ -49,18 +45,17 @@ export const useOverview = () => {
       const response = await statisticsApi.getOverview();
       return response.data;
     },
-    staleTime: 2 * 60 * 1000, // 2 minutos
+    staleTime: 2 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 };
 
-// Hook para estatísticas de um clube específico
 export const useClubStats = (
   clubId: string,
   params?: { startDate?: string; endDate?: string; groupBy?: string }
 ) => {
   return useQuery({
-    queryKey: ['clubStats', clubId, params],
+    queryKey: ['clubStats', clubId, JSON.stringify(params)],
     queryFn: async () => {
       const response = await statisticsApi.getClubStats(clubId, params);
       return response.data;
@@ -71,7 +66,6 @@ export const useClubStats = (
   });
 };
 
-// Hook para estatísticas de uma criança específica
 export const useChildStats = (childId: string) => {
   return useQuery({
     queryKey: ['childStats', childId],
@@ -85,13 +79,12 @@ export const useChildStats = (childId: string) => {
   });
 };
 
-// Hook para estatísticas de uma cidade
 export const useCityStats = (
   city: string,
   params?: { state?: string; startDate?: string; endDate?: string }
 ) => {
   return useQuery({
-    queryKey: ['cityStats', city, params],
+    queryKey: ['cityStats', city, JSON.stringify(params)],
     queryFn: async () => {
       const response = await statisticsApi.getCityStats(city, params);
       return response.data;
@@ -102,13 +95,12 @@ export const useCityStats = (
   });
 };
 
-// Hook para estatísticas de um professor
 export const useTeacherStats = (
   teacherId: string,
   params?: { startDate?: string; endDate?: string }
 ) => {
   return useQuery({
-    queryKey: ['teacherStats', teacherId, params],
+    queryKey: ['teacherStats', teacherId, JSON.stringify(params)],
     queryFn: async () => {
       const response = await statisticsApi.getTeacherStats(teacherId, params);
       return response.data;
@@ -119,10 +111,9 @@ export const useTeacherStats = (
   });
 };
 
-// Hook para lista de crianças (NOVO!)
 export const useChildren = (filters?: import('./api').ChildrenFilters) => {
   return useQuery({
-    queryKey: ['children', filters],
+    queryKey: ['children', JSON.stringify(filters)],
     queryFn: async () => {
       const response = await statisticsApi.getChildren(filters);
       return response.data;
@@ -132,10 +123,9 @@ export const useChildren = (filters?: import('./api').ChildrenFilters) => {
   });
 };
 
-// Hook para lista de clubes (NOVO!)
 export const useClubs = (filters?: import('./api').ClubsFilters) => {
   return useQuery({
-    queryKey: ['clubs', filters],
+    queryKey: ['clubs', JSON.stringify(filters)],
     queryFn: async () => {
       const response = await statisticsApi.getClubs(filters);
       return response.data;
@@ -145,10 +135,9 @@ export const useClubs = (filters?: import('./api').ClubsFilters) => {
   });
 };
 
-// Hook para lista de professores (NOVO!)
 export const useTeachers = (filters?: import('./api').TeachersFilters) => {
   return useQuery({
-    queryKey: ['teachers', filters],
+    queryKey: ['teachers', JSON.stringify(filters)],
     queryFn: async () => {
       const response = await statisticsApi.getTeachers(filters);
       return response.data;
@@ -158,13 +147,12 @@ export const useTeachers = (filters?: import('./api').TeachersFilters) => {
   });
 };
 
-// Hook para frequência de clube (com paginação v2.5.0)
 export const useClubAttendance = (
   clubId: string,
   params: { year: number; startDate?: string; endDate?: string; page?: number; limit?: number }
 ) => {
   return useQuery({
-    queryKey: ['clubAttendance', clubId, params],
+    queryKey: ['clubAttendance', clubId, JSON.stringify(params)],
     queryFn: async () => {
       const response = await statisticsApi.getClubAttendance(clubId, params);
       return response.data;
@@ -191,7 +179,7 @@ export const useCurrentWeek = (): { data?: CurrentWeekInfo; isLoading: boolean; 
 
 export const useWeeklyAttendance = (params: { year: number; week: number; page?: number; limit?: number }) => {
   return useQuery({
-    queryKey: ['weeklyAttendance', params],
+    queryKey: ['weeklyAttendance', JSON.stringify(params)],
     queryFn: async () => {
       const response = await statisticsApi.getWeeklyAttendance(params);
       return response.data;

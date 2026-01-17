@@ -34,7 +34,7 @@ export default function WeekVideoPlayer({ video }: Props) {
   };
 
   const getGoogleDriveEmbedUrl = (url: string): string | null => {
-    const match = url.match(/\/d\/(.*?)\//);
+  const match = url.match(/\/d\/(.*?)\//);
     return match ? `https://drive.google.com/file/d/${match[1]}/preview` : null;
   };
 
@@ -189,7 +189,7 @@ export default function WeekVideoPlayer({ video }: Props) {
           },
         }}
       >
-        {/* Header */}
+        
         <Box
           display="flex"
           alignItems="center"
@@ -238,12 +238,10 @@ export default function WeekVideoPlayer({ video }: Props) {
           </Box>
         </Box>
 
-        {/* Video Player */}
         <Box sx={{ mb: 3 }}>
           {renderVideo()}
         </Box>
 
-        {/* Description */}
         {video.description && (
           <Typography
             variant="body2"
@@ -259,7 +257,6 @@ export default function WeekVideoPlayer({ video }: Props) {
           </Typography>
         )}
 
-        {/* Download Button */}
         {shouldAllowDownload() && (
           <Box sx={{ mt: 'auto' }}>
             <DownloadButton

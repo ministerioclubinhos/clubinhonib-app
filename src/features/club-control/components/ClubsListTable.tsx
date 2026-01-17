@@ -40,7 +40,7 @@ import {
   ExpandMore,
   ExpandLess,
   PersonOff,
-  HourglassEmpty, // ⭐ v1.8.2: Para status 'pending'
+  HourglassEmpty,
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { ClubCheckResult, WeekCheckResult } from '../api';
@@ -201,24 +201,23 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
         }}
       >
         <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-          📋 Status Detalhado dos Clubes
+          📋 Status Detalhado dos Clubinhos
         </Typography>
         <Chip
           label={
             (statusFilter !== 'all' || severityFilter !== 'all' || weekdayFilter !== 'all' || hasProblemsFilter !== null)
-              ? `${clubs.length} de ${data?.clubs?.length || 0} clubes (filtrados)`
-              : `${data?.clubs?.length || 0} de ${data?.pagination?.total || 0} clubes`
+              ? `${clubs.length} de ${data?.clubs?.length || 0} clubinhos (filtrados)`
+              : `${data?.clubs?.length || 0} de ${data?.pagination?.total || 0} clubinhos`
           }
-          sx={{ 
-            bgcolor: 'white', 
-            color: theme.palette.primary.main, 
+          sx={{
+            bgcolor: 'white',
+            color: theme.palette.primary.main,
             fontWeight: 'bold',
             fontSize: { xs: '0.75rem', sm: '0.875rem' }
           }}
         />
       </Box>
 
-      {/* Filtros locais para a lista de clubes */}
       <Box
         sx={{
           p: { xs: 1.5, sm: 2 },
@@ -298,8 +297,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
             </FormControl>
           </Grid>
         </Grid>
-        
-        {/* Chips de filtros ativos */}
+
         {(statusFilter !== 'all' || severityFilter !== 'all' || weekdayFilter !== 'all' || hasProblemsFilter !== null) && (
           <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
             <Typography variant="caption" color="text.secondary">
@@ -357,7 +355,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
         )}
       </Box>
 
-      {/* Versão Mobile: Cards */}
       {isMobile ? (
         <Box sx={{ p: { xs: 1, sm: 2 } }}>
           {clubs.map((club) => {
@@ -383,7 +380,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                   onClick={() => onToggleExpanded(club.clubId)}
                 >
                   <Stack spacing={1.5}>
-                    {/* Header do Card */}
+
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flex: 1 }}>
                         <Box
@@ -416,7 +413,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </IconButton>
                     </Box>
 
-                    {/* Informações Principais */}
                     <Grid container spacing={1.5}>
                       <Grid item xs={6}>
                         <Box>
@@ -453,17 +449,17 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                               {club.children.withPagela}/{club.children.total}
                             </Typography>
                             {club.children.missing > 0 && (
-                              <Badge 
-                                badgeContent={club.children.missing} 
+                              <Badge
+                                badgeContent={club.children.missing}
                                 color={club.status === 'pending' ? 'info' : 'error'}
                               >
-                                <PersonOff 
-                                  fontSize="small" 
-                                  sx={{ 
-                                    color: club.status === 'pending' 
-                                      ? theme.palette.info.main 
-                                      : theme.palette.error.main 
-                                  }} 
+                                <PersonOff
+                                  fontSize="small"
+                                  sx={{
+                                    color: club.status === 'pending'
+                                      ? theme.palette.info.main
+                                      : theme.palette.error.main
+                                  }}
                                 />
                               </Badge>
                             )}
@@ -472,7 +468,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Grid>
                     </Grid>
 
-                    {/* Completude */}
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
@@ -497,7 +492,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       />
                     </Box>
 
-                    {/* Status */}
                     <Box>
                       <Chip
                         icon={statusConfig.icon}
@@ -515,10 +509,9 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                   </Stack>
                 </CardContent>
 
-                {/* Detalhes Expansíveis */}
                 <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                   <Box sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: 'grey.50', borderTop: `1px solid ${theme.palette.divider}` }}>
-                    {/* Alertas */}
+
                     {club.alerts && club.alerts.length > 0 && (
                       <Box sx={{ mb: 2 }}>
                         {club.alerts.map((alert, index) => (
@@ -531,13 +524,12 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Box>
                     )}
 
-                    {/* Indicators */}
                     {club.indicators && club.indicators.length > 0 && (
                       <Box sx={{ mb: 2 }}>
                         {club.indicators.map((indicator, index) => (
-                          <Alert 
-                            key={index} 
-                            severity={indicator.severity as any} 
+                          <Alert
+                            key={index}
+                            severity={indicator.severity as any}
                             sx={{ mb: 1 }}
                           >
                             <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
@@ -550,11 +542,11 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                                 </Typography>
                                 <List dense sx={{ pl: 0 }}>
                                   {indicator.details.childrenList.map((child) => (
-                                    <Box 
+                                    <Box
                                       key={child.childId}
-                                      sx={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
+                                      sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
                                         gap: 1,
                                         py: 0.5,
                                         px: 1,
@@ -592,14 +584,13 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Box>
                     )}
 
-                    {/* Informações sobre Crianças */}
                     {(club.children.activeCount !== undefined || club.children.inactiveCount !== undefined || club.children.note) && (
-                      <Paper 
-                        elevation={0} 
-                        sx={{ 
-                          p: 1.5, 
-                          mb: 2, 
-                          borderRadius: 2, 
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 1.5,
+                          mb: 2,
+                          borderRadius: 2,
                           border: `2px solid ${theme.palette.info.main}30`,
                           bgcolor: theme.palette.info.main + '08'
                         }}
@@ -636,7 +627,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Paper>
                     )}
 
-                    {/* Lista de Crianças Faltantes */}
                     {club.children.missing > 0 && club.children.missingList && (
                       <Paper elevation={0} sx={{ p: 1.5, borderRadius: 2, border: '2px solid #ff980050' }}>
                         <Typography variant="subtitle2" fontWeight="bold" color="error" gutterBottom sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
@@ -666,7 +656,6 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </Paper>
                     )}
 
-                    {/* Exceção */}
                     {club.exception && (
                       <Alert severity="info" sx={{ mt: 2 }}>
                         <AlertTitle sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>ℹ️ Exceção Cadastrada</AlertTitle>
@@ -682,9 +671,9 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
           })}
         </Box>
       ) : (
-        /* Versão Desktop: Tabela */
-        <TableContainer 
-          sx={{ 
+
+        <TableContainer
+          sx={{
             maxHeight: 800,
             overflowX: 'auto',
             '&::-webkit-scrollbar': {
@@ -700,337 +689,330 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
           }}
         >
           <Table stickyHeader sx={{ minWidth: 600 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell width={50} sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 50 }}></TableCell>
-              <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 150 }}>Clube</TableCell>
-              <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 100 }}>Dia</TableCell>
-              <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 100 }}>Crianças</TableCell>
-              <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 120 }} align="center">
-                Completude
-              </TableCell>
-              <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 100 }} align="center">
-                Status
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {clubs.map((club) => {
-              const statusConfig = getStatusConfig(club.status);
-              const isExpanded = expandedClubs.has(club.clubId);
-              const completeness =
-                club.children.total > 0 ? (club.children.withPagela / club.children.total) * 100 : 0;
+            <TableHead>
+              <TableRow>
+                <TableCell width={50} sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 50 }}></TableCell>
+                <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 150 }}>Clube</TableCell>
+                <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 100 }}>Dia</TableCell>
+                <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 100 }}>Crianças</TableCell>
+                <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 120 }} align="center">
+                  Completude
+                </TableCell>
+                <TableCell sx={{ bgcolor: 'grey.50', fontWeight: 'bold', minWidth: 100 }} align="center">
+                  Status
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {clubs.map((club) => {
+                const statusConfig = getStatusConfig(club.status);
+                const isExpanded = expandedClubs.has(club.clubId);
+                const completeness =
+                  club.children.total > 0 ? (club.children.withPagela / club.children.total) * 100 : 0;
 
-              return (
-                <React.Fragment key={club.clubId}>
-                  <TableRow
-                    hover
-                    sx={{
-                      cursor: 'pointer',
-                      bgcolor: statusConfig.bgcolor,
-                      '&:hover': { bgcolor: statusConfig.bgcolor + '!important' },
-                    }}
-                    onClick={() => onToggleExpanded(club.clubId)}
-                  >
-                    <TableCell>
-                      <IconButton size="small">
-                        {isExpanded ? <ExpandLess /> : <ExpandMore />}
-                      </IconButton>
-                    </TableCell>
-                    <TableCell>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Box
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                            bgcolor: statusConfig.color + '20',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 'bold',
-                            color: statusConfig.color,
-                          }}
-                        >
-                          {club.clubNumber}
-                        </Box>
-                        <Box>
-                          <Typography variant="body2" fontWeight="bold">
-                            Clubinho #{club.clubNumber}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {club.week.expectedDate ? dayjs(club.week.expectedDate).format('DD/MM/YYYY') : 'Sem data'}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </TableCell>
-                    <TableCell>
-                      {club.weekday ? (
-                        <Chip
-                          label={weekdayNames[club.weekday] || club.weekday}
-                          size="small"
-                          variant="outlined"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      ) : (
-                        <Chip
-                          label="N/D"
-                          size="small"
-                          variant="outlined"
-                          color="default"
-                          sx={{ fontWeight: 'bold', opacity: 0.5 }}
-                          title="Não disponível"
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography variant="body2" fontWeight="bold">
-                          {club.children.withPagela}/{club.children.total}
-                        </Typography>
-                        {club.children.missing > 0 && (
-                          <Badge 
-                            badgeContent={club.children.missing} 
-                            color={club.status === 'pending' ? 'info' : 'error'}
+                return (
+                  <React.Fragment key={club.clubId}>
+                    <TableRow
+                      hover
+                      sx={{
+                        cursor: 'pointer',
+                        bgcolor: statusConfig.bgcolor,
+                        '&:hover': { bgcolor: statusConfig.bgcolor + '!important' },
+                      }}
+                      onClick={() => onToggleExpanded(club.clubId)}
+                    >
+                      <TableCell>
+                        <IconButton size="small">
+                          {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                        </IconButton>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Box
+                            sx={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: '50%',
+                              bgcolor: statusConfig.color + '20',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 'bold',
+                              color: statusConfig.color,
+                            }}
                           >
-                            <PersonOff 
-                              fontSize="small" 
-                              sx={{ 
-                                color: club.status === 'pending' 
-                                  ? theme.palette.info.main 
-                                  : theme.palette.error.main 
-                              }} 
-                            />
-                          </Badge>
+                            {club.clubNumber}
+                          </Box>
+                          <Box>
+                            <Typography variant="body2" fontWeight="bold">
+                              Clubinho #{club.clubNumber}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {club.week.expectedDate ? dayjs(club.week.expectedDate).format('DD/MM/YYYY') : 'Sem data'}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        {club.weekday ? (
+                          <Chip
+                            label={weekdayNames[club.weekday] || club.weekday}
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontWeight: 'bold' }}
+                          />
+                        ) : (
+                          <Chip
+                            label="N/D"
+                            size="small"
+                            variant="outlined"
+                            color="default"
+                            sx={{ fontWeight: 'bold', opacity: 0.5 }}
+                            title="Não disponível"
+                          />
                         )}
-                        {/* ⭐ Indicador de crianças inativas v1.4.0 */}
-                        {club.children.inactiveCount !== undefined && club.children.inactiveCount > 0 && (
-                          <Tooltip title={`${club.children.inactiveCount} criança(s) inativa(s) não considerada(s)`}>
-                            <Chip
-                              label={`${club.children.inactiveCount} inativa(s)`}
-                              size="small"
-                              variant="outlined"
-                              sx={{ 
-                                fontSize: '0.65rem',
-                                height: 20,
-                                bgcolor: 'grey.100',
-                                color: 'text.secondary'
-                              }}
-                            />
-                          </Tooltip>
-                        )}
-                      </Stack>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Box>
-                        <Typography variant="body2" fontWeight="bold" color={statusConfig.color}>
-                          {completeness.toFixed(0)}%
-                        </Typography>
-                        <LinearProgress
-                          variant="determinate"
-                          value={completeness}
-                          sx={{
-                            mt: 0.5,
-                            height: 6,
-                            borderRadius: 3,
-                            bgcolor: statusConfig.bgcolor,
-                            '& .MuiLinearProgress-bar': {
-                              bgcolor: statusConfig.color,
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography variant="body2" fontWeight="bold">
+                            {club.children.withPagela}/{club.children.total}
+                          </Typography>
+                          {club.children.missing > 0 && (
+                            <Badge
+                              badgeContent={club.children.missing}
+                              color={club.status === 'pending' ? 'info' : 'error'}
+                            >
+                              <PersonOff
+                                fontSize="small"
+                                sx={{
+                                  color: club.status === 'pending'
+                                    ? theme.palette.info.main
+                                    : theme.palette.error.main
+                                }}
+                              />
+                            </Badge>
+                          )}
+
+                          {club.children.inactiveCount !== undefined && club.children.inactiveCount > 0 && (
+                            <Tooltip title={`${club.children.inactiveCount} criança(s) inativa(s) não considerada(s)`}>
+                              <Chip
+                                label={`${club.children.inactiveCount} inativa(s)`}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  fontSize: '0.65rem',
+                                  height: 20,
+                                  bgcolor: 'grey.100',
+                                  color: 'text.secondary'
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box>
+                          <Typography variant="body2" fontWeight="bold" color={statusConfig.color}>
+                            {completeness.toFixed(0)}%
+                          </Typography>
+                          <LinearProgress
+                            variant="determinate"
+                            value={completeness}
+                            sx={{
+                              mt: 0.5,
+                              height: 6,
                               borderRadius: 3,
-                            },
+                              bgcolor: statusConfig.bgcolor,
+                              '& .MuiLinearProgress-bar': {
+                                bgcolor: statusConfig.color,
+                                borderRadius: 3,
+                              },
+                            }}
+                          />
+                        </Box>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip
+                          icon={statusConfig.icon}
+                          label={statusConfig.label}
+                          size="small"
+                          sx={{
+                            bgcolor: statusConfig.bgcolor,
+                            color: statusConfig.color,
+                            border: `2px solid ${statusConfig.borderColor}`,
+                            fontWeight: 'bold',
                           }}
                         />
-                      </Box>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Chip
-                        icon={statusConfig.icon}
-                        label={statusConfig.label}
-                        size="small"
-                        sx={{
-                          bgcolor: statusConfig.bgcolor,
-                          color: statusConfig.color,
-                          border: `2px solid ${statusConfig.borderColor}`,
-                          fontWeight: 'bold',
-                        }}
-                      />
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                    </TableRow>
 
-                  {/* Detalhes Expansíveis */}
-                  <TableRow>
-                    <TableCell colSpan={6} sx={{ p: 0, border: 'none' }}>
-                      <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                        <Box sx={{ p: 3, bgcolor: 'grey.50' }}>
-                          {/* Alertas */}
-                          {club.alerts && club.alerts.length > 0 && (
-                            <Box sx={{ mb: 2 }}>
-                              {club.alerts.map((alert, index) => (
-                                <Alert key={index} severity={alert.severity as any} sx={{ mb: 1 }}>
-                                  {alert.message}
-                                </Alert>
-                              ))}
-                            </Box>
-                          )}
+                    <TableRow>
+                      <TableCell colSpan={6} sx={{ p: 0, border: 'none' }}>
+                        <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                          <Box sx={{ p: 3, bgcolor: 'grey.50' }}>
 
-                          {/* Indicators v1.5.0: Só são gerados dentro do período letivo */}
-                          {/* ⭐ v1.4.0: Suporte para club_inactive e children_not_attending */}
-                          {club.indicators && club.indicators.length > 0 && (
-                            <Box sx={{ mb: 2 }}>
-                              {club.indicators.map((indicator, index) => (
-                                <Alert 
-                                  key={index} 
-                                  severity={indicator.severity as any} 
-                                  sx={{ mb: 1 }}
-                                >
-                                  <Typography variant="body2" fontWeight="bold">
-                                    {indicator.message}
-                                  </Typography>
-                                  {/* ⭐ v1.4.0: Exibir lista de crianças para children_not_attending */}
-                                  {indicator.type === 'children_not_attending' && indicator.details?.childrenList && indicator.details.childrenList.length > 0 && (
-                                    <Box sx={{ mt: 1.5 }}>
-                                      <Typography variant="caption" fontWeight="bold" display="block" gutterBottom>
-                                        Crianças que não frequentam mais:
-                                      </Typography>
-                                      <List dense sx={{ pl: 0 }}>
-                                        {indicator.details.childrenList.map((child) => (
-                                          <Box 
-                                            key={child.childId}
-                                            sx={{ 
-                                              display: 'flex', 
-                                              alignItems: 'center', 
-                                              gap: 1,
-                                              py: 0.5,
-                                              px: 1,
-                                              borderRadius: 1,
-                                              bgcolor: 'rgba(0,0,0,0.03)',
-                                              mb: 0.5
-                                            }}
-                                          >
-                                            <PersonOff fontSize="small" color="disabled" />
-                                            <Typography variant="caption">
-                                              <strong>{child.childName}</strong>
-                                              {child.reason && (
-                                                <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                                                  ({child.reason})
-                                                </Typography>
-                                              )}
-                                            </Typography>
-                                          </Box>
-                                        ))}
-                                      </List>
-                                    </Box>
-                                  )}
-                                  {/* ⭐ v1.4.0: Exibir detalhes para club_inactive */}
-                                  {indicator.type === 'club_inactive' && indicator.details?.note && (
-                                    <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                                      {indicator.details.note}
-                                    </Typography>
-                                  )}
-                                  {/* Exibir nota geral se presente */}
-                                  {indicator.details?.note && indicator.type !== 'club_inactive' && (
-                                    <Typography variant="caption" display="block" sx={{ mt: 1, fontStyle: 'italic' }}>
-                                      {indicator.details.note}
-                                    </Typography>
-                                  )}
-                                </Alert>
-                              ))}
-                            </Box>
-                          )}
-
-                          {/* ⭐ Informações sobre Crianças Ativas/Inativas v1.4.0 */}
-                          {(club.children.activeCount !== undefined || club.children.inactiveCount !== undefined || club.children.note) && (
-                            <Paper 
-                              elevation={0} 
-                              sx={{ 
-                                p: 2, 
-                                mb: 2, 
-                                borderRadius: 2, 
-                                border: `2px solid ${theme.palette.info.main}30`,
-                                bgcolor: theme.palette.info.main + '08'
-                              }}
-                            >
-                              <Typography variant="subtitle2" fontWeight="bold" color="info.main" gutterBottom>
-                                ℹ️ Informações sobre Crianças
-                              </Typography>
-                              <Divider sx={{ my: 1 }} />
-                              <Stack spacing={1}>
-                                {club.children.activeCount !== undefined && (
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <CheckCircle fontSize="small" color="success" />
-                                    <Typography variant="body2">
-                                      <strong>{club.children.activeCount}</strong> criança(s) ativa(s) considerada(s) nos cálculos
-                                    </Typography>
-                                  </Box>
-                                )}
-                                {club.children.inactiveCount !== undefined && club.children.inactiveCount > 0 && (
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <PersonOff fontSize="small" color="disabled" />
-                                    <Typography variant="body2" color="text.secondary">
-                                      <strong>{club.children.inactiveCount}</strong> criança(s) inativa(s) (não consideradas)
-                                    </Typography>
-                                  </Box>
-                                )}
-                                {club.children.note && (
-                                  <Alert severity="info" sx={{ mt: 1 }}>
-                                    <Typography variant="caption">
-                                      {club.children.note}
-                                    </Typography>
+                            {club.alerts && club.alerts.length > 0 && (
+                              <Box sx={{ mb: 2 }}>
+                                {club.alerts.map((alert, index) => (
+                                  <Alert key={index} severity={alert.severity as any} sx={{ mb: 1 }}>
+                                    {alert.message}
                                   </Alert>
-                                )}
-                              </Stack>
-                            </Paper>
-                          )}
-
-                          {/* Lista de Crianças Faltantes */}
-                          {club.children.missing > 0 && club.children.missingList && (
-                            <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '2px solid #ff980050' }}>
-                              <Typography variant="subtitle2" fontWeight="bold" color="error" gutterBottom>
-                                ⚠️ Crianças Sem Pagela ({club.children.missing}):
-                              </Typography>
-                              <Divider sx={{ my: 1 }} />
-                              <Grid container spacing={1}>
-                                {club.children.missingList.map((child) => (
-                                  <Grid item xs={12} sm={6} md={4} key={child.childId}>
-                                    <Box
-                                      sx={{
-                                        p: 1,
-                                        bgcolor: 'white',
-                                        borderRadius: 1,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1,
-                                      }}
-                                    >
-                                      <PersonOff fontSize="small" color="error" />
-                                      <Typography variant="body2">{child.childName}</Typography>
-                                    </Box>
-                                  </Grid>
                                 ))}
-                              </Grid>
-                            </Paper>
-                          )}
+                              </Box>
+                            )}
 
-                          {/* Exceção */}
-                          {club.exception && (
-                            <Alert severity="info" sx={{ mt: 2 }}>
-                              <AlertTitle>ℹ️ Exceção Cadastrada</AlertTitle>
-                              {club.exception.reason || 'Exceção registrada para esta data'}
-                            </Alert>
-                          )}
-                        </Box>
-                      </Collapse>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              );
-            })}
-          </TableBody>
-        </Table>
+                            {club.indicators && club.indicators.length > 0 && (
+                              <Box sx={{ mb: 2 }}>
+                                {club.indicators.map((indicator, index) => (
+                                  <Alert
+                                    key={index}
+                                    severity={indicator.severity as any}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    <Typography variant="body2" fontWeight="bold">
+                                      {indicator.message}
+                                    </Typography>
+
+                                    {indicator.type === 'children_not_attending' && indicator.details?.childrenList && indicator.details.childrenList.length > 0 && (
+                                      <Box sx={{ mt: 1.5 }}>
+                                        <Typography variant="caption" fontWeight="bold" display="block" gutterBottom>
+                                          Crianças que não frequentam mais:
+                                        </Typography>
+                                        <List dense sx={{ pl: 0 }}>
+                                          {indicator.details.childrenList.map((child) => (
+                                            <Box
+                                              key={child.childId}
+                                              sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1,
+                                                py: 0.5,
+                                                px: 1,
+                                                borderRadius: 1,
+                                                bgcolor: 'rgba(0,0,0,0.03)',
+                                                mb: 0.5
+                                              }}
+                                            >
+                                              <PersonOff fontSize="small" color="disabled" />
+                                              <Typography variant="caption">
+                                                <strong>{child.childName}</strong>
+                                                {child.reason && (
+                                                  <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                                                    ({child.reason})
+                                                  </Typography>
+                                                )}
+                                              </Typography>
+                                            </Box>
+                                          ))}
+                                        </List>
+                                      </Box>
+                                    )}
+
+                                    {indicator.type === 'club_inactive' && indicator.details?.note && (
+                                      <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                                        {indicator.details.note}
+                                      </Typography>
+                                    )}
+
+                                    {indicator.details?.note && indicator.type !== 'club_inactive' && (
+                                      <Typography variant="caption" display="block" sx={{ mt: 1, fontStyle: 'italic' }}>
+                                        {indicator.details.note}
+                                      </Typography>
+                                    )}
+                                  </Alert>
+                                ))}
+                              </Box>
+                            )}
+
+                            {(club.children.activeCount !== undefined || club.children.inactiveCount !== undefined || club.children.note) && (
+                              <Paper
+                                elevation={0}
+                                sx={{
+                                  p: 2,
+                                  mb: 2,
+                                  borderRadius: 2,
+                                  border: `2px solid ${theme.palette.info.main}30`,
+                                  bgcolor: theme.palette.info.main + '08'
+                                }}
+                              >
+                                <Typography variant="subtitle2" fontWeight="bold" color="info.main" gutterBottom>
+                                  ℹ️ Informações sobre Crianças
+                                </Typography>
+                                <Divider sx={{ my: 1 }} />
+                                <Stack spacing={1}>
+                                  {club.children.activeCount !== undefined && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      <CheckCircle fontSize="small" color="success" />
+                                      <Typography variant="body2">
+                                        <strong>{club.children.activeCount}</strong> criança(s) ativa(s) considerada(s) nos cálculos
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                  {club.children.inactiveCount !== undefined && club.children.inactiveCount > 0 && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      <PersonOff fontSize="small" color="disabled" />
+                                      <Typography variant="body2" color="text.secondary">
+                                        <strong>{club.children.inactiveCount}</strong> criança(s) inativa(s) (não consideradas)
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                  {club.children.note && (
+                                    <Alert severity="info" sx={{ mt: 1 }}>
+                                      <Typography variant="caption">
+                                        {club.children.note}
+                                      </Typography>
+                                    </Alert>
+                                  )}
+                                </Stack>
+                              </Paper>
+                            )}
+
+                            {club.children.missing > 0 && club.children.missingList && (
+                              <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '2px solid #ff980050' }}>
+                                <Typography variant="subtitle2" fontWeight="bold" color="error" gutterBottom>
+                                  ⚠️ Crianças Sem Pagela ({club.children.missing}):
+                                </Typography>
+                                <Divider sx={{ my: 1 }} />
+                                <Grid container spacing={1}>
+                                  {club.children.missingList.map((child) => (
+                                    <Grid item xs={12} sm={6} md={4} key={child.childId}>
+                                      <Box
+                                        sx={{
+                                          p: 1,
+                                          bgcolor: 'white',
+                                          borderRadius: 1,
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <PersonOff fontSize="small" color="error" />
+                                        <Typography variant="body2">{child.childName}</Typography>
+                                      </Box>
+                                    </Grid>
+                                  ))}
+                                </Grid>
+                              </Paper>
+                            )}
+
+                            {club.exception && (
+                              <Alert severity="info" sx={{ mt: 2 }}>
+                                <AlertTitle>ℹ️ Exceção Cadastrada</AlertTitle>
+                                {club.exception.reason || 'Exceção registrada para esta data'}
+                              </Alert>
+                            )}
+                          </Box>
+                        </Collapse>
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
         </TableContainer>
       )}
 
-      {/* ⭐ Paginação do Backend para lista de clubes - Funciona em ambos (mobile e desktop) */}
       {(data?.pagination || (clubs.length > 0)) && (
         <Box sx={{ borderTop: 1, borderColor: 'divider', px: { xs: 1, sm: 0 } }}>
           <TablePagination
@@ -1048,8 +1030,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
               onExpandedClubsReset();
             }}
             rowsPerPageOptions={[20, 50, 100]}
-            labelRowsPerPage="Clubes por página:"
-            labelDisplayedRows={({ from, to, count }) => 
+            labelRowsPerPage="Clubinhos por página:"
+            labelDisplayedRows={({ from, to, count }) =>
               `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
             }
             sx={{

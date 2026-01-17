@@ -21,11 +21,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
         mt: { xs: -2, sm: 0 },
       }}
     >
-      {/* Background Image */}
+
       <Box
         component="img"
         src={banner}
-        alt="Banner Clubinho NIB"
+        alt="Banner Clubinhos NIB"
         sx={{
           width: '100%',
           height: '100%',
@@ -36,8 +36,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
           zIndex: 0,
         }}
       />
-      
-      {/* Overlay */}
+
       <Box
         sx={{
           position: 'absolute',
@@ -50,7 +49,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
         }}
       />
 
-      {/* Floating Particles */}
       {[...Array(20)].map((_, i) => (
         <motion.div
           key={i}
@@ -58,7 +56,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
             position: 'absolute',
             width: '4px',
             height: '4px',
-            background: '#FFD700',
+            background: '#81d742',
             borderRadius: '50%',
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
@@ -76,7 +74,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
         />
       ))}
 
-      {/* Content */}
       <Container
         maxWidth="lg"
         sx={{
@@ -106,7 +103,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
               lineHeight: 1.1,
             }}
           >
-            Bem-vindo ao Clubinho NIB
+            Bem-vindo ao Clubinhos NIB
           </Typography>
         </motion.div>
 
@@ -156,12 +153,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
                     fontSize: { xs: '1rem', md: '1.1rem' },
                     fontWeight: 700,
                     borderRadius: 3,
-                    background: 'linear-gradient(45deg, #F4D03F 30%, #F1C40F 90%)',
-                    color: '#2C3E50',
-                    boxShadow: '0 8px 20px rgba(244, 208, 63, 0.3)',
+                    background: 'linear-gradient(45deg, #81d742 30%, #67bf1b 90%)',
+                    color: '#ffffff',
+                    boxShadow: '0 8px 20px rgba(129, 215, 66, 0.3)',
                     '&:hover': {
-                      background: 'linear-gradient(45deg, #F1C40F 30%, #D4AC0D 90%)',
-                      boxShadow: '0 12px 25px rgba(244, 208, 63, 0.4)',
+                      background: 'linear-gradient(45deg, #67bf1b 30%, #5aa814 90%)',
+                      boxShadow: '0 12px 25px rgba(129, 215, 66, 0.4)',
                       transform: 'translateY(-2px)',
                     },
                     transition: 'all 0.3s ease',

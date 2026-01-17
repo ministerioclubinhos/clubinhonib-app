@@ -18,20 +18,15 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import axios from 'axios';
 import api from '@/config/axiosConfig';
-import { IMaskInput } from 'react-imask';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
-
+import { PhoneInput, extractPhoneDigits } from '@/components/common/inputs';
 
 interface RegisterProps {
   commonUser: boolean;
 }
 
 type RoleChoice = '' | 'teacher' | 'coordinator';
-
-const PhoneMask = React.forwardRef<HTMLInputElement, any>(function PhoneMask(props, ref) {
-  return <IMaskInput {...props} mask="(00) 00000-0000" inputRef={ref} overwrite />;
-});
 
 const getSchema = (commonUser: boolean) =>
   Yup.object({
@@ -111,7 +106,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
       await api.post(endpoint, {
         name: data.name,
         email: data.email,
-        phone: data.phone,
+        phone: extractPhoneDigits(data.phone),
         password: commonUser ? data.password : undefined,
         role: data.role || undefined,
       });
@@ -244,24 +239,11 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
                   />
                 )}
 
-                <Controller
+                <PhoneInput
                   name="phone"
                   control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Telefone"
-                      fullWidth
-                      margin="normal"
-                      error={!!errors.phone}
-                      helperText={errors.phone?.message}
-                      slotProps={{
-                        input: {
-                          inputComponent: PhoneMask as any,
-                        },
-                      }}
-                    />
-                  )}
+                  error={!!errors.phone}
+                  helperText={errors.phone?.message}
                 />
 
                 <Controller

@@ -7,7 +7,7 @@ import type {
 import { store } from '@/store/slices';
 import { logout, login } from '@/store/slices/auth/authSlice';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const baseURL = import.meta.env.VITE_API_URL;
 
 const apiAxios = axios.create({
   baseURL,
