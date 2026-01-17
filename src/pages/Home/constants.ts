@@ -8,15 +8,15 @@ export const FEATURES: Feature[] = [
     id: 'evangelistic-ministry',
     icon: SchoolIcon,
     title: 'Ministério Evangelístico',
-    description: 'Mais de 20 anos levando o amor de Cristo às crianças através de ensino bíblico criativo e envolvente em escolas, abrigos e residências.',
-    color: '#67bf1b',
+    description: 'Mais de 20 anos levando o amor de Cristo às crianças através de ensino bíblico criativo e envolvente em escolas, clubinhos e residências.',
+    color: '#81d742',
   },
   {
     id: 'biblical-teaching',
     icon: GroupIcon,
     title: 'Ensino Bíblico Criativo',
     description: 'Formamos servos comprometidos que ensinam a Palavra de Deus de forma alegre, dinâmica e memorável para as crianças.',
-    color: '#4997fb',
+    color: '#e74c3c',
   },
   {
     id: 'community-partnership',

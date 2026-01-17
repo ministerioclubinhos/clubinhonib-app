@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'CloudFormation template for Clubinho NIB Amplify App with production and staging environments'
+Description: 'CloudFormation template for Clubinhos NIB Amplify App with production and staging environments'
 
 Parameters:
   RepositoryUrl:
@@ -39,7 +39,7 @@ Resources:
     Type: 'AWS::Amplify::App'
     Properties:
       Name: 'clubinhonib-app'
-      Description: 'Clubinho NIB React Application'
+      Description: 'Clubinhos NIB React Application'
       Repository: !Ref RepositoryUrl
       AccessToken: !Ref GitHubAccessToken
       CustomRules:

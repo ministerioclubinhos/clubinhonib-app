@@ -49,7 +49,7 @@ import { UserRole } from "@/store/slices/auth/authSlice";
 const drawerWidth = 240;
 
 type NavItem = { label: string; to: string; icon: ReactNode };
-type SectionId = "pages" | "conteudos" | "clubinho"| "pessoas" | "operacional";
+type SectionId = "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "interacoes" | "operacional";
 type Section = { id: SectionId; title: string; items: NavItem[] };
 type MobileTab = "tudo" | SectionId;
 
@@ -67,8 +67,8 @@ function AdminLayout() {
   const [mobileTab, setMobileTab] = useState<MobileTab>("tudo");
   const toggleDrawer = () => setMobileOpen((v) => !v);
 
-  const HEADER_H = 64; 
-  const FOOTER_H = 88; 
+  const HEADER_H = 64;
+  const FOOTER_H = 88;
   const cssVars = {
     "--app-header-h": `${HEADER_H}px`,
     "--app-footer-h": `${FOOTER_H}px`,
@@ -77,36 +77,6 @@ function AdminLayout() {
   const allSections = useMemo<Section[]>(
     () => [
       {
-        id: "pages",
-        title: "Páginas",
-        items: [
-          { label: "Materiais semanais", to: "/adm/paginas-materiais-semanais", icon: <EventNote /> },
-          { label: "Páginas de fotos", to: "/adm/paginas-fotos", icon: <PhotoLibrary /> },
-          { label: "Fotos dos clubinhos", to: "/adm/fotos-clubinhos", icon: <Collections /> },
-          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <Lightbulb /> },
-          { label: "Páginas de vídeos", to: "/adm/paginas-videos", icon: <VideoLibrary /> },
-          { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
-        ],
-      },
-      {
-        id: "conteudos",
-        title: "Conteúdos",
-        items: [
-          { label: "Meditações", to: "/adm/meditacoes", icon: <MenuBook /> },
-          { label: "Documentos", to: "/adm/documentos", icon: <Description /> },
-          { label: "Informativos", to: "/adm/informativos", icon: <Campaign /> },
-          { label: "Criar Página", to: "/adm/criar-pagina", icon: <NoteAdd /> },
-        ],
-      },
-      {
-        id: "clubinho",
-        title: "Clubinho",
-        items: [
-          { label: "Clubinhos", to: "/adm/clubinhos", icon: <Groups /> },
-          { label: "Pagelas", to: "/adm/pagelas", icon: <Groups /> },
-        ],
-      },
-     {
         id: "pessoas",
         title: "Pessoas",
         items: [
@@ -115,15 +85,59 @@ function AdminLayout() {
           { label: "Coordenadores", to: "/adm/coordenadores", icon: <SupervisorAccount /> },
           { label: "Crianças", to: "/adm/criancas", icon: <Groups /> },
         ],
-      }, 
+      },
+      {
+        id: "clubinhos",
+        title: "Clubinhos",
+        items: [
+          { label: "Clubinhos", to: "/adm/clubinhos", icon: <Groups /> },
+          { label: "Pagelas", to: "/adm/pagelas", icon: <Groups /> },
+
+        ],
+      },
+      {
+        id: "conteudos",
+        title: "Conteúdo",
+        items: [
+          { label: "Meditações", to: "/adm/meditacoes", icon: <MenuBook /> },
+          { label: "Documentos", to: "/adm/documentos", icon: <Description /> },
+          { label: "Informativos", to: "/adm/informativos", icon: <Campaign /> },
+          { label: "Criar Página", to: "/adm/criar-pagina", icon: <NoteAdd /> },
+          { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
+          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <Lightbulb /> },
+        ],
+      },
+      {
+        id: "midias",
+        title: "Mídias",
+        items: [
+          { label: "Páginas de fotos", to: "/adm/paginas-fotos", icon: <PhotoLibrary /> },
+          { label: "Fotos dos clubinhos", to: "/adm/fotos-clubinhos", icon: <Collections /> },
+          { label: "Páginas de vídeos", to: "/adm/paginas-videos", icon: <VideoLibrary /> },
+        ],
+      },
+      {
+        id: "materiais",
+        title: "Materiais",
+        items: [
+          { label: "Materiais semanais", to: "/adm/paginas-materiais-semanais", icon: <EventNote /> },
+        ],
+      },
+      {
+        id: "interacoes",
+        title: "Interações",
+        items: [
+          { label: "Comentários", to: "/adm/comentarios", icon: <Comment /> },
+          { label: "Contatos", to: "/adm/contatos", icon: <ContactMail /> },
+          { label: "Feedbacks", to: "/adm/feedbacks", icon: <RateReview /> },
+
+        ],
+      },
       {
         id: "operacional",
         title: "Operacional",
         items: [
-          { label: "Feedbacks", to: "/adm/feedbacks", icon: <RateReview /> },
-          { label: "Comentários", to: "/adm/comentarios", icon: <Comment /> },
-          { label: "Contatos", to: "/adm/contatos", icon: <ContactMail /> },
-          { label: "Controle de Clubes", to: "/adm/controle-clubes", icon: <Checklist /> },
+          { label: "Controle de Clubinhos", to: "/adm/controle-clubinhos", icon: <Checklist /> },
           { label: "Estatísticas", to: "/adm/estatisticas", icon: <BarChart /> },
         ],
       },
@@ -152,21 +166,6 @@ function AdminLayout() {
   }, [allSections, isAdmin, isCoordinator]);
 
   const sectionOfPath = (path: string): SectionId => {
-    if (path.startsWith("/adm/paginas-") || path.startsWith("/adm/fotos-")) return "pages";
-    if (
-      path.startsWith("/adm/meditacoes") ||
-      path.startsWith("/adm/documentos") ||
-      path.startsWith("/adm/informativos") ||
-      path.startsWith("/adm/criar-pagina")
-    ) {
-      return "conteudos";
-    }
-    if (
-      path.startsWith("/adm/clubinhos") ||
-      path.startsWith("/adm/pagelas")
-    ) {
-      return "clubinho";
-    }
     if (
       path.startsWith("/adm/usuarios") ||
       path.startsWith("/adm/professores") ||
@@ -175,7 +174,31 @@ function AdminLayout() {
     ) {
       return "pessoas";
     }
-    return "operacional";
+
+    if (
+      path.startsWith("/adm/clubinhos") ||
+      path.startsWith("/adm/pagelas") ||
+      path.startsWith("/adm/controle-clubinhos")
+    ) {
+      return "clubinhos";
+    }
+
+    if (
+      path.startsWith("/adm/meditacoes") ||
+      path.startsWith("/adm/documentos") ||
+      path.startsWith("/adm/informativos") ||
+      path.startsWith("/adm/criar-pagina") ||
+      path.startsWith("/adm/paginas-ideias") ||
+      path.startsWith("/adm/ideias-compartilhadas")
+    ) {
+      return "conteudos";
+    }
+
+    if (path.startsWith("/adm/paginas-fotos") || path.startsWith("/adm/fotos-") || path.startsWith("/adm/paginas-videos")) return "midias";
+
+    if (path.startsWith("/adm/paginas-materiais-semanais")) return "materiais";
+
+    return "interacoes";
   };
 
   const [expanded, setExpanded] = useState<SectionId | null>(sectionOfPath(location.pathname));
@@ -199,10 +222,12 @@ function AdminLayout() {
 
   const labelMap: Record<MobileTab, string> = {
     tudo: "tudo",
-    pages: "pages",
-    conteudos: "conteúdos",
-    clubinho: "clubinho",
     pessoas: "pessoas",
+    clubinhos: "clubinhos",
+    conteudos: "conteúdo",
+    midias: "mídias",
+    materiais: "materiais",
+    interacoes: "interações",
     operacional: "operacional",
   };
 
@@ -225,7 +250,7 @@ function AdminLayout() {
               gap: 0.5,
             }}
           >
-            {(["tudo", "pages", "conteudos", "clubinho","pessoas","operacional"] as MobileTab[]).map((tab) => (
+            {(["tudo", "pessoas", "clubinhos", "conteudos", "midias", "materiais", "interacoes"] as MobileTab[]).map((tab) => (
               <Button
                 key={tab}
                 size="small"

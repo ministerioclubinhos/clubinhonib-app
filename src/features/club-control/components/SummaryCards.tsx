@@ -58,29 +58,29 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               <Chip
                 label={`${((summary.clubsOk / summary.totalClubs) * 100).toFixed(0)}%`}
                 size="small"
-                sx={{ 
-                  bgcolor: theme.palette.success.main, 
-                  color: 'white', 
+                sx={{
+                  bgcolor: theme.palette.success.main,
+                  color: 'white',
                   fontWeight: 'bold',
                   fontSize: { xs: '0.65rem', sm: '0.7rem' },
                   height: { xs: 20, sm: 24 }
                 }}
               />
             </Stack>
-            <Typography 
-              variant="h4" 
-              fontWeight="bold" 
-              color="success.main" 
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              color="success.main"
               gutterBottom
               sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, mb: 0.5 }}
             >
               {summary.clubsOk}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-              Clubes Completos
+              Clubinhos Completos
             </Typography>
             <Typography variant="caption" color="text.secondary" display="block" mt={0.25} sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
-              de {summary.totalClubs} clubes ativos
+              de {summary.totalClubs} clubinhos ativos
             </Typography>
           </CardContent>
         </Card>
@@ -108,9 +108,9 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                 <Chip
                   label="PENDENTE"
                   size="small"
-                  sx={{ 
-                    bgcolor: theme.palette.info.main, 
-                    color: 'white', 
+                  sx={{
+                    bgcolor: theme.palette.info.main,
+                    color: 'white',
                     fontWeight: 'bold',
                     fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     height: { xs: 20, sm: 24 }
@@ -121,7 +121,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                 {summary.clubsPending}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                Clubes Pendentes
+                Clubinhos Pendentes
               </Typography>
               <Typography variant="caption" color="text.secondary" display="block" mt={0.25} sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
                 ainda dentro do prazo
@@ -154,7 +154,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                   label="ATENÇÃO"
                   size="small"
                   color="warning"
-                  sx={{ 
+                  sx={{
                     fontWeight: 'bold',
                     fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     height: { xs: 20, sm: 24 }
@@ -166,7 +166,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               {summary.clubsPartial}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-              Clubes Parciais
+              Clubinhos Parciais
             </Typography>
             <Typography variant="caption" color="text.secondary" display="block" mt={0.25} sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
               algumas crianças sem pagela
@@ -198,7 +198,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                   label="CRÍTICO"
                   size="small"
                   color="error"
-                  sx={{ 
+                  sx={{
                     fontWeight: 'bold',
                     fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     height: { xs: 20, sm: 24 }
@@ -210,7 +210,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               {summary.clubsMissing}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-              Clubes Faltando
+              Clubinhos Faltando
             </Typography>
             <Typography variant="caption" color="text.secondary" display="block" mt={0.25} sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
               nenhuma pagela lançada
@@ -241,9 +241,9 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                 <Chip
                   label="INFO"
                   size="small"
-                  sx={{ 
-                    bgcolor: theme.palette.grey[400], 
-                    color: 'white', 
+                  sx={{
+                    bgcolor: theme.palette.grey[400],
+                    color: 'white',
                     fontWeight: 'bold',
                     fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     height: { xs: 20, sm: 24 }
@@ -254,7 +254,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                 {summary.clubsInactive}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                Clubes Inativos
+                Clubinhos Inativos
               </Typography>
               <Typography variant="caption" color="text.secondary" display="block" mt={0.25} sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
                 sem dia da semana definido
@@ -286,9 +286,9 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                 <Chip
                   label="FÉRIAS"
                   size="small"
-                  sx={{ 
-                    bgcolor: theme.palette.info.light, 
-                    color: 'white', 
+                  sx={{
+                    bgcolor: theme.palette.info.light,
+                    color: 'white',
                     fontWeight: 'bold',
                     fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     height: { xs: 20, sm: 24 }
@@ -348,8 +348,8 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                     overallCompleteness >= 80
                       ? theme.palette.success.main
                       : overallCompleteness >= 50
-                      ? theme.palette.warning.main
-                      : theme.palette.error.main,
+                        ? theme.palette.warning.main
+                        : theme.palette.error.main,
                 },
               }}
             />
