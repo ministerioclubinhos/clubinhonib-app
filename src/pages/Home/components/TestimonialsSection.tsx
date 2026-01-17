@@ -48,7 +48,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
         },
       }}
     >
-      
+      {/* Divisão Suave Superior */}
       <Box
         sx={{
           position: 'absolute',
@@ -62,7 +62,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           borderTopRightRadius: 0,
         }}
       />
-
+      
+      {/* Ondas Decorativas Superiores */}
       <motion.div
         style={{
           position: 'absolute',
@@ -212,15 +213,17 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
             </motion.div>
           </AnimatePresence>
 
+          {/* Navigation Buttons */}
           <IconButton
             onClick={prevTestimonial}
             sx={{
-              position: 'absolute',
-              left: { xs: -20, md: -60 },
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(255, 255, 255, 0.9)',
-              color: '#667eea',
+            position: 'absolute',
+            left: { xs: -6, md: -60 },
+            top: '50%',
+            transform: 'translateY(-50%)',
+            background: 'rgba(255, 255, 255, 0.9)',
+            color: '#667eea',
+            zIndex: 5,
               '&:hover': {
                 background: 'rgba(255, 255, 255, 1)',
                 transform: 'translateY(-50%) scale(1.1)',
@@ -235,11 +238,12 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
             onClick={nextTestimonial}
             sx={{
               position: 'absolute',
-              right: { xs: -20, md: -60 },
+              right: { xs: -6, md: -60 },
               top: '50%',
               transform: 'translateY(-50%)',
               background: 'rgba(255, 255, 255, 0.9)',
               color: '#667eea',
+              zIndex: 5,
               '&:hover': {
                 background: 'rgba(255, 255, 255, 1)',
                 transform: 'translateY(-50%) scale(1.1)',
@@ -250,6 +254,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
             <ChevronRight />
           </IconButton>
 
+          {/* Dots Indicator */}
           <Box
             sx={{
               display: 'flex',
@@ -278,6 +283,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
         </Box>
       </Container>
 
+      {/* Divisão Suave Inferior */}
       <Box
         sx={{
           position: 'absolute',
@@ -291,7 +297,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           borderBottomRightRadius: 0,
         }}
       />
-
+      
+      {/* Ondas Decorativas Inferiores */}
       <motion.div
         style={{
           position: 'absolute',
