@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de deploy da stack CloudFormation para Clubinho NIB Amplify App
+# Script de deploy da stack CloudFormation para Clubinhos NIB Amplify App
 # Uso:
 #   ./deploy.sh [create|update|delete|apply|status|deploy] STACK_NAME [--yes] [--recreate] [--profile P] [--region R] [--template FILE] [--parameters FILE]
 #

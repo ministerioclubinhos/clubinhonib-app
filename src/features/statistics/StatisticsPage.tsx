@@ -78,14 +78,14 @@ const StatisticsPageContent: React.FC = () => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
+
     return {
       startDate: dayjs(firstDay).format('YYYY-MM-DD'),
       endDate: dayjs(lastDay).format('YYYY-MM-DD'),
-      groupBy: 'week', 
+      groupBy: 'week',
     };
   };
-  
+
   const [filters, setFilters] = React.useState<StatisticsFilters>(getDefaultFilters());
 
   const handleTabChange = (event: React.SyntheticEvent | null, newValue: number) => {
@@ -106,14 +106,14 @@ const StatisticsPageContent: React.FC = () => {
   };
 
   return (
-    <Container 
-      maxWidth="xl" 
-      sx={{ 
+    <Container
+      maxWidth="xl"
+      sx={{
         py: { xs: 2, sm: 3, md: 4 },
         px: { xs: 1, sm: 2, md: 3 }
       }}
     >
-      
+
       <Box sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
         <Typography
           variant="h4"
@@ -127,10 +127,10 @@ const StatisticsPageContent: React.FC = () => {
             fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
           }}
         >
-          📊 Estatísticas do Clubinho NIB
+          📊 Estatísticas do Clubinhos NIB
         </Typography>
-        <Typography 
-          variant="body1" 
+        <Typography
+          variant="body1"
           color="text.secondary"
           sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
         >
@@ -150,9 +150,9 @@ const StatisticsPageContent: React.FC = () => {
       <QuickFilters onSelectFilter={handleFilterChange} currentFilters={filters} />
 
       <Box sx={{ mt: { xs: 1.5, sm: 2 }, mb: { xs: 1.5, sm: 2 } }}>
-        <Button 
-          variant="outlined" 
-          size="small" 
+        <Button
+          variant="outlined"
+          size="small"
           onClick={() => setFiltersOpen((v) => !v)}
           fullWidth={isMobile}
         >
@@ -170,7 +170,7 @@ const StatisticsPageContent: React.FC = () => {
       <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           {isMobile ? (
-            
+
             <Box sx={{ p: 1 }}>
               <Grid container spacing={0.5}>
                 <Grid item xs={6}>
@@ -374,7 +374,7 @@ const StatisticsPageContent: React.FC = () => {
               </Grid>
             </Box>
           ) : (
-            
+
             <Tabs
               value={activeTab}
               onChange={handleTabChange}
