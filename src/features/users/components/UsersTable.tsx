@@ -30,7 +30,7 @@ import {
 import { Visibility, Edit, Delete, WhatsApp } from "@mui/icons-material";
 import { UserRow } from "../types";
 import { fmtDate } from "@/utils/dates";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 import { RootState } from "@/store/slices";
 import UsersCards from "./UsersCards";
 import { buildWhatsappLink } from "@/utils/whatsapp";
@@ -147,19 +147,19 @@ function UsersTableDesktop({
       },
       ...(isMdUp
         ? ([
-            {
-              accessorKey: "createdAt",
-              header: "Criado em",
-              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
-              meta: { width: 170 },
-            },
-            {
-              accessorKey: "updatedAt",
-              header: "Atualizado em",
-              cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
-              meta: { width: 170 },
-            },
-          ] as ColumnDef<UserRow>[])
+          {
+            accessorKey: "createdAt",
+            header: "Criado em",
+            cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
+            meta: { width: 170 },
+          },
+          {
+            accessorKey: "updatedAt",
+            header: "Atualizado em",
+            cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
+            meta: { width: 170 },
+          },
+        ] as ColumnDef<UserRow>[])
         : []),
       {
         id: "actions",
@@ -251,8 +251,8 @@ function UsersTableDesktop({
                             sorted === "asc"
                               ? "asc"
                               : sorted === "desc"
-                              ? "desc"
-                              : "asc"
+                                ? "desc"
+                                : "asc"
                           }
                           onClick={h.column.getToggleSortingHandler()}
                         >

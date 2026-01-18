@@ -5,14 +5,14 @@ import {
   FormControlLabel, Switch
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
-import { UserRole } from "@/store/slices/auth/authSlice";
-import { UpadateUserForm } from "../types";
+import { UserRole } from "@/types/shared";
+import { UpdateUserForm } from "../types";
 import { SimplePhoneInput } from "@/components/common/inputs";
 
 type Props = {
   open: boolean;
-  value: (UpadateUserForm & { confirmPassword?: string; editPassword?: boolean }) | null;
-  onChange: (v: UpadateUserForm & { confirmPassword?: string; editPassword?: boolean }) => void;
+  value: (UpdateUserForm & { confirmPassword?: string; editPassword?: boolean }) | null;
+  onChange: (v: UpdateUserForm & { confirmPassword?: string; editPassword?: boolean }) => void;
   loading: boolean;
   error: string;
   onCancel: () => void;
@@ -53,6 +53,15 @@ export default function UserEditDialog({
               onChange={(e) => onChange({ ...value, name: e.target.value })}
             />
           </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={value.email || ""}
+              onChange={(e) => onChange({ ...value, email: e.target.value })}
+            />
+          </Grid>
 
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
@@ -73,7 +82,7 @@ export default function UserEditDialog({
 
           <Grid item xs={12} md={6}>
             <SimplePhoneInput
-              value={value.phone}
+              value={value.phone || ""}
               onChange={(phone) => onChange({ ...value, phone })}
               margin="none"
             />

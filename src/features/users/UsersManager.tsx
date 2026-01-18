@@ -13,11 +13,11 @@ import {
   SortParam,
   UserFilters,
   UserRow,
-  UpadateUserForm,
+  UpdateUserForm,
 } from "./types";
 
 import { useUserMutations, useUsers } from "./hooks";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 import BackHeader from "@/components/common/header/BackHeader";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
@@ -46,7 +46,7 @@ export default function UsersManager() {
   const [viewing, setViewing] = React.useState<UserRow | null>(null);
 
   const [editing, setEditing] = React.useState<
-    (UpadateUserForm & { id: string; confirmPassword?: string; editPassword?: boolean }) | null
+    (UpdateUserForm & { id: string; confirmPassword?: string; editPassword?: boolean }) | null
   >(null);
 
   const [creating, setCreating] = React.useState<CreateUserForm | null>(null);
@@ -111,6 +111,7 @@ export default function UsersManager() {
             confirmPassword: "",
             phone: "",
             role: UserRole.TEACHER,
+            active: true,
           })
         }
         onRefresh={doRefresh}
@@ -139,6 +140,7 @@ export default function UsersManager() {
           setEditing({
             id: user.id,
             name: user.name,
+            email: user.email,
             phone: user.phone,
             role: user.role,
             active: user.active,

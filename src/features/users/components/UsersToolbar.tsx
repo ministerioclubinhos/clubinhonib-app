@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { Add, Refresh } from "@mui/icons-material";
 import { UserFilters } from "../types";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 
 type Props = {
   filters: UserFilters;
@@ -121,7 +121,7 @@ export default function UsersToolbar({
             </Tooltip>
           </Box>
         </Grid>
-        
+
         <Grid item xs={12} md={2}>
           {isXs ? (
             <>

@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 
 export const useAuthRole = () => {
   const { isAuthenticated, user } = useSelector((s: RootState) => s.auth);
