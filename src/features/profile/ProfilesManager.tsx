@@ -182,7 +182,7 @@ const roleConfig: Record<string, { gradient: string; color: string; label: strin
   leader: {
     gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     color: '#f5576c',
-    label: 'Líder',
+    label: 'Coordenador',
     icon: <LeaderIcon sx={{ fontSize: 14 }} />,
     bgLight: 'rgba(245, 87, 108, 0.08)',
   },

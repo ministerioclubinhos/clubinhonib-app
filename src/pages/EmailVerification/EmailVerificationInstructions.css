@@ -1,0 +1,247 @@
+/* Container principal com fundo */
+.email-verification-fullscreen-bg {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: #f5f5f5;
+  padding: 20px 0;
+}
+
+/* Container de conteúdo */
+.email-verification-instructions-container {
+  width: 90%;
+  max-width: 1400px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 40px 60px;
+  text-align: center;
+}
+
+/* Header */
+.email-verification-header {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 20px 0;
+  padding: 0;
+}
+
+.email-verification-header h1 {
+  margin-bottom: 16px;
+  color: #2d3a4a;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.email-verification-header p {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+.email-verification-header ol {
+  text-align: left;
+  margin: 20px auto;
+  padding-left: 24px;
+  max-width: 100%;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.email-verification-header ol li {
+  margin-bottom: 12px;
+}
+
+/* Wrapper da imagem */
+.email-verification-image-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+/* Imagem principal */
+.email-verification-image {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+  transition: transform 0.2s;
+}
+
+.email-verification-image:hover {
+  transform: scale(1.02);
+}
+
+/* Hint para expandir */
+.expand-hint {
+  font-size: 0.95rem;
+  color: #888;
+  margin-top: 12px;
+  display: block;
+  font-style: italic;
+}
+
+/* Modal */
+.email-verification-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+/* Imagem no modal */
+.email-verification-image-modal {
+  max-width: 95vw;
+  max-height: 85vh;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  object-fit: contain;
+  display: block;
+}
+
+/* Botão fechar modal */
+.close-modal-btn {
+  margin-top: 20px;
+  padding: 12px 36px;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: background 0.2s;
+}
+
+.close-modal-btn:hover {
+  background: #125ea2;
+}
+
+/* Mensagem final */
+.email-verification-instructions-container p.final-msg {
+  margin-top: 24px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #2d3a4a;
+}
+
+/* Botão voltar */
+.back-btn {
+  margin-top: 32px;
+  margin-bottom: 20px;
+  padding: 12px 32px;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: #125ea2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Media Queries para Mobile */
+@media (max-width: 768px) {
+  .email-verification-fullscreen-bg {
+    padding: 0;
+    background: #fff;
+  }
+
+  .email-verification-instructions-container {
+    max-width: 100%;
+    min-height: 100vh;
+    padding: 20px 16px;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .email-verification-header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 12px;
+  }
+
+  .email-verification-header p {
+    font-size: 1rem;
+    padding: 0 8px;
+  }
+
+  .email-verification-header ol {
+    padding-left: 20px;
+    padding-right: 12px;
+    font-size: 0.95rem;
+    margin: 16px 0;
+  }
+
+  .email-verification-header ol li {
+    margin-bottom: 10px;
+  }
+
+  .email-verification-image-wrapper {
+    margin: 16px 0;
+  }
+
+  .email-verification-image {
+    border-radius: 4px;
+  }
+
+  .expand-hint {
+    font-size: 0.9rem;
+    margin-top: 8px;
+  }
+
+  .email-verification-instructions-container p.final-msg {
+    margin-top: 20px;
+    font-size: 1rem;
+    padding: 0 8px;
+  }
+
+  .back-btn {
+    margin-top: 24px;
+    padding: 10px 28px;
+    font-size: 1rem;
+  }
+
+  .email-verification-modal {
+    padding: 10px;
+  }
+
+  .email-verification-image-modal {
+    max-width: 100vw;
+    max-height: 90vh;
+  }
+
+  .close-modal-btn {
+    padding: 10px 28px;
+    font-size: 1rem;
+  }
+}

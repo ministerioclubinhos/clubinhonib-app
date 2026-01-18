@@ -8,7 +8,12 @@ export interface LoginDto {
 
 export interface AuthResponse {
     accessToken: string;
+    refreshToken: string;
     user: User;
+    emailVerification?: {
+        verificationEmailSent: boolean;
+        message: string;
+    };
 }
 
 export interface RegisterUserDto {

@@ -21,7 +21,10 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
   const dispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const profileAlerts = useProfileAlerts();
+
   const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
+
   const isTeacher = isAuthenticated && user?.role === UserRole.TEACHER;
   const isCoordinator = isAuthenticated && user?.role === UserRole.COORDINATOR;
 
@@ -41,6 +44,8 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
 
   const renderLink = (to: string, label: string) => {
     const active = location.pathname === to || location.pathname.startsWith(to + '/');
+    const isLogin = to === '/login';
+
     return (
       <Button
         key={to}
@@ -48,7 +53,7 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
           navigate(to);
           handleClick();
         }}
-        variant={active ? 'contained' : 'text'}
+        variant={active ? 'contained' : (isLogin ? 'outlined' : 'text')}
         color={active ? 'success' : 'inherit'}
         fullWidth={!!isMobile}
         sx={{
@@ -56,6 +61,13 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
           fontWeight: 'bold',
           ...(isMobile ? { color: '#fff' } : {}),
           ...(active && !isMobile ? { boxShadow: 'none' } : null),
+          ...(isLogin && !active && !isMobile ? {
+            borderColor: 'rgba(255,255,255,0.5)',
+            '&:hover': {
+              borderColor: '#fff',
+              backgroundColor: 'rgba(255,255,255,0.1)'
+            }
+          } : {}),
           minHeight: 44,
           textTransform: 'none',
           maxWidth: '100%',
@@ -69,23 +81,43 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
   return (
     <Stack
       direction={isMobile ? 'column' : 'row'}
-      spacing={isMobile ? 1.5 : 4}
+      spacing={isMobile ? 1.5 : 4} // Standard spacing for links
       alignItems={isMobile ? 'stretch' : 'center'}
       mt={isMobile ? 6 : 0}
-      sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}
+      sx={{
+        width: '100%',
+        maxWidth: '100%',
+        overflowX: 'hidden',
+        position: 'relative' // Needed if we want absolute positioning, but flex is better
+      }}
     >
-      {renderLink('/', 'Início')}
-      {renderLink('/feed-clubinho', 'Feed Clubinho')}
-      {renderLink('/sobre', 'Sobre')}
-      {renderLink('/eventos', 'Eventos')}
-      {renderLink('/contato', 'Contato')}
+      {/* Navigation Links Group */}
+      <Stack
+        direction={isMobile ? 'column' : 'row'}
+        spacing={isMobile ? 1.5 : 4}
+        alignItems={isMobile ? 'stretch' : 'center'}
+        sx={{ flexGrow: 1, justifyContent: isMobile ? 'flex-start' : 'center' }}
+      >
+        {renderLink('/', 'Início')}
+        {renderLink('/feed-clubinho', 'Feed Clubinho')}
+        {renderLink('/sobre', 'Sobre')}
+        {renderLink('/eventos', 'Eventos')}
+        {renderLink('/contato', 'Contato')}
+      </Stack>
+
+      {/* User Actions Group */}
       {isAuthenticated && user ? (
-        <React.Fragment>
-          {!isMobile && <CompleteProfileAlert alerts={useProfileAlerts()} />}
+        <Stack
+          direction={isMobile ? 'column' : 'row'}
+          spacing={1}
+          alignItems="center"
+          sx={!isMobile ? { ml: 4 } : {}} // Add some margin from links on desktop if needed
+        >
+          {!isMobile && <CompleteProfileAlert alerts={profileAlerts} />}
           <UserMenu user={user} onCloseMobile={handleClick} isMobile={isMobile} />
-        </React.Fragment>
+        </Stack>
       ) : (
-        renderLink('/login', 'Área do Professor')
+        renderLink('/login', 'Entrar')
       )}
     </Stack>
   );

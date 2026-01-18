@@ -16,7 +16,6 @@ import { useDispatch } from 'react-redux';
 import { logout, User } from '@/store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
 import api from '@/config/axiosConfig';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
 import SchoolIcon from '@mui/icons-material/School';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
@@ -66,7 +65,6 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
     const isCoordinator = user?.role === UserRole.COORDINATOR;
     const isTeacher = user?.role === UserRole.TEACHER;
 
-    // Get initials for avatar if no image
     const getInitials = (name: string) => {
         const names = name.split(' ');
         if (names.length === 1) return names[0].charAt(0).toUpperCase();
@@ -207,14 +205,19 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                     <IconButton
                         onClick={handleClick}
                         size="small"
-                        sx={{ ml: 2 }}
                         aria-controls={open ? 'account-menu' : undefined}
                         aria-haspopup="true"
                         aria-expanded={open ? 'true' : undefined}
                     >
                         <Avatar
-                            sx={{ width: 40, height: 40, bgcolor: 'secondary.main' }}
-                            src={user.image?.url} // Assuming user.image has a url property based on types.ts
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                bgcolor: 'secondary.main',
+                                border: '2px solid #fff',
+                                boxShadow: '0px 2px 4px rgba(0,0,0,0.2)' // Adding subtle shadow for better depth
+                            }}
+                            src={user.image?.url}
                             alt={user.name}
                         >
                             {!user.image?.url && getInitials(user.name)}

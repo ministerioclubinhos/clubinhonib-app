@@ -21,8 +21,8 @@ export const authService = {
         return response.data;
     },
 
-    register: async (data: RegisterUserDto): Promise<User> => {
-        const response = await apiAxios.post<User>('/auth/register', data);
+    register: async (data: RegisterUserDto): Promise<any> => {
+        const response = await apiAxios.post<any>('/auth/register', data);
         return response.data;
     },
 

@@ -57,6 +57,8 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [verificationNeeded, setVerificationNeeded] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
 
   const dispatch = useDispatch<AppDispatchType>();
   const navigate = useNavigate();
@@ -103,17 +105,21 @@ const Login: React.FC = () => {
     try {
       const response = await api.post<LoginResponse>('/auth/login', { email, password });
       if (response.data.user.active === false) {
+        if (response.data.emailVerification) {
+          setVerificationMessage(response.data.emailVerification.message);
+          setVerificationNeeded(true);
+        }
         setErrorMessage('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
         return;
       }
-      const { accessToken, refreshToken, user: responseUser } = response.data;
+      const { accessToken, refreshToken, user: responseUser, emailVerification } = response.data;
 
       const mappedUser = {
         ...responseUser,
         role: responseUser.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.TEACHER,
       };
 
-      dispatch(login({ accessToken, refreshToken, user: mappedUser }));
+      dispatch(login({ accessToken, refreshToken, user: mappedUser, emailVerification }));
       await bootstrapAfterLogin(accessToken);
 
       const redirectPath = mappedUser.role === UserRole.ADMIN ? '/adm' : '/area-do-professor';
@@ -137,6 +143,10 @@ const Login: React.FC = () => {
       const res = await api.post('/auth/google', { token: credential });
 
       if (res.data.active === false) {
+        if (res.data.emailVerification) {
+          setVerificationMessage(res.data.emailVerification.message);
+          setVerificationNeeded(true);
+        }
         setErrorMessage('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
         return;
       }
@@ -149,13 +159,13 @@ const Login: React.FC = () => {
         return;
       }
 
-      const { accessToken, refreshToken, user: responseUser } = res.data;
+      const { accessToken, refreshToken, user: responseUser, emailVerification } = res.data;
       const mappedUser = {
         ...responseUser,
         role: responseUser.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.TEACHER,
       };
 
-      dispatch(login({ accessToken, refreshToken, user: mappedUser }));
+      dispatch(login({ accessToken, refreshToken, user: mappedUser, emailVerification }));
       await bootstrapAfterLogin(accessToken);
 
       const redirectPath = mappedUser.role === UserRole.ADMIN ? '/adm' : '/area-do-professor';
@@ -218,8 +228,6 @@ const Login: React.FC = () => {
                 disabled={loading}
                 aria-label="Digite seu email"
                 variant="outlined"
-                error={!!errorMessage && !email}
-                helperText={!!errorMessage && !email ? 'Email é obrigatório' : ''}
               />
               <TextField
                 fullWidth
@@ -231,9 +239,17 @@ const Login: React.FC = () => {
                 disabled={loading}
                 aria-label="Digite sua senha"
                 variant="outlined"
-                error={!!errorMessage && !password}
-                helperText={!!errorMessage && !password ? 'Senha é obrigatória' : ''}
               />
+
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: -1 }}>
+                <Button
+                  onClick={() => navigate('/esqueci-senha')}
+                  sx={{ textTransform: 'none', fontSize: '0.875rem' }}
+                >
+                  Esqueci minha senha
+                </Button>
+              </Box>
+
               <Button
                 type="submit"
                 variant="contained"
@@ -258,6 +274,33 @@ const Login: React.FC = () => {
             >
               Cadastre-se
             </Button>
+
+            {verificationNeeded && verificationMessage && (
+              <Alert severity="info" sx={{ mt: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+                  <Typography variant="body2" component="span" align="center">
+                    {verificationMessage}
+                  </Typography>
+                  <Button
+                    variant="text"
+                    color="inherit"
+                    size="small"
+                    onClick={() => navigate('/verificar-email')}
+                    sx={{
+                      textDecoration: 'underline',
+                      fontWeight: 'bold',
+                      p: 0,
+                      '&:hover': {
+                        textDecoration: 'underline',
+                        backgroundColor: 'transparent'
+                      }
+                    }}
+                  >
+                    Clique aqui para mais instruções
+                  </Button>
+                </Box>
+              </Alert>
+            )}
           </Paper>
         </Container>
       </Box>

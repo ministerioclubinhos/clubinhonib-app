@@ -32,6 +32,10 @@ export interface LoginResponse {
   user: User;
   accessToken: string;
   refreshToken: string;
+  emailVerification?: {
+    verificationEmailSent: boolean;
+    message: string;
+  };
 }
 
 interface AuthState {
@@ -43,6 +47,7 @@ interface AuthState {
   initialized: boolean;
   error: string | null;
   googleUser: GoogleUser | null;
+  emailVerificationAlert: { verificationEmailSent: boolean; message: string } | null;
 }
 
 const initialState: AuthState = {
@@ -54,14 +59,10 @@ const initialState: AuthState = {
   initialized: false,
   error: null,
   googleUser: null,
+  emailVerificationAlert: null,
 };
 
 const IS_DEV = import.meta.env.DEV === true;
-const DEBUG_AUTH = import.meta.env.VITE_DEBUG_AUTH === 'true';
-
-const log = (message: string, ...args: any[]) => {
-  if (IS_DEV || DEBUG_AUTH) console.debug(message, ...args);
-};
 
 const clean = (s: string) => s.replace(/^"|"$/g, '');
 
@@ -72,7 +73,6 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
     const token = state.auth.accessToken;
 
     if (!token || typeof token !== 'string' || token.trim() === '') {
-      log('[Auth] Nenhum token válido encontrado.');
       return rejectWithValue('No valid access token found');
     }
 
@@ -83,7 +83,6 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
       return response.data;
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || 'Erro ao buscar usuário';
-      log('[Auth] Erro ao buscar usuário:', errorMessage);
       return rejectWithValue(errorMessage);
     }
   }
@@ -104,8 +103,11 @@ export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
         try {
           await dispatch(fetchCurrentUser()).unwrap();
         } catch (e) {
+          console.error('[initAuth] Error validating token, forcing logout', e);
           dispatch(logout());
         }
+      } else {
+        dispatch(logout());
       }
     } catch (e: any) {
       return rejectWithValue('Falha ao inicializar auth');
@@ -119,13 +121,21 @@ const authSlice = createSlice({
   reducers: {
     login: (
       state,
-      action: PayloadAction<{ accessToken: string; refreshToken: string; user?: User }>
+      action: PayloadAction<{
+        accessToken: string;
+        refreshToken: string;
+        user?: User;
+        emailVerification?: { verificationEmailSent: boolean; message: string };
+      }>
     ) => {
-      const { accessToken, refreshToken, user } = action.payload;
+      const { accessToken, refreshToken, user, emailVerification } = action.payload;
       state.accessToken = clean(accessToken);
       state.refreshToken = clean(refreshToken);
       state.isAuthenticated = true;
       if (user) state.user = user;
+      if (emailVerification) {
+        state.emailVerificationAlert = emailVerification;
+      }
       state.error = null;
       try {
         localStorage.setItem('accessToken', state.accessToken!);
@@ -138,6 +148,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.googleUser = null;
+      state.emailVerificationAlert = null;
       state.error = null;
       state.initialized = true;
       try {
@@ -166,11 +177,11 @@ const authSlice = createSlice({
         state.initialized = true;
       })
       .addCase(initAuth.rejected, (state, action) => {
+        console.warn('[Auth:reducer] initAuth.rejected', action.payload);
         state.loadingUser = false;
         state.initialized = true;
         state.error = (action.payload as string) || 'Falha ao inicializar auth';
       })
-
       .addCase(fetchCurrentUser.pending, (state) => {
         state.loadingUser = true;
         state.error = null;
@@ -182,6 +193,7 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
+        console.warn('[Auth:reducer] fetchCurrentUser.rejected', action.payload);
         state.loadingUser = false;
         state.user = null;
         state.isAuthenticated = false;

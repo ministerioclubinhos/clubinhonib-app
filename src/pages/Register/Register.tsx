@@ -70,6 +70,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
   const [loading, setLoading] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
   const [globalError, setGlobalError] = React.useState<string | null>(null);
+  const [verificationMessage, setVerificationMessage] = React.useState<string | null>(null);
 
   const {
     control,
@@ -103,13 +104,17 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
     const endpoint = commonUser ? '/auth/register' : '/auth/complete-register';
 
     try {
-      await api.post(endpoint, {
+      const response = await api.post(endpoint, {
         name: data.name,
         email: data.email,
         phone: extractPhoneDigits(data.phone),
         password: commonUser ? data.password : undefined,
         role: data.role || undefined,
       });
+
+      if (response.data?.emailVerification?.message) {
+        setVerificationMessage(response.data.emailVerification.message);
+      }
       setSuccess(true);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -169,9 +174,28 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
                     boxShadow: 2,
                   }}
                 >
-                  Cadastro concluído com sucesso! <br />
-                  Aguarde a aprovação do seu cadastro. <br />
-                  Você será notificado pelo WhatsApp.
+                  {verificationMessage ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body1" component="span" sx={{ fontWeight: 'inherit' }}>
+                        {verificationMessage}
+                      </Typography>
+                      <Button
+                        variant="text"
+                        color="inherit"
+                        size="small"
+                        onClick={() => navigate('/verificar-email')}
+                        sx={{ textDecoration: 'underline', fontWeight: 'bold' }}
+                      >
+                        Clique aqui para mais instruções
+                      </Button>
+                    </Box>
+                  ) : (
+                    <>
+                      Cadastro concluído com sucesso! <br />
+                      Aguarde a aprovação do seu cadastro. <br />
+                      Você será notificado pelo WhatsApp.
+                    </>
+                  )}
                 </Alert>
 
                 <Button
