@@ -65,6 +65,7 @@ import { UserRole } from '@/types/shared';
 import { apiGetAllProfiles } from './api';
 import { CompleteProfileListItem, QueryProfilesDto, PaginationMeta } from './types';
 import ProfileAdminEditDialog from './components/ProfileAdminEditDialog';
+import { buildWhatsappLink } from '@/utils/whatsapp';
 
 type BirthdayStatus = 'today' | 'this-week' | 'this-month' | null;
 
@@ -179,14 +180,14 @@ const roleConfig: Record<string, { gradient: string; color: string; label: strin
     icon: <AdminIcon sx={{ fontSize: 14 }} />,
     bgLight: 'rgba(118, 75, 162, 0.08)',
   },
-  leader: {
+  coordinator: {
     gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     color: '#f5576c',
     label: 'Coordenador',
     icon: <LeaderIcon sx={{ fontSize: 14 }} />,
     bgLight: 'rgba(245, 87, 108, 0.08)',
   },
-  member: {
+  teacher: {
     gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
     color: '#4facfe',
     label: 'Professor',
@@ -224,17 +225,18 @@ interface ProfileDetailModalProps {
   open: boolean;
   onClose: () => void;
   userRole?: string;
+  currentUserName?: string;
   onEdit: () => void;
 }
 
-const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({ profile, open, onClose, userRole, onEdit }) => {
+const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({ profile, open, onClose, userRole, currentUserName, onEdit }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [copied, setCopied] = useState<string | null>(null);
 
   if (!profile) return null;
 
-  const config = roleConfig[profile.role?.toLowerCase()] || roleConfig.member;
+  const config = roleConfig[profile.role?.toLowerCase()] || roleConfig.teacher;
   const genderStyle = getGenderStyle(profile.personalData?.gender);
   const birthdayStatus = getBirthdayStatus(profile.personalData?.birthDate);
   const age = calculateAge(profile.personalData?.birthDate);
@@ -247,8 +249,11 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({ profile, open, 
 
   const handleWhatsApp = () => {
     if (profile.phone) {
-      const phone = profile.phone.replace(/\D/g, '');
-      window.open(`https://wa.me/55${phone}`, '_blank');
+      const isBirthday = birthdayStatus === 'today';
+      const link = buildWhatsappLink(profile.name, currentUserName, profile.phone, isBirthday, profile.personalData?.gender);
+      if (link) {
+        window.open(link, '_blank');
+      }
     }
   };
 
@@ -276,8 +281,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({ profile, open, 
       onClose={onClose}
       maxWidth="xs"
       fullWidth
-      TransitionComponent={Fade}
-      slots={{ backdrop: Backdrop }}
+      slots={{ transition: Fade, backdrop: Backdrop }}
       slotProps={{
         backdrop: {
           sx: {
@@ -285,14 +289,14 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({ profile, open, 
             backgroundColor: 'rgba(0, 0, 0, 0.4)',
           },
         },
-      }}
-      PaperProps={{
-        sx: {
-          borderRadius: 4,
-          overflow: 'hidden',
-          m: isMobile ? 2 : 3,
-          maxHeight: 'calc(100vh - 32px)',
-        },
+        paper: {
+          sx: {
+            borderRadius: 4,
+            overflow: 'hidden',
+            m: isMobile ? 2 : 3,
+            maxHeight: 'calc(100vh - 32px)',
+          },
+        }
       }}
     >
       <Box
@@ -827,7 +831,7 @@ interface ProfileCardProps {
 }
 
 const ProfileCard: React.FC<ProfileCardProps> = ({ profile, index, onClick }) => {
-  const roleStyle = roleConfig[profile.role?.toLowerCase()] || roleConfig.member;
+  const roleStyle = roleConfig[profile.role?.toLowerCase()] || roleConfig.teacher;
   const genderStyle = getGenderStyle(profile.personalData?.gender);
   const birthdayStatus = getBirthdayStatus(profile.personalData?.birthDate);
   const age = calculateAge(profile.personalData?.birthDate);
@@ -1194,7 +1198,7 @@ const ProfilesManager: React.FC = () => {
           />
 
           <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ justifyContent: { xs: 'center', md: 'flex-start' } }}>
-            {(['all', 'member', 'leader', 'admin'] as const).map((role) => {
+            {(['all', 'teacher', 'coordinator', 'admin'] as const).map((role) => {
               const isSelected = (filters.role || 'all') === (role === 'all' ? 'all' : role) && (role === 'all' ? !filters.role : true);
               const config = role === 'all' ? null : roleConfig[role];
               return (
@@ -1274,6 +1278,8 @@ const ProfilesManager: React.FC = () => {
                   <MenuItem value="email-DESC">Email (Z-A)</MenuItem>
                   <MenuItem value="createdAt-DESC">Mais recentes</MenuItem>
                   <MenuItem value="createdAt-ASC">Mais antigos</MenuItem>
+                  <MenuItem value="birthDate-ASC">Aniversário (Jan-Dez)</MenuItem>
+                  <MenuItem value="birthDate-DESC">Aniversário (Dez-Jan)</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -1388,6 +1394,7 @@ const ProfilesManager: React.FC = () => {
         open={!!selectedProfile}
         onClose={() => setSelectedProfile(null)}
         userRole={user?.role}
+        currentUserName={user?.name}
         onEdit={() => {
           setEditingProfile(selectedProfile);
           setSelectedProfile(null);

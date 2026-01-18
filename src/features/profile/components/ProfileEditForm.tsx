@@ -98,29 +98,19 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      const payload: UpdateProfileDto = {};
-      if (formData.name && formData.name.trim() !== profile?.name) {
-        payload.name = formData.name.trim();
-      }
-      if (formData.email && formData.email.trim() !== profile?.email) {
-        payload.email = normalizeEmail(formData.email);
-      }
-      const nextPhoneDigits = digitsOnly(formData.phone);
-      const prevPhoneDigits = digitsOnly(profile?.phone);
-      if (nextPhoneDigits && nextPhoneDigits !== prevPhoneDigits) {
-        payload.phone = nextPhoneDigits;
-      }
+      const payload: UpdateProfileDto = {
+        name: formData.name ? formData.name.trim() : undefined,
+        email: formData.email ? normalizeEmail(formData.email) : undefined,
+        phone: digitsOnly(formData.phone) || undefined,
+        cpf: digitsOnly(formData.cpf) || undefined,
+      };
 
-      const nextCpfDigits = digitsOnly(formData.cpf);
-      const prevCpfDigits = digitsOnly(profile?.cpf);
+      console.log('ProfileEditForm Payload:', payload);
 
-      // Send CPF if it's new/changed, or send empty string if user cleared it (though validator might block that if required, here it's optional)
-      if (nextCpfDigits !== prevCpfDigits) {
-        payload.cpf = nextCpfDigits;
-      }
+      Object.keys(payload).forEach(key => payload[key as keyof UpdateProfileDto] === undefined && delete payload[key as keyof UpdateProfileDto]);
 
       if (Object.keys(payload).length === 0) {
-        onError('Nenhuma alteração foi feita');
+        onError('Nenhuma alteração detectada para enviar.');
         setIsSubmitting(false);
         return;
       }
@@ -141,7 +131,6 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
       } else if (errorField === 'email') {
         setErrors({ email: errorMessage });
       } else {
-        // Fallback logic based on message content
         if (errorMessage.toLowerCase().includes('cpf')) {
           setErrors({ cpf: errorMessage });
         } else if (errorMessage.toLowerCase().includes('email') || errorMessage.includes('já está em uso')) {

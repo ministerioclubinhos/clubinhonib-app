@@ -82,29 +82,29 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      const payload: UpdatePersonalDataDto = {};
-
+      // Simplificado: Envia sempre os dados atuais do formulário
       const newBirthDate = birthDate ? birthDate.format('YYYY-MM-DD') : '';
-      const currentBirthDate = personalData?.birthDate || '';
-      if (newBirthDate !== currentBirthDate) {
-        payload.birthDate = newBirthDate || undefined;
-      }
 
-      if (formData.gender !== (personalData?.gender || '')) {
-        payload.gender = formData.gender || undefined;
-      }
-      if (formData.gaLeaderName?.trim() !== (personalData?.gaLeaderName || '')) {
-        payload.gaLeaderName = formData.gaLeaderName?.trim() || undefined;
-      }
+      const payload: UpdatePersonalDataDto = {
+        birthDate: newBirthDate || undefined,
+        gender: formData.gender || undefined,
+        gaLeaderName: formData.gaLeaderName?.trim() || undefined,
+        gaLeaderContact: digitsOnly(formData.gaLeaderContact) || undefined,
+      };
 
-      const nextContact = digitsOnly(formData.gaLeaderContact);
-      const prevContact = digitsOnly(personalData?.gaLeaderContact);
-      if (nextContact !== prevContact) {
-        payload.gaLeaderContact = nextContact || undefined;
+      console.log('PersonalDataForm Payload:', payload);
+
+      if (Object.keys(payload).length === 0) {
+        // Se realmente estiver tudo vazio (o que é difícil dado que birthDate pode ser string vazia pra limpar),
+        // mas vamos deixar passar se tiver valor.
+        // Na verdade, se tudo for undefined, o objeto terá chaves com valores undefined.
+        // A API deve ignorar undefineds ou tratar.
+        // Vamos limpar chaves undefined para garantir.
+        Object.keys(payload).forEach(key => payload[key as keyof UpdatePersonalDataDto] === undefined && delete payload[key as keyof UpdatePersonalDataDto]);
       }
 
       if (Object.keys(payload).length === 0) {
-        onError('Nenhuma alteração foi feita');
+        onError('Nenhuma alteração detectada para enviar.');
         setIsSubmitting(false);
         return;
       }
