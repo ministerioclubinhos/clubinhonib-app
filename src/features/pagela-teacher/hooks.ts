@@ -26,18 +26,35 @@ function useDebouncedValue<T>(value: T, delay = 250) {
   return debounced;
 }
 
-export function useChildrenBrowser() {
-  const [q, setQ] = useState("");
+export function useChildrenBrowser(pageSize: number = 20) {
+  const [searchString, setSearchString] = useState("");
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(undefined);
+  const [acceptedChristFilter, setAcceptedChristFilter] = useState<boolean | undefined>(undefined);
   const [items, setItems] = useState<ChildSimpleResponseDto[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setChildrenError] = useState<string>("");
 
-  const search = useCallback(async (_term: string) => {
+  const debouncedSearch = useDebouncedValue(searchString, 300);
+
+  const fetchChildren = useCallback(async (pageNum: number) => {
     setLoading(true);
     setChildrenError("");
     try {
-      const list = await apiFetchChildSimple();
-      setItems(list);
+      const response = await apiFetchChildSimple({
+        searchString: debouncedSearch || undefined,
+        isActive: isActiveFilter,
+        acceptedChrist: acceptedChristFilter,
+        page: pageNum,
+        limit: pageSize,
+      });
+
+      setItems(response.data || []);
+      setTotalPages(response.meta?.totalPages || 1);
+      setTotalItems(response.meta?.totalItems || 0);
+      setPage(pageNum);
     } catch (e: any) {
       setChildrenError(
         e?.response?.data?.message || e?.message || "Erro ao listar crianças"
@@ -45,24 +62,40 @@ export function useChildrenBrowser() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [debouncedSearch, isActiveFilter, acceptedChristFilter, pageSize]);
 
   useEffect(() => {
-    search("");
-  }, [search]);
+    fetchChildren(1);
+  }, [fetchChildren]);
 
-  const onChangeQ = (v: string) => {
-    setQ(v);
-    search(v);
-  };
+  const handlePageChange = useCallback((newPage: number) => {
+    fetchChildren(newPage);
+  }, [fetchChildren]);
 
   const refetch = useCallback(async () => {
-    await search(q);
-  }, [search, q]);
+    await fetchChildren(page);
+  }, [fetchChildren, page]);
 
   const byId = useMemo(() => new Map(items.map((c) => [c.id, c])), [items]);
 
-  return { q, onChangeQ, items, byId, loading, error, setError: setChildrenError, refetch };
+  return {
+    searchString,
+    setSearchString,
+    isActiveFilter,
+    setIsActiveFilter,
+    acceptedChristFilter,
+    setAcceptedChristFilter,
+    items,
+    byId,
+    loading,
+    error,
+    setError: setChildrenError,
+    refetch,
+    page,
+    totalPages,
+    totalItems,
+    handlePageChange,
+  };
 }
 
 export function useChildPagelas(

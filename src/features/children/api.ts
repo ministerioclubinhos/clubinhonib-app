@@ -34,9 +34,23 @@ export async function apiFetchChild(id: string) {
   return data;
 }
 
-export async function apiFetchChildSimple() {
-  const { data } = await api.get<ChildSimpleResponseDto[]>(`/children/simple`);
-  return data;
+export async function apiFetchChildSimple(params?: {
+  searchString?: string;
+  isActive?: boolean;
+  acceptedChrist?: boolean;
+  page?: number;
+  limit?: number;
+}) {
+  const { data } = await api.get<Paginated<ChildSimpleResponseDto>>(`/children/simple`, {
+    params: {
+      searchString: params?.searchString || undefined,
+      isActive: params?.isActive !== undefined ? params.isActive : undefined,
+      acceptedChrist: params?.acceptedChrist !== undefined ? params.acceptedChrist : undefined,
+      page: params?.page || 1,
+      limit: params?.limit || 20,
+    },
+  });
+  return data; // Return full paginated response
 }
 
 export async function apiCreateChild(payload: CreateChildForm) {

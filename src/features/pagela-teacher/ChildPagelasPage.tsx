@@ -46,10 +46,10 @@ export default function ChildPagelasPage() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const { byId, loading: loadingChildren, error: cError, setError: setCErr, onChangeQ } =
+  const { byId, loading: loadingChildren, error: cError, setError: setCErr, setSearchString } =
     useChildrenBrowser();
   React.useEffect(() => {
-    if (!loc.state?.child && !byId.get(childId)) onChangeQ("");
+    if (!loc.state?.child && !byId.get(childId)) setSearchString("");
   }, [childId]);
 
   const child = loc.state?.child || byId.get(childId) || null;
