@@ -275,6 +275,7 @@ const WeekMaterialsList = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.4, delay: index * 0.1 }}
                                             whileHover={{ y: -4 }}
+                                            style={{ height: '100%' }} 
                                         >
                                             <Card
                                                 sx={{
