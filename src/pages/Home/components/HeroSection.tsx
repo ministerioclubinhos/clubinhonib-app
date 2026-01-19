@@ -91,7 +91,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
             variant="h1"
             component="h1"
             sx={{
-              fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem', lg: '5.5rem' },
+              fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.2rem', lg: '5rem' },
               fontWeight: 900,
               background: 'linear-gradient(45deg, #FFE55C 30%, #FFD700 90%)',
               backgroundClip: 'text',
@@ -101,6 +101,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
               fontFamily: "'Poppins', sans-serif",
               mb: { xs: 2, md: 3 },
               lineHeight: 1.1,
+              letterSpacing: { xs: 'normal', md: '-0.02em', lg: '-0.03em' },
             }}
           >
             Bem-vindo ao Clubinhos NIB

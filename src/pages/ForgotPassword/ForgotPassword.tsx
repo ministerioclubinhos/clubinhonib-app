@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '@/config/axiosConfig';
 
 const MESSAGES = {
-    VERIFICATION_NEEDED: 'Seu email ainda não foi verificado na AWS. Um novo email de verificação foi enviado.',
+    VERIFICATION_NEEDED: 'Seu email ainda não foi verificado. Um novo email de verificação foi enviado.',
     SUCCESS_RESET_LINK: 'As instruções de recuperação foram enviadas para o seu email.',
     SUCCESS_GENERIC: 'Solicitação processada. Verifique seu email.',
     ERROR_NOT_FOUND: 'Email não encontrado em nosso cadastro.',

@@ -47,7 +47,7 @@ export type ChildSimpleResponseDto = {
   guardianName: string;
   guardianPhone: string;
   gender: string;
-  clubId: string;
+  clubId: string | null;
   isActive: boolean;
   acceptedChrists: AcceptedChristShortDto[];
 };
