@@ -24,6 +24,7 @@ const MobileNavigation: React.FC = () => {
         anchor="left"
         open={open}
         onClose={closeDrawer}
+        sx={{ zIndex: 1230 }} // Higher than Footer (1220)
         ModalProps={{ keepMounted: true }}
         PaperProps={{
           sx: {

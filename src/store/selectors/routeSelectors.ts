@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../slices';
 import { MediaTargetType } from '../slices/types';
-import { UserRole } from '../slices/auth/authSlice';
+import { UserRole } from '@/types/shared';
 
 export const selectVideoRoutes = createSelector(
   [(state: RootState) => state.routes.routes],

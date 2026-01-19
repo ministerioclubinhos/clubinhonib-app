@@ -1,9 +1,10 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState as RootStateType } from "@/store/slices";
-import { Box, CircularProgress, Typography } from "@mui/material";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { logout } from "@/store/slices/auth/authSlice";
+import { Box, CircularProgress, Typography, Button } from "@mui/material";
+import { UserRole } from "@/types/shared";
 
 interface ProtectedRouteProps {
   requiredRole?: UserRole | UserRole[];
@@ -17,9 +18,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   adminBypass = true,
 }) => {
   const location = useLocation();
+  const dispatch = useDispatch();
   const { isAuthenticated, user, loadingUser, initialized, accessToken } = useSelector(
     (state: RootStateType) => state.auth
   );
+
+  const handleLogout = () => {
+    dispatch(logout());
+    window.location.href = '/login';
+  };
 
   if (!initialized || loadingUser || (accessToken && !user)) {
     return (
@@ -30,13 +37,29 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          gap: 2,
+          gap: 3,
+          px: 2,
         }}
       >
         <CircularProgress aria-label="Carregando autenticação" />
         <Typography variant="body2" color="text.secondary">
           Verificando autenticação...
         </Typography>
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={handleLogout}
+          sx={{
+            mt: 2,
+            borderWidth: 2,
+            '&:hover': {
+              borderWidth: 2,
+              bgcolor: 'rgba(211, 47, 47, 0.04)',
+            }
+          }}
+        >
+          Sair
+        </Button>
       </Box>
     );
   }

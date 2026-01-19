@@ -2,12 +2,13 @@ import * as React from "react";
 import {
   Box, Alert, Grid, Paper, TextField, InputAdornment,
   Typography, CircularProgress, Button, Fab, IconButton, Tooltip,
-  useMediaQuery, useTheme
+  useMediaQuery, useTheme, Pagination, Select, MenuItem, FormControl, InputLabel
 } from "@mui/material";
-import { Search, PersonAdd, ArrowBack } from "@mui/icons-material";
+import { Search, PersonAdd, ArrowBack, FilterAltOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
+import { UserRole } from "@/types/shared";
 
 import { useChildrenBrowser } from "./hooks";
 import ChildCard from "./components/ChildCard";
@@ -22,27 +23,29 @@ export default function ChildrenBrowserPage() {
   const nav = useNavigate();
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const club = useSelector((state: RootState) => (state.auth as any).user?.teacherProfile?.club);
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const pageSize = isMobile ? 5 : 10;
+
+  const user = useSelector((state: RootState) => (state.auth as any).user);
+  const isAdmin = user?.role === UserRole.ADMIN;
 
   const {
+    searchString,
+    setSearchString,
+    isActiveFilter,
+    setIsActiveFilter,
+    acceptedChristFilter,
+    setAcceptedChristFilter,
     items,
     loading,
     error,
     setError,
     refetch,
-  } = club ? useChildrenBrowser() : { items: [], loading: false, error: "", setError: () => { }, refetch: () => { } };
-
-  const [query, setQuery] = React.useState("");
-  const filteredItems = React.useMemo(() => {
-    const s = query.trim().toLowerCase();
-    if (!s) return items;
-    return items.filter((c) => {
-      const name = c.name?.toLowerCase() ?? "";
-      const gname = c.guardianName?.toLowerCase() ?? "";
-      const gphone = c.guardianPhone?.toLowerCase() ?? "";
-      return name.includes(s) || gname.includes(s) || gphone.includes(s);
-    });
-  }, [items, query]);
+    page,
+    totalPages,
+    totalItems,
+    handlePageChange,
+  } = useChildrenBrowser(pageSize);
 
   const [creating, setCreating] = React.useState<CreateChildForm | null>(null);
   const [editing, setEditing] = React.useState<EditChildForm | null>(null);
@@ -175,107 +178,160 @@ export default function ChildrenBrowserPage() {
             Área das crianças
           </Typography>
 
-          {club && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ display: { xs: "none", md: "block" } }}
-            >
-              Toque em uma criança para abrir suas pagelas
-            </Typography>
-
-          )}
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ display: { xs: "none", md: "block" } }}
+          >
+            Toque em uma criança para abrir suas pagelas
+          </Typography>
         </Box>
 
-        {club && (
-          <Button
-            onClick={openCreate}
-            startIcon={<PersonAdd />}
-            variant="contained"
-            sx={{ display: { xs: "none", md: "inline-flex" } }}
-          >
-            Adicionar criança
-          </Button>
-        )}
+        <Button
+          onClick={openCreate}
+          startIcon={<PersonAdd />}
+          variant="contained"
+          sx={{ display: { xs: "none", md: "inline-flex" } }}
+        >
+          Adicionar criança
+        </Button>
       </Box>
 
-      {club && (
-        <Fab
-          color="primary"
-          aria-label="Adicionar criança"
-          onClick={openCreate}
-          sx={{
-            position: "fixed",
-            bottom: 24,
-            right: 24,
-            display: { xs: "flex", md: "none" },
-            zIndex: 1300,
-          }}
-        >
-          <PersonAdd />
-        </Fab>
+      <Fab
+        color="primary"
+        aria-label="Adicionar criança"
+        onClick={openCreate}
+        sx={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          display: { xs: "flex", md: "none" },
+          zIndex: 1300,
+        }}
+      >
+        <PersonAdd />
+      </Fab>
+
+      <Paper
+        elevation={0}
+        sx={{ p: 2, mb: 2, borderRadius: 3, border: "1px solid", borderColor: "divider" }}
+      >
+        <Typography variant="h6" fontWeight={900} sx={{ mb: 2, color: "#143a2b" }}>
+          Selecionar Criança {totalItems > 0 && `(${totalItems})`}
+        </Typography>
+
+        <Box sx={{
+          display: 'flex',
+          gap: 2,
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'stretch', md: 'center' },
+          mb: 2
+        }}>
+          <TextField
+            value={searchString}
+            onChange={(e) => setSearchString(e.target.value)}
+            size="small"
+            fullWidth
+            placeholder="Buscar por nome ou telefone do responsável…"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ flex: { md: 1 } }}
+          />
+
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', md: 180 } }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={isActiveFilter === undefined ? 'all' : isActiveFilter ? 'active' : 'inactive'}
+              onChange={(e) => {
+                const val = e.target.value;
+                setIsActiveFilter(val === 'all' ? undefined : val === 'active');
+              }}
+              label="Status"
+            >
+              <MenuItem value="all">Todas</MenuItem>
+              <MenuItem value="active">Ativas</MenuItem>
+              <MenuItem value="inactive">Desativadas</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', md: 200 } }}>
+            <InputLabel>Decisão</InputLabel>
+            <Select
+              value={acceptedChristFilter === undefined ? 'all' : acceptedChristFilter ? 'accepted' : 'not_accepted'}
+              onChange={(e) => {
+                const val = e.target.value;
+                setAcceptedChristFilter(val === 'all' ? undefined : val === 'accepted');
+              }}
+              label="Decisão"
+            >
+              <MenuItem value="all">Todas</MenuItem>
+              <MenuItem value="accepted">Aceitaram Cristo</MenuItem>
+              <MenuItem value="not_accepted">Não Aceitaram</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Button
+            onClick={() => {
+              setSearchString("");
+              setIsActiveFilter(undefined);
+              setAcceptedChristFilter(undefined);
+            }}
+            disabled={!searchString && isActiveFilter === undefined && acceptedChristFilter === undefined}
+            startIcon={<FilterAltOff />}
+            variant="outlined"
+            size="small"
+            sx={{ minWidth: { xs: '100%', md: 'auto' } }}
+          >
+            Limpar Filtros
+          </Button>
+        </Box>
+      </Paper>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+          {error}
+        </Alert>
       )}
 
-      {!club ? (
-        <Alert severity="warning" sx={{ mt: 4 }}>
-          <Typography fontWeight="bold">
-            Você não está vinculado a nenhum clubinho.
-          </Typography>
-          <Typography>
-            Entre em contato com <strong>seu Coordenador</strong> ou envie uma mensagem para  <strong>(92) 99127-4881</strong> ou <strong>(92) 98155-3139</strong>.
-          </Typography>
-        </Alert>
+      {loading && !items.length ? (
+        <Box textAlign="center" my={6}>
+          <CircularProgress />
+        </Box>
       ) : (
         <>
-          <Paper
-            elevation={0}
-            sx={{ p: 2, mb: 2, borderRadius: 3, border: "1px solid", borderColor: "divider" }}
-          >
-            <Typography variant="h6" fontWeight={900} sx={{ mb: 1, color: "#143a2b" }}>
-              Selecionar Criança
-            </Typography>
-            <TextField
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              size="small"
-              fullWidth
-              placeholder="Buscar por nome ou telefone do responsável…"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Paper>
+          <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
+            {items.map((child) => (
+              <Grid key={child.id} item xs={12} sm={6} md={4} lg={3} xl={2.4 as any}>
+                <ChildCard
+                  child={child}
+                  onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
+                  onEdit={(c) => openEdit(c.id)}
+                  onRefresh={refetch}
+                  onToggleActive={(c) => {
+                    setConfirmToggleActive(c);
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
-              {error}
-            </Alert>
-          )}
-
-          {loading && !items.length ? (
-            <Box textAlign="center" my={6}>
-              <CircularProgress />
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(_, newPage) => handlePageChange(newPage)}
+                color="primary"
+                size={isMobile ? "small" : "medium"}
+                showFirstButton
+                showLastButton
+              />
             </Box>
-          ) : (
-            <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
-              {filteredItems.map((child) => (
-                <Grid key={child.id} item xs={12} sm={6} md={4} lg={3} xl={2.4 as any}>
-                  <ChildCard
-                    child={child}
-                    onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
-                    onEdit={(c) => openEdit(c.id)}
-                    onRefresh={refetch}
-                    onToggleActive={(c) => {
-                      setConfirmToggleActive(c);
-                    }}
-                  />
-                </Grid>
-              ))}
-            </Grid>
           )}
         </>
       )}
@@ -318,7 +374,7 @@ export default function ChildrenBrowserPage() {
         }}
         onConfirm={async () => {
           if (!confirmToggleActive) return;
-          
+
           try {
             const fullChild = await apiFetchChild(confirmToggleActive.id);
             await toggleActive(fullChild.id, 1, 20, undefined, undefined);
@@ -330,6 +386,6 @@ export default function ChildrenBrowserPage() {
         }}
         loading={dialogLoading}
       />
-    </Box>
+    </Box >
   );
 }

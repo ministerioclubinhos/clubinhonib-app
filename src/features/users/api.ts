@@ -1,5 +1,5 @@
 import api from "@/config/axiosConfig";
-import { CreateUserForm, UsersPage, UserRow, UpadateUserForm } from "./types";
+import { CreateUserForm, UsersPage, UserRow, UpdateUserForm } from "./types";
 import { extractPhoneDigits } from "@/components/common/inputs";
 
 export async function apiListUsers(params: {
@@ -42,7 +42,7 @@ export async function apiListUsers(params: {
 export async function apiCreateUser(
   payload: Omit<CreateUserForm, "confirmPassword">
 ): Promise<UserRow> {
-  const { name, email, password, phone, role } = payload;
+  const { name, email, password, phone, role, active } = payload;
 
   const { data } = await api.post<UserRow>("/users", {
     name,
@@ -50,6 +50,7 @@ export async function apiCreateUser(
     password,
     phone: phone ? extractPhoneDigits(phone) : undefined,
     role,
+    active,
   });
 
   return data;
@@ -57,22 +58,24 @@ export async function apiCreateUser(
 
 export async function apiUpdateUser(
   id: string,
-  payload: UpadateUserForm
+  payload: UpdateUserForm
 ): Promise<UserRow> {
   console.log(payload);
-  
+
   const {
     name,
+    email,
     role,
     phone,
     active,
     completed,
     commonUser,
     password,
-  } = payload;  
+  } = payload;
 
   const { data } = await api.put<UserRow>(`/users/${id}`, {
     name,
+    email,
     role,
     phone: phone ? extractPhoneDigits(phone) : undefined,
     active,
@@ -86,4 +89,18 @@ export async function apiUpdateUser(
 
 export async function apiDeleteUser(id: string): Promise<void> {
   await api.delete(`/users/${id}`);
+}
+
+export async function apiUpdateUserImage(
+  id: string,
+  file: File
+): Promise<UserRow> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const { data } = await api.patch<UserRow>(`/users/${id}/image`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return data;
 }

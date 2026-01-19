@@ -31,7 +31,7 @@ import {
 } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { SENSITIVE_KEYS, UserRow } from "../types";
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 import { buildWhatsappLink } from "@/utils/whatsapp";
 import { formatDate } from "@/utils/dateUtils";
 import { roleChipColor, anchorProps, isCoreOrSensitive } from "@/utils/textUtils";
@@ -74,8 +74,8 @@ export default function UserViewDialog({ open, user, onClose }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-const { user: loggedUser } = useSelector((state: RootState) => state.auth);
-const waLink = useMemo(() => (user ? buildWhatsappLink(user.name, loggedUser?.name, user.phone) ?? undefined : undefined), [user, loggedUser?.name]);
+  const { user: loggedUser } = useSelector((state: RootState) => state.auth);
+  const waLink = useMemo(() => (user ? buildWhatsappLink(user.name, loggedUser?.name, user.phone) ?? undefined : undefined), [user, loggedUser?.name]);
   const telLink = user?.phone ? `tel:${user.phone}` : undefined;
 
   return (

@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, CircularProgress, Toolbar } from '@mui/material';
+import { Box, CircularProgress, Toolbar, Button, Typography, Stack } from '@mui/material';
 
 import './App.css';
 import './styles/Global.css';
@@ -18,6 +18,8 @@ import Event from './pages/Event/Event';
 import Login from './pages/Login/Login';
 import TeacherArea from './pages/TeacherArea/TeacherArea';
 import ClubinhoFeedView from './pages/PageView/ClubinhoFeedView/ClubinhoFeedView';
+import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
+import ResetPassword from './pages/ResetPassword/ResetPassword';
 
 import MeditationPageCreator from './components/Adm/PageCreator/Templates/MeditationPageCreator/MeditationPageCreator';
 import ImagePageCreator from './components/Adm/PageCreator/Templates/ImagePageCreator/ImagePageCreator';
@@ -29,7 +31,8 @@ import AdminDashboardPage from './components/Adm/AdminDashboardPage';
 import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 
 import { fetchRoutes } from './store/slices/route/routeSlice';
-import { UserRole, initAuth } from './store/slices/auth/authSlice';
+import { initAuth, logout } from './store/slices/auth/authSlice';
+import { UserRole } from "@/types/shared";
 
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
@@ -64,33 +67,72 @@ import VideosManager from './features/video-pages/VideosManager';
 import WeekMaterialManager from './features/week-materials/WeekMaterialManager';
 import StatisticsPage from './features/statistics/StatisticsPage';
 import ClubControlPage from './features/club-control/ClubControlPage';
+import { ProfilesManager, ProfilePage } from './features/profile';
+import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
   const dynamicRoutes = useSelector((state: RootStateType) => state.routes.routes);
-  const { initialized, loadingUser } = useSelector((state: RootStateType) => state.auth);
+  const { initialized, loadingUser, isAuthenticated } = useSelector((state: RootStateType) => state.auth);
+  const [forceReady, setForceReady] = useState(false);
 
   useEffect(() => {
     dispatch(fetchRoutes());
     dispatch(initAuth());
+
+    const fallbackTimeout = setTimeout(() => {
+      setForceReady(true);
+    }, 15000);
+
+    return () => clearTimeout(fallbackTimeout);
   }, [dispatch]);
 
-  if (!initialized || loadingUser) {
+  const handleLogout = () => {
+    dispatch(logout());
+    setForceReady(true);
+    window.location.href = '/login';
+  };
+
+  if (!forceReady && (!initialized || loadingUser)) {
     return (
       <Box
         sx={{
           height: '100vh',
           width: '100vw',
           display: 'flex',
+          flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          bgcolor: '#f0f0f0',
+          background: 'linear-gradient(135deg, #E8F5E9 0%, #FFFFFF 100%)',
+          backgroundAttachment: 'fixed',
+          gap: 3,
+          px: 2,
         }}
       >
         <CircularProgress size={48} />
+        <Typography variant="body1" color="text.secondary">
+          Verificando autenticação...
+        </Typography>
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={handleLogout}
+          sx={{
+            mt: 2,
+            borderWidth: 2,
+            '&:hover': {
+              borderWidth: 2,
+              bgcolor: 'rgba(211, 47, 47, 0.04)',
+            }
+          }}
+        >
+          Sair
+        </Button>
       </Box>
     );
   }
+
+
 
   return (
     <BrowserRouter>
@@ -107,6 +149,11 @@ function App() {
               <Route path="/eventos" element={<Event />} />
               <Route path="/feed-clubinho" element={<ClubinhoFeedView feed />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/esqueci-senha" element={<ForgotPassword />} />
+              <Route path="/esqueci-senha" element={<ForgotPassword />} />
+              <Route path="/redefinir-senha" element={<ResetPassword />} />
+              <Route path="/recuperar-senha/:token" element={<ResetPassword />} />
+              <Route path="/verificar-email" element={<EmailVerificationInstructions />} />
               <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
               <Route path="/cadastrar" element={<Register commonUser />} />
               <Route path="*" element={<Home />} />
@@ -119,6 +166,7 @@ function App() {
                 <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
                 <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
                 <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
+                <Route path="/meu-perfil" element={<ProfilePage />} />
               </Route>
 
               <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>
@@ -138,6 +186,7 @@ function App() {
                   <Route path="paginas-ideias" element={<IdeasManager />} />
                   <Route path="criar-pagina" element={<SelecPageTemplate />} />
                   <Route path="usuarios" element={<UsersManager />} />
+                  <Route path="perfis" element={<ProfilesManager />} />
                   <Route path="coordenadores" element={<CoordinatorProfilesManager />} />
                   <Route path="professores" element={<TeacherProfilesManager />} />
                   <Route path="criancas" element={<ChildrenManager />} />

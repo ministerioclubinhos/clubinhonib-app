@@ -1,4 +1,4 @@
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 
 export type UserRow = {
   id: string;
@@ -19,17 +19,19 @@ export type CreateUserForm = {
   password: string;
   confirmPassword?: string;
   phone?: string;
-  role: UserRole
+  role: UserRole;
+  active?: boolean;
 };
 
-export type UpadateUserForm = {
-  name: string;
-  role: UserRole;
-  phone: string;
-  active: boolean;
-  completed: boolean;
-  commonUser: boolean;
-  password: string;
+export type UpdateUserForm = {
+  name?: string;
+  email?: string;
+  role?: UserRole;
+  phone?: string;
+  active?: boolean;
+  completed?: boolean;
+  commonUser?: boolean;
+  password?: string;
   confirmPassword?: string;
 };
 

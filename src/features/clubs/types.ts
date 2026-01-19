@@ -1,4 +1,4 @@
-import { UserRole } from "@/store/slices/auth/authSlice";
+import { UserRole } from "@/types/shared";
 
 export type Weekday =
   | "monday" | "tuesday" | "wednesday" | "thursday"
