@@ -23,10 +23,10 @@ import {
 } from 'recharts';
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface ClubPerformanceChartProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filters }) => {
@@ -48,13 +48,13 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
         presenceRate: Number(club.presenceRate) || 0,
         clubNumber: Number(club.clubNumber) || 0,
       }));
-    
+
     return sorted;
   }, [data?.byClub]);
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -64,7 +64,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
 
   if (!data) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar dados dos clubinhos</Typography>
       </Paper>
     );
@@ -72,7 +72,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
 
   if (!data.byClub || data.byClub.length === 0) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="text.secondary">Nenhum dado de clubinho disponível para o período selecionado</Typography>
       </Paper>
     );
@@ -88,11 +88,11 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
   const getMedalColor = (position: number) => {
     switch (position) {
       case 0:
-        return '#FFD700'; 
+        return '#FFD700';
       case 1:
-        return '#C0C0C0'; 
+        return '#C0C0C0';
       case 2:
-        return '#CD7F32'; 
+        return '#CD7F32';
       default:
         return theme.palette.grey[400];
     }
@@ -162,12 +162,12 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
       {topClubs.length > 0 ? (
         <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
           <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
-            <BarChart 
-              data={topClubs} 
+            <BarChart
+              data={topClubs}
               margin={{ top: 20, right: isMobile ? 10 : 30, left: isMobile ? 10 : 20, bottom: isMobile ? 80 : 60 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-              <XAxis 
+              <XAxis
                 dataKey="clubNumber"
                 tickFormatter={(value) => `#${value}`}
                 stroke={theme.palette.text.secondary}
@@ -184,9 +184,9 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Bar 
-                dataKey="presenceRate" 
-                name="Taxa de Presença (%)" 
+              <Bar
+                dataKey="presenceRate"
+                name="Taxa de Presença (%)"
                 radius={[8, 8, 0, 0]}
                 isAnimationActive={true}
               >
@@ -225,7 +225,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
-                
+
                 <Avatar
                   sx={{
                     width: { xs: 36, sm: 40 },

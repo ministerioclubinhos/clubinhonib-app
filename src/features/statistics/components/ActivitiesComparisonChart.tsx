@@ -26,10 +26,10 @@ import {
 } from 'recharts';
 import { CompareArrows } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface ActivitiesComparisonChartProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 type ViewMode = 'radar' | 'bar';
@@ -49,7 +49,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
     );
   }
 
-  if (!data) {
+  if (!data || !data.byGender || !data.byAgeGroup || !data.byParticipationTime) {
     return (
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar dados</Typography>
@@ -126,7 +126,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
     <Paper
       elevation={0}
       sx={{
-        p: 3,
+        p: { xs: 1.5, sm: 3 },
         borderRadius: 3,
         background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.secondary.main}03 100%)`,
         border: `2px solid ${theme.palette.divider}`,
@@ -158,7 +158,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         </Box>
       </Box>
 
-      <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(156, 39, 176, 0.08)', borderRadius: 2 }}>
+      <Box sx={{ mb: 3, p: { xs: 1.5, sm: 2 }, bgcolor: 'rgba(156, 39, 176, 0.08)', borderRadius: 2 }}>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           Taxas Médias Gerais
         </Typography>
@@ -199,7 +199,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
       )}
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
-        
+
         <Grid item xs={12} md={4}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Gênero
@@ -259,7 +259,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         </Grid>
       </Grid>
 
-      <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
+      <Box sx={{ mt: 3, p: { xs: 1.5, sm: 2 }, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           💡 Insights
         </Typography>

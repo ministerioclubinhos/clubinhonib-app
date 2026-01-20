@@ -1,12 +1,3 @@
-/**
- * Mensagens de erro padrão para exibição ao usuário.
- * Use estas constantes em vez de strings hardcoded para manter consistência.
- */
-
-// ============================================================================
-// Mensagens Genéricas
-// ============================================================================
-
 export const GENERIC_ERROR_MESSAGES = {
     UNEXPECTED: 'Ocorreu um erro inesperado.',
     INTERNAL_SERVER: 'Erro interno do servidor.',
@@ -17,10 +8,6 @@ export const GENERIC_ERROR_MESSAGES = {
     SAVE_ERROR: 'Erro ao salvar as alterações.',
 } as const;
 
-// ============================================================================
-// Mensagens de Autenticação
-// ============================================================================
-
 export const AUTH_ERROR_MESSAGES = {
     INVALID_CREDENTIALS: 'Email ou senha incorretos.',
     USER_INACTIVE: 'Usuário inativo. Entre em contato com o administrador.',
@@ -29,10 +16,6 @@ export const AUTH_ERROR_MESSAGES = {
     SESSION_EXPIRED: 'Sua sessão expirou. Por favor, faça login novamente.',
     INVALID_FORM: 'Por favor, insira um email válido e uma senha com pelo menos 6 caracteres.',
 } as const;
-
-// ============================================================================
-// Mensagens de Recuperação de Senha
-// ============================================================================
 
 export const PASSWORD_RECOVERY_MESSAGES = {
     VERIFICATION_NEEDED: 'Seu email ainda não foi verificado. Um novo email de verificação foi enviado.',
@@ -44,10 +27,6 @@ export const PASSWORD_RECOVERY_MESSAGES = {
     PASSWORD_CHANGED: 'Senha alterada com sucesso! Redirecionando para o login...',
     PASSWORD_SAME_AS_CURRENT: 'A nova senha deve ser diferente da senha atual.',
 } as const;
-
-// ============================================================================
-// Mensagens de Validação de Formulário
-// ============================================================================
 
 export const FORM_VALIDATION_MESSAGES = {
     PASSWORDS_DONT_MATCH: 'As senhas não coincidem.',
@@ -86,19 +65,11 @@ export const FORM_VALIDATION_MESSAGES = {
     COMMENT_SAVE_ERROR: 'Erro ao salvar comentário',
 } as const;
 
-// ============================================================================
-// Mensagens de Permissão
-// ============================================================================
-
 export const PERMISSION_ERROR_MESSAGES = {
     ACCESS_DENIED: 'Você não tem permissão para acessar este recurso.',
     INSUFFICIENT_PERMISSIONS: 'Permissões insuficientes para esta operação.',
     FEATURE_DISABLED: 'Esta funcionalidade está temporariamente desabilitada.',
 } as const;
-
-// ============================================================================
-// Tipos
-// ============================================================================
 
 export type GenericErrorMessage = typeof GENERIC_ERROR_MESSAGES[keyof typeof GENERIC_ERROR_MESSAGES];
 export type AuthErrorMessage = typeof AUTH_ERROR_MESSAGES[keyof typeof AUTH_ERROR_MESSAGES];

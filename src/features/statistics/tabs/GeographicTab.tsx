@@ -1,9 +1,9 @@
 import React from 'react';
 import { GeographicChart } from '../components';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface GeographicTabProps {
-	filters: StatisticsFilters;
+	filters: PagelasStatsQueryDto;
 }
 
 const GeographicTab: React.FC<GeographicTabProps> = ({ filters }) => {

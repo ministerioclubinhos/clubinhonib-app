@@ -25,10 +25,10 @@ import {
 } from 'recharts';
 import { ShowChart, BarChart as BarChartIcon, Timeline } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface AdvancedPagelasChartProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 type ChartType = 'line' | 'bar' | 'area' | 'composed';
@@ -66,12 +66,13 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
     );
   }
 
-  const combinedData = data.timeSeries.total.map((item, index) => ({
+  const timeSeries = data.timeSeries;
+  const combinedData = timeSeries.total.map((item, index) => ({
     date: item.date,
     total: item.value,
-    presence: data.timeSeries.presence[index]?.value || 0,
-    meditation: data.timeSeries.meditation[index]?.value || 0,
-    verseRecitation: data.timeSeries.verseRecitation[index]?.value || 0,
+    presence: timeSeries.presence?.[index]?.value || 0,
+    meditation: timeSeries.meditation?.[index]?.value || 0,
+    verseRecitation: timeSeries.verseRecitation?.[index]?.value || 0,
   }));
 
   const metrics = [
@@ -119,7 +120,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
   const renderChart = () => {
     const commonProps = {
       data: combinedData,
-      margin: isMobile 
+      margin: isMobile
         ? { top: 10, right: 10, left: 0, bottom: 0 }
         : { top: 10, right: 30, left: 0, bottom: 0 },
     };
@@ -137,15 +138,15 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
               ))}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               stroke={theme.palette.text.secondary}
               angle={isMobile ? -45 : 0}
               textAnchor={isMobile ? 'end' : 'middle'}
               height={isMobile ? 60 : 30}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
-            <YAxis 
+            <YAxis
               stroke={theme.palette.text.secondary}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
@@ -181,15 +182,15 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
               ))}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               stroke={theme.palette.text.secondary}
               angle={isMobile ? -45 : 0}
               textAnchor={isMobile ? 'end' : 'middle'}
               height={isMobile ? 60 : 30}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
-            <YAxis 
+            <YAxis
               stroke={theme.palette.text.secondary}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
@@ -216,15 +217,15 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
         return (
           <ComposedChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               stroke={theme.palette.text.secondary}
               angle={isMobile ? -45 : 0}
               textAnchor={isMobile ? 'end' : 'middle'}
               height={isMobile ? 60 : 30}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
-            <YAxis 
+            <YAxis
               stroke={theme.palette.text.secondary}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
@@ -248,15 +249,15 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               stroke={theme.palette.text.secondary}
               angle={isMobile ? -45 : 0}
               textAnchor={isMobile ? 'end' : 'middle'}
               height={isMobile ? 60 : 30}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
-            <YAxis 
+            <YAxis
               stroke={theme.palette.text.secondary}
               style={{ fontSize: isMobile ? 9 : 11 }}
             />
@@ -314,11 +315,11 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
         </Box>
 
         <Box sx={{ width: '100%', maxWidth: '100%', mb: { xs: 2, sm: 0 } }}>
-          <ButtonGroup 
-            size="small" 
-            variant="outlined" 
+          <ButtonGroup
+            size="small"
+            variant="outlined"
             fullWidth={isMobile}
-            sx={{ 
+            sx={{
               display: 'flex',
               flexWrap: { xs: 'wrap', sm: 'nowrap' },
               width: { xs: '100%', sm: 'auto' },

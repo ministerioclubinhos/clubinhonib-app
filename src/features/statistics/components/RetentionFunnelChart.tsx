@@ -11,10 +11,10 @@ import {
 } from '@mui/material';
 import { TrendingUp, TrendingDown, Group, Timer } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface RetentionFunnelChartProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filters }) => {
@@ -63,7 +63,7 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
     <Paper
       elevation={0}
       sx={{
-        p: 3,
+        p: { xs: 1.5, sm: 3 },
         borderRadius: 3,
         background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}03 100%)`,
         border: `2px solid ${theme.palette.divider}`,
@@ -92,7 +92,7 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
 
           return (
             <Box key={stage.timeRange} sx={{ mb: 2 }}>
-              
+
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
                 <Typography variant="h6" sx={{ minWidth: 30 }}>
                   {config.icon}
@@ -112,15 +112,16 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
               <Box
                 sx={{
                   position: 'relative',
-                  width: `${percentage}%`,
+                  width: { xs: '100%', sm: `${percentage}%` },
                   maxWidth: '100%',
-                  minWidth: '30%',
-                  height: 80,
+                  minWidth: { xs: '100%', sm: '30%' },
+                  height: { xs: 'auto', sm: 80 },
                   background: `linear-gradient(90deg, ${config.color} 0%, ${config.color}CC 100%)`,
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
-                  px: 2,
+                  px: { xs: 1.5, sm: 2 },
+                  py: { xs: 1.5, sm: 0 },
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'translateX(4px)',
@@ -271,7 +272,7 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
           </Grid>
         </Grid>
       </Box>
-    </Paper>
+    </Paper >
   );
 };
 

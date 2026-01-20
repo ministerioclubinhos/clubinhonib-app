@@ -2,10 +2,10 @@ import React from 'react';
 import { Box, Paper, Typography, CircularProgress, useTheme, Grid } from '@mui/material';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, ResponsiveContainer, Tooltip } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface RadarComparisonChartProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filters }) => {
@@ -22,7 +22,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
     );
   }
 
-  if (!data) {
+  if (!data || !data.byGender || !data.byAgeGroup) {
     return (
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar dados</Typography>
@@ -95,7 +95,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
 
   return (
     <Grid container spacing={3}>
-      
+
       <Grid item xs={12} md={6}>
         <Paper
           elevation={0}
@@ -113,7 +113,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
           <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
             Performance relativa entre meninos e meninas
           </Typography>
-          
+
           <ResponsiveContainer width="100%" height={350}>
             <RadarChart data={genderData}>
               <PolarGrid stroke={theme.palette.divider} />
@@ -175,7 +175,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
           <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
             Performance por grupos de idade
           </Typography>
-          
+
           <ResponsiveContainer width="100%" height={350}>
             <RadarChart data={ageGroupData}>
               <PolarGrid stroke={theme.palette.divider} />

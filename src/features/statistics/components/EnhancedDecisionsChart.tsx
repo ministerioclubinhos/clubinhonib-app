@@ -17,10 +17,10 @@ import {
 } from 'recharts';
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { useAcceptedChristsChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { AcceptedChristsStatsQueryDto } from '../api';
 
 interface EnhancedDecisionsChartProps {
-  filters?: StatisticsFilters;
+  filters?: AcceptedChristsStatsQueryDto;
 }
 
 export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ filters }) => {
@@ -40,25 +40,25 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
 
   if (!data) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar dados de decisões</Typography>
       </Paper>
     );
   }
 
-  const chartData = data.timeSeries && Array.isArray(data.timeSeries) 
+  const chartData = data.timeSeries && Array.isArray(data.timeSeries)
     ? data.timeSeries.map((item) => ({
-        date: item.date,
-        total: item.series?.total || 0,
-        accepted: item.series?.ACCEPTED || 0,
-        reconciled: item.series?.RECONCILED || 0,
-      }))
+      date: item.date,
+      total: item.series?.total || 0,
+      accepted: item.series?.ACCEPTED || 0,
+      reconciled: item.series?.RECONCILED || 0,
+    }))
     : [];
 
-  const totalAccepted = chartData.length > 0 
+  const totalAccepted = chartData.length > 0
     ? chartData.reduce((sum, item) => sum + (item.accepted || 0), 0)
     : (data.byGender?.reduce((sum, item) => sum + (item.accepted || 0), 0) || 0);
-  const totalReconciled = chartData.length > 0 
+  const totalReconciled = chartData.length > 0
     ? chartData.reduce((sum, item) => sum + (item.reconciled || 0), 0)
     : (data.byGender?.reduce((sum, item) => sum + (item.reconciled || 0), 0) || 0);
   const totalDecisions = totalAccepted + totalReconciled;
@@ -151,7 +151,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
 
   return (
     <Box sx={{ width: '98%', maxWidth: '98%', overflowX: 'hidden', mx: 'auto' }}>
-      
+
       <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: 3, width: '100%', maxWidth: '100%' }}>
         <Grid item xs={12} sm={6} md={4} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper
@@ -276,34 +276,34 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
       </Grid>
 
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%' }}>
-        
+
         {chartData && chartData.length > 0 && (
           <Grid item xs={12}>
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 2, sm: 3 },
-              borderRadius: 3,
-              background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}03 100%)`,
-              border: `2px solid ${theme.palette.divider}`,
-              width: '100%',
-              maxWidth: '100%',
-              overflow: 'hidden',
-            }}
-          >
-            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-              ✝️ Evolução de Decisões ao Longo do Tempo
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-              Acompanhamento temporal das decisões por Cristo
-            </Typography>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: 3,
+                background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}03 100%)`,
+                border: `2px solid ${theme.palette.divider}`,
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                ✝️ Evolução de Decisões ao Longo do Tempo
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                Acompanhamento temporal das decisões por Cristo
+              </Typography>
 
               <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
                 <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: isMobile ? 80 : 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke={theme.palette.text.secondary} 
+                  <XAxis
+                    dataKey="date"
+                    stroke={theme.palette.text.secondary}
                     style={{ fontSize: isMobile ? 10 : 12 }}
                     angle={-45}
                     textAnchor="end"
@@ -469,7 +469,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 1.5, sm: 3 },
               borderRadius: 3,
               border: `2px solid ${theme.palette.divider}`,
             }}

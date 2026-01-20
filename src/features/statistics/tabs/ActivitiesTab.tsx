@@ -1,9 +1,9 @@
 import React from 'react';
 import { ActivitiesComparisonChart } from '../components';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface ActivitiesTabProps {
-	filters: StatisticsFilters;
+	filters: PagelasStatsQueryDto;
 }
 
 const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ filters }) => {
