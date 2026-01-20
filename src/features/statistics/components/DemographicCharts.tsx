@@ -2,10 +2,10 @@ import React from 'react';
 import { Box, Paper, Typography, CircularProgress, Grid, useTheme } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface DemographicChartsProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters }) => {
@@ -20,7 +20,7 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
     );
   }
 
-  if (error || !data) {
+  if (error || !data || !data.byGender || !data.byAgeGroup || !data.byParticipationTime) {
     return (
       <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography color="error">Erro ao carregar dados demográficos</Typography>
@@ -47,9 +47,9 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
 
   return (
     <Grid container spacing={3}>
-      
+
       <Grid item xs={12} md={6}>
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
+        <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2, height: '100%' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             👥 Distribuição por Gênero
           </Typography>
@@ -87,7 +87,7 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
       </Grid>
 
       <Grid item xs={12} md={6}>
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
+        <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2, height: '100%' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             🎂 Distribuição por Faixa Etária
           </Typography>
@@ -120,7 +120,7 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
       </Grid>
 
       <Grid item xs={12}>
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             ⏱️ Análise por Tempo de Participação
           </Typography>

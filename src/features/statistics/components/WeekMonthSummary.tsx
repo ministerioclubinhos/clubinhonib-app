@@ -72,7 +72,7 @@ export const WeekMonthSummary: React.FC = () => {
   ];
 
   const getTrend = (weekValue: number, monthValue: number) => {
-    const weeklyAvg = monthValue / 4; 
+    const weeklyAvg = monthValue / 4;
     if (weekValue > weeklyAvg * 1.1) {
       return { icon: <TrendingUp />, color: theme.palette.success.main, text: 'Acima da média' };
     }
@@ -87,12 +87,12 @@ export const WeekMonthSummary: React.FC = () => {
 
   return (
     <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
-      
+
       <Grid item xs={12} md={6} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, sm: 3 },
+            p: { xs: 1.5, sm: 3 },
             borderRadius: 3,
             background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}05 100%)`,
             border: `2px solid ${theme.palette.divider}`,
@@ -112,12 +112,12 @@ export const WeekMonthSummary: React.FC = () => {
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Pagelas Registradas
             </Typography>
-            <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 3 }, mb: 2 }}>
               <Box sx={{ flex: { xs: '1 1 calc(50% - 8px)', sm: 'none' }, minWidth: 0 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.875rem' } }}>
                   Esta Semana
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' }, wordBreak: 'break-word' }}>
+                <Typography variant="h4" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.25rem', sm: '2.125rem' }, wordBreak: 'break-word' }}>
                   {data.pagelas.thisWeek.total}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
@@ -125,10 +125,10 @@ export const WeekMonthSummary: React.FC = () => {
                 </Typography>
               </Box>
               <Box sx={{ flex: { xs: '1 1 calc(50% - 8px)', sm: 'none' }, minWidth: 0 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.875rem' } }}>
                   Este Mês
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' }, wordBreak: 'break-word' }}>
+                <Typography variant="h4" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.25rem', sm: '2.125rem' }, wordBreak: 'break-word' }}>
                   {data.pagelas.thisMonth.total}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
@@ -152,12 +152,12 @@ export const WeekMonthSummary: React.FC = () => {
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Decisões por Cristo
             </Typography>
-            <Box sx={{ display: 'flex', gap: { xs: 2, sm: 3 }, mb: 2, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 3 }, mb: 2, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
               <Box sx={{ flex: { xs: '1 1 calc(50% - 8px)', sm: 'none' }, minWidth: 0 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Esta Semana
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
+                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.25rem', sm: '2.125rem' } }}>
                   {data.acceptedChrists.thisWeek}
                 </Typography>
               </Box>
@@ -165,15 +165,15 @@ export const WeekMonthSummary: React.FC = () => {
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Este Mês
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
+                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.25rem', sm: '2.125rem' } }}>
                   {data.acceptedChrists.thisMonth}
                 </Typography>
               </Box>
-              <Box sx={{ flex: { xs: '1 1 100%', sm: 'none' }, minWidth: 0 }}>
+              <Box sx={{ flex: { xs: '1 1 auto', sm: 'none' }, minWidth: 0 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Este Ano
                 </Typography>
-                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
+                <Typography variant="h4" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.25rem', sm: '2.125rem' } }}>
                   {data.acceptedChrists.thisYear}
                 </Typography>
               </Box>
@@ -248,7 +248,7 @@ export const WeekMonthSummary: React.FC = () => {
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, sm: 3 },
+            p: { xs: 1.5, sm: 3 },
             borderRadius: 3,
             background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.success.main}05 100%)`,
             border: `2px solid ${theme.palette.divider}`,
@@ -261,34 +261,34 @@ export const WeekMonthSummary: React.FC = () => {
             📊 Últimas 6 Semanas - Pagelas
           </Typography>
           <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
-            <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
-            <AreaChart data={lastSixWeeksData}>
-              <defs>
-                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.6} />
-                  <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-              <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 60 : 30} />
-              <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: theme.palette.background.paper,
-                  border: `1px solid ${theme.palette.divider}`,
-                  borderRadius: 8,
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="value"
-                name="Total"
-                stroke={theme.palette.primary.main}
-                strokeWidth={2}
-                fill="url(#colorValue)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={isMobile ? 220 : 250}>
+              <AreaChart data={lastSixWeeksData} margin={isMobile ? { top: 5, right: 0, left: -20, bottom: 0 } : { top: 10, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.6} />
+                    <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 50 : 30} tickMargin={isMobile ? 5 : 10} />
+                <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} width={isMobile ? 25 : 40} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: theme.palette.background.paper,
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 8,
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  name="Total"
+                  stroke={theme.palette.primary.main}
+                  strokeWidth={2}
+                  fill="url(#colorValue)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </Box>
         </Paper>
       </Grid>
@@ -297,7 +297,7 @@ export const WeekMonthSummary: React.FC = () => {
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, sm: 3 },
+            p: { xs: 1.5, sm: 3 },
             borderRadius: 3,
             background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.success.main}05 100%)`,
             border: `2px solid ${theme.palette.divider}`,
@@ -311,33 +311,33 @@ export const WeekMonthSummary: React.FC = () => {
           </Typography>
           <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
             <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
-            <AreaChart data={lastSixMonthsData}>
-              <defs>
-                <linearGradient id="colorDecisions" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={theme.palette.success.main} stopOpacity={0.6} />
-                  <stop offset="95%" stopColor={theme.palette.success.main} stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-              <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 60 : 30} />
-              <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: theme.palette.background.paper,
-                  border: `1px solid ${theme.palette.divider}`,
-                  borderRadius: 8,
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="value"
-                name="Decisões"
-                stroke={theme.palette.success.main}
-                strokeWidth={2}
-                fill="url(#colorDecisions)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+              <AreaChart data={lastSixMonthsData} margin={isMobile ? { top: 5, right: 0, left: -20, bottom: 0 } : { top: 10, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorDecisions" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={theme.palette.success.main} stopOpacity={0.6} />
+                    <stop offset="95%" stopColor={theme.palette.success.main} stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                <XAxis dataKey="date" stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 50 : 30} tickMargin={isMobile ? 5 : 10} />
+                <YAxis stroke={theme.palette.text.secondary} style={{ fontSize: isMobile ? 9 : 11 }} width={isMobile ? 25 : 40} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: theme.palette.background.paper,
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 8,
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  name="Decisões"
+                  stroke={theme.palette.success.main}
+                  strokeWidth={2}
+                  fill="url(#colorDecisions)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </Box>
 
           <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mt: 2, width: '100%', maxWidth: '100%', margin: 0 }}>

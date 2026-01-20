@@ -24,7 +24,7 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
   onEndDateChange,
   showDescription = true,
 }) => {
-  const isCustomPeriod = period === 'custom';
+  const isCustomPeriod = period === PeriodShortcut.CUSTOM;
   const description = showDescription ? getPeriodDescription(period, startDate, endDate) : null;
 
   return (
@@ -40,7 +40,7 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
               const value = e.target.value as PeriodShortcut | '';
               onPeriodChange(value || undefined);
 
-              if (value && value !== 'custom') {
+              if (value && value !== PeriodShortcut.CUSTOM) {
                 onStartDateChange(undefined);
                 onEndDateChange(undefined);
               }
@@ -51,13 +51,13 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
             }}
           >
             <MenuItem value="">Todos os Períodos</MenuItem>
-            <MenuItem value="today">Hoje</MenuItem>
-            <MenuItem value="this_week">Esta Semana</MenuItem>
-            <MenuItem value="this_month">Este Mês</MenuItem>
-            <MenuItem value="last_7_days">Últimos 7 Dias</MenuItem>
-            <MenuItem value="last_30_days">Últimos 30 Dias</MenuItem>
-            <MenuItem value="this_year">Este Ano</MenuItem>
-            <MenuItem value="custom">Personalizado...</MenuItem>
+            <MenuItem value={PeriodShortcut.TODAY}>Hoje</MenuItem>
+            <MenuItem value={PeriodShortcut.THIS_WEEK}>Esta Semana</MenuItem>
+            <MenuItem value={PeriodShortcut.THIS_MONTH}>Este Mês</MenuItem>
+            <MenuItem value={PeriodShortcut.LAST_7_DAYS}>Últimos 7 Dias</MenuItem>
+            <MenuItem value={PeriodShortcut.LAST_30_DAYS}>Últimos 30 Dias</MenuItem>
+            <MenuItem value={PeriodShortcut.THIS_YEAR}>Este Ano</MenuItem>
+            <MenuItem value={PeriodShortcut.CUSTOM}>Personalizado...</MenuItem>
           </TextField>
         </Grid>
 

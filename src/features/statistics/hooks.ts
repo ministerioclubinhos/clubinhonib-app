@@ -1,20 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
-import { statisticsApi, StatisticsFilters } from './api';
+import { statisticsApi, PagelasStatsQueryDto, AcceptedChristsStatsQueryDto, ChildrenStatsQueryDto, ClubsStatsQueryDto, TeachersStatsQueryDto } from './api';
 import { clubControlApi, CurrentWeekInfo } from '../club-control/api';
 
-export const usePagelasChartData = (filters?: StatisticsFilters) => {
+export const usePagelasChartData = (filters?: PagelasStatsQueryDto) => {
   return useQuery({
-    queryKey: ['pagelasCharts', JSON.stringify(filters)],
+    queryKey: ['pagelasCharts', filters?.startDate, filters?.endDate, filters?.groupBy, filters?.gender, filters?.minAge, filters?.maxAge, filters?.city, filters?.state, filters?.district],
     queryFn: async () => {
       const response = await statisticsApi.getPagelasChartData(filters);
       return response.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Force refetch on filter change
     refetchOnWindowFocus: false,
   });
 };
 
-export const useAcceptedChristsChartData = (filters?: StatisticsFilters) => {
+export const useAcceptedChristsChartData = (filters?: AcceptedChristsStatsQueryDto) => {
   return useQuery({
     queryKey: ['acceptedChristsCharts', JSON.stringify(filters)],
     queryFn: async () => {
@@ -26,14 +26,14 @@ export const useAcceptedChristsChartData = (filters?: StatisticsFilters) => {
   });
 };
 
-export const useInsights = (filters?: StatisticsFilters) => {
+export const useInsights = (filters?: any) => {
   return useQuery({
-    queryKey: ['insights', JSON.stringify(filters)],
+    queryKey: ['insights', filters?.startDate, filters?.endDate, filters?.groupBy, filters?.gender, filters?.minAge, filters?.maxAge, filters?.city, filters?.state, filters?.district, filters?.period],
     queryFn: async () => {
       const response = await statisticsApi.getInsights(filters);
       return response.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Force refetch on filter change
     refetchOnWindowFocus: false,
   });
 };
@@ -55,13 +55,13 @@ export const useClubStats = (
   params?: { startDate?: string; endDate?: string; groupBy?: string }
 ) => {
   return useQuery({
-    queryKey: ['clubStats', clubId, JSON.stringify(params)],
+    queryKey: ['clubStats', clubId, params?.startDate, params?.endDate, params?.groupBy],
     queryFn: async () => {
       const response = await statisticsApi.getClubStats(clubId, params);
       return response.data;
     },
     enabled: !!clubId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     refetchOnWindowFocus: false,
   });
 };
@@ -84,13 +84,13 @@ export const useCityStats = (
   params?: { state?: string; startDate?: string; endDate?: string }
 ) => {
   return useQuery({
-    queryKey: ['cityStats', city, JSON.stringify(params)],
+    queryKey: ['cityStats', city, params?.state, params?.startDate, params?.endDate],
     queryFn: async () => {
       const response = await statisticsApi.getCityStats(city, params);
       return response.data;
     },
     enabled: !!city,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     refetchOnWindowFocus: false,
   });
 };
@@ -100,49 +100,49 @@ export const useTeacherStats = (
   params?: { startDate?: string; endDate?: string }
 ) => {
   return useQuery({
-    queryKey: ['teacherStats', teacherId, JSON.stringify(params)],
+    queryKey: ['teacherStats', teacherId, params?.startDate, params?.endDate],
     queryFn: async () => {
       const response = await statisticsApi.getTeacherStats(teacherId, params);
       return response.data;
     },
     enabled: !!teacherId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     refetchOnWindowFocus: false,
   });
 };
 
-export const useChildren = (filters?: import('./api').ChildrenFilters) => {
+export const useChildren = (filters?: ChildrenStatsQueryDto) => {
   return useQuery({
-    queryKey: ['children', JSON.stringify(filters)],
+    queryKey: ['children', filters?.startDate, filters?.endDate, filters?.page, filters?.limit, filters?.sortBy, filters?.sortOrder, filters?.gender, filters?.minAge, filters?.maxAge, filters?.city, filters?.state, filters?.district],
     queryFn: async () => {
       const response = await statisticsApi.getChildren(filters);
       return response.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, 
     refetchOnWindowFocus: false,
   });
 };
 
-export const useClubs = (filters?: import('./api').ClubsFilters) => {
+export const useClubs = (filters?: ClubsStatsQueryDto) => {
   return useQuery({
-    queryKey: ['clubs', JSON.stringify(filters)],
+    queryKey: ['clubs', filters?.startDate, filters?.endDate, filters?.page, filters?.limit, filters?.sortBy, filters?.sortOrder, filters?.city, filters?.state, filters?.weekday, filters?.minChildren, filters?.maxChildren],
     queryFn: async () => {
       const response = await statisticsApi.getClubs(filters);
       return response.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, 
     refetchOnWindowFocus: false,
   });
 };
 
-export const useTeachers = (filters?: import('./api').TeachersFilters) => {
+export const useTeachers = (filters?: TeachersStatsQueryDto) => {
   return useQuery({
-    queryKey: ['teachers', JSON.stringify(filters)],
+    queryKey: ['teachers', filters?.startDate, filters?.endDate, filters?.page, filters?.limit, filters?.sortBy, filters?.sortOrder, filters?.city, filters?.state],
     queryFn: async () => {
       const response = await statisticsApi.getTeachers(filters);
       return response.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, 
     refetchOnWindowFocus: false,
   });
 };
@@ -152,13 +152,13 @@ export const useClubAttendance = (
   params: { year: number; startDate?: string; endDate?: string; page?: number; limit?: number }
 ) => {
   return useQuery({
-    queryKey: ['clubAttendance', clubId, JSON.stringify(params)],
+    queryKey: ['clubAttendance', clubId, params.year, params.startDate, params.endDate, params.page, params.limit],
     queryFn: async () => {
       const response = await statisticsApi.getClubAttendance(clubId, params);
       return response.data;
     },
     enabled: !!clubId && !!params.year,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     refetchOnWindowFocus: false,
   });
 };
@@ -179,13 +179,13 @@ export const useCurrentWeek = (): { data?: CurrentWeekInfo; isLoading: boolean; 
 
 export const useWeeklyAttendance = (params: { year: number; week: number; page?: number; limit?: number }) => {
   return useQuery({
-    queryKey: ['weeklyAttendance', JSON.stringify(params)],
+    queryKey: ['weeklyAttendance', params.year, params.week, params.page, params.limit],
     queryFn: async () => {
       const response = await statisticsApi.getWeeklyAttendance(params);
       return response.data;
     },
     enabled: !!params.year && !!params.week,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
     refetchOnWindowFocus: false,
   });
 };

@@ -19,10 +19,10 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface PagelasTimeSeriesChartProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ filters }) => {
@@ -40,7 +40,7 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
     );
   }
 
-  if (error || !data) {
+  if (error || !data || !data.timeSeries) {
     return (
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Typography color="error">Erro ao carregar dados de pagelas</Typography>
@@ -48,12 +48,13 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
     );
   }
 
-  const combinedData = data.timeSeries.total.map((item, index) => ({
+  const timeSeries = data.timeSeries;
+  const combinedData = timeSeries.total.map((item, index) => ({
     date: item.date,
     total: item.value,
-    presence: data.timeSeries.presence[index]?.value || 0,
-    meditation: data.timeSeries.meditation[index]?.value || 0,
-    verseRecitation: data.timeSeries.verseRecitation[index]?.value || 0,
+    presence: timeSeries.presence?.[index]?.value || 0,
+    meditation: timeSeries.meditation?.[index]?.value || 0,
+    verseRecitation: timeSeries.verseRecitation?.[index]?.value || 0,
   }));
 
   const handleSeriesToggle = (

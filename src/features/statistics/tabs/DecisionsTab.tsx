@@ -1,9 +1,9 @@
 import React from 'react';
 import { EnhancedDecisionsChart } from '../components';
-import { StatisticsFilters } from '../api';
+import { AcceptedChristsStatsQueryDto } from '../api';
 
 interface DecisionsTabProps {
-	filters: StatisticsFilters;
+	filters: AcceptedChristsStatsQueryDto;
 }
 
 const DecisionsTab: React.FC<DecisionsTabProps> = ({ filters }) => {

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import { RadarComparisonChart, DemographicCharts } from '../components';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface DemographicTabProps {
-	filters: StatisticsFilters;
+	filters: PagelasStatsQueryDto;
 }
 
 const DemographicTab: React.FC<DemographicTabProps> = ({ filters }) => {
