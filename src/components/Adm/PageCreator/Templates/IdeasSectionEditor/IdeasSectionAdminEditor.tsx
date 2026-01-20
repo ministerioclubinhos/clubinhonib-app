@@ -20,6 +20,8 @@ import { IdeasSection } from '@/store/slices/ideas/ideasSlice';
 import { setIdeasSectionData, clearIdeasSectionData } from '@/store/slices/ideas/ideasSlice';
 import { IdeasMaterialSection } from '../IdeasMaterialPageCreator/IdeasMaterialSection';
 import api from '@/config/axiosConfig';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface IdeasSectionAdminEditorProps {
   existingSection?: IdeasSection;
@@ -81,7 +83,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
     if (!selectedPage) {
       setSnackbar({
         open: true,
-        message: 'Por favor, selecione uma página de destino',
+        message: FORM_VALIDATION_MESSAGES.SELECT_DESTINATION_PAGE,
         severity: 'error',
       });
       return;
@@ -90,7 +92,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
     if (!existingSection?.id) {
       setSnackbar({
         open: true,
-        message: 'ID da seção não encontrado',
+        message: FORM_VALIDATION_MESSAGES.SECTION_ID_NOT_FOUND,
         severity: 'error',
       });
       return;
@@ -213,7 +215,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
       dispatch(clearIdeasSectionData());
       setSnackbar({
         open: true,
-        message: 'Seção editada e vinculada com sucesso! 🎉',
+        message: FEATURE_SUCCESS_MESSAGES.SECTION_UPDATED,
         severity: 'success',
       });
       setTimeout(() => {
@@ -223,7 +225,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
       console.error('Erro ao salvar seção:', error);
       setSnackbar({
         open: true,
-        message: 'Ops! Algo deu errado ao salvar a seção. Tente novamente.',
+        message: GENERIC_ERROR_MESSAGES.SAVE_ERROR,
         severity: 'error',
       });
     } finally {

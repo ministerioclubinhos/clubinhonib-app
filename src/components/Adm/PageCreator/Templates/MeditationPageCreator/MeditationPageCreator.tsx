@@ -25,6 +25,8 @@ import { AxiosError } from 'axios';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
 import MediaManager from './MediaManager';
 import { SimpleDatePicker } from '@/components/common/inputs';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface Props {
   fromTemplatePage?: boolean;
@@ -92,7 +94,7 @@ export default function MeditationPageCreator({ fromTemplatePage }: Props) {
     if (!topic || !startDate || !endDate) {
       setSnackbar({
         open: true,
-        message: 'Informe tema, data de início e fim.',
+        message: FORM_VALIDATION_MESSAGES.REQUIRED_GENERIC,
         severity: 'error',
       });
       return;
@@ -101,7 +103,7 @@ export default function MeditationPageCreator({ fromTemplatePage }: Props) {
     if (!isMonday(startDate)) {
       setSnackbar({
         open: true,
-        message: 'A data de início deve ser uma segunda-feira.',
+        message: FORM_VALIDATION_MESSAGES.MEDITATION_DATE_MONDAY,
         severity: 'error',
       });
       return;
@@ -110,7 +112,7 @@ export default function MeditationPageCreator({ fromTemplatePage }: Props) {
     if (!isFriday(endDate)) {
       setSnackbar({
         open: true,
-        message: 'A data de término deve ser uma sexta-feira.',
+        message: FORM_VALIDATION_MESSAGES.MEDITATION_DATE_FRIDAY,
         severity: 'error',
       });
       return;
@@ -119,7 +121,7 @@ export default function MeditationPageCreator({ fromTemplatePage }: Props) {
     if (days.length !== 5) {
       setSnackbar({
         open: true,
-        message: 'Adicione exatamente 5 dias de meditação.',
+        message: FORM_VALIDATION_MESSAGES.MEDITATION_DAYS_COUNT,
         severity: 'error',
       });
       return;
@@ -131,7 +133,7 @@ export default function MeditationPageCreator({ fromTemplatePage }: Props) {
     ) {
       setSnackbar({
         open: true,
-        message: 'Informe um link válido ou envie um arquivo.',
+        message: FORM_VALIDATION_MESSAGES.MEDITATION_MEDIA_REQUIRED,
         severity: 'error',
       });
       return;
@@ -181,13 +183,13 @@ export default function MeditationPageCreator({ fromTemplatePage }: Props) {
         });
 
       await dispatch(fetchRoutes());
-      setSnackbar({ open: true, message: 'Meditação salva com sucesso!', severity: 'success' });
+      setSnackbar({ open: true, message: FEATURE_SUCCESS_MESSAGES.MEDITATION_SAVED, severity: 'success' });
       navigate('/adm/meditacoes');
     } catch (error) {
       const errMessage =
         error instanceof AxiosError && error.response?.data?.message
           ? error.response.data.message
-          : 'Erro ao salvar meditação.';
+          : GENERIC_ERROR_MESSAGES.SAVE_ERROR;
       setSnackbar({ open: true, message: errMessage, severity: 'error' });
     } finally {
       setLoading(false);

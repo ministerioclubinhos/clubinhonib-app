@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { Dispatch, Fragment, SetStateAction } from 'react';
 import { MediaItem, MediaPlatform, MediaUploadType } from 'store/slices/types';
+import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 
 interface VideoFormProps {
   newVideo: MediaItem;
@@ -51,7 +52,7 @@ export default function VideoForm({
             value={newVideo.title}
             onChange={(e) => setNewVideo((prev) => ({ ...prev, title: e.target.value }))}
             error={errors.newVideoTitle}
-            helperText={errors.newVideoTitle ? 'Campo obrigatório' : ''}
+            helperText={errors.newVideoTitle ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid>
 
@@ -62,7 +63,7 @@ export default function VideoForm({
             value={newVideo.description}
             onChange={(e) => setNewVideo((prev) => ({ ...prev, description: e.target.value }))}
             error={errors.newVideoDescription}
-            helperText={errors.newVideoDescription ? 'Campo obrigatório' : ''}
+            helperText={errors.newVideoDescription ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid>
 
@@ -124,9 +125,9 @@ export default function VideoForm({
               error={errors.newVideoSrc || errors.newVideoURL}
               helperText={
                 errors.newVideoSrc
-                  ? 'Campo obrigatório'
+                  ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD
                   : errors.newVideoURL
-                    ? 'URL inválida para a plataforma selecionada'
+                    ? FORM_VALIDATION_MESSAGES.URL_INVALID_PLATFORM
                     : ''
               }
             />

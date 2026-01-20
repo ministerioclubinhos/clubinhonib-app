@@ -13,21 +13,43 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '@/config/axiosConfig';
+import { useApiError } from '@/hooks/useApiError';
+import { UserErrorCode } from '@/types/api-error';
+import { getErrorMessage, logApiError } from '@/utils/apiError';
+
+import { PASSWORD_RECOVERY_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
 const MESSAGES = {
-    VERIFICATION_NEEDED: 'Seu email ainda não foi verificado. Um novo email de verificação foi enviado.',
-    SUCCESS_RESET_LINK: 'As instruções de recuperação foram enviadas para o seu email.',
-    SUCCESS_GENERIC: 'Solicitação processada. Verifique seu email.',
-    ERROR_NOT_FOUND: 'Email não encontrado em nosso cadastro.',
-    ERROR_GENERIC: 'Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde.',
+    VERIFICATION_NEEDED: PASSWORD_RECOVERY_MESSAGES.VERIFICATION_NEEDED,
+    SUCCESS_RESET_LINK: PASSWORD_RECOVERY_MESSAGES.RESET_LINK_SENT,
+    SUCCESS_GENERIC: PASSWORD_RECOVERY_MESSAGES.SUCCESS_GENERIC,
+    ERROR_NOT_FOUND: PASSWORD_RECOVERY_MESSAGES.EMAIL_NOT_FOUND,
+    ERROR_GENERIC: GENERIC_ERROR_MESSAGES.TRY_AGAIN,
 };
+
+type MessageType = 'success' | 'error' | 'info';
+
+interface Message {
+    type: MessageType;
+    text: string;
+    action?: () => void;
+    actionLabel?: string;
+}
 
 const ForgotPassword: React.FC = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string; action?: () => void; actionLabel?: string } | null>(null);
-
+    const [message, setMessage] = useState<Message | null>(null);
     const [cooldown, setCooldown] = useState(0);
+
+    const {
+        handleError,
+        clearError,
+        hasFieldError,
+        getFieldError,
+        clearFieldError,
+        isErrorCode,
+    } = useApiError();
 
     const navigate = useNavigate();
     const theme = useTheme();
@@ -49,9 +71,14 @@ const ForgotPassword: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         setMessage(null);
+        clearError();
 
         try {
-            const response = await api.post('/auth/forgot-password', { email });
+            const response = await api.post(
+                '/auth/forgot-password',
+                { email },
+                { skipGlobalError: true } as any
+            );
 
             if (response.data?.status === 'VERIFICATION_EMAIL_SENT' || response.data?.message?.includes('verifi')) {
                 setMessage({
@@ -77,24 +104,22 @@ const ForgotPassword: React.FC = () => {
                 setCooldown(120);
             }
 
-        } catch (error: any) {
-            console.error('Error requesting password reset:', error);
+        } catch (error) {
+            logApiError(error, 'ForgotPassword');
+            const analyzed = handleError(error, 'ForgotPassword');
 
-            if (error.response?.status === 404) {
+            // Mensagem customizada para email não encontrado
+            if (analyzed.code === UserErrorCode.NOT_FOUND || analyzed.httpStatus === 404) {
                 setMessage({
                     type: 'error',
-                    text: error.response?.data?.message || MESSAGES.ERROR_NOT_FOUND,
+                    text: analyzed.message || MESSAGES.ERROR_NOT_FOUND,
                 });
-                return;
+            } else {
+                setMessage({
+                    type: 'error',
+                    text: analyzed.message || MESSAGES.ERROR_GENERIC,
+                });
             }
-
-            const msg = error.response?.data?.message;
-            const finalText = typeof msg === 'string' ? msg : MESSAGES.ERROR_GENERIC;
-
-            setMessage({
-                type: 'error',
-                text: finalText,
-            });
         } finally {
             setLoading(false);
         }
@@ -108,6 +133,12 @@ const ForgotPassword: React.FC = () => {
             return `Reenviar em ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         }
         return 'Enviar Link de Recuperação';
+    };
+
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value);
+        if (hasFieldError('email')) clearFieldError('email');
+        if (message?.type === 'error') setMessage(null);
     };
 
     return (
@@ -191,9 +222,11 @@ const ForgotPassword: React.FC = () => {
                             type="email"
                             label="Email cadastrado"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={handleEmailChange}
                             required
                             disabled={loading || cooldown > 0}
+                            error={hasFieldError('email')}
+                            helperText={getFieldError('email')}
                         />
 
                         <Button

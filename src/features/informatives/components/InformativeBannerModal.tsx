@@ -16,6 +16,7 @@ import type { AppDispatch } from 'store/slices';
 import { fetchRoutes } from 'store/slices/route/routeSlice';
 import type { InformativeBannerData } from 'store/slices/informative/informativeBannerSlice';
 import { createBannerApi, updateBannerApi } from '../api';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 
 interface InformativeBannerModalProps {
   open: boolean;
@@ -55,7 +56,7 @@ export default function InformativeBannerModal({
 
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim()) {
-      setErrMsg('Preencha título e descrição.');
+      setErrMsg(FORM_VALIDATION_MESSAGES.REQUIRED_GENERIC);
       return;
     }
 
@@ -78,7 +79,7 @@ export default function InformativeBannerModal({
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        'Erro ao salvar banner. Tente novamente.';
+        GENERIC_ERROR_MESSAGES.SAVE_ERROR;
       setErrMsg(String(msg));
     } finally {
       setLoading(false);

@@ -8,6 +8,8 @@ import api from '@/config/axiosConfig';
 import { setData, clearData, SectionData } from '@/store/slices/image-section/imageSectionSlice';
 import { MediaType, MediaUploadType, MediaPlatform } from '@/store/slices/types';
 import { RootState } from '@/store/slices';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 import { LoadingSpinner } from '@/pages/TeacherArea/components/Modals';
 import { NotificationModal } from '@/pages/TeacherArea/components/Modals';
@@ -39,15 +41,15 @@ export default function ImageSectionEditorAdmin() {
 
   const validate = useCallback((): boolean => {
     if (!sectionData?.caption?.trim()) {
-      showError('O título da galeria compartilhada é obrigatório.');
+      showError(FORM_VALIDATION_MESSAGES.SHARED_GALLERY_TITLE_REQUIRED);
       return false;
     }
     if (!sectionData?.description?.trim()) {
-      showError('A descrição das atividades do Clubinho é obrigatória.');
+      showError(FORM_VALIDATION_MESSAGES.SHARED_GALLERY_DESCRIPTION_REQUIRED);
       return false;
     }
     if (!sectionData?.mediaItems?.length) {
-      showError('É necessário ter pelo menos uma imagem para publicar.');
+      showError(FORM_VALIDATION_MESSAGES.SHARED_GALLERY_MEDIA_REQUIRED);
       return false;
     }
     return true;
@@ -91,7 +93,7 @@ export default function ImageSectionEditorAdmin() {
 
   const saveSection = async (formData: FormData) => {
     if (!sectionData?.id) {
-      showError('ID da seção não encontrado.');
+      showError(FORM_VALIDATION_MESSAGES.SECTION_ID_NOT_FOUND);
       return;
     }
 
@@ -101,7 +103,7 @@ export default function ImageSectionEditorAdmin() {
 
     setNotification({
       open: true,
-      message: 'Imagens compartilhadas publicadas com sucesso!',
+      message: FEATURE_SUCCESS_MESSAGES.IMAGES_SHARED,
       severity: 'success',
     });
 
@@ -119,7 +121,7 @@ export default function ImageSectionEditorAdmin() {
       navigate('/adm/fotos-clubinhos');
     } catch (error) {
       console.error('Erro ao salvar a seção:', error);
-      showError('Falha ao publicar as imagens compartilhadas. Tente novamente.');
+      showError(GENERIC_ERROR_MESSAGES.SAVE_ERROR);
     } finally {
       setIsSaving(false);
     }
@@ -136,7 +138,7 @@ export default function ImageSectionEditorAdmin() {
   }, [sectionData, navigate]);
 
   if (!sectionData) {
-    return null; 
+    return null;
   }
 
   return (
@@ -154,7 +156,7 @@ export default function ImageSectionEditorAdmin() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          
+
           <Paper
             elevation={2}
             sx={{
@@ -195,7 +197,7 @@ export default function ImageSectionEditorAdmin() {
                   Editar e publicar imagens compartilhadas dos Clubinhos
                 </Typography>
               </Box>
-              
+
               <Box
                 sx={{
                   display: 'flex',
@@ -221,7 +223,7 @@ export default function ImageSectionEditorAdmin() {
                 >
                   ← Voltar
                 </Button>
-                
+
                 <Button
                   variant="contained"
                   onClick={handleSave}
@@ -279,7 +281,7 @@ export default function ImageSectionEditorAdmin() {
               >
                 📋 Informações da Galeria Compartilhada
               </Typography>
-              
+
               <Box
                 sx={{
                   display: 'grid',
@@ -295,14 +297,14 @@ export default function ImageSectionEditorAdmin() {
                     {sectionData?.id || 'N/A'}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                     Status
                   </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
+                  <Typography
+                    variant="body2"
+                    sx={{
                       color: sectionData?.public ? '#059669' : '#dc2626',
                       fontWeight: 600,
                     }}
@@ -310,7 +312,7 @@ export default function ImageSectionEditorAdmin() {
                     {sectionData?.public ? '🌐 Público' : '🔒 Privado'}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                     Imagens Compartilhadas

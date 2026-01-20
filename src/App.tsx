@@ -41,7 +41,14 @@ import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/I
 import { WeekMaterialsList } from './pages/TeacherArea/components';
 import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
 import ImageSectionEditorAdmin from './features/image-sections/ImageSectionEditorAdmin';
+
 import { SiteFeedbackForm } from './pages/TeacherArea/components';
+
+import { SnackbarProvider } from 'notistack';
+import AppErrorBoundary from './components/AppErrorBoundary';
+import GlobalErrorHandler from './components/GlobalErrorHandler';
+import NotFoundPage from './pages/Error/NotFoundPage';
+import AccessDeniedPage from './pages/Error/AccessDeniedPage';
 
 import CoordinatorProfilesManager from './features/coordinators/CoordinatorProfilesManager';
 import TeacherProfilesManager from './features/teachers/TeacherProfilesManager';
@@ -93,6 +100,8 @@ function App() {
     window.location.href = '/login';
   };
 
+
+
   if (!forceReady && (!initialized || loadingUser)) {
     return (
       <Box
@@ -132,92 +141,96 @@ function App() {
     );
   }
 
-
-
   return (
-    <BrowserRouter>
-      <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Navbar />
+    <AppErrorBoundary>
+      <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        <GlobalErrorHandler />
+        <BrowserRouter>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <Navbar />
 
-        <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <Toolbar />
-          <Box className="mainContainer" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/sobre" element={<About />} />
-              <Route path="/contato" element={<Contact />} />
-              <Route path="/eventos" element={<Event />} />
-              <Route path="/feed-clubinho" element={<ClubinhoFeedView feed />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/esqueci-senha" element={<ForgotPassword />} />
-              <Route path="/esqueci-senha" element={<ForgotPassword />} />
-              <Route path="/redefinir-senha" element={<ResetPassword />} />
-              <Route path="/recuperar-senha/:token" element={<ResetPassword />} />
-              <Route path="/verificar-email" element={<EmailVerificationInstructions />} />
-              <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
-              <Route path="/cadastrar" element={<Register commonUser />} />
-              <Route path="*" element={<Home />} />
+            <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Toolbar />
+              <Box className="mainContainer" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/sobre" element={<About />} />
+                  <Route path="/contato" element={<Contact />} />
+                  <Route path="/eventos" element={<Event />} />
+                  <Route path="/feed-clubinho" element={<ClubinhoFeedView feed />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/esqueci-senha" element={<ForgotPassword />} />
+                  <Route path="/redefinir-senha" element={<ResetPassword />} />
+                  <Route path="/recuperar-senha/:token" element={<ResetPassword />} />
+                  <Route path="/verificar-email" element={<EmailVerificationInstructions />} />
+                  <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
+                  <Route path="/cadastrar" element={<Register commonUser />} />
 
-              <Route element={<ProtectedRoute />}>
-                <Route path="/area-do-professor" element={<TeacherArea />} />
-                <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
-                <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
-                <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
-                <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
-                <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
-                <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
-                <Route path="/meu-perfil" element={<ProfilePage />} />
-              </Route>
+                  <Route path="/acesso-negado" element={<AccessDeniedPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
 
-              <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>
-                <Route path="/adm" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboardPage />} />
-                  <Route path="meditacoes" element={<MeditationManager />} />
-                  <Route path="comentarios" element={<CommentsManager />} />
-                  <Route path="documentos" element={<DocumentsManager />} />
-                  <Route path="informativos" element={<InformativeBannerLManager />} />
-                  <Route path="feedbacks" element={<FeedbackManager />} />
-                  <Route path="contatos" element={<ContactsManager />} />
-                  <Route path="paginas-materiais-semanais" element={<WeekMaterialManager />} />
-                  <Route path="paginas-fotos" element={<ImagePageManager />} />
-                  <Route path="fotos-clubinhos" element={<ImageSectionManager />} />
-                  <Route path="ideias-compartilhadas" element={<IdeasSectionManager />} />
-                  <Route path="paginas-videos" element={<VideosManager />} />
-                  <Route path="paginas-ideias" element={<IdeasManager />} />
-                  <Route path="criar-pagina" element={<SelecPageTemplate />} />
-                  <Route path="usuarios" element={<UsersManager />} />
-                  <Route path="perfis" element={<ProfilesManager />} />
-                  <Route path="coordenadores" element={<CoordinatorProfilesManager />} />
-                  <Route path="professores" element={<TeacherProfilesManager />} />
-                  <Route path="criancas" element={<ChildrenManager />} />
-                  <Route path="clubinhos" element={<ClubsManager />} />
-                  <Route path="pagelas" element={<PagelaClubsManager />} />
-                  <Route path="estatisticas" element={<StatisticsPage />} />
-                  <Route path="controle-clubinhos" element={<ClubControlPage />} />
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/area-do-professor" element={<TeacherArea />} />
+                    <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
+                    <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
+                    <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
+                    <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
+                    <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
+                    <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
+                    <Route path="/meu-perfil" element={<ProfilePage />} />
+                  </Route>
 
-                  <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
-                  <Route path="editar-imagens-clubinho" element={<ImageSectionEditorAdmin />} />
-                  <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage />} />
-                </Route>
-              </Route>
+                  <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>
+                    <Route path="/adm" element={<AdminLayout />}>
+                      <Route index element={<AdminDashboardPage />} />
+                      <Route path="meditacoes" element={<MeditationManager />} />
+                      <Route path="comentarios" element={<CommentsManager />} />
+                      <Route path="documentos" element={<DocumentsManager />} />
+                      <Route path="informativos" element={<InformativeBannerLManager />} />
+                      <Route path="feedbacks" element={<FeedbackManager />} />
+                      <Route path="contatos" element={<ContactsManager />} />
+                      <Route path="paginas-materiais-semanais" element={<WeekMaterialManager />} />
+                      <Route path="paginas-fotos" element={<ImagePageManager />} />
+                      <Route path="fotos-clubinhos" element={<ImageSectionManager />} />
+                      <Route path="ideias-compartilhadas" element={<IdeasSectionManager />} />
+                      <Route path="paginas-videos" element={<VideosManager />} />
+                      <Route path="paginas-ideias" element={<IdeasManager />} />
+                      <Route path="criar-pagina" element={<SelecPageTemplate />} />
+                      <Route path="usuarios" element={<UsersManager />} />
+                      <Route path="perfis" element={<ProfilesManager />} />
+                      <Route path="coordenadores" element={<CoordinatorProfilesManager />} />
+                      <Route path="professores" element={<TeacherProfilesManager />} />
+                      <Route path="criancas" element={<ChildrenManager />} />
+                      <Route path="clubinhos" element={<ClubsManager />} />
+                      <Route path="pagelas" element={<PagelaClubsManager />} />
+                      <Route path="estatisticas" element={<StatisticsPage />} />
+                      <Route path="controle-clubinhos" element={<ClubControlPage />} />
 
-              {dynamicRoutes.map((route: DynamicRouteType) => (
-                <Route
-                  key={route.id}
-                  path={`/${route.path}`}
-                  element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
-                />
-              ))}
-            </Routes>
+                      <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
+                      <Route path="editar-imagens-clubinho" element={<ImageSectionEditorAdmin />} />
+                      <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage />} />
+                    </Route>
+                  </Route>
+
+                  {dynamicRoutes.map((route: DynamicRouteType) => (
+                    <Route
+                      key={route.id}
+                      path={`/${route.path}`}
+                      element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
+                    />
+                  ))}
+                </Routes>
+              </Box>
+            </Box>
+            <Footer />
           </Box>
-        </Box>
-        <Footer />
-      </Box>
-    </BrowserRouter>
+        </BrowserRouter>
+      </SnackbarProvider>
+    </AppErrorBoundary>
   );
 }
 

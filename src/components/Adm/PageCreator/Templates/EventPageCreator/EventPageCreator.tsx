@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, Typography, TextField, Button, Grid, IconButton } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import { SimpleDatePicker } from '@/components/common/inputs';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
 interface EventItem {
   title: string;
@@ -64,7 +65,7 @@ export default function EventPageCreator() {
         },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Erro ao salvar página');
+      if (!res.ok) throw new Error(GENERIC_ERROR_MESSAGES.SAVE_ERROR);
     } catch (err) {
       console.error('Erro ao salvar página', err);
     }
@@ -89,7 +90,7 @@ export default function EventPageCreator() {
             value={pageTitle}
             onChange={(e) => setPageTitle(e.target.value)}
             error={errors.pageTitle}
-            helperText={errors.pageTitle ? 'Campo obrigatório' : ''}
+            helperText={errors.pageTitle ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid>
         <Grid item xs={12}>
@@ -101,7 +102,7 @@ export default function EventPageCreator() {
             value={pageDescription}
             onChange={(e) => setPageDescription(e.target.value)}
             error={errors.pageDescription}
-            helperText={errors.pageDescription ? 'Campo obrigatório' : ''}
+            helperText={errors.pageDescription ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid>
       </Grid>
@@ -118,7 +119,7 @@ export default function EventPageCreator() {
             value={newEvent.title}
             onChange={(e) => setNewEvent((prev) => ({ ...prev, title: e.target.value }))}
             error={errors.newEventTitle}
-            helperText={errors.newEventTitle ? 'Campo obrigatório' : ''}
+            helperText={errors.newEventTitle ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid>
         <Grid item xs={12} sm={4}>
@@ -128,7 +129,7 @@ export default function EventPageCreator() {
             label="Data do Evento"
             margin="none"
             error={errors.newEventDate}
-            helperText={errors.newEventDate ? 'Campo obrigatório' : ''}
+            helperText={errors.newEventDate ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid>
         <Grid item xs={12} sm={4}>
@@ -138,7 +139,7 @@ export default function EventPageCreator() {
             value={newEvent.location}
             onChange={(e) => setNewEvent((prev) => ({ ...prev, location: e.target.value }))}
             error={errors.newEventLocation}
-            helperText={errors.newEventLocation ? 'Campo obrigatório' : ''}
+            helperText={errors.newEventLocation ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid>
         <Grid item xs={12}>

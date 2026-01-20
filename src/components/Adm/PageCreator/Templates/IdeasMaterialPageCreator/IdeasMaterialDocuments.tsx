@@ -1,13 +1,9 @@
-import { Fragment, useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
-  TextField,
   Button,
   Grid,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
+
   Typography,
   IconButton,
   Tooltip,
@@ -16,26 +12,26 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Alert,
 } from '@mui/material';
 import { Delete, Edit, Visibility } from '@mui/icons-material';
-import { validateMediaURL } from 'utils/validateMediaURL';
-import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
+import { MediaItem, MediaType, MediaUploadType } from 'store/slices/types';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
-import { getMediaPreviewUrl } from 'utils/getMediaPreviewUrl';
 
 interface DocumentsProps {
   documents: MediaItem[];
   setDocuments: (docs: MediaItem[]) => void;
+  ideaTitle?: string;
 }
 
-export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsProps) {
+export function IdeasMaterialDocuments({ documents, setDocuments, ideaTitle }: DocumentsProps) {
   const [tempDoc, setTempDoc] = useState<MediaItem>({
     title: '',
     description: '',
     mediaType: MediaType.DOCUMENT,
-    uploadType: MediaUploadType.LINK,
+    uploadType: MediaUploadType.UPLOAD,
     url: '',
-    platformType: MediaPlatform.GOOGLE_DRIVE,
+    platformType: undefined,
   });
   const [fileName, setFileName] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -44,6 +40,24 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [openPreviewModal, setOpenPreviewModal] = useState(false);
   const [previewDocument, setPreviewDocument] = useState<MediaItem | null>(null);
+
+  useEffect(() => {
+    if (editingIndex === null) {
+      const count = documents.length + 1;
+      const autoTitle = ideaTitle
+        ? `Documento ${count} da ideia "${ideaTitle}"`
+        : `Documento ${count} da ideia`;
+      const autoDesc = ideaTitle
+        ? `Documento ${count} para auxiliar na ideia "${ideaTitle}"`
+        : `Documento ${count} para auxiliar na ideia`;
+
+      setTempDoc((prev) => ({
+        ...prev,
+        title: autoTitle,
+        description: autoDesc,
+      }));
+    }
+  }, [ideaTitle, documents.length, editingIndex]);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -58,9 +72,9 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
       title: '',
       description: '',
       mediaType: MediaType.DOCUMENT,
-      uploadType: MediaUploadType.LINK,
+      uploadType: MediaUploadType.UPLOAD,
       url: '',
-      platformType: MediaPlatform.GOOGLE_DRIVE,
+      platformType: undefined,
     });
     setFileName('');
     setEditingIndex(null);
@@ -68,19 +82,13 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
   };
 
   const handleAddOrUpdate = () => {
-    const isValid =
-      tempDoc.uploadType === MediaUploadType.UPLOAD ||
-      validateMediaURL(tempDoc.url, tempDoc.platformType);
-    const hasError =
-      !tempDoc.title ||
-      !tempDoc.description ||
-      !tempDoc.url ||
-      (tempDoc.uploadType === MediaUploadType.LINK && !isValid);
+    const isValid = tempDoc.uploadType === MediaUploadType.UPLOAD; // Only upload supported for docs now
+    const hasError = !tempDoc.title || !tempDoc.description || !tempDoc.url; // URL is set by handleUpload
 
     setErrors({
       title: !tempDoc.title,
       description: !tempDoc.description,
-      url: !tempDoc.url || (tempDoc.uploadType === MediaUploadType.LINK && !isValid),
+      url: !tempDoc.url,
     });
 
     if (hasError) return;
@@ -119,108 +127,56 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
   };
 
   const canPreview = (document: MediaItem): boolean => {
-    if (document.uploadType === MediaUploadType.UPLOAD || document.isLocalFile) {
-      return true;
-    }
-    if (document.uploadType === MediaUploadType.LINK) {
-      return document.platformType === MediaPlatform.GOOGLE_DRIVE;
-    }
-    return false;
+    return document.uploadType === MediaUploadType.UPLOAD || !!document.isLocalFile;
   };
 
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Título"
-            fullWidth
-            value={tempDoc.title}
-            onChange={(e) => setTempDoc({ ...tempDoc, title: e.target.value })}
-            error={errors.title}
-            helperText={errors.title ? 'Campo obrigatório' : ''}
-          />
+        <Grid item xs={12}>
+          <Alert
+            severity="info"
+            variant="outlined"
+            sx={{ mb: 2, '& .MuiAlert-message': { width: '100%' }, py: 0.5 }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 1, md: 4 } }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" display="block" color="text.secondary" sx={{ lineHeight: 1 }}>
+                  Título Automático
+                </Typography>
+                <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.2, mt: 0.5 }}>
+                  {tempDoc.title}
+                </Typography>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" display="block" color="text.secondary" sx={{ lineHeight: 1 }}>
+                  Descrição Automática
+                </Typography>
+                <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.2, mt: 0.5 }}>
+                  {tempDoc.description}
+                </Typography>
+              </Box>
+            </Box>
+          </Alert>
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Descrição"
-            fullWidth
-            value={tempDoc.description}
-            onChange={(e) => setTempDoc({ ...tempDoc, description: e.target.value })}
-            error={errors.description}
-            helperText={errors.description ? 'Campo obrigatório' : ''}
-          />
+
+        <Grid item xs={12}>
+          <Button variant="outlined" component="label" fullWidth sx={{ height: '56px' }}>
+            {fileName ? 'Trocar Documento' : 'Upload de Documento (PDF, DOC)'}
+            <input type="file" hidden accept=".pdf,.doc,.docx" onChange={handleUpload} />
+          </Button>
+          {fileName && (
+            <Typography variant="body2" mt={1} textAlign="center">
+              Arquivo selecionado: <strong>{fileName}</strong>
+            </Typography>
+          )}
+          {errors.url && (
+            <Typography variant="caption" color="error" display="block" textAlign="center">
+              Selecione um arquivo para continuar.
+            </Typography>
+          )}
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>Tipo</InputLabel>
-            <Select
-              value={tempDoc.uploadType}
-              label="Tipo"
-              onChange={(e) =>
-                setTempDoc({
-                  ...tempDoc,
-                  uploadType: e.target.value as MediaUploadType.LINK | MediaUploadType.UPLOAD,
-                  platformType:
-                    e.target.value === MediaUploadType.LINK
-                      ? MediaPlatform.GOOGLE_DRIVE
-                      : undefined,
-                  url: '',
-                  file: undefined,
-                })
-              }
-            >
-              <MenuItem value="link">Link</MenuItem>
-              <MenuItem value="upload">Upload</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        {tempDoc.uploadType === MediaUploadType.LINK && (
-          <Fragment>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Plataforma</InputLabel>
-                <Select
-                  value={tempDoc.platformType || ''}
-                  label="Plataforma"
-                  onChange={(e) =>
-                    setTempDoc({
-                      ...tempDoc,
-                      platformType: e.target.value as MediaItem['platformType'],
-                    })
-                  }
-                >
-                  <MenuItem value="googledrive">Google Drive</MenuItem>
-                  <MenuItem value="onedrive">OneDrive</MenuItem>
-                  <MenuItem value="dropbox">Dropbox</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="URL do Documento"
-                fullWidth
-                value={tempDoc.url}
-                onChange={(e) => setTempDoc({ ...tempDoc, url: e.target.value })}
-                error={errors.url}
-                helperText={errors.url ? 'URL inválida ou obrigatória' : ''}
-              />
-            </Grid>
-          </Fragment>
-        )}
-        {tempDoc.uploadType === MediaUploadType.UPLOAD && (
-          <Grid item xs={12}>
-            <Button variant="outlined" component="label">
-              Upload de Documento
-              <input type="file" hidden accept=".pdf,.doc,.docx" onChange={handleUpload} />
-            </Button>
-            {fileName && (
-              <Typography variant="body2" mt={1}>
-                Arquivo: <strong>{fileName}</strong>
-              </Typography>
-            )}
-          </Grid>
-        )}
+
         <Grid item xs={12}>
           <Button variant="contained" fullWidth onClick={handleAddOrUpdate} sx={{ mt: 2 }}>
             {editingIndex !== null ? 'Salvar Alterações' : 'Adicionar Documento'}
@@ -231,9 +187,9 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
       <Grid container spacing={3} sx={{ mt: 3 }}>
         {documents.map((doc, index) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-            <Box sx={{ 
-              p: 3, 
-              border: '1px solid', 
+            <Box sx={{
+              p: 3,
+              border: '1px solid',
               borderColor: 'divider',
               borderRadius: '16px',
               bgcolor: 'background.paper',
@@ -245,9 +201,9 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
               },
             }}>
               <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-                <Box sx={{ 
-                  p: 1.5, 
-                  bgcolor: 'primary.light', 
+                <Box sx={{
+                  p: 1.5,
+                  bgcolor: 'primary.light',
                   borderRadius: '12px',
                   mr: 2,
                   display: 'flex',
@@ -262,7 +218,7 @@ export function IdeasMaterialDocuments({ documents, setDocuments }: DocumentsPro
                   <Typography fontWeight="bold" sx={{ mb: 1, fontSize: '1.1rem' }}>
                     {doc.title}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ 
+                  <Typography variant="body2" color="text.secondary" sx={{
                     mb: 1,
                     display: '-webkit-box',
                     WebkitLineClamp: 2,

@@ -26,6 +26,8 @@ import { validateMediaURL } from '@/utils/validateMediaURL';
 import VideoForm from './VideoForm';
 import VideoList from './VideoList';
 import { MediaItem, MediaType, MediaUploadType, MediaPlatform } from 'store/slices/types';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface VideoProps {
   fromTemplatePage?: boolean;
@@ -93,10 +95,10 @@ export default function VideoPageCreator({ fromTemplatePage = false }: VideoProp
   const areUploadsComplete = () => Object.values(uploadProgress).every((v) => v !== false);
 
   const validate = (): boolean => {
-    if (!title.trim()) return showError('O título da galeria é obrigatório.', 'pageTitle');
+    if (!title.trim()) return showError(FORM_VALIDATION_MESSAGES.TITLE_REQUIRED, 'pageTitle');
     if (!description.trim())
-      return showError('A descrição da galeria é obrigatória.', 'pageDescription');
-    if (videos.length === 0) return showError('Adicione pelo menos um vídeo.');
+      return showError(FORM_VALIDATION_MESSAGES.DESCRIPTION_REQUIRED, 'pageDescription');
+    if (videos.length === 0) return showError(FORM_VALIDATION_MESSAGES.VIDEO_REQUIRED);
     if (!fromTemplatePage && !videoData?.id)
       return showError('ID da página é obrigatório no modo de edição.');
     if (!areUploadsComplete())
@@ -133,7 +135,7 @@ export default function VideoPageCreator({ fromTemplatePage = false }: VideoProp
           isLocalFile: video.uploadType === MediaUploadType.UPLOAD,
           url:
             video.uploadType === MediaUploadType.LINK ||
-            (video.uploadType === MediaUploadType.UPLOAD && video.id)
+              (video.uploadType === MediaUploadType.UPLOAD && video.id)
               ? video.url
               : undefined,
           platformType: video.uploadType === MediaUploadType.LINK ? video.platformType : undefined,
@@ -155,22 +157,22 @@ export default function VideoPageCreator({ fromTemplatePage = false }: VideoProp
 
       const response = fromTemplatePage
         ? await api.post('/video-pages', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          })
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
         : await api.patch(`/video-pages/${videoData!.id}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
 
       await dispatch(fetchRoutes());
       navigate(`/${response.data.route.path}`);
       setSnackbarMessage(
-        fromTemplatePage ? 'Página criada com sucesso!' : 'Página atualizada com sucesso!'
+        fromTemplatePage ? FEATURE_SUCCESS_MESSAGES.PAGE_CREATED : FEATURE_SUCCESS_MESSAGES.PAGE_UPDATED
       );
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
     } catch (error) {
       console.error('Erro ao salvar página', error);
-      showError('Erro ao salvar a página. Tente novamente.');
+      showError(GENERIC_ERROR_MESSAGES.SAVE_ERROR);
     } finally {
       setLoading(false);
     }
@@ -200,7 +202,7 @@ export default function VideoPageCreator({ fromTemplatePage = false }: VideoProp
     }));
 
     if (hasError || !isValidURL) {
-      if (!isValidURL) showError('URL inválida para a plataforma selecionada.');
+      if (!isValidURL) showError(FORM_VALIDATION_MESSAGES.URL_INVALID_PLATFORM);
       return;
     }
 
@@ -253,7 +255,7 @@ export default function VideoPageCreator({ fromTemplatePage = false }: VideoProp
           mediaType: MediaType.VIDEO,
         });
       }
-      setSnackbarMessage('Vídeo removido com sucesso!');
+      setSnackbarMessage(FEATURE_SUCCESS_MESSAGES.VIDEO_REMOVED);
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
     }
@@ -308,7 +310,7 @@ export default function VideoPageCreator({ fromTemplatePage = false }: VideoProp
           onChange={(e) => setTitle(e.target.value)}
           margin="normal"
           error={errors.pageTitle}
-          helperText={errors.pageTitle ? 'Campo obrigatório' : ''}
+          helperText={errors.pageTitle ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
         />
         <TextField
           fullWidth
@@ -318,7 +320,7 @@ export default function VideoPageCreator({ fromTemplatePage = false }: VideoProp
           multiline
           rows={3}
           error={errors.pageDescription}
-          helperText={errors.pageDescription ? 'Campo obrigatório' : ''}
+          helperText={errors.pageDescription ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
         />
         <FormControlLabel
           control={<Switch checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />}

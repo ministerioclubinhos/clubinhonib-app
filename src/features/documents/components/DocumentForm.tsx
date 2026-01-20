@@ -6,6 +6,8 @@ import { RootState } from 'store/slices';
 import { MediaItem, MediaType, MediaUploadType, MediaPlatform } from '../types';
 import DocumentMediaForm from './DocumentMediaForm';
 import { createDocument, updateDocument } from '../api';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface Props {
   isEditing: boolean;
@@ -71,13 +73,13 @@ const DocumentForm: React.FC<Props> = ({ isEditing, onSuccess }) => {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim()) return setSnackbar({ open: true, message: 'O nome do documento é obrigatório.', severity: 'error' });
-    if (!description.trim()) return setSnackbar({ open: true, message: 'A descrição do documento é obrigatória.', severity: 'error' });
-    if (!mediaTitle.trim()) return setSnackbar({ open: true, message: 'O título da mídia é obrigatório.', severity: 'error' });
-    if (!uploadType) return setSnackbar({ open: true, message: 'O tipo de upload é obrigatório.', severity: 'error' });
-    if (uploadType === MediaUploadType.LINK && !url.trim()) return setSnackbar({ open: true, message: 'A URL da mídia é obrigatória.', severity: 'error' });
+    if (!name.trim()) return setSnackbar({ open: true, message: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD, severity: 'error' });
+    if (!description.trim()) return setSnackbar({ open: true, message: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD, severity: 'error' });
+    if (!mediaTitle.trim()) return setSnackbar({ open: true, message: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD, severity: 'error' });
+    if (!uploadType) return setSnackbar({ open: true, message: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD, severity: 'error' });
+    if (uploadType === MediaUploadType.LINK && !url.trim()) return setSnackbar({ open: true, message: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD, severity: 'error' });
     if (uploadType === MediaUploadType.UPLOAD && !file && (!isEditing || !mediaData?.isLocalFile))
-      return setSnackbar({ open: true, message: 'O arquivo da mídia é obrigatório.', severity: 'error' });
+      return setSnackbar({ open: true, message: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD, severity: 'error' });
 
     setLoading(true);
     try {
@@ -122,7 +124,7 @@ const DocumentForm: React.FC<Props> = ({ isEditing, onSuccess }) => {
       if (!isEditing) resetForm();
     } catch (error) {
       console.error('Erro ao salvar documento:', error);
-      setSnackbar({ open: true, message: 'Erro ao salvar documento.', severity: 'error' });
+      setSnackbar({ open: true, message: GENERIC_ERROR_MESSAGES.TRY_AGAIN, severity: 'error' });
     } finally {
       setLoading(false);
     }

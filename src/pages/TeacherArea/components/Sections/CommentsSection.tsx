@@ -34,6 +34,8 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import api from '@/config/axiosConfig';
 import { setComments } from 'store/slices/comment/commentsSlice';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
+import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 
 const CommentsSection: React.FC = () => {
   const dispatch = useDispatch();
@@ -183,7 +185,7 @@ const CommentsSection: React.FC = () => {
         />
 
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 3 } }}>
             <Box
               sx={{
@@ -290,7 +292,7 @@ const CommentsSection: React.FC = () => {
                               error={errors[field as keyof typeof errors]}
                               helperText={
                                 errors[field as keyof typeof errors]
-                                  ? `${labels[field].split(' ')[0]} é obrigatório`
+                                  ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD
                                   : ''
                               }
                               InputProps={{
@@ -578,7 +580,7 @@ const CommentsSection: React.FC = () => {
             boxShadow: 6,
           }}
         >
-          ✅ Comentário enviado com sucesso! Ele será avaliado antes de ser publicado.
+          {FEATURE_SUCCESS_MESSAGES.COMMENT_SENT}
         </Alert>
       </Snackbar>
     </motion.div>
