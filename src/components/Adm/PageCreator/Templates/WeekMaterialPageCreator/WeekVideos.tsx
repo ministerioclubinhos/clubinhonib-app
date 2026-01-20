@@ -19,6 +19,7 @@ import { Delete, Edit } from '@mui/icons-material';
 import { Fragment, useState } from 'react';
 import { validateMediaURL } from 'utils/validateMediaURL';
 import { MediaItem, MediaType, MediaUploadType, MediaPlatform } from 'store/slices/types';
+import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 
 interface Props {
   videos: MediaItem[];
@@ -114,7 +115,7 @@ export default function WeekVideos({ videos, setVideos }: Props) {
             value={newVideo.title}
             onChange={(e) => setNewVideo((prev) => ({ ...prev, title: e.target.value }))}
             error={errors.title}
-            helperText={errors.title ? 'Campo obrigatório' : ''}
+            helperText={errors.title ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -124,7 +125,7 @@ export default function WeekVideos({ videos, setVideos }: Props) {
             value={newVideo.description}
             onChange={(e) => setNewVideo((prev) => ({ ...prev, description: e.target.value }))}
             error={errors.description}
-            helperText={errors.description ? 'Campo obrigatório' : ''}
+            helperText={errors.description ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid>
 
@@ -182,7 +183,7 @@ export default function WeekVideos({ videos, setVideos }: Props) {
                 value={newVideo.url}
                 onChange={(e) => setNewVideo((prev) => ({ ...prev, url: e.target.value }))}
                 error={errors.url}
-                helperText={errors.url ? 'URL inválida ou obrigatória' : ''}
+                helperText={errors.url ? FORM_VALIDATION_MESSAGES.INVALID_URL : ''}
               />
             </Grid>
           </Fragment>

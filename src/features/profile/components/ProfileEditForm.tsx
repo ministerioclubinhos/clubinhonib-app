@@ -13,6 +13,8 @@ import { Profile, UpdateProfileDto } from '../types';
 import { apiUpdateProfile } from '../api';
 import { digitsOnly, maskPhoneBR, maskCPF } from '../../../utils/masks';
 import { isValidEmail, normalizeEmail, isValidCPF } from '../../../utils/validators';
+import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { AUTH_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface ProfileEditFormProps {
   profile: Profile | null;
@@ -50,7 +52,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
     const newErrors: Partial<Record<keyof UpdateProfileDto, string>> = {};
 
     if (!formData.name || !formData.name.trim()) {
-      newErrors.name = 'Nome é obrigatório';
+      newErrors.name = FORM_VALIDATION_MESSAGES.REQUIRED_FIELD;
     } else {
       const parts = formData.name.trim().split(/\s+/);
       if (parts.length < 2) {
@@ -61,25 +63,25 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
     }
 
     if (!formData.email || !formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório';
+      newErrors.email = FORM_VALIDATION_MESSAGES.REQUIRED_FIELD;
     } else if (!isValidEmail(formData.email)) {
-      newErrors.email = 'Email inválido';
+      newErrors.email = FORM_VALIDATION_MESSAGES.INVALID_EMAIL;
     }
 
     const phoneDigits = digitsOnly(formData.phone);
     if (!phoneDigits) {
-      newErrors.phone = 'Telefone é obrigatório';
+      newErrors.phone = FORM_VALIDATION_MESSAGES.REQUIRED_FIELD;
     } else {
       const isWithCC = phoneDigits.startsWith('55') && phoneDigits.length > 11;
       const lenOk = isWithCC
         ? phoneDigits.length === 12 || phoneDigits.length === 13
         : phoneDigits.length === 10 || phoneDigits.length === 11;
-      if (!lenOk) newErrors.phone = 'Telefone inválido';
+      if (!lenOk) newErrors.phone = FORM_VALIDATION_MESSAGES.INVALID_PHONE;
     }
 
     if (formData.cpf) {
       if (!isValidCPF(formData.cpf)) {
-        newErrors.cpf = 'CPF inválido';
+        newErrors.cpf = FORM_VALIDATION_MESSAGES.INVALID_CPF;
       }
     }
 
@@ -169,7 +171,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                   const v = e.target.value;
                   const parts = v.trim().split(/\s+/);
 
-                  if (!v.trim()) setErrors({ ...errors, name: 'Nome é obrigatório' });
+                  if (!v.trim()) setErrors({ ...errors, name: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD });
                   else if (parts.length < 2) setErrors({ ...errors, name: 'Digite seu nome e sobrenome' });
                   else if (parts.length < 3) setErrors({ ...errors, name: 'Digite seu nome completo (mínimo 3 nomes)' });
                   else if (errors.name) setErrors({ ...errors, name: undefined });
@@ -178,7 +180,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                   const v = formData.name || '';
                   const parts = v.trim().split(/\s+/);
 
-                  if (!v.trim()) setErrors({ ...errors, name: 'Nome é obrigatório' });
+                  if (!v.trim()) setErrors({ ...errors, name: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD });
                   else if (parts.length < 2) setErrors({ ...errors, name: 'Digite seu nome e sobrenome' });
                   else if (parts.length < 3) setErrors({ ...errors, name: 'Digite seu nome completo (mínimo 3 nomes)' });
                 }}
@@ -204,14 +206,14 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                 onChange={(e) => {
                   setFormData({ ...formData, email: e.target.value });
                   const v = e.target.value;
-                  if (!v.trim()) setErrors({ ...errors, email: 'Email é obrigatório' });
-                  else if (!isValidEmail(v)) setErrors({ ...errors, email: 'Email inválido' });
+                  if (!v.trim()) setErrors({ ...errors, email: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD });
+                  else if (!isValidEmail(v)) setErrors({ ...errors, email: FORM_VALIDATION_MESSAGES.INVALID_EMAIL });
                   else if (errors.email) setErrors({ ...errors, email: undefined });
                 }}
                 onBlur={() => {
                   const v = formData.email || '';
-                  if (!v.trim()) setErrors({ ...errors, email: 'Email é obrigatório' });
-                  else if (!isValidEmail(v)) setErrors({ ...errors, email: 'Email inválido' });
+                  if (!v.trim()) setErrors({ ...errors, email: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD });
+                  else if (!isValidEmail(v)) setErrors({ ...errors, email: FORM_VALIDATION_MESSAGES.INVALID_EMAIL });
                 }}
                 error={!!errors.email}
                 helperText={errors.email}
@@ -236,25 +238,25 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                 onChange={(e) => {
                   setFormData({ ...formData, phone: maskPhoneBR(e.target.value) });
                   const digits = digitsOnly(e.target.value);
-                  if (!digits) setErrors({ ...errors, phone: 'Telefone é obrigatório' });
+                  if (!digits) setErrors({ ...errors, phone: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD });
                   else {
                     const isWithCC = digits.startsWith('55') && digits.length > 11;
                     const lenOk = isWithCC
                       ? digits.length === 12 || digits.length === 13
                       : digits.length === 10 || digits.length === 11;
-                    if (!lenOk) setErrors({ ...errors, phone: 'Telefone inválido' });
+                    if (!lenOk) setErrors({ ...errors, phone: FORM_VALIDATION_MESSAGES.INVALID_PHONE });
                     else if (errors.phone) setErrors({ ...errors, phone: undefined });
                   }
                 }}
                 onBlur={() => {
                   const digits = digitsOnly(formData.phone);
-                  if (!digits) setErrors({ ...errors, phone: 'Telefone é obrigatório' });
+                  if (!digits) setErrors({ ...errors, phone: FORM_VALIDATION_MESSAGES.REQUIRED_FIELD });
                   else {
                     const isWithCC = digits.startsWith('55') && digits.length > 11;
                     const lenOk = isWithCC
                       ? digits.length === 12 || digits.length === 13
                       : digits.length === 10 || digits.length === 11;
-                    if (!lenOk) setErrors({ ...errors, phone: 'Telefone inválido' });
+                    if (!lenOk) setErrors({ ...errors, phone: FORM_VALIDATION_MESSAGES.INVALID_PHONE });
                   }
                 }}
                 error={!!errors.phone}
@@ -280,7 +282,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                 onChange={(e) => {
                   setFormData({ ...formData, cpf: maskCPF(e.target.value) });
                   if (e.target.value && !isValidCPF(e.target.value)) {
-                    setErrors({ ...errors, cpf: 'CPF inválido' });
+                    setErrors({ ...errors, cpf: FORM_VALIDATION_MESSAGES.INVALID_CPF });
                   } else {
                     setErrors({ ...errors, cpf: undefined });
                   }
@@ -301,7 +303,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
             {success && (
               <Grid item xs={12}>
                 <Alert severity="success">
-                  Perfil atualizado com sucesso!
+                  {AUTH_SUCCESS_MESSAGES.PROFILE_UPDATED}
                 </Alert>
               </Grid>
             )}

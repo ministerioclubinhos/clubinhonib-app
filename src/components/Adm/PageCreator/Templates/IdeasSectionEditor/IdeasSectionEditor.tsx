@@ -20,6 +20,8 @@ import { RootState } from 'store/slices';
 import api from '@/config/axiosConfig';
 import { MediaUploadType } from 'store/slices/types';
 import { useIdeasPages } from '@/features/ideas-sections/hooks';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface IdeasSectionEditorProps {
   fromTemplatePage?: boolean;
@@ -29,7 +31,7 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  
+
   const existingSection = useSelector((state: RootState) => state.ideas.ideasSectionData);
 
   const {
@@ -78,7 +80,7 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
     if (!sectionData.title.trim() || !sectionData.description.trim()) {
       setSnackbar({
         open: true,
-        message: 'Preencha todos os campos obrigatórios.',
+        message: FORM_VALIDATION_MESSAGES.REQUIRED_GENERIC,
         severity: 'error',
       });
       return;
@@ -87,7 +89,7 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
     if (!fromTemplatePage && !selectedPage) {
       setSnackbar({
         open: true,
-        message: 'Selecione uma página de destino para vincular a seção.',
+        message: FORM_VALIDATION_MESSAGES.SELECT_DESTINATION_PAGE,
         severity: 'error',
       });
       return;
@@ -132,17 +134,17 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
         const res = await api.post('/ideas-sections', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        
-        if (!res?.data) throw new Error('Erro ao criar seção');
-        
+
+        if (!res?.data) throw new Error(GENERIC_ERROR_MESSAGES.SAVE_ERROR);
+
         setSnackbar({
           open: true,
-          message: 'Seção criada com sucesso!',
+          message: FEATURE_SUCCESS_MESSAGES.SECTION_CREATED,
           severity: 'success',
         });
-        
+
         dispatch(clearIdeasSectionData());
-        
+
         const currentPath = window.location.pathname;
         if (currentPath === '/compartilhar-ideia') {
           navigate('/area-do-professor');
@@ -157,25 +159,25 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
             headers: { 'Content-Type': 'multipart/form-data' },
           }
         );
-        
-        if (!res?.data) throw new Error('Erro ao salvar seção');
-        
+
+        if (!res?.data) throw new Error(GENERIC_ERROR_MESSAGES.SAVE_ERROR);
+
         setSnackbar({
           open: true,
-          message: 'Seção salva e publicada com sucesso!',
+          message: FEATURE_SUCCESS_MESSAGES.SECTION_SAVED,
           severity: 'success',
         });
-        
+
         dispatch(clearIdeasSectionData());
         navigate('/adm/ideias-compartilhadas');
       } else {
-        throw new Error('Seção não encontrada para edição');
+        throw new Error(FORM_VALIDATION_MESSAGES.SECTION_NOT_FOUND);
       }
     } catch (err) {
       console.error('Erro ao salvar:', err);
       setSnackbar({
         open: true,
-        message: 'Erro ao salvar a seção.',
+        message: GENERIC_ERROR_MESSAGES.SAVE_ERROR,
         severity: 'error',
       });
     } finally {
@@ -191,7 +193,7 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
         flexDirection: 'column',
       }}
     >
-      <Box sx={{ 
+      <Box sx={{
         p: { xs: 3, md: 4 },
         borderBottom: '1px solid',
         borderColor: 'divider',
@@ -216,7 +218,7 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
         >
           {fromTemplatePage ? 'Criar e compartilhar ideia incrível' : 'Editar Seção de Ideias'}
         </Typography>
-        
+
         {fromTemplatePage && (
           <Typography
             variant="body1"
@@ -235,10 +237,10 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
             Compartilhe uma ideia incrível que você teve nessa semana no seu Clubinho
           </Typography>
         )}
-        
-        <Box sx={{ 
-          display: 'flex', 
-          gap: 3, 
+
+        <Box sx={{
+          display: 'flex',
+          gap: 3,
           alignItems: 'center',
           flexWrap: 'wrap',
           mt: 2,
@@ -293,7 +295,7 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
             onClick={handleSaveSection}
             disabled={loading}
             startIcon={loading ? <CircularProgress size={16} /> : null}
-            sx={{ 
+            sx={{
               ml: fromTemplatePage ? 0 : 'auto',
               px: 4,
               py: 1.5,
@@ -311,10 +313,10 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
         </Box>
 
         {selectedPage && !fromTemplatePage && (
-          <Box sx={{ 
-            mt: 1, 
-            p: 1.5, 
-            bgcolor: 'primary.light', 
+          <Box sx={{
+            mt: 1,
+            p: 1.5,
+            bgcolor: 'primary.light',
             borderRadius: 1,
             display: 'flex',
             alignItems: 'center',
@@ -332,8 +334,8 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
         )}
       </Box>
 
-      <Box sx={{ 
-        flex: 1, 
+      <Box sx={{
+        flex: 1,
         p: { xs: 3, md: 4 },
         bgcolor: 'background.default',
         minHeight: 'calc(100vh - 200px)',

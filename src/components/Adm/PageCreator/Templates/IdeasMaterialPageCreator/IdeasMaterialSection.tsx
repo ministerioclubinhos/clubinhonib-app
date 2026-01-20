@@ -144,6 +144,7 @@ export function IdeasMaterialSection({ section, onUpdate, isCreationMode = false
             const otherMedias = medias.filter((i) => i.mediaType !== MediaType.DOCUMENT);
             handleMediasChange([...otherMedias, ...docs]);
           }}
+          ideaTitle={title}
         />
       )}
       {tabIndex === 1 && (
@@ -153,6 +154,7 @@ export function IdeasMaterialSection({ section, onUpdate, isCreationMode = false
             const otherMedias = medias.filter((i) => i.mediaType !== MediaType.IMAGE);
             handleMediasChange([...otherMedias, ...imgs]);
           }}
+          ideaTitle={title}
         />
       )}
       {tabIndex === 2 && (
@@ -162,6 +164,7 @@ export function IdeasMaterialSection({ section, onUpdate, isCreationMode = false
             const otherMedias = medias.filter((i) => i.mediaType !== MediaType.VIDEO);
             handleMediasChange([...otherMedias, ...vids]);
           }}
+          ideaTitle={title}
         />
       )}
     </Box>

@@ -5,56 +5,102 @@
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![AWS Amplify](https://img.shields.io/badge/AWS-Amplify-FF9900?style=flat-square&logo=aws-amplify&logoColor=white)
 
-Sistema de gestão e apoio para o ministério infantil **Clubinhos NIB**. O projeto moderniza a organização de atividades, escalas de voluntários e comunicação interna, oferecendo uma experiência fluida para líderes e membros.
+**Clubinhos NIB** is a comprehensive management and support system designed for the children's ministry of Nova Igreja Batista (NIB). It modernizes the organization of educational activities, volunteer schedules, and internal communication, providing a fluid and engaging experience for leaders, teachers, and members.
 
 ---
 
-## 🛠️ Tecnologias
+## 🚀 Features
 
-Buscamos excelência técnica utilizando ferramentas modernas e performáticas:
+- **Activity Management**: Plan and distribute weekly activities, materials, and lessons for different age groups.
+- **Media Sharing**: A dedicated platform for teachers to share photos and videos of club activities, fostering community and inspiration.
+- **Volunteer Coordination**: Manage schedules, roles, and communication for ministry volunteers.
+- **Interactive Dashboard**: A user-friendly interface for tracking progress, upcoming events, and important announcements.
+- **Secure Authentication**: Role-based access control ensuring data privacy and appropriate permissions for admins, coordinators, and teachers.
 
-| Categoria | Tecnologias |
-|-----------|-------------|
+## 📚 Documentation & Modules
+
+Explore our detailed documentation to understand specific modules and architecture:
+
+| Module | Description |
+| :--- | :--- |
+| [🔐 Authentication](./docs/authentication.md) | Login, registration, and role-based access control. |
+| [🍎 Teacher Area](./docs/teacher_area.md) | Dashboard, class reporting, and media sharing for teachers. |
+| [🏢 Club Management](./docs/club_management.md) | Tools for admins, coordinators, and personnel oversight. |
+| [👶 Children Ministry](./docs/children_ministry.md) | Profiles, attendance (Pagelas), and reporting for children. |
+| [📚 Content & Materials](./docs/content_materials.md) | Weekly lessons, devotionals, and resource distribution. |
+| [📄 Page Creator](./docs/page_creator.md) | Admin tools for dynamic content creation. |
+| [💬 Engagement](./docs/engagement.md) | Comments, feedback, and social interaction features. |
+| [📊 Statistics](./docs/statistics.md) | Data visualization and reporting analytics. |
+| [📂 Features & State](./docs/features.md) | Redux slicing and feature organization. |
+| [🧩 Components](./docs/components.md) | UI components and design system. |
+| [🏗️ Project Structure](./docs/project_structure.md) | Folder layout and architectural patterns. |
+| [📡 API & Config](./docs/api_integration.md) | Axios setup, environment variables, and error handling. |
+| [🛠️ Utilities](./docs/utilities.md) | Helper functions, validation logic, and shared tools. |
+| [☁️ Deployment](./docs/deployment_infrastructure.md) | Infrastructure as Code (CloudFormation) and Amplify setup. |
+
+## 🛠️ Technology Stack
+
+We strive for technical excellence by leveraging modern, high-performance tools and best practices:
+
+| Category | Technologies |
+| :--- | :--- |
 | **Core** | [React 18](https://react.dev), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/) |
-| **Estilo & UI** | [TailwindCSS](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), [Lucide Icons](https://lucide.dev/) |
-| **Estado & Dados** | [TanStack Query](https://tanstack.com/query), [Zustand](https://github.com/pmndrs/zustand), [React Hook Form](https://react-hook-form.com/) |
-| **DevOps** | AWS Amplify, CloudFormation, GitHub Actions |
+| **Styling & UI** | [Material UI](https://mui.com/), [Framer Motion](https://www.framer.com/motion/) |
+| **State & Data** | [Redux Toolkit](https://redux-toolkit.js.org/), [Axios](https://axios-http.com/) |
+| **Forms & Validation** | [React Hook Form](https://react-hook-form.com/), [Yup](https://github.com/jquense/yup) |
+| **DevOps & Cloud** | AWS Amplify, CloudFormation, GitHub Actions |
 
-## 🚀 Como Iniciar
+## � Getting Started
 
-### Pré-requisitos
+### Prerequisites
 
-Certifique-se de ter instalado:
+Ensure you have the following installed on your machine:
 
 - **Node.js 18+**
-- **npm** ou **yarn**
+- **npm** or **yarn**
 
-### Instalação Rápida
+### Quick Installation
 
-```bash
-# Clone o repositório
-git clone https://github.com/clubinhonib/clubinhonib-app.git
+1. **Clone the repository:**
 
-# Entre no diretório
-cd clubinhonib-app
+    ```bash
+    git clone https://github.com/clubinhonib/clubinhonib-app.git
+    ```
 
-# Instale as dependências
-npm install
+2. **Navigate to the project directory:**
 
-# Inicie o servidor de desenvolvimento
-npm run dev
-```
+    ```bash
+    cd clubinhonib-app
+    ```
 
-Acesse `http://localhost:5173` para ver a aplicação rodando.
+3. **Install dependencies:**
 
-## 📦 Scripts Úteis
+    ```bash
+    npm install
+    ```
 
-- **`npm run build`**: Gera o build otimizado para produção.
-- **`npm run preview`**: Testa o build de produção localmente.
-- **`npm run lint`**: Analisa e corrige problemas de código (ESLint/Prettier).
+4. **Start the development server:**
 
-## ☁️ Infraestrutura & Deploy
+    ```bash
+    npm run dev
+    ```
 
-Nossa infraestrutura é totalmente gerenciada como código (IaC) via AWS CloudFormation e provisionada pelo AWS Amplify.
+    Access `http://localhost:5173` to view the application in your browser.
 
-👉 **[Documentação Completa de Deploy](./cloudformation/README.md)** para detalhes sobre ambientes (Staging/Prod), configuração de DNS e pipeline de CI/CD.
+## � Available Scripts
+
+- **`npm run dev`**: Starts the development server with HMR.
+- **`npm run build`**: Generates an optimized production build.
+- **`npm run preview`**: Locally previews the production build.
+- **`npm run lint`**: Analyzes code for potential errors using ESLint.
+- **`npm run type-check`**: Runs TypeScript type checking.
+
+## ☁️ Infrastructure & Deployment
+
+Our infrastructure is fully managed as code (IaC) via **AWS CloudFormation** and provisioned using **AWS Amplify**, ensuring reliable and reproducible deployments across environments.
+
+---
+
+<p align="center">
+  Built with ❤️ for the next generation.
+</p>

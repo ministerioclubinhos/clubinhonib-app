@@ -21,6 +21,8 @@ import api from '@/config/axiosConfig';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { PhoneInput, extractPhoneDigits } from '@/components/common/inputs';
+import { FORM_VALIDATION_MESSAGES, AUTH_ERROR_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface RegisterProps {
   commonUser: boolean;
@@ -30,23 +32,23 @@ type RoleChoice = '' | 'teacher' | 'coordinator';
 
 const getSchema = (commonUser: boolean) =>
   Yup.object({
-    name: Yup.string().required('Nome é obrigatório'),
-    email: Yup.string().email('Email inválido').required('Email é obrigatório'),
+    name: Yup.string().required(FORM_VALIDATION_MESSAGES.REQUIRED_FIELD),
+    email: Yup.string().email(FORM_VALIDATION_MESSAGES.INVALID_EMAIL).required(FORM_VALIDATION_MESSAGES.REQUIRED_FIELD),
     ...(commonUser && {
       confirmEmail: Yup.string()
         .oneOf([Yup.ref('email')], 'Os emails não coincidem')
         .required('Confirme o email'),
-      password: Yup.string().min(6, 'Senha deve ter pelo menos 6 caracteres').required('Senha obrigatória'),
+      password: Yup.string().min(6, FORM_VALIDATION_MESSAGES.PASSWORD_TOO_SHORT).required(FORM_VALIDATION_MESSAGES.REQUIRED_FIELD),
       confirmPassword: Yup.string()
-        .oneOf([Yup.ref('password')], 'As senhas não coincidem')
+        .oneOf([Yup.ref('password')], FORM_VALIDATION_MESSAGES.PASSWORDS_DONT_MATCH)
         .required('Confirme a senha'),
     }),
     phone: Yup.string()
-      .test('len', 'Telefone inválido (DDD + número)', (val) => {
+      .test('len', FORM_VALIDATION_MESSAGES.INVALID_PHONE, (val) => {
         const digits = val?.replace(/\D/g, '');
         return digits?.length === 10 || digits?.length === 11;
       })
-      .required('Telefone é obrigatório'),
+      .required(FORM_VALIDATION_MESSAGES.REQUIRED_FIELD),
     role: (commonUser
       ? Yup.mixed<RoleChoice>().oneOf(['', 'teacher', 'coordinator'])
       : Yup.mixed<RoleChoice>().oneOf(['teacher', 'coordinator']).required('Selecione seu perfil')) as any,
@@ -120,7 +122,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
       if (axios.isAxiosError(error)) {
         setGlobalError(error.response?.data?.message || 'Erro ao cadastrar. Tente novamente.');
       } else {
-        setGlobalError('Erro inesperado. Tente novamente mais tarde.');
+        setGlobalError(GENERIC_ERROR_MESSAGES.UNEXPECTED);
       }
     } finally {
       setLoading(false);
@@ -191,7 +193,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
                     </Box>
                   ) : (
                     <>
-                      Cadastro concluído com sucesso! <br />
+                      {FEATURE_SUCCESS_MESSAGES.REGISTER_COMPLETED} <br />
                       Aguarde a aprovação do seu cadastro. <br />
                       Você será notificado pelo WhatsApp.
                     </>

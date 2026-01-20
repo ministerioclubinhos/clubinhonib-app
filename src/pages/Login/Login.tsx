@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 import api from '@/config/axiosConfig';
@@ -25,40 +24,31 @@ import {
   fetchCurrentUser,
 } from '@/store/slices/auth/authSlice';
 import { UserRole } from '@/types/shared';
+import { useApiError } from '@/hooks/useApiError';
+import { AuthErrorCode, UserErrorCode } from '@/types/api-error';
+import { logApiError } from '@/utils/apiError';
 
 const log = (message: string, ...args: any[]) => {
   if (import.meta.env.DEV) console.log(message, ...args);
-};
-
-const mapLoginError = (err: unknown): string => {
-  if (axios.isAxiosError(err)) {
-    const status = err.response?.status;
-    const raw = (err.response?.data as any)?.message;
-    const serverMsg = Array.isArray(raw) ? raw.join(' ') : String(raw ?? '');
-
-    if (status === 401) {
-      return 'Email ou senha inválidos.';
-    }
-
-    if (/user.*inactive|blocked|disabled/i.test(serverMsg)) {
-      return 'Usuário inativo ou sem permissão.';
-    }
-
-    if (serverMsg) return serverMsg;
-
-    return 'Erro inesperado. Tente novamente mais tarde';
-  }
-
-  return 'Erro inesperado. Tente novamente mais tarde.';
 };
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [verificationNeeded, setVerificationNeeded] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
+
+  const {
+    error: errorMessage,
+    handleError,
+    clearError,
+    hasFieldError,
+    getFieldError,
+    clearFieldError,
+    setError,
+    isErrorCode,
+  } = useApiError();
 
   const dispatch = useDispatch<AppDispatchType>();
   const navigate = useNavigate();
@@ -92,26 +82,32 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearError();
 
     if (!isFormValid()) {
-      setErrorMessage('Por favor, insira um email válido e uma senha com pelo menos 6 caracteres.');
+      setError('Por favor, insira um email válido e uma senha com pelo menos 6 caracteres.');
       return;
     }
 
     setLoading(true);
-    setErrorMessage(null);
     log('[Login] Tentando login com:', { email });
 
     try {
-      const response = await api.post<LoginResponse>('/auth/login', { email, password });
+      const response = await api.post<LoginResponse>(
+        '/auth/login',
+        { email, password },
+        { skipGlobalError: true } as any
+      );
+
       if (response.data.user.active === false) {
         if (response.data.emailVerification) {
           setVerificationMessage(response.data.emailVerification.message);
           setVerificationNeeded(true);
         }
-        setErrorMessage('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
+        setError('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
         return;
       }
+
       const { accessToken, refreshToken, user: responseUser, emailVerification } = response.data;
 
       const mappedUser = {
@@ -125,9 +121,15 @@ const Login: React.FC = () => {
       const redirectPath = mappedUser.role === UserRole.ADMIN ? '/adm' : '/area-do-professor';
       navigate(redirectPath);
     } catch (error) {
-      const msg = mapLoginError(error);
-      setErrorMessage(msg);
-      log('[Login] Erro no login:', error);
+      logApiError(error, 'Login');
+      const analyzed = handleError(error, 'Login');
+
+      // Mensagens customizadas para erros específicos
+      if (analyzed.code === AuthErrorCode.INVALID_CREDENTIALS) {
+        setError('Email ou senha incorretos.');
+      } else if (analyzed.code === UserErrorCode.INACTIVE) {
+        setError('Usuário inativo. Entre em contato com o administrador.');
+      }
     } finally {
       setLoading(false);
     }
@@ -135,19 +137,19 @@ const Login: React.FC = () => {
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     setLoading(true);
-    setErrorMessage(null);
+    clearError();
     log('[Login] Login com Google bem-sucedido:', credentialResponse);
 
     try {
       const { credential } = credentialResponse;
-      const res = await api.post('/auth/google', { token: credential });
+      const res = await api.post('/auth/google', { token: credential }, { skipGlobalError: true } as any);
 
       if (res.data.active === false) {
         if (res.data.emailVerification) {
           setVerificationMessage(res.data.emailVerification.message);
           setVerificationNeeded(true);
         }
-        setErrorMessage('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
+        setError('Usuário não validado, entre em contato com (92) 99127-4881 ou (92) 98155-3139');
         return;
       }
 
@@ -171,17 +173,27 @@ const Login: React.FC = () => {
       const redirectPath = mappedUser.role === UserRole.ADMIN ? '/adm' : '/area-do-professor';
       navigate(redirectPath);
     } catch (error) {
-      const msg = mapLoginError(error);
-      setErrorMessage(msg);
-      log('[Login] Erro no login Google:', error);
+      logApiError(error, 'Login Google');
+      handleError(error, 'Login Google');
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleError = () => {
-    setErrorMessage('Erro ao fazer login com Google. Tente novamente.');
+    setError('Erro ao fazer login com Google. Tente novamente.');
     log('[Login] Falha no login com Google');
+  };
+
+  // Limpa erros de campo quando o usuário digita
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (hasFieldError('email')) clearFieldError('email');
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    if (hasFieldError('password')) clearFieldError('password');
   };
 
   return (
@@ -223,22 +235,26 @@ const Login: React.FC = () => {
                 type="email"
                 label="Email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 required
                 disabled={loading}
                 aria-label="Digite seu email"
                 variant="outlined"
+                error={hasFieldError('email')}
+                helperText={getFieldError('email')}
               />
               <TextField
                 fullWidth
                 type="password"
                 label="Senha"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
                 required
                 disabled={loading}
                 aria-label="Digite sua senha"
                 variant="outlined"
+                error={hasFieldError('password')}
+                helperText={getFieldError('password')}
               />
 
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: -1 }}>

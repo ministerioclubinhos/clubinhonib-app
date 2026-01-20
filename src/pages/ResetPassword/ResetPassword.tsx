@@ -6,12 +6,16 @@ import {
     Paper,
     TextField,
     Typography,
-    useTheme,
     CircularProgress,
     Alert,
 } from '@mui/material';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import api from '@/config/axiosConfig';
+import { useApiError } from '@/hooks/useApiError';
+import { AuthErrorCode, UserErrorCode } from '@/types/api-error';
+import { logApiError } from '@/utils/apiError';
+import { PASSWORD_RECOVERY_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { AUTH_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 const ResetPassword: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -27,7 +31,18 @@ const ResetPassword: React.FC = () => {
     const [emailUser, setEmailUser] = useState('');
 
     const [submitting, setSubmitting] = useState(false);
-    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    const {
+        error: errorMessage,
+        handleError,
+        clearError,
+        hasFieldError,
+        getFieldError,
+        clearFieldError,
+        setError,
+        setFieldError,
+    } = useApiError();
 
     const navigate = useNavigate();
 
@@ -40,7 +55,10 @@ const ResetPassword: React.FC = () => {
 
         const validateToken = async () => {
             try {
-                const response = await api.get(`/auth/reset-password/validate?token=${token}`);
+                const response = await api.get(
+                    `/auth/reset-password/validate?token=${token}`,
+                    { skipGlobalError: true } as any
+                );
                 if (response.data.valid) {
                     setIsValidToken(true);
                     setEmailUser(response.data.email);
@@ -48,6 +66,7 @@ const ResetPassword: React.FC = () => {
                     setIsValidToken(false);
                 }
             } catch (error) {
+                logApiError(error, 'ResetPassword:validate');
                 setIsValidToken(false);
             } finally {
                 setValidating(false);
@@ -59,28 +78,54 @@ const ResetPassword: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        clearError();
+        setSuccessMessage(null);
+
+        // Validações locais
         if (newPassword !== confirmPassword) {
-            setMessage({ type: 'error', text: 'As senhas não coincidem.' });
+            setFieldError('confirmPassword', FORM_VALIDATION_MESSAGES.PASSWORDS_DONT_MATCH);
             return;
         }
         if (newPassword.length < 6) {
-            setMessage({ type: 'error', text: 'A senha deve ter no mínimo 6 caracteres.' });
+            setFieldError('newPassword', FORM_VALIDATION_MESSAGES.PASSWORD_TOO_SHORT);
             return;
         }
 
         setSubmitting(true);
-        setMessage(null);
 
         try {
-            await api.post('/auth/reset-password', { token, newPassword });
-            setMessage({ type: 'success', text: 'Senha alterada com sucesso! Redirecionando para o login...' });
+            await api.post(
+                '/auth/reset-password',
+                { token, newPassword },
+                { skipGlobalError: true } as any
+            );
+            setSuccessMessage(AUTH_SUCCESS_MESSAGES.PASSWORD_CHANGED);
             setTimeout(() => navigate('/login'), 3000);
-        } catch (error: any) {
-            const msg = error?.response?.data?.message || 'Erro ao redefinir senha. O token pode ter expirado.';
-            setMessage({ type: 'error', text: msg });
+        } catch (error) {
+            logApiError(error, 'ResetPassword');
+            const analyzed = handleError(error, 'ResetPassword');
+
+            // Mensagens customizadas por código
+            if (analyzed.code === UserErrorCode.EXPIRED_RECOVERY_CODE) {
+                setError(PASSWORD_RECOVERY_MESSAGES.LINK_EXPIRED);
+            } else if (analyzed.code === UserErrorCode.INVALID_RECOVERY_CODE) {
+                setError(PASSWORD_RECOVERY_MESSAGES.LINK_INVALID);
+            } else if (analyzed.code === AuthErrorCode.NEW_PASSWORD_SAME_AS_CURRENT) {
+                setFieldError('newPassword', PASSWORD_RECOVERY_MESSAGES.PASSWORD_SAME_AS_CURRENT);
+            }
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setNewPassword(e.target.value);
+        if (hasFieldError('newPassword')) clearFieldError('newPassword');
+    };
+
+    const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setConfirmPassword(e.target.value);
+        if (hasFieldError('confirmPassword')) clearFieldError('confirmPassword');
     };
 
     if (validating) {
@@ -95,7 +140,9 @@ const ResetPassword: React.FC = () => {
         return (
             <Box sx={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
                 <Paper elevation={3} sx={{ p: 4, textAlign: 'center', maxWidth: 480, width: '100%' }}>
-                    <Typography variant="h5" color="error" gutterBottom fontWeight="bold">Link Inválido ou Expirado</Typography>
+                    <Typography variant="h5" color="error" gutterBottom fontWeight="bold">
+                        Link Inválido ou Expirado
+                    </Typography>
                     <Typography color="text.secondary" sx={{ mb: 3 }}>
                         O link de recuperação de senha que você utilizou não é válido ou já expirou. Por favor, solicite uma nova recuperação.
                     </Typography>
@@ -106,6 +153,8 @@ const ResetPassword: React.FC = () => {
             </Box>
         );
     }
+
+    const isSuccess = successMessage !== null;
 
     return (
         <Box
@@ -130,9 +179,15 @@ const ResetPassword: React.FC = () => {
                         Defina uma nova senha para <b>{emailUser}</b>
                     </Typography>
 
-                    {message && (
-                        <Alert severity={message.type} sx={{ mb: 2 }}>
-                            {message.text}
+                    {successMessage && (
+                        <Alert severity="success" sx={{ mb: 2 }}>
+                            {successMessage}
+                        </Alert>
+                    )}
+
+                    {errorMessage && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                            {errorMessage}
                         </Alert>
                     )}
 
@@ -142,20 +197,25 @@ const ResetPassword: React.FC = () => {
                             type="password"
                             label="Nova Senha"
                             value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
+                            onChange={handleNewPasswordChange}
                             required
-                            disabled={submitting || message?.type === 'success'}
+                            disabled={submitting || isSuccess}
+                            error={hasFieldError('newPassword')}
+                            helperText={getFieldError('newPassword')}
                         />
                         <TextField
                             fullWidth
                             type="password"
                             label="Confirmar Nova Senha"
                             value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            onChange={handleConfirmPasswordChange}
                             required
-                            error={newPassword !== confirmPassword && confirmPassword.length > 0}
-                            helperText={newPassword !== confirmPassword && confirmPassword.length > 0 ? "As senhas não conferem" : ""}
-                            disabled={submitting || message?.type === 'success'}
+                            error={hasFieldError('confirmPassword') || (newPassword !== confirmPassword && confirmPassword.length > 0)}
+                            helperText={
+                                getFieldError('confirmPassword') ||
+                                (newPassword !== confirmPassword && confirmPassword.length > 0 ? FORM_VALIDATION_MESSAGES.PASSWORDS_DONT_MATCH : '')
+                            }
+                            disabled={submitting || isSuccess}
                         />
 
                         <Button
@@ -163,7 +223,7 @@ const ResetPassword: React.FC = () => {
                             variant="contained"
                             fullWidth
                             size="large"
-                            disabled={submitting || !newPassword || newPassword !== confirmPassword || message?.type === 'success'}
+                            disabled={submitting || !newPassword || newPassword !== confirmPassword || isSuccess}
                             sx={{ mt: 1 }}
                         >
                             {submitting ? <CircularProgress size={24} color="inherit" /> : 'Redefinir Senha'}

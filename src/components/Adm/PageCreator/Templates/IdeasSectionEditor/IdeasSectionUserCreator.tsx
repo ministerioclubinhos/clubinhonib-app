@@ -15,6 +15,8 @@ import { IdeasSection } from '@/store/slices/ideas/ideasSlice';
 import { clearIdeasSectionData } from '@/store/slices/ideas/ideasSlice';
 import { IdeasMaterialSection } from '../IdeasMaterialPageCreator/IdeasMaterialSection';
 import api from '@/config/axiosConfig';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 export function IdeasSectionUserCreator() {
   const dispatch = useDispatch();
@@ -24,7 +26,7 @@ export function IdeasSectionUserCreator() {
     title: '',
     description: '',
     medias: [],
-    public: true, 
+    public: true,
   });
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -46,7 +48,7 @@ export function IdeasSectionUserCreator() {
     if (!sectionData.title.trim()) {
       setSnackbar({
         open: true,
-        message: 'Por favor, adicione um título para sua ideia',
+        message: FORM_VALIDATION_MESSAGES.TITLE_REQUIRED,
         severity: 'error',
       });
       return;
@@ -55,7 +57,7 @@ export function IdeasSectionUserCreator() {
     if (!sectionData.description.trim()) {
       setSnackbar({
         open: true,
-        message: 'Por favor, adicione uma descrição para sua ideia',
+        message: FORM_VALIDATION_MESSAGES.DESCRIPTION_REQUIRED,
         severity: 'error',
       });
       return;
@@ -74,7 +76,7 @@ export function IdeasSectionUserCreator() {
     if (validMedias.length === 0) {
       setSnackbar({
         open: true,
-        message: 'Por favor, adicione pelo menos uma mídia (vídeo, imagem ou documento) para sua ideia',
+        message: FORM_VALIDATION_MESSAGES.SECTION_MEDIA_REQUIRED,
         severity: 'error',
       });
       return;
@@ -141,7 +143,7 @@ export function IdeasSectionUserCreator() {
       formData.append('sectionData', JSON.stringify({
         title: sectionData.title,
         description: sectionData.description,
-        public: true, 
+        public: true,
         medias: mediasPayload,
       }));
 
@@ -160,7 +162,7 @@ export function IdeasSectionUserCreator() {
 
       setSnackbar({
         open: true,
-        message: 'Sua ideia incrível foi compartilhada com sucesso! 🎉',
+        message: FEATURE_SUCCESS_MESSAGES.SECTION_SHARED,
         severity: 'success',
       });
 
@@ -171,7 +173,7 @@ export function IdeasSectionUserCreator() {
       console.error('Erro ao compartilhar ideia:', error);
       setSnackbar({
         open: true,
-        message: 'Ops! Algo deu errado ao compartilhar sua ideia. Tente novamente.',
+        message: GENERIC_ERROR_MESSAGES.SAVE_ERROR,
         severity: 'error',
       });
     } finally {
@@ -228,13 +230,13 @@ export function IdeasSectionUserCreator() {
           sx={{
             fontWeight: 'bold',
             fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.5rem' },
-            mb: { xs: 3, md: 2 }, 
+            mb: { xs: 3, md: 2 },
             color: 'white',
             textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-            mt: { xs: 4, md: 5 }, 
-            px: 0, 
-            maxWidth: '100%', 
-            mx: 0, 
+            mt: { xs: 4, md: 5 },
+            px: 0,
+            maxWidth: '100%',
+            mx: 0,
           }}
         >
           ✨ Criar e compartilhar ideia incrível
@@ -245,7 +247,7 @@ export function IdeasSectionUserCreator() {
           sx={{
             color: 'rgba(255,255,255,0.9)',
             fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' },
-            mb: { xs: 4, md: 2 }, 
+            mb: { xs: 4, md: 2 },
             maxWidth: '700px',
             mx: 'auto',
             lineHeight: 1.5,
@@ -271,7 +273,7 @@ export function IdeasSectionUserCreator() {
         zIndex: 1,
       }}>
         <Box sx={{
-          maxWidth: '1200px', 
+          maxWidth: '1200px',
           mx: 'auto',
           bgcolor: 'background.paper',
           borderRadius: '20px',
@@ -280,7 +282,7 @@ export function IdeasSectionUserCreator() {
           border: '1px solid',
           borderColor: 'divider',
           position: 'relative',
-          width: { xs: '98%', md: '95%' }, 
+          width: { xs: '98%', md: '95%' },
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -329,7 +331,7 @@ export function IdeasSectionUserCreator() {
                   flex: 1,
                 }}
               >
-                {sectionData.medias.length > 0 
+                {sectionData.medias.length > 0
                   ? `✅ ${sectionData.medias.length} mídia(s) adicionada(s)`
                   : '⚠️ Adicione pelo menos uma mídia (vídeo, imagem ou documento)'
                 }

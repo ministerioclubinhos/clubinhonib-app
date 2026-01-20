@@ -15,6 +15,8 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import api from '@/config/axiosConfig';
 import { SimpleDatePicker } from '@/components/common/inputs';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { GENERIC_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface EventFormModalProps {
   open: boolean;
@@ -76,7 +78,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
     if (!title || !date || !location || !description) {
       setSnackbar({
         open: true,
-        message: 'Preencha todos os campos obrigatórios.',
+        message: FORM_VALIDATION_MESSAGES.REQUIRED_GENERIC,
         severity: 'error',
       });
       return;
@@ -125,7 +127,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
       await onSuccess();
       setSnackbar({
         open: true,
-        message: `Evento ${mode === 'add' ? 'criado' : 'atualizado'} com sucesso!`,
+        message: mode === 'add' ? GENERIC_SUCCESS_MESSAGES.CREATED : GENERIC_SUCCESS_MESSAGES.UPDATED,
         severity: 'success',
       });
       onClose();
@@ -133,7 +135,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
       const errMessage =
         error instanceof Error && error.message
           ? error.message
-          : 'Erro ao salvar evento.';
+          : GENERIC_ERROR_MESSAGES.SAVE_ERROR;
       setSnackbar({ open: true, message: errMessage, severity: 'error' });
     } finally {
       setLoading(false);

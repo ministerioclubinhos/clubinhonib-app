@@ -13,6 +13,8 @@ import { RootState } from '@/store/slices';
 import { LoadingSpinner } from '../components/Modals';
 import { NotificationModal } from '../components/Modals';
 import ImageSectionEditor from './ImageSectionEditor';
+import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface NotificationState {
   open: boolean;
@@ -44,15 +46,15 @@ export default function ImageSectionPage() {
 
   const validate = useCallback((): boolean => {
     if (!sectionData?.caption?.trim()) {
-      showError('O título das atividades do seu Clubinho é obrigatório.');
+      showError(FORM_VALIDATION_MESSAGES.SHARED_GALLERY_TITLE_REQUIRED);
       return false;
     }
     if (!sectionData?.description?.trim()) {
-      showError('A descrição das atividades é obrigatória.');
+      showError(FORM_VALIDATION_MESSAGES.DESCRIPTION_REQUIRED);
       return false;
     }
     if (!sectionData?.mediaItems?.length) {
-      showError('Adicione pelo menos uma imagem das atividades do seu Clubinho.');
+      showError(FORM_VALIDATION_MESSAGES.MEDIA_REQUIRED);
       return false;
     }
     return true;
@@ -95,14 +97,14 @@ export default function ImageSectionPage() {
   }, [sectionData]);
 
   const saveSection = async (formData: FormData) => {
-    
+
     await api.post('/image-sections', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
     setNotification({
       open: true,
-      message: 'Imagens do seu Clubinho compartilhadas com sucesso!',
+      message: FEATURE_SUCCESS_MESSAGES.IMAGES_CLUB_SHARED,
       severity: 'success',
     });
 

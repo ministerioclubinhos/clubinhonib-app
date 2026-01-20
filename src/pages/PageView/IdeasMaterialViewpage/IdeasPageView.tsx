@@ -10,34 +10,18 @@ import {
   useMediaQuery,
   Fab,
   Zoom,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Chip,
-  Card,
-  CardContent,
-  Grid,
-  Collapse,
-  Divider,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import ImageIcon from '@mui/icons-material/Image';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import api from '@/config/axiosConfig';
 import { fetchRoutes } from 'store/slices/route/routeSlice';
 import { RootState, AppDispatch } from 'store/slices';
 import { setIdeasData, IdeasPageData } from 'store/slices/ideas/ideasSlice';
-import IdeasDocumentViewer from './IdeasDocumentViewer';
-import IdeasImageGalleryView from './IdeasImageGalleryView';
-import IdeasVideoPlayerView from './IdeasVideoPlayerView';
+import MediaSection from './MediaSection';
 import { UserRole } from '@/types/shared';
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
@@ -45,237 +29,7 @@ interface IdeasPageViewProps {
   idToFetch: string;
 }
 
-interface MediaSectionProps {
-  sectionId: string;
-  sectionIndex: number;
-  title: string;
-  description: string;
-  videos: any[];
-  documents: any[];
-  images: any[];
-  expandedMediaTypes: { [key: string]: boolean };
-  onToggleMediaType: (sectionId: string, mediaType: string) => void;
-}
 
-function MediaSection({
-  sectionId,
-  sectionIndex,
-  title,
-  description,
-  videos,
-  documents,
-  images,
-  expandedMediaTypes,
-  onToggleMediaType,
-}: MediaSectionProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  const MediaTypeCard = ({
-    type,
-    icon,
-    items,
-    color,
-    emoji
-  }: {
-    type: string;
-    icon: React.ReactNode;
-    items: any[];
-    color: string;
-    emoji: string;
-  }) => {
-    if (items.length === 0) return null;
-
-    const isExpanded = expandedMediaTypes[`${sectionId}-${type}`];
-    const key = `${sectionId}-${type}`;
-
-    return (
-      <Card
-        sx={{
-          mb: { xs: '5px', sm: 2 },
-          borderRadius: { xs: 1, sm: 2 },
-          boxShadow: '0 1px 6px rgba(0,0,0,0.1)',
-          transition: 'all 0.3s ease',
-          '&:hover': {
-            boxShadow: '0 3px 12px rgba(0,0,0,0.15)',
-          }
-        }}
-      >
-        <CardContent sx={{ p: { xs: '5px', sm: 2, md: 3 } }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              cursor: 'pointer',
-              py: { xs: '5px', sm: 1 },
-            }}
-            onClick={() => onToggleMediaType(sectionId, type)}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 2 } }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: { xs: 0.25, sm: 1 },
-                  color: color,
-                }}
-              >
-                {icon}
-                <Typography
-                  variant="h6"
-                  fontWeight="bold"
-                  sx={{
-                    fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' },
-                    color: color,
-                  }}
-                >
-                  {emoji} {type === 'videos' ? 'Vídeos' : type === 'documents' ? 'Documentos' : 'Imagens'} ({items.length})
-                </Typography>
-              </Box>
-              <Chip
-                label={items.length}
-                size="small"
-                sx={{
-                  backgroundColor: `${color}20`,
-                  color: color,
-                  fontWeight: 'bold',
-                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                  height: { xs: 20, sm: 24 },
-                }}
-              />
-            </Box>
-            <IconButton
-              size="small"
-              sx={{
-                color: color,
-                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.3s ease',
-                p: { xs: '5px', sm: 1 },
-              }}
-            >
-              <ExpandMoreIcon fontSize="small" />
-            </IconButton>
-          </Box>
-
-          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-            <Divider sx={{ my: { xs: '5px', sm: 2 } }} />
-            <Grid
-              container
-              spacing={{ xs: 1, sm: 2, md: 3 }}
-              sx={{ mt: { xs: '5px', sm: 1 } }}
-            >
-              {items.map((item, index) => (
-                <Grid
-                  item
-                  xs={12}
-                  sm={6}
-                  md={4}
-                  lg={3}
-                  key={item.id || index}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Box
-                      sx={{
-                        height: '100%',
-                        borderRadius: { xs: 1.5, sm: 2 },
-                        overflow: 'hidden',
-                        boxShadow: '0 1px 6px rgba(0,0,0,0.1)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          boxShadow: '0 3px 12px rgba(0,0,0,0.15)',
-                        }
-                      }}
-                    >
-                      {type === 'videos' && <IdeasVideoPlayerView video={item} />}
-                      {type === 'documents' && <IdeasDocumentViewer document={item} />}
-                      {type === 'images' && <IdeasImageGalleryView image={item} />}
-                    </Box>
-                  </motion.div>
-                </Grid>
-              ))}
-            </Grid>
-          </Collapse>
-        </CardContent>
-      </Card>
-    );
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Card
-        sx={{
-          backgroundColor: 'white',
-          borderRadius: { xs: 1.5, sm: 3 },
-          boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
-          mb: { xs: '5px', sm: 4 },
-          overflow: 'hidden',
-          mx: { xs: 0, sm: 2 },
-        }}
-      >
-        <CardContent sx={{ p: { xs: '5px', sm: 3, md: 4 } }}>
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-            color="primary.main"
-            mb={{ xs: 1, sm: 2 }}
-            sx={{
-              fontSize: { xs: '1.1rem', sm: '1.4rem', md: '1.8rem' },
-              lineHeight: 1.2,
-            }}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            mb={{ xs: 1.5, sm: 3 }}
-            sx={{
-              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
-              lineHeight: 1.6,
-            }}
-          >
-            {description}
-          </Typography>
-
-          <Box sx={{ mt: { xs: 2, sm: 3 } }}>
-            <MediaTypeCard
-              type="videos"
-              icon={<VideoLibraryIcon />}
-              items={videos}
-              color={theme.palette.error.main}
-              emoji="🎬"
-            />
-            <MediaTypeCard
-              type="documents"
-              icon={<PictureAsPdfIcon />}
-              items={documents}
-              color={theme.palette.success.main}
-              emoji="📄"
-            />
-            <MediaTypeCard
-              type="images"
-              icon={<ImageIcon />}
-              items={images}
-              color={theme.palette.warning.main}
-              emoji="🖼️"
-            />
-          </Box>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
 
 export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
   const [loading, setLoading] = useState(true);
@@ -283,7 +37,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
   const [ideasPage, setIdeasPage] = useState<IdeasPageData | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [expandedMediaTypes, setExpandedMediaTypes] = useState<{ [key: string]: boolean }>({});
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -335,10 +89,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
 
   const toggleMediaType = (sectionId: string, mediaType: string) => {
     const key = `${sectionId}-${mediaType}`;
-    setExpandedMediaTypes((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setExpandedKey((prev) => (prev === key ? null : key));
   };
 
   if (loading) {
@@ -639,7 +390,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
         minHeight: 'calc(100vh - 200px)',
       }}>
         <Container
-          maxWidth="xl"
+          maxWidth={false}
           sx={{
             px: { xs: 1, sm: 2, md: 3 },
             bgcolor: 'background.paper',
@@ -663,7 +414,11 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
             },
           }}
         >
-          <Box sx={{ mb: { xs: 2, sm: 4 } }}>
+          <Box sx={{
+            mb: { xs: 2, sm: 4 },
+            columnCount: { xs: 1, md: 2 },
+            columnGap: { xs: 2, md: 3 },
+          }}>
             <AnimatePresence>
               {sections.map((section, sectionIndex) => {
                 const videos = section.medias.filter((media) => media.mediaType === 'video');
@@ -680,7 +435,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
                     videos={videos}
                     documents={documents}
                     images={images}
-                    expandedMediaTypes={expandedMediaTypes}
+                    expandedKey={expandedKey}
                     onToggleMediaType={toggleMediaType}
                   />
                 );
