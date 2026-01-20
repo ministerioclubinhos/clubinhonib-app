@@ -1,15 +1,15 @@
 import React from 'react';
-import { 
-  Box, 
-  Paper, 
-  Typography, 
-  CircularProgress, 
-  useTheme, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
+import {
+  Box,
+  Paper,
+  Typography,
+  CircularProgress,
+  useTheme,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
   TableRow,
   Card,
   CardContent,
@@ -20,10 +20,10 @@ import {
 } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface GeographicChartProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => {
@@ -41,9 +41,9 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
     );
   }
 
-  if (error || !data) {
+  if (error || !data || !data.byCity) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
         <Typography color="error">Erro ao carregar dados geográficos</Typography>
       </Paper>
     );
@@ -95,13 +95,13 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
           Detalhes por Cidade
         </Typography>
         {isMobile ? (
-          
+
           <Stack spacing={2}>
             {topCities.map((city, index) => (
               <Card key={index} elevation={2} sx={{ borderRadius: 2 }}>
                 <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                   <Stack spacing={1.5}>
-                    
+
                     <Box>
                       <Typography variant="subtitle2" fontWeight="bold" sx={{ fontSize: { xs: '0.95rem', sm: '1.125rem' } }}>
                         {city.city}, {city.state}
@@ -148,7 +148,7 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
             ))}
           </Stack>
         ) : (
-          
+
           <TableContainer>
             <Table size="small">
               <TableHead>

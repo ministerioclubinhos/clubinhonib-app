@@ -1,30 +1,37 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, memo } from 'react';
 import {
   Box,
   Container,
-  Typography,
-  Tabs,
-  Tab,
-  Paper,
-  useTheme,
-  useMediaQuery,
-  Button,
-  Collapse,
   Skeleton,
-  Grid,
+  useTheme,
+  alpha,
+  Paper,
+  Fab,
+  Zoom,
+  useMediaQuery,
+  Drawer,
+  IconButton,
+  Typography,
 } from '@mui/material';
-import { useSearchParams } from 'react-router-dom';
+import {
+  KeyboardArrowUp,
+  Close,
+  Settings,
+} from '@mui/icons-material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { StatisticsFiltersComponent, QuickFilters } from './components';
-import { StatisticsFilters } from './api';
+import { motion, AnimatePresence } from 'framer-motion';
+import { StatisticsProvider, useStatistics } from './context';
+import { DashboardHeader, NavigationTabs } from './components/dashboard';
+import { KPIDashboard, SmartFilters } from './components/ui';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
 
 dayjs.locale('pt-br');
 
+// Lazy loaded tabs
 const OverviewTab = React.lazy(() => import('./tabs/OverviewTab'));
-const FrequencyTab = React.lazy(() => import('./tabs/FrequencyTab'));
 const ChildrenTab = React.lazy(() => import('./tabs/ChildrenTab'));
+const FrequencyTab = React.lazy(() => import('./tabs/FrequencyTab'));
 const ClubsTab = React.lazy(() => import('./tabs/ClubsTab'));
 const TeachersTab = React.lazy(() => import('./tabs/TeachersTab'));
 const DemographicTab = React.lazy(() => import('./tabs/DemographicTab'));
@@ -33,485 +40,245 @@ const DecisionsTab = React.lazy(() => import('./tabs/DecisionsTab'));
 const RetentionTab = React.lazy(() => import('./tabs/RetentionTab'));
 const ActivitiesTab = React.lazy(() => import('./tabs/ActivitiesTab'));
 const RankingsTab = React.lazy(() => import('./tabs/RankingsTab'));
-const OverviewSummaryCards = React.lazy(() =>
-  import('./components').then((m) => ({ default: m.OverviewSummaryCards }))
-);
 
+// Query client with optimized settings
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
+      staleTime: 2 * 60 * 1000, // 2 minutes
     },
   },
 });
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
+// Loading skeleton for tabs
+const TabSkeleton: React.FC = () => (
+  <Box sx={{ display: 'grid', gap: 2 }}>
+    <Skeleton variant="rounded" height={80} />
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+      {[1, 2, 3, 4].map((i) => (
+        <Skeleton key={i} variant="rounded" height={100} />
+      ))}
+    </Box>
+    <Skeleton variant="rounded" height={350} />
+  </Box>
+);
 
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other }) => {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`statistics-tabpanel-${index}`}
-      aria-labelledby={`statistics-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-};
+// Scroll to top button
+const ScrollToTop: React.FC = memo(() => {
+  const [visible, setVisible] = React.useState(false);
 
-const StatisticsPageContent: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = Number(searchParams.get('tab') ?? 0);
-  const [activeTab, setActiveTab] = React.useState(Number.isNaN(initialTab) ? 0 : initialTab);
-  const [filtersOpen, setFiltersOpen] = React.useState(false);
-
-  const getDefaultFilters = (): StatisticsFilters => {
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-    return {
-      startDate: dayjs(firstDay).format('YYYY-MM-DD'),
-      endDate: dayjs(lastDay).format('YYYY-MM-DD'),
-      groupBy: 'week',
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setVisible(window.scrollY > 300);
     };
-  };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const [filters, setFilters] = React.useState<StatisticsFilters>(getDefaultFilters());
-
-  const handleTabChange = (event: React.SyntheticEvent | null, newValue: number) => {
-    setActiveTab(newValue);
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set('tab', String(newValue));
-      return next;
-    });
-  };
-
-  const handleFilterChange = (newFilters: StatisticsFilters) => {
-    setFilters(newFilters);
-  };
-
-  const handleResetFilters = () => {
-    setFilters(getDefaultFilters());
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <Container
-      maxWidth="xl"
+    <Zoom in={visible}>
+      <Fab
+        color="primary"
+        size="small"
+        onClick={scrollToTop}
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          zIndex: 1000,
+        }}
+      >
+        <KeyboardArrowUp />
+      </Fab>
+    </Zoom>
+  );
+});
+
+ScrollToTop.displayName = 'ScrollToTop';
+
+// Tab content renderer
+const TabContent: React.FC = memo(() => {
+  const { state } = useStatistics();
+  const theme = useTheme();
+
+  const renderTab = () => {
+    switch (state.activeTab) {
+      case 0:
+        return <OverviewTab />;
+      case 1:
+        return <FrequencyTab />;
+      case 2:
+        return <ChildrenTab />;
+      case 3:
+        return <ClubsTab />;
+      case 4:
+        return <TeachersTab />;
+      case 5:
+        return <DemographicTab filters={state.filters} />;
+      case 6:
+        return <GeographicTab filters={state.filters} />;
+      case 7:
+        return <DecisionsTab filters={state.filters} />;
+      case 8:
+        return <RetentionTab filters={state.filters} />;
+      case 9:
+        return <ActivitiesTab filters={state.filters} />;
+      case 10:
+        return <RankingsTab filters={state.filters} />;
+      default:
+        return <OverviewTab />;
+    }
+  };
+
+  return (
+    <Paper
+      elevation={0}
       sx={{
-        py: { xs: 2, sm: 3, md: 4 },
-        px: { xs: 1, sm: 2, md: 3 }
+        borderRadius: 3,
+        overflow: 'hidden',
+        border: `1px solid ${theme.palette.divider}`,
+        p: { xs: 2, md: 3 },
+        minHeight: 400,
       }}
     >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={state.activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Suspense fallback={<TabSkeleton />}>
+            {renderTab()}
+          </Suspense>
+        </motion.div>
+      </AnimatePresence>
+    </Paper>
+  );
+});
 
-      <Box sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
-        <Typography
-          variant="h4"
-          fontWeight="bold"
-          gutterBottom
-          sx={{
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
-          }}
-        >
-          📊 Estatísticas do Clubinhos NIB
-        </Typography>
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
-        >
-          Análise completa de dados, insights e relatórios
-          {filters.startDate && filters.endDate && (
-            <> - {dayjs(filters.startDate).format('MMM/YYYY')} a {dayjs(filters.endDate).format('MMM/YYYY')}</>
-          )}
-        </Typography>
+TabContent.displayName = 'TabContent';
+
+// Settings drawer
+const SettingsDrawer: React.FC<{ open: boolean; onClose: () => void }> = memo(({ open, onClose }) => {
+  const theme = useTheme();
+
+  return (
+    <Drawer
+      anchor="right"
+      open={open}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          width: { xs: '100%', sm: 400 },
+          p: 3,
+        },
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Settings color="primary" />
+          <Typography variant="h6" fontWeight={700}>
+            Configuracoes
+          </Typography>
+        </Box>
+        <IconButton onClick={onClose}>
+          <Close />
+        </IconButton>
       </Box>
 
-      <Box sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
-        <Suspense fallback={<Skeleton variant="rounded" height={120} />}>
-          <OverviewSummaryCards />
-        </Suspense>
-      </Box>
+      <Typography variant="body2" color="text.secondary">
+        Configuracoes do dashboard em breve...
+      </Typography>
+    </Drawer>
+  );
+});
 
-      <QuickFilters onSelectFilter={handleFilterChange} currentFilters={filters} />
+SettingsDrawer.displayName = 'SettingsDrawer';
 
-      <Box sx={{ mt: { xs: 1.5, sm: 2 }, mb: { xs: 1.5, sm: 2 } }}>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => setFiltersOpen((v) => !v)}
-          fullWidth={isMobile}
-        >
-          {filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
-        </Button>
-      </Box>
-      <Collapse in={filtersOpen} unmountOnExit>
-        <StatisticsFiltersComponent
-          filters={filters}
-          onChange={handleFilterChange}
-          onReset={handleResetFilters}
+// Main content component
+const StatisticsContent: React.FC = memo(() => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const { state } = useStatistics();
+
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: alpha(theme.palette.primary.main, 0.02),
+        pb: 4,
+      }}
+    >
+      <Container
+        maxWidth="xl"
+        sx={{
+          py: { xs: 2, md: 4 },
+          px: { xs: 2, md: 3 },
+        }}
+      >
+        {/* Header */}
+        <DashboardHeader
+          onSettingsClick={() => setSettingsOpen(true)}
         />
-      </Collapse>
 
-      <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          {isMobile ? (
-
-            <Box sx={{ p: 1 }}>
-              <Grid container spacing={0.5}>
-                <Grid item xs={6}>
-                  <Tab
-                    label="📈 Visão Geral"
-                    onClick={() => handleTabChange(null, 0)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 0 ? 600 : 400,
-                      color: activeTab === 0 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 0 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="📅 Frequência"
-                    onClick={() => handleTabChange(null, 1)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 1 ? 600 : 400,
-                      color: activeTab === 1 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 1 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="👶 Crianças"
-                    onClick={() => handleTabChange(null, 2)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 2 ? 600 : 400,
-                      color: activeTab === 2 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 2 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="🏫 Clubinhos"
-                    onClick={() => handleTabChange(null, 3)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 3 ? 600 : 400,
-                      color: activeTab === 3 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 3 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="👨‍🏫 Professores"
-                    onClick={() => handleTabChange(null, 4)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 4 ? 600 : 400,
-                      color: activeTab === 4 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 4 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="👥 Demográfico"
-                    onClick={() => handleTabChange(null, 5)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 5 ? 600 : 400,
-                      color: activeTab === 5 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 5 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="🗺️ Geográfico"
-                    onClick={() => handleTabChange(null, 6)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 6 ? 600 : 400,
-                      color: activeTab === 6 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 6 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="✝️ Decisões"
-                    onClick={() => handleTabChange(null, 7)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 7 ? 600 : 400,
-                      color: activeTab === 7 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 7 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="⏱️ Retenção"
-                    onClick={() => handleTabChange(null, 8)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 8 ? 600 : 400,
-                      color: activeTab === 8 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 8 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="📊 Atividades"
-                    onClick={() => handleTabChange(null, 9)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 9 ? 600 : 400,
-                      color: activeTab === 9 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 9 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Tab
-                    label="🏆 Rankings"
-                    onClick={() => handleTabChange(null, 10)}
-                    sx={{
-                      minHeight: 40,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontWeight: activeTab === 10 ? 600 : 400,
-                      color: activeTab === 10 ? theme.palette.primary.main : 'inherit',
-                      borderBottom: activeTab === 10 ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      width: '100%',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Box>
-          ) : (
-
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-              aria-label="tabs de estatísticas"
-              sx={{
-                '& .MuiTab-root': {
-                  textTransform: 'none',
-                  fontSize: '0.875rem',
-                  minHeight: 48,
-                },
-              }}
-            >
-              <Tab label="📈 Visão Geral" />
-              <Tab label="📅 Frequência" />
-              <Tab label="👶 Crianças" />
-              <Tab label="🏫 Clubinhos" />
-              <Tab label="👨‍🏫 Professores" />
-              <Tab label="👥 Demográfico" />
-              <Tab label="🗺️ Geográfico" />
-              <Tab label="✝️ Decisões" />
-              <Tab label="⏱️ Retenção" />
-              <Tab label="📊 Atividades" />
-              <Tab label="🏆 Rankings" />
-            </Tabs>
-          )}
+        {/* KPI Dashboard - Always visible */}
+        <Box sx={{ mb: 3 }}>
+          <Suspense fallback={<Skeleton variant="rounded" height={200} sx={{ borderRadius: 3 }} />}>
+            <KPIDashboard />
+          </Suspense>
         </Box>
 
-        <TabPanel value={activeTab} index={0}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={80} /><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={280} /></Box>}>
-              <OverviewTab filters={filters} />
-            </Suspense>
-          </Box>
-        </TabPanel>
+        {/* Smart Filters */}
+        <Box sx={{ mb: 3 }}>
+          <SmartFilters />
+        </Box>
 
-        <TabPanel value={activeTab} index={1}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={300} /></Box>}>
-              <FrequencyTab />
-            </Suspense>
-          </Box>
-        </TabPanel>
+        {/* Navigation Tabs */}
+        <NavigationTabs />
 
-        <TabPanel value={activeTab} index={2}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Skeleton variant="rounded" height={400} />}>
-              <ChildrenTab />
-            </Suspense>
-          </Box>
-        </TabPanel>
+        {/* Tab Content */}
+        <TabContent />
 
-        <TabPanel value={activeTab} index={3}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Skeleton variant="rounded" height={400} />}>
-              <ClubsTab />
-            </Suspense>
-          </Box>
-        </TabPanel>
+        {/* Footer */}
+        <Box sx={{ mt: 4, textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            Ultima atualizacao: {dayjs().format('DD/MM/YYYY HH:mm')}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.7 }}>
+            Use os filtros para personalizar suas analises
+          </Typography>
+        </Box>
+      </Container>
 
-        <TabPanel value={activeTab} index={4}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Skeleton variant="rounded" height={400} />}>
-              <TeachersTab />
-            </Suspense>
-          </Box>
-        </TabPanel>
+      {/* Scroll to top button */}
+      <ScrollToTop />
 
-        <TabPanel value={activeTab} index={5}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={280} /><Skeleton variant="rounded" height={320} /></Box>}>
-              <DemographicTab filters={filters} />
-            </Suspense>
-          </Box>
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={6}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Skeleton variant="rounded" height={420} />}>
-              <GeographicTab filters={filters} />
-            </Suspense>
-          </Box>
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={7}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Skeleton variant="rounded" height={360} />}>
-              <DecisionsTab filters={filters} />
-            </Suspense>
-          </Box>
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={8}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={300} /><Skeleton variant="rounded" height={300} /></Box>}>
-              <RetentionTab filters={filters} />
-            </Suspense>
-          </Box>
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={9}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Skeleton variant="rounded" height={360} />}>
-              <ActivitiesTab filters={filters} />
-            </Suspense>
-          </Box>
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={10}>
-          <Box sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-            <Suspense fallback={<Box sx={{ display: 'grid', gap: 2 }}><Skeleton variant="rounded" height={260} /><Skeleton variant="rounded" height={260} /></Box>}>
-              <RankingsTab filters={filters} />
-            </Suspense>
-          </Box>
-        </TabPanel>
-      </Paper>
-
-      <Box sx={{ mt: { xs: 2, sm: 3, md: 4 }, textAlign: 'center', px: { xs: 1, sm: 0 } }}>
-        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-          💡 Use os filtros acima para personalizar suas análises
-        </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-          Última atualização: {dayjs().format('DD/MM/YYYY HH:mm')}
-        </Typography>
-      </Box>
-    </Container>
+      {/* Settings drawer */}
+      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+    </Box>
   );
-};
+});
 
+StatisticsContent.displayName = 'StatisticsContent';
+
+// Main page component with providers
 const StatisticsPage: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <StatisticsPageContent />
+      <StatisticsProvider>
+        <StatisticsContent />
+      </StatisticsProvider>
     </QueryClientProvider>
   );
 };
 
 export default StatisticsPage;
-

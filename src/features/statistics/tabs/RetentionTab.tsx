@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import { RetentionFunnelChart, DemographicCharts } from '../components';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface RetentionTabProps {
-	filters: StatisticsFilters;
+	filters: PagelasStatsQueryDto;
 }
 
 const RetentionTab: React.FC<RetentionTabProps> = ({ filters }) => {

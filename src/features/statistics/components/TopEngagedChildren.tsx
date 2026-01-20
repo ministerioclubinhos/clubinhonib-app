@@ -23,10 +23,10 @@ import {
 } from '@mui/material';
 import { Star, EmojiEvents, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useInsights } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface TopEngagedChildrenProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters }) => {
@@ -54,18 +54,18 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
   }
 
   const initialMobileItems = 3;
-  const displayedChildren = isMobile && !showAllMobile 
+  const displayedChildren = isMobile && !showAllMobile
     ? (data.topEngagedChildren || []).slice(0, initialMobileItems)
     : (data.topEngagedChildren || []);
 
   const getMedalColor = (position: number) => {
     switch (position) {
       case 0:
-        return '#FFD700'; 
+        return '#FFD700';
       case 1:
-        return '#C0C0C0'; 
+        return '#C0C0C0';
       case 2:
-        return '#CD7F32'; 
+        return '#CD7F32';
       default:
         return theme.palette.grey[400];
     }
@@ -87,8 +87,8 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
   };
 
   return (
-    <Paper elevation={3} sx={{ 
-      p: { xs: 2, sm: 3 }, 
+    <Paper elevation={3} sx={{
+      p: { xs: 2, sm: 3 },
       borderRadius: 2,
       width: '98%',
       maxWidth: '98%',
@@ -108,7 +108,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
           </Typography>
         </Box>
       ) : isMobile ? (
-        
+
         <Stack spacing={2}>
           {displayedChildren.map((child, index) => (
             <Card
@@ -122,7 +122,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
             >
               <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                 <Stack spacing={1.5}>
-                  
+
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
                       {index < 3 ? (
@@ -238,8 +238,8 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                   px: 3,
                 }}
               >
-                {showAllMobile 
-                  ? `Ver menos (mostrando ${data.topEngagedChildren.length})` 
+                {showAllMobile
+                  ? `Ver menos (mostrando ${data.topEngagedChildren.length})`
                   : `Ver mais (${data.topEngagedChildren.length - initialMobileItems} restantes)`
                 }
               </Button>
@@ -247,7 +247,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
           )}
         </Stack>
       ) : (
-        
+
         <TableContainer>
           <Table>
             <TableHead>

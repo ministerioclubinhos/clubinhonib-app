@@ -21,10 +21,10 @@ import {
 } from '@mui/material';
 import { EmojiEvents, TrendingUp } from '@mui/icons-material';
 import { useInsights } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface ClubRankingsProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
@@ -44,7 +44,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
 
   if (error || !data) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
         <Typography color="error">Erro ao carregar rankings</Typography>
       </Paper>
     );
@@ -53,11 +53,11 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
   const getMedalColor = (position: number) => {
     switch (position) {
       case 0:
-        return '#FFD700'; 
+        return '#FFD700';
       case 1:
-        return '#C0C0C0'; 
+        return '#C0C0C0';
       case 2:
-        return '#CD7F32'; 
+        return '#CD7F32';
       default:
         return theme.palette.grey[400];
     }
@@ -86,7 +86,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
           </Typography>
         </Box>
       ) : isMobile ? (
-        
+
         <Stack spacing={2}>
           {data.clubRankings.map((club, index) => (
             <Card
@@ -100,7 +100,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
             >
               <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                 <Stack spacing={1.5}>
-                  
+
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       {index < 3 ? (
@@ -170,7 +170,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
           ))}
         </Stack>
       ) : (
-        
+
         <TableContainer>
           <Table>
             <TableHead>

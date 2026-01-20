@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Paper, Typography, CircularProgress, useTheme } from '@mui/material';
+import { Box, Paper, Typography, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
 import {
   LineChart,
   Line,
@@ -11,14 +11,15 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useAcceptedChristsChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { AcceptedChristsStatsQueryDto } from '../api';
 
 interface AcceptedChristsChartProps {
-  filters?: StatisticsFilters;
+  filters?: AcceptedChristsStatsQueryDto;
 }
 
 export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filters }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { data, isLoading, error } = useAcceptedChristsChartData(filters);
 
   if (isLoading) {
@@ -52,7 +53,7 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
         ✝️ Decisões por Cristo ao Longo do Tempo
       </Typography>
 
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
           <XAxis
@@ -97,7 +98,7 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
         </LineChart>
       </ResponsiveContainer>
 
-      <Box sx={{ mt: 3, display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+      <Box sx={{ mt: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 3 }, flexWrap: 'wrap' }}>
         <Box>
           <Typography variant="body2" color="text.secondary">
             Total de Decisões

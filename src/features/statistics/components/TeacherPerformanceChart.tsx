@@ -23,10 +23,10 @@ import {
 } from 'recharts';
 import { School, TrendingUp, EmojiEvents } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface TeacherPerformanceChartProps {
-  filters?: StatisticsFilters;
+  filters?: PagelasStatsQueryDto;
 }
 
 export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = ({ filters }) => {
@@ -45,7 +45,7 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
 
   if (!data || !data.byTeacher || data.byTeacher.length === 0) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="text.secondary">Sem dados de professores para o período selecionado</Typography>
       </Paper>
     );
@@ -105,7 +105,7 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
     <Paper
       elevation={0}
       sx={{
-        p: 3,
+        p: { xs: 1.5, sm: 3 },
         borderRadius: 3,
         background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.success.main}03 100%)`,
         border: `2px solid ${theme.palette.divider}`,
@@ -144,8 +144,8 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                   index === 0
                     ? theme.palette.warning.main
                     : index === 1
-                    ? theme.palette.info.main
-                    : theme.palette.success.main
+                      ? theme.palette.info.main
+                      : theme.palette.success.main
                 }
               />
             ))}
@@ -178,7 +178,7 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  
+
                   <Avatar
                     sx={{
                       width: 48,
@@ -187,8 +187,8 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                         index === 0
                           ? theme.palette.warning.main
                           : index === 1
-                          ? theme.palette.info.main
-                          : theme.palette.success.main,
+                            ? theme.palette.info.main
+                            : theme.palette.success.main,
                       fontWeight: 'bold',
                     }}
                   >
@@ -236,8 +236,8 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                             index === 0
                               ? theme.palette.warning.main
                               : index === 1
-                              ? theme.palette.info.main
-                              : theme.palette.success.main,
+                                ? theme.palette.info.main
+                                : theme.palette.success.main,
                         },
                       }}
                     />

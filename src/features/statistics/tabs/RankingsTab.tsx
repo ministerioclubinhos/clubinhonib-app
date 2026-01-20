@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import { ClubRankings, TopEngagedChildren } from '../components';
-import { StatisticsFilters } from '../api';
+import { PagelasStatsQueryDto } from '../api';
 
 interface RankingsTabProps {
-	filters: StatisticsFilters;
+	filters: PagelasStatsQueryDto;
 }
 
 const RankingsTab: React.FC<RankingsTabProps> = ({ filters }) => {

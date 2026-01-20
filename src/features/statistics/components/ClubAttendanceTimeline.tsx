@@ -31,6 +31,9 @@ import {
 } from '@mui/icons-material';
 import { useClubAttendance, useClubs } from '../hooks';
 import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
+
+dayjs.locale('pt-br');
 
 const weekdayNames: Record<string, string> = {
   MONDAY: 'Segunda-feira',
@@ -55,19 +58,19 @@ export const ClubAttendanceTimeline: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const [selectedClubId, setSelectedClubId] = React.useState<string>('');
   const [year, setYear] = React.useState(currentYear);
-  
+
   const [timelinePage, setTimelinePage] = React.useState(1);
   const [timelineLimit, setTimelineLimit] = React.useState(20);
   const [missingWeeksPage, setMissingWeeksPage] = React.useState(1);
-  
+
   const [expandedTimeline, setExpandedTimeline] = React.useState(true);
   const [expandedMissingWeeks, setExpandedMissingWeeks] = React.useState(false);
 
   const { data: clubsData } = useClubs({ page: 1, limit: 100 });
-  const { data, isLoading } = useClubAttendance(selectedClubId, { 
-    year, 
-    page: timelinePage, 
-    limit: timelineLimit 
+  const { data, isLoading } = useClubAttendance(selectedClubId, {
+    year,
+    page: timelinePage,
+    limit: timelineLimit
   });
 
   React.useEffect(() => {
@@ -124,14 +127,24 @@ export const ClubAttendanceTimeline: React.FC = () => {
       'incomplete_pagela': 'Pagela Incompleta',
       'exception': 'Exceção',
       'out_of_period': 'Fora do Período',
+      'consecutive_missing': 'Ausências Consecutivas',
+      'info': 'Informação',
     };
-    
+
     return translations[type.toLowerCase()] || type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
+  const formattedAlertMessage = (alert: any) => {
+    if (alert.lastPagelaDate) {
+      // Override message if we have a structured date, to ensure proper localization
+      return `Última pagela: ${dayjs(alert.lastPagelaDate).locale('pt-br').format('dddd, D [de] MMMM [de] YYYY')}`;
+    }
+    return alert.message;
   };
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -141,7 +154,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
 
   return (
     <Box>
-      
+
       <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2, sm: 3 }, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
         <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
           <Grid item xs={12} md={6}>
@@ -186,18 +199,18 @@ export const ClubAttendanceTimeline: React.FC = () => {
       </Paper>
 
       {!selectedClubId ? (
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+        <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
           <Typography color="text.secondary">Selecione um clubinho para ver a frequência</Typography>
         </Paper>
       ) : !data ? (
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+        <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress />
           </Box>
         </Paper>
       ) : (
         <>
-          
+
           <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
             <Grid item xs={6} sm={3}>
               <Paper
@@ -220,7 +233,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   label={`${data.attendance.weeksWithPagela}/${data.attendance.weeksExpected}`}
                   size="small"
                   color="success"
-                  sx={{ 
+                  sx={{
                     mt: { xs: 0.5, sm: 1 },
                     fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     height: { xs: 20, sm: 24 },
@@ -251,7 +264,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   label={data.attendance.weeksMissing === 0 ? 'Nenhuma' : 'Atenção!'}
                   size="small"
                   color={data.attendance.weeksMissing === 0 ? 'success' : 'warning'}
-                  sx={{ 
+                  sx={{
                     mt: { xs: 0.5, sm: 1 },
                     fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     height: { xs: 20, sm: 24 },
@@ -329,7 +342,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                       <AlertTitle sx={{ fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                         {translateAlertType(alert.type)}
                       </AlertTitle>
-                      {alert.message}
+                      {formattedAlertMessage(alert)}
                     </Alert>
                   </Grid>
                 ))}
@@ -371,15 +384,15 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 {expandedTimeline ? <ExpandLess /> : <ExpandMore />}
               </IconButton>
             </Box>
-            
+
             <Collapse in={expandedTimeline}>
               <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
 
                 <Box
                   sx={{
                     display: 'grid',
-                    gridTemplateColumns: isMobile 
-                      ? 'repeat(auto-fill, minmax(45px, 1fr))' 
+                    gridTemplateColumns: isMobile
+                      ? 'repeat(auto-fill, minmax(45px, 1fr))'
                       : 'repeat(auto-fill, minmax(55px, 1fr))',
                     gap: { xs: 0.5, sm: 1 },
                   }}
@@ -394,9 +407,8 @@ export const ClubAttendanceTimeline: React.FC = () => {
                         bgcolor: week.hasPagela
                           ? `${theme.palette.success.main}20`
                           : `${theme.palette.error.main}20`,
-                        border: `2px solid ${
-                          week.hasPagela ? theme.palette.success.main : theme.palette.error.main
-                        }`,
+                        border: `2px solid ${week.hasPagela ? theme.palette.success.main : theme.palette.error.main
+                          }`,
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
                         '&:hover': {
@@ -447,7 +459,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                       }}
                       rowsPerPageOptions={[10, 20, 50, 100]}
                       labelRowsPerPage="Semanas por página:"
-                      labelDisplayedRows={({ from, to, count }) => 
+                      labelDisplayedRows={({ from, to, count }) =>
                         `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
                       }
                       sx={{
@@ -499,7 +511,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   {expandedMissingWeeks ? <ExpandLess /> : <ExpandMore />}
                 </IconButton>
               </Box>
-              
+
               <Collapse in={expandedMissingWeeks}>
                 <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 1.5 } }}>
@@ -549,7 +561,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                         onPageChange={(event, newPage) => setMissingWeeksPage(newPage + 1)}
                         rowsPerPage={data.missingWeeksPagination.limit}
                         rowsPerPageOptions={[]}
-                        labelDisplayedRows={({ from, to, count }) => 
+                        labelDisplayedRows={({ from, to, count }) =>
                           `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
                         }
                         sx={{
