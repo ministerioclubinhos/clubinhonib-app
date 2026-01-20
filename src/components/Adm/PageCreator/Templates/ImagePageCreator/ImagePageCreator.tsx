@@ -21,6 +21,8 @@ import { ImagePageData } from '@/store/slices/image/imageSlice';
 import ImageSection from './ImageSection';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
 import { SectionData } from '@/store/slices/image-section/imageSectionSlice';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
 interface ImageProps {
   fromTemplatePage?: boolean;
@@ -77,16 +79,16 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
   };
 
   const validate = (): boolean => {
-    if (!title.trim()) return setError('O título da galeria é obrigatório.');
-    if (!description.trim()) return setError('A descrição da galeria é obrigatória.');
-    if (sections.length === 0) return setError('Adicione pelo menos uma seção.');
+    if (!title.trim()) return setError(FORM_VALIDATION_MESSAGES.TITLE_REQUIRED);
+    if (!description.trim()) return setError(FORM_VALIDATION_MESSAGES.DESCRIPTION_REQUIRED);
+    if (sections.length === 0) return setError(FORM_VALIDATION_MESSAGES.SECTION_REQUIRED);
 
     for (let i = 0; i < sections.length; i++) {
       const { caption, description, mediaItems } = sections[i];
-      if (!caption.trim()) return setError(`A seção ${i + 1} precisa de um título.`);
-      if (!description.trim()) return setError(`A seção ${i + 1} precisa de uma descrição.`);
+      if (!caption.trim()) return setError(`Seção ${i + 1}: ${FORM_VALIDATION_MESSAGES.SECTION_TITLE_REQUIRED}`);
+      if (!description.trim()) return setError(`Seção ${i + 1}: ${FORM_VALIDATION_MESSAGES.SECTION_DESCRIPTION_REQUIRED}`);
       if (mediaItems.length === 0)
-        return setError(`A seção ${i + 1} precisa conter pelo menos uma mídia.`);
+        return setError(`Seção ${i + 1}: ${FORM_VALIDATION_MESSAGES.SECTION_MEDIA_REQUIRED}`);
     }
 
     return true;
@@ -157,7 +159,7 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
       setSuccessSnackbarOpen(true);
     } catch (error) {
       console.error(error);
-      setError('Erro ao enviar dados. Verifique o console.');
+      setError(GENERIC_ERROR_MESSAGES.SAVE_ERROR);
     } finally {
       setIsSaving(false);
     }
@@ -268,7 +270,7 @@ export default function ImagePageCreator({ fromTemplatePage }: ImageProps) {
 
       <Notification
         open={successSnackbarOpen}
-        message="Página salva com sucesso!"
+        message={FEATURE_SUCCESS_MESSAGES.PAGE_SAVED}
         severity="success"
         onClose={() => setSuccessSnackbarOpen(false)}
       />

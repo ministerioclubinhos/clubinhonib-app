@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import {
   Box,
   TextField,
@@ -16,17 +16,20 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Alert,
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
 import { validateMediaURL } from 'utils/validateMediaURL';
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
+import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 
 interface VideosProps {
   videos: MediaItem[];
   setVideos: (videos: MediaItem[]) => void;
+  ideaTitle?: string;
 }
 
-export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
+export function IdeasMaterialVideos({ videos, setVideos, ideaTitle }: VideosProps) {
   const [tempVideo, setTempVideo] = useState<MediaItem>({
     title: '',
     description: '',
@@ -40,6 +43,24 @@ export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
   const [errors, setErrors] = useState({ title: false, description: false, url: false });
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (editingIndex === null) {
+      const count = videos.length + 1;
+      const autoTitle = ideaTitle
+        ? `Vídeo ${count} da ideia "${ideaTitle}"`
+        : `Vídeo ${count} da ideia`;
+      const autoDesc = ideaTitle
+        ? `Vídeo ${count} para auxiliar na ideia "${ideaTitle}"`
+        : `Vídeo ${count} para auxiliar na ideia`;
+
+      setTempVideo((prev) => ({
+        ...prev,
+        title: autoTitle,
+        description: autoDesc,
+      }));
+    }
+  }, [ideaTitle, videos.length, editingIndex]);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -112,27 +133,33 @@ export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Título do Vídeo"
-            fullWidth
-            value={tempVideo.title}
-            onChange={(e) => setTempVideo({ ...tempVideo, title: e.target.value })}
-            error={errors.title}
-            helperText={errors.title ? 'Campo obrigatório' : ''}
-          />
+        <Grid item xs={12}>
+          <Alert
+            severity="info"
+            variant="outlined"
+            sx={{ mb: 2, '& .MuiAlert-message': { width: '100%' }, py: 0.5 }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 1, md: 4 } }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" display="block" color="text.secondary" sx={{ lineHeight: 1 }}>
+                  Título Automático
+                </Typography>
+                <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.2, mt: 0.5 }}>
+                  {tempVideo.title}
+                </Typography>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" display="block" color="text.secondary" sx={{ lineHeight: 1 }}>
+                  Descrição Automática
+                </Typography>
+                <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.2, mt: 0.5 }}>
+                  {tempVideo.description}
+                </Typography>
+              </Box>
+            </Box>
+          </Alert>
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Descrição do Vídeo"
-            fullWidth
-            value={tempVideo.description}
-            onChange={(e) => setTempVideo({ ...tempVideo, description: e.target.value })}
-            error={errors.description}
-            helperText={errors.description ? 'Campo obrigatório' : ''}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12}>
           <FormControl fullWidth>
             <InputLabel>Tipo</InputLabel>
             <Select
@@ -142,48 +169,27 @@ export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
                 setTempVideo({
                   ...tempVideo,
                   uploadType: e.target.value as MediaUploadType.LINK | MediaUploadType.UPLOAD,
-                  platformType:
-                    e.target.value === MediaUploadType.LINK ? MediaPlatform.YOUTUBE : undefined,
+                  platformType: MediaPlatform.YOUTUBE,
                   url: '',
                   file: undefined,
                 })
               }
             >
-              <MenuItem value="link">Link</MenuItem>
+              <MenuItem value="link">Link (YouTube)</MenuItem>
               <MenuItem value="upload">Upload</MenuItem>
             </Select>
           </FormControl>
         </Grid>
         {tempVideo.uploadType === MediaUploadType.LINK && (
           <Fragment>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Plataforma</InputLabel>
-                <Select
-                  value={tempVideo.platformType || ''}
-                  label="Plataforma"
-                  onChange={(e) =>
-                    setTempVideo({
-                      ...tempVideo,
-                      platformType: e.target.value as MediaItem['platformType'],
-                    })
-                  }
-                >
-                  <MenuItem value="youtube">YouTube</MenuItem>
-                  <MenuItem value="googledrive">Google Drive</MenuItem>
-                  <MenuItem value="onedrive">OneDrive</MenuItem>
-                  <MenuItem value="dropbox">Dropbox</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
             <Grid item xs={12}>
               <TextField
-                label="URL do Vídeo"
+                label="URL do Vídeo (YouTube)"
                 fullWidth
                 value={tempVideo.url}
                 onChange={(e) => setTempVideo({ ...tempVideo, url: e.target.value })}
                 error={errors.url}
-                helperText={errors.url ? 'URL inválida ou obrigatória' : ''}
+                helperText={errors.url ? FORM_VALIDATION_MESSAGES.INVALID_URL : ''}
               />
             </Grid>
           </Fragment>
@@ -217,9 +223,9 @@ export function IdeasMaterialVideos({ videos, setVideos }: VideosProps) {
               {video.uploadType === MediaUploadType.LINK ? (
                 <Box sx={{ aspectRatio: '16/9', mt: 1 }}>
                   <iframe
-                    src={video.platformType === MediaPlatform.YOUTUBE ? 
-                      video.url.includes('embed') ? 
-                        `${video.url}&autoplay=0&mute=0` : 
+                    src={video.platformType === MediaPlatform.YOUTUBE ?
+                      video.url.includes('embed') ?
+                        `${video.url}&autoplay=0&mute=0` :
                         video.url.replace(/watch\?v=/, 'embed/') + '?autoplay=0&mute=0' :
                       video.url
                     }

@@ -17,6 +17,8 @@ import { useNavigate } from 'react-router-dom';
 import { setFeedbacks } from '@/store/slices/feedback/feedbackSlice';
 import api from '@/config/axiosConfig';
 import { FeedbackCategory, FeedbackCategoryLabels } from '@/store/slices/types';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+
 
 export interface FeedbackData {
     id?: string;
@@ -84,7 +86,7 @@ const SiteFeedbackForm: React.FC = () => {
             }, 2000);
 
         } catch (error) {
-            setErrorMessage('Erro ao enviar feedback. Tente novamente.');
+            setErrorMessage(GENERIC_ERROR_MESSAGES.TRY_AGAIN);
             console.error('Erro ao enviar feedback:', error);
         }
     };
@@ -129,7 +131,7 @@ const SiteFeedbackForm: React.FC = () => {
                 onChange={(e) => setName(e.target.value)}
                 sx={{ mb: 2 }}
                 error={errors.name}
-                helperText={errors.name ? 'Nome é obrigatório' : ''}
+                helperText={errors.name ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
                 required
                 inputProps={{ 'aria-label': 'Seu nome' }}
             />
@@ -142,7 +144,7 @@ const SiteFeedbackForm: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 sx={{ mb: 2 }}
                 error={errors.email}
-                helperText={errors.email ? 'E-mail inválido' : ''}
+                helperText={errors.email ? FORM_VALIDATION_MESSAGES.INVALID_EMAIL : ''}
                 inputProps={{ 'aria-label': 'E-mail (opcional)' }}
             />
 
@@ -158,7 +160,7 @@ const SiteFeedbackForm: React.FC = () => {
             />
             {errors.rating && (
                 <Typography color="error" variant="body2">
-                    Nota é obrigatória
+                    {FORM_VALIDATION_MESSAGES.REQUIRED_FIELD}
                 </Typography>
             )}
 
@@ -190,7 +192,7 @@ const SiteFeedbackForm: React.FC = () => {
                 onChange={(e) => setComment(e.target.value)}
                 sx={{ mb: 2 }}
                 error={errors.comment}
-                helperText={errors.comment ? 'Comentário é obrigatório' : ''}
+                helperText={errors.comment ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
                 required
                 inputProps={{ 'aria-label': 'Comentário' }}
             />

@@ -1,13 +1,8 @@
-import { Fragment, useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
-  TextField,
   Button,
   Grid,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Typography,
   IconButton,
   Tooltip,
@@ -16,30 +11,49 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Alert,
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
-import { validateMediaURL } from 'utils/validateMediaURL';
-import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from 'store/slices/types';
+import { MediaItem,MediaType, MediaUploadType } from 'store/slices/types';
 
 interface ImagesProps {
   images: MediaItem[];
   setImages: (imgs: MediaItem[]) => void;
+  ideaTitle?: string;
 }
 
-export function IdeasMaterialImages({ images, setImages }: ImagesProps) {
+export function IdeasMaterialImages({ images, setImages, ideaTitle }: ImagesProps) {
   const [tempImg, setTempImg] = useState<MediaItem>({
     title: '',
     description: '',
     mediaType: MediaType.IMAGE,
-    uploadType: MediaUploadType.LINK,
+    uploadType: MediaUploadType.UPLOAD,
     url: '',
-    platformType: MediaPlatform.GOOGLE_DRIVE,
+    platformType: undefined,
   });
   const [fileName, setFileName] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [errors, setErrors] = useState({ title: false, description: false, url: false });
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (editingIndex === null) {
+      const count = images.length + 1;
+      const autoTitle = ideaTitle
+        ? `Imagem ${count} da ideia "${ideaTitle}"`
+        : `Imagem ${count} da ideia`;
+      const autoDesc = ideaTitle
+        ? `Imagem ${count} para auxiliar na ideia "${ideaTitle}"`
+        : `Imagem ${count} para auxiliar na ideia`;
+
+      setTempImg((prev) => ({
+        ...prev,
+        title: autoTitle,
+        description: autoDesc,
+      }));
+    }
+  }, [ideaTitle, images.length, editingIndex]);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,9 +68,9 @@ export function IdeasMaterialImages({ images, setImages }: ImagesProps) {
       title: '',
       description: '',
       mediaType: MediaType.IMAGE,
-      uploadType: MediaUploadType.LINK,
+      uploadType: MediaUploadType.UPLOAD,
       url: '',
-      platformType: MediaPlatform.GOOGLE_DRIVE,
+      platformType: undefined,
     });
     setFileName('');
     setEditingIndex(null);
@@ -64,19 +78,13 @@ export function IdeasMaterialImages({ images, setImages }: ImagesProps) {
   };
 
   const handleAddOrUpdate = () => {
-    const isValid =
-      tempImg.uploadType === MediaUploadType.UPLOAD ||
-      validateMediaURL(tempImg.url, tempImg.platformType);
-    const hasError =
-      !tempImg.title ||
-      !tempImg.description ||
-      !tempImg.url ||
-      (tempImg.uploadType === MediaUploadType.LINK && !isValid);
+    const isValid = tempImg.uploadType === MediaUploadType.UPLOAD; // Only upload supported
+    const hasError = !tempImg.title || !tempImg.description || !tempImg.url;
 
     setErrors({
       title: !tempImg.title,
       description: !tempImg.description,
-      url: !tempImg.url || (tempImg.uploadType === MediaUploadType.LINK && !isValid),
+      url: !tempImg.url,
     });
 
     if (hasError) return;
@@ -112,96 +120,49 @@ export function IdeasMaterialImages({ images, setImages }: ImagesProps) {
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Título da Imagem"
-            fullWidth
-            value={tempImg.title}
-            onChange={(e) => setTempImg({ ...tempImg, title: e.target.value })}
-            error={errors.title}
-            helperText={errors.title ? 'Campo obrigatório' : ''}
-          />
+        <Grid item xs={12}>
+          <Alert
+            severity="info"
+            variant="outlined"
+            sx={{ mb: 2, '& .MuiAlert-message': { width: '100%' }, py: 0.5 }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 1, md: 4 } }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" display="block" color="text.secondary" sx={{ lineHeight: 1 }}>
+                  Título Automático
+                </Typography>
+                <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.2, mt: 0.5 }}>
+                  {tempImg.title}
+                </Typography>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" display="block" color="text.secondary" sx={{ lineHeight: 1 }}>
+                  Descrição Automática
+                </Typography>
+                <Typography variant="body2" fontWeight="medium" sx={{ lineHeight: 1.2, mt: 0.5 }}>
+                  {tempImg.description}
+                </Typography>
+              </Box>
+            </Box>
+          </Alert>
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Descrição da Imagem"
-            fullWidth
-            value={tempImg.description}
-            onChange={(e) => setTempImg({ ...tempImg, description: e.target.value })}
-            error={errors.description}
-            helperText={errors.description ? 'Campo obrigatório' : ''}
-          />
+
+        <Grid item xs={12}>
+          <Button variant="outlined" component="label" fullWidth sx={{ height: '56px' }}>
+            {fileName ? 'Trocar Imagem' : 'Upload de Imagem'}
+            <input type="file" hidden accept="image/*" onChange={handleUpload} />
+          </Button>
+          {fileName && (
+            <Typography variant="body2" mt={1} textAlign="center">
+              Arquivo selecionado: <strong>{fileName}</strong>
+            </Typography>
+          )}
+          {errors.url && (
+            <Typography variant="caption" color="error" display="block" textAlign="center">
+              Selecione um arquivo para continuar.
+            </Typography>
+          )}
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>Tipo</InputLabel>
-            <Select
-              value={tempImg.uploadType}
-              label="Tipo"
-              onChange={(e) =>
-                setTempImg({
-                  ...tempImg,
-                  uploadType: e.target.value as MediaUploadType.LINK | MediaUploadType.UPLOAD,
-                  platformType:
-                    e.target.value === MediaUploadType.LINK
-                      ? MediaPlatform.GOOGLE_DRIVE
-                      : undefined,
-                  url: '',
-                  file: undefined,
-                })
-              }
-            >
-              <MenuItem value="link">Link</MenuItem>
-              <MenuItem value="upload">Upload</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        {tempImg.uploadType === 'link' && (
-          <Fragment>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Plataforma</InputLabel>
-                <Select
-                  value={tempImg.platformType || ''}
-                  label="Plataforma"
-                  onChange={(e) =>
-                    setTempImg({
-                      ...tempImg,
-                      platformType: e.target.value as MediaItem['platformType'],
-                    })
-                  }
-                >
-                  <MenuItem value="googledrive">Google Drive</MenuItem>
-                  <MenuItem value="onedrive">OneDrive</MenuItem>
-                  <MenuItem value="dropbox">Dropbox</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="URL da Imagem"
-                fullWidth
-                value={tempImg.url}
-                onChange={(e) => setTempImg({ ...tempImg, url: e.target.value })}
-                error={errors.url}
-                helperText={errors.url ? 'URL inválida ou obrigatória' : ''}
-              />
-            </Grid>
-          </Fragment>
-        )}
-        {tempImg.uploadType === MediaUploadType.UPLOAD && (
-          <Grid item xs={12}>
-            <Button variant="outlined" component="label">
-              Upload de Imagem
-              <input type="file" hidden accept="image/*" onChange={handleUpload} />
-            </Button>
-            {fileName && (
-              <Typography variant="body2" mt={1}>
-                Arquivo: <strong>{fileName}</strong>
-              </Typography>
-            )}
-          </Grid>
-        )}
         <Grid item xs={12}>
           <Button variant="contained" fullWidth onClick={handleAddOrUpdate} sx={{ mt: 2 }}>
             {editingIndex !== null ? 'Salvar Alterações' : 'Adicionar Imagem'}

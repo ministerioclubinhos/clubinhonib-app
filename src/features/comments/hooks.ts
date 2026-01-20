@@ -4,6 +4,7 @@ import { AppDispatch, RootState } from "@/store/slices";
 import { CommentData, setComments } from "store/slices/comment/commentsSlice";
 import { apiDeleteComment, apiGetComments, apiPublishComment, apiUpdateComment } from "./api";
 import { debounce } from "./utils";
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from "@/constants/errorMessages";
 
 export function useCommentsData() {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,7 +19,7 @@ export function useCommentsData() {
       const data = await apiGetComments();
       dispatch(setComments(data));
     } catch (e: any) {
-      setError("Erro ao buscar comentários");
+      setError(FORM_VALIDATION_MESSAGES.COMMENT_FETCH_ERROR);
     } finally {
       setLoading(false);
     }
@@ -75,7 +76,7 @@ export function useCommentActions(fetchComments: () => Promise<void> | void) {
   const publish = useCallback(async (c: CommentData) => {
     setActionLoading(true); setActionError("");
     try { await apiPublishComment(c); await fetchComments(); }
-    catch (e: any) { setActionError("Erro ao publicar comentário"); throw e; }
+    catch (e: any) { setActionError(FORM_VALIDATION_MESSAGES.COMMENT_PUBLISH_ERROR); throw e; }
     finally { setActionLoading(false); }
   }, [fetchComments]);
 
@@ -83,7 +84,7 @@ export function useCommentActions(fetchComments: () => Promise<void> | void) {
     if (!c.id) return;
     setActionLoading(true); setActionError("");
     try { await apiDeleteComment(c.id); await fetchComments(); }
-    catch (e: any) { setActionError("Erro ao deletar comentário"); throw e; }
+    catch (e: any) { setActionError(FORM_VALIDATION_MESSAGES.COMMENT_DELETE_ERROR); throw e; }
     finally { setActionLoading(false); }
   }, [fetchComments]);
 
@@ -92,7 +93,7 @@ export function useCommentActions(fetchComments: () => Promise<void> | void) {
   }) => {
     setActionLoading(true); setActionError("");
     try { await apiUpdateComment(c, payload); await fetchComments(); }
-    catch (e: any) { setActionError("Erro ao salvar comentário"); throw e; }
+    catch (e: any) { setActionError(FORM_VALIDATION_MESSAGES.COMMENT_SAVE_ERROR); throw e; }
     finally { setActionLoading(false); }
   }, [fetchComments]);
 

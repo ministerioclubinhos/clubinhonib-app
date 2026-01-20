@@ -25,6 +25,8 @@ import api from '@/config/axiosConfig';
 import { MediaUploadType } from 'store/slices/types';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 import { IdeasMaterialSection } from './IdeasMaterialSection';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface PageCreatorProps {
   fromTemplatePage?: boolean;
@@ -101,7 +103,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
     if (Object.values(errors).some(Boolean)) {
       setSnackbar({
         open: true,
-        message: 'Preencha todos os campos obrigatórios e adicione pelo menos uma seção.',
+        message: FORM_VALIDATION_MESSAGES.REQUIRED_GENERIC,
         severity: 'error',
       });
       return;
@@ -148,11 +150,11 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
         ? api.post('/ideas-pages', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
         : api.patch(`/ideas-pages/${ideasData?.id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }));
 
-      if (!response?.data) throw new Error('Erro ao salvar');
+      if (!response?.data) throw new Error(GENERIC_ERROR_MESSAGES.SAVE_ERROR);
 
       setSnackbar({
         open: true,
-        message: 'Página salva com sucesso!',
+        message: FEATURE_SUCCESS_MESSAGES.PAGE_SAVED,
         severity: 'success',
       });
 
@@ -162,7 +164,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
       console.error('Erro ao salvar:', error);
       setSnackbar({
         open: true,
-        message: 'Erro ao salvar a página.',
+        message: GENERIC_ERROR_MESSAGES.SAVE_ERROR,
         severity: 'error',
       });
     } finally {
@@ -199,7 +201,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
           value={pageTitle}
           onChange={(e) => setPageTitle(e.target.value)}
           error={errors.title}
-          helperText={errors.title ? 'Campo obrigatório' : ''}
+          helperText={errors.title ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           sx={{ mb: 2 }}
         />
         <TextField
@@ -210,7 +212,7 @@ export function IdeasMaterialPageCreator({ fromTemplatePage }: PageCreatorProps)
           value={pageDescription}
           onChange={(e) => setPageDescription(e.target.value)}
           error={errors.description}
-          helperText={errors.description ? 'Campo obrigatório' : ''}
+          helperText={errors.description ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
         />
       </Paper>
 

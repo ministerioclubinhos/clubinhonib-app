@@ -22,6 +22,8 @@ import WeekAudios from './WeekAudios';
 import WeekImages from './WeekImages';
 import api from '@/config/axiosConfig';
 import { MediaItem, MediaType, MediaUploadType } from 'store/slices/types';
+import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface WeekMaterialPageCreatorProps {
   fromTemplatePage?: boolean;
@@ -128,7 +130,7 @@ export default function WeekMaterialPageCreator({
     if (hasError) {
       setSnackbar({
         open: true,
-        message: 'Preencha todos os campos obrigatórios.',
+        message: FORM_VALIDATION_MESSAGES.REQUIRED_GENERIC,
         severity: 'error',
       });
       return;
@@ -187,13 +189,13 @@ export default function WeekMaterialPageCreator({
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
-      if (!res?.data) throw new Error('Erro ao salvar');
+      if (!res?.data) throw new Error(GENERIC_ERROR_MESSAGES.SAVE_ERROR);
 
       await dispatch(fetchRoutes());
 
       setSnackbar({
         open: true,
-        message: 'Página salva com sucesso!',
+        message: FEATURE_SUCCESS_MESSAGES.PAGE_SAVED,
         severity: 'success',
       });
 
@@ -202,7 +204,7 @@ export default function WeekMaterialPageCreator({
       console.error('Erro ao salvar:', err);
       setSnackbar({
         open: true,
-        message: 'Erro ao salvar a página.',
+        message: GENERIC_ERROR_MESSAGES.SAVE_ERROR,
         severity: 'error',
       });
     } finally {
@@ -236,7 +238,7 @@ export default function WeekMaterialPageCreator({
           value={pageTitle}
           onChange={(e) => setPageTitle(e.target.value)}
           error={errors.title}
-          helperText={errors.title ? 'Campo obrigatório' : ''}
+          helperText={errors.title ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           sx={{ mb: 2 }}
         />
         <TextField
@@ -245,7 +247,7 @@ export default function WeekMaterialPageCreator({
           value={pageSubtitle}
           onChange={(e) => setPageSubtitle(e.target.value)}
           error={errors.subtitle}
-          helperText={errors.subtitle ? 'Campo obrigatório' : ''}
+          helperText={errors.subtitle ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           sx={{ mb: 2 }}
         />
         <TextField
@@ -256,7 +258,7 @@ export default function WeekMaterialPageCreator({
           value={pageDescription}
           onChange={(e) => setPageDescription(e.target.value)}
           error={errors.description}
-          helperText={errors.description ? 'Campo obrigatório' : ''}
+          helperText={errors.description ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
         />
       </Box>
       <Typography variant="h5" mb={3} fontWeight="bold" textAlign="center">
