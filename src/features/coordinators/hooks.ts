@@ -13,6 +13,7 @@ import type {
   CoordinatorProfile,
 } from "./types";
 import type { SortingState } from "@tanstack/react-table";
+import { extractErrorMessage } from "@/utils/apiError";
 
 function mapSortingToServer(sorting: SortingState) {
   const first = sorting?.[0];
@@ -71,10 +72,8 @@ export function useCoordinatorProfiles(
       });
       setRows(data.items || []);
       setTotal(data.total || 0);
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message || err.message || "Erro ao listar coordenadores"
-      );
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Erro ao listar coordenadores"));
     } finally {
       setLoading(false);
     }
@@ -115,9 +114,8 @@ export function useCoordinatorMutations(
         await refreshOne(coordinatorId);
         await refreshPage();
         return res?.message || "Club atribuído ao coordenador com sucesso";
-      } catch (err: any) {
-        const msg =
-          err?.response?.data?.message || err.message || "Erro ao vincular clubinho";
+      } catch (err: unknown) {
+        const msg = extractErrorMessage(err, "Erro ao vincular clubinho");
         setDialogError(msg);
         throw err;
       } finally {
@@ -135,9 +133,8 @@ export function useCoordinatorMutations(
         await refreshOne(coordinatorId);
         await refreshPage();
         return res?.message || "Club removido do coordenador com sucesso";
-      } catch (err: any) {
-        const msg =
-          err?.response?.data?.message || err.message || "Erro ao desvincular clubinho";
+      } catch (err: unknown) {
+        const msg = extractErrorMessage(err, "Erro ao desvincular clubinho");
         setDialogError(msg);
         throw err;
       } finally {
@@ -160,8 +157,8 @@ export function useClubsIndex() {
     try {
       const list = await apiListClubsSimple();
       setClubs(list || []);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Erro ao listar clubinhos");
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Erro ao listar clubinhos"));
     } finally {
       setLoading(false);
     }

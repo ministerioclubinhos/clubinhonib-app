@@ -16,6 +16,9 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 import { selectVideoRoutes } from '@/store/selectors/routeSelectors';
 import { RouteData } from '@/store/slices/route/routeSlice';
@@ -82,10 +85,51 @@ const TrainingVideosSection: React.FC = () => {
       />
 
       {videosToDisplay.length > 0 ? (
-        <Fragment>
-          <Grid container spacing={3}>
-            {videosToDisplay.map((video) => (
-              <Grid item xs={12} sm={6} md={3} key={video.id}>
+        <Box
+          sx={{
+            py: 2,
+            px: { xs: 0.5, md: 1 },
+            '& .slick-prev:before, & .slick-next:before': {
+              color: '#7e57c2',
+              fontSize: '28px',
+            },
+            '& .slick-prev': {
+              left: { xs: -10, md: -20 },
+              zIndex: 2,
+            },
+            '& .slick-next': {
+              right: { xs: -10, md: -20 },
+              zIndex: 2,
+            },
+            '& .slick-dots': {
+              bottom: -35,
+              '& li.slick-active button:before': {
+                color: '#7e57c2',
+              },
+              '& li button:before': {
+                color: '#7e57c2',
+                opacity: 0.25,
+              },
+            },
+          }}
+        >
+          <Slider
+            dots
+            infinite={filteredVideos.length > 3}
+            speed={500}
+            slidesToShow={4}
+            slidesToScroll={1}
+            autoplay
+            autoplaySpeed={4000}
+            pauseOnHover
+            responsive={[
+              { breakpoint: 1200, settings: { slidesToShow: 3 } },
+              { breakpoint: 900, settings: { slidesToShow: 2 } },
+              { breakpoint: 600, settings: { slidesToShow: 1 } },
+            ]}
+          >
+            {filteredVideos.map((video) => (
+              <Box key={video.id} sx={{ p: 1.5 }}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -96,10 +140,13 @@ const TrainingVideosSection: React.FC = () => {
                   <Card
                     sx={{
                       height: '100%',
+                      minHeight: 280,
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       borderRadius: 2,
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
                       '&:hover': {
                         boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
                       },
@@ -115,37 +162,42 @@ const TrainingVideosSection: React.FC = () => {
                         objectFit: 'cover',
                       }}
                     />
-                    <CardContent>
+                    <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                       <Typography
                         variant="subtitle1"
                         fontWeight="bold"
                         color="#424242"
                         gutterBottom
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          lineHeight: '1.2em',
+                          height: '2.4em',
+                        }}
                       >
                         {video.title}
                       </Typography>
-                      <Typography variant="body2" color="#616161" noWrap>
+                      <Typography
+                        variant="body2"
+                        color="#616161"
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
                         {video.description}
                       </Typography>
                     </CardContent>
                   </Card>
                 </motion.div>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
-
-          {filteredVideos.length > visibleCount && (
-            <Box textAlign="center" mt={3}>
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => setExpanded((prev) => !prev)}
-              >
-                {expanded ? 'Ver menos' : 'Ver mais'}
-              </Button>
-            </Box>
-          )}
-        </Fragment>
+          </Slider>
+        </Box>
       ) : (
         <Typography variant="body2" color="text.secondary" textAlign="center">
           Nenhum vídeo encontrado.

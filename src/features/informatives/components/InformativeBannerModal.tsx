@@ -17,6 +17,7 @@ import { fetchRoutes } from 'store/slices/route/routeSlice';
 import type { InformativeBannerData } from 'store/slices/informative/informativeBannerSlice';
 import { createBannerApi, updateBannerApi } from '../api';
 import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { extractErrorMessage } from '@/utils/apiError';
 
 interface InformativeBannerModalProps {
   open: boolean;
@@ -75,12 +76,9 @@ export default function InformativeBannerModal({
       await onSave();
 
       onClose();
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        GENERIC_ERROR_MESSAGES.SAVE_ERROR;
-      setErrMsg(String(msg));
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err, GENERIC_ERROR_MESSAGES.SAVE_ERROR);
+      setErrMsg(msg);
     } finally {
       setLoading(false);
     }

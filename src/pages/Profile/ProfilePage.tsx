@@ -40,6 +40,7 @@ import PasswordChangeForm from '@/features/profile/components/PasswordChangeForm
 import ProfileImageUpload from '@/features/profile/components/ProfileImageUpload';
 import PersonalDataForm from '@/features/profile/components/PersonalDataForm';
 import PreferencesForm from '@/features/profile/components/PreferencesForm';
+import { extractErrorMessage } from '@/utils/apiError';
 
 const menuItems = [
   { icon: <PersonIcon />, label: 'Informações da Conta', shortLabel: 'Conta' },
@@ -147,8 +148,8 @@ const ProfilePage: React.FC = () => {
     try {
       setError(null);
       await dispatch(fetchCurrentUser());
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Erro ao atualizar perfil.');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, 'Erro ao atualizar perfil.'));
     }
   };
 

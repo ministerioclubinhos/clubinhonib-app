@@ -8,6 +8,7 @@ import {
 } from "./api";
 import { ClubSimple, TeacherProfile, TeacherQuery, Page } from "./types";
 import type { SortingState } from "@tanstack/react-table";
+import { extractErrorMessage } from "@/utils/apiError";
 
 export function useTeacherProfiles(
   pageIndex: number,  
@@ -68,9 +69,9 @@ export function useTeacherProfiles(
 
       setRows(data.items || []);
       setTotal(data.total || 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (mySeq !== seqRef.current) return;
-      setError(err?.response?.data?.message || err.message || "Erro ao listar professores");
+      setError(extractErrorMessage(err, "Erro ao listar professores"));
     } finally {
       if (mySeq === seqRef.current) setLoading(false);
     }
@@ -104,7 +105,7 @@ export function useTeacherMutations(
   const setClub = useCallback(async (teacherId: string, clubId: string) => {
     setDialogLoading(true); setDialogError("");
     try { await apiAssignTeacherToClub(teacherId, clubId); await refreshOne(teacherId); }
-    catch (err: any) { setDialogError(err?.response?.data?.message || err.message || "Erro ao vincular Clubinho"); throw err; }
+    catch (err: unknown) { setDialogError(extractErrorMessage(err, "Erro ao vincular Clubinho")); throw err; }
     finally { setDialogLoading(false); }
   }, [refreshOne]);
 
@@ -116,8 +117,8 @@ export function useTeacherMutations(
       if (!currentClubId) return;
       await apiUnassignTeacherFromClub(teacherId, currentClubId);
       await refreshOne(teacherId);
-    } catch (err: any) {
-      setDialogError(err?.response?.data?.message || err.message || "Erro ao desvincular Clubinho");
+    } catch (err: unknown) {
+      setDialogError(extractErrorMessage(err, "Erro ao desvincular Clubinho"));
       throw err;
     } finally { setDialogLoading(false); }
   }, [refreshOne]);
@@ -135,8 +136,8 @@ export function useClubsIndex() {
     try {
       const list = await apiListClubsSimple();
       setClubs(list || []);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Erro ao listar clubinhos");
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Erro ao listar clubinhos"));
     } finally {
       setLoading(false);
     }

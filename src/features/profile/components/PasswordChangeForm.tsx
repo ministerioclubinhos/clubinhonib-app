@@ -13,6 +13,8 @@ import { motion } from 'framer-motion';
 import SaveIcon from '@mui/icons-material/Save';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { extractErrorInfo } from '@/utils/apiError';
+import { AuthErrorCode } from '@/types/api-error';
 import { ChangePasswordDto } from '../types';
 import { apiChangePassword } from '../api';
 
@@ -120,12 +122,15 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
       setFormData({ currentPassword: '', newPassword: '' });
       setConfirmPassword('');
       setTimeout(() => setSuccess(false), 5000);
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Erro ao alterar senha';
-      onError(errorMessage);
+    } catch (err: unknown) {
+      const errorInfo = extractErrorInfo(err, 'Erro ao alterar senha');
+      onError(errorInfo.message);
 
-      if (isCommonUser && errorMessage.includes('incorreta')) {
+      // Tratamento específico por código de erro conforme documentação da API
+      if (isCommonUser && errorInfo.code === AuthErrorCode.CURRENT_PASSWORD_INCORRECT) {
         setErrors({ currentPassword: 'Senha atual incorreta' });
+      } else if (errorInfo.code === AuthErrorCode.NEW_PASSWORD_SAME_AS_CURRENT) {
+        setErrors({ newPassword: 'A nova senha deve ser diferente da senha atual' });
       }
     } finally {
       setIsSubmitting(false);

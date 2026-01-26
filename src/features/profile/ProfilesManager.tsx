@@ -66,6 +66,7 @@ import { apiGetAllProfiles } from './api';
 import { CompleteProfileListItem, QueryProfilesDto, PaginationMeta } from './types';
 import ProfileAdminEditDialog from './components/ProfileAdminEditDialog';
 import { buildWhatsappLink } from '@/utils/whatsapp';
+import { extractErrorMessage } from '@/utils/apiError';
 
 type BirthdayStatus = 'today' | 'this-week' | 'this-month' | null;
 
@@ -1019,8 +1020,8 @@ const ProfilesManager: React.FC = () => {
       const response = await apiGetAllProfiles(filters);
       setProfiles(response.items);
       setMeta(response.meta);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Erro ao carregar perfis');
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, 'Erro ao carregar perfis'));
     } finally {
       setLoading(false);
     }

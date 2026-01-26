@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 import { motion } from 'framer-motion';
+import { extractErrorMessage } from '@/utils/apiError';
 import SaveIcon from '@mui/icons-material/Save';
 import { SimpleDatePicker } from '@/components/common/inputs/DatePickerInput';
 import { PersonalData, UpdatePersonalDataDto } from '../types';
@@ -118,8 +119,8 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({
       setSuccess(true);
       onUpdate();
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Erro ao atualizar dados pessoais';
+    } catch (err: unknown) {
+      const errorMessage = extractErrorMessage(err, 'Erro ao atualizar dados pessoais');
       onError(errorMessage);
     } finally {
       setIsSubmitting(false);

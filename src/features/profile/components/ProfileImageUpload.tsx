@@ -17,6 +17,7 @@ import CameraswitchIcon from '@mui/icons-material/Cameraswitch';
 import { apiUpdateProfileImage } from '../api';
 import { fetchCurrentUser } from '@/store/slices/auth/authSlice';
 import type { AppDispatch } from '@/store/slices';
+import { extractErrorMessage } from '@/utils/apiError';
 
 interface ProfileImageUploadProps {
   currentImageUrl?: string;
@@ -472,8 +473,8 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
 
       onUpdate();
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Erro ao fazer upload da imagem';
+    } catch (err: unknown) {
+      const errorMessage = extractErrorMessage(err, 'Erro ao fazer upload da imagem');
       onError(errorMessage);
     } finally {
       setIsSubmitting(false);
