@@ -10,8 +10,9 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import DescriptionIcon from '@mui/icons-material/Description';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 import api from '@/config/axiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
@@ -98,10 +99,51 @@ const DocumentsSection: React.FC = () => {
           {error}
         </Typography>
       ) : documentRoutes.length > 0 ? (
-        <Fragment>
-          <Grid container spacing={3}>
-            {displayedRoutes.map((route) => (
-              <Grid item xs={12} sm={6} md={3} key={route.id}>
+        <Box
+          sx={{
+            py: 2,
+            px: { xs: 0.5, md: 1 },
+            '& .slick-prev:before, & .slick-next:before': {
+              color: '#0288d1',
+              fontSize: '28px',
+            },
+            '& .slick-prev': {
+              left: { xs: -10, md: -20 },
+              zIndex: 2,
+            },
+            '& .slick-next': {
+              right: { xs: -10, md: -20 },
+              zIndex: 2,
+            },
+            '& .slick-dots': {
+              bottom: -35,
+              '& li.slick-active button:before': {
+                color: '#0288d1',
+              },
+              '& li button:before': {
+                color: '#0288d1',
+                opacity: 0.25,
+              },
+            },
+          }}
+        >
+          <Slider
+            dots
+            infinite={documentRoutes.length > 3}
+            speed={500}
+            slidesToShow={4}
+            slidesToScroll={1}
+            autoplay
+            autoplaySpeed={4000}
+            pauseOnHover
+            responsive={[
+              { breakpoint: 1200, settings: { slidesToShow: 3 } },
+              { breakpoint: 900, settings: { slidesToShow: 2 } },
+              { breakpoint: 600, settings: { slidesToShow: 1 } },
+            ]}
+          >
+            {documentRoutes.map((route) => (
+              <Box key={route.id} sx={{ p: 1.5 }}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -111,49 +153,56 @@ const DocumentsSection: React.FC = () => {
                 >
                   <Card
                     sx={{
+                      height: '100%',
+                      minHeight: 180,
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       borderRadius: 2,
                       cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
                       '&:hover': {
                         boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
                       },
                     }}
                     onClick={() => handleOpenModal(route)}
                   >
-                    <CardContent sx={{ py: 1 }}>
+                    <CardContent sx={{ py: 2 }}>
                       <Typography
                         variant="subtitle1"
                         fontWeight="bold"
                         color="#424242"
                         gutterBottom
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          height: '3.6em',
+                          lineHeight: '1.2em',
+                        }}
                       >
                         {route.title}
                       </Typography>
-                      <Typography variant="body2" color="#616161">
+                      <Typography
+                        variant="body2"
+                        color="#616161"
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
                         {truncateDescription(route.description, 70)}
                       </Typography>
                     </CardContent>
                   </Card>
                 </motion.div>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
-
-          {documentRoutes.length > 4 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-              <Button
-                variant="outlined"
-                color="primary"
-                endIcon={
-                  isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />
-                }
-                onClick={handleToggleExpand}
-              >
-                {isExpanded ? 'Ver menos' : 'Ver mais documentos'}
-              </Button>
-            </Box>
-          )}
-        </Fragment>
+          </Slider>
+        </Box>
       ) : (
         <Typography
           variant="body2"

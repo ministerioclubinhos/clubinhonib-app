@@ -15,8 +15,6 @@ import {
 } from '@/utils/eventBus';
 import {
   analyzeError,
-  getErrorMessage,
-  isApiError,
   logApiError,
   AnalyzedError,
 } from '@/utils/apiError';
@@ -85,6 +83,7 @@ const doRefresh = async () => {
 
 /**
  * Determina a variante do toast baseado na categoria do erro
+ * Conforme documentação da API para tratamento por HTTP Status
  */
 const getToastVariant = (analyzed: AnalyzedError): ToastVariant => {
   switch (analyzed.category) {
@@ -112,6 +111,27 @@ const getToastVariant = (analyzed: AnalyzedError): ToastVariant => {
 };
 
 /**
+ * Determina a duração do toast baseado na categoria e status do erro
+ * Erros mais críticos ficam mais tempo visíveis
+ */
+const getToastDuration = (analyzed: AnalyzedError): number => {
+  // Erros de autenticação/permissão ficam mais tempo visíveis
+  if (analyzed.category === 'AUTH' || analyzed.category === 'PERMISSION') {
+    return 6000;
+  }
+  // Erros internos também ficam mais tempo
+  if (analyzed.category === 'INTERNAL' || analyzed.httpStatus === 500) {
+    return 5000;
+  }
+  // Erros de validação são mais curtos (usuário precisa corrigir algo)
+  if (analyzed.category === 'VALIDATION') {
+    return 3500;
+  }
+  // Padrão
+  return 4000;
+};
+
+/**
  * Trata o erro globalmente baseado na análise
  */
 const handleGlobalError = (error: AxiosError, analyzed: AnalyzedError) => {
@@ -131,9 +151,11 @@ const handleGlobalError = (error: AxiosError, analyzed: AnalyzedError) => {
 
   // Mostrar toast com a mensagem apropriada
   const variant = getToastVariant(analyzed);
+  const autoHideDuration = getToastDuration(analyzed);
   eventBus.emit<ToastEvent>(EventTypes.SHOW_TOAST, {
     message: analyzed.message,
     variant,
+    autoHideDuration,
   });
 };
 

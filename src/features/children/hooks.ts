@@ -3,6 +3,7 @@ import {
   apiCreateChild, apiDeleteChild, apiFetchChild, apiFetchChildren, apiUpdateChild, apiToggleChildActive
 } from "./api";
 import { ChildFilters, ChildResponseDto, ChildSort, CreateChildForm, EditChildForm } from "./types";
+import { extractErrorMessage } from "@/utils/apiError";
 
 export function useChildren(pageIndex: number, pageSize: number, sorting: ChildSort, filters: ChildFilters) {
   const [rows, setRows] = useState<ChildResponseDto[]>([]);
@@ -23,8 +24,8 @@ export function useChildren(pageIndex: number, pageSize: number, sorting: ChildS
       const meta = (data as any)?.meta;
       setRows(Array.isArray((data as any)?.data) ? (data as any).data : []);
       setTotal(Number(meta?.totalItems ?? (data as any)?.total ?? 0));
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Erro ao listar crianças");
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Erro ao listar crianças"));
     } finally {
       setLoading(false);
     }
@@ -61,8 +62,8 @@ export function useChildMutations(refetch: (page: number, limit: number, filters
     try {
       await apiCreateChild(payload);
       await refetch(page, limit, filters, sort);
-    } catch (err: any) {
-      setDialogError(err?.response?.data?.message || err.message || "Erro ao criar criança");
+    } catch (err: unknown) {
+      setDialogError(extractErrorMessage(err, "Erro ao criar criança"));
     } finally {
       setDialogLoading(false);
     }
@@ -74,8 +75,8 @@ export function useChildMutations(refetch: (page: number, limit: number, filters
     try {
       await apiUpdateChild(id, payload);
       await refetch(page, limit, filters, sort);
-    } catch (err: any) {
-      setDialogError(err?.response?.data?.message || err.message || "Erro ao atualizar criança");
+    } catch (err: unknown) {
+      setDialogError(extractErrorMessage(err, "Erro ao atualizar criança"));
     } finally {
       setDialogLoading(false);
     }
@@ -87,8 +88,8 @@ export function useChildMutations(refetch: (page: number, limit: number, filters
     try {
       await apiDeleteChild(id);
       await refetch(page, limit, filters, sort);
-    } catch (err: any) {
-      setDialogError(err?.response?.data?.message || err.message || "Erro ao remover criança");
+    } catch (err: unknown) {
+      setDialogError(extractErrorMessage(err, "Erro ao remover criança"));
     } finally {
       setDialogLoading(false);
     }
@@ -100,8 +101,8 @@ export function useChildMutations(refetch: (page: number, limit: number, filters
     try {
       await apiToggleChildActive(id);
       await refetch(page, limit, filters, sort);
-    } catch (err: any) {
-      setDialogError(err?.response?.data?.message || err.message || "Erro ao alterar status da criança");
+    } catch (err: unknown) {
+      setDialogError(extractErrorMessage(err, "Erro ao alterar status da criança"));
     } finally {
       setDialogLoading(false);
     }

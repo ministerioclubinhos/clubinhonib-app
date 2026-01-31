@@ -18,6 +18,7 @@ import {
   ClubSort,
   CoordinatorOption,
 } from "./types";
+import { extractErrorMessage } from "@/utils/apiError";
 
 export function useClubs(
   pageIndex: number,
@@ -42,8 +43,8 @@ export function useClubs(
       });
       setRows(Array.isArray(data?.data) ? data.data : []);
       setTotal(Number(data?.total ?? 0));
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Erro ao listar clubinhos");
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Erro ao listar clubinhos"));
     } finally {
       setLoading(false);
     }
@@ -85,8 +86,8 @@ export function useClubMutations(
       try {
         await apiCreateClub(payload);
         await fetchClubs(page, limit, filters, sort);
-      } catch (err: any) {
-        setDialogError(err?.response?.data?.message || err.message || "Erro ao criar clubinho");
+      } catch (err: unknown) {
+        setDialogError(extractErrorMessage(err, "Erro ao criar clubinho"));
       } finally {
         setDialogLoading(false);
       }
@@ -108,8 +109,8 @@ export function useClubMutations(
       try {
         await apiUpdateClub(id, payload);
         await fetchClubs(page, limit, filters, sort);
-      } catch (err: any) {
-        setDialogError(err?.response?.data?.message || err.message || "Erro ao atualizar clubinho");
+      } catch (err: unknown) {
+        setDialogError(extractErrorMessage(err, "Erro ao atualizar clubinho"));
       } finally {
         setDialogLoading(false);
       }
@@ -124,8 +125,8 @@ export function useClubMutations(
       try {
         await apiDeleteClub(id);
         await fetchClubs(page, limit, filters, sort);
-      } catch (err: any) {
-        setDialogError(err?.response?.data?.message || err.message || "Erro ao remover clubinho");
+      } catch (err: unknown) {
+        setDialogError(extractErrorMessage(err, "Erro ao remover clubinho"));
       } finally {
         setDialogLoading(false);
       }
@@ -140,8 +141,8 @@ export function useClubMutations(
       try {
         await apiToggleClubActive(id);
         await fetchClubs(page, limit, filters, sort);
-      } catch (err: any) {
-        setDialogError(err?.response?.data?.message || err.message || "Erro ao alterar status do clubinho");
+      } catch (err: unknown) {
+        setDialogError(extractErrorMessage(err, "Erro ao alterar status do clubinho"));
       } finally {
         setDialogLoading(false);
       }

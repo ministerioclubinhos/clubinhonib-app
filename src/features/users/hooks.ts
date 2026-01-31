@@ -12,6 +12,7 @@ import {
   UserRow,
   UpdateUserForm,
 } from "./types";
+import { extractErrorMessage } from "@/utils/apiError";
 
 export function useUsers(
   pageIndex: number,
@@ -45,10 +46,8 @@ export function useUsers(
 
       setRows(Array.isArray(page?.items) ? page.items : []);
       setTotal(Number(page?.meta?.total ?? 0));
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message || err.message || "Erro ao buscar usuários"
-      );
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Erro ao buscar usuários"));
     } finally {
       setLoading(false);
     }
@@ -90,10 +89,8 @@ export function useUserMutations(refreshPage: () => Promise<void> | void) {
       const { confirmPassword, ...payload } = form;
       await apiCreateUser(payload);
       await refreshPage();
-    } catch (err: any) {
-      setDialogError(
-        err?.response?.data?.message || err.message || "Erro ao criar usuário"
-      );
+    } catch (err: unknown) {
+      setDialogError(extractErrorMessage(err, "Erro ao criar usuário"));
       throw err;
     } finally {
       setDialogLoading(false);
@@ -106,13 +103,11 @@ export function useUserMutations(refreshPage: () => Promise<void> | void) {
       setDialogError("");
 
       try {
-        const { confirmPassword, ...payload } = form;
-        await apiUpdateUser(id, form);
+        const { confirmPassword: _, ...payload } = form;
+        await apiUpdateUser(id, payload);
         await refreshPage();
-      } catch (err: any) {
-        setDialogError(
-          err?.response?.data?.message || err.message || "Erro ao atualizar usuário"
-        );
+      } catch (err: unknown) {
+        setDialogError(extractErrorMessage(err, "Erro ao atualizar usuário"));
         throw err;
       } finally {
         setDialogLoading(false);
@@ -128,10 +123,8 @@ export function useUserMutations(refreshPage: () => Promise<void> | void) {
     try {
       await apiDeleteUser(id);
       await refreshPage();
-    } catch (err: any) {
-      setDialogError(
-        err?.response?.data?.message || err.message || "Erro ao excluir usuário"
-      );
+    } catch (err: unknown) {
+      setDialogError(extractErrorMessage(err, "Erro ao excluir usuário"));
       throw err;
     } finally {
       setDialogLoading(false);

@@ -18,6 +18,7 @@ import ChildFormDialog from "../children/components/ChildFormDialog";
 import { apiFetchChild } from "../children/api";
 import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
 import { ChildSimpleResponseDto } from "../children/types";
+import { extractErrorMessage } from "@/utils/apiError";
 
 export default function ChildrenBrowserPage() {
   const nav = useNavigate();
@@ -380,8 +381,8 @@ export default function ChildrenBrowserPage() {
             await toggleActive(fullChild.id, 1, 20, undefined, undefined);
             await refetch();
             setConfirmToggleActive(null);
-          } catch (err: any) {
-            setDialogError(err?.response?.data?.message || err.message || "Erro ao alterar status da criança");
+          } catch (err: unknown) {
+            setDialogError(extractErrorMessage(err, "Erro ao alterar status da criança"));
           }
         }}
         loading={dialogLoading}

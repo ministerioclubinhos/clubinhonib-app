@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 import { useDispatch } from 'react-redux';
 import {
   Box,
@@ -8,15 +9,20 @@ import {
   CircularProgress,
   Alert,
   Stack,
+  Tooltip,
+  Dialog,
+  IconButton,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import CameraswitchIcon from '@mui/icons-material/Cameraswitch';
+import CloseIcon from '@mui/icons-material/Close';
 import { apiUpdateProfileImage } from '../api';
 import { fetchCurrentUser } from '@/store/slices/auth/authSlice';
 import type { AppDispatch } from '@/store/slices';
+import { extractErrorMessage } from '@/utils/apiError';
 
 interface ProfileImageUploadProps {
   currentImageUrl?: string;
@@ -35,8 +41,12 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [cameraFacingMode, setCameraFacingMode] = useState<'environment' | 'user'>('environment');
+  const [previewOpen, setPreviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const imageToShow = preview || currentImageUrl;
+  const canPreview = !!imageToShow;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -176,43 +186,67 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
       `;
 
       const captureButton = document.createElement('button');
-      captureButton.textContent = 'Capturar Foto';
+      captureButton.type = 'button';
+      captureButton.setAttribute('aria-label', 'Capturar foto');
       captureButton.style.cssText = `
-        padding: 14px 28px;
+        width: 80px;
+        height: 80px;
+        border-radius: 999px;
+        border: 4px solid white;
         background: #1976d2;
         color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        min-width: 140px;
-        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+        box-shadow: 0 4px 16px rgba(25, 118, 210, 0.4);
       `;
+      const captureIconContainer = document.createElement('span');
+      captureIconContainer.style.cssText = 'display: flex; align-items: center; justify-content: center;';
+      captureButton.appendChild(captureIconContainer);
+      createRoot(captureIconContainer).render(
+        React.createElement(CameraAltIcon, { sx: { fontSize: 42, color: 'white' } })
+      );
 
-      const cancelButton = document.createElement('button');
-      cancelButton.textContent = 'Cancelar';
-      cancelButton.style.cssText = `
-        padding: 14px 28px;
-        background: #666;
+
+      const closeButton = document.createElement('button');
+      closeButton.type = 'button';
+      closeButton.setAttribute('aria-label', 'Fechar câmera');
+      closeButton.style.cssText = `
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        width: 72px;
+        height: 72px;
+        border-radius: 999px;
+        border: 1.5px solid rgba(255,255,255,0.45);
+        background: rgba(0,0,0,0.82);
         color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        min-width: 140px;
+        z-index: 7;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.55);
       `;
+      const closeIconContainer = document.createElement('span');
+      closeIconContainer.style.cssText = 'display: flex; align-items: center; justify-content: center;';
+      closeButton.appendChild(closeIconContainer);
+      createRoot(closeIconContainer).render(
+        React.createElement(CloseIcon, { sx: { fontSize: 42, color: 'white' } })
+      );
 
       const switchCameraIconButton = document.createElement('button');
       switchCameraIconButton.type = 'button';
       switchCameraIconButton.setAttribute('aria-label', 'Trocar câmera');
       switchCameraIconButton.style.cssText = `
         position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 58px;
-        height: 58px;
+        top: 16px;
+        right: 16px;
+        width: 72px;
+        height: 72px;
         border-radius: 999px;
         border: 1.5px solid rgba(255,255,255,0.45);
         background: rgba(0,0,0,0.82);
@@ -226,14 +260,12 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
         -webkit-backdrop-filter: blur(6px);
         box-shadow: 0 12px 28px rgba(0,0,0,0.55);
       `;
-      switchCameraIconButton.innerHTML = `
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M7 7h4V3" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M7 7a8 8 0 0 1 13 3" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M17 17h-4v4" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M17 17a8 8 0 0 1-13-3" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      `;
+      const switchIconContainer = document.createElement('span');
+      switchIconContainer.style.cssText = 'display: flex; align-items: center; justify-content: center;';
+      switchCameraIconButton.appendChild(switchIconContainer);
+      createRoot(switchIconContainer).render(
+        React.createElement(CameraswitchIcon, { sx: { fontSize: 42, color: 'white' } })
+      );
 
       const maskOverlay = document.createElement('div');
       maskOverlay.style.cssText = `
@@ -315,7 +347,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
         }
       };
 
-      cancelButton.onclick = () => {
+      closeButton.onclick = () => {
         cleanup();
       };
 
@@ -391,10 +423,10 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
       };
 
       buttonContainer.appendChild(captureButton);
-      buttonContainer.appendChild(cancelButton);
 
       videoWrapper.appendChild(videoElement);
       videoWrapper.appendChild(maskOverlay);
+      videoWrapper.appendChild(closeButton);
       videoWrapper.appendChild(switchCameraIconButton);
       modal.appendChild(videoWrapper);
       modal.appendChild(buttonContainer);
@@ -472,8 +504,8 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
 
       onUpdate();
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Erro ao fazer upload da imagem';
+    } catch (err: unknown) {
+      const errorMessage = extractErrorMessage(err, 'Erro ao fazer upload da imagem');
       onError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -488,21 +520,30 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
     >
       <Box sx={{ width: '100%' }}>
         <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Avatar
-            src={preview || currentImageUrl}
-            sx={{
-              width: { xs: 120, sm: 150, md: 180 },
-              height: { xs: 120, sm: 150, md: 180 },
-              fontSize: { xs: '3rem', md: '4rem' },
-              bgcolor: 'primary.main',
-              border: '4px solid white',
-              boxShadow: '0 8px 24px rgba(25, 118, 210, 0.3)',
-              mx: 'auto',
-              mb: 2,
-            }}
-          >
-            {!preview && !currentImageUrl && 'U'}
-          </Avatar>
+          <Tooltip title={canPreview ? 'Ver foto' : ''} arrow>
+            <Avatar
+              src={imageToShow}
+              onClick={() => canPreview && setPreviewOpen(true)}
+              sx={{
+                width: { xs: 120, sm: 150, md: 180 },
+                height: { xs: 120, sm: 150, md: 180 },
+                fontSize: { xs: '3rem', md: '4rem' },
+                bgcolor: 'primary.main',
+                border: '4px solid white',
+                boxShadow: '0 8px 24px rgba(25, 118, 210, 0.3)',
+                mx: 'auto',
+                mb: 2,
+                cursor: canPreview ? 'pointer' : 'default',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': canPreview ? {
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 12px 32px rgba(25, 118, 210, 0.4)',
+                } : {},
+              }}
+            >
+              {!imageToShow && 'U'}
+            </Avatar>
+          </Tooltip>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Sua foto de perfil será exibida em todo o sistema
           </Typography>
@@ -633,6 +674,51 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
           </Button>
         </Box>
       </Box>
+
+      <Dialog
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        maxWidth="md"
+        slotProps={{
+          paper: {
+            sx: {
+              bgcolor: 'transparent',
+              boxShadow: 'none',
+              overflow: 'visible',
+            },
+          },
+        }}
+      >
+        <Box sx={{ position: 'relative' }}>
+          <IconButton
+            onClick={() => setPreviewOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: -20,
+              right: -20,
+              bgcolor: 'rgba(0,0,0,0.7)',
+              color: 'white',
+              '&:hover': {
+                bgcolor: 'rgba(0,0,0,0.85)',
+              },
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Box
+            component="img"
+            src={imageToShow || ''}
+            alt="Foto de perfil ampliada"
+            sx={{
+              maxWidth: '90vw',
+              maxHeight: '80vh',
+              borderRadius: 2,
+              objectFit: 'contain',
+            }}
+          />
+        </Box>
+      </Dialog>
     </motion.div>
   );
 };

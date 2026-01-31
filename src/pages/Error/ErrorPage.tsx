@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Button, Container, Typography, Paper } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import ReplayIcon from '@mui/icons-material/Replay';
 import HomeIcon from '@mui/icons-material/Home';
 
@@ -10,8 +9,6 @@ interface ErrorPageProps {
 }
 
 const ErrorPage: React.FC<ErrorPageProps> = ({ error, resetErrorBoundary }) => {
-    const navigate = useNavigate();
-
     const handleReload = () => {
         if (resetErrorBoundary) {
             resetErrorBoundary();
@@ -21,11 +18,10 @@ const ErrorPage: React.FC<ErrorPageProps> = ({ error, resetErrorBoundary }) => {
     };
 
     const handleGoHome = () => {
-        navigate('/');
+        // Use window.location instead of navigate to avoid Router context dependency
+        window.location.href = '/';
         if (resetErrorBoundary) {
             resetErrorBoundary();
-        } else {
-            setTimeout(() => window.location.reload(), 100);
         }
     };
 

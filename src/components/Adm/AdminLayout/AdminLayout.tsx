@@ -151,7 +151,6 @@ function AdminLayout() {
     "/adm/professores",
     "/adm/clubinhos",
     "/adm/pagelas",
-    "/adm/usuarios",
     "/adm/perfis",
   ]);
 

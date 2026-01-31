@@ -18,13 +18,6 @@ import {
 } from '@/types/api-error';
 import { GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
-// ============================================================================
-// Type Guards
-// ============================================================================
-
-/**
- * Verifica se o erro é um erro de API padronizado
- */
 export const isApiError = (error: unknown): error is AxiosError<ApiErrorResponse> => {
     if (!axios.isAxiosError(error)) return false;
     const data = error.response?.data;
@@ -37,20 +30,10 @@ export const isApiError = (error: unknown): error is AxiosError<ApiErrorResponse
     );
 };
 
-/**
- * Verifica se o erro é um erro de rede (sem resposta do servidor)
- */
 export const isNetworkError = (error: unknown): boolean => {
     return axios.isAxiosError(error) && error.code === 'ERR_NETWORK';
 };
 
-// ============================================================================
-// Extractors
-// ============================================================================
-
-/**
- * Extrai o código de erro da API
- */
 export const getApiErrorCode = (error: unknown): ApiErrorCode | null => {
     if (isApiError(error)) {
         return error.response?.data.error.code || null;
@@ -58,9 +41,6 @@ export const getApiErrorCode = (error: unknown): ApiErrorCode | null => {
     return null;
 };
 
-/**
- * Extrai os detalhes do erro (útil para validação de campos)
- */
 export const getApiErrorDetails = (error: unknown): ApiErrorDetail | null => {
     if (isApiError(error)) {
         const details = error.response?.data.error.details;
@@ -71,17 +51,11 @@ export const getApiErrorDetails = (error: unknown): ApiErrorDetail | null => {
     return null;
 };
 
-/**
- * Extrai o campo específico do erro de validação
- */
 export const getErrorField = (error: unknown): string | null => {
     const details = getApiErrorDetails(error);
     return details?.field || null;
 };
 
-/**
- * Extrai dados completos do erro para logging/debug
- */
 export const getApiErrorData = (error: unknown): ApiErrorData | null => {
     if (isApiError(error)) {
         return error.response?.data.error || null;
@@ -89,9 +63,6 @@ export const getApiErrorData = (error: unknown): ApiErrorData | null => {
     return null;
 };
 
-/**
- * Extrai a mensagem de erro amigável
- */
 export const getErrorMessage = (error: unknown, defaultMessage = GENERIC_ERROR_MESSAGES.UNEXPECTED): string => {
     if (isApiError(error)) {
         return error.response?.data.error.message || defaultMessage;
@@ -111,10 +82,6 @@ export const getErrorMessage = (error: unknown, defaultMessage = GENERIC_ERROR_M
 
     return defaultMessage;
 };
-
-// ============================================================================
-// Error Categories
-// ============================================================================
 
 export type ErrorCategory =
     | 'AUTH'
@@ -145,9 +112,6 @@ export interface AnalyzedError {
     redirectTo: string | null;
 }
 
-/**
- * Analisa o erro e retorna informações categorizadas para tratamento
- */
 export const analyzeError = (error: unknown): AnalyzedError => {
     const defaultResult: AnalyzedError = {
         category: 'UNKNOWN',
@@ -163,7 +127,6 @@ export const analyzeError = (error: unknown): AnalyzedError => {
         redirectTo: null,
     };
 
-    // Erro de rede
     if (isNetworkError(error)) {
         return {
             ...defaultResult,
@@ -172,7 +135,6 @@ export const analyzeError = (error: unknown): AnalyzedError => {
         };
     }
 
-    // Não é erro de API padronizado
     if (!isApiError(error)) {
         return defaultResult;
     }
@@ -194,10 +156,8 @@ export const analyzeError = (error: unknown): AnalyzedError => {
         path,
     };
 
-    // Categorizar por código de erro
     if (Object.values(AuthErrorCode).includes(code as AuthErrorCode)) {
         result.category = 'AUTH';
-        // Erros que requerem logout/redirect
         if ([
             AuthErrorCode.TOKEN_EXPIRED,
             AuthErrorCode.TOKEN_INVALID,
@@ -235,10 +195,6 @@ export const analyzeError = (error: unknown): AnalyzedError => {
     return result;
 };
 
-// ============================================================================
-// Error Code Checkers
-// ============================================================================
-
 export const isAuthError = (error: unknown): boolean => {
     const code = getApiErrorCode(error);
     return code !== null && Object.values(AuthErrorCode).includes(code as AuthErrorCode);
@@ -258,7 +214,7 @@ export const isNotFoundError = (error: unknown): boolean => {
     const code = getApiErrorCode(error);
     if (!code) return false;
 
-    const notFoundCodes = [
+    const notFoundCodes: string[] = [
         ResourceErrorCode.NOT_FOUND,
         UserErrorCode.NOT_FOUND,
         ClubErrorCode.NOT_FOUND,
@@ -270,14 +226,14 @@ export const isNotFoundError = (error: unknown): boolean => {
         ...Object.values(ContentErrorCode),
     ];
 
-    return notFoundCodes.includes(code as any);
+    return notFoundCodes.includes(code);
 };
 
 export const isConflictError = (error: unknown): boolean => {
     const code = getApiErrorCode(error);
     if (!code) return false;
 
-    const conflictCodes = [
+    const conflictCodes: string[] = [
         ResourceErrorCode.CONFLICT,
         ResourceErrorCode.ALREADY_EXISTS,
         UserErrorCode.ALREADY_EXISTS,
@@ -287,7 +243,7 @@ export const isConflictError = (error: unknown): boolean => {
         ProfileErrorCode.ALREADY_EXISTS,
     ];
 
-    return conflictCodes.includes(code as any);
+    return conflictCodes.includes(code);
 };
 
 export const isInternalError = (error: unknown): boolean => {
@@ -295,13 +251,6 @@ export const isInternalError = (error: unknown): boolean => {
     return code !== null && Object.values(InternalErrorCode).includes(code as InternalErrorCode);
 };
 
-// ============================================================================
-// Logging Helper
-// ============================================================================
-
-/**
- * Loga o erro com informações úteis para debug
- */
 export const logApiError = (error: unknown, context?: string): void => {
     const analyzed = analyzeError(error);
     const prefix = context ? `[${context}]` : '[API Error]';
@@ -317,7 +266,84 @@ export const logApiError = (error: unknown, context?: string): void => {
         console.log('Path:', analyzed.path);
         console.groupEnd();
     } else {
-        // Em produção, log simplificado
         console.error(`${prefix} [${analyzed.code}] ${analyzed.message} - ${analyzed.path}`);
     }
+};
+
+export const extractErrorMessage = (error: unknown, defaultMessage: string): string => {
+    if (isApiError(error)) {
+        return error.response?.data.error.message || defaultMessage;
+    }
+
+    if (axios.isAxiosError(error)) {
+        const responseMessage = error.response?.data?.message;
+        if (typeof responseMessage === 'string' && responseMessage.trim()) {
+            return responseMessage;
+        }
+
+        if (error.code === 'ERR_NETWORK') return GENERIC_ERROR_MESSAGES.NETWORK_ERROR;
+        if (error.code === 'ECONNABORTED') return GENERIC_ERROR_MESSAGES.TIMEOUT;
+        if (error.response?.status === 500) return GENERIC_ERROR_MESSAGES.INTERNAL_SERVER;
+        if (error.response?.status === 503) return GENERIC_ERROR_MESSAGES.SERVICE_UNAVAILABLE;
+        if (error.response?.status === 404) return 'Recurso não encontrado.';
+        if (error.response?.status === 403) return 'Acesso negado.';
+        if (error.response?.status === 401) return 'Não autorizado.';
+
+        return defaultMessage;
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return defaultMessage;
+};
+
+export interface ExtractedErrorInfo {
+    message: string;
+    code: ApiErrorCode | null;
+    field: string | null;
+    httpStatus: number | null;
+    category: ErrorCategory;
+    isValidationError: boolean;
+    isNotFound: boolean;
+    isConflict: boolean;
+    isAuthError: boolean;
+    isPermissionError: boolean;
+}
+
+export const extractErrorInfo = (error: unknown, defaultMessage: string): ExtractedErrorInfo => {
+    const analyzed = analyzeError(error);
+
+    return {
+        message: analyzed.message || defaultMessage,
+        code: analyzed.code,
+        field: analyzed.field,
+        httpStatus: analyzed.httpStatus,
+        category: analyzed.category,
+        isValidationError: analyzed.category === 'VALIDATION',
+        isNotFound: analyzed.httpStatus === 404 || isNotFoundError(error),
+        isConflict: analyzed.httpStatus === 409 || isConflictError(error),
+        isAuthError: analyzed.category === 'AUTH',
+        isPermissionError: analyzed.category === 'PERMISSION',
+    };
+};
+
+export const shouldLogout = (error: unknown): boolean => {
+    const code = getApiErrorCode(error);
+    if (!code) return false;
+
+    return [
+        AuthErrorCode.TOKEN_EXPIRED,
+        AuthErrorCode.TOKEN_INVALID,
+        AuthErrorCode.TOKEN_MISSING,
+        AuthErrorCode.REFRESH_TOKEN_INVALID,
+    ].includes(code as AuthErrorCode);
+};
+
+export const getHttpStatus = (error: unknown): number | null => {
+    if (axios.isAxiosError(error)) {
+        return error.response?.status || null;
+    }
+    return null;
 };

@@ -73,6 +73,7 @@ export type CompleteProfile = {
 
 export type CompleteProfileListItem = CompleteProfile & {
   role: string;
+  image?: ProfileImage | null;
 };
 
 export type CreatePersonalDataDto = {
