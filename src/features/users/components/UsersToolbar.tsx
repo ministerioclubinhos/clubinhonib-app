@@ -25,6 +25,7 @@ type Props = {
   onChange: (updater: (prev: UserFilters) => UserFilters) => void;
   onCreate: () => void;
   onRefresh: () => void;
+  onClearFilters: () => void;
   isXs?: boolean;
 };
 
@@ -39,6 +40,7 @@ export default function UsersToolbar({
   onChange,
   onCreate,
   onRefresh,
+  onClearFilters,
   isXs,
 }: Props) {
   const roleOptions = ["all", UserRole.COORDINATOR, UserRole.TEACHER] as const;
@@ -46,11 +48,12 @@ export default function UsersToolbar({
   return (
     <Paper sx={{ p: { xs: 1.5, md: 2 }, mb: 2 }}>
       <Grid container spacing={{ xs: 1.5, md: 2 }} alignItems="center">
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={3}>
           <TextField
             fullWidth
             size="small"
-            label="Buscar (nome, e-mail, telefone, papel)"
+            label="Buscar"
+            placeholder="Nome, e-mail, telefone..."
             value={filters.q}
             onChange={(e) =>
               onChange((prev) => ({ ...prev, q: e.target.value }))
@@ -58,7 +61,7 @@ export default function UsersToolbar({
           />
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid item xs={6} md={2}>
           <FormControl size="small" fullWidth>
             <InputLabel>Papel</InputLabel>
             <Select
@@ -83,46 +86,73 @@ export default function UsersToolbar({
           </FormControl>
         </Grid>
 
-        <Grid item xs={12} md={3}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              gap: { xs: 1, md: 3 },
-              alignItems: { xs: "flex-start", md: "center" },
-            }}
-          >
-            <Tooltip title="Exibe apenas usuários que estão ativos no sistema">
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={filters.onlyActive}
-                    onChange={(e) =>
-                      onChange((p) => ({ ...p, onlyActive: e.target.checked }))
-                    }
-                  />
-                }
-                label="Apenas ativos"
-              />
-            </Tooltip>
-
-            <Tooltip title="Exibe apenas usuários que concluíram o cadastro">
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={filters.onlyCompleted}
-                    onChange={(e) =>
-                      onChange((p) => ({ ...p, onlyCompleted: e.target.checked }))
-                    }
-                  />
-                }
-                label="Apenas completos"
-              />
-            </Tooltip>
-          </Box>
+        <Grid item xs={6} md={2}>
+          <FormControl size="small" fullWidth>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={
+                filters.active === null
+                  ? "all"
+                  : filters.active
+                    ? "true"
+                    : "false"
+              }
+              label="Status"
+              onChange={(e) => {
+                const val = e.target.value;
+                const active =
+                  val === "all" ? null : val === "true" ? true : false;
+                onChange((prev) => ({ ...prev, active }));
+              }}
+            >
+              <MenuItem value="all">Todos</MenuItem>
+              <MenuItem value="true">Ativos</MenuItem>
+              <MenuItem value="false">Inativos</MenuItem>
+            </Select>
+          </FormControl>
         </Grid>
 
-        <Grid item xs={12} md={2}>
+        <Grid item xs={6} md={2}>
+          <FormControl size="small" fullWidth>
+            <InputLabel>Cadastro</InputLabel>
+            <Select
+              value={
+                filters.completed === null
+                  ? "all"
+                  : filters.completed
+                    ? "true"
+                    : "false"
+              }
+              label="Cadastro"
+              onChange={(e) => {
+                const val = e.target.value;
+                const completed =
+                  val === "all" ? null : val === "true" ? true : false;
+                onChange((prev) => ({ ...prev, completed }));
+              }}
+            >
+              <MenuItem value="all">Todos</MenuItem>
+              <MenuItem value="true">Completo</MenuItem>
+              <MenuItem value="false">Incompleto</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid
+          item
+          xs={6}
+          md={3}
+          sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
+        >
+          <Button
+            color="inherit"
+            size="small"
+            onClick={onClearFilters}
+            sx={{ minWidth: "auto" }}
+          >
+            Limpar
+          </Button>
+
           {isXs ? (
             <>
               <Fab
@@ -157,29 +187,20 @@ export default function UsersToolbar({
               </Fab>
             </>
           ) : (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-                gap: 1.25,
-              }}
-            >
+            <>
               <Tooltip title="Recarregar">
                 <IconButton onClick={onRefresh} aria-label="Recarregar">
                   <Refresh />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Criar Usuário">
-                <Button
-                  variant="contained"
-                  startIcon={<Add />}
-                  onClick={onCreate}
-                >
-                  Criar
-                </Button>
-              </Tooltip>
-            </Box>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={onCreate}
+              >
+                Criar
+              </Button>
+            </>
           )}
         </Grid>
       </Grid>

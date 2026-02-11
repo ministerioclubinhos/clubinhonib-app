@@ -38,8 +38,8 @@ export function useUsers(
         limit: pageSize,
         q: filters.q || undefined,
         role: filters.role,
-        active: filters.onlyActive,
-        completed: filters.onlyCompleted,
+        active: filters.active,
+        completed: filters.completed,
         sort,
         order,
       });
@@ -52,8 +52,8 @@ export function useUsers(
       setLoading(false);
     }
   }, [
-    filters.onlyActive,
-    filters.onlyCompleted,
+    filters.active,
+    filters.completed,
     filters.q,
     filters.role,
     pageIndex,

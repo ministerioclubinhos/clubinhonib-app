@@ -7,8 +7,8 @@ export async function apiListUsers(params: {
   limit: number;
   q?: string;
   role?: string;
-  active?: boolean;
-  completed?: boolean;
+  active?: boolean | null;
+  completed?: boolean | null;
   sort?: string;
   order?: "ASC" | "DESC";
 }): Promise<UsersPage> {
@@ -29,8 +29,9 @@ export async function apiListUsers(params: {
       limit,
       q: q || undefined,
       role: role && role !== "all" ? role : undefined,
-      active: active ? "true" : undefined,
-      completed: completed ? "true" : undefined,
+      active: active === true ? "true" : active === false ? "false" : undefined,
+      completed:
+        completed === true ? "true" : completed === false ? "false" : undefined,
       sort,
       order,
     },
