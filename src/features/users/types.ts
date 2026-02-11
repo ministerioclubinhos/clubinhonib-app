@@ -43,8 +43,8 @@ export type UsersPage = {
 export type UserFilters = {
   q: string;
   role: "all" | UserRole | string;
-  onlyActive: boolean;
-  onlyCompleted: boolean;
+  active?: boolean | null;
+  completed?: boolean | null;
 };
 
 export type SortParam = { id: string; desc: boolean } | null;
