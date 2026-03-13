@@ -1,12 +1,12 @@
 import { MediaPlatform, MediaUploadType, MediaItem, MediaType } from 'store/slices/types';
 
 export const getGoogleDriveThumbnailUrl = (url: string): string | null => {
-const match = url.match(/\/d\/(.*?)\//);
+  const match = url.match(/\/d\/(.*?)\//);
   return match ? `https://drive.google.com/thumbnail?id=${match[1]}` : null;
 };
 
 export const getGoogleDrivePreviewUrl = (url: string): string | null => {
-const match = url.match(/\/d\/(.*?)\//);
+  const match = url.match(/\/d\/(.*?)\//);
   return match ? `https://drive.google.com/file/d/${match[1]}/preview` : null;
 };
 
@@ -33,8 +33,15 @@ export const getMediaPreviewUrl = (media: MediaItem): string => {
 
       case MediaPlatform.ANY:
       default:
+        if (media.url?.includes('drive.google.com/file/d/')) {
+          return media.url.replace(/\/view.*$/, '/preview');
+        }
         return media.url;
     }
+  }
+
+  if (media.url?.includes('drive.google.com/file/d/')) {
+    return media.url.replace(/\/view.*$/, '/preview');
   }
 
   return media.url;
