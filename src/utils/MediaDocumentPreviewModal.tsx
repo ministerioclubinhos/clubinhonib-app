@@ -2,13 +2,16 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
   IconButton,
   useMediaQuery,
   useTheme,
   Box,
   Button,
+  Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { useEffect } from 'react';
 import { MediaItem } from 'store/slices/types';
 import { getMediaPreviewUrl } from './getMediaPreviewUrl';
@@ -35,66 +38,86 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
   if (!media || (isMobile && open)) return null;
 
   const previewUrl = getMediaPreviewUrl(media);
+  const displayTitle = title || media.title || 'Visualizar documento';
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      fullScreen={false}
-      maxWidth={false}
+      fullWidth
+      maxWidth="xl"
       PaperProps={{
         sx: {
-          width: '90vw',
-          height: '85vh',
-          maxWidth: '90vw',
+          width: '95%',
+          maxHeight: '95vh',
           borderRadius: 3,
-          display: 'flex',
-          flexDirection: 'column',
+          overflow: 'hidden',
+          boxShadow: 24,
         },
       }}
     >
       <DialogTitle
         sx={{
           display: 'flex',
-          alignItems: 'center',
           justifyContent: 'space-between',
+          alignItems: 'center',
+          px: 3,
+          py: 2,
           bgcolor: '#81d742',
           color: 'white',
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-          pr: 2,
+          fontWeight: 700,
         }}
       >
-        {title || media.title}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <DescriptionOutlinedIcon />
+          {displayTitle}
+        </Box>
         <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0, flexGrow: 1 }}>
-        <iframe
-          src={previewUrl}
-          title={media.title}
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-          }}
-        />
+      <DialogContent sx={{ p: 0, bgcolor: 'grey.100', minHeight: 480 }}>
+        {previewUrl ? (
+          <Box
+            component="iframe"
+            src={previewUrl}
+            title={displayTitle}
+            sx={{
+              width: '100%',
+              height: '78vh',
+              border: 'none',
+              display: 'block',
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 400,
+              color: 'text.secondary',
+              px: 3,
+            }}
+          >
+            <DescriptionOutlinedIcon sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />
+            <Typography variant="h6" fontWeight={600} gutterBottom>
+              Nenhum documento disponível
+            </Typography>
+            <Typography variant="body2">
+              Não há URL ou arquivo vinculado para visualização.
+            </Typography>
+          </Box>
+        )}
       </DialogContent>
 
-      <Box
-        sx={{
-          p: 2,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          borderTop: '1px solid #ccc',
-        }}
-      >
-        <Button variant="contained" color="primary" onClick={onClose}>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button onClick={onClose} variant="contained" sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, bgcolor: '#81d742', '&:hover': { bgcolor: '#6bb83a' } }}>
           Fechar
         </Button>
-      </Box>
+      </DialogActions>
     </Dialog>
   );
 }

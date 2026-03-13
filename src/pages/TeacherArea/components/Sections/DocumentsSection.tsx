@@ -22,6 +22,8 @@ import {
 } from 'store/slices/documents/documentSlice';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
 import { RouteData } from 'store/slices/route/routeSlice';
+import SearchIcon from '@mui/icons-material/Search';
+import { TextField, InputAdornment } from '@mui/material';
 
 const DocumentsSection: React.FC = () => {
   const dispatch = useDispatch();
@@ -32,6 +34,7 @@ const DocumentsSection: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const documentRoutes = routes.filter(
     (route) => route.entityType === 'Document'
@@ -67,9 +70,17 @@ const DocumentsSection: React.FC = () => {
       : description;
   };
 
+  const filteredRoutes = documentRoutes.filter((route) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      route.title?.toLowerCase().includes(term) ||
+      route.description?.toLowerCase().includes(term)
+    );
+  });
+
   const displayedRoutes = isExpanded
-    ? documentRoutes
-    : documentRoutes.slice(0, 4);
+    ? filteredRoutes
+    : filteredRoutes.slice(0, 4);
 
   return (
     <Paper
@@ -82,23 +93,53 @@ const DocumentsSection: React.FC = () => {
         borderRadius: 2,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <DescriptionIcon sx={{ color: '#0288d1', mr: 1 }} />
-        <Typography
-          variant="h6"
-          fontWeight="bold"
-          color="#424242"
-          sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}
-        >
-          Documentos Importantes
-        </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between',
+          alignItems: { xs: 'stretch', sm: 'center' },
+          gap: 2,
+          mb: 3,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <DescriptionIcon sx={{ color: '#0288d1', mr: 1 }} />
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            color="#424242"
+            sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}
+          >
+            Documentos Importantes
+          </Typography>
+        </Box>
+
+        <TextField
+          size="small"
+          placeholder="Buscar documento..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+              </InputAdornment>
+            ),
+            sx: {
+              bgcolor: 'white',
+              borderRadius: 2,
+              minWidth: { sm: 250 },
+            }
+          }}
+        />
       </Box>
 
       {error ? (
         <Typography variant="body2" color="error" textAlign="center">
           {error}
         </Typography>
-      ) : documentRoutes.length > 0 ? (
+      ) : filteredRoutes.length > 0 ? (
         <Box
           sx={{
             py: 2,
@@ -129,7 +170,7 @@ const DocumentsSection: React.FC = () => {
         >
           <Slider
             dots
-            infinite={documentRoutes.length > 3}
+            infinite={filteredRoutes.length > 3}
             speed={500}
             slidesToShow={4}
             slidesToScroll={1}
@@ -142,7 +183,7 @@ const DocumentsSection: React.FC = () => {
               { breakpoint: 600, settings: { slidesToShow: 1 } },
             ]}
           >
-            {documentRoutes.map((route) => (
+            {filteredRoutes.map((route) => (
               <Box key={route.id} sx={{ p: 1.5 }}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -208,8 +249,9 @@ const DocumentsSection: React.FC = () => {
           variant="body2"
           color="text.secondary"
           textAlign="center"
+          sx={{ py: 4 }}
         >
-          Nenhum documento disponível no momento.
+          {searchTerm ? 'Nenhum documento reflete sua busca.' : 'Nenhum documento disponível no momento.'}
         </Typography>
       )}
 

@@ -17,7 +17,7 @@ import DocumentForm from './components/DocumentForm';
 import DocumentCard from './components/DocumentCard';
 import DocumentDetailsModal from './components/DocumentDetailsModal';
 import DocumentPreviewModal from './components/DocumentPreviewModal';
-import DocumentViewModal from './components/DocumentViewModal';
+import MediaDocumentPreviewModal from '@/utils/MediaDocumentPreviewModal';
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 import { DocumentItem } from './types';
@@ -294,7 +294,12 @@ const DocumentsManager: React.FC = () => {
 
       <DocumentDetailsModal open={!!detailsModalOpen} document={detailsModalOpen} onClose={() => setDetailsModalOpen(null)} />
       <DocumentPreviewModal open={!!previewModalOpen} document={previewModalOpen} onClose={() => setPreviewModalOpen(null)} />
-      <DocumentViewModal open={!!viewModalOpen} document={viewModalOpen} onClose={() => setViewModalOpen(null)} />
+      <MediaDocumentPreviewModal
+        open={!!viewModalOpen}
+        media={viewModalOpen?.media || null}
+        title={viewModalOpen?.name}
+        onClose={() => setViewModalOpen(null)}
+      />
 
       <DeleteConfirmDialog
         open={!!deleteModalOpen}
