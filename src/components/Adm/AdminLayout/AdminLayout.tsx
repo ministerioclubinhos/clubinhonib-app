@@ -18,6 +18,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Button,
+  Tooltip,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -40,6 +41,8 @@ import {
   ExpandMore,
   Checklist,
   BarChart,
+  ChevronLeft,
+  ChevronRight,
 } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
@@ -207,14 +210,17 @@ function AdminLayout() {
 
   const [expanded, setExpanded] = useState<SectionId | null>(sectionOfPath(location.pathname));
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   useEffect(() => {
     const target = sectionOfPath(location.pathname);
     setExpanded((prev) => (prev === target ? prev : target));
   }, [location.pathname]);
 
   const handleAccordion =
-    (panel: SectionId) => (_: React.SyntheticEvent, isExpanding: boolean) =>
+    (panel: SectionId) => (_: React.SyntheticEvent, isExpanding: boolean) => {
       setExpanded((prev) => (isExpanding ? panel : prev === panel ? null : prev));
+    };
 
   const handleNavigate = (to: string) => {
     navigate(to);
@@ -238,10 +244,25 @@ function AdminLayout() {
   const drawerContent = (
     <>
       <Toolbar />
-      <Box sx={{ pb: 2, pt: 1, px: 2 }}>
-        <Typography variant="subtitle1" fontWeight="bold">
-          Painel Admin
-        </Typography>
+      <Box sx={{ pb: 1, pt: 1, px: 2, display: 'flex', alignItems: 'center', justifyContent: sidebarCollapsed ? 'center' : 'space-between' }}>
+        {!sidebarCollapsed && (
+          <Typography variant="subtitle1" fontWeight="bold">
+            Painel Admin
+          </Typography>
+        )}
+        <Tooltip title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}>
+          <IconButton
+            size="small"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            sx={{ color: "text.secondary", "&:hover": { color: "primary.main" } }}
+          >
+            {sidebarCollapsed ? (
+              <ChevronRight fontSize="small" />
+            ) : (
+              <ChevronLeft fontSize="small" />
+            )}
+          </IconButton>
+        </Tooltip>
       </Box>
       <Divider />
 
@@ -293,51 +314,85 @@ function AdminLayout() {
           }}
         >
           <AccordionSummary
-            expandIcon={<ExpandMore />}
+            expandIcon={sidebarCollapsed ? null : <ExpandMore />}
             sx={{
-              px: 2,
+              px: sidebarCollapsed ? 1 : 2,
               py: 1,
-              "& .MuiAccordionSummary-content": { alignItems: "center", my: 0.25 },
-              "&:hover": { bgcolor: "action.hover" },
+              justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+              bgcolor: sidebarCollapsed && expanded === sec.id ? 'rgba(0,0,0,0.02)' : 'transparent',
+              "& .MuiAccordionSummary-content": {
+                alignItems: "center",
+                my: 0.25,
+                flexGrow: sidebarCollapsed ? 0 : 1,
+                justifyContent: sidebarCollapsed ? 'center' : 'flex-start'
+              },
+              "&:hover": { bgcolor: sidebarCollapsed && expanded === sec.id ? 'rgba(0,0,0,0.04)' : "action.hover" },
             }}
           >
-            <Typography
-              variant="caption"
-              fontWeight="bold"
-              color="text.secondary"
-              sx={{ fontSize: isMobile ? 11 : undefined }}
-            >
-              {sec.title}
-            </Typography>
+            {!sidebarCollapsed ? (
+              <Typography
+                variant="caption"
+                fontWeight="bold"
+                color="text.secondary"
+                sx={{ fontSize: isMobile ? 11 : undefined }}
+              >
+                {sec.title}
+              </Typography>
+            ) : (
+              <Tooltip title={sec.title} placement="right">
+                <Box sx={{ display: 'flex', color: expanded === sec.id ? 'text.primary' : 'text.secondary' }}>
+                  {sec.items[0]?.icon}
+                </Box>
+              </Tooltip>
+            )}
           </AccordionSummary>
 
-          <AccordionDetails sx={{ p: 0 }}>
+          <AccordionDetails
+            sx={{
+              p: 0,
+              ...(sidebarCollapsed && expanded === sec.id
+                ? {
+                  bgcolor: 'rgba(0,0,0,0.02)',
+                  py: 0.5,
+                }
+                : {}),
+            }}
+          >
             <List dense disablePadding>
               {sec.items.map((item) => {
                 const selected =
                   location.pathname === item.to ||
                   location.pathname.startsWith(item.to + "/");
                 return (
-                  <ListItemButton
-                    key={item.to}
-                    selected={selected}
-                    onClick={() => handleNavigate(item.to)}
-                    sx={{
-                      py: 1,
-                      px: 2,
-                      "& .MuiListItemText-primary": { fontSize: isMobile ? 13 : undefined },
-                      "& .MuiListItemIcon-root, & .MuiSvgIcon-root": {
-                        fontSize: isMobile ? "1.1rem" : undefined,
-                      },
-                      "&.Mui-selected": {
-                        bgcolor: "action.selected",
-                        "&:hover": { bgcolor: "action.selected" },
-                      },
-                    }}
-                  >
-                    <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.label} />
-                  </ListItemButton>
+                  <Tooltip key={item.to} title={sidebarCollapsed ? item.label : ""} placement="right">
+                    <ListItemButton
+                      selected={selected}
+                      onClick={() => handleNavigate(item.to)}
+                      sx={{
+                        py: 1,
+                        px: sidebarCollapsed ? 1 : 2,
+                        justifyContent: sidebarCollapsed ? "center" : "flex-start",
+                        borderRadius: sidebarCollapsed ? 1 : 0,
+                        "& .MuiListItemText-primary": { fontSize: isMobile ? 13 : undefined },
+                        "& .MuiListItemIcon-root, & .MuiSvgIcon-root": {
+                          fontSize: sidebarCollapsed ? "1.2rem" : (isMobile ? "1.1rem" : undefined),
+                        },
+                        "&.Mui-selected": {
+                          bgcolor: sidebarCollapsed ? "transparent" : "action.selected",
+                          color: sidebarCollapsed ? "primary.main" : "inherit",
+                          "&:hover": { bgcolor: sidebarCollapsed ? "transparent" : "action.selected" },
+                          "& .MuiListItemIcon-root": {
+                            color: sidebarCollapsed ? "primary.main" : "inherit"
+                          }
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: sidebarCollapsed ? 0 : 36, justifyContent: 'center', color: sidebarCollapsed && !selected ? "text.secondary" : "inherit" }}>
+                        {item.icon}
+                      </ListItemIcon>
+                      {!sidebarCollapsed && <ListItemText primary={item.label} />}
+                    </ListItemButton>
+                  </Tooltip>
                 );
               })}
             </List>
@@ -380,10 +435,20 @@ function AdminLayout() {
         onClose={toggleDrawer}
         ModalProps={{ keepMounted: true }}
         sx={{
-          width: drawerWidth,
+          width: sidebarCollapsed ? 72 : drawerWidth,
           flexShrink: 0,
+          whiteSpace: 'nowrap',
+          transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
           "& .MuiDrawer-paper": {
-            width: drawerWidth,
+            width: sidebarCollapsed ? 72 : drawerWidth,
+            transition: theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            overflowX: 'hidden',
             boxSizing: "border-box",
             mt: isMobile ? 0 : `${HEADER_H}px`,
             height: isMobile
