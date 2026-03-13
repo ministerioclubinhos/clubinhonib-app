@@ -9,10 +9,10 @@ import {
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
-import { 
+import {
   InformativeBanner,
   FofinhoButton,
-  SpecialFamilyCallout, 
+  SpecialFamilyCallout,
   IdeasSharingBanner,
   BannerSection,
   MotivationSection,
@@ -27,16 +27,16 @@ const TeacherArea: React.FC = () => {
 
   return (
     <Container maxWidth={false} sx={CONTAINER_STYLES.main}>
-      
+
       <InformativeBanner />
 
-      <BannerSection 
-        showWeekBanner={showWeek} 
-        showMeditationBanner={showMeditation} 
+      <BannerSection
+        showWeekBanner={showWeek}
+        showMeditationBanner={showMeditation}
       />
 
-      <FofinhoButton 
-        references={['materials', 'childrenArea', 'photos', 'rate', 'events', 'help']} 
+      <FofinhoButton
+        references={['childrenArea', 'photos', 'rate', 'events', 'help']}
       />
 
       <MotivationSection motivationText={MOTIVATION_TEXT} />

@@ -19,15 +19,15 @@ const TeacherWeekBanner: React.FC = () => {
         elevation={3}
         sx={{
           width: '100%',
-          height: { 
+          height: {
             xs: 'auto',
-            sm: 'auto', 
-            md: 350 
+            sm: 'auto',
+            md: 350
           },
-          minHeight: { 
+          minHeight: {
             xs: 300,
-            sm: 300, 
-            md: 280 
+            sm: 300,
+            md: 280
           },
           display: 'flex',
           flexDirection: 'column',
@@ -40,9 +40,9 @@ const TeacherWeekBanner: React.FC = () => {
           border: '1px solid rgba(0,0,0,0.05)',
         }}
       >
-        <Typography 
-          variant="h6" 
-          sx={{ 
+        <Typography
+          variant="h6"
+          sx={{
             color: 'text.secondary',
             fontSize: { xs: '1rem', md: '1.1rem' },
             fontWeight: 500,
@@ -64,15 +64,15 @@ const TeacherWeekBanner: React.FC = () => {
         elevation={4}
         sx={{
           width: '100%',
-          height: { 
+          height: {
             xs: 'auto',
-            sm: 'auto', 
-            md: 350 
+            sm: 'auto',
+            md: 350
           },
-          minHeight: { 
+          minHeight: {
             xs: 300,
-            sm: 300, 
-            md: 280 
+            sm: 300,
+            md: 280
           },
           display: 'flex',
           flexDirection: 'column',
@@ -109,90 +109,50 @@ const TeacherWeekBanner: React.FC = () => {
           },
         }}
       >
-        <Box sx={{ 
+        <Box sx={{
           position: 'relative',
           zIndex: 1,
           width: '100%',
           maxWidth: { xs: '100%', md: '600px' },
         }}>
           <Typography
-            variant="h6"
-            sx={{
-              fontSize: { xs: '1rem', md: '1.3rem' },
-              fontWeight: 500,
-              mb: 1,
-              textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
-            }}
-          >
-            Olá {user?.name || 'Professor'}, estamos na:
-          </Typography>
-
-          <Typography
-            variant="h4"
+            variant="h3"
             fontWeight="bold"
             sx={{
-              color: '#fff',
-              fontSize: { xs: '1.5rem', md: '3rem' },
-              mb: 2,
-              textShadow: '2px 2px 6px rgba(0, 0, 0, 0.4)',
-              lineHeight: 1.2,
+              fontSize: { xs: '1.4rem', sm: '2rem', md: '2.8rem' },
+              fontWeight: 700,
+              mb: { xs: 3, sm: 4, md: 5 },
+              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',
+              px: { xs: 2, sm: 0 },
             }}
           >
-            {currentWeekRoute.title}
+            Olá {user?.name || 'Professor'}
           </Typography>
-
-          {currentWeekRoute.subtitle && (
-            <Fragment>
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: { xs: '0.9rem', md: '1.2rem' },
-                  mb: 1,
-                  textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
-                  opacity: 0.95,
-                }}
-              >
-                Com o tema:
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  fontWeight: { xs: 500, md: 700 },
-                  fontSize: { xs: '0.95rem', md: '1.5rem' },
-                  mb: 3,
-                  textShadow: { xs: '1px 1px 3px rgba(0, 0, 0, 0.3)', md: '2px 2px 8px rgba(0, 0, 0, 0.6)' },
-                  opacity: 0.95,
-                }}
-              >
-                {currentWeekRoute.subtitle}
-              </Typography>
-            </Fragment>
-          )}
 
           <Button
             variant="contained"
-            size="medium"
+            size="large"
             component={Link}
-            to={`/${currentWeekRoute.path}`}
+            to="/lista-materias-semanais"
             sx={{
               bgcolor: 'white',
               color: '#0073E6',
               fontWeight: 'bold',
-              px: { xs: 3, md: 4 },
-              py: { xs: 1, md: 1.5 },
-              fontSize: { xs: '0.85rem', md: '1rem' },
-              borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              px: { xs: 3, sm: 5, md: 8 },
+              py: { xs: 1.2, sm: 1.8, md: 2.5 },
+              fontSize: { xs: '0.95rem', sm: '1.2rem', md: '1.4rem' },
+              borderRadius: 3,
+              boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
               '&:hover': {
                 bgcolor: 'rgba(255,255,255,0.95)',
                 transform: 'translateY(-2px)',
-                boxShadow: '0 6px 16px rgba(0,0,0,0.3)',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
               },
               transition: 'all 0.3s ease',
-              minWidth: { xs: '120px', md: '140px' },
+              minWidth: { xs: '200px', sm: '240px', md: '280px' },
             }}
           >
-            Saber mais
+            Histórias Bíblicas
           </Button>
         </Box>
       </Paper>
