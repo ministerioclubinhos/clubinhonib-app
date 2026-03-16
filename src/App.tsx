@@ -33,6 +33,7 @@ import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 import { fetchRoutes } from './store/slices/route/routeSlice';
 import { initAuth, logout } from './store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
+import { useFeatureFlags } from '@/hooks';
 
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
@@ -82,6 +83,7 @@ function App() {
   const dynamicRoutes = useSelector((state: RootStateType) => state.routes.routes);
   const { initialized, loadingUser, isAuthenticated } = useSelector((state: RootStateType) => state.auth);
   const [forceReady, setForceReady] = useState(false);
+  const { flags } = useFeatureFlags();
 
   useEffect(() => {
     dispatch(fetchRoutes());
@@ -174,10 +176,21 @@ function App() {
                     <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
                     <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
                     <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
-                    <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
-                    <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
                     <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
                     <Route path="/meu-perfil" element={<ProfilePage />} />
+                  </Route>
+
+                  <Route element={
+                    <ProtectedRoute
+                      requiredRole={
+                        flags.teacher_children_access
+                          ? undefined
+                          : [UserRole.ADMIN, UserRole.COORDINATOR]
+                      }
+                    />
+                  }>
+                    <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
+                    <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
                   </Route>
 
                   <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>

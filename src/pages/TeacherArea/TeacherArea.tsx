@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
+import { useFeatureFlags } from '@/hooks';
 import {
   InformativeBanner,
   FofinhoButton,
@@ -24,6 +25,7 @@ import { MOTIVATION_TEXT, CONTAINER_STYLES } from './constants';
 const TeacherArea: React.FC = () => {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const { loading, showWeek, showMeditation } = useTeacherArea();
+  const { flags } = useFeatureFlags();
 
   return (
     <Container maxWidth={false} sx={CONTAINER_STYLES.main}>
@@ -36,7 +38,13 @@ const TeacherArea: React.FC = () => {
       />
 
       <FofinhoButton
-        references={['childrenArea', 'photos', 'rate', 'events', 'help']}
+        references={[
+          ...(flags.teacher_children_access ? ['childrenArea'] : []),
+          'photos',
+          'rate',
+          'events',
+          'help',
+        ]}
       />
 
       <MotivationSection motivationText={MOTIVATION_TEXT} />
