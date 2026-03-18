@@ -455,8 +455,22 @@ const SpecialFamilyDayPage: React.FC = () => {
                         <Button
                           variant="contained"
                           color="secondary"
-                          href={doc.url}
-                          target="_blank"
+                          onClick={async () => {
+                            window.open(doc.url, '_blank', 'noopener,noreferrer');
+                            try {
+                              const response = await fetch(doc.url);
+                              const blob = await response.blob();
+                              const blobUrl = URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = blobUrl;
+                              link.download = doc.title || 'documento';
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                            } catch {
+                            }
+                          }}
                         >
                           Baixar
                         </Button>

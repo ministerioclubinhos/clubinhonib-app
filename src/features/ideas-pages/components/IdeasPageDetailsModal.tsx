@@ -54,10 +54,23 @@ export default function IdeasPageDetailsModal({ page, open, onClose }: Props) {
         return (
           <Button
             variant="outlined"
-            href={media.url}
-            target="_blank"
-            rel="noopener noreferrer"
             aria-label={`Baixar documento ${media.title}`}
+            onClick={async () => {
+              window.open(media.url, '_blank', 'noopener,noreferrer');
+              try {
+                const response = await fetch(media.url);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = media.title || 'documento';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+              } catch {
+              }
+            }}
           >
             Baixar Documento
           </Button>

@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { MediaItem } from 'store/slices/types';
 import { getMediaPreviewUrl } from './getMediaPreviewUrl';
 
@@ -27,13 +27,40 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+
   useEffect(() => {
-    if (open && media && isMobile) {
-      const url = getMediaPreviewUrl(media);
-      window.open(url, '_blank');
-      onClose();
-    }
-  }, [open, media, isMobile, onClose]);
+    if (!open || !media || !isMobile) return;
+
+    const previewUrl = getMediaPreviewUrl(media);
+    const downloadUrl = media.url;
+    const filename = media.originalName || media.title || 'documento';
+    const controller = new AbortController();
+
+    window.open(previewUrl || downloadUrl, '_blank', 'noopener,noreferrer');
+
+    (async () => {
+      try {
+        const response = await fetch(downloadUrl, { signal: controller.signal });
+        const blob = await response.blob();
+        if (controller.signal.aborted) return;
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      } catch {
+      }
+    })();
+
+    onCloseRef.current();
+
+    return () => controller.abort();
+  }, [open, media, isMobile]);
 
   if (!media || (isMobile && open)) return null;
 

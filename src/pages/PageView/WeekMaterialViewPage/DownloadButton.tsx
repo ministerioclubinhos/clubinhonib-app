@@ -1,4 +1,5 @@
-import { Button, useTheme, useMediaQuery } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { Button, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
 import DownloadIcon from '@mui/icons-material/Download';
 
@@ -19,6 +20,47 @@ export default function DownloadButton({
 }: DownloadButtonProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [loading, setLoading] = useState(false);
+  const mountedRef = useRef(true);
+  const controllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      controllerRef.current?.abort();
+    };
+  }, []);
+
+  const handleDownload = async () => {
+    if (disabled || loading) return;
+
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
+    window.open(url, '_blank', 'noopener,noreferrer');
+
+    setLoading(true);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      const blob = await response.blob();
+      if (controller.signal.aborted) return;
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'documento';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch {
+    } finally {
+      if (mountedRef.current && !controller.signal.aborted) setLoading(false);
+    }
+  };
 
   const getSizeStyles = () => {
     switch (size) {
@@ -36,7 +78,7 @@ export default function DownloadButton({
           fontSize: { xs: '1rem', md: '1.1rem' },
           minHeight: { xs: 44, md: 48 },
         };
-      default: 
+      default:
         return {
           py: { xs: 1, md: 1.25 },
           px: { xs: 2, md: 2.5 },
@@ -54,38 +96,35 @@ export default function DownloadButton({
       <Button
         variant="contained"
         color="primary"
-        startIcon={<DownloadIcon sx={{ fontSize: { xs: '1rem', md: '1.2rem' } }} />}
-        href={url}
-        download={filename}
-        target="_blank"
-        rel="noopener noreferrer"
-        disabled={disabled}
+        startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <DownloadIcon sx={{ fontSize: { xs: '1rem', md: '1.2rem' } }} />}
+        onClick={handleDownload}
+        disabled={disabled || loading}
         fullWidth={fullWidth}
         sx={{
           ...getSizeStyles(),
           borderRadius: 3,
           textTransform: 'none',
           fontWeight: 'bold',
-          background: disabled 
+          background: disabled
             ? 'linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%)'
             : 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
           color: disabled ? 'grey.500' : 'white',
-          boxShadow: disabled 
+          boxShadow: disabled
             ? 'none'
             : '0 4px 16px rgba(33, 150, 243, 0.3)',
           transition: 'all 0.3s ease',
           '&:hover': {
-            background: disabled 
+            background: disabled
               ? 'linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%)'
               : 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
             transform: 'translateY(-2px)',
-            boxShadow: disabled 
+            boxShadow: disabled
               ? 'none'
               : '0 6px 20px rgba(33, 150, 243, 0.4)',
           },
           '&:active': {
             transform: 'translateY(0px)',
-            boxShadow: disabled 
+            boxShadow: disabled
               ? 'none'
               : '0 2px 8px rgba(33, 150, 243, 0.3)',
           },
@@ -95,7 +134,7 @@ export default function DownloadButton({
           },
         }}
       >
-        Baixar
+        {loading ? 'Baixando...' : 'Baixar'}
       </Button>
     </motion.div>
   );
