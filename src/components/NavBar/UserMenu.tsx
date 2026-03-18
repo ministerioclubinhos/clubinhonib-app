@@ -140,7 +140,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                     Área do Professor
                 </Button>
 
-                {(isAdmin || isCoordinator || (isTeacher && flags.teacher_children_access)) && (
+                {(isAdmin || (isCoordinator && flags.coordinator_children_access) || (isTeacher && flags.teacher_children_access)) && (
                     <Button
                         onClick={() => handleNavigate('/area-das-criancas')}
                         fullWidth
@@ -281,7 +281,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                     Área do Professor
                 </MenuItem>
 
-                {(isAdmin || isCoordinator || (isTeacher && flags.teacher_children_access)) && (
+                {(isAdmin || (isCoordinator && flags.coordinator_children_access) || (isTeacher && flags.teacher_children_access)) && (
                     <MenuItem onClick={() => handleNavigate('/area-das-criancas')}>
                         <ListItemIcon>
                             <ChildCareIcon fontSize="small" />

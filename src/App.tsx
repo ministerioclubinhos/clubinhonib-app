@@ -182,11 +182,12 @@ function App() {
 
                   <Route element={
                     <ProtectedRoute
-                      requiredRole={
-                        flags.teacher_children_access
-                          ? undefined
-                          : [UserRole.ADMIN, UserRole.COORDINATOR]
-                      }
+                      requiredRole={(() => {
+                        const roles: UserRole[] = [UserRole.ADMIN];
+                        if (flags.coordinator_children_access) roles.push(UserRole.COORDINATOR);
+                        if (flags.teacher_children_access) roles.push(UserRole.TEACHER);
+                        return roles;
+                      })()}
                     />
                   }>
                     <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />

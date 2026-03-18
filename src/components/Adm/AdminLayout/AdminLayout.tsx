@@ -48,6 +48,7 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { UserRole } from "@/types/shared";
+import { useFeatureFlags } from "@/hooks";
 
 const drawerWidth = 240;
 
@@ -65,6 +66,7 @@ function AdminLayout() {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const isAdmin = !!isAuthenticated && user?.role === UserRole.ADMIN;
   const isCoordinator = !!isAuthenticated && user?.role === UserRole.COORDINATOR;
+  const { flags } = useFeatureFlags();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("tudo");
@@ -150,7 +152,7 @@ function AdminLayout() {
   );
 
   const coordinatorAllowed = new Set<string>([
-    "/adm/criancas",
+    ...(flags.coordinator_children_access ? ["/adm/criancas"] : []),
     "/adm/professores",
     "/adm/clubinhos",
     "/adm/pagelas",

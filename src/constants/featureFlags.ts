@@ -1,5 +1,6 @@
 export interface FeatureFlags {
   teacher_children_access: boolean;
+  coordinator_children_access: boolean;
   teacher_photo_upload: boolean;
   teacher_weekly_materials: boolean;
   teacher_site_feedback: boolean;
@@ -14,6 +15,7 @@ export interface FeatureFlags {
 
 export const MOCKED_FEATURE_FLAGS: FeatureFlags = {
   teacher_children_access: false,
+  coordinator_children_access: false,
   teacher_photo_upload: true,
   teacher_weekly_materials: true,
   teacher_site_feedback: true,
