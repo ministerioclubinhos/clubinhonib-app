@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, Stack } from '@mui/material';
@@ -9,6 +9,7 @@ import api from '@/config/axiosConfig';
 import UserMenu from './UserMenu';
 import CompleteProfileAlert from './CompleteProfileAlert';
 import { useProfileAlerts } from '@/features/profile/hooks/useProfileAlerts';
+import LinkClubModal from '@/features/auth/components/LinkClubModal';
 
 interface Props {
   closeMenu?: () => void;
@@ -22,6 +23,26 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const profileAlerts = useProfileAlerts();
+  const [linkClubOpen, setLinkClubOpen] = useState(false);
+
+  const needsClubLink = useMemo(
+    () =>
+      user?.role === 'teacher' &&
+      (!user?.teacherProfile || !user?.teacherProfile?.club),
+    [user],
+  );
+
+  const allAlerts = useMemo(() => {
+    if (!needsClubLink) return profileAlerts;
+    return [
+      {
+        id: 'link-club',
+        message: 'De qual clubinho você faz parte?',
+        action: () => setLinkClubOpen(true),
+      },
+      ...profileAlerts,
+    ];
+  }, [profileAlerts, needsClubLink]);
 
   const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
 
@@ -113,12 +134,14 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
           alignItems="center"
           sx={!isMobile ? { ml: 4 } : {}} // Add some margin from links on desktop if needed
         >
-          {!isMobile && <CompleteProfileAlert alerts={profileAlerts} />}
+          {!isMobile && <CompleteProfileAlert alerts={allAlerts} />}
           <UserMenu user={user} onCloseMobile={handleClick} isMobile={isMobile} />
         </Stack>
       ) : (
         renderLink('/login', 'Entrar')
       )}
+
+      <LinkClubModal open={linkClubOpen} onClose={() => setLinkClubOpen(false)} />
     </Stack>
   );
 };

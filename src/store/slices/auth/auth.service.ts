@@ -61,5 +61,10 @@ export const authService = {
     resetPassword: async (data: ResetPasswordDto): Promise<ResetPasswordResponse> => {
         const response = await apiAxios.post<ResetPasswordResponse>('/auth/reset-password', data);
         return response.data;
-    }
+    },
+
+    linkTeacherClub: async (clubNumber: number): Promise<{ message: string }> => {
+        const response = await apiAxios.post<{ message: string }>('/auth/link-club', { clubNumber });
+        return response.data;
+    },
 };

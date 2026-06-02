@@ -19,6 +19,7 @@ import {
   ListItemText,
   Divider,
   Container,
+  Button,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
@@ -41,6 +42,8 @@ import ProfileImageUpload from '@/features/profile/components/ProfileImageUpload
 import PersonalDataForm from '@/features/profile/components/PersonalDataForm';
 import PreferencesForm from '@/features/profile/components/PreferencesForm';
 import { extractErrorMessage } from '@/utils/apiError';
+import LinkClubModal from '@/features/auth/components/LinkClubModal';
+import SchoolIcon from '@mui/icons-material/School';
 
 const menuItems = [
   { icon: <PersonIcon />, label: 'Informações da Conta', shortLabel: 'Conta' },
@@ -59,6 +62,7 @@ const ProfilePage: React.FC = () => {
   const { isAuthenticated, initialized, user, loadingUser } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [linkClubOpen, setLinkClubOpen] = useState(false);
 
   const initialTab = React.useMemo(() => {
     if (typeof window !== 'undefined') {
@@ -366,6 +370,45 @@ const ProfilePage: React.FC = () => {
               </Box>
             )}
 
+            {/* Se for Professor e NÃO tiver clubinho vinculado */}
+            {user?.role === 'teacher' && !user?.teacherProfile?.club && (
+              <Box sx={{ px: 2, py: 1.5, bgcolor: 'rgba(129, 215, 66, 0.05)' }}>
+                <Typography variant="overline" sx={{ display: 'block', mb: 1, color: 'text.secondary', fontWeight: 700, lineHeight: 1, fontSize: '0.65rem', letterSpacing: 0.5 }}>
+                  MEU CLUBINHO
+                </Typography>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 1.5,
+                    bgcolor: 'white',
+                    border: '1px dashed',
+                    borderColor: '#81d742',
+                    borderRadius: 2,
+                    textAlign: 'center',
+                  }}
+                >
+                  <SchoolIcon sx={{ color: '#81d742', mb: 0.5, fontSize: 28 }} />
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                    De qual clubinho você faz parte?
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={() => setLinkClubOpen(true)}
+                    sx={{
+                      bgcolor: '#81d742',
+                      color: 'white',
+                      fontWeight: 700,
+                      fontSize: '0.7rem',
+                      '&:hover': { bgcolor: '#6bb83a' },
+                    }}
+                  >
+                    Informar meu clubinho
+                  </Button>
+                </Paper>
+              </Box>
+            )}
+
             {/* Se for Coordenador e tiver clubinhos vinculados */}
             {user?.coordinatorProfile?.clubs && user.coordinatorProfile.clubs.length > 0 && (
               <Box sx={{ px: 2, py: 1.5, bgcolor: 'rgba(25, 118, 210, 0.03)' }}>
@@ -517,6 +560,13 @@ const ProfilePage: React.FC = () => {
           </Paper>
         </motion.div>
       </Box>
+      <LinkClubModal
+        open={linkClubOpen}
+        onClose={() => {
+          setLinkClubOpen(false);
+          dispatch(fetchCurrentUser());
+        }}
+      />
     </Box>
   );
 };

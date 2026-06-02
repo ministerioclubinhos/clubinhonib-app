@@ -2,6 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import apiAxios from '@/config/axiosConfig';
 
 import { PersonalData, UserPreferences, ProfileImage, UserRole, TeacherProfileLite, CoordinatorProfileLite } from '@/types/shared';
+import { authService } from './auth.service';
 
 export interface User {
   id: string;
@@ -84,6 +85,20 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || 'Erro ao buscar usuário';
       return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const linkTeacherClub = createAsyncThunk<User, number, { rejectValue: string }>(
+  'auth/linkTeacherClub',
+  async (clubNumber, { dispatch, rejectWithValue }) => {
+    try {
+      await authService.linkTeacherClub(clubNumber);
+      const user = await authService.getCurrentUser();
+      return user;
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || 'Erro ao vincular clubinho';
+      return rejectWithValue(msg);
     }
   }
 );
@@ -204,6 +219,9 @@ const authSlice = createSlice({
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
         } catch { }
+      })
+      .addCase(linkTeacherClub.fulfilled, (state, action) => {
+        state.user = action.payload;
       });
   },
 });

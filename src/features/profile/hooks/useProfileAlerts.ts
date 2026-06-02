@@ -5,6 +5,7 @@ export interface ProfileAlert {
     id: string;
     message: string;
     to?: string;
+    action?: () => void;
 }
 
 export function useProfileAlerts() {
