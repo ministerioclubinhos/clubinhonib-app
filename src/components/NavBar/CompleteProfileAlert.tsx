@@ -34,10 +34,16 @@ const CompleteProfileAlert: React.FC<CompleteProfileAlertProps> = ({
         setAnchorEl(null);
     };
 
-    const handleAlertClick = (to?: string) => {
+    const handleAlertClick = (alert: ProfileAlert) => {
         handleClose();
-        if (onAlertClick) onAlertClick();
-        if (to) navigate(to);
+        if (alert.action) {
+            alert.action();
+        } else if (alert.to) {
+            if (onAlertClick) onAlertClick();
+            navigate(alert.to);
+        } else if (onAlertClick) {
+            onAlertClick();
+        }
     };
 
     if (!alerts || alerts.length === 0) return null;
@@ -104,7 +110,7 @@ const CompleteProfileAlert: React.FC<CompleteProfileAlertProps> = ({
                     {alerts.map((alert) => (
                         <MenuItem
                             key={alert.id}
-                            onClick={() => handleAlertClick(alert.to)}
+                            onClick={() => handleAlertClick(alert)}
                             sx={{
                                 px: 2,
                                 py: 1.5,
