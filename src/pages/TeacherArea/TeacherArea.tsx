@@ -18,6 +18,7 @@ import {
   BannerSection,
   MotivationSection,
   TeacherContent,
+  VerseOfWeekSection,
 } from './components';
 import { useTeacherArea } from './hooks';
 import { MOTIVATION_TEXT, CONTAINER_STYLES } from './constants';
@@ -47,6 +48,8 @@ const TeacherArea: React.FC = () => {
         ]}
       />
 
+      <VerseOfWeekSection />
+
       <MotivationSection motivationText={MOTIVATION_TEXT} />
 
       <Paper elevation={4} sx={CONTAINER_STYLES.paper}>
@@ -60,6 +63,17 @@ const TeacherArea: React.FC = () => {
           Área do Professor
         </Typography>
 
+        <Typography
+          variant="body2"
+          sx={{
+            color: '#757575',
+            fontStyle: 'italic',
+            fontSize: { xs: '0.85rem', md: '0.95rem' },
+          }}
+        >
+          “Apascenta os meus cordeiros.” — João 21:15
+        </Typography>
+
         <Divider sx={{ my: 3, borderColor: '#e0e0e0' }} />
 
         {isAuthenticated ? (
@@ -71,9 +85,17 @@ const TeacherArea: React.FC = () => {
             <TeacherContent userName={user?.name} />
           )
         ) : (
-          <Typography variant="body1" color="#757575">
-            Você precisa estar logado para acessar esta área.
-          </Typography>
+          <Box textAlign="center" py={2}>
+            <Typography variant="body1" color="#757575" gutterBottom>
+              Você precisa estar logado para acessar esta área. 🔑
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: '#9e9e9e', fontStyle: 'italic', mt: 1 }}
+            >
+              “Pedi, e dar-se-vos-á; buscai e achareis; batei, e abrir-se-vos-á.” — Mateus 7:7
+            </Typography>
+          </Box>
         )}
       </Paper>
     </Container>

@@ -1,15 +1,10 @@
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
   Button,
-  useMediaQuery,
-  useTheme,
   CircularProgress,
   Paper,
-  Collapse,
-  IconButton,
-  Tooltip,
 } from '@mui/material';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
 import { AppDispatch, RootState } from 'store/slices';
@@ -19,15 +14,12 @@ import {
   MeditationData,
   WeekDayLabel,
 } from '@/store/slices/meditation/meditationSlice';
-import { MediaType, MediaUploadType } from '@/store/slices/types';
 import api from '@/config/axiosConfig';
 import { motion } from 'framer-motion';
-import { BANNER_HEIGHTS } from '../../constants';
+import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 
 export default function TeacherMeditationBanner() {
   const dispatch = useDispatch<AppDispatch>();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -51,6 +43,9 @@ export default function TeacherMeditationBanner() {
     return null;
   }
 
+  const weekdayLabel =
+    WeekDayLabel[meditationDay.path as keyof typeof WeekDayLabel] || meditationDay.path;
+
   const handleOpenPreview = async () => {
     try {
       setLoading(true);
@@ -66,59 +61,38 @@ export default function TeacherMeditationBanner() {
     }
   };
 
-  if (loading) {
-    return (
-      <Paper
-        elevation={3}
-        sx={{
-          width: '100%',
-          minHeight: { xs: 280, sm: 250, md: 280 },
-          maxHeight: { xs: 320, sm: 300, md: 320 },
-          height: { xs: 280, sm: 250, md: 280 },
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderRadius: { xs: 2, md: 3 },
-          background: 'linear-gradient(135deg, #00796b 0%, #004d40 100%)',
-        }}
-      >
-        <CircularProgress sx={{ color: 'white' }} />
-      </Paper>
-    );
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
+      style={{ height: '100%', width: '100%' }}
     >
       <Paper
         elevation={4}
         sx={{
           width: '100%',
-           height: { 
-             xs: 'auto',
-             sm: 'auto', 
-             md: 350 
-           },
-           minHeight: { 
-             xs: 300,
-             sm: 300, 
-             md: 280 
-           },
+          height: '100%',
+          minHeight: { xs: 240, sm: 260, md: 320 },
           display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
+          flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-           p: { xs: '5px', sm: 3, md: '16px' },
+          textAlign: 'center',
+          gap: { xs: 1.5, md: 2 },
+          p: { xs: 2.5, sm: 3, md: 4 },
           borderRadius: { xs: 2, md: 3 },
           background: 'linear-gradient(135deg, #00796b 0%, #004d40 50%, #00695c 100%)',
           color: '#e0f2f1',
           position: 'relative',
           overflow: 'hidden',
-          '&::before': {
-            content: '""',
+          boxSizing: 'border-box',
+        }}
+      >
+        <motion.div
+          animate={{ y: [0, -12, 0], x: [0, 6, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
             position: 'absolute',
             top: -50,
             right: -50,
@@ -127,9 +101,12 @@ export default function TeacherMeditationBanner() {
             background: 'rgba(255,255,255,0.1)',
             borderRadius: '50%',
             zIndex: 0,
-          },
-          '&::after': {
-            content: '""',
+          }}
+        />
+        <motion.div
+          animate={{ y: [0, 10, 0], x: [0, -6, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
             position: 'absolute',
             bottom: -30,
             left: -30,
@@ -138,140 +115,142 @@ export default function TeacherMeditationBanner() {
             background: 'rgba(255,255,255,0.08)',
             borderRadius: '50%',
             zIndex: 0,
-          },
-        }}
-      >
-        <Box sx={{ 
-          position: 'relative', 
-          zIndex: 1, 
-          width: '100%', 
-          height: '100%',
-          display: 'flex', 
-          flexDirection: { xs: 'column', md: 'row' }, 
-          gap: { xs: 2, md: 4 },
-        }}>
-          
-          <Box sx={{ 
-            flex: '0 0 30%', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            justifyContent: 'center',
-            textAlign: { xs: 'center', md: 'left' }
-          }}>
+          }}
+        />
+
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            width: '100%',
+            maxWidth: 600,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: { xs: 1.5, md: 2 },
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.45 }}
+          >
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.8,
+                px: 1.8,
+                py: 0.5,
+                borderRadius: '999px',
+                bgcolor: 'rgba(255,255,255,0.18)',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              <SelfImprovementIcon sx={{ fontSize: { xs: '1rem', md: '1.2rem' } }} />
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: { xs: '0.7rem', md: '0.8rem' },
+                  fontWeight: 700,
+                  letterSpacing: '1.5px',
+                  lineHeight: 1.6,
+                }}
+              >
+                Meditação de {weekdayLabel}
+              </Typography>
+            </Box>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.45 }}
+          >
             <Typography
               variant="h4"
               fontWeight="bold"
               sx={{
-                fontSize: { xs: '1.3rem', sm: '1.5rem', md: '1.8rem' },
-                textShadow: '2px 2px 6px rgba(0,0,0,0.4)',
-                mb: { xs: 1, md: 1.5 },
+                fontSize: { xs: '1.3rem', sm: '1.6rem', md: '1.9rem' },
+                lineHeight: 1.25,
+                textShadow: '2px 2px 4px rgba(0,0,0,0.35)',
               }}
             >
               Já meditou hoje?
             </Typography>
 
-            <Typography
-              variant="h6"
-              fontWeight="medium"
-              sx={{
-                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                textShadow: '1px 1px 3px rgba(0,0,0,0.4)',
-                mb: { xs: 1, md: 1.5 },
-                opacity: 0.95,
-              }}
-            >
-              Hoje é{' '}
-              {meditationDay
-                ? `${WeekDayLabel[meditationDay?.path as keyof typeof WeekDayLabel] || meditationDay?.path}.`
-                : '...'}
-            </Typography>
-
-            <Typography
-              variant="h5"
-              sx={{
-                fontSize: { xs: '1.1rem', md: '1.3rem' },
-                fontWeight: 500,
-                textShadow: '2px 2px 6px rgba(0,0,0,0.4)',
-                mb: 0,
-              }}
-            >
-              O tema de hoje é:{' '}
-              <span style={{ fontWeight: 'bold' }}>{meditationDay.title}</span>
-            </Typography>
-          </Box>
-
-          <Box sx={{ 
-            flex: '0 0 70%', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            textAlign: 'center',
-            height: '100%',
-            position: 'relative',
-            p: { xs: 0, sm: 2, md: 2 },
-            m: { xs: 1, sm: 0, md: 0 },
-          }}>
-            <Box sx={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', width: '100%' }}>
-              <Box sx={{ 
-                width: '100%', 
-                height: 'auto',
-                mb: 0,
-                p: { xs: 0, sm: 2, md: 2 },
-                m: { xs: 1, sm: 0, md: 0 },
-                borderRadius: 2,
-                bgcolor: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-              }}>
+            {meditationDay.title && (
               <Typography
-                variant="h6"
+                variant="subtitle1"
                 sx={{
+                  mt: 0.5,
                   fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                  textShadow: '1px 1px 3px rgba(0,0,0,0.4)',
-                  opacity: 0.9,
-                  fontWeight: 500,
-                  mb: 1,
-                  textAlign: 'center',
-                }}
-              >
-                Versículo de hoje:
-              </Typography>
-
-              <Typography
-                variant="h4"
-                fontStyle="italic"
-                sx={{
-                  fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.4rem' },
-                  textShadow: '2px 2px 8px rgba(0,0,0,0.5)',
                   opacity: 0.95,
-                  fontWeight: 300,
-                  lineHeight: 1.3,
-                  mb: 0,
+                  textShadow: '1px 1px 3px rgba(0,0,0,0.3)',
                 }}
               >
-                "{meditationDay.subtitle}"
+                O tema de hoje é <strong>{meditationDay.title}</strong>
               </Typography>
+            )}
+          </motion.div>
 
+          {meditationDay.subtitle && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.45 }}
+              style={{ width: '100%' }}
+            >
+              <Box
+                sx={{
+                  width: '100%',
+                  px: { xs: 1.5, md: 2.5 },
+                  py: { xs: 1.2, md: 1.8 },
+                  borderRadius: 2,
+                  bgcolor: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <Typography
+                  variant="body1"
+                  fontStyle="italic"
+                  sx={{
+                    fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.15rem' },
+                    fontWeight: 300,
+                    lineHeight: 1.45,
+                    textShadow: '1px 1px 4px rgba(0,0,0,0.4)',
+                  }}
+                >
+                  “{meditationDay.subtitle}”
+                </Typography>
               </Box>
-            </Box>
+            </motion.div>
+          )}
 
-            <Box sx={{ flex: '0 0 auto', display: 'flex', justifyContent: 'center', width: '100%', minHeight: '50px' }}>
-              <Button
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.55, duration: 0.4 }}
+          >
+            <Button
               variant="contained"
               onClick={handleOpenPreview}
               disabled={loading}
+              startIcon={
+                loading ? <CircularProgress size={18} sx={{ color: 'inherit' }} /> : undefined
+              }
               sx={{
                 bgcolor: 'rgba(255,255,255,0.2)',
                 color: 'white',
-                px: { xs: 4, md: 6 },
-                py: { xs: 0.8, md: 1 },
+                px: { xs: 3, sm: 4, md: 5 },
+                py: { xs: 1, md: 1.2 },
                 fontSize: { xs: '0.9rem', md: '1rem' },
                 fontWeight: 'bold',
                 borderRadius: 2,
                 textTransform: 'none',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255,255,255,0.3)',
-                mt: '5px',
                 '&:hover': {
                   bgcolor: 'rgba(255,255,255,0.3)',
                   transform: 'translateY(-2px)',
@@ -281,15 +260,13 @@ export default function TeacherMeditationBanner() {
                   color: 'rgba(255,255,255,0.5)',
                 },
                 transition: 'all 0.3s ease',
-                minWidth: { xs: '160px', md: '180px' },
+                minWidth: { xs: 180, md: 200 },
               }}
             >
               {loading ? 'Carregando...' : 'Visualizar Meditação'}
-              </Button>
-            </Box>
-          </Box>
+            </Button>
+          </motion.div>
         </Box>
-
       </Paper>
 
       <MediaDocumentPreviewModal

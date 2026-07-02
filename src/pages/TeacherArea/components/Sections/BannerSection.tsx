@@ -3,32 +3,34 @@ import { Grid } from '@mui/material';
 import { BannerSectionProps } from '../../types';
 import { TeacherWeekBanner, TeacherMeditationBanner, IdeasSharingBanner } from '../Banners';
 
+const itemSx = { display: 'flex', '& > *': { width: '100%' } };
+
 const BannerSection: React.FC<BannerSectionProps> = ({ showMeditationBanner }) => {
   return (
     <Grid
       container
-      spacing={2}
-      sx={{ mb: 6, mt: 0, pt: 0, justifyContent: 'space-between' }}
+      spacing={{ xs: 2, md: 3 }}
+      alignItems="stretch"
+      sx={{ mb: { xs: 4, md: 6 }, mt: 0 }}
     >
       {showMeditationBanner ? (
         <>
-          <Grid item xs={12} sx={{ mb: 2 }}>
-            <IdeasSharingBanner forceColumnLayout={showMeditationBanner}/>
+          <Grid item xs={12} sx={itemSx}>
+            <IdeasSharingBanner variant="full" />
           </Grid>
-
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} sx={itemSx}>
             <TeacherWeekBanner />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} sx={itemSx}>
             <TeacherMeditationBanner />
           </Grid>
         </>
       ) : (
         <>
-          <Grid item xs={12} md={6}>
-            <IdeasSharingBanner  variant="compact" />
+          <Grid item xs={12} md={6} sx={itemSx}>
+            <IdeasSharingBanner variant="compact" />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} sx={itemSx}>
             <TeacherWeekBanner />
           </Grid>
         </>
