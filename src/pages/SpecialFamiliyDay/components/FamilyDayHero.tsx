@@ -11,6 +11,9 @@ import { WeekMaterialPageData } from "@/store/slices/week-material/weekMaterialS
 import { SectionEyebrow } from "./FamilyDayShared";
 import { FAMILY_COLORS, sectionWidthSx } from "./familyDayTheme";
 
+const FAMILY_DAY_HERO_IMAGE =
+  "https://clubinho-nib-storage.s3.amazonaws.com/production/uploads/1785245767597_image_0.jpeg";
+
 const eventInfo = [
   {
     icon: <CalendarMonthRoundedIcon />,
@@ -114,7 +117,6 @@ const EventDetails = () => (
 );
 
 export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
-  const featuredImage = data.images?.[0]?.url || "/banner.jpg";
   const hasMaterials =
     data.videos.length > 0 ||
     data.audios.length > 0 ||
@@ -355,8 +357,8 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
                 >
                   <Box
                     component="img"
-                    src={featuredImage}
-                    alt={data.images?.[0]?.title || "Dia da Família"}
+                    src={FAMILY_DAY_HERO_IMAGE}
+                    alt="Dia Especial da Família"
                     sx={{
                       width: "100%",
                       height: "100%",

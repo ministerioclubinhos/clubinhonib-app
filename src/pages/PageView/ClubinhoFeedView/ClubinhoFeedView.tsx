@@ -37,6 +37,16 @@ interface ClubinhoFeedViewProps {
   feed?: boolean;
 }
 
+const feedContainerSx = {
+  width: '90%',
+  maxWidth: 'none',
+  minWidth: 0,
+  mx: 'auto',
+  px: '0 !important',
+  py: { xs: 2, md: 4 },
+  boxSizing: 'border-box',
+} as const;
+
 function SectionSkeleton() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -194,7 +204,7 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container maxWidth={false} sx={feedContainerSx}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -210,7 +220,7 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
 
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container maxWidth={false} sx={feedContainerSx}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -239,7 +249,7 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
 
   if (!section) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container maxWidth={false} sx={feedContainerSx}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -287,7 +297,7 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+    <Container maxWidth={false} sx={feedContainerSx}>
 
       <motion.div
         initial={{ opacity: 0, y: -20 }}

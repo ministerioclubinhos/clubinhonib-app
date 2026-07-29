@@ -30,6 +30,7 @@ const WeekMaterialsList = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const routes = useSelector((state: RootState) => state.routes.routes);
     const loading = useSelector((state: RootState) => state.routes.loading);
+    const specialFamilyDayId = import.meta.env.VITE_SPECIAL_FAMILY_DAY_ID || '';
     const weekMaterialsRoutes = routes
         .filter(
             (route) =>
@@ -348,7 +349,12 @@ const WeekMaterialsList = () => {
                                                     <Button
                                                         variant="contained"
                                                         component={Link}
-                                                        to={`/${route.path}`}
+                                                        to={
+                                                            specialFamilyDayId &&
+                                                            route.idToFetch === specialFamilyDayId
+                                                                ? '/dia-especial-familia'
+                                                                : `/${route.path}`
+                                                        }
                                                         fullWidth
                                                         size={isMobile ? "medium" : "small"}
                                                         sx={{
