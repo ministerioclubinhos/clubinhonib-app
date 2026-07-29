@@ -77,6 +77,7 @@ import StatisticsPage from './features/statistics/StatisticsPage';
 import ClubControlPage from './features/club-control/ClubControlPage';
 import { ProfilesManager, ProfilePage } from './features/profile';
 import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
+import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
@@ -167,6 +168,7 @@ function App() {
                   <Route path="/verificar-email" element={<EmailVerificationInstructions />} />
                   <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
                   <Route path="/cadastrar" element={<Register commonUser />} />
+                  <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} />
 
                   <Route path="/acesso-negado" element={<AccessDeniedPage />} />
                   <Route path="*" element={<NotFoundPage />} />

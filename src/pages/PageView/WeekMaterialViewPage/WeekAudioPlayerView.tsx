@@ -14,9 +14,10 @@ import { MediaItem, MediaPlatform, MediaUploadType } from 'store/slices/types';
 
 interface Props {
   audio: MediaItem;
+  compact?: boolean;
 }
 
-export default function WeekAudioPlayerView({ audio }: Props) {
+export default function WeekAudioPlayerView({ audio, compact = false }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -57,8 +58,8 @@ export default function WeekAudioPlayerView({ audio }: Props) {
             position: 'relative',
             overflow: 'hidden',
             width: '100%',
-            pt: { xs: '25%', md: '15%' },
-            borderRadius: 3,
+            pt: compact ? { xs: '18%', md: '12%' } : { xs: '25%', md: '15%' },
+            borderRadius: compact ? 1.5 : 3,
             bgcolor: 'grey.50',
             border: '2px solid',
             borderColor: 'grey.200',
@@ -114,23 +115,23 @@ export default function WeekAudioPlayerView({ audio }: Props) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
+      whileHover={compact ? undefined : { y: -2 }}
       transition={{ duration: 0.3 }}
+      style={{ height: '100%' }}
     >
       <Paper
-        elevation={3}
+        elevation={compact ? 0 : 3}
         sx={{
-          p: { xs: 3, md: 4 },
-          borderRadius: { xs: 3, md: 4 },
-          border: `2px solid ${theme.palette.secondary.main}20`,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f3e5f5 100%)',
+          p: compact ? { xs: 1, md: 1.2 } : { xs: 3, md: 4 },
+          borderRadius: compact ? 2 : { xs: 3, md: 4 },
+          border: `${compact ? 1 : 2}px solid ${theme.palette.secondary.main}20`,
+          background: compact ? '#FFFFFF' : 'linear-gradient(135deg, #ffffff 0%, #f3e5f5 100%)',
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
           transition: 'all 0.3s ease',
           '&:hover': {
-            elevation: 6,
-            transform: 'translateY(-2px)',
+            transform: compact ? 'none' : 'translateY(-2px)',
             borderColor: theme.palette.secondary.main,
           },
         }}
@@ -139,13 +140,15 @@ export default function WeekAudioPlayerView({ audio }: Props) {
         <Box
           display="flex"
           alignItems="center"
-          gap={2}
-          mb={3}
+          gap={compact ? 1 : 2}
+          mb={compact ? 1 : 3}
         >
           <Box
             sx={{
-              p: 2,
-              borderRadius: 3,
+              width: compact ? 34 : 'auto',
+              height: compact ? 34 : 'auto',
+              p: compact ? 0 : 2,
+              borderRadius: compact ? 1.5 : 3,
               bgcolor: 'secondary.main',
               color: 'white',
               display: 'flex',
@@ -153,7 +156,7 @@ export default function WeekAudioPlayerView({ audio }: Props) {
               justifyContent: 'center',
             }}
           >
-            <MusicNoteIcon sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} />
+            <MusicNoteIcon sx={{ fontSize: compact ? '1.25rem' : { xs: '1.5rem', md: '2rem' } }} />
           </Box>
           
           <Box flex={1}>
@@ -162,15 +165,20 @@ export default function WeekAudioPlayerView({ audio }: Props) {
               fontWeight="bold"
               color="secondary.main"
               sx={{
-                fontSize: { xs: '1.1rem', md: '1.3rem' },
-                mb: 0.5,
-                lineHeight: 1.3,
+                fontSize: compact ? { xs: '0.9rem', md: '1rem' } : { xs: '1.1rem', md: '1.3rem' },
+                mb: compact ? 0 : 0.5,
+                lineHeight: compact ? 1.2 : 1.3,
+                display: '-webkit-box',
+                WebkitLineClamp: compact ? 2 : 'unset',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                overflowWrap: 'anywhere',
               }}
             >
               {audio.title}
             </Typography>
             
-            {fileSize && (
+            {fileSize && !compact && (
               <Chip
                 label={fileSize}
                 size="small"
@@ -184,7 +192,7 @@ export default function WeekAudioPlayerView({ audio }: Props) {
           </Box>
         </Box>
 
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: compact ? 1 : 3 }}>
           {renderAudioPlayer()}
         </Box>
 
@@ -193,10 +201,16 @@ export default function WeekAudioPlayerView({ audio }: Props) {
             variant="body2"
             color="text.secondary"
             sx={{
-              mb: 3,
-              lineHeight: 1.6,
-              fontSize: { xs: '0.9rem', md: '1rem' },
+              mb: compact ? 1 : 3,
+              lineHeight: compact ? 1.35 : 1.6,
+              fontSize: compact ? '0.8rem' : { xs: '0.9rem', md: '1rem' },
               flex: 1,
+              ...(compact && {
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }),
             }}
           >
             {audio.description}
@@ -207,7 +221,7 @@ export default function WeekAudioPlayerView({ audio }: Props) {
           <DownloadButton
             url={audio.url}
             filename={audio.originalName || audio.title || 'audio'}
-            size={isMobile ? 'medium' : 'large'}
+            size={compact ? 'small' : isMobile ? 'medium' : 'large'}
             fullWidth
           />
         </Box>

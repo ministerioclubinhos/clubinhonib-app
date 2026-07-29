@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, Typography, Button, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Share } from '@mui/icons-material';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import { BANNER_STYLES } from '../../constants';
 
 interface IdeasSharingBannerProps {
@@ -10,46 +11,43 @@ interface IdeasSharingBannerProps {
   forceColumnLayout?: boolean;
 }
 
-const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full', forceColumnLayout = false }) => {
-
+const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full' }) => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isCompact = variant === 'compact';
-
-  const shouldUseColumnLayout = isMobile || !forceColumnLayout;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
+      style={{ height: '100%', width: '100%' }}
     >
       <Box
         component="section"
         sx={{
-          ...BANNER_STYLES.ideasSharing,
-          display: 'flex',
-          flexDirection: shouldUseColumnLayout ? 'column' : 'row',
-          alignItems: shouldUseColumnLayout ? 'center' : 'stretch',
-          justifyContent: 'space-between',
-          gap: shouldUseColumnLayout ? 3 : 0,
+          background: BANNER_STYLES.ideasSharing.background,
+          boxShadow: BANNER_STYLES.ideasSharing.boxShadow,
+          borderRadius: { xs: 2, md: 3 },
           width: '100%',
-          mx: 'auto',
-          px: isCompact ? { xs: '10px', sm: 3, md: '16px' } : { xs: '10px', sm: 4, md: 4 },
-          py: isCompact ? { xs: '10px', sm: 0, md: 0 } : { xs: '10px', sm: 6, md: 6 },
-          mb: isCompact ? 0 : 6,
-          mt: isCompact ? 0 : 4,
+          height: '100%',
+          minHeight: isCompact
+            ? { xs: 240, sm: 260, md: 320 }
+            : { xs: 240, sm: 220, md: 200 },
+          display: 'flex',
+          flexDirection: isCompact ? 'column' : { xs: 'column', md: 'row' },
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: { xs: 2, md: isCompact ? 2 : 4 },
+          p: { xs: 2.5, sm: 3, md: 4 },
           position: 'relative',
           overflow: 'hidden',
-          height: isMobile
-            ? { xs: 'auto', sm: 'auto', md: 'auto' }
-            : { xs: 'auto', sm: 'auto', md: shouldUseColumnLayout ? 350 : 200 },
-          minHeight: isMobile
-            ? { xs: 400, sm: 400, md: 400 }
-            : { xs: 400, sm: shouldUseColumnLayout ? 300 : 200, md: shouldUseColumnLayout ? 280 : 200 },
-          '&::before': {
-            content: '""',
+          boxSizing: 'border-box',
+        }}
+      >
+        <motion.div
+          animate={{ y: [0, -12, 0], x: [0, 6, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
             position: 'absolute',
             top: -50,
             right: -50,
@@ -58,9 +56,12 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
             background: 'rgba(255,255,255,0.1)',
             borderRadius: '50%',
             zIndex: 0,
-          },
-          '&::after': {
-            content: '""',
+          }}
+        />
+        <motion.div
+          animate={{ y: [0, 10, 0], x: [0, -6, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
             position: 'absolute',
             bottom: -30,
             left: -30,
@@ -69,32 +70,63 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
             background: 'rgba(255,255,255,0.08)',
             borderRadius: '50%',
             zIndex: 0,
-          },
-        }}
-      >
+          }}
+        />
+
         <Box
           sx={{
-            flex: isCompact ? 1 : 2,
+            flex: isCompact ? '0 0 auto' : { xs: '0 0 auto', md: 2 },
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            alignItems: shouldUseColumnLayout ? 'center' : 'flex-start',
-            textAlign: shouldUseColumnLayout ? 'center' : 'left',
-            px: isCompact ? 0 : 4,
+            alignItems: isCompact ? 'center' : { xs: 'center', md: 'flex-start' },
+            textAlign: isCompact ? 'center' : { xs: 'center', md: 'left' },
+            gap: { xs: 1, md: 1.5 },
             position: 'relative',
             zIndex: 1,
+            maxWidth: 700,
           }}
         >
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.8,
+              px: 1.8,
+              py: 0.5,
+              borderRadius: '999px',
+              bgcolor: 'rgba(255,255,255,0.18)',
+              backdropFilter: 'blur(4px)',
+              alignSelf: isCompact ? 'center' : { xs: 'center', md: 'flex-start' },
+            }}
+          >
+            <LightbulbIcon sx={{ color: '#fff', fontSize: { xs: '1rem', md: '1.2rem' } }} />
+            <Typography
+              variant="overline"
+              sx={{
+                color: '#fff',
+                fontSize: { xs: '0.7rem', md: '0.8rem' },
+                fontWeight: 700,
+                letterSpacing: '1.5px',
+                lineHeight: 1.6,
+              }}
+            >
+              Mural de Ideias
+            </Typography>
+          </Box>
+
           <Typography
             variant="h4"
             sx={{
               fontWeight: 'bold',
               color: 'white',
-              fontSize: isCompact ? { xs: '1rem', sm: '1.1rem', md: '1.6rem' } : { xs: '1.8rem', sm: '2rem', md: '2.2rem' },
+              fontSize: isCompact
+                ? { xs: '1.15rem', sm: '1.3rem', md: '1.5rem' }
+                : { xs: '1.3rem', sm: '1.6rem', md: '1.9rem' },
+              lineHeight: 1.25,
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              mb: 2,
             }}
-          >{forceColumnLayout}
+          >
             ✨ Compartilhe a Inspiração que Deus Te Deu!
           </Typography>
 
@@ -102,45 +134,45 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
             variant="h6"
             sx={{
               color: 'rgba(255,255,255,0.95)',
-              fontSize: isCompact ? { xs: '0.85rem', sm: '0.95rem', md: '1.1rem' } : { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
-              maxWidth: isCompact ? '800px' : '800px',
-              lineHeight: 1.4,
+              fontSize: isCompact
+                ? { xs: '0.85rem', sm: '0.9rem', md: '1rem' }
+                : { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+              lineHeight: 1.5,
               fontWeight: 400,
-              mb: 0,
             }}
           >
-            💡 Criou uma brincadeira incrível ou descobriu uma forma especial de contar uma história bíblica?
-            <br />
-            🌟 Compartilhe sua criatividade com outros professores! Sua ideia pode transformar vidas! ✨
+            💡 Criou uma brincadeira ou uma forma especial de contar uma história bíblica?
+            Compartilhe com outros professores — sua ideia pode transformar vidas! 🌟
           </Typography>
-
         </Box>
 
         <Box
           sx={{
-            flex: 1,
+            flex: isCompact ? '0 0 auto' : { xs: '0 0 auto', md: 1 },
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 2,
+            gap: 1,
             position: 'relative',
             zIndex: 1,
-            px: isCompact ? 0 : 2,
+            width: { xs: '100%', sm: 'auto' },
           }}
         >
           <Button
             variant="contained"
             size="large"
             onClick={() => navigate('/compartilhar-ideia')}
+            endIcon={<Share sx={{ fontSize: { xs: '1.1rem', md: '1.4rem' } }} />}
             sx={{
               bgcolor: 'white',
               color: '#667eea',
-              px: isCompact ? { xs: 3, md: 4 } : { xs: 4, md: 8 },
-              py: isCompact ? { xs: 1.5, md: 2 } : { xs: 2, md: 3 },
-              fontSize: isCompact ? { xs: '0.9rem', sm: '1rem', md: '1.3rem' } : { xs: '1rem', sm: '1.2rem', md: '1.4rem' },
+              px: { xs: 3, sm: 4, md: 5 },
+              py: { xs: 1.2, md: 1.5 },
+              fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.15rem' },
               fontWeight: 'bold',
-              borderRadius: '16px',
+              textTransform: 'none',
+              borderRadius: '14px',
               boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
               '&:hover': {
                 bgcolor: 'rgba(255,255,255,0.95)',
@@ -148,16 +180,9 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
                 boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
               },
               transition: 'all 0.3s ease',
-              minWidth: isCompact ? { xs: '160px', md: '180px' } : { xs: '180px', md: '250px' },
-              width: '100%',
+              minWidth: { xs: 200, md: 220 },
+              maxWidth: '100%',
             }}
-            endIcon={
-              <Share
-                sx={{
-                  fontSize: isCompact ? { xs: '1rem', md: '1.3rem' } : { xs: '1.2rem', md: '1.8rem' }
-                }}
-              />
-            }
           >
             Compartilhar Ideia
           </Button>
@@ -167,8 +192,7 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
             sx={{
               color: 'rgba(255,255,255,0.8)',
               textAlign: 'center',
-              fontSize: isCompact ? { xs: '0.7rem', sm: '0.75rem', md: '0.9rem' } : { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
-              maxWidth: '200px',
+              fontSize: { xs: '0.7rem', md: '0.8rem' },
             }}
           >
             Clique aqui para começar!

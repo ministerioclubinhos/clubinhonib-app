@@ -7,7 +7,7 @@ import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { TeacherContentProps } from '../../types';
 import { SECTION_DATA } from '../../constants';
-import { DocumentsSection, IdeasGallerySection, TrainingVideosSection, CommentsSection } from './';
+import { DocumentsSection, IdeasGallerySection, TrainingVideosSection, CommentsSection, TeachingStepsSection } from './';
 
 const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
   const theme = useTheme();
@@ -81,7 +81,7 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
               mb: 1,
             }}
           >
-            Bem-vindo ao site do Clubinho onde consegue encontrar materiais, ideias e recursos para enriquecer suas aulas!
+            Que alegria ter você aqui! Encontre materiais, ideias e recursos para enriquecer suas aulas e semear a Palavra no coração das crianças.
           </Typography>
 
           <Typography
@@ -97,6 +97,21 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
             }}
           >
             Tudo atualizado semanalmente e alinhado ao calendário bíblico para sua missão evangelística! ✨
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              maxWidth: '700px',
+              mx: 'auto',
+              mt: 2,
+              fontSize: { xs: '0.9rem', md: '1rem' },
+              fontStyle: 'italic',
+              color: 'primary.dark',
+              fontWeight: 500,
+            }}
+          >
+            “E tudo quanto fizerdes, fazei-o de todo o coração, como para o Senhor.” — Colossenses 3:23
           </Typography>
         </Box>
       </Box>
@@ -233,6 +248,43 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
                               </Box>
                             ))}
                           </Box>
+
+                          {section.verse && (
+                            <Box
+                              sx={{
+                                mt: 1.5,
+                                p: 1,
+                                borderRadius: 1.5,
+                                bgcolor: `${section.color}0d`,
+                                textAlign: 'center',
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  display: 'block',
+                                  fontStyle: 'italic',
+                                  color: 'text.secondary',
+                                  fontSize: { xs: '0.72rem', md: '0.75rem' },
+                                  lineHeight: 1.4,
+                                }}
+                              >
+                                “{section.verse.text}”
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  display: 'block',
+                                  mt: 0.3,
+                                  fontWeight: 700,
+                                  color: section.color,
+                                  fontSize: { xs: '0.7rem', md: '0.72rem' },
+                                }}
+                              >
+                                {section.verse.reference}
+                              </Typography>
+                            </Box>
+                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -244,6 +296,9 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
         })}
       </Grid>
 
+      <Box mt={6}>
+        <TeachingStepsSection />
+      </Box>
       <Box mt={6}>
         <DocumentsSection />
       </Box>

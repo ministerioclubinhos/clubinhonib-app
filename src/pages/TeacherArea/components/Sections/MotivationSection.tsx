@@ -130,6 +130,43 @@ const MotivationSection: React.FC<MotivationSectionProps> = ({ motivationText })
               >
                 Lembre-se: uma palavra de fé pode transformar uma vida!
               </Typography>
+
+              <Box
+                sx={{
+                  mt: { xs: 2, md: 2.5 },
+                  mx: 'auto',
+                  maxWidth: 700,
+                  p: { xs: 1.5, md: 2 },
+                  borderRadius: 2,
+                  background: 'linear-gradient(135deg, #fffdf5 0%, #fff8e1 100%)',
+                  borderLeft: '4px solid #f9a825',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.9rem', md: '1.05rem' },
+                    fontStyle: 'italic',
+                    color: '#4e342e',
+                    lineHeight: { xs: 1.5, md: 1.6 },
+                  }}
+                >
+                  “E não nos cansemos de fazer o bem, porque a seu tempo ceifaremos, se não desfalecermos.”
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    mt: 0.5,
+                    fontWeight: 700,
+                    color: '#f57f17',
+                    fontSize: { xs: '0.78rem', md: '0.85rem' },
+                  }}
+                >
+                  — Gálatas 6:9
+                </Typography>
+              </Box>
             </Box>
           </motion.div>
 

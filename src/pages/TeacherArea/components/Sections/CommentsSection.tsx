@@ -19,6 +19,8 @@ import {
   Stack,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/slices';
@@ -30,6 +32,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import HomeIcon from '@mui/icons-material/Home';
 import SendIcon from '@mui/icons-material/Send';
+import CloseIcon from '@mui/icons-material/Close';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import api from '@/config/axiosConfig';
@@ -47,6 +50,7 @@ const CommentsSection: React.FC = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
+  const [selectedComment, setSelectedComment] = useState<(typeof comments)[number] | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -162,7 +166,7 @@ const CommentsSection: React.FC = () => {
       <Paper
         elevation={4}
         sx={{
-          p: { xs: 0.6, md: 4 },
+          p: { xs: 2, md: 4 },
           mt: 5,
           borderRadius: { xs: 3, md: 4 },
           background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
@@ -201,17 +205,39 @@ const CommentsSection: React.FC = () => {
             >
               <CommentIcon sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }} />
             </Box>
-            <Typography
-              variant="h4"
-              fontWeight="bold"
-              color="primary.main"
-              sx={{
-                fontSize: { xs: '1rem', md: '1.8rem' },
-                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              }}
-            >
-              Comentários dos Professores
-            </Typography>
+            <Box>
+              <Typography
+                variant="h4"
+                fontWeight="bold"
+                color="primary.main"
+                sx={{
+                  fontSize: { xs: '1rem', md: '1.8rem' },
+                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                }}
+              >
+                Comentários dos Professores
+                {comments.length > 0 && (
+                  <Chip
+                    size="small"
+                    label={comments.length}
+                    sx={{
+                      ml: 1,
+                      bgcolor: `${theme.palette.primary.main}15`,
+                      color: 'primary.main',
+                      fontWeight: 700,
+                      verticalAlign: 'middle',
+                    }}
+                  />
+                )}
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: { xs: '0.8rem', md: '0.95rem' }, mt: 0.3 }}
+              >
+                🌱 Testemunhos de quem já está semeando a Palavra nos Clubinhos
+              </Typography>
+            </Box>
           </Box>
 
           <Box sx={{ mb: { xs: 2, md: 4 } }}>
@@ -376,6 +402,11 @@ const CommentsSection: React.FC = () => {
                 <Box sx={{
                   position: 'relative',
                   px: 1,
+                  '& .slick-track': { display: 'flex !important' },
+                  '& .slick-slide': {
+                    height: 'inherit',
+                    '& > div': { height: '100%' },
+                  },
                   '& .slick-prev:before, & .slick-next:before': {
                     color: theme.palette.primary.main,
                     fontSize: '28px'
@@ -409,25 +440,27 @@ const CommentsSection: React.FC = () => {
                         key={comment.id}
                         sx={{
                           p: { xs: 0.5, md: 2 },
-                          display: 'flex',
-                          justifyContent: 'center',
+                          height: '100%',
+                          boxSizing: 'border-box',
                         }}
                       >
                         <motion.div
                           initial={{ opacity: 0, scale: 0.9, y: 20 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           transition={{ duration: 0.4, delay: index * 0.1 }}
-                          whileHover={{ y: -8 }}
+                          style={{ height: '100%' }}
                         >
                           <Card
                             elevation={6}
+                            onClick={() => setSelectedComment(comment)}
                             sx={{
-                              width: { xs: '100%', sm: '96%', md: '90%' },
-                              maxWidth: { xs: 'none', md: 400 },
+                              width: '100%',
+                              height: '100%',
                               minHeight: { xs: 260, md: 320 },
                               borderRadius: { xs: 2, md: 3 },
                               background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
                               border: `2px solid ${theme.palette.primary.main}15`,
+                              cursor: 'pointer',
                               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                               '&:hover': {
                                 elevation: 12,
@@ -489,10 +522,29 @@ const CommentsSection: React.FC = () => {
                                       lineHeight: { xs: 1.5, md: 1.6 },
                                       color: 'text.primary',
                                       fontStyle: 'italic',
+                                      display: '-webkit-box',
+                                      WebkitLineClamp: 6,
+                                      WebkitBoxOrient: 'vertical',
+                                      overflow: 'hidden',
                                     }}
                                   >
-                                    "{comment.comment}"
+                                    “{comment.comment}”
                                   </Typography>
+
+                                  {comment.comment.length > 180 && (
+                                    <Typography
+                                      variant="caption"
+                                      sx={{
+                                        display: 'block',
+                                        mt: 1,
+                                        color: 'primary.main',
+                                        fontWeight: 700,
+                                        fontSize: { xs: '0.72rem', md: '0.78rem' },
+                                      }}
+                                    >
+                                      Ler comentário completo…
+                                    </Typography>
+                                  )}
                                 </Paper>
                               </Box>
 
@@ -564,6 +616,111 @@ const CommentsSection: React.FC = () => {
           </AnimatePresence>
         </Box>
       </Paper>
+
+      <Dialog
+        open={!!selectedComment}
+        onClose={() => setSelectedComment(null)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
+            m: { xs: 2, md: 4 },
+          },
+        }}
+      >
+        {selectedComment && (
+          <DialogContent sx={{ p: { xs: 2.5, md: 4 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Avatar
+                sx={{
+                  bgcolor: 'primary.main',
+                  mr: 2,
+                  width: { xs: 44, md: 52 },
+                  height: { xs: 44, md: 52 },
+                  fontSize: { xs: '1.1rem', md: '1.3rem' },
+                }}
+              >
+                {selectedComment.name.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  color="primary.main"
+                  sx={{ fontSize: { xs: '1rem', md: '1.15rem' }, lineHeight: 1.3 }}
+                >
+                  {selectedComment.name}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.72rem', md: '0.78rem' } }}
+                >
+                  {new Date(selectedComment.createdAt).toLocaleDateString('pt-BR')}
+                </Typography>
+              </Box>
+              <IconButton
+                aria-label="Fechar comentário"
+                onClick={() => setSelectedComment(null)}
+                sx={{ color: 'text.secondary' }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            <Paper
+              elevation={1}
+              sx={{
+                p: { xs: 2, md: 2.5 },
+                borderRadius: 2,
+                background: 'linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)',
+                borderLeft: `4px solid ${theme.palette.primary.main}`,
+                mb: 2,
+                maxHeight: '55vh',
+                overflowY: 'auto',
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: { xs: '0.95rem', md: '1.05rem' },
+                  lineHeight: 1.7,
+                  color: 'text.primary',
+                  fontStyle: 'italic',
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                “{selectedComment.comment}”
+              </Typography>
+            </Paper>
+
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              <Chip
+                icon={<HomeIcon />}
+                label={selectedComment.clubinho}
+                size="small"
+                sx={{
+                  bgcolor: 'primary.light',
+                  color: 'white',
+                  '& .MuiChip-icon': { color: 'white' },
+                }}
+              />
+              <Chip
+                icon={<LocationOnIcon />}
+                label={selectedComment.neighborhood}
+                size="small"
+                sx={{
+                  bgcolor: 'secondary.light',
+                  color: 'white',
+                  '& .MuiChip-icon': { color: 'white' },
+                }}
+              />
+            </Stack>
+          </DialogContent>
+        )}
+      </Dialog>
 
       <Snackbar
         open={successSnackbarOpen}

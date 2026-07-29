@@ -6,3 +6,5 @@ export { default as DocumentsSection } from './DocumentsSection';
 export { default as IdeasGallerySection } from './IdeasGallerySection';
 export { default as TrainingVideosSection } from './TrainingVideosSection';
 export { default as WeekMaterialsList } from './WeekMaterialsList';
+export { default as VerseOfWeekSection } from './VerseOfWeekSection';
+export { default as TeachingStepsSection } from './TeachingStepsSection';
