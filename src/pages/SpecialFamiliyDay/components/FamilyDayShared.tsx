@@ -66,24 +66,25 @@ export const CarouselArrow = ({
       sx={{
         position: "absolute",
         top: "50%",
-        [isNext ? "right" : "left"]: { xs: 8, sm: 16 },
+        [isNext ? "right" : "left"]: { xs: 12, sm: 16 },
         transform: "translateY(-50%)",
-        zIndex: 4,
-        width: { xs: 42, sm: 48 },
-        height: { xs: 42, sm: 48 },
+        zIndex: 20,
+        width: { xs: 44, sm: 48 },
+        height: { xs: 44, sm: 48 },
         p: 0,
         display: "grid",
         placeItems: "center",
         border: light
-          ? "1px solid rgba(255,255,255,0.45)"
-          : `1px solid ${FAMILY_COLORS.line}`,
+          ? "2px solid rgba(255,255,255,0.75)"
+          : `2px solid ${FAMILY_COLORS.line}`,
         borderRadius: "50%",
         color: light ? FAMILY_COLORS.ink : FAMILY_COLORS.terracotta,
         backgroundColor: light
-          ? "rgba(255,255,255,0.94)"
+          ? FAMILY_COLORS.paper
           : FAMILY_COLORS.paper,
-        boxShadow: "0 12px 26px rgba(52, 43, 39, 0.18)",
+        boxShadow: "0 10px 28px rgba(52, 43, 39, 0.3)",
         cursor: "pointer",
+        touchAction: "manipulation",
         transition: "transform .2s ease, background-color .2s ease",
         "&:hover": {
           transform: "translateY(-50%) scale(1.06)",

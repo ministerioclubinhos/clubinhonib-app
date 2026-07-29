@@ -5,6 +5,7 @@ import Slider from "react-slick";
 
 import { MediaItem } from "@/store/slices/types";
 import { CarouselArrow, SectionEyebrow } from "./FamilyDayShared";
+import { FamilyDayExpandedMedia } from "./FamilyDayExpandedMedia";
 import {
   FAMILY_COLORS,
   sectionWidthSx,
@@ -13,6 +14,7 @@ import {
 
 export const FamilyDayGallery = ({ images }: { images: MediaItem[] }) => {
   const [activeImage, setActiveImage] = useState(0);
+  const [expandedImage, setExpandedImage] = useState<MediaItem | null>(null);
   const sliderRef = useRef<Slider | null>(null);
 
   if (images.length === 0) return null;
@@ -133,6 +135,12 @@ export const FamilyDayGallery = ({ images }: { images: MediaItem[] }) => {
                 autoplay={images.length > 1}
                 autoplaySpeed={5000}
                 pauseOnHover
+                swipe
+                swipeToSlide
+                draggable
+                touchMove
+                touchThreshold={12}
+                waitForAnimate={false}
                 arrows={images.length > 1}
                 nextArrow={<CarouselArrow direction="next" light />}
                 prevArrow={<CarouselArrow direction="previous" light />}
@@ -144,6 +152,16 @@ export const FamilyDayGallery = ({ images }: { images: MediaItem[] }) => {
                     sx={{ p: { xs: 0.4, sm: 0.7 } }}
                   >
                     <Box
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Expandir imagem ${index + 1}`}
+                      onClick={() => setExpandedImage(image)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setExpandedImage(image);
+                        }
+                      }}
                       sx={{
                         position: "relative",
                         p: { xs: 0.7, sm: 1 },
@@ -151,6 +169,12 @@ export const FamilyDayGallery = ({ images }: { images: MediaItem[] }) => {
                         backgroundColor: FAMILY_COLORS.paper,
                         boxShadow: "0 28px 70px rgba(8, 38, 35, .3)",
                         overflow: "hidden",
+                        cursor: "zoom-in",
+                        outline: "none",
+                        "&:focus-visible": {
+                          boxShadow:
+                            "0 0 0 4px #F6C866, 0 28px 70px rgba(8, 38, 35, .3)",
+                        },
                       }}
                     >
                       <Box
@@ -299,6 +323,14 @@ export const FamilyDayGallery = ({ images }: { images: MediaItem[] }) => {
           </Grid>
         </Grid>
       </Container>
+
+      <FamilyDayExpandedMedia
+        media={expandedImage}
+        items={images}
+        kind="image"
+        onClose={() => setExpandedImage(null)}
+        onSelect={setExpandedImage}
+      />
     </Box>
   );
 };

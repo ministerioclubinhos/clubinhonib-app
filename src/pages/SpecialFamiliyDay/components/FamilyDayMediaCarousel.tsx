@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Box, Chip, Stack, Typography } from "@mui/material";
 import GraphicEqRoundedIcon from "@mui/icons-material/GraphicEqRounded";
 import MusicNoteRoundedIcon from "@mui/icons-material/MusicNoteRounded";
@@ -7,6 +8,7 @@ import Slider from "react-slick";
 import { MediaItem } from "@/store/slices/types";
 import WeekAudioPlayerView from "@/pages/PageView/WeekMaterialViewPage/WeekAudioPlayerView";
 import WeekVideoPlayer from "@/pages/PageView/WeekMaterialViewPage/WeekVideoPlayerView";
+import { FamilyDayExpandedMedia } from "./FamilyDayExpandedMedia";
 import { CarouselArrow } from "./FamilyDayShared";
 import { FAMILY_COLORS, sliderBaseSx } from "./familyDayTheme";
 
@@ -44,22 +46,25 @@ export const FamilyDayMediaCarousel = ({
   items: MediaItem[];
   compact?: boolean;
 }) => {
+  const [expandedMedia, setExpandedMedia] = useState<MediaItem | null>(null);
+
   if (items.length === 0) return null;
 
   const config = mediaConfig[kind];
 
   return (
-    <Box
-      sx={{
-        height: compact ? "100%" : "auto",
-        mb: compact ? 0 : 2.2,
-        p: { xs: 2, sm: 2.8 },
-        borderRadius: "34px",
-        border: `1px solid ${config.border}`,
-        backgroundColor: config.background,
-        overflow: "hidden",
-      }}
-    >
+    <>
+      <Box
+        sx={{
+          height: compact ? "100%" : "auto",
+          mb: compact ? 0 : 2.2,
+          p: { xs: 2, sm: 2.8 },
+          borderRadius: "34px",
+          border: `1px solid ${config.border}`,
+          backgroundColor: config.background,
+          overflow: "hidden",
+        }}
+      >
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={1.4}
@@ -142,7 +147,7 @@ export const FamilyDayMediaCarousel = ({
             },
             {
               breakpoint: 600,
-              settings: { slidesToShow: 1, arrows: false },
+              settings: { slidesToShow: 1, arrows: items.length > 1 },
             },
           ]}
         >
@@ -153,7 +158,11 @@ export const FamilyDayMediaCarousel = ({
             >
               <Box sx={{ height: "100%", minWidth: 0 }}>
                 {kind === "video" ? (
-                  <WeekVideoPlayer video={item} compact />
+                  <WeekVideoPlayer
+                    video={item}
+                    compact
+                    onExpand={() => setExpandedMedia(item)}
+                  />
                 ) : (
                   <WeekAudioPlayerView audio={item} compact />
                 )}
@@ -162,6 +171,17 @@ export const FamilyDayMediaCarousel = ({
           ))}
         </Slider>
       </Box>
-    </Box>
+      </Box>
+
+      {kind === "video" && (
+        <FamilyDayExpandedMedia
+          media={expandedMedia}
+          items={items}
+          kind="video"
+          onClose={() => setExpandedMedia(null)}
+          onSelect={setExpandedMedia}
+        />
+      )}
+    </>
   );
 };

@@ -5,20 +5,21 @@ import {
   useTheme, 
   useMediaQuery,
   Chip,
-  Stack,
   Alert,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import FullscreenRoundedIcon from '@mui/icons-material/FullscreenRounded';
 import DownloadButton from './DownloadButton';
 import { MediaItem, MediaUploadType, MediaPlatform } from 'store/slices/types';
 
 interface Props {
   video: MediaItem;
   compact?: boolean;
+  onExpand?: () => void;
 }
 
-export default function WeekVideoPlayer({ video, compact = false }: Props) {
+export default function WeekVideoPlayer({ video, compact = false, onExpand }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -249,8 +250,48 @@ export default function WeekVideoPlayer({ video, compact = false }: Props) {
           </Box>
         </Box>
 
-        <Box sx={{ mb: compact ? 1 : 3 }}>
+        <Box sx={{ position: 'relative', mb: compact ? 1 : 3 }}>
           {renderVideo()}
+          {onExpand && (
+            <Box
+              component="button"
+              type="button"
+              onClick={onExpand}
+              aria-label={`Expandir vídeo ${video.title || ''}`}
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 2,
+                p: 1,
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'flex-end',
+                border: 0,
+                borderRadius: compact ? 1.5 : 3,
+                color: '#fff',
+                background: 'transparent',
+                cursor: 'zoom-in',
+                '&:hover': {
+                  background: 'rgba(0,0,0,.08)',
+                },
+                '& .video-expand-icon': {
+                  width: 40,
+                  height: 40,
+                  display: 'grid',
+                  placeItems: 'center',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(0,0,0,.68)',
+                  border: '1px solid rgba(255,255,255,.45)',
+                  boxShadow: '0 8px 22px rgba(0,0,0,.24)',
+                  backdropFilter: 'blur(6px)',
+                },
+              }}
+            >
+              <Box className="video-expand-icon">
+                <FullscreenRoundedIcon />
+              </Box>
+            </Box>
+          )}
         </Box>
 
         {video.description && (
