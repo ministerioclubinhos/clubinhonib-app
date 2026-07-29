@@ -211,16 +211,16 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
                     fontSize: {
                       xs: "2.25rem",
                       sm: "2.85rem",
-                      md: "clamp(2.75rem, 4.2vw, 4.5rem)",
+                      md: "clamp(3rem, 4.5vw, 5.25rem)",
                     },
                     fontWeight: 900,
-                    lineHeight: { xs: 1.04, md: 0.98 },
+                    lineHeight: { xs: 1.04, md: 0.94 },
                     letterSpacing: { xs: "-0.045em", md: "-0.06em" },
                     whiteSpace: { xs: "normal", md: "nowrap" },
                     color: FAMILY_COLORS.ink,
                     textShadow: {
                       xs: "none",
-                      md: "0 5px 0 rgba(255, 255, 255, 0.7)",
+                      md: "0 6px 0 rgba(255, 255, 255, 0.78)",
                     },
                   }}
                 >
@@ -260,12 +260,16 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
 
                 <Typography
                   sx={{
-                    mt: 2.3,
-                    maxWidth: 620,
-                    color: FAMILY_COLORS.muted,
-                    fontSize: { xs: "1rem", sm: "1.08rem", md: "1.14rem" },
-                    lineHeight: 1.7,
-                    fontWeight: 500,
+                    mt: { xs: 2.3, md: 3 },
+                    maxWidth: { xs: 620, md: 720 },
+                    color: { xs: FAMILY_COLORS.muted, md: FAMILY_COLORS.ink },
+                    fontSize: {
+                      xs: "1rem",
+                      sm: "1.08rem",
+                      md: "clamp(1.25rem, 1.45vw, 1.55rem)",
+                    },
+                    lineHeight: { xs: 1.7, md: 1.5 },
+                    fontWeight: { xs: 500, md: 700 },
                   }}
                 >
                   {data.subtitle ||
@@ -275,13 +279,32 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
                 {data.description && (
                   <Typography
                     sx={{
-                      mt: 1.4,
-                      maxWidth: 620,
-                      pl: 1.6,
-                      borderLeft: `4px solid ${FAMILY_COLORS.sun}`,
+                      mt: { xs: 1.4, md: 2 },
+                      maxWidth: { xs: 620, md: 700 },
+                      py: { xs: 0, md: 1.5 },
+                      pr: { xs: 0, md: 2 },
+                      pl: { xs: 1.6, md: 2.2 },
+                      borderLeft: {
+                        xs: `4px solid ${FAMILY_COLORS.sun}`,
+                        md: `6px solid ${FAMILY_COLORS.sun}`,
+                      },
+                      borderRadius: { xs: 0, md: "0 18px 18px 0" },
+                      backgroundColor: {
+                        xs: "transparent",
+                        md: "rgba(255, 255, 255, 0.55)",
+                      },
                       color: FAMILY_COLORS.muted,
-                      fontSize: { xs: "0.86rem", sm: "0.92rem" },
-                      lineHeight: 1.65,
+                      fontSize: {
+                        xs: "0.86rem",
+                        sm: "0.92rem",
+                        md: "clamp(1.02rem, 1.05vw, 1.14rem)",
+                      },
+                      fontWeight: { xs: 400, md: 550 },
+                      lineHeight: { xs: 1.65, md: 1.7 },
+                      boxShadow: {
+                        xs: "none",
+                        md: "0 12px 34px rgba(91, 62, 46, 0.07)",
+                      },
                     }}
                   >
                     {data.description}
