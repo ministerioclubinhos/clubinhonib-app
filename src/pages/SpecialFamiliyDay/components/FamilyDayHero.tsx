@@ -117,6 +117,8 @@ const EventDetails = () => (
 );
 
 export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
+  const heroTitle = data.title?.trim() || "Dia da Família";
+  const titleParts = heroTitle.split(/(família)/i);
   const hasMaterials =
     data.videos.length > 0 ||
     data.audios.length > 0 ||
@@ -184,7 +186,7 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
 
         <Container maxWidth={false} sx={sectionWidthSx}>
           <Grid container spacing={{ xs: 5.5, md: 7 }} alignItems="center">
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={7}>
               <Box
                 component={motion.div}
                 initial={{ opacity: 0, x: -28 }}
@@ -204,43 +206,56 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
                   variant="h1"
                   sx={{
                     mt: 2.2,
-                    maxWidth: 740,
+                    width: "fit-content",
+                    maxWidth: { xs: "100%", md: "none" },
                     fontSize: {
-                      xs: "3.1rem",
-                      sm: "4.25rem",
-                      md: "4.7rem",
-                      lg: "5.55rem",
+                      xs: "2.25rem",
+                      sm: "2.85rem",
+                      md: "clamp(2.75rem, 4.2vw, 4.5rem)",
                     },
-                    lineHeight: 0.93,
+                    fontWeight: 900,
+                    lineHeight: { xs: 1.04, md: 0.98 },
+                    letterSpacing: { xs: "-0.045em", md: "-0.06em" },
+                    whiteSpace: { xs: "normal", md: "nowrap" },
                     color: FAMILY_COLORS.ink,
+                    textShadow: {
+                      xs: "none",
+                      md: "0 5px 0 rgba(255, 255, 255, 0.7)",
+                    },
                   }}
                 >
-                  Dia da
-                  <Box
-                    component="span"
-                    sx={{
-                      position: "relative",
-                      zIndex: 0,
-                      display: "block",
-                      width: "fit-content",
-                      color: FAMILY_COLORS.terracotta,
-                      "&::after": {
-                        content: '""',
-                        position: "absolute",
-                        zIndex: -1,
-                        left: -4,
-                        right: -12,
-                        bottom: "0.02em",
-                        height: "0.22em",
-                        borderRadius: 999,
-                        backgroundColor: FAMILY_COLORS.sun,
-                        opacity: 0.48,
-                        transform: "rotate(-1.5deg)",
-                      },
-                    }}
-                  >
-                    Família
-                  </Box>
+                  {titleParts.map((part, index) =>
+                    part.toLocaleLowerCase("pt-BR") === "família" ? (
+                      <Box
+                        key={`${part}-${index}`}
+                        component="span"
+                        sx={{
+                          position: "relative",
+                          zIndex: 0,
+                          display: "inline-block",
+                          width: "fit-content",
+                          color: FAMILY_COLORS.terracotta,
+                          "&::after": {
+                            content: '""',
+                            position: "absolute",
+                            zIndex: -1,
+                            left: -4,
+                            right: -12,
+                            bottom: "0.02em",
+                            height: "0.22em",
+                            borderRadius: 999,
+                            backgroundColor: FAMILY_COLORS.sun,
+                            opacity: 0.48,
+                            transform: "rotate(-1.5deg)",
+                          },
+                        }}
+                      >
+                        {part}
+                      </Box>
+                    ) : (
+                      part
+                    )
+                  )}
                 </Typography>
 
                 <Typography
@@ -256,6 +271,22 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
                   {data.subtitle ||
                     "Um encontro para celebrar o amor que acolhe, a fé que nos aproxima e as memórias que levamos para sempre."}
                 </Typography>
+
+                {data.description && (
+                  <Typography
+                    sx={{
+                      mt: 1.4,
+                      maxWidth: 620,
+                      pl: 1.6,
+                      borderLeft: `4px solid ${FAMILY_COLORS.sun}`,
+                      color: FAMILY_COLORS.muted,
+                      fontSize: { xs: "0.86rem", sm: "0.92rem" },
+                      lineHeight: 1.65,
+                    }}
+                  >
+                    {data.description}
+                  </Typography>
+                )}
 
                 <Stack
                   direction={{ xs: "column", sm: "row" }}
@@ -296,7 +327,7 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={5}>
               <Box
                 component={motion.div}
                 initial={{ opacity: 0, scale: 0.94, rotate: 2 }}
