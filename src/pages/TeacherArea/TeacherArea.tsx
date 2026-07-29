@@ -38,6 +38,8 @@ const TeacherArea: React.FC = () => {
         showMeditationBanner={showMeditation}
       />
 
+      <SpecialFamilyCallout />
+
       <FofinhoButton
         references={[
           ...(flags.teacher_children_access ? ['childrenArea'] : []),

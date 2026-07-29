@@ -156,39 +156,6 @@ const TeacherWeekBanner: React.FC = () => {
             transition={{ delay: 0.25, duration: 0.45 }}
           >
             <Typography
-              variant="h4"
-              fontWeight="bold"
-              sx={{
-                fontSize: { xs: '1.3rem', sm: '1.7rem', md: '2rem' },
-                lineHeight: 1.25,
-                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',
-              }}
-            >
-              {currentWeekRoute.title || `Olá, ${firstName}!`}
-            </Typography>
-
-            {currentWeekRoute.subtitle && (
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  mt: 1,
-                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                  opacity: 0.95,
-                  lineHeight: 1.5,
-                  textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
-                }}
-              >
-                {currentWeekRoute.subtitle}
-              </Typography>
-            )}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.45 }}
-          >
-            <Typography
               variant="body2"
               sx={{
                 fontSize: { xs: '0.85rem', md: '0.95rem' },
@@ -204,7 +171,7 @@ const TeacherWeekBanner: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.55, duration: 0.4 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
           >
             <Button
               variant="contained"

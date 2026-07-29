@@ -33,7 +33,8 @@ const WeekMaterialsList = () => {
     const weekMaterialsRoutes = routes
         .filter(
             (route) =>
-                route.entityType === MediaTargetType.WeekMaterialsPage && route.public
+                route.entityType === MediaTargetType.WeekMaterialsPage &&
+                route.public
         )
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
