@@ -45,6 +45,7 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { UserRole } from "@/types/shared";
+import { useFeatureFlags } from "@/hooks";
 
 type SectionId = "all" | "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "interacoes" | "operacional";
 
@@ -108,6 +109,7 @@ export default function AdminDashboardPage() {
   const isAdmin = !!isAuthenticated && role === UserRole.ADMIN;
   const isCoordinator = !!isAuthenticated && role === UserRole.COORDINATOR;
   const isSimpleMode = isCoordinator && !isAdmin;
+  const { flags } = useFeatureFlags();
 
   const [query, setQuery] = React.useState("");
   const [section, setSection] = React.useState<SectionId>("all");
@@ -123,7 +125,7 @@ export default function AdminDashboardPage() {
 
   const normalizedQuery = query.trim().toLowerCase();
   const coordinatorAllowed = new Set<string>([
-    "/adm/criancas",
+    ...(flags.coordinator_children_access ? ["/adm/criancas"] : []),
     "/adm/professores",
     "/adm/clubinhos",
     "/adm/pagelas",

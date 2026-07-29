@@ -84,9 +84,7 @@ export type CreateClubForm = {
   weekday: Weekday;
   time?: string | null;
   isActive?: boolean;
-  address: Partial<AddressResponseDto> & {
-    street: string; district: string; city: string; state: string; postalCode: string;
-  };
+  address: Partial<AddressResponseDto>;
   coordinatorProfileId?: string | null;
   teacherProfileIds?: string[];
 };

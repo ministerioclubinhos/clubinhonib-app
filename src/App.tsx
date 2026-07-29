@@ -33,6 +33,7 @@ import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 import { fetchRoutes } from './store/slices/route/routeSlice';
 import { initAuth, logout } from './store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
+import { useFeatureFlags } from '@/hooks';
 
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
@@ -76,12 +77,14 @@ import StatisticsPage from './features/statistics/StatisticsPage';
 import ClubControlPage from './features/club-control/ClubControlPage';
 import { ProfilesManager, ProfilePage } from './features/profile';
 import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
+import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
   const dynamicRoutes = useSelector((state: RootStateType) => state.routes.routes);
   const { initialized, loadingUser, isAuthenticated } = useSelector((state: RootStateType) => state.auth);
   const [forceReady, setForceReady] = useState(false);
+  const { flags } = useFeatureFlags();
 
   useEffect(() => {
     dispatch(fetchRoutes());
@@ -165,6 +168,7 @@ function App() {
                   <Route path="/verificar-email" element={<EmailVerificationInstructions />} />
                   <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
                   <Route path="/cadastrar" element={<Register commonUser />} />
+                  <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} />
 
                   <Route path="/acesso-negado" element={<AccessDeniedPage />} />
                   <Route path="*" element={<NotFoundPage />} />
@@ -174,10 +178,22 @@ function App() {
                     <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
                     <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
                     <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
-                    <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
-                    <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
                     <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
                     <Route path="/meu-perfil" element={<ProfilePage />} />
+                  </Route>
+
+                  <Route element={
+                    <ProtectedRoute
+                      requiredRole={(() => {
+                        const roles: UserRole[] = [UserRole.ADMIN];
+                        if (flags.coordinator_children_access) roles.push(UserRole.COORDINATOR);
+                        if (flags.teacher_children_access) roles.push(UserRole.TEACHER);
+                        return roles;
+                      })()}
+                    />
+                  }>
+                    <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
+                    <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
                   </Route>
 
                   <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>

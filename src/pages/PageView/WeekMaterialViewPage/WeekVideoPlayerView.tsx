@@ -5,19 +5,21 @@ import {
   useTheme, 
   useMediaQuery,
   Chip,
-  Stack,
   Alert,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import FullscreenRoundedIcon from '@mui/icons-material/FullscreenRounded';
 import DownloadButton from './DownloadButton';
 import { MediaItem, MediaUploadType, MediaPlatform } from 'store/slices/types';
 
 interface Props {
   video: MediaItem;
+  compact?: boolean;
+  onExpand?: () => void;
 }
 
-export default function WeekVideoPlayer({ video }: Props) {
+export default function WeekVideoPlayer({ video, compact = false, onExpand }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -88,8 +90,11 @@ export default function WeekVideoPlayer({ video }: Props) {
           controls
           sx={{
             width: '100%',
-            borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            aspectRatio: '16/9',
+            objectFit: 'contain',
+            bgcolor: '#000',
+            borderRadius: compact ? 1.5 : 3,
+            boxShadow: compact ? 'none' : '0 8px 32px rgba(0,0,0,0.1)',
           }}
         >
           <source src={video.url} />
@@ -112,8 +117,8 @@ export default function WeekVideoPlayer({ video }: Props) {
                 width: '100%',
                 aspectRatio: '16/9',
                 border: 'none',
-                borderRadius: 3,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                borderRadius: compact ? 1.5 : 3,
+                boxShadow: compact ? 'none' : '0 8px 32px rgba(0,0,0,0.1)',
               }}
             />
           ) : (
@@ -135,8 +140,8 @@ export default function WeekVideoPlayer({ video }: Props) {
                 width: '100%',
                 aspectRatio: '16/9',
                 border: 'none',
-                borderRadius: 3,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                borderRadius: compact ? 1.5 : 3,
+                boxShadow: compact ? 'none' : '0 8px 32px rgba(0,0,0,0.1)',
               }}
             />
           ) : (
@@ -168,23 +173,23 @@ export default function WeekVideoPlayer({ video }: Props) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
+      whileHover={compact ? undefined : { y: -2 }}
       transition={{ duration: 0.3 }}
+      style={{ height: '100%' }}
     >
       <Paper
-        elevation={3}
+        elevation={compact ? 0 : 3}
         sx={{
-          p: { xs: 3, md: 4 },
-          borderRadius: { xs: 3, md: 4 },
-          border: `2px solid ${theme.palette.error.main}20`,
-          background: 'linear-gradient(135deg, #ffffff 0%, #ffebee 100%)',
+          p: compact ? { xs: 1, md: 1.2 } : { xs: 3, md: 4 },
+          borderRadius: compact ? 2 : { xs: 3, md: 4 },
+          border: `${compact ? 1 : 2}px solid ${theme.palette.error.main}20`,
+          background: compact ? '#FFFFFF' : 'linear-gradient(135deg, #ffffff 0%, #ffebee 100%)',
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
           transition: 'all 0.3s ease',
           '&:hover': {
-            elevation: 6,
-            transform: 'translateY(-2px)',
+            transform: compact ? 'none' : 'translateY(-2px)',
             borderColor: theme.palette.error.main,
           },
         }}
@@ -193,13 +198,15 @@ export default function WeekVideoPlayer({ video }: Props) {
         <Box
           display="flex"
           alignItems="center"
-          gap={2}
-          mb={3}
+          gap={compact ? 1 : 2}
+          mb={compact ? 1 : 3}
         >
           <Box
             sx={{
-              p: 2,
-              borderRadius: 3,
+              width: compact ? 34 : 'auto',
+              height: compact ? 34 : 'auto',
+              p: compact ? 0 : 2,
+              borderRadius: compact ? 1.5 : 3,
               bgcolor: 'error.main',
               color: 'white',
               display: 'flex',
@@ -207,7 +214,7 @@ export default function WeekVideoPlayer({ video }: Props) {
               justifyContent: 'center',
             }}
           >
-            <PlayCircleOutlineIcon sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} />
+            <PlayCircleOutlineIcon sx={{ fontSize: compact ? '1.25rem' : { xs: '1.5rem', md: '2rem' } }} />
           </Box>
           
           <Box flex={1}>
@@ -216,15 +223,20 @@ export default function WeekVideoPlayer({ video }: Props) {
               fontWeight="bold"
               color="error.main"
               sx={{
-                fontSize: { xs: '1.1rem', md: '1.3rem' },
-                mb: 0.5,
-                lineHeight: 1.3,
+                fontSize: compact ? { xs: '0.9rem', md: '1rem' } : { xs: '1.1rem', md: '1.3rem' },
+                mb: compact ? 0 : 0.5,
+                lineHeight: compact ? 1.2 : 1.3,
+                display: '-webkit-box',
+                WebkitLineClamp: compact ? 2 : 'unset',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                overflowWrap: 'anywhere',
               }}
             >
               {video.title}
             </Typography>
             
-            {fileSize && (
+            {fileSize && !compact && (
               <Chip
                 label={fileSize}
                 size="small"
@@ -238,8 +250,48 @@ export default function WeekVideoPlayer({ video }: Props) {
           </Box>
         </Box>
 
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ position: 'relative', mb: compact ? 1 : 3 }}>
           {renderVideo()}
+          {onExpand && (
+            <Box
+              component="button"
+              type="button"
+              onClick={onExpand}
+              aria-label={`Expandir vídeo ${video.title || ''}`}
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 2,
+                p: 1,
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'flex-end',
+                border: 0,
+                borderRadius: compact ? 1.5 : 3,
+                color: '#fff',
+                background: 'transparent',
+                cursor: 'zoom-in',
+                '&:hover': {
+                  background: 'rgba(0,0,0,.08)',
+                },
+                '& .video-expand-icon': {
+                  width: 40,
+                  height: 40,
+                  display: 'grid',
+                  placeItems: 'center',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(0,0,0,.68)',
+                  border: '1px solid rgba(255,255,255,.45)',
+                  boxShadow: '0 8px 22px rgba(0,0,0,.24)',
+                  backdropFilter: 'blur(6px)',
+                },
+              }}
+            >
+              <Box className="video-expand-icon">
+                <FullscreenRoundedIcon />
+              </Box>
+            </Box>
+          )}
         </Box>
 
         {video.description && (
@@ -248,9 +300,16 @@ export default function WeekVideoPlayer({ video }: Props) {
             color="text.secondary"
             sx={{
               mb: 3,
-              lineHeight: 1.6,
-              fontSize: { xs: '0.9rem', md: '1rem' },
+              lineHeight: compact ? 1.35 : 1.6,
+              fontSize: compact ? '0.8rem' : { xs: '0.9rem', md: '1rem' },
               flex: 1,
+              ...(compact && {
+                mb: 1,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }),
             }}
           >
             {video.description}
@@ -264,7 +323,7 @@ export default function WeekVideoPlayer({ video }: Props) {
                 video.platformType === MediaPlatform.DROPBOX ? getDropboxRawUrl(video.url) : video.url
               }
               filename={video.originalName || video.title || 'video'}
-              size={isMobile ? 'medium' : 'large'}
+              size={compact ? 'small' : isMobile ? 'medium' : 'large'}
               fullWidth
             />
           </Box>

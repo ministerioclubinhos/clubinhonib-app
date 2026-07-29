@@ -9,14 +9,16 @@ import {
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
-import { 
+import { useFeatureFlags } from '@/hooks';
+import {
   InformativeBanner,
   FofinhoButton,
-  SpecialFamilyCallout, 
+  SpecialFamilyCallout,
   IdeasSharingBanner,
   BannerSection,
   MotivationSection,
   TeacherContent,
+  VerseOfWeekSection,
 } from './components';
 import { useTeacherArea } from './hooks';
 import { MOTIVATION_TEXT, CONTAINER_STYLES } from './constants';
@@ -24,20 +26,31 @@ import { MOTIVATION_TEXT, CONTAINER_STYLES } from './constants';
 const TeacherArea: React.FC = () => {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const { loading, showWeek, showMeditation } = useTeacherArea();
+  const { flags } = useFeatureFlags();
 
   return (
     <Container maxWidth={false} sx={CONTAINER_STYLES.main}>
-      
+
       <InformativeBanner />
 
-      <BannerSection 
-        showWeekBanner={showWeek} 
-        showMeditationBanner={showMeditation} 
+      <BannerSection
+        showWeekBanner={showWeek}
+        showMeditationBanner={showMeditation}
       />
 
-      <FofinhoButton 
-        references={['materials', 'childrenArea', 'photos', 'rate', 'events', 'help']} 
+      <SpecialFamilyCallout />
+
+      <FofinhoButton
+        references={[
+          ...(flags.teacher_children_access ? ['childrenArea'] : []),
+          'photos',
+          'rate',
+          'events',
+          'help',
+        ]}
       />
+
+      <VerseOfWeekSection />
 
       <MotivationSection motivationText={MOTIVATION_TEXT} />
 
@@ -52,6 +65,17 @@ const TeacherArea: React.FC = () => {
           Área do Professor
         </Typography>
 
+        <Typography
+          variant="body2"
+          sx={{
+            color: '#757575',
+            fontStyle: 'italic',
+            fontSize: { xs: '0.85rem', md: '0.95rem' },
+          }}
+        >
+          “Apascenta os meus cordeiros.” — João 21:15
+        </Typography>
+
         <Divider sx={{ my: 3, borderColor: '#e0e0e0' }} />
 
         {isAuthenticated ? (
@@ -63,9 +87,17 @@ const TeacherArea: React.FC = () => {
             <TeacherContent userName={user?.name} />
           )
         ) : (
-          <Typography variant="body1" color="#757575">
-            Você precisa estar logado para acessar esta área.
-          </Typography>
+          <Box textAlign="center" py={2}>
+            <Typography variant="body1" color="#757575" gutterBottom>
+              Você precisa estar logado para acessar esta área. 🔑
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: '#9e9e9e', fontStyle: 'italic', mt: 1 }}
+            >
+              “Pedi, e dar-se-vos-á; buscai e achareis; batei, e abrir-se-vos-á.” — Mateus 7:7
+            </Typography>
+          </Box>
         )}
       </Paper>
     </Container>

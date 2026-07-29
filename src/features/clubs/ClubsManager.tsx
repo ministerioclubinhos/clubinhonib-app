@@ -92,8 +92,16 @@ export default function ClubsManager() {
   const submitCreate = async () => {
     if (!creating) return;
 
+    const addressPayload = creating.address ? { ...creating.address } : undefined;
+    if (addressPayload) {
+      delete (addressPayload as any).id;
+      delete (addressPayload as any).createdAt;
+      delete (addressPayload as any).updatedAt;
+    }
+
     const payload: CreateClubForm = {
       ...creating,
+      address: addressPayload as CreateClubForm['address'],
       teacherProfileIds: sanitizeIds(creating.teacherProfileIds),
     };
 
@@ -134,8 +142,16 @@ export default function ClubsManager() {
     const { id, ...rest } = editing;
     const teacherIds = sanitizeIds(rest.teacherProfileIds) ?? [];
 
+    const addressPayload = rest.address ? { ...rest.address } : undefined;
+    if (addressPayload) {
+      delete (addressPayload as any).id;
+      delete (addressPayload as any).createdAt;
+      delete (addressPayload as any).updatedAt;
+    }
+
     const payload: Omit<EditClubForm, "id"> & { teacherProfileIds: string[] } = {
       ...rest,
+      address: addressPayload as EditClubForm['address'],
       teacherProfileIds: teacherIds,
     };
 

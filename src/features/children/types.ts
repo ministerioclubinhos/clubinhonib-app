@@ -92,12 +92,12 @@ export type CreateChildForm = {
   isActive?: boolean;
   clubId?: string | null;
   address?: {
-    street: string;
+    street?: string;
     number?: string;
-    district: string;
-    city: string;
-    state: string;
-    postalCode: string;
+    district?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
     complement?: string;
   } | null;
 };

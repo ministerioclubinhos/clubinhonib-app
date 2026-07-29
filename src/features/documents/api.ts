@@ -1,8 +1,9 @@
 import api from '@/config/axiosConfig';
 import { DocumentItem } from './types';
 
-export async function listDocuments() {
-  const { data } = await api.get<DocumentItem[]>('/documents');
+export async function listDocuments(search?: string) {
+  const params = search?.trim() ? { search: search.trim() } : {};
+  const { data } = await api.get<DocumentItem[]>('/documents', { params });
   return data ?? [];
 }
 

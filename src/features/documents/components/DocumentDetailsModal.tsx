@@ -1,10 +1,21 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button,
-  Box, Grid, Divider, IconButton, Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+  Button,
+  Box,
+  Grid,
+  IconButton,
+  Paper,
+  Tooltip,
 } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import LinkIcon from '@mui/icons-material/Link';
 import { DocumentItem } from '../types';
 import { mediaTypeLabel, platformLabel, uploadTypeLabel } from '../utils';
 
@@ -15,22 +26,14 @@ interface Props {
 }
 
 const DetailField = ({ label, value }: { label: string; value?: string | number | null }) => (
-  <Fragment>
-    <Box display="flex" alignItems="center" py={1.2}>
-      <Typography variant="body2" fontWeight={600} color="grey.600" sx={{ mr: 1, whiteSpace: 'nowrap' }}>
-        {label}:
-      </Typography>
-      <Typography
-        variant="body1"
-        fontWeight={500}
-        color="text.primary"
-        sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
-      >
-        {value ?? 'N/A'}
-      </Typography>
-    </Box>
-    <Divider />
-  </Fragment>
+  <Box sx={{ py: 1.5 }}>
+    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
+      {label}
+    </Typography>
+    <Typography variant="body2" fontWeight={500} color="text.primary" sx={{ wordBreak: 'break-word' }}>
+      {value ?? '—'}
+    </Typography>
+  </Box>
 );
 
 const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
@@ -41,74 +44,81 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <Box display="flex" justifyContent="space-between" alignItems="center" px={3} pt={2}>
-        <DialogTitle sx={{ fontWeight: 'bold', color: 'primary.main', flexGrow: 1, p: 0, textAlign: 'center' }}>
-          Detalhes do Documento
-        </DialogTitle>
-        <IconButton onClick={onClose}><CloseIcon /></IconButton>
-      </Box>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: { borderRadius: 3, overflow: 'hidden', boxShadow: 24 },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 3,
+          py: 2,
+          bgcolor: '#81d742',
+          color: 'white',
+          fontWeight: 700,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <DescriptionOutlinedIcon /> Detalhes do documento
+        </Box>
+        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+          <CloseRoundedIcon />
+        </IconButton>
+      </DialogTitle>
 
-      <DialogContent dividers sx={{ px: 4, py: 3 }}>
-        <Typography variant="h6" gutterBottom color="primary.main" sx={{ textAlign: 'center' }}>
-          Detalhes do Documento
-        </Typography>
-
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
+      <DialogContent sx={{ px: 0, py: 0 }}>
+        <Box sx={{ px: 3, pt: 3 }}>
+          <Typography variant="overline" color="primary.main" fontWeight={700}>
+            Documento
+          </Typography>
+          <Paper variant="outlined" sx={{ p: 2, mt: 1, borderRadius: 2, borderColor: 'divider' }}>
             <DetailField label="Nome" value={document?.name} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
             <DetailField label="Descrição" value={document?.description} />
-          </Grid>
-        </Grid>
+          </Paper>
+        </Box>
 
-        <Divider sx={{ my: 4 }} />
-
-        <Typography variant="h6" gutterBottom color="primary.main" sx={{ textAlign: 'center' }}>
-          Mídia Vinculada
-        </Typography>
-
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
-            <DetailField label="Título da Mídia" value={document?.media?.title} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <DetailField label="Descrição da Mídia" value={document?.media?.description} />
-          </Grid>
-          <Grid item xs={12} sm={4}>
+        <Box sx={{ px: 3, pt: 3, pb: 3 }}>
+          <Typography variant="overline" color="primary.main" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <LinkIcon fontSize="small" /> Mídia vinculada
+          </Typography>
+          <Paper variant="outlined" sx={{ p: 2, mt: 1, borderRadius: 2, borderColor: 'divider' }}>
+            <DetailField label="Título da mídia" value={document?.media?.title} />
+            <DetailField label="Descrição da mídia" value={document?.media?.description} />
             <DetailField label="Plataforma" value={platformLabel(document?.media?.platformType)} />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <DetailField label="Tipo de Upload" value={uploadTypeLabel(document?.media?.uploadType)} />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <DetailField label="Tipo de Mídia" value={mediaTypeLabel(document?.media?.mediaType)} />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box display="flex" alignItems="center" py={1.2}>
-              <Typography variant="body2" fontWeight={600} color="grey.600" sx={{ mr: 1, whiteSpace: 'nowrap' }}>
-                URL:
+            <DetailField label="Tipo de upload" value={uploadTypeLabel(document?.media?.uploadType)} />
+            <DetailField label="Tipo de mídia" value={mediaTypeLabel(document?.media?.mediaType)} />
+            <Box sx={{ py: 1.5 }}>
+              <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
+                URL
               </Typography>
-              <Typography variant="body1" fontWeight={500} color="text.primary" sx={{ wordBreak: 'break-all', flex: 1 }}>
-                {url || 'N/A'}
-              </Typography>
-              {url && (
-                <Tooltip title="Copiar URL">
-                  <IconButton onClick={handleCopyUrl} size="small" sx={{ ml: 1 }}>
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <Typography variant="body2" fontWeight={500} color="text.primary" sx={{ wordBreak: 'break-all', flex: 1 }}>
+                  {url || '—'}
+                </Typography>
+                {url && (
+                  <Tooltip title="Copiar URL">
+                    <IconButton onClick={handleCopyUrl} size="small" color="primary" sx={{ flexShrink: 0 }}>
+                      <ContentCopyRoundedIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Box>
             </Box>
-            <Divider />
-          </Grid>
-        </Grid>
+          </Paper>
+        </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 4, py: 2 }}>
-        <Button onClick={onClose} variant="contained" color="primary">Fechar</Button>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button onClick={onClose} variant="contained" sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, bgcolor: '#81d742', '&:hover': { bgcolor: '#6bb83a' } }}>
+          Fechar
+        </Button>
       </DialogActions>
     </Dialog>
   );

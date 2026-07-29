@@ -95,9 +95,19 @@ export default function ChildrenManager() {
     });
   const submitCreate = async () => {
     if (!creating) return;
-    const payload = { ...creating };
+
+    const addressPayload = creating.address ? { ...creating.address } : undefined;
+    if (addressPayload) {
+      delete (addressPayload as any).id;
+      delete (addressPayload as any).createdAt;
+      delete (addressPayload as any).updatedAt;
+    }
+
+    const payload = { ...creating, address: addressPayload };
+
     if (!payload.joinedAt) payload.joinedAt = null;
     if (!payload.clubId) payload.clubId = null as any;
+
     await createChild(payload, pageIndex + 1, pageSize, filters, sorting);
     setCreating(null);
   };
@@ -119,7 +129,16 @@ export default function ChildrenManager() {
   const submitEdit = async () => {
     if (!editing) return;
     const { id, ...rest } = editing;
-    await updateChild(id, rest, pageIndex + 1, pageSize, filters, sorting);
+
+    const addressPayload = rest.address ? { ...rest.address } : undefined;
+    if (addressPayload) {
+      delete (addressPayload as any).id;
+      delete (addressPayload as any).createdAt;
+      delete (addressPayload as any).updatedAt;
+    }
+
+    const payload = { ...rest, address: addressPayload };
+    await updateChild(id, payload, pageIndex + 1, pageSize, filters, sorting);
     setEditing(null);
   };
 

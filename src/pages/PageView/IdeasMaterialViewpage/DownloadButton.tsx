@@ -1,4 +1,5 @@
-import { Button, useTheme, useMediaQuery } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { Button, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 
 interface DownloadButtonProps {
@@ -12,23 +13,61 @@ interface DownloadButtonProps {
 export default function DownloadButton({ 
   url, 
   filename, 
-  disabled, 
+  disabled = false,
   size = 'small',
   fullWidth = false 
 }: DownloadButtonProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [loading, setLoading] = useState(false);
+  const mountedRef = useRef(true);
+  const controllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      controllerRef.current?.abort();
+    };
+  }, []);
+
+  const handleDownload = async () => {
+    if (disabled || loading) return;
+
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
+    window.open(url, '_blank', 'noopener,noreferrer');
+
+    setLoading(true);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      const blob = await response.blob();
+      if (controller.signal.aborted) return;
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'documento';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch {
+    } finally {
+      if (mountedRef.current && !controller.signal.aborted) setLoading(false);
+    }
+  };
 
   return (
     <Button
       variant="contained"
       color="primary"
-      startIcon={<DownloadIcon />}
-      href={url}
-      download={filename}
-      target="_blank"
-      rel="noopener noreferrer"
-      disabled={disabled}
+      startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <DownloadIcon />}
+      onClick={handleDownload}
+      disabled={disabled || loading}
       size={size}
       fullWidth={fullWidth}
       sx={{
@@ -44,7 +83,7 @@ export default function DownloadButton({
         transition: 'all 0.2s ease',
       }}
     >
-      Baixar
+      {loading ? 'Baixando...' : 'Baixar'}
     </Button>
   );
 }
