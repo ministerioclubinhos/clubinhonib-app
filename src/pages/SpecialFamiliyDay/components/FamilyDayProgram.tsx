@@ -7,7 +7,6 @@ import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 import MusicNoteRoundedIcon from "@mui/icons-material/MusicNoteRounded";
-import OndemandVideoRoundedIcon from "@mui/icons-material/OndemandVideoRounded";
 import RestaurantRoundedIcon from "@mui/icons-material/RestaurantRounded";
 import SportsKabaddiRoundedIcon from "@mui/icons-material/SportsKabaddiRounded";
 import VolunteerActivismRoundedIcon from "@mui/icons-material/VolunteerActivismRounded";
@@ -31,11 +30,6 @@ const programItems = [
     title: "Apresentação do Clubinho",
     icon: <GroupsRoundedIcon />,
     color: FAMILY_COLORS.sky,
-  },
-  {
-    title: "Vídeo convite do Clubão",
-    icon: <OndemandVideoRoundedIcon />,
-    color: FAMILY_COLORS.sun,
   },
   {
     title: "Declaração das crianças",
