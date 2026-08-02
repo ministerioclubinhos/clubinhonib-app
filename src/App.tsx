@@ -31,7 +31,7 @@ import AdminDashboardPage from './components/Adm/AdminDashboardPage';
 import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 
 import { fetchRoutes } from './store/slices/route/routeSlice';
-import { initAuth, logout } from './store/slices/auth/authSlice';
+import { initAuth, signOut } from './store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from '@/hooks';
 
@@ -98,7 +98,7 @@ function App() {
   }, [dispatch]);
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(signOut());
     setForceReady(true);
     window.location.href = '/login';
   };

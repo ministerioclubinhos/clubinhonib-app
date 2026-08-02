@@ -5,6 +5,7 @@ import {
     logApiError,
     ErrorCategory,
     getApiErrorDetails,
+    isRequestCanceled,
 } from '@/utils/apiError';
 import {
     ApiErrorCode,
@@ -38,6 +39,8 @@ export const useApiError = () => {
     const [state, setState] = useState<FormErrorState>(initialState);
 
     const handleError = useCallback((error: unknown, context?: string) => {
+        if (isRequestCanceled(error)) return analyzeError(error);
+
         logApiError(error, context);
 
         const analyzed = analyzeError(error);

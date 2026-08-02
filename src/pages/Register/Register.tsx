@@ -49,9 +49,9 @@ const getSchema = (commonUser: boolean) =>
         return digits?.length === 10 || digits?.length === 11;
       })
       .required(FORM_VALIDATION_MESSAGES.REQUIRED_FIELD),
-    role: (commonUser
-      ? Yup.mixed<RoleChoice>().oneOf(['', 'teacher', 'coordinator'])
-      : Yup.mixed<RoleChoice>().oneOf(['teacher', 'coordinator']).required('Selecione seu perfil')) as any,
+    role: Yup.mixed<RoleChoice>()
+      .oneOf(['teacher', 'coordinator'], 'Selecione Professor ou Coordenador')
+      .required('Selecione seu perfil') as any,
   });
 
 interface FormData {

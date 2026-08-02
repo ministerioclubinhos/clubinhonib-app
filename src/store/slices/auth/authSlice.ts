@@ -1,8 +1,16 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import apiAxios from '@/config/axiosConfig';
 
-import { PersonalData, UserPreferences, ProfileImage, UserRole, TeacherProfileLite, CoordinatorProfileLite } from '@/types/shared';
+import {
+  PersonalData,
+  UserPreferences,
+  ProfileImage,
+  UserRole,
+  TeacherProfileLite,
+  CoordinatorProfileLite,
+} from '@/types/shared';
 import { authService } from './auth.service';
+import { clearAuthTokens, readAuthTokens, sanitizeToken, writeAuthTokens } from './authStorage';
 
 export interface User {
   id: string;
@@ -63,10 +71,6 @@ const initialState: AuthState = {
   emailVerificationAlert: null,
 };
 
-const IS_DEV = import.meta.env.DEV === true;
-
-const clean = (s: string) => s.replace(/^"|"$/g, '');
-
 export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: string }>(
   'auth/fetchCurrentUser',
   async (_, { getState, rejectWithValue }) => {
@@ -103,23 +107,41 @@ export const linkTeacherClub = createAsyncThunk<User, number, { rejectValue: str
   }
 );
 
+export const signOut = createAsyncThunk<void, void, { state: { auth: AuthState } }>(
+  'auth/signOut',
+  async (_, { dispatch, getState }) => {
+    const { accessToken, refreshToken } = getState().auth;
+    dispatch(logout());
+
+    try {
+      await authService.logout(refreshToken ?? undefined, accessToken ?? undefined);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('[Auth] Falha ao revogar sessão no servidor:', error);
+      }
+    }
+  }
+);
+
 export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
   'auth/initAuth',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { dispatch, getState, rejectWithValue }) => {
     try {
-      const rawAccess = localStorage.getItem('accessToken');
-      const rawRefresh = localStorage.getItem('refreshToken');
+      const tokens = readAuthTokens();
 
-      if (rawAccess && rawRefresh) {
-        const accessToken = clean(rawAccess);
-        const refreshToken = clean(rawRefresh);
-        dispatch(login({ accessToken, refreshToken }));
+      if (tokens) {
+        dispatch(restoreSession(tokens));
 
         try {
           await dispatch(fetchCurrentUser()).unwrap();
         } catch (e) {
-          console.error('[initAuth] Error validating token, forcing logout', e);
-          dispatch(logout());
+          const state = getState() as { auth: AuthState };
+          if (!state.auth.accessToken || !state.auth.refreshToken) {
+            dispatch(logout());
+          }
+          if (import.meta.env.DEV) {
+            console.warn('[initAuth] Não foi possível validar a sessão:', e);
+          }
         }
       } else {
         dispatch(logout());
@@ -144,18 +166,39 @@ const authSlice = createSlice({
       }>
     ) => {
       const { accessToken, refreshToken, user, emailVerification } = action.payload;
-      state.accessToken = clean(accessToken);
-      state.refreshToken = clean(refreshToken);
+      state.accessToken = sanitizeToken(accessToken);
+      state.refreshToken = sanitizeToken(refreshToken);
       state.isAuthenticated = true;
       if (user) state.user = user;
       if (emailVerification) {
         state.emailVerificationAlert = emailVerification;
       }
       state.error = null;
-      try {
-        localStorage.setItem('accessToken', state.accessToken!);
-        localStorage.setItem('refreshToken', state.refreshToken!);
-      } catch { }
+      writeAuthTokens({
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+      });
+    },
+    restoreSession: (
+      state,
+      action: PayloadAction<{ accessToken: string; refreshToken: string }>
+    ) => {
+      state.accessToken = sanitizeToken(action.payload.accessToken);
+      state.refreshToken = sanitizeToken(action.payload.refreshToken);
+      state.isAuthenticated = false;
+      state.user = null;
+      state.error = null;
+    },
+    tokensRefreshed: (
+      state,
+      action: PayloadAction<{ accessToken: string; refreshToken: string }>
+    ) => {
+      state.accessToken = sanitizeToken(action.payload.accessToken);
+      state.refreshToken = sanitizeToken(action.payload.refreshToken);
+      writeAuthTokens({
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+      });
     },
     logout: (state) => {
       state.accessToken = null;
@@ -166,10 +209,7 @@ const authSlice = createSlice({
       state.emailVerificationAlert = null;
       state.error = null;
       state.initialized = true;
-      try {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-      } catch { }
+      clearAuthTokens();
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
@@ -210,15 +250,8 @@ const authSlice = createSlice({
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         console.warn('[Auth:reducer] fetchCurrentUser.rejected', action.payload);
         state.loadingUser = false;
-        state.user = null;
-        state.isAuthenticated = false;
-        state.accessToken = null;
-        state.refreshToken = null;
+        state.isAuthenticated = Boolean(state.user && state.accessToken && state.refreshToken);
         state.error = (action.payload as string) || 'Erro desconhecido';
-        try {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-        } catch { }
       })
       .addCase(linkTeacherClub.fulfilled, (state, action) => {
         state.user = action.payload;
@@ -226,5 +259,13 @@ const authSlice = createSlice({
   },
 });
 
-export const { login, logout, setError, setGoogleUser, clearGoogleUser } = authSlice.actions;
+export const {
+  login,
+  logout,
+  restoreSession,
+  tokensRefreshed,
+  setError,
+  setGoogleUser,
+  clearGoogleUser,
+} = authSlice.actions;
 export default authSlice.reducer;

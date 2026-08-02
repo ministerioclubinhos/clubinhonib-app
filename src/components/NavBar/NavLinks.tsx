@@ -1,11 +1,8 @@
-import React, { Fragment, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Button, Stack } from '@mui/material';
 import { RootState } from '@/store/slices';
-import { logout } from '@/store/slices/auth/authSlice';
-import { UserRole } from "@/types/shared";
-import api from '@/config/axiosConfig';
 import UserMenu from './UserMenu';
 import CompleteProfileAlert from './CompleteProfileAlert';
 import { useProfileAlerts } from '@/features/profile/hooks/useProfileAlerts';
@@ -19,7 +16,6 @@ interface Props {
 const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const profileAlerts = useProfileAlerts();
@@ -44,24 +40,7 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
     ];
   }, [profileAlerts, needsClubLink]);
 
-  const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
-
-  const isTeacher = isAuthenticated && user?.role === UserRole.TEACHER;
-  const isCoordinator = isAuthenticated && user?.role === UserRole.COORDINATOR;
-
   const handleClick = () => closeMenu?.();
-
-  const handleLogout = async () => {
-    try {
-      await api.post('/auth/logout');
-    } catch (error) {
-      console.warn('[Logout] Erro ao fazer logout:', error);
-    } finally {
-      dispatch(logout());
-      navigate('/');
-      closeMenu?.();
-    }
-  };
 
   const renderLink = (to: string, label: string) => {
     const active = location.pathname === to || location.pathname.startsWith(to + '/');

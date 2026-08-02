@@ -1,8 +1,8 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState as RootStateType } from "@/store/slices";
-import { logout } from "@/store/slices/auth/authSlice";
+import { AppDispatch, RootState as RootStateType } from "@/store/slices";
+import { signOut } from "@/store/slices/auth/authSlice";
 import { Box, CircularProgress, Typography, Button } from "@mui/material";
 import { UserRole } from "@/types/shared";
 
@@ -18,17 +18,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   adminBypass = true,
 }) => {
   const location = useLocation();
-  const dispatch = useDispatch();
-  const { isAuthenticated, user, loadingUser, initialized, accessToken } = useSelector(
+  const dispatch = useDispatch<AppDispatch>();
+  const { isAuthenticated, user, loadingUser, initialized } = useSelector(
     (state: RootStateType) => state.auth
   );
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(signOut());
     window.location.href = '/login';
   };
 
-  if (!initialized || loadingUser || (accessToken && !user)) {
+  if (!initialized || loadingUser) {
     return (
       <Box
         sx={{

@@ -23,10 +23,10 @@ import {
   setGoogleUser,
   fetchCurrentUser,
 } from '@/store/slices/auth/authSlice';
-import { UserRole } from '@/types/shared';
 import { useApiError } from '@/hooks/useApiError';
 import { AuthErrorCode, UserErrorCode } from '@/types/api-error';
 import { logApiError } from '@/utils/apiError';
+import { getAuthenticatedHome } from '@/store/slices/auth/authRoutes';
 
 const log = (message: string, ...args: any[]) => {
   if (import.meta.env.DEV) console.log(message, ...args);
@@ -59,8 +59,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const redirectPath = user?.role === UserRole.ADMIN || user?.role === UserRole.COORDINATOR ? '/adm' : '/area-do-professor';
-      navigate(redirectPath);
+      navigate(getAuthenticatedHome(user?.role), { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -69,10 +68,7 @@ const Login: React.FC = () => {
     return emailRegex.test(email) && password.length >= 6;
   };
 
-  const bootstrapAfterLogin = async (accessToken: string) => {
-    try {
-      api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-    } catch { }
+  const bootstrapAfterLogin = async () => {
     try {
       await dispatch(fetchCurrentUser()).unwrap();
     } catch (e) {
@@ -110,16 +106,9 @@ const Login: React.FC = () => {
 
       const { accessToken, refreshToken, user: responseUser, emailVerification } = response.data;
 
-      const mappedUser = {
-        ...responseUser,
-        role: responseUser.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.TEACHER,
-      };
-
-      dispatch(login({ accessToken, refreshToken, user: mappedUser, emailVerification }));
-      await bootstrapAfterLogin(accessToken);
-
-      const redirectPath = mappedUser.role === UserRole.ADMIN ? '/adm' : '/area-do-professor';
-      navigate(redirectPath);
+      dispatch(login({ accessToken, refreshToken, user: responseUser, emailVerification }));
+      await bootstrapAfterLogin();
+      navigate(getAuthenticatedHome(responseUser.role), { replace: true });
     } catch (error) {
       logApiError(error, 'Login');
       const analyzed = handleError(error, 'Login');
@@ -162,16 +151,9 @@ const Login: React.FC = () => {
       }
 
       const { accessToken, refreshToken, user: responseUser, emailVerification } = res.data;
-      const mappedUser = {
-        ...responseUser,
-        role: responseUser.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.TEACHER,
-      };
-
-      dispatch(login({ accessToken, refreshToken, user: mappedUser, emailVerification }));
-      await bootstrapAfterLogin(accessToken);
-
-      const redirectPath = mappedUser.role === UserRole.ADMIN ? '/adm' : '/area-do-professor';
-      navigate(redirectPath);
+      dispatch(login({ accessToken, refreshToken, user: responseUser, emailVerification }));
+      await bootstrapAfterLogin();
+      navigate(getAuthenticatedHome(responseUser.role), { replace: true });
     } catch (error) {
       logApiError(error, 'Login Google');
       handleError(error, 'Login Google');
