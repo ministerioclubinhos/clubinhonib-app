@@ -34,6 +34,22 @@ export const isNetworkError = (error: unknown): boolean => {
     return axios.isAxiosError(error) && error.code === 'ERR_NETWORK';
 };
 
+/**
+ * AbortController/Axios cancellations are expected control flow (for example,
+ * when a component unmounts or replaces an in-flight search).
+ */
+export const isRequestCanceled = (error: unknown): boolean => {
+    if (axios.isCancel(error)) return true;
+    if (axios.isAxiosError(error)) {
+        return error.code === 'ERR_CANCELED' || error.name === 'CanceledError';
+    }
+    return (
+        typeof DOMException !== 'undefined' &&
+        error instanceof DOMException &&
+        error.name === 'AbortError'
+    );
+};
+
 export const getApiErrorCode = (error: unknown): ApiErrorCode | null => {
     if (isApiError(error)) {
         return error.response?.data.error.code || null;
@@ -252,6 +268,8 @@ export const isInternalError = (error: unknown): boolean => {
 };
 
 export const logApiError = (error: unknown, context?: string): void => {
+    if (isRequestCanceled(error)) return;
+
     const analyzed = analyzeError(error);
     const prefix = context ? `[${context}]` : '[API Error]';
 

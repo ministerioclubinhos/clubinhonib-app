@@ -1,6 +1,4 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistReducer, persistStore } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
 
 import imageReducer from './image/imageSlice';
 import imageSectionReducer from './image-section/imageSectionSlice';
@@ -16,15 +14,12 @@ import ideasReducer from './ideas/ideasSlice';
 import informativeBannerReducer from './informative/informativeBannerSlice';
 import imageSectionPaginationReducer from './image-section-pagination/imageSectionPaginationSlice';
 import feedbackReducer from './feedback/feedbackSlice';
-
-const authPersistConfig = {
-  key: 'auth',
-  storage,
-  whitelist: ['accessToken', 'refreshToken', 'isAuthenticated'],
-};
+import { configureApiAuth } from '@/config/axiosConfig';
+import { logout, tokensRefreshed } from './auth/authSlice';
+import { readAuthTokens } from './auth/authStorage';
 
 const rootReducer = combineReducers({
-  auth: persistReducer(authPersistConfig, authReducer),
+  auth: authReducer,
   image: imageReducer,
   imageSection: imageSectionReducer,
   routes: routesReducer,
@@ -45,7 +40,38 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });
 
-export const persistor = persistStore(store);
+configureApiAuth({
+  getTokens: () => {
+    const { accessToken, refreshToken } = store.getState().auth;
+    return { accessToken, refreshToken };
+  },
+  onTokensRefreshed: (tokens) => {
+    store.dispatch(tokensRefreshed(tokens));
+  },
+  onSessionExpired: () => {
+    store.dispatch(logout());
+  },
+});
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key !== 'accessToken' && event.key !== 'refreshToken') return;
+
+    const storedTokens = readAuthTokens();
+    const current = store.getState().auth;
+    if (!storedTokens) {
+      if (current.accessToken || current.refreshToken) store.dispatch(logout());
+      return;
+    }
+
+    if (
+      storedTokens.accessToken !== current.accessToken ||
+      storedTokens.refreshToken !== current.refreshToken
+    ) {
+      store.dispatch(tokensRefreshed(storedTokens));
+    }
+  });
+}
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

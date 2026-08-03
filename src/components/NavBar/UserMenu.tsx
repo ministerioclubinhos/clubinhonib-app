@@ -13,10 +13,10 @@ import {
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { logout, User } from '@/store/slices/auth/authSlice';
+import { signOut, User } from '@/store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from '@/hooks';
-import api from '@/config/axiosConfig';
+import type { AppDispatch } from '@/store/slices';
 import PersonIcon from '@mui/icons-material/Person';
 import SchoolIcon from '@mui/icons-material/School';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
@@ -31,7 +31,7 @@ interface UserMenuProps {
 
 const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -51,15 +51,9 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
 
     const handleLogout = async () => {
         handleClose();
-        try {
-            await api.post('/auth/logout');
-        } catch (error) {
-            console.warn('[Logout] Erro ao fazer logout:', error);
-        } finally {
-            dispatch(logout());
-            navigate('/');
-            onCloseMobile?.();
-        }
+        await dispatch(signOut());
+        navigate('/');
+        onCloseMobile?.();
     };
 
     const isAdmin = user?.role === UserRole.ADMIN;
