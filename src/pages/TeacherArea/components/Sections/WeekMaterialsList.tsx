@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
-    Grid,
+    Grid2,
     Card,
     CardContent,
     CardMedia,
@@ -22,7 +22,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from 'store/slices';
 import { MediaTargetType } from 'store/slices/types';
+import { WEEK_MATERIAL_SEARCH_DEBOUNCE_MS } from '@/features/week-materials';
 import { FofinhoButton } from '../Buttons';
+
+const SPECIAL_FAMILY_DAY_ID = import.meta.env.VITE_SPECIAL_FAMILY_DAY_ID || '';
 
 const WeekMaterialsList = () => {
     const navigate = useNavigate();
@@ -30,32 +33,43 @@ const WeekMaterialsList = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const routes = useSelector((state: RootState) => state.routes.routes);
     const loading = useSelector((state: RootState) => state.routes.loading);
-    const specialFamilyDayId = import.meta.env.VITE_SPECIAL_FAMILY_DAY_ID || '';
-    const weekMaterialsRoutes = routes
-        .filter(
-            (route) =>
-                route.entityType === MediaTargetType.WeekMaterialsPage &&
-                route.public
-        )
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
     const [filter, setFilter] = useState('');
-    const [filteredRoutes, setFilteredRoutes] = useState(weekMaterialsRoutes);
+    const [debouncedFilter, setDebouncedFilter] = useState('');
+
+    const weekMaterialsRoutes = useMemo(
+        () =>
+            routes
+                .filter(
+                    (route) =>
+                        route.entityType === MediaTargetType.WeekMaterialsPage &&
+                        route.public
+                )
+                .sort(
+                    (a, b) =>
+                        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                ),
+        [routes]
+    );
 
     useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-            const lowercasedFilter = filter.toLowerCase();
-            const filtered = weekMaterialsRoutes.filter(
-                (route) =>
-                    route.title.toLowerCase().includes(lowercasedFilter) ||
-                    route.subtitle.toLowerCase().includes(lowercasedFilter) ||
-                    route.description.toLowerCase().includes(lowercasedFilter)
-            );
-            setFilteredRoutes(filtered);
-        }, 300);
+        const timeoutId = window.setTimeout(
+            () => setDebouncedFilter(filter),
+            WEEK_MATERIAL_SEARCH_DEBOUNCE_MS
+        );
+        return () => window.clearTimeout(timeoutId);
+    }, [filter]);
 
-        return () => clearTimeout(delayDebounceFn);
-    }, [filter, weekMaterialsRoutes]);
+    const filteredRoutes = useMemo(() => {
+        const term = debouncedFilter.toLowerCase();
+        if (!term) return weekMaterialsRoutes;
+
+        return weekMaterialsRoutes.filter(
+            (route) =>
+                route.title.toLowerCase().includes(term) ||
+                route.subtitle.toLowerCase().includes(term) ||
+                route.description.toLowerCase().includes(term)
+        );
+    }, [weekMaterialsRoutes, debouncedFilter]);
 
     if (loading) {
         return (
@@ -269,9 +283,9 @@ const WeekMaterialsList = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.2 }}
                         >
-                            <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+                            <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
                                 {filteredRoutes.map((route, index) => (
-                                    <Grid item xs={12} sm={6} md={4} lg={3} xl={2.4} key={route.id}>
+                                    <Grid2 size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2.4 }} key={route.id}>
                                         <motion.div
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -350,8 +364,8 @@ const WeekMaterialsList = () => {
                                                         variant="contained"
                                                         component={Link}
                                                         to={
-                                                            specialFamilyDayId &&
-                                                            route.idToFetch === specialFamilyDayId
+                                                            SPECIAL_FAMILY_DAY_ID &&
+                                                            route.idToFetch === SPECIAL_FAMILY_DAY_ID
                                                                 ? '/dia-especial-familia'
                                                                 : `/${route.path}`
                                                         }
@@ -376,9 +390,9 @@ const WeekMaterialsList = () => {
                                                 </Box>
                                             </Card>
                                         </motion.div>
-                                    </Grid>
+                                    </Grid2>
                                 ))}
-                            </Grid>
+                            </Grid2>
                         </motion.div>
                     </Paper>
                 </motion.div>

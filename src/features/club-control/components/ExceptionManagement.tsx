@@ -5,7 +5,7 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
+  Grid2,
   Table,
   TableBody,
   TableCell,
@@ -48,6 +48,7 @@ import {
 } from '@mui/icons-material';
 import { useCreateException, useWeekdayExceptions, useDeleteException } from '../hooks';
 import dayjs from 'dayjs';
+import { getClubControlErrorMessage } from '../errorMessage';
 
 const EXCEPTION_TYPES = [
   { value: 'holiday', label: 'Feriado', icon: <EventBusy />, color: '#ff9800' },
@@ -89,7 +90,7 @@ export const ExceptionManagement: React.FC = () => {
     severity: 'success',
   });
 
-  const { data: exceptionsData, isLoading } = useWeekdayExceptions({ page, limit });
+  const { data: exceptionsData, isLoading, isError, refetch } = useWeekdayExceptions({ page, limit });
   const exceptions = exceptionsData?.items || [];
   const createException = useCreateException();
   const deleteException = useDeleteException();
@@ -122,10 +123,10 @@ export const ExceptionManagement: React.FC = () => {
         message: `Exceção cadastrada com sucesso! A data ${dateFormatted} (${weekday}) não terá funcionamento para TODOS os clubinhos deste dia.`,
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao cadastrar exceção: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível cadastrar a exceção.'),
         severity: 'error',
       });
     }
@@ -140,10 +141,10 @@ export const ExceptionManagement: React.FC = () => {
         message: 'Exceção excluída com sucesso! A data voltará a ser considerada como dia normal de funcionamento.',
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao excluir exceção: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível excluir a exceção.'),
         severity: 'error',
       });
     }
@@ -219,9 +220,9 @@ export const ExceptionManagement: React.FC = () => {
         </Typography>
       </Alert>
 
-      <Grid container spacing={{ xs: 2, sm: 3 }}>
+      <Grid2 container spacing={{ xs: 2, sm: 3 }}>
 
-        <Grid item xs={12} md={5}>
+        <Grid2 size={{ xs: 12, md: 5 }}>
           <Paper
             elevation={0}
             sx={{
@@ -257,8 +258,8 @@ export const ExceptionManagement: React.FC = () => {
             </Box>
 
             <form onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={12}>
                   <SimpleDatePicker
                     value={formData.exceptionDate}
                     onChange={(value) => setFormData({ ...formData, exceptionDate: value })}
@@ -267,9 +268,9 @@ export const ExceptionManagement: React.FC = () => {
                     margin="none"
                     helperText="Data em que NENHUM clube funcionará"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     select
@@ -292,9 +293,9 @@ export const ExceptionManagement: React.FC = () => {
                       </MenuItem>
                     ))}
                   </TextField>
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     label="Motivo"
@@ -304,9 +305,9 @@ export const ExceptionManagement: React.FC = () => {
                     placeholder="Ex: Feriado - Proclamação da República"
                     helperText="Descreva o motivo da exceção"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -327,9 +328,9 @@ export const ExceptionManagement: React.FC = () => {
                       </Box>
                     }
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     label="Observações"
@@ -339,9 +340,9 @@ export const ExceptionManagement: React.FC = () => {
                     rows={3}
                     placeholder="Informações adicionais (opcional)"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <Button
                     type="submit"
                     variant="contained"
@@ -353,8 +354,8 @@ export const ExceptionManagement: React.FC = () => {
                   >
                     {createException.isPending ? 'Cadastrando...' : 'Cadastrar Exceção Global'}
                   </Button>
-                </Grid>
-              </Grid>
+                </Grid2>
+              </Grid2>
             </form>
 
             <Alert severity="warning" sx={{ mt: 2 }} icon={<Warning />}>
@@ -363,9 +364,9 @@ export const ExceptionManagement: React.FC = () => {
               </Typography>
             </Alert>
           </Paper>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={7}>
+        <Grid2 size={{ xs: 12, md: 7 }}>
           <Paper
             elevation={0}
             sx={{
@@ -400,6 +401,13 @@ export const ExceptionManagement: React.FC = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress />
                 </Box>
+              ) : isError ? (
+                <Alert
+                  severity="error"
+                  action={<Button onClick={() => refetch()}>Tentar novamente</Button>}
+                >
+                  Não foi possível carregar as exceções.
+                </Alert>
               ) : !exceptions || exceptions.length === 0 ? (
                 <Alert severity="info" sx={{ borderRadius: 2 }}>
                   <Typography variant="body2" fontWeight="bold" gutterBottom>
@@ -665,8 +673,8 @@ export const ExceptionManagement: React.FC = () => {
               ))}
             </Box>
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       <Dialog
         open={deleteDialog.open}

@@ -1,3 +1,4 @@
+import type { AlertColor } from '@mui/material';
 import React from 'react';
 import {
   Box,
@@ -10,7 +11,7 @@ import {
   TableHead,
   TableRow,
   Chip,
-  Grid,
+  Grid2,
   Alert,
   AlertTitle,
   IconButton,
@@ -44,6 +45,14 @@ import {
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { ClubCheckResult, WeekCheckResult } from '../api';
+
+/** Converte a severidade vinda da API para as aceitas pelo Alert do MUI. */
+const ALERT_SEVERITIES: AlertColor[] = ['error', 'warning', 'info', 'success'];
+
+const toAlertSeverity = (severity: string | undefined): AlertColor =>
+  ALERT_SEVERITIES.includes(severity as AlertColor)
+    ? (severity as AlertColor)
+    : 'info';
 
 interface ClubsListTableProps {
   clubs: ClubCheckResult[];
@@ -225,8 +234,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
-          <Grid item xs={12} sm={6} md={3}>
+        <Grid2 container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
+          <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Status</InputLabel>
               <Select
@@ -244,8 +253,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                 <MenuItem value="out_of_period">🏖️ Fora do Período</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Severidade</InputLabel>
               <Select
@@ -260,8 +269,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                 <MenuItem value="success">✅ Sucesso</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Dia da Semana</InputLabel>
               <Select
@@ -278,8 +287,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                 <MenuItem value="saturday">Sábado</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Problemas</InputLabel>
               <Select
@@ -295,8 +304,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                 <MenuItem value="ok">✅ Sem Problemas</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
 
         {(statusFilter !== 'all' || severityFilter !== 'all' || weekdayFilter !== 'all' || hasProblemsFilter !== null) && (
           <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -413,8 +422,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                       </IconButton>
                     </Box>
 
-                    <Grid container spacing={1.5}>
-                      <Grid item xs={6}>
+                    <Grid2 container spacing={1.5}>
+                      <Grid2 size={6}>
                         <Box>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                             Dia da Semana
@@ -438,8 +447,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                             )}
                           </Box>
                         </Box>
-                      </Grid>
-                      <Grid item xs={6}>
+                      </Grid2>
+                      <Grid2 size={6}>
                         <Box>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                             Crianças
@@ -465,8 +474,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                             )}
                           </Stack>
                         </Box>
-                      </Grid>
-                    </Grid>
+                      </Grid2>
+                    </Grid2>
 
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
@@ -515,7 +524,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                     {club.alerts && club.alerts.length > 0 && (
                       <Box sx={{ mb: 2 }}>
                         {club.alerts.map((alert, index) => (
-                          <Alert key={index} severity={alert.severity as any} sx={{ mb: 1 }}>
+                          <Alert key={index} severity={toAlertSeverity(alert.severity)} sx={{ mb: 1 }}>
                             <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                               {alert.message}
                             </Typography>
@@ -529,7 +538,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                         {club.indicators.map((indicator, index) => (
                           <Alert
                             key={index}
-                            severity={indicator.severity as any}
+                            severity={toAlertSeverity(indicator.severity)}
                             sx={{ mb: 1 }}
                           >
                             <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
@@ -854,7 +863,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                             {club.alerts && club.alerts.length > 0 && (
                               <Box sx={{ mb: 2 }}>
                                 {club.alerts.map((alert, index) => (
-                                  <Alert key={index} severity={alert.severity as any} sx={{ mb: 1 }}>
+                                  <Alert key={index} severity={toAlertSeverity(alert.severity)} sx={{ mb: 1 }}>
                                     {alert.message}
                                   </Alert>
                                 ))}
@@ -866,7 +875,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                                 {club.indicators.map((indicator, index) => (
                                   <Alert
                                     key={index}
-                                    severity={indicator.severity as any}
+                                    severity={toAlertSeverity(indicator.severity)}
                                     sx={{ mb: 1 }}
                                   >
                                     <Typography variant="body2" fontWeight="bold">
@@ -973,9 +982,9 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                                   ⚠️ Crianças Sem Pagela ({club.children.missing}):
                                 </Typography>
                                 <Divider sx={{ my: 1 }} />
-                                <Grid container spacing={1}>
+                                <Grid2 container spacing={1}>
                                   {club.children.missingList.map((child) => (
-                                    <Grid item xs={12} sm={6} md={4} key={child.childId}>
+                                    <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={child.childId}>
                                       <Box
                                         sx={{
                                           p: 1,
@@ -989,9 +998,9 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
                                         <PersonOff fontSize="small" color="error" />
                                         <Typography variant="body2">{child.childName}</Typography>
                                       </Box>
-                                    </Grid>
+                                    </Grid2>
                                   ))}
-                                </Grid>
+                                </Grid2>
                               </Paper>
                             )}
 

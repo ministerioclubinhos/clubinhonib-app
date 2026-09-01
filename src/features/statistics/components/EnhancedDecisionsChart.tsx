@@ -1,5 +1,7 @@
+import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
-import { Box, Paper, Typography, CircularProgress, useTheme, Grid, LinearProgress, Chip, useMediaQuery } from '@mui/material';
+import type { PieLabelRenderProps } from 'recharts';
+import { Box, Paper, Typography, CircularProgress, useTheme, Grid2, LinearProgress, Chip, useMediaQuery } from '@mui/material';
 import {
   BarChart,
   Bar,
@@ -18,6 +20,7 @@ import {
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { useAcceptedChristsChartData } from '../hooks';
 import { AcceptedChristsStatsQueryDto } from '../api';
+
 
 interface EnhancedDecisionsChartProps {
   filters?: AcceptedChristsStatsQueryDto;
@@ -100,7 +103,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
     avgMonths: item.avgMonthsParticipating,
   })) || [];
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <Paper
@@ -115,7 +118,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             {label}
           </Typography>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
               <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: entry.fill || entry.stroke }} />
               <Typography variant="body2">
@@ -137,7 +140,20 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
     innerRadius,
     outerRadius,
     percent,
-  }: any) => {
+  }: PieLabelRenderProps) => {
+    // O Recharts declara a geometria como opcional: sem o setor posicionado
+    // não há rótulo para desenhar.
+    if (
+      cx === undefined ||
+      cy === undefined ||
+      midAngle === undefined ||
+      innerRadius === undefined ||
+      outerRadius === undefined ||
+      percent === undefined
+    ) {
+      return null;
+    }
+
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -152,8 +168,8 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
   return (
     <Box sx={{ width: '98%', maxWidth: '98%', overflowX: 'hidden', mx: 'auto' }}>
 
-      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: 3, width: '100%', maxWidth: '100%' }}>
-        <Grid item xs={12} sm={6} md={4} sx={{ width: '100%', maxWidth: '100%' }}>
+      <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: 3, width: '100%', maxWidth: '100%' }}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper
             elevation={0}
             sx={{
@@ -186,9 +202,9 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
               </Box>
             </Box>
           </Paper>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} sm={6} md={4} sx={{ width: '100%', maxWidth: '100%' }}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper
             elevation={0}
             sx={{
@@ -229,9 +245,9 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
               </Box>
             </Box>
           </Paper>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} sm={6} md={4} sx={{ width: '100%', maxWidth: '100%' }}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper
             elevation={0}
             sx={{
@@ -272,13 +288,13 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
               </Box>
             </Box>
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
-      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%' }}>
+      <Grid2 container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%' }}>
 
         {chartData && chartData.length > 0 && (
-          <Grid item xs={12}>
+          <Grid2 size={12}>
             <Paper
               elevation={0}
               sx={{
@@ -338,11 +354,11 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
                 </ComposedChart>
               </ResponsiveContainer>
             </Paper>
-          </Grid>
+          </Grid2>
         )}
 
         {genderData.length > 0 && (
-          <Grid item xs={12} md={6}>
+          <Grid2 size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={0}
               sx={{
@@ -369,11 +385,11 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
                 </BarChart>
               </ResponsiveContainer>
             </Paper>
-          </Grid>
+          </Grid2>
         )}
 
         {ageGroupData.length > 0 && (
-          <Grid item xs={12} md={6}>
+          <Grid2 size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={0}
               sx={{
@@ -400,11 +416,11 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
                 </BarChart>
               </ResponsiveContainer>
             </Paper>
-          </Grid>
+          </Grid2>
         )}
 
         {topClubsData.length > 0 && (
-          <Grid item xs={12}>
+          <Grid2 size={12}>
             <Paper
               elevation={0}
               sx={{
@@ -431,11 +447,11 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
                 </BarChart>
               </ResponsiveContainer>
             </Paper>
-          </Grid>
+          </Grid2>
         )}
 
         {participationData.length > 0 && (
-          <Grid item xs={12} md={6}>
+          <Grid2 size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={0}
               sx={{
@@ -462,10 +478,10 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
                 </BarChart>
               </ResponsiveContainer>
             </Paper>
-          </Grid>
+          </Grid2>
         )}
 
-        <Grid item xs={12} md={6}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
           <Paper
             elevation={0}
             sx={{
@@ -530,8 +546,8 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
               ))}
             </Box>
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Box>
   );
 };

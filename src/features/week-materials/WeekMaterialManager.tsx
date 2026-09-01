@@ -1,50 +1,59 @@
 import { useEffect, useState } from 'react';
 import {
-  Box,
-  Typography,
-  Grid,
-  CircularProgress,
   Alert,
+  Box,
+  CircularProgress,
+  Grid2,
   TextField,
-  IconButton,
-  Tooltip,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { AppDispatch } from '@/store/slices';
-import { setWeekMaterialData, WeekMaterialPageData } from 'store/slices/week-material/weekMaterialSlice';
-import { fetchRoutes } from '@/store/slices/route/routeSlice';
-
-import { useWeekMaterials } from './hooks';
-import WeekMaterialDetailsModal from './components/WeekMaterialDetailsModal';
-import SetCurrentWeekConfirmDialog from './components/SetCurrentWeekConfirmDialog';
-import WeekMaterialCard from './components/WeekMaterialCard';
 import BackHeader from '@/components/common/header/BackHeader';
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
+import { AppDispatch } from '@/store/slices';
+import { fetchRoutes } from '@/store/slices/route/routeSlice';
+import { setWeekMaterialData } from '@/store/slices/week-material/weekMaterialSlice';
 
+import SetCurrentWeekConfirmDialog from './components/SetCurrentWeekConfirmDialog';
+import WeekMaterialCard from './components/WeekMaterialCard';
+import WeekMaterialDetailsModal from './components/WeekMaterialDetailsModal';
+import { WEEK_MATERIAL_ROUTES } from './constants';
+import { useWeekMaterials } from './hooks';
+import { WeekMaterialResponse } from './types';
+
+/** Admin screen listing every week material page. */
 export default function WeekMaterialManager() {
-  const { filtered, search, setSearch, loading, isFiltering, error, setError, fetchAll, remove, markAsCurrent } =
-    useWeekMaterials();
+  const {
+    filtered,
+    search,
+    setSearch,
+    loading,
+    isFiltering,
+    error,
+    setError,
+    fetchAll,
+    remove,
+    markAsCurrent,
+  } = useWeekMaterials();
 
-  const [materialToDelete, setMaterialToDelete] = useState<WeekMaterialPageData | null>(null);
-  const [selectedMaterial, setSelectedMaterial] = useState<WeekMaterialPageData | null>(null);
-  const [materialToSetAsCurrent, setMaterialToSetAsCurrent] = useState<WeekMaterialPageData | null>(null);
+  const [materialToDelete, setMaterialToDelete] =
+    useState<WeekMaterialResponse | null>(null);
+  const [selectedMaterial, setSelectedMaterial] =
+    useState<WeekMaterialResponse | null>(null);
+  const [materialToSetAsCurrent, setMaterialToSetAsCurrent] =
+    useState<WeekMaterialResponse | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+  useEffect(() => {
+    void fetchAll();
+  }, [fetchAll]);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
-
-  const handleEdit = (material: WeekMaterialPageData) => {
+  const handleEdit = (material: WeekMaterialResponse) => {
     dispatch(setWeekMaterialData(material));
-    navigate('/adm/editar-pagina-semana');
+    navigate(WEEK_MATERIAL_ROUTES.EDIT_PAGE);
   };
 
   const handleDelete = async () => {
@@ -64,7 +73,7 @@ export default function WeekMaterialManager() {
     <Box
       sx={{
         px: { xs: 2, md: 4 },
-        bgcolor: '#f5f7fa',
+        bgcolor: 'background.default',
         minHeight: '100vh',
       }}
     >
@@ -73,22 +82,29 @@ export default function WeekMaterialManager() {
       <Box maxWidth={500} mx="auto" mb={5}>
         <TextField
           fullWidth
+          label="Buscar por título"
           placeholder="Buscar por título..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(event) => setSearch(event.target.value)}
         />
       </Box>
 
       {loading || isFiltering ? (
-        <Box textAlign="center" mt={10}><CircularProgress /></Box>
+        <Box textAlign="center" mt={10}>
+          <CircularProgress aria-label="Carregando materiais" />
+        </Box>
       ) : error ? (
         <Box textAlign="center" mt={10}>
-          <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
+          <Alert severity="error" onClose={() => setError('')}>
+            {error}
+          </Alert>
         </Box>
       ) : filtered.length === 0 ? (
-        <Box textAlign="center" mt={10}><Alert severity="info">Nenhum material encontrado.</Alert></Box>
+        <Box textAlign="center" mt={10}>
+          <Alert severity="info">Nenhum material encontrado.</Alert>
+        </Box>
       ) : (
-        <Grid container spacing={4} justifyContent="center">
+        <Grid2 container spacing={4} justifyContent="center">
           {filtered.map((material) => (
             <WeekMaterialCard
               key={material.id}
@@ -99,11 +115,11 @@ export default function WeekMaterialManager() {
               onSetAsCurrent={() => setMaterialToSetAsCurrent(material)}
             />
           ))}
-        </Grid>
+        </Grid2>
       )}
 
       <DeleteConfirmDialog
-        open={!!materialToDelete}
+        open={Boolean(materialToDelete)}
         title={materialToDelete?.title}
         onClose={() => setMaterialToDelete(null)}
         onConfirm={handleDelete}
@@ -111,13 +127,13 @@ export default function WeekMaterialManager() {
 
       <WeekMaterialDetailsModal
         material={selectedMaterial}
-        open={!!selectedMaterial}
+        open={Boolean(selectedMaterial)}
         onClose={() => setSelectedMaterial(null)}
       />
 
       <SetCurrentWeekConfirmDialog
-        open={!!materialToSetAsCurrent}
-        materialTitle={materialToSetAsCurrent?.title || ''}
+        open={Boolean(materialToSetAsCurrent)}
+        materialTitle={materialToSetAsCurrent?.title ?? ''}
         onClose={() => setMaterialToSetAsCurrent(null)}
         onConfirm={handleSetAsCurrentWeek}
       />

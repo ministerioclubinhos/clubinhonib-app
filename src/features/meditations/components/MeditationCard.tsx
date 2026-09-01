@@ -55,7 +55,8 @@ export default function MeditationCard({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const previewUrl = getMediaPreviewUrl(meditation.media);
+  const media = meditation.media;
+  const previewUrl = media ? getMediaPreviewUrl(media) : '';
 
   const handleEdit = () => {
     dispatch(setMeditationData(meditation));
@@ -169,7 +170,7 @@ export default function MeditationCard({
               ))}
             </Stack>
 
-            {meditation.media?.url && (
+            {media?.url && (
               <Box textAlign="center" mt={2}>
                 <Button
                   startIcon={<PictureAsPdf />}
@@ -207,11 +208,13 @@ export default function MeditationCard({
         </Collapse>
       </Card>
 
-      <MediaDocumentPreviewModal
-        open={open}
-        onClose={() => setOpen(false)}
-        media={{ ...meditation.media, url: previewUrl }}
-      />
+      {media && (
+        <MediaDocumentPreviewModal
+          open={open}
+          onClose={() => setOpen(false)}
+          media={{ ...media, url: previewUrl }}
+        />
+      )}
     </Fragment>
   );
 }

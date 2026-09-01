@@ -17,8 +17,8 @@ export enum PeriodShortcut {
 export type GroupBy = 'day' | 'week' | 'month' | 'year';
 
 export enum DecisionType {
-  ACCEPTED = 'accepted',
-  RECONCILED = 'reconciled'
+  ACCEPTED = 'ACCEPTED',
+  RECONCILED = 'RECONCILED'
 }
 
 export interface PaginationInfo {
@@ -42,6 +42,7 @@ export interface PaginationMeta { // Kept for compatibility if needed, but Pagin
 // --- Query DTOs ---
 
 export interface PagelasStatsQueryDto {
+  period?: PeriodShortcut;
   year?: number;
   week?: number;
   startDate?: string;
@@ -74,7 +75,7 @@ export interface ChildrenStatsQueryDto {
   gender?: 'M' | 'F';
   minAge?: number;
   maxAge?: number;
-  ageGroup?: string;
+  ageGroup?: '0-5' | '6-10' | '11-15' | '16+';
   city?: string;
   state?: string;
   district?: string;
@@ -92,7 +93,7 @@ export interface ChildrenStatsQueryDto {
   isNewcomer?: boolean;
   isVeteran?: boolean;
   search?: string;
-  sortBy?: string;
+  sortBy?: 'name' | 'age' | 'engagementScore' | 'presenceRate';
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
@@ -104,7 +105,7 @@ export interface ClubsStatsQueryDto {
   startDate?: string;
   endDate?: string;
   coordinatorId?: string;
-  weekday?: string;
+  weekday?: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
   city?: string;
   state?: string;
   district?: string;
@@ -116,7 +117,7 @@ export interface ClubsStatsQueryDto {
   maxPerformanceScore?: number;
   minDecisions?: number;
   minTeachers?: number;
-  sortBy?: string;
+  sortBy?: 'clubNumber' | 'performanceScore' | 'presenceRate' | 'totalChildren' | 'totalDecisions';
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
@@ -140,13 +141,14 @@ export interface TeachersStatsQueryDto {
   minDecisions?: number;
   isActive?: boolean;
   search?: string;
-  sortBy?: string;
+  sortBy?: 'name' | 'effectivenessScore' | 'presenceRate' | 'totalChildren';
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
 }
 
 export interface AcceptedChristsStatsQueryDto {
+  period?: PeriodShortcut;
   startDate?: string;
   endDate?: string;
   clubId?: string;
@@ -693,7 +695,7 @@ export const statisticsApi = {
   getAcceptedChristsChartData: (params?: AcceptedChristsStatsQueryDto) =>
     apiAxios.get<AcceptedChristsChartDataDto>(`${BASE_URL}/accepted-christs/charts`, { params }),
 
-  getInsights: (params?: any) => // Mixed filters support
+  getInsights: (params?: PagelasStatsQueryDto) =>
     apiAxios.get<CombinedInsightsDto>(`${BASE_URL}/insights`, { params }),
 
   // Overview & Dashboard
@@ -723,16 +725,4 @@ export const statisticsApi = {
   getWeeklyAttendance: (params: { year: number; week: number; page?: number; limit?: number }) =>
     apiAxios.get<WeeklyAttendanceDto>(`${BASE_URL}/attendance/week`, { params }),
 
-  // Detailed Views (WIP)
-  getClubStats: (clubId: string, params?: { startDate?: string; endDate?: string; groupBy?: string }) =>
-    apiAxios.get(`${BASE_URL}/clubs/${clubId}`, { params }),
-
-  getChildStats: (childId: string) =>
-    apiAxios.get(`${BASE_URL}/children/${childId}`),
-
-  getCityStats: (city: string, params?: { state?: string; startDate?: string; endDate?: string }) =>
-    apiAxios.get(`${BASE_URL}/cities/${city}`, { params }),
-
-  getTeacherStats: (teacherId: string, params?: { startDate?: string; endDate?: string }) =>
-    apiAxios.get(`${BASE_URL}/teachers/${teacherId}`, { params }),
 };

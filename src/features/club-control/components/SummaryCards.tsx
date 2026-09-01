@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Grid,
+  Grid2,
   Card,
   CardContent,
   Typography,
@@ -36,8 +36,8 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   const theme = useTheme();
 
   return (
-    <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
-      <Grid item xs={12} sm={6} md={3}>
+    <Grid2 container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
+      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
         <Card
           elevation={0}
           sx={{
@@ -84,10 +84,10 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
             </Typography>
           </CardContent>
         </Card>
-      </Grid>
+      </Grid2>
 
       {summary.clubsPending !== undefined && summary.clubsPending > 0 && (
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <Card
             elevation={0}
             sx={{
@@ -128,10 +128,10 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
       )}
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
         <Card
           elevation={0}
           sx={{
@@ -173,9 +173,9 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
             </Typography>
           </CardContent>
         </Card>
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
         <Card
           elevation={0}
           sx={{
@@ -217,10 +217,10 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
             </Typography>
           </CardContent>
         </Card>
-      </Grid>
+      </Grid2>
 
       {summary.clubsInactive > 0 && (
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <Card
             elevation={0}
             sx={{
@@ -261,11 +261,11 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
       )}
 
       {summary.clubsOutOfPeriod > 0 && (
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <Card
             elevation={0}
             sx={{
@@ -306,10 +306,10 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
       )}
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
         <Card
           elevation={0}
           sx={{
@@ -358,9 +358,9 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
             </Typography>
           </CardContent>
         </Card>
-      </Grid>
+      </Grid2>
 
-    </Grid>
+    </Grid2>
   );
 };
 

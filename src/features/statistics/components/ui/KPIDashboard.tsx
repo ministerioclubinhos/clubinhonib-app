@@ -34,7 +34,7 @@ export const KPIDashboard: React.FC = memo(() => {
     activeKPIs,
     activeColor,
     isLoading,
-    refetchOverview,
+    refetchAll,
     engagementRate,
     overview,
   } = useKPIData();
@@ -85,11 +85,19 @@ export const KPIDashboard: React.FC = memo(() => {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title="Atualizar dados">
-            <IconButton size="small" onClick={() => refetchOverview()}>
+            <IconButton
+              onClick={() => refetchAll()}
+              aria-label="Atualizar indicadores"
+              sx={{ minWidth: 44, minHeight: 44 }}
+            >
               <Refresh />
             </IconButton>
           </Tooltip>
-          <IconButton size="small" onClick={() => setExpanded(!expanded)}>
+          <IconButton
+            onClick={() => setExpanded(!expanded)}
+            aria-label={expanded ? 'Recolher indicadores' : 'Expandir indicadores'}
+            sx={{ minWidth: 44, minHeight: 44 }}
+          >
             {expanded ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </Box>

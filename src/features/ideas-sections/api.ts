@@ -1,14 +1,15 @@
 import api from '@/config/axiosConfig';
-import { IdeasSection, IdeasPage, SectionData } from './types';
+import { apiListIdeasPages } from '@/features/ideas-pages/api';
+import { IdeasSection, IdeasPage } from './types';
 
 export async function listIdeasSections(): Promise<IdeasSection[]> {
   const { data } = await api.get('/ideas-sections');
   return data as IdeasSection[];
 }
 
+/** Páginas de ideias disponíveis para publicar uma seção. */
 export async function listIdeasPages(): Promise<IdeasPage[]> {
-  const { data } = await api.get('/ideas-pages');
-  return data as IdeasPage[];
+  return apiListIdeasPages();
 }
 
 export async function deleteIdeasSection(id: string): Promise<void> {

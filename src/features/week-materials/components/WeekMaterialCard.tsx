@@ -1,13 +1,13 @@
 import {
-  Grid, Card, CardContent, Typography, IconButton, Button, Box, Chip, Stack,
+  Grid2, Card, CardContent, Typography, IconButton, Button, Box, Chip, Stack,
   useMediaQuery, useTheme, Tooltip, Divider
 } from '@mui/material';
 import { Visibility, Delete, Public, Lock } from '@mui/icons-material';
-import { WeekMaterialPageData } from 'store/slices/week-material/weekMaterialSlice';
-import { truncate } from '../../week-materials/utils';
+import { WeekMaterialResponse } from '../types';
+import { truncate } from '../utils';
 
-interface Props {
-  material: WeekMaterialPageData;
+interface WeekMaterialCardProps {
+  material: WeekMaterialResponse;
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -16,18 +16,17 @@ interface Props {
 
 export default function WeekMaterialCard({
   material, onView, onEdit, onDelete, onSetAsCurrent,
-}: Props) {
+}: WeekMaterialCardProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const isPublic = material.route.public;
 
   return (
-    <Grid
-      item
+    <Grid2
       sx={{
         flexBasis: { xs: '100%', sm: '50%', md: '33.33%', lg: '25%' },
-        maxWidth:  { xs: '100%', sm: '50%', md: '33.33%', lg: '25%' },
+        maxWidth: { xs: '100%', sm: '50%', md: '33.33%', lg: '25%' },
         display: 'flex',
       }}
     >
@@ -195,6 +194,6 @@ export default function WeekMaterialCard({
           </Box>
         </CardContent>
       </Card>
-    </Grid>
+    </Grid2>
   );
 }

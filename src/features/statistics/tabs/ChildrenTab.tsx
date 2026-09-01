@@ -1,7 +1,7 @@
 import React, { memo, useState, useCallback, useMemo } from 'react';
 import {
   Box,
-  Grid,
+  Grid2,
   Paper,
   Typography,
   Avatar,
@@ -13,8 +13,6 @@ import {
   CardContent,
   Stack,
   Divider,
-  IconButton,
-  Tooltip,
   useMediaQuery,
 } from '@mui/material';
 import {
@@ -22,7 +20,6 @@ import {
   CheckCircle,
   ChildCare,
   TrendingUp,
-  Visibility,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useStatistics } from '../context';
@@ -118,38 +115,38 @@ const ChildMobileCard: React.FC<{ child: ChildStat; index: number }> = memo(({ c
         <Divider sx={{ mb: 1.5 }} />
 
         {/* Stats Grid */}
-        <Grid container spacing={1}>
-          <Grid item xs={6}>
+        <Grid2 container spacing={1}>
+          <Grid2 size={6}>
             <Typography variant="caption" color="text.secondary">
               Clubinho
             </Typography>
             <Typography variant="body2" fontWeight={600}>
               {child.club ? `#${child.club.number}` : '-'}
             </Typography>
-          </Grid>
-          <Grid item xs={6}>
+          </Grid2>
+          <Grid2 size={6}>
             <Typography variant="caption" color="text.secondary">
               Cidade
             </Typography>
             <Typography variant="body2" fontWeight={600} noWrap>
               {child.address?.city || '-'}
             </Typography>
-          </Grid>
-          <Grid item xs={6}>
+          </Grid2>
+          <Grid2 size={6}>
             <Typography variant="caption" color="text.secondary">
               Tempo
             </Typography>
             <Chip label={`${child.monthsParticipating}m`} size="small" variant="outlined" sx={{ height: 22 }} />
-          </Grid>
-          <Grid item xs={6}>
+          </Grid2>
+          <Grid2 size={6}>
             <Typography variant="caption" color="text.secondary">
               Pagelas
             </Typography>
             <Typography variant="body2" fontWeight={700} color="primary">
               {child.stats.totalPagelas}
             </Typography>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
 
         {/* Progress Bar */}
         <Box sx={{ mt: 2 }}>
@@ -201,6 +198,7 @@ ChildMobileCard.displayName = 'ChildMobileCard';
 export const ChildrenTab: React.FC = memo(() => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { state } = useStatistics();
 
   const [filters, setFilters] = useState<ChildrenStatsQueryDto>({
     page: 1,
@@ -209,7 +207,32 @@ export const ChildrenTab: React.FC = memo(() => {
     sortOrder: 'DESC',
   });
 
-  const { data, isLoading, refetch } = useChildren(filters);
+  const queryFilters = useMemo<ChildrenStatsQueryDto>(
+    () => ({
+      ...filters,
+      ...state.filters,
+      page: filters.page,
+      limit: filters.limit,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
+      search: filters.search,
+    }),
+    [filters, state.filters],
+  );
+
+  const { data, isLoading, refetch } = useChildren(queryFilters);
+
+  React.useEffect(() => {
+    setFilters((previous) => ({ ...previous, page: 1 }));
+  }, [state.filters]);
+
+  React.useEffect(() => {
+    setFilters((previous) => ({
+      ...previous,
+      page: 1,
+      limit: isMobile ? 10 : 20,
+    }));
+  }, [isMobile]);
 
   const handlePageChange = useCallback((page: number) => {
     setFilters((prev) => ({ ...prev, page }));
@@ -395,8 +418,8 @@ export const ChildrenTab: React.FC = memo(() => {
   return (
     <Box sx={{ width: '100%' }}>
       {/* Summary Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} sm={6} md={2.4}>
+      <Grid2 container spacing={2} sx={{ mb: 3 }}>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }}>
           <StatCard
             title="Total Filtrado"
             value={data?.summary.filteredChildren || 0}
@@ -406,8 +429,8 @@ export const ChildrenTab: React.FC = memo(() => {
             loading={isLoading}
             compact
           />
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }}>
           <StatCard
             title="Idade Media"
             value={data?.summary.avgAge?.toFixed(1) || '0'}
@@ -417,8 +440,8 @@ export const ChildrenTab: React.FC = memo(() => {
             loading={isLoading}
             compact
           />
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }}>
           <StatCard
             title="Engajamento Medio"
             value={data?.summary.avgEngagementScore?.toFixed(1) || '0'}
@@ -428,8 +451,8 @@ export const ChildrenTab: React.FC = memo(() => {
             loading={isLoading}
             compact
           />
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }}>
           <StatCard
             title="Presenca Media"
             value={data?.summary.avgPresenceRate?.toFixed(1) || '0'}
@@ -439,8 +462,8 @@ export const ChildrenTab: React.FC = memo(() => {
             loading={isLoading}
             compact
           />
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }}>
           <StatCard
             title="Com Decisao"
             value={data?.summary.childrenWithDecisions || 0}
@@ -449,8 +472,8 @@ export const ChildrenTab: React.FC = memo(() => {
             loading={isLoading}
             compact
           />
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       {/* Data Table */}
       <DataTable
@@ -480,13 +503,6 @@ export const ChildrenTab: React.FC = memo(() => {
         striped
         hover
         mobileCardRender={(row: ChildStat, index: number) => <ChildMobileCard child={row} index={index} />}
-        rowActions={(row: ChildStat) => (
-          <Tooltip title="Ver detalhes">
-            <IconButton size="small">
-              <Visibility />
-            </IconButton>
-          </Tooltip>
-        )}
       />
     </Box>
   );

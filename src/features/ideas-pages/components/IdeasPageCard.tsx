@@ -1,18 +1,18 @@
-import React from 'react';
-import { Grid, Card, CardContent, Typography, IconButton, Button, Box, Chip } from '@mui/material';
+import { Grid2, Card, CardContent, Typography, IconButton, Button, Box, Chip } from '@mui/material';
 import { Visibility, Delete } from '@mui/icons-material';
-import { IdeasPageData } from 'store/slices/ideas/ideasSlice';
+import { IdeasPageResponse } from '../types';
 import { truncate } from '../utils';
 
-interface Props {
-  page: IdeasPageData;
+interface IdeasPageCardProps {
+  page: IdeasPageResponse;
   onView: () => void;
   onDelete: () => void;
 }
 
-export default function IdeasPageCard({ page, onView, onDelete }: Props) {
+/** Card de uma página de ideias na listagem administrativa. */
+export default function IdeasPageCard({ page, onView, onDelete }: IdeasPageCardProps) {
   return (
-    <Grid item xs={12} sm={6} md={4}>
+    <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
       <Card sx={{ borderRadius: 3, position: 'relative', p: 2, height: '100%' }}>
         <IconButton
           onClick={onDelete}
@@ -58,6 +58,6 @@ export default function IdeasPageCard({ page, onView, onDelete }: Props) {
           )}
         </CardContent>
       </Card>
-    </Grid>
+    </Grid2>
   );
 }

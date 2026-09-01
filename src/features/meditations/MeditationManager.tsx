@@ -10,7 +10,8 @@ import {
 import type { MeditationData, DayItem } from '@/store/slices/meditation/meditationSlice';
 import MeditationCard from './components/MeditationCard';
 import DayDetailsDialog from './components/DayDetailsDialog';
-import { formatPtBrDate, useMeditationsList } from './hooks';
+import { useMeditationsList } from './hooks';
+import { formatPtBrDate } from './utils';
 import BackHeader from '@/components/common/header/BackHeader';
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 import ImagePageToolbar from '../image-pages/components/ImagePageToolbar';

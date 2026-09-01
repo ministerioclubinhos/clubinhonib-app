@@ -5,7 +5,7 @@ import {
   Typography,
   CircularProgress,
   useTheme,
-  Grid,
+  Grid2,
   Chip,
   TextField,
   MenuItem,
@@ -259,8 +259,8 @@ export const WeeklyAttendanceGrid: React.FC = () => {
       {hasClubs && (
         <>
 
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6} md={2.4}>
+          <Grid2 container spacing={2} sx={{ mb: 3 }}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 2.4 }}>
               <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
                 <Typography variant="caption" color="text.secondary">
                   Total de Clubinhos
@@ -269,9 +269,9 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                   {data.summary.totalClubs}
                 </Typography>
               </Paper>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={2.4}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 2.4 }}>
               <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
                 <Typography variant="caption" color="text.secondary">
                   Com Pagela
@@ -280,9 +280,9 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                   {data.summary.clubsWithPagela}
                 </Typography>
               </Paper>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={2.4}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 2.4 }}>
               <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
                 <Typography variant="caption" color="text.secondary">
                   Faltaram
@@ -291,9 +291,9 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                   {data.summary.clubsMissing}
                 </Typography>
               </Paper>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={2.4}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 2.4 }}>
               <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
                 <Typography variant="caption" color="text.secondary">
                   Taxa de Frequência
@@ -302,9 +302,9 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                   {data.summary.attendanceRate.toFixed(1)}%
                 </Typography>
               </Paper>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={2.4}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 2.4 }}>
               <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `2px solid ${theme.palette.divider}` }}>
                 <Typography variant="caption" color="text.secondary">
                   Clubinhos Ativos
@@ -313,8 +313,8 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                   {data.summary.clubsActive}
                 </Typography>
               </Paper>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
 
           <Paper
             elevation={0}
@@ -374,8 +374,8 @@ export const WeeklyAttendanceGrid: React.FC = () => {
 
                         <Divider sx={{ my: 0.5 }} />
 
-                        <Grid container spacing={1}>
-                          <Grid item xs={6}>
+                        <Grid2 container spacing={1}>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Dia da Semana
@@ -384,8 +384,8 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                                 {weekdayNames[club.weekday] || club.weekday}
                               </Typography>
                             </Box>
-                          </Grid>
-                          <Grid item xs={6}>
+                          </Grid2>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Data Esperada
@@ -394,8 +394,8 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                                 {dayjs(club.expectedDate).format('DD/MM/YYYY')}
                               </Typography>
                             </Box>
-                          </Grid>
-                        </Grid>
+                          </Grid2>
+                        </Grid2>
 
                         <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
                           <Box>

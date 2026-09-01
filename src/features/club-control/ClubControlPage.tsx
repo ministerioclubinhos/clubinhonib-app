@@ -1,17 +1,9 @@
 import React from 'react';
 import { Box, Container, Typography, Paper, Tabs, Tab, useTheme, useMediaQuery } from '@mui/material';
 import { Dashboard, CalendarMonth, EventBusy, Assessment } from '@mui/icons-material';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ControlDashboard, PeriodManagement, ExceptionManagement } from './components';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: true,
-      retry: 1,
-    },
-  },
-});
+import { queryClient } from '../../config/queryClient';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -169,4 +161,3 @@ const ClubControlPage: React.FC = () => {
 };
 
 export default ClubControlPage;
-

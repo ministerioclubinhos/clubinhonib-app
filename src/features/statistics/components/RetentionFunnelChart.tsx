@@ -5,7 +5,7 @@ import {
   Typography,
   CircularProgress,
   useTheme,
-  Grid,
+  Grid2,
   Chip,
   LinearProgress,
 } from '@mui/material';
@@ -129,8 +129,8 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
                   },
                 }}
               >
-                <Grid container spacing={1} sx={{ color: 'white' }}>
-                  <Grid item xs={6}>
+                <Grid2 container spacing={1} sx={{ color: 'white' }}>
+                  <Grid2 size={6}>
                     <Box>
                       <Typography variant="caption" sx={{ opacity: 0.9 }}>
                         Total
@@ -142,8 +142,8 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
                         ({stage.uniqueChildren} crianças únicas)
                       </Typography>
                     </Box>
-                  </Grid>
-                  <Grid item xs={6}>
+                  </Grid2>
+                  <Grid2 size={6}>
                     <Box>
                       <Typography variant="caption" sx={{ opacity: 0.9 }}>
                         Taxa de Presença
@@ -155,8 +155,8 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
                         Média: {stage.avgMonthsParticipating.toFixed(1)} meses
                       </Typography>
                     </Box>
-                  </Grid>
-                </Grid>
+                  </Grid2>
+                </Grid2>
               </Box>
 
               <Box sx={{ mt: 1, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -188,14 +188,14 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           📈 Análise de Conversão
         </Typography>
-        <Grid container spacing={2}>
+        <Grid2 container spacing={2}>
           {retentionData.map((stage, index) => {
             if (index === 0) return null;
             const prev = retentionData[index - 1];
             const conversionRate = ((stage.uniqueChildren / prev.uniqueChildren) * 100).toFixed(1);
 
             return (
-              <Grid item xs={12} sm={4} key={stage.timeRange}>
+              <Grid2 size={{ xs: 12, sm: 4 }} key={stage.timeRange}>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
                     {prev.timeRange} → {stage.timeRange}
@@ -222,23 +222,23 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
                     }}
                   />
                 </Box>
-              </Grid>
+              </Grid2>
             );
           })}
-        </Grid>
+        </Grid2>
       </Box>
 
       <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={3}>
+        <Grid2 container spacing={2}>
+          <Grid2 size={{ xs: 12, sm: 3 }}>
             <Typography variant="body2" color="text.secondary">
               Total Geral
             </Typography>
             <Typography variant="h6" fontWeight="bold" color="success.main">
               {retentionData.reduce((sum, s) => sum + s.total, 0)}
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={3}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 3 }}>
             <Typography variant="body2" color="text.secondary">
               Taxa Média
             </Typography>
@@ -248,16 +248,16 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
               ).toFixed(1)}
               %
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={3}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 3 }}>
             <Typography variant="body2" color="text.secondary">
               Maior Retenção
             </Typography>
             <Typography variant="h6" fontWeight="bold" color="success.main">
               {Math.max(...retentionData.map((s) => s.presenceRate)).toFixed(1)}%
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={3}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 3 }}>
             <Typography variant="body2" color="text.secondary">
               Taxa de Veteranos
             </Typography>
@@ -269,8 +269,8 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
               ).toFixed(1)}
               %
             </Typography>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Box>
     </Paper >
   );

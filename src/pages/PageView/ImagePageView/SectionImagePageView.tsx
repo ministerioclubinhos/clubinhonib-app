@@ -36,7 +36,17 @@ import 'swiper/css/effect-coverflow';
 import type { SectionData } from 'store/slices/image/imageSlice';
 import { motion } from 'framer-motion';
 
-export interface SectionItemProps extends Omit<SectionData, 'id' | 'public'> {}
+/**
+ * As props declaram o que o componente consome, em vez de derivarem do tipo da
+ * seção: aqui as datas chegam já convertidas e as mídias vêm do estado local.
+ */
+export interface SectionItemProps {
+  caption: string;
+  description: string;
+  mediaItems: MediaItem[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
 
 const formatDateTime = (value: string | Date) => {
   const date = new Date(value);

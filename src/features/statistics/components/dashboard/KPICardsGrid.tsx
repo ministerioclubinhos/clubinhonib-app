@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, Grid2 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatCard } from '../ui/StatCard';
 
-const MotionGrid = motion.create(Grid);
+const MotionGrid = motion.create(Grid2);
 
 interface KPICardsGridProps {
     activeKPIs: any[];
@@ -32,7 +32,7 @@ export const KPICardsGrid: React.FC<KPICardsGridProps> = ({
                     transition={{ duration: 0.3 }}
                 >
                     {activeKPIs.map((kpi, index) => (
-                        <Grid item xs={6} sm={6} md={3} key={kpi.title}>
+                        <Grid2 size={{ xs: 6, sm: 6, md: 3 }} key={kpi.title}>
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -44,7 +44,7 @@ export const KPICardsGrid: React.FC<KPICardsGridProps> = ({
                                     compact={isMobile}
                                 />
                             </motion.div>
-                        </Grid>
+                        </Grid2>
                     ))}
                 </MotionGrid>
             </AnimatePresence>

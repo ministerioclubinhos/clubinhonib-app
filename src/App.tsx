@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, CircularProgress, Toolbar, Button, Typography, Stack } from '@mui/material';
+import { Box, CircularProgress, Toolbar, Button, Typography } from '@mui/material';
 
 import './App.css';
 import './styles/Global.css';
@@ -21,10 +21,6 @@ import ClubinhoFeedView from './pages/PageView/ClubinhoFeedView/ClubinhoFeedView
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 
-import MeditationPageCreator from './components/Adm/PageCreator/Templates/MeditationPageCreator/MeditationPageCreator';
-import ImagePageCreator from './components/Adm/PageCreator/Templates/ImagePageCreator/ImagePageCreator';
-import VideoPageCreator from './components/Adm/PageCreator/Templates/VideoPageCreator/VideoPageCreator';
-import WeekMaterialPageCreator from './components/Adm/PageCreator/Templates/WeekMaterialPageCreator/WeekMaterialPageCreator';
 import SelecPageTemplate from './components/Adm/PageCreator/SelectPageTemplate/SelecPageTemplate';
 
 import AdminDashboardPage from './components/Adm/AdminDashboardPage';
@@ -38,7 +34,6 @@ import { useFeatureFlags } from '@/hooks';
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
 
-import { IdeasMaterialPageCreator } from 'components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
 import { WeekMaterialsList } from './pages/TeacherArea/components';
 import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
 import ImageSectionEditorAdmin from './features/image-sections/ImageSectionEditorAdmin';
@@ -70,9 +65,15 @@ import ImagePageManager from './features/image-pages/ImagePageManager';
 import IdeasSectionManager from './features/ideas-sections/IdeasSectionManager';
 import IdeasSectionPage from './pages/TeacherArea/IdeasSection/IdeasSectionPage';
 import DocumentsManager from './features/documents/DocumentsManager';
-import IdeasManager from './features/ideas-pages/IdeasManager';
+import { IdeasManager, IdeasPageForm } from './features/ideas-pages';
 import VideosManager from './features/video-pages/VideosManager';
-import WeekMaterialManager from './features/week-materials/WeekMaterialManager';
+import {
+  WeekMaterialManager,
+  WeekMaterialPageForm,
+} from './features/week-materials';
+import { MeditationPageForm } from './features/meditations';
+import { ImagePageForm } from './features/image-pages';
+import { VideoPageForm } from './features/video-pages';
 import StatisticsPage from './features/statistics/StatisticsPage';
 import ClubControlPage from './features/club-control/ClubControlPage';
 import { ProfilesManager, ProfilePage } from './features/profile';
@@ -82,7 +83,7 @@ import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
   const dynamicRoutes = useSelector((state: RootStateType) => state.routes.routes);
-  const { initialized, loadingUser, isAuthenticated } = useSelector((state: RootStateType) => state.auth);
+  const { initialized, loadingUser } = useSelector((state: RootStateType) => state.auth);
   const [forceReady, setForceReady] = useState(false);
   const { flags } = useFeatureFlags();
 
@@ -219,14 +220,16 @@ function App() {
                       <Route path="criancas" element={<ChildrenManager />} />
                       <Route path="clubinhos" element={<ClubsManager />} />
                       <Route path="pagelas" element={<PagelaClubsManager />} />
-                      <Route path="estatisticas" element={<StatisticsPage />} />
-                      <Route path="controle-clubinhos" element={<ClubControlPage />} />
+                      <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN]} />}>
+                        <Route path="estatisticas" element={<StatisticsPage />} />
+                        <Route path="controle-clubinhos" element={<ClubControlPage />} />
+                      </Route>
 
-                      <Route path="editar-meditacao" element={<MeditationPageCreator fromTemplatePage={false} />} />
-                      <Route path="editar-pagina-imagens" element={<ImagePageCreator fromTemplatePage={false} />} />
-                      <Route path="editar-pagina-videos" element={<VideoPageCreator fromTemplatePage={false} />} />
-                      <Route path="editar-pagina-semana" element={<WeekMaterialPageCreator fromTemplatePage={false} />} />
-                      <Route path="editar-pagina-ideias" element={<IdeasMaterialPageCreator fromTemplatePage={false} />} />
+                      <Route path="editar-meditacao" element={<MeditationPageForm fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-imagens" element={<ImagePageForm fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-videos" element={<VideoPageForm fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-semana" element={<WeekMaterialPageForm fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-ideias" element={<IdeasPageForm fromTemplatePage={false} />} />
                       <Route path="editar-imagens-clubinho" element={<ImageSectionEditorAdmin />} />
                       <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage />} />
                     </Route>

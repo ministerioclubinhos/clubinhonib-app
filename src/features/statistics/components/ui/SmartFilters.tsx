@@ -8,7 +8,7 @@ import {
   Tooltip,
   Button,
   Collapse,
-  Grid,
+  Grid2,
   TextField,
   MenuItem,
   Divider,
@@ -292,9 +292,9 @@ export const SmartFilters: React.FC = memo(() => {
         <Collapse in={expanded}>
           <Divider />
           <Box sx={{ p: { xs: 2, md: 3 } }}>
-            <Grid container spacing={2}>
+            <Grid2 container spacing={2}>
               {/* Search */}
-              <Grid item xs={12} md={4}>
+              <Grid2 size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   size="small"
@@ -317,10 +317,10 @@ export const SmartFilters: React.FC = memo(() => {
                     ),
                   }}
                 />
-              </Grid>
+              </Grid2>
 
               {/* Gender */}
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   select
@@ -333,9 +333,9 @@ export const SmartFilters: React.FC = memo(() => {
                   <MenuItem value="M">Masculino</MenuItem>
                   <MenuItem value="F">Feminino</MenuItem>
                 </TextField>
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   size="small"
@@ -345,9 +345,9 @@ export const SmartFilters: React.FC = memo(() => {
                   onChange={(e) => setFilters({ minAge: e.target.value ? Number(e.target.value) : undefined })}
                   inputProps={{ min: 0, max: 100 }}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   size="small"
@@ -357,9 +357,9 @@ export const SmartFilters: React.FC = memo(() => {
                   onChange={(e) => setFilters({ maxAge: e.target.value ? Number(e.target.value) : undefined })}
                   inputProps={{ min: 0, max: 100 }}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   select
@@ -373,10 +373,10 @@ export const SmartFilters: React.FC = memo(() => {
                   <MenuItem value="month">Mes</MenuItem>
                   <MenuItem value="year">Ano</MenuItem>
                 </TextField>
-              </Grid>
+              </Grid2>
 
               {/* City */}
-              <Grid item xs={12} md={3}>
+              <Grid2 size={{ xs: 12, md: 3 }}>
                 <TextField
                   fullWidth
                   size="small"
@@ -384,9 +384,9 @@ export const SmartFilters: React.FC = memo(() => {
                   value={state.filters.city || ''}
                   onChange={(e) => setFilters({ city: e.target.value || undefined })}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   size="small"
@@ -394,9 +394,9 @@ export const SmartFilters: React.FC = memo(() => {
                   value={state.filters.state || ''}
                   onChange={(e) => setFilters({ state: e.target.value || undefined })}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   size="small"
@@ -404,8 +404,8 @@ export const SmartFilters: React.FC = memo(() => {
                   value={state.filters.district || ''}
                   onChange={(e) => setFilters({ district: e.target.value || undefined })}
                 />
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
 
             {hasActiveFilters && (
               <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>

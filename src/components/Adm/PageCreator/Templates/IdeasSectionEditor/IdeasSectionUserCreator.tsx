@@ -13,7 +13,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { IdeasSection } from '@/store/slices/ideas/ideasSlice';
 import { clearIdeasSectionData } from '@/store/slices/ideas/ideasSlice';
-import { IdeasMaterialSection } from '../IdeasMaterialPageCreator/IdeasMaterialSection';
+import { IdeasSectionFields } from '@/features/ideas-pages';
 import api from '@/config/axiosConfig';
 import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
@@ -295,7 +295,7 @@ export function IdeasSectionUserCreator() {
             borderRadius: '3px',
           },
         }}>
-          <IdeasMaterialSection
+          <IdeasSectionFields
             section={sectionData}
             onUpdate={handleSectionUpdate}
             isCreationMode={true}

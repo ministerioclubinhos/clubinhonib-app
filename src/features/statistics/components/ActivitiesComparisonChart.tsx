@@ -1,3 +1,5 @@
+import { toChartNumber } from '../types/chart.types';
+import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,
@@ -5,7 +7,7 @@ import {
   Typography,
   CircularProgress,
   useTheme,
-  Grid,
+  Grid2,
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
@@ -27,6 +29,11 @@ import {
 import { CompareArrows } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
 import { PagelasStatsQueryDto } from '../api';
+
+/** Barra de atividade exibida no tooltip. */
+interface ActivitiesTooltipPayload {
+  category: string;
+}
 
 interface ActivitiesComparisonChartProps {
   filters?: PagelasStatsQueryDto;
@@ -93,7 +100,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
     },
   ];
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: ChartTooltipProps<ActivitiesTooltipPayload>) => {
     if (active && payload && payload.length) {
       return (
         <Paper
@@ -108,11 +115,11 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             {payload[0].payload.category}
           </Typography>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
               <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: entry.color }} />
               <Typography variant="body2">
-                {entry.name}: <strong>{entry.value.toFixed(1)}%</strong>
+                {entry.name}: <strong>{toChartNumber(entry.value).toFixed(1)}%</strong>
               </Typography>
             </Box>
           ))}
@@ -162,9 +169,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           Taxas Médias Gerais
         </Typography>
-        <Grid container spacing={2}>
+        <Grid2 container spacing={2}>
           {radarData.map((item) => (
-            <Grid item xs={12} sm={4} key={item.metric}>
+            <Grid2 size={{ xs: 12, sm: 4 }} key={item.metric}>
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   {item.metric}
@@ -173,9 +180,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
                   {item.value.toFixed(1)}%
                 </Typography>
               </Box>
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
       </Box>
 
       {viewMode === 'radar' && (
@@ -198,9 +205,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         </ResponsiveContainer>
       )}
 
-      <Grid container spacing={3} sx={{ mt: 2 }}>
+      <Grid2 container spacing={3} sx={{ mt: 2 }}>
 
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Gênero
           </Typography>
@@ -215,9 +222,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               <Bar dataKey="Recitação" fill={theme.palette.secondary.main} />
             </BarChart>
           </ResponsiveContainer>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Faixa Etária
           </Typography>
@@ -232,9 +239,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               <Bar dataKey="Recitação" fill={theme.palette.secondary.main} />
             </BarChart>
           </ResponsiveContainer>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Tempo de Participação
           </Typography>
@@ -256,39 +263,39 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               <Bar dataKey="Recitação" fill={theme.palette.secondary.main} />
             </BarChart>
           </ResponsiveContainer>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       <Box sx={{ mt: 3, p: { xs: 1.5, sm: 2 }, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           💡 Insights
         </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
+        <Grid2 container spacing={2}>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Typography variant="caption" color="text.secondary">
               Atividade Mais Alta
             </Typography>
             <Typography variant="body1" fontWeight="bold">
               {radarData.reduce((max, item) => (item.value > max.value ? item : max)).metric}
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Typography variant="caption" color="text.secondary">
               Atividade Mais Baixa
             </Typography>
             <Typography variant="body1" fontWeight="bold">
               {radarData.reduce((min, item) => (item.value < min.value ? item : min)).metric}
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Typography variant="caption" color="text.secondary">
               Diferença Máxima
             </Typography>
             <Typography variant="body1" fontWeight="bold">
               {(Math.max(...radarData.map((d) => d.value)) - Math.min(...radarData.map((d) => d.value))).toFixed(1)}%
             </Typography>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Box>
     </Paper>
   );

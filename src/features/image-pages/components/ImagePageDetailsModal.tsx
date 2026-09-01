@@ -152,7 +152,7 @@ export default function ImagePageDetailsModal({ page, open, onClose }: Props) {
                                       </Typography>
                                       <IconButton
                                         size="small"
-                                        onClick={() => copyToClipboard(item.url)}
+                                        onClick={() => copyToClipboard(item.url ?? '')}
                                         title="Copiar URL"
                                         sx={{ color: 'primary.main' }}
                                       >

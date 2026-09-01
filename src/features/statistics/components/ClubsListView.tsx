@@ -15,7 +15,7 @@ import {
   CircularProgress,
   TextField,
   MenuItem,
-  Grid,
+  Grid2,
   Button,
   Collapse,
   IconButton,
@@ -42,12 +42,12 @@ import {
 } from '@mui/icons-material';
 import { useClubs } from '../hooks';
 import { ClubsStatsQueryDto } from '../api';
-import { PeriodFilter } from './PeriodFilter';
-import { getPeriodDates } from '../utils/periodHelpers';
+import { useStatistics } from '../context';
 
 export const ClubsListView: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { state } = useStatistics();
   const [filters, setFilters] = React.useState<ClubsStatsQueryDto>({
     page: 1,
     limit: isMobile ? 5 : 20,
@@ -57,15 +57,35 @@ export const ClubsListView: React.FC = () => {
 
   React.useEffect(() => {
     const newLimit = isMobile ? 5 : 20;
-    if (filters.limit !== newLimit) {
-      setFilters({ ...filters, limit: newLimit, page: 1 });
-    }
+    setFilters((previous) =>
+      previous.limit === newLimit
+        ? previous
+        : { ...previous, limit: newLimit, page: 1 },
+    );
   }, [isMobile]);
   const [filtersExpanded, setFiltersExpanded] = React.useState(false);
 
-  const { data, isLoading } = useClubs(filters);
+  const queryFilters = React.useMemo<ClubsStatsQueryDto>(
+    () => ({
+      ...filters,
+      ...state.filters,
+      page: filters.page,
+      limit: filters.limit,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
+    }),
+    [filters, state.filters],
+  );
+  const { data, isLoading, isError, refetch } = useClubs(queryFilters);
 
-  const handleFilterChange = (field: keyof ClubsStatsQueryDto, value: any) => {
+  React.useEffect(() => {
+    setFilters((previous) => ({ ...previous, page: 1 }));
+  }, [state.filters]);
+
+  const handleFilterChange = (
+    field: keyof ClubsStatsQueryDto,
+    value: ClubsStatsQueryDto[keyof ClubsStatsQueryDto],
+  ) => {
     setFilters({ ...filters, [field]: value || undefined, page: 1 });
   };
 
@@ -95,10 +115,13 @@ export const ClubsListView: React.FC = () => {
     return theme.palette.grey[400];
   };
 
-  if (!data && !isLoading) {
+  if (isError) {
     return (
       <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
-        <Typography color="error">Erro ao carregar clubinhos</Typography>
+        <Typography color="error" sx={{ mb: 1.5 }}>
+          Não foi possível carregar os clubinhos.
+        </Typography>
+        <Button onClick={() => refetch()} variant="outlined">Tentar novamente</Button>
       </Paper>
     );
   }
@@ -124,8 +147,8 @@ export const ClubsListView: React.FC = () => {
   return (
     <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
 
-      <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0, display: 'flex', flexWrap: 'wrap' }}>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+      <Grid2 container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0, display: 'flex', flexWrap: 'wrap' }}>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -146,8 +169,8 @@ export const ClubsListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -163,8 +186,8 @@ export const ClubsListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -180,8 +203,8 @@ export const ClubsListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -197,8 +220,8 @@ export const ClubsListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -214,13 +237,19 @@ export const ClubsListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       {data && (data.inactiveClubs || data.inactiveChildren) && (
-        <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
+        <Grid2 container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
           {data.inactiveClubs && data.inactiveClubs.total > 0 && (
-            <Grid item xs={12} sm={6} md={data.inactiveChildren && data.inactiveChildren.total > 0 ? 6 : 12}>
+            <Grid2
+              size={{
+                xs: 12,
+                sm: 6,
+                md: data.inactiveChildren && data.inactiveChildren.total > 0 ? 6 : 12,
+              }}
+            >
               <Paper
                 elevation={0}
                 sx={{
@@ -262,10 +291,16 @@ export const ClubsListView: React.FC = () => {
                   </Box>
                 )}
               </Paper>
-            </Grid>
+            </Grid2>
           )}
           {data.inactiveChildren && data.inactiveChildren.total > 0 && (
-            <Grid item xs={12} sm={6} md={data.inactiveClubs && data.inactiveClubs.total > 0 ? 6 : 12}>
+            <Grid2
+              size={{
+                xs: 12,
+                sm: 6,
+                md: data.inactiveClubs && data.inactiveClubs.total > 0 ? 6 : 12,
+              }}
+            >
               <Paper
                 elevation={0}
                 sx={{
@@ -292,9 +327,9 @@ export const ClubsListView: React.FC = () => {
                   </Typography>
                 )}
               </Paper>
-            </Grid>
+            </Grid2>
           )}
-        </Grid>
+        </Grid2>
       )}
 
       <Paper elevation={0} sx={{ p: 2, borderRadius: 2, mb: 2, border: `1px solid ${theme.palette.divider}` }}>
@@ -305,36 +340,20 @@ export const ClubsListView: React.FC = () => {
           </Box>
           <Box>
             <Button size="small" startIcon={<Refresh />} onClick={handleReset}>Limpar</Button>
-            <IconButton size="small" onClick={() => setFiltersExpanded(!filtersExpanded)}>
+            <IconButton
+              onClick={() => setFiltersExpanded(!filtersExpanded)}
+              aria-label={filtersExpanded ? 'Recolher filtros' : 'Expandir filtros'}
+              sx={{ minWidth: 44, minHeight: 44 }}
+            >
               {filtersExpanded ? <ExpandLess /> : <ExpandMore />}
             </IconButton>
           </Box>
         </Box>
 
         <Collapse in={filtersExpanded}>
-          <Grid container spacing={2}>
+          <Grid2 container spacing={2}>
 
-            <Grid item xs={12}>
-              <PeriodFilter
-                period={filters.period}
-                startDate={filters.startDate}
-                endDate={filters.endDate}
-                onPeriodChange={(period) => {
-                  const dates = getPeriodDates(period);
-                  setFilters({
-                    ...filters,
-                    period,
-                    startDate: dates?.startDate,
-                    endDate: dates?.endDate,
-                    page: 1,
-                  });
-                }}
-                onStartDateChange={(startDate) => handleFilterChange('startDate', startDate)}
-                onEndDateChange={(endDate) => handleFilterChange('endDate', endDate)}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 label="Cidade"
@@ -342,9 +361,9 @@ export const ClubsListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('city', e.target.value)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 select
@@ -362,9 +381,9 @@ export const ClubsListView: React.FC = () => {
                 <MenuItem value="SATURDAY">Sábado</MenuItem>
                 <MenuItem value="SUNDAY">Domingo</MenuItem>
               </TextField>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -373,9 +392,9 @@ export const ClubsListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('minChildren', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -384,9 +403,9 @@ export const ClubsListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('maxChildren', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -395,9 +414,9 @@ export const ClubsListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('minPerformanceScore', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -406,9 +425,9 @@ export const ClubsListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('maxPerformanceScore', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -417,9 +436,9 @@ export const ClubsListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('minPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -428,9 +447,9 @@ export const ClubsListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('maxPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -439,9 +458,9 @@ export const ClubsListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('minDecisions', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -450,9 +469,9 @@ export const ClubsListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('minTeachers', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 select
@@ -465,9 +484,9 @@ export const ClubsListView: React.FC = () => {
                 <MenuItem value="performanceScore">Performance</MenuItem>
                 <MenuItem value="totalChildren">Total Crianças</MenuItem>
               </TextField>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 select
@@ -479,8 +498,8 @@ export const ClubsListView: React.FC = () => {
                 <MenuItem value="ASC">Crescente</MenuItem>
                 <MenuItem value="DESC">Decrescente</MenuItem>
               </TextField>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </Collapse>
       </Paper>
 
@@ -549,8 +568,8 @@ export const ClubsListView: React.FC = () => {
 
                         <Divider sx={{ my: 0.5 }} />
 
-                        <Grid container spacing={1}>
-                          <Grid item xs={6}>
+                        <Grid2 container spacing={1}>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
                                 Dia
@@ -559,9 +578,9 @@ export const ClubsListView: React.FC = () => {
                                 {weekdayNames[club.weekday] || club.weekday}
                               </Typography>
                             </Box>
-                          </Grid>
+                          </Grid2>
                           {club.time && (
-                            <Grid item xs={6}>
+                            <Grid2 size={6}>
                               <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
                                   Horário
@@ -570,9 +589,9 @@ export const ClubsListView: React.FC = () => {
                                   {club.time}
                                 </Typography>
                               </Box>
-                            </Grid>
+                            </Grid2>
                           )}
-                          <Grid item xs={6}>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
                                 Cidade
@@ -581,9 +600,9 @@ export const ClubsListView: React.FC = () => {
                                 {club.address.city}, {club.address.state}
                               </Typography>
                             </Box>
-                          </Grid>
+                          </Grid2>
                           {club.coordinator && (
-                            <Grid item xs={6}>
+                            <Grid2 size={6}>
                               <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
                                   Coordenador
@@ -592,9 +611,9 @@ export const ClubsListView: React.FC = () => {
                                   {club.coordinator.name}
                                 </Typography>
                               </Box>
-                            </Grid>
+                            </Grid2>
                           )}
-                          <Grid item xs={6}>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
                                 Crianças
@@ -603,8 +622,8 @@ export const ClubsListView: React.FC = () => {
                                 {club.children.total} ({club.children.active} ativos)
                               </Typography>
                             </Box>
-                          </Grid>
-                          <Grid item xs={6}>
+                          </Grid2>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
                                 Professores
@@ -613,8 +632,8 @@ export const ClubsListView: React.FC = () => {
                                 {club.teachers.total}
                               </Typography>
                             </Box>
-                          </Grid>
-                          <Grid item xs={12}>
+                          </Grid2>
+                          <Grid2 size={12}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, display: 'block', mb: 0.25 }}>
                                 Gênero
@@ -623,8 +642,8 @@ export const ClubsListView: React.FC = () => {
                                 M: {club.children.byGender.M} | F: {club.children.byGender.F}
                               </Typography>
                             </Box>
-                          </Grid>
-                        </Grid>
+                          </Grid2>
+                        </Grid2>
 
                         <Box>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
@@ -817,4 +836,3 @@ export const ClubsListView: React.FC = () => {
     </Box>
   );
 };
-

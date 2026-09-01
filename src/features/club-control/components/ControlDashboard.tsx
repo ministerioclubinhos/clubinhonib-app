@@ -8,7 +8,7 @@ import {
   CircularProgress,
   Button,
   useTheme,
-  Grid,
+  Grid2,
   Chip,
   Collapse,
 } from '@mui/material';
@@ -215,13 +215,16 @@ export const ControlDashboard: React.FC = () => {
   const handlePrevWeek = () => {
     if (academicWeek !== null && academicWeek > 1) {
       setAcademicWeek(academicWeek - 1);
-    } else if (academicWeek === 1 && academicYear !== null) {
-    } else {
-      if (currentWeekInfo?.academicYear && currentWeekInfo?.academicWeek) {
-        if (currentWeekInfo.academicWeek > 1) {
-          setAcademicYear(currentWeekInfo.academicYear);
-          setAcademicWeek(currentWeekInfo.academicWeek - 1);
-        }
+      return;
+    }
+
+    // Semana 1 é o início do ano letivo: não há semana anterior para onde ir.
+    if (academicWeek === 1 && academicYear !== null) return;
+
+    if (currentWeekInfo?.academicYear && currentWeekInfo?.academicWeek) {
+      if (currentWeekInfo.academicWeek > 1) {
+        setAcademicYear(currentWeekInfo.academicYear);
+        setAcademicWeek(currentWeekInfo.academicWeek - 1);
       }
     }
   };
@@ -260,62 +263,17 @@ export const ControlDashboard: React.FC = () => {
   }
 
   if (error) {
-    const isNetworkError = error && typeof error === 'object' && 'code' in error && error.code === 'ERR_NETWORK';
-    const is404 = error && typeof error === 'object' && 'response' in error && (error as any).response?.status === 404;
-    
     return (
-      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `2px solid ${theme.palette.error.main}` }}>
+      <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `2px solid ${theme.palette.error.main}` }}>
         <Alert severity="error" sx={{ borderRadius: 2, mb: 2 }}>
-          <AlertTitle>❌ Erro ao Carregar Dados do Painel de Controle</AlertTitle>
-          {isNetworkError && (
-            <Typography variant="body2">
-              <strong>Erro de Rede:</strong> Não foi possível conectar ao servidor backend.
-            </Typography>
-          )}
-          {is404 && (
-            <Typography variant="body2">
-              <strong>Endpoint não encontrado (404):</strong> O módulo de controle ainda não está implementado no backend.
-            </Typography>
-          )}
-          {!isNetworkError && !is404 && (
-            <Typography variant="body2">
-              Não foi possível carregar os dados de controle.
-            </Typography>
-          )}
+          <AlertTitle>Não foi possível carregar o painel</AlertTitle>
+          Verifique sua conexão e tente novamente. Se o problema continuar, procure o suporte responsável.
         </Alert>
 
-        <Box sx={{ mb: 2, p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            🔧 Possíveis Soluções:
-          </Typography>
-          <Typography variant="body2" component="ul" sx={{ pl: 2, m: 0 }}>
-            <li>Verifique se o backend está rodando em <code>http://localhost:3000</code></li>
-            <li>Verifique se o módulo de controle está implementado no backend</li>
-            <li>Teste o endpoint manualmente: <code>GET /club-control/dashboard</code></li>
-            <li>Verifique o console do navegador (F12) para mais detalhes</li>
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Button variant="contained" size="small" onClick={() => refetch()} startIcon={<Refresh />}>
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+          <Button variant="contained" onClick={() => refetch()} startIcon={<Refresh />} sx={{ minHeight: 44 }}>
             Tentar Novamente
           </Button>
-          <Button 
-            variant="outlined" 
-            size="small" 
-            onClick={() => window.open('http://localhost:3000/club-control/dashboard', '_blank')}
-          >
-            Testar Endpoint
-          </Button>
-        </Box>
-
-        <Box sx={{ mt: 2, p: 1, bgcolor: 'grey.50', borderRadius: 1, fontSize: '0.75rem', fontFamily: 'monospace', overflow: 'auto', maxHeight: 200 }}>
-          <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
-            Detalhes do erro:
-          </Typography>
-          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-            {error instanceof Error ? error.message : JSON.stringify(error, null, 2)}
-          </pre>
         </Box>
       </Paper>
     );
@@ -391,9 +349,9 @@ export const ControlDashboard: React.FC = () => {
         >
           <Collapse in={expandedInactiveInfo}>
             <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
-              <Grid container spacing={{ xs: 2, sm: 2 }}>
+              <Grid2 container spacing={{ xs: 2, sm: 2 }}>
                 {data.inactiveClubs && data.inactiveClubs.length > 0 && (
-                  <Grid item xs={12} md={6}>
+                  <Grid2 size={{ xs: 12, md: 6 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 }, mb: { xs: 1, sm: 1.5 } }}>
                       <Block sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.warning.main, flexShrink: 0 }} />
                       <Typography 
@@ -421,10 +379,10 @@ export const ControlDashboard: React.FC = () => {
                         />
                       ))}
                     </Box>
-                  </Grid>
+                  </Grid2>
                 )}
                 {data.childrenNotAttending && data.childrenNotAttending.total > 0 && (
-                  <Grid item xs={12} md={6}>
+                  <Grid2 size={{ xs: 12, md: 6 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 }, mb: { xs: 1, sm: 1.5 } }}>
                       <PersonOff sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.error.main, flexShrink: 0 }} />
                       <Typography 
@@ -462,9 +420,9 @@ export const ControlDashboard: React.FC = () => {
                         )}
                       </Box>
                     )}
-                  </Grid>
+                  </Grid2>
                 )}
-              </Grid>
+              </Grid2>
             </Box>
           </Collapse>
           <Box

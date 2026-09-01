@@ -12,6 +12,7 @@ import {
     AutoAwesome,
 } from '@mui/icons-material';
 import { useOverview, useInsights } from '../../hooks';
+import { useStatistics } from '../../context';
 
 export interface KPICategory {
     id: string;
@@ -30,9 +31,10 @@ export const categories: KPICategory[] = [
 export const useKPIData = () => {
     const theme = useTheme();
     const [activeCategory, setActiveCategory] = useState('overview');
+    const { state } = useStatistics();
 
     const { data: overview, isLoading: overviewLoading, refetch: refetchOverview } = useOverview();
-    const { data: insights, isLoading: insightsLoading } = useInsights();
+    const { data: insights, isLoading: insightsLoading, refetch: refetchInsights } = useInsights(state.filters);
 
     const isLoading = overviewLoading || insightsLoading;
 
@@ -176,8 +178,12 @@ export const useKPIData = () => {
     const activeColor = categories.find(c => c.id === activeCategory)?.color || theme.palette.primary.main;
 
     const engagementRate = overview
-        ? (overview.summary.activeChildrenThisMonth / overview.summary.totalChildren) * 100
+        ? overview.summary.totalChildren > 0
+          ? (overview.summary.activeChildrenThisMonth / overview.summary.totalChildren) * 100
+          : 0
         : 0;
+
+    const refetchAll = () => Promise.all([refetchOverview(), refetchInsights()]);
 
     return {
         categories,
@@ -186,7 +192,7 @@ export const useKPIData = () => {
         activeKPIs,
         activeColor,
         isLoading,
-        refetchOverview,
+        refetchAll,
         engagementRate,
         overview,
     };

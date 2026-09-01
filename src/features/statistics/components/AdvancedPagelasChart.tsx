@@ -1,3 +1,4 @@
+import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,
@@ -88,7 +89,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
     }
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <Paper
@@ -103,7 +104,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             {label}
           </Typography>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
               <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: entry.color }} />
               <Typography variant="body2">

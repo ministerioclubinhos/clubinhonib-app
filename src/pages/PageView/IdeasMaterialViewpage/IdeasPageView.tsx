@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import api from '@/config/axiosConfig';
+import { apiDeleteIdeasPage, apiGetIdeasPage } from '@/features/ideas-pages';
 import { fetchRoutes } from 'store/slices/route/routeSlice';
 import { RootState, AppDispatch } from 'store/slices';
 import { setIdeasData, IdeasPageData } from 'store/slices/ideas/ideasSlice';
@@ -47,18 +47,17 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
 
-  const handleBack = () => {
-    console.log('handleBack called in IdeasPageView');
-    navigate(-1);
-  };
+  const handleBack = () => navigate(-1);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get(`/ideas-pages/${idToFetch}`);
-        setIdeasPage(response.data);
-        dispatch(setIdeasData(response.data));
-      } catch (err) {
+        const page = await apiGetIdeasPage(idToFetch);
+        setIdeasPage(page);
+        // O formulário de edição lê a página do store, que não é persistido.
+        dispatch(setIdeasData(page));
+      } catch (fetchError) {
+        console.error('Erro ao carregar página de ideias:', fetchError);
         setError('Erro ao carregar a página de ideias. Tente novamente mais tarde.');
       } finally {
         setLoading(false);
@@ -72,10 +71,11 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
     try {
       if (!ideasPage?.id) return;
       setIsDeleting(true);
-      await api.delete(`/ideas-pages/${ideasPage.id}`);
+      await apiDeleteIdeasPage(ideasPage.id);
       await dispatch(fetchRoutes());
       navigate('/');
-    } catch (err) {
+    } catch (deleteError) {
+      console.error('Erro ao excluir página de ideias:', deleteError);
       setError('Erro ao excluir a página. Tente novamente mais tarde.');
     } finally {
       setIsDeleting(false);

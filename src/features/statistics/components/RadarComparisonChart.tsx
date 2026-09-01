@@ -1,8 +1,15 @@
+import { toChartNumber } from '../types/chart.types';
+import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
-import { Box, Paper, Typography, CircularProgress, useTheme, Grid } from '@mui/material';
+import { Box, Paper, Typography, CircularProgress, useTheme, Grid2 } from '@mui/material';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, ResponsiveContainer, Tooltip } from 'recharts';
 import { usePagelasChartData } from '../hooks';
 import { PagelasStatsQueryDto } from '../api';
+
+/** Ponto do radar exibido no tooltip. */
+interface RadarTooltipPayload {
+  metric: string;
+}
 
 interface RadarComparisonChartProps {
   filters?: PagelasStatsQueryDto;
@@ -64,7 +71,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
     },
   ];
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: ChartTooltipProps<RadarTooltipPayload>) => {
     if (active && payload && payload.length) {
       return (
         <Paper
@@ -79,11 +86,11 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             {payload[0].payload.metric}
           </Typography>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
               <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: entry.stroke }} />
               <Typography variant="body2">
-                {entry.name}: <strong>{entry.value.toFixed(1)}%</strong>
+                {entry.name}: <strong>{toChartNumber(entry.value).toFixed(1)}%</strong>
               </Typography>
             </Box>
           ))}
@@ -94,9 +101,9 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
   };
 
   return (
-    <Grid container spacing={3}>
+    <Grid2 container spacing={3}>
 
-      <Grid item xs={12} md={6}>
+      <Grid2 size={{ xs: 12, md: 6 }}>
         <Paper
           elevation={0}
           sx={{
@@ -156,9 +163,9 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
             ))}
           </Box>
         </Paper>
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} md={6}>
+      <Grid2 size={{ xs: 12, md: 6 }}>
         <Paper
           elevation={0}
           sx={{
@@ -227,8 +234,8 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
             })}
           </Box>
         </Paper>
-      </Grid>
-    </Grid>
+      </Grid2>
+    </Grid2>
   );
 };
 

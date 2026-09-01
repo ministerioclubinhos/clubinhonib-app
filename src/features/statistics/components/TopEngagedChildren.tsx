@@ -18,7 +18,7 @@ import {
   useMediaQuery,
   Stack,
   Divider,
-  Grid,
+  Grid2,
   Button,
 } from '@mui/material';
 import { Star, EmojiEvents, ExpandMore, ExpandLess } from '@mui/icons-material';
@@ -152,8 +152,8 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
 
                   <Divider />
 
-                  <Grid container spacing={1.5}>
-                    <Grid item xs={6}>
+                  <Grid2 container spacing={1.5}>
+                    <Grid2 size={6}>
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Idade
@@ -162,8 +162,8 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                           {child.age} anos
                         </Typography>
                       </Box>
-                    </Grid>
-                    <Grid item xs={6}>
+                    </Grid2>
+                    <Grid2 size={6}>
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Cidade
@@ -172,8 +172,8 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                           {child.city ? `${child.city}, ${child.state}` : '-'}
                         </Typography>
                       </Box>
-                    </Grid>
-                    <Grid item xs={6}>
+                    </Grid2>
+                    <Grid2 size={6}>
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Tempo
@@ -182,8 +182,8 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                           {child.monthsParticipating} {child.monthsParticipating === 1 ? 'mês' : 'meses'}
                         </Typography>
                       </Box>
-                    </Grid>
-                    <Grid item xs={6}>
+                    </Grid2>
+                    <Grid2 size={6}>
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Pagelas
@@ -192,8 +192,8 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
                           {child.totalPagelas}
                         </Typography>
                       </Box>
-                    </Grid>
-                  </Grid>
+                    </Grid2>
+                  </Grid2>
 
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box sx={{ flex: 1 }}>

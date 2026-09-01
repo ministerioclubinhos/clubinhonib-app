@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { IdeasMaterialSection } from '../IdeasMaterialPageCreator/IdeasMaterialSection';
+import { IdeasSectionFields } from '@/features/ideas-pages';
 import { IdeasSection, clearIdeasSectionData } from 'store/slices/ideas/ideasSlice';
 import { RootState } from 'store/slices';
 import api from '@/config/axiosConfig';
@@ -350,7 +350,7 @@ export default function IdeasSectionEditor({ fromTemplatePage }: IdeasSectionEdi
           border: '1px solid',
           borderColor: 'divider',
         }}>
-          <IdeasMaterialSection
+          <IdeasSectionFields
             section={sectionData}
             onUpdate={handleSectionUpdate}
             isCreationMode={fromTemplatePage}

@@ -16,7 +16,7 @@ import {
   CircularProgress,
   TextField,
   MenuItem,
-  Grid,
+  Grid2,
   Button,
   Collapse,
   IconButton,
@@ -102,8 +102,8 @@ export const ChildrenListView: React.FC = () => {
   return (
     <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
 
-      <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0 }}>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+      <Grid2 container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0 }}>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -124,8 +124,8 @@ export const ChildrenListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -141,8 +141,8 @@ export const ChildrenListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -158,8 +158,8 @@ export const ChildrenListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -175,8 +175,8 @@ export const ChildrenListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-        <Grid item xs={6} sm={6} md={2.4} sx={{ width: '100%', maxWidth: '100%' }}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>
           <Paper elevation={0} sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: 2,
@@ -192,8 +192,8 @@ export const ChildrenListView: React.FC = () => {
               </Typography>
             )}
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       <Paper elevation={0} sx={{ p: 2, borderRadius: 2, mb: 2, border: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: filtersExpanded ? 2 : 0 }}>
@@ -213,9 +213,9 @@ export const ChildrenListView: React.FC = () => {
         </Box>
 
         <Collapse in={filtersExpanded}>
-          <Grid container spacing={2}>
+          <Grid2 container spacing={2}>
 
-            <Grid item xs={12}>
+            <Grid2 size={12}>
               <PeriodFilter
                 period={filters.period}
                 startDate={filters.startDate}
@@ -233,9 +233,9 @@ export const ChildrenListView: React.FC = () => {
                 onStartDateChange={(startDate) => handleFilterChange('startDate', startDate)}
                 onEndDateChange={(endDate) => handleFilterChange('endDate', endDate)}
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
               <TextField
                 fullWidth
                 label="Buscar por nome"
@@ -244,9 +244,9 @@ export const ChildrenListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('search', e.target.value)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 select
@@ -259,9 +259,9 @@ export const ChildrenListView: React.FC = () => {
                 <MenuItem value="M">Masculino</MenuItem>
                 <MenuItem value="F">Feminino</MenuItem>
               </TextField>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -270,9 +270,9 @@ export const ChildrenListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('minAge', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 2 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -281,9 +281,9 @@ export const ChildrenListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('maxAge', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 select
@@ -310,9 +310,9 @@ export const ChildrenListView: React.FC = () => {
                 <MenuItem value="veteran">🏆 Veteranos (1+ ano)</MenuItem>
                 <MenuItem value="low_engagement">⚠️ Baixo Engajamento (&lt;50%)</MenuItem>
               </TextField>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -321,9 +321,9 @@ export const ChildrenListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('minEngagementScore', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -332,9 +332,9 @@ export const ChildrenListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('maxEngagementScore', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -343,9 +343,9 @@ export const ChildrenListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('minPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -354,9 +354,9 @@ export const ChildrenListView: React.FC = () => {
                 onChange={(e) => handleFilterChange('maxPresenceRate', e.target.value ? Number(e.target.value) : undefined)}
                 size="small"
               />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 select
@@ -371,9 +371,9 @@ export const ChildrenListView: React.FC = () => {
                 <MenuItem value="totalPagelas">Total Pagelas</MenuItem>
                 <MenuItem value="presenceRate">Taxa Presença</MenuItem>
               </TextField>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 2 }}>
               <TextField
                 fullWidth
                 select
@@ -385,8 +385,8 @@ export const ChildrenListView: React.FC = () => {
                 <MenuItem value="ASC">Crescente</MenuItem>
                 <MenuItem value="DESC">Decrescente</MenuItem>
               </TextField>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </Collapse>
       </Paper>
 
@@ -461,8 +461,8 @@ export const ChildrenListView: React.FC = () => {
 
                         <Divider sx={{ my: 0.5 }} />
 
-                        <Grid container spacing={1}>
-                          <Grid item xs={6}>
+                        <Grid2 container spacing={1}>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Clubinho
@@ -471,8 +471,8 @@ export const ChildrenListView: React.FC = () => {
                                 {child.club ? `#${child.club.number}` : '-'}
                               </Typography>
                             </Box>
-                          </Grid>
-                          <Grid item xs={6}>
+                          </Grid2>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Cidade
@@ -481,8 +481,8 @@ export const ChildrenListView: React.FC = () => {
                                 {child.address ? `${child.address.city}, ${child.address.state}` : '-'}
                               </Typography>
                             </Box>
-                          </Grid>
-                          <Grid item xs={6}>
+                          </Grid2>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Tempo
@@ -494,8 +494,8 @@ export const ChildrenListView: React.FC = () => {
                                 sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }}
                               />
                             </Box>
-                          </Grid>
-                          <Grid item xs={6}>
+                          </Grid2>
+                          <Grid2 size={6}>
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Pagelas
@@ -504,8 +504,8 @@ export const ChildrenListView: React.FC = () => {
                                 {child.stats.totalPagelas}
                               </Typography>
                             </Box>
-                          </Grid>
-                        </Grid>
+                          </Grid2>
+                        </Grid2>
 
                         <Box>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>

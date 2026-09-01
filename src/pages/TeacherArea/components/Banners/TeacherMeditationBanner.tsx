@@ -11,10 +11,9 @@ import { AppDispatch, RootState } from 'store/slices';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   setMeditationData,
-  MeditationData,
   WeekDayLabel,
 } from '@/store/slices/meditation/meditationSlice';
-import api from '@/config/axiosConfig';
+import { getMeditation } from '@/features/meditations';
 import { motion } from 'framer-motion';
 import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 
@@ -49,9 +48,9 @@ export default function TeacherMeditationBanner() {
   const handleOpenPreview = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/meditations/${meditationDay?.idToFetch}`);
-      if (response.data?.meditation) {
-        dispatch(setMeditationData(response.data.meditation as MeditationData));
+      const meditation = await getMeditation(meditationDay?.idToFetch ?? '');
+      if (meditation) {
+        dispatch(setMeditationData(meditation));
         setOpenModal(true);
       }
     } catch (error) {

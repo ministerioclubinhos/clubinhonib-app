@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { RootState } from '@/store/slices';
 import { IdeasSection } from '@/store/slices/ideas/ideasSlice';
 import { setIdeasSectionData, clearIdeasSectionData } from '@/store/slices/ideas/ideasSlice';
-import { IdeasMaterialSection } from '../IdeasMaterialPageCreator/IdeasMaterialSection';
+import { IdeasSectionFields } from '@/features/ideas-pages';
 import api from '@/config/axiosConfig';
 import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
@@ -415,7 +415,7 @@ export function IdeasSectionAdminEditor({ existingSection }: IdeasSectionAdminEd
           borderColor: 'divider',
           width: { xs: '98%', md: 'auto' },
         }}>
-          <IdeasMaterialSection
+          <IdeasSectionFields
             section={sectionData}
             onUpdate={handleSectionUpdate}
             isCreationMode={false}

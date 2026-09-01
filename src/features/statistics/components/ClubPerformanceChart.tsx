@@ -1,3 +1,5 @@
+import { toChartNumber } from '../types/chart.types';
+import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,
@@ -24,6 +26,14 @@ import {
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
 import { PagelasStatsQueryDto } from '../api';
+
+/** Clubinho exibido no tooltip. */
+interface ClubTooltipPayload {
+  clubNumber: number;
+  total: number;
+  presenceRate: number;
+  meditationRate?: number;
+}
 
 interface ClubPerformanceChartProps {
   filters?: PagelasStatsQueryDto;
@@ -98,7 +108,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
     }
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: ChartTooltipProps<ClubTooltipPayload>) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

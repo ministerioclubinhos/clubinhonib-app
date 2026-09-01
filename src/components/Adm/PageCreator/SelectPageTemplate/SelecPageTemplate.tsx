@@ -1,115 +1,150 @@
-import React, { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { clearImageData } from '@/store/slices/image/imageSlice';
 import {
   Box,
-  Typography,
-  Select,
-  MenuItem,
+  Button,
+  Divider,
+  Fade,
   Paper,
-  FormControl,
-  InputLabel,
-  SelectChangeEvent,
+  Typography,
+  useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { ReactElement } from 'react';
-import VideoPageCreator from '@/components/Adm/PageCreator/Templates/VideoPageCreator/VideoPageCreator';
-import PhotoPageCreator from '@/components/Adm/PageCreator/Templates/ImagePageCreator/ImagePageCreator';
-import MeditationPageCreator from '@/components/Adm/PageCreator/Templates/MeditationPageCreator/MeditationPageCreator';
-import WeekMaterialPageCreator from '@/components/Adm/PageCreator/Templates/WeekMaterialPageCreator/WeekMaterialPageCreator';
-import { IdeasMaterialPageCreator } from '@/components/Adm/PageCreator/Templates/IdeasMaterialPageCreator/IdeasMaterialPageCreator';
+import { ArrowBack } from '@mui/icons-material';
+
 import BackHeader from '@/components/common/header/BackHeader';
+import { clearImageData } from '@/store/slices/image/imageSlice';
 
-enum Options {
-  WEEK_MATERIALS = 'Adicionar Materiais da Semana',
-  MEDITATION = 'Adicionar meditação da Semana',
-  GALLERY = 'Adicionar galeria de Fotos',
-  VIDEOS = 'Adicionar galeria de Videos',
-  IDEAS = 'Adicionar pagina de Ideias',
-}
+import PageTemplateCard from './PageTemplateCard';
+import { PAGE_TEMPLATES } from './constants';
+import { PageTemplateId } from './types';
 
-const componentMap: Record<keyof typeof Options, () => ReactElement> = {
-  GALLERY: () => <PhotoPageCreator fromTemplatePage={true} />,
-  VIDEOS: () => <VideoPageCreator fromTemplatePage={true} />,
-  MEDITATION: () => <MeditationPageCreator fromTemplatePage={true} />,
-  IDEAS: () => <IdeasMaterialPageCreator fromTemplatePage={true} />,
-  WEEK_MATERIALS: () => <WeekMaterialPageCreator fromTemplatePage={true} />,
-};
-
+/**
+ * Escolha do modelo de página. A grade de modelos dá lugar ao criador do modelo
+ * selecionado na mesma rota, com um cabeçalho que permite voltar para a grade.
+ */
 export default function SelecPageTemplate() {
-  const [selectedOption, setSelectedOption] = useState<keyof typeof Options | ''>('');
   const dispatch = useDispatch();
-
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [selectedId, setSelectedId] = useState<PageTemplateId | null>(null);
 
-  const handleChange = (event: SelectChangeEvent) => {
-    const selected = event.target.value as keyof typeof Options;
-    setSelectedOption(selected);
+  const selectedTemplate = useMemo(
+    () => PAGE_TEMPLATES.find((template) => template.id === selectedId) ?? null,
+    [selectedId],
+  );
 
-    if (selected === 'GALLERY') {
-      dispatch(clearImageData());
-    }
-  };
+  const handleSelect = useCallback(
+    (id: PageTemplateId) => {
+      // A galeria reaproveita o rascunho do store, que precisa começar vazio.
+      if (id === PageTemplateId.GALLERY) {
+        dispatch(clearImageData());
+      }
+      setSelectedId(id);
+    },
+    [dispatch],
+  );
+
+  const handleChangeTemplate = useCallback(() => setSelectedId(null), []);
 
   return (
     <Box
+      component="main"
       sx={{
         minHeight: '100vh',
-        px: { xs: 1, md: 0 },
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        bgcolor: 'linear-gradient(to bottom, #f4f4f4, #e8e8e8)',
-        textAlign: 'center',
+        px: { xs: 2, md: 4 },
+        pb: { xs: 4, md: 6 },
+        bgcolor: 'background.default',
       }}
     >
       <BackHeader title="Criador de Páginas" />
 
-      <Typography
-        variant="subtitle1"
-        color="text.secondary"
-        sx={{  mb: { xs: 2, md: 3 }, fontSize: { xs: '1rem', md: '1.5rem' } }}
-      >
-        Selecione um modelo abaixo para visualizar e criar um novo conteúdo.
-      </Typography>
+      {!selectedTemplate ? (
+        <Fade in appear>
+          <Box sx={{ maxWidth: 1100, mx: 'auto' }}>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{ mb: { xs: 2.5, md: 3.5 } }}
+            >
+              Escolha o modelo da página que você quer criar.
+            </Typography>
 
-      <FormControl sx={{ minWidth: 300, mb: 4 }} fullWidth>
-        <InputLabel id="template-select-label">Selecione uma página</InputLabel>
-        <Select
-          labelId="template-select-label"
-          value={selectedOption}
-          onChange={handleChange}
-          label="Selecione uma página"
-        >
-          <MenuItem value="">
-            <em>Nenhuma</em>
-          </MenuItem>
-          {Object.entries(Options).map(([key, label]) => (
-            <MenuItem key={key} value={key}>
-              {label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(2, 1fr)',
+                  md: 'repeat(3, 1fr)',
+                },
+                gap: { xs: 2, md: 2.5 },
+              }}
+            >
+              {PAGE_TEMPLATES.map((template) => (
+                <PageTemplateCard
+                  key={template.id}
+                  template={template}
+                  onSelect={handleSelect}
+                />
+              ))}
+            </Box>
+          </Box>
+        </Fade>
+      ) : (
+        <Fade in appear>
+          <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
+            <Paper
+              variant="outlined"
+              sx={{
+                position: 'sticky',
+                // O AdminLayout só monta a AppBar fixa abaixo de `md`; sem esse
+                // deslocamento o cabeçalho gruda atrás dela no celular.
+                top: { xs: 56, sm: 64, md: 0 },
+                zIndex: 2,
+                px: { xs: 2, md: 2.5 },
+                py: { xs: 1.25, md: 1.5 },
+                mb: { xs: 2, md: 3 },
+                borderRadius: 2,
+                bgcolor: 'background.paper',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                {selectedTemplate.icon}
+                <Box>
+                  <Typography variant="overline" color="text.secondary">
+                    Novo conteúdo
+                  </Typography>
+                  <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
+                    {selectedTemplate.title}
+                  </Typography>
+                </Box>
+              </Box>
 
-      <Paper
-        elevation={3}
-        sx={{
-           width: '100%',
-          p: 1,
-          transition: 'all 0.3s ease-in-out',
-          opacity: selectedOption ? 1 : 0.5,
-        }}
-      >
-        {selectedOption ? (
-          componentMap[selectedOption as keyof typeof Options]()
-        ) : (
-          <Typography variant="body1" color="text.secondary">
-            Selecione um template para visualizar.
-          </Typography>
-        )}
-      </Paper>
+              <Button
+                type="button"
+                variant="outlined"
+                size="medium"
+                startIcon={<ArrowBack />}
+                onClick={handleChangeTemplate}
+                fullWidth={isMobile}
+                sx={{ minHeight: 44, textTransform: 'none' }}
+              >
+                Trocar modelo
+              </Button>
+            </Paper>
+
+            <Divider sx={{ mb: { xs: 2, md: 3 } }} />
+
+            {selectedTemplate.render()}
+          </Box>
+        </Fade>
+      )}
     </Box>
   );
 }

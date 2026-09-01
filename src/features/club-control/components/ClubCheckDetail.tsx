@@ -1,3 +1,4 @@
+import type { BoxProps } from '@mui/material';
 import React from 'react';
 import {
   Dialog,
@@ -244,7 +245,16 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
   );
 };
 
-const Paper = ({ children, ...props }: any) => {
+/**
+ * Substitui o Paper do MUI por um Box. Os pontos de uso ainda passam
+ * `elevation`, que o Box não conhece: a prop é aceita e descartada aqui em vez
+ * de vazar para o DOM.
+ */
+const Paper = ({
+  children,
+  elevation: _elevation,
+  ...props
+}: BoxProps & { elevation?: number }) => {
   return <Box {...props}>{children}</Box>;
 };
 

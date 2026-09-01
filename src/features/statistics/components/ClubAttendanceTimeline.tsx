@@ -5,7 +5,7 @@ import {
   Typography,
   CircularProgress,
   useTheme,
-  Grid,
+  Grid2,
   Chip,
   LinearProgress,
   Alert,
@@ -156,8 +156,8 @@ export const ClubAttendanceTimeline: React.FC = () => {
     <Box>
 
       <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2, sm: 3 }, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-        <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
-          <Grid item xs={12} md={6}>
+        <Grid2 container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
+          <Grid2 size={{ xs: 12, md: 6 }}>
             <TextField
               fullWidth
               select
@@ -178,8 +178,8 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 </MenuItem>
               )}
             </TextField>
-          </Grid>
-          <Grid item xs={12} md={3}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, md: 3 }}>
             <TextField
               fullWidth
               select
@@ -194,8 +194,8 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 </MenuItem>
               ))}
             </TextField>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Paper>
 
       {!selectedClubId ? (
@@ -211,8 +211,8 @@ export const ClubAttendanceTimeline: React.FC = () => {
       ) : (
         <>
 
-          <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
-            <Grid item xs={6} sm={3}>
+          <Grid2 container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
+            <Grid2 size={{ xs: 6, sm: 3 }}>
               <Paper
                 elevation={0}
                 sx={{
@@ -241,9 +241,9 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   }}
                 />
               </Paper>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={6} sm={3}>
+            <Grid2 size={{ xs: 6, sm: 3 }}>
               <Paper
                 elevation={0}
                 sx={{
@@ -272,9 +272,9 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   }}
                 />
               </Paper>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={6} sm={3}>
+            <Grid2 size={{ xs: 6, sm: 3 }}>
               <Paper
                 elevation={0}
                 sx={{
@@ -297,9 +297,9 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   semanas consecutivas
                 </Typography>
               </Paper>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={6} sm={3}>
+            <Grid2 size={{ xs: 6, sm: 3 }}>
               <Paper
                 elevation={0}
                 sx={{
@@ -319,8 +319,8 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   de {data.period.totalWeeks} do ano
                 </Typography>
               </Paper>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
 
           {data.note && (
             <Alert severity="warning" sx={{ mb: { xs: 2, sm: 3 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
@@ -331,9 +331,9 @@ export const ClubAttendanceTimeline: React.FC = () => {
 
           {data.alerts && data.alerts.length > 0 && (
             <Box sx={{ mb: { xs: 2, sm: 3 } }}>
-              <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+              <Grid2 container spacing={{ xs: 1, sm: 1.5 }}>
                 {data.alerts.map((alert, index) => (
-                  <Grid item xs={12} sm={6} key={index}>
+                  <Grid2 size={{ xs: 12, sm: 6 }} key={index}>
                     <Alert
                       severity={alert.severity === 'critical' ? 'error' : alert.severity}
                       icon={getSeverityIcon(alert.severity)}
@@ -344,9 +344,9 @@ export const ClubAttendanceTimeline: React.FC = () => {
                       </AlertTitle>
                       {formattedAlertMessage(alert)}
                     </Alert>
-                  </Grid>
+                  </Grid2>
                 ))}
-              </Grid>
+              </Grid2>
             </Box>
           )}
 

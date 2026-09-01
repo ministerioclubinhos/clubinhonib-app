@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   TextField,
@@ -37,6 +37,7 @@ const DocumentForm: React.FC<Props> = ({ isEditing, onSuccess }) => {
   const [platformType, setPlatformType] = useState<MediaPlatform>(MediaPlatform.ANY);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showMediaForm, setShowMediaForm] = useState(isEditing);
 
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
@@ -63,6 +64,7 @@ const DocumentForm: React.FC<Props> = ({ isEditing, onSuccess }) => {
     setUrl('');
     setPlatformType(MediaPlatform.ANY);
     setFile(null);
+    setShowMediaForm(false);
   };
 
   const clearMediaFields = () => {

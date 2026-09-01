@@ -5,7 +5,7 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
+  Grid2,
   Table,
   TableBody,
   TableCell,
@@ -35,6 +35,7 @@ import { useCreatePeriod, useAcademicPeriods, useDeletePeriod, useUpdatePeriod }
 import { AcademicPeriod } from '../api';
 import dayjs from 'dayjs';
 import { SimpleDatePicker } from '@/components/common/inputs';
+import { getClubControlErrorMessage } from '../errorMessage';
 
 export const PeriodManagement: React.FC = () => {
   const theme = useTheme();
@@ -79,7 +80,7 @@ export const PeriodManagement: React.FC = () => {
     severity: 'success',
   });
 
-  const { data: periodsData, isLoading } = useAcademicPeriods(page, limit);
+  const { data: periodsData, isLoading, isError, refetch } = useAcademicPeriods(page, limit);
   const periods = periodsData?.items || [];
   const createPeriod = useCreatePeriod();
   const updatePeriod = useUpdatePeriod();
@@ -87,6 +88,19 @@ export const PeriodManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (
+      formData.startDate > formData.endDate ||
+      dayjs(formData.startDate).year() !== formData.year ||
+      dayjs(formData.endDate).year() !== formData.year
+    ) {
+      setSnackbar({
+        open: true,
+        message: 'Informe datas válidas, em ordem, dentro do ano letivo selecionado.',
+        severity: 'warning',
+      });
+      return;
+    }
 
     try {
       await createPeriod.mutateAsync({
@@ -108,10 +122,10 @@ export const PeriodManagement: React.FC = () => {
         message: `Período letivo ${formData.year} cadastrado com sucesso! Este período vale para TODOS os clubinhos.`,
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao cadastrar período: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível cadastrar o período.'),
         severity: 'error',
       });
     }
@@ -139,6 +153,19 @@ export const PeriodManagement: React.FC = () => {
     e.preventDefault();
     if (!editDialog.period) return;
 
+    if (
+      editFormData.startDate > editFormData.endDate ||
+      dayjs(editFormData.startDate).year() !== editDialog.period.year ||
+      dayjs(editFormData.endDate).year() !== editDialog.period.year
+    ) {
+      setSnackbar({
+        open: true,
+        message: 'Informe datas válidas, em ordem, dentro do ano letivo.',
+        severity: 'warning',
+      });
+      return;
+    }
+
     try {
       await updatePeriod.mutateAsync({
         periodId: editDialog.period.id,
@@ -155,10 +182,10 @@ export const PeriodManagement: React.FC = () => {
         message: 'Período atualizado com sucesso!',
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao atualizar período: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível atualizar o período.'),
         severity: 'error',
       });
     }
@@ -173,10 +200,10 @@ export const PeriodManagement: React.FC = () => {
         message: 'Período excluído com sucesso!',
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao excluir período: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível excluir o período.'),
         severity: 'error',
       });
     }
@@ -240,16 +267,16 @@ export const PeriodManagement: React.FC = () => {
           • Um período por ano vale para <strong>TODOS os clubinhos</strong>
         </Typography>
         <Typography variant="caption" display="block">
-          • A primeira semana do período é a "Semana 1" do ano letivo
+          • A primeira semana do período é a “Semana 1” do ano letivo
         </Typography>
         <Typography variant="caption" display="block">
           • Fora do período letivo não há monitoramento de pagelas
         </Typography>
       </Alert>
 
-      <Grid container spacing={{ xs: 2, sm: 3 }}>
+      <Grid2 container spacing={{ xs: 2, sm: 3 }}>
 
-        <Grid item xs={12} md={5}>
+        <Grid2 size={{ xs: 12, md: 5 }}>
           <Paper
             elevation={0}
             sx={{
@@ -285,8 +312,8 @@ export const PeriodManagement: React.FC = () => {
             </Box>
 
             <form onSubmit={handleSubmit}>
-              <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-                <Grid item xs={12}>
+              <Grid2 container spacing={{ xs: 1.5, sm: 2 }}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     type="number"
@@ -297,9 +324,9 @@ export const PeriodManagement: React.FC = () => {
                     inputProps={{ min: 2020, max: 2100 }}
                     helperText="Ex: 2024, 2025..."
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12} sm={6}>
+                <Grid2 size={{ xs: 12, sm: 6 }}>
                   <SimpleDatePicker
                     value={formData.startDate}
                     onChange={(value) => setFormData({ ...formData, startDate: value })}
@@ -308,9 +335,9 @@ export const PeriodManagement: React.FC = () => {
                     margin="none"
                     helperText="Primeiro dia do ano letivo"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12} sm={6}>
+                <Grid2 size={{ xs: 12, sm: 6 }}>
                   <SimpleDatePicker
                     value={formData.endDate}
                     onChange={(value) => setFormData({ ...formData, endDate: value })}
@@ -319,9 +346,9 @@ export const PeriodManagement: React.FC = () => {
                     margin="none"
                     helperText="Último dia do ano letivo"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     label="Descrição"
@@ -330,9 +357,9 @@ export const PeriodManagement: React.FC = () => {
                     placeholder="Ex: Ano Letivo 2024"
                     helperText="Descrição do período"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <Button
                     type="submit"
                     variant="contained"
@@ -343,8 +370,8 @@ export const PeriodManagement: React.FC = () => {
                   >
                     {createPeriod.isPending ? 'Cadastrando...' : 'Cadastrar Período Global'}
                   </Button>
-                </Grid>
-              </Grid>
+                </Grid2>
+              </Grid2>
             </form>
 
             <Alert severity="warning" sx={{ mt: 2 }}>
@@ -353,9 +380,9 @@ export const PeriodManagement: React.FC = () => {
               </Typography>
             </Alert>
           </Paper>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={7}>
+        <Grid2 size={{ xs: 12, md: 7 }}>
           <Paper
             elevation={0}
             sx={{
@@ -390,6 +417,13 @@ export const PeriodManagement: React.FC = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress />
                 </Box>
+              ) : isError ? (
+                <Alert
+                  severity="error"
+                  action={<Button onClick={() => refetch()}>Tentar novamente</Button>}
+                >
+                  Não foi possível carregar os períodos letivos.
+                </Alert>
               ) : !periods || periods.length === 0 ? (
                 <Alert severity="info" sx={{ borderRadius: 2 }}>
                   <Typography variant="body2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
@@ -621,8 +655,8 @@ export const PeriodManagement: React.FC = () => {
               )}
             </Box>
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       <Dialog
         open={editDialog.open}
@@ -643,8 +677,8 @@ export const PeriodManagement: React.FC = () => {
                 </Typography>
               </Alert>
             )}
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6}>
+            <Grid2 container spacing={2} sx={{ mt: 1 }}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <SimpleDatePicker
                   value={editFormData.startDate}
                   onChange={(value) => setEditFormData({ ...editFormData, startDate: value })}
@@ -652,8 +686,8 @@ export const PeriodManagement: React.FC = () => {
                   required
                   margin="none"
                 />
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <SimpleDatePicker
                   value={editFormData.endDate}
                   onChange={(value) => setEditFormData({ ...editFormData, endDate: value })}
@@ -661,8 +695,8 @@ export const PeriodManagement: React.FC = () => {
                   required
                   margin="none"
                 />
-              </Grid>
-              <Grid item xs={12}>
+              </Grid2>
+              <Grid2 size={12}>
                 <TextField
                   fullWidth
                   label="Descrição"
@@ -670,8 +704,8 @@ export const PeriodManagement: React.FC = () => {
                   onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
                   placeholder="Ex: Ano Letivo 2024 - Atualizado"
                 />
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button

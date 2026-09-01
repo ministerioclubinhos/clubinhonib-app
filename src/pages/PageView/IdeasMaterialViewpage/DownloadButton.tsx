@@ -55,7 +55,12 @@ export default function DownloadButton({
       document.body.removeChild(link);
 
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-    } catch {
+    } catch (downloadError) {
+      // A aba já foi aberta com o arquivo; o download direto é um extra que
+      // falha em URL de outro domínio sem CORS.
+      if (!controller.signal.aborted) {
+        console.warn('Falha ao baixar o documento diretamente:', downloadError);
+      }
     } finally {
       if (mountedRef.current && !controller.signal.aborted) setLoading(false);
     }

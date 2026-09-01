@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Button,
-  IconButton, Divider, Paper, Grid,
+  IconButton, Divider, Paper, Grid2,
 } from '@mui/material';
 import { ContentCopy, Close } from '@mui/icons-material';
-import { WeekMaterialPageData } from 'store/slices/week-material/weekMaterialSlice';
-import { formatDate } from '../../week-materials/utils';
+import { WeekMaterialResponse } from '../types';
+import { formatDate, selectMediaByType } from '../utils';
+import { WEEK_MATERIAL_MEDIA_TABS } from '../constants';
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
 interface WeekMaterialDetailsModalProps {
-  material: WeekMaterialPageData | null;
+  material: WeekMaterialResponse | null;
   open: boolean;
   onClose: () => void;
   deletable?: boolean;
@@ -81,43 +82,41 @@ export default function WeekMaterialDetailsModal({
                 <Typography variant="h6" fontWeight="bold" color="primary" textAlign="center" mb={3}>
                   Informações Gerais
                 </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
+                <Grid2 container spacing={2}>
+                  <Grid2 size={{ xs: 12, md: 6 }}>
                     <Typography variant="body1">
                       <strong>Título:</strong> {material.title || 'Sem Título'}
                     </Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
+                  </Grid2>
+                  <Grid2 size={{ xs: 12, md: 6 }}>
                     <Typography variant="body1">
                       <strong>Subtítulo:</strong> {material.subtitle || 'Sem Subtítulo'}
                     </Typography>
-                  </Grid>
-                  <Grid item xs={12}>
+                  </Grid2>
+                  <Grid2 size={12}>
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                       <strong>Descrição:</strong> {material.description || 'Sem Descrição'}
                     </Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
+                  </Grid2>
+                  <Grid2 size={{ xs: 12, md: 6 }}>
                     <Typography variant="body1">
                       <strong>Criado em:</strong> {formatDate(material.createdAt)}
                     </Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
+                  </Grid2>
+                  <Grid2 size={{ xs: 12, md: 6 }}>
                     <Typography variant="body1">
                       <strong>Atualizado em:</strong> {formatDate(material.updatedAt)}
                     </Typography>
-                  </Grid>
-                </Grid>
+                  </Grid2>
+                </Grid2>
               </Paper>
 
               <Divider sx={{ my: 2 }} />
 
-              {[
-                { label: 'Vídeos', items: material.videos },
-                { label: 'Documentos', items: material.documents },
-                { label: 'Imagens', items: material.images },
-                { label: 'Áudios', items: material.audios },
-              ].map((section) =>
+              {WEEK_MATERIAL_MEDIA_TABS.map((tab) => ({
+                label: tab.label,
+                items: selectMediaByType(material, tab.mediaType),
+              })).map((section) =>
                 section.items.length > 0 ? (
                   <Paper key={section.label} elevation={2} sx={{ p: 3, borderRadius: 2, bgcolor: '#fff' }}>
                     <Typography
@@ -130,9 +129,9 @@ export default function WeekMaterialDetailsModal({
                       {section.label}
                     </Typography>
 
-                    <Grid container spacing={3}>
+                    <Grid2 container spacing={3}>
                       {section.items.map((item) => (
-                        <Grid item xs={12} md={6} key={item.id}>
+                        <Grid2 size={{ xs: 12, md: 6 }} key={item.id}>
                           <Box
                             sx={{
                               p: 2,
@@ -171,9 +170,9 @@ export default function WeekMaterialDetailsModal({
                               </IconButton>
                             </Box>
                           </Box>
-                        </Grid>
+                        </Grid2>
                       ))}
-                    </Grid>
+                    </Grid2>
                   </Paper>
                 ) : null
               )}

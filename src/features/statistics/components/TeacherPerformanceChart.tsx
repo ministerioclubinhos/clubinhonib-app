@@ -1,3 +1,5 @@
+import { toChartNumber } from '../types/chart.types';
+import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,
@@ -8,7 +10,7 @@ import {
   Avatar,
   Chip,
   LinearProgress,
-  Grid,
+  Grid2,
 } from '@mui/material';
 import {
   BarChart,
@@ -24,6 +26,13 @@ import {
 import { School, TrendingUp, EmojiEvents } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
 import { PagelasStatsQueryDto } from '../api';
+
+/** Professor exibido no tooltip. */
+interface TeacherTooltipPayload {
+  teacherName: string;
+  total: number;
+  presenceRate: number;
+}
 
 interface TeacherPerformanceChartProps {
   filters?: PagelasStatsQueryDto;
@@ -70,7 +79,7 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
     return name.substring(0, 2).toUpperCase();
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: ChartTooltipProps<TeacherTooltipPayload>) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -157,9 +166,9 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           Top 5 Professores Detalhados
         </Typography>
-        <Grid container spacing={2}>
+        <Grid2 container spacing={2}>
           {topTeachers.slice(0, 5).map((teacher, index) => (
-            <Grid item xs={12} md={6} key={teacher.teacherId}>
+            <Grid2 size={{ xs: 12, md: 6 }} key={teacher.teacherId}>
               <Paper
                 elevation={0}
                 sx={{
@@ -244,22 +253,22 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                   </Box>
                 </Box>
               </Paper>
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
       </Box>
 
       <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
+        <Grid2 container spacing={2}>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Typography variant="body2" color="text.secondary">
               Total de Professores
             </Typography>
             <Typography variant="h6" fontWeight="bold" color="success.main">
               {data.byTeacher.length}
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Typography variant="body2" color="text.secondary">
               Média de Pagelas
             </Typography>
@@ -268,16 +277,16 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
                 0
               )}
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Typography variant="body2" color="text.secondary">
               Total Geral
             </Typography>
             <Typography variant="h6" fontWeight="bold" color="success.main">
               {data.byTeacher.reduce((sum, t) => sum + t.total, 0)}
             </Typography>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Box>
     </Paper>
   );

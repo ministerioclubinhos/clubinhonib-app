@@ -22,7 +22,11 @@ import {
 } from "@mui/material";
 import {
   Menu as MenuIcon,
+  Assignment,
+  Badge as BadgeIcon,
+  ChildCare,
   EventNote,
+  TipsAndUpdates,
   PhotoLibrary,
   Collections,
   VideoLibrary,
@@ -79,17 +83,19 @@ function AdminLayout() {
     "--app-footer-h": `${FOOTER_H}px`,
   } as React.CSSProperties;
 
+  // O agrupamento espelha o do AdminDashboardPage: o mesmo item precisa morar
+  // na mesma seção nas duas telas.
   const allSections = useMemo<Section[]>(
     () => [
       {
         id: "pessoas",
         title: "Pessoas",
         items: [
-          { label: "Perfis", to: "/adm/perfis", icon: <Group /> },
+          { label: "Perfis", to: "/adm/perfis", icon: <BadgeIcon /> },
           { label: "Usuários", to: "/adm/usuarios", icon: <Group /> },
           { label: "Professores", to: "/adm/professores", icon: <School /> },
           { label: "Coordenadores", to: "/adm/coordenadores", icon: <SupervisorAccount /> },
-          { label: "Crianças", to: "/adm/criancas", icon: <Groups /> },
+          { label: "Crianças", to: "/adm/criancas", icon: <ChildCare /> },
         ],
       },
       {
@@ -97,20 +103,17 @@ function AdminLayout() {
         title: "Clubinhos",
         items: [
           { label: "Clubinhos", to: "/adm/clubinhos", icon: <Groups /> },
-          { label: "Pagelas", to: "/adm/pagelas", icon: <Groups /> },
-
+          { label: "Pagelas", to: "/adm/pagelas", icon: <Assignment /> },
         ],
       },
       {
         id: "conteudos",
         title: "Conteúdo",
         items: [
+          { label: "Criar Página", to: "/adm/criar-pagina", icon: <NoteAdd /> },
           { label: "Meditações", to: "/adm/meditacoes", icon: <MenuBook /> },
           { label: "Documentos", to: "/adm/documentos", icon: <Description /> },
           { label: "Informativos", to: "/adm/informativos", icon: <Campaign /> },
-          { label: "Criar Página", to: "/adm/criar-pagina", icon: <NoteAdd /> },
-          { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
-          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <Lightbulb /> },
         ],
       },
       {
@@ -127,6 +130,8 @@ function AdminLayout() {
         title: "Materiais",
         items: [
           { label: "Materiais semanais", to: "/adm/paginas-materiais-semanais", icon: <EventNote /> },
+          { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
+          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <TipsAndUpdates /> },
         ],
       },
       {
@@ -136,7 +141,6 @@ function AdminLayout() {
           { label: "Comentários", to: "/adm/comentarios", icon: <Comment /> },
           { label: "Contatos", to: "/adm/contatos", icon: <ContactMail /> },
           { label: "Feedbacks", to: "/adm/feedbacks", icon: <RateReview /> },
-
         ],
       },
       {
@@ -172,43 +176,24 @@ function AdminLayout() {
     return filtered;
   }, [allSections, isAdmin, isCoordinator]);
 
-  const sectionOfPath = (path: string): SectionId => {
-    if (
-      path.startsWith("/adm/usuarios") ||
-      path.startsWith("/adm/professores") ||
-      path.startsWith("/adm/coordenadores") ||
-      path.startsWith("/adm/coordenadores") ||
-      path.startsWith("/adm/criancas") ||
-      path.startsWith("/adm/perfis")
-    ) {
-      return "pessoas";
-    }
+  /**
+   * Descobre a seção a partir do próprio menu, casando o prefixo mais longo.
+   * Manter uma lista paralela de `startsWith` fazia o destaque divergir do
+   * agrupamento — era assim que "Operacional" nunca abria.
+   */
+  const sectionOfPath = React.useCallback(
+    (path: string): SectionId | null => {
+      const match = allSections
+        .flatMap((section) =>
+          section.items.map((item) => ({ to: item.to, id: section.id })),
+        )
+        .filter(({ to }) => path === to || path.startsWith(`${to}/`))
+        .sort((a, b) => b.to.length - a.to.length)[0];
 
-    if (
-      path.startsWith("/adm/clubinhos") ||
-      path.startsWith("/adm/pagelas") ||
-      path.startsWith("/adm/controle-clubinhos")
-    ) {
-      return "clubinhos";
-    }
-
-    if (
-      path.startsWith("/adm/meditacoes") ||
-      path.startsWith("/adm/documentos") ||
-      path.startsWith("/adm/informativos") ||
-      path.startsWith("/adm/criar-pagina") ||
-      path.startsWith("/adm/paginas-ideias") ||
-      path.startsWith("/adm/ideias-compartilhadas")
-    ) {
-      return "conteudos";
-    }
-
-    if (path.startsWith("/adm/paginas-fotos") || path.startsWith("/adm/fotos-") || path.startsWith("/adm/paginas-videos")) return "midias";
-
-    if (path.startsWith("/adm/paginas-materiais-semanais")) return "materiais";
-
-    return "interacoes";
-  };
+      return match?.id ?? null;
+    },
+    [allSections],
+  );
 
   const [expanded, setExpanded] = useState<SectionId | null>(sectionOfPath(location.pathname));
 
@@ -216,8 +201,9 @@ function AdminLayout() {
 
   useEffect(() => {
     const target = sectionOfPath(location.pathname);
+    if (!target) return;
     setExpanded((prev) => (prev === target ? prev : target));
-  }, [location.pathname]);
+  }, [location.pathname, sectionOfPath]);
 
   const handleAccordion =
     (panel: SectionId) => (_: React.SyntheticEvent, isExpanding: boolean) => {

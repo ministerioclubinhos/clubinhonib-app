@@ -1,21 +1,150 @@
+import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
+import { IMAGE_PAGE_PAYLOAD_FIELD } from './constants';
+import {
+  GalleryMediaRequest,
+  ImagePageFormValues,
+  ImagePageRequest,
+  ImagePageResponse,
+  ImageSectionDraft,
+} from './types';
 
-
-export const truncate = (text: string = '', max = 100) =>
+/** Recorta um texto para exibição em card. */
+export const truncate = (text: string = '', max = 100): string =>
   text.length > max ? `${text.slice(0, max)}...` : text;
 
-export async function copyToClipboard(text: string) {
+/** Copia um texto para a área de transferência. */
+export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    return ok;
+    return false;
   }
 }
+
+/** Nome do campo multipart de uma imagem enviada. */
+export const buildMediaFieldKey = (
+  sectionIndex: number,
+  mediaIndex: number,
+): string => `file_sec${sectionIndex}_mid${mediaIndex}`;
+
+/** True quando a imagem é um arquivo enviado, e não um link. */
+export const isUploadedMedia = (media: MediaItem): boolean =>
+  media.uploadType === MediaUploadType.UPLOAD || media.isLocalFile === true;
+
+/**
+ * Mapeia uma imagem para o contrato de requisição, anexando o arquivo apenas
+ * quando ele é novo — uma imagem já salva é reenviada pela URL, e a API
+ * preserva o objeto que está no S3.
+ */
+export const toMediaRequest = (
+  media: MediaItem,
+  sectionIndex: number,
+  mediaIndex: number,
+  formData: FormData,
+): GalleryMediaRequest => {
+  const hasNewFile = Boolean(media.file);
+  const fieldKey = hasNewFile
+    ? buildMediaFieldKey(sectionIndex, mediaIndex)
+    : undefined;
+
+  if (hasNewFile && fieldKey && media.file) {
+    formData.append(fieldKey, media.file);
+  }
+
+  return {
+    ...(media.id ? { id: media.id } : {}),
+    title: media.title || '',
+    description: media.description || '',
+    mediaType: MediaType.IMAGE,
+    uploadType: media.uploadType || MediaUploadType.UPLOAD,
+    isLocalFile: isUploadedMedia(media),
+    // Um upload novo só tem a URL local de pré-visualização, que a API ignora.
+    url: hasNewFile ? '' : media.url || '',
+    platformType: media.platformType || MediaPlatform.ANY,
+    ...(media.originalName ? { originalName: media.originalName } : {}),
+    ...(media.size ? { size: media.size } : {}),
+    ...(fieldKey ? { fieldKey } : {}),
+  };
+};
+
+/** Monta o JSON enviado no campo multipart. */
+export const buildImagePagePayload = (
+  values: ImagePageFormValues,
+  sections: ImageSectionDraft[],
+  formData: FormData,
+  pageId?: string,
+): ImagePageRequest => ({
+  ...(pageId ? { id: pageId } : {}),
+  title: values.title.trim(),
+  description: values.description.trim(),
+  public: values.public,
+  sections: sections.map((section, sectionIndex) => ({
+    ...(section.id ? { id: section.id } : {}),
+    caption: section.caption,
+    description: section.description,
+    public: section.public,
+    mediaItems: section.mediaItems.map((media, mediaIndex) =>
+      toMediaRequest(media, sectionIndex, mediaIndex, formData),
+    ),
+  })),
+});
+
+/** Monta o corpo multipart de criação/edição. */
+export const buildImagePageFormData = (
+  values: ImagePageFormValues,
+  sections: ImageSectionDraft[],
+  pageId?: string,
+): FormData => {
+  const formData = new FormData();
+
+  formData.append(
+    IMAGE_PAGE_PAYLOAD_FIELD,
+    JSON.stringify(buildImagePagePayload(values, sections, formData, pageId)),
+  );
+
+  return formData;
+};
+
+/** Valores iniciais do formulário a partir da galeria carregada. */
+export const toFormValues = (
+  page: ImagePageResponse | null,
+): ImagePageFormValues => ({
+  title: page?.title ?? '',
+  description: page?.description ?? '',
+  public: page?.public ?? true,
+});
+
+/** Seções da galeria no formato editável do formulário. */
+export const toSectionDrafts = (
+  page: ImagePageResponse | null,
+): ImageSectionDraft[] =>
+  (page?.sections ?? []).map((section) => ({
+    id: section.id,
+    caption: section.caption,
+    description: section.description,
+    public: section.public,
+    mediaItems: (section.mediaItems ?? []).map((media) => ({
+      ...media,
+      title: media.title ?? '',
+      description: media.description ?? '',
+      url: media.url ?? '',
+      file: undefined,
+    })) as MediaItem[],
+  }));
+
+/** Total de imagens em todas as seções. */
+export const countMedia = (sections: ImageSectionDraft[]): number =>
+  sections.reduce((total, section) => total + section.mediaItems.length, 0);
+
+/** Filtra galerias por título. */
+export const filterByTitle = (
+  pages: ImagePageResponse[],
+  term: string,
+): ImagePageResponse[] => {
+  const normalized = term.trim().toLowerCase();
+  if (!normalized) return pages;
+  return pages.filter((page) =>
+    (page.title || '').toLowerCase().includes(normalized),
+  );
+};

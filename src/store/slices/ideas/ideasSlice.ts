@@ -1,7 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RouteData } from '@/store/slices/route/routeSlice';
-import { MediaItem } from '@/store/slices/types';
+import type { IdeasPageResponse } from '@/features/ideas-pages/types';
+import type { MediaItem } from '@/store/slices/types';
 
+/**
+ * Seção em edição no fluxo de ideias compartilhadas. É um rascunho, não a
+ * resposta da API: uma seção nova ainda não tem id e as mídias podem carregar
+ * o arquivo escolhido no navegador.
+ */
 export interface IdeasSection {
   id?: string;
   public?: boolean;
@@ -12,17 +17,11 @@ export interface IdeasSection {
   medias: MediaItem[];
 }
 
-export interface IdeasPageData {
-  id?: string;
-  public?: boolean;
-  title: string;
-  subtitle?: string;
-  description: string;
-  createdAt?: string;
-  updatedAt?: string;
-  sections: IdeasSection[];
-  route?: RouteData;
-}
+/**
+ * Página de ideias selecionada para edição. O tipo espelha a resposta da API:
+ * o `route` devolvido é um recorte, sem id nem datas.
+ */
+export type IdeasPageData = IdeasPageResponse;
 
 interface IdeasState {
   ideasData: IdeasPageData | null;
@@ -53,5 +52,10 @@ const ideasSlice = createSlice({
   },
 });
 
-export const { setIdeasData, clearIdeasData, setIdeasSectionData, clearIdeasSectionData } = ideasSlice.actions;
+export const {
+  setIdeasData,
+  clearIdeasData,
+  setIdeasSectionData,
+  clearIdeasSectionData,
+} = ideasSlice.actions;
 export default ideasSlice.reducer;

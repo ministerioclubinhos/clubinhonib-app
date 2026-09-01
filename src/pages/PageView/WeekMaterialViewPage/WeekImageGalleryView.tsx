@@ -6,7 +6,6 @@ import {
   useTheme, 
   useMediaQuery,
   Chip,
-  Stack,
   Dialog,
   DialogContent,
   IconButton,

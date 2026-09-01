@@ -16,7 +16,7 @@ import {
   useMediaQuery,
   Stack,
   Divider,
-  Grid,
+  Grid2,
 } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { usePagelasChartData } from '../hooks';
@@ -110,8 +110,8 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
 
                     <Divider />
 
-                    <Grid container spacing={1.5}>
-                      <Grid item xs={6}>
+                    <Grid2 container spacing={1.5}>
+                      <Grid2 size={6}>
                         <Box>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                             Total
@@ -120,8 +120,8 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
                             {city.total}
                           </Typography>
                         </Box>
-                      </Grid>
-                      <Grid item xs={6}>
+                      </Grid2>
+                      <Grid2 size={6}>
                         <Box>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                             Crianças
@@ -130,8 +130,8 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
                             {city.uniqueChildren}
                           </Typography>
                         </Box>
-                      </Grid>
-                      <Grid item xs={12}>
+                      </Grid2>
+                      <Grid2 size={12}>
                         <Box>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                             Presença
@@ -140,8 +140,8 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
                             {city.presenceRate.toFixed(1)}%
                           </Typography>
                         </Box>
-                      </Grid>
-                    </Grid>
+                      </Grid2>
+                    </Grid2>
                   </Stack>
                 </CardContent>
               </Card>

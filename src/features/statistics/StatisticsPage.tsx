@@ -8,23 +8,17 @@ import {
   Paper,
   Fab,
   Zoom,
-  useMediaQuery,
-  Drawer,
-  IconButton,
   Typography,
 } from '@mui/material';
-import {
-  KeyboardArrowUp,
-  Close,
-  Settings,
-} from '@mui/icons-material';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { KeyboardArrowUp } from '@mui/icons-material';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatisticsProvider, useStatistics } from './context';
 import { DashboardHeader, NavigationTabs } from './components/dashboard';
 import { KPIDashboard, SmartFilters } from './components/ui';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
+import { queryClient } from '../../config/queryClient';
 
 dayjs.locale('pt-br');
 
@@ -40,17 +34,6 @@ const DecisionsTab = React.lazy(() => import('./tabs/DecisionsTab'));
 const RetentionTab = React.lazy(() => import('./tabs/RetentionTab'));
 const ActivitiesTab = React.lazy(() => import('./tabs/ActivitiesTab'));
 const RankingsTab = React.lazy(() => import('./tabs/RankingsTab'));
-
-// Query client with optimized settings
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 2 * 60 * 1000, // 2 minutes
-    },
-  },
-});
 
 // Loading skeleton for tabs
 const TabSkeleton: React.FC = () => (
@@ -87,6 +70,7 @@ const ScrollToTop: React.FC = memo(() => {
         color="primary"
         size="small"
         onClick={scrollToTop}
+        aria-label="Voltar ao topo"
         sx={{
           position: 'fixed',
           bottom: 24,
@@ -166,49 +150,9 @@ const TabContent: React.FC = memo(() => {
 
 TabContent.displayName = 'TabContent';
 
-// Settings drawer
-const SettingsDrawer: React.FC<{ open: boolean; onClose: () => void }> = memo(({ open, onClose }) => {
-  const theme = useTheme();
-
-  return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: { xs: '100%', sm: 400 },
-          p: 3,
-        },
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Settings color="primary" />
-          <Typography variant="h6" fontWeight={700}>
-            Configuracoes
-          </Typography>
-        </Box>
-        <IconButton onClick={onClose}>
-          <Close />
-        </IconButton>
-      </Box>
-
-      <Typography variant="body2" color="text.secondary">
-        Configuracoes do dashboard em breve...
-      </Typography>
-    </Drawer>
-  );
-});
-
-SettingsDrawer.displayName = 'SettingsDrawer';
-
 // Main content component
 const StatisticsContent: React.FC = memo(() => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [settingsOpen, setSettingsOpen] = React.useState(false);
-  const { state } = useStatistics();
 
   return (
     <Box
@@ -226,9 +170,7 @@ const StatisticsContent: React.FC = memo(() => {
         }}
       >
         {/* Header */}
-        <DashboardHeader
-          onSettingsClick={() => setSettingsOpen(true)}
-        />
+        <DashboardHeader onRefresh={() => queryClient.invalidateQueries()} />
 
         {/* KPI Dashboard - Always visible */}
         <Box sx={{ mb: 3 }}>
@@ -261,9 +203,6 @@ const StatisticsContent: React.FC = memo(() => {
 
       {/* Scroll to top button */}
       <ScrollToTop />
-
-      {/* Settings drawer */}
-      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </Box>
   );
 });

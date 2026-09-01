@@ -78,10 +78,14 @@ const getPeriodDateRange = (period: PeriodShortcut): DateRange | null => {
         endDate: now.format('YYYY-MM-DD'),
       };
     case PeriodShortcut.THIS_WEEK:
+      {
+        const daysSinceMonday = now.day() === 0 ? 6 : now.day() - 1;
+        const monday = now.subtract(daysSinceMonday, 'day');
       return {
-        startDate: now.startOf('week').format('YYYY-MM-DD'),
-        endDate: now.endOf('week').format('YYYY-MM-DD'),
+          startDate: monday.format('YYYY-MM-DD'),
+          endDate: monday.add(5, 'day').format('YYYY-MM-DD'),
       };
+      }
     case PeriodShortcut.THIS_MONTH:
       return {
         startDate: now.startOf('month').format('YYYY-MM-DD'),
