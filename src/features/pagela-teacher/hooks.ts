@@ -11,11 +11,13 @@ import {
   apiDeletePagela,
 } from "./api";
 import { apiFetchChildSimple } from "@/features/children/api";
+import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
 import type { ChildSimpleResponseDto } from "../children/types";
 
 export type Tri = "any" | "yes" | "no";
-const triToBoolString = (t: Tri): "true" | "false" | undefined =>
-  t === "yes" ? "true" : t === "no" ? "false" : undefined;
+/** O filtro de três estados vira booleano, ou some quando é "qualquer um". */
+const triToBoolean = (t: Tri): boolean | undefined =>
+  t === "yes" ? true : t === "no" ? false : undefined;
 
 function useDebouncedValue<T>(value: T, delay = 250) {
   const [debounced, setDebounced] = useState(value);
@@ -55,10 +57,8 @@ export function useChildrenBrowser(pageSize: number = 20) {
       setTotalPages(response.meta?.totalPages || 1);
       setTotalItems(response.meta?.totalItems || 0);
       setPage(pageNum);
-    } catch (e: any) {
-      setChildrenError(
-        e?.response?.data?.message || e?.message || "Erro ao listar crianças"
-      );
+    } catch (err: unknown) {
+      setChildrenError(extractErrorMessage(err, "Erro ao listar crianças"));
     } finally {
       setLoading(false);
     }
@@ -131,9 +131,9 @@ export function useChildPagelas(
     childId: string;
     year?: number;
     week?: number;
-    present?: "true" | "false";
-    didMeditation?: "true" | "false";
-    recitedVerse?: "true" | "false";
+    present?: boolean;
+    didMeditation?: boolean;
+    recitedVerse?: boolean;
     page: number;
     limit: number;
   };
@@ -144,9 +144,9 @@ export function useChildPagelas(
       childId,
       year,
       week,
-      present: triToBoolString(presentQ),
-      didMeditation: triToBoolString(medQ),
-      recitedVerse: triToBoolString(verseQ),
+      present: triToBoolean(presentQ),
+      didMeditation: triToBoolean(medQ),
+      recitedVerse: triToBoolean(verseQ),
       page,
       limit,
     };
@@ -175,11 +175,11 @@ export function useChildPagelas(
       setError("");
       try {
         const data = await apiListPagelasPaginated(q, { signal: ctrl.signal });
-        setRows(data.items || []);
+        setRows(data.data || []);
         setTotal(data.total || 0);
-      } catch (e: any) {
-        if (e?.name !== "CanceledError" && e?.name !== "AbortError") {
-          setError(e?.response?.data?.message || e?.message || "Erro ao listar pagelas");
+      } catch (err: unknown) {
+        if (!isCancelledRequest(err)) {
+          setError(extractErrorMessage(err, "Erro ao listar pagelas"));
         }
       } finally {
         if (abortRef.current === ctrl) abortRef.current = null;

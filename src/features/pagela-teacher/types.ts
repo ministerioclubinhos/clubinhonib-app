@@ -1,32 +1,12 @@
-export type Pagela = {
-  id: string;
-  childId: string;
-  teacherProfileId: string | null;
-  referenceDate: string;
-  year: number;
-  week: number;
-  present: boolean;
-  didMeditation: boolean;
-  recitedVerse: boolean;
-  notes: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-export type PageDto<T> = { items: T[]; total: number; page: number; limit: number };
-
-export type CreatePagelaPayload = {
-  childId: string;
-  teacherProfileId?: string | null;
-  referenceDate: string;
-  week: number;
-  year?: number;
-  present: boolean;
-  didMeditation: boolean;
-  recitedVerse: boolean;
-  notes?: string | null;
-};
-
-export type UpdatePagelaPayload = Partial<Omit<CreatePagelaPayload, "childId">> & {
-  teacherProfileId?: string | null;
-};
+/**
+ * Tipos da área do professor.
+ *
+ * O contrato de `/pagelas` é de `features/pagelas`; aqui ele é reexportado com
+ * os nomes que esta área usa, para os componentes não conhecerem dois donos.
+ */
+export type {
+  PagelaResponse as Pagela,
+  CreatePagelaRequest as CreatePagelaPayload,
+  UpdatePagelaRequest as UpdatePagelaPayload,
+  Paginated as PageDto,
+} from "@/features/pagelas/types";

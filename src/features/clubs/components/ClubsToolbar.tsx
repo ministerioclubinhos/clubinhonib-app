@@ -3,7 +3,7 @@ import {
   Button,
   IconButton,
   Tooltip,
-  Grid,
+  Grid2,
   TextField,
   Paper,
   Stack,
@@ -68,8 +68,8 @@ export default function ClubsToolbar({
         Pesquisar
       </Typography>
 
-      <Grid container spacing={{ xs: 1.5, md: 2 }} alignItems="center">
-        <Grid item xs={12} md={8}>
+      <Grid2 container spacing={{ xs: 1.5, md: 2 }} alignItems="center">
+        <Grid2 size={{ xs: 12, md: 8 }}>
           <TextField
             fullWidth
             size="small"
@@ -78,9 +78,9 @@ export default function ClubsToolbar({
             onChange={(e) => handleChange("searchString", e.target.value)}
             placeholder="Endereço / nº do clubinho.."
           />
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <FormControl fullWidth size="small">
             <InputLabel>Status</InputLabel>
             <Select
@@ -96,18 +96,22 @@ export default function ClubsToolbar({
               <MenuItem value="false">Inativo</MenuItem>
             </Select>
           </FormControl>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12}>
+        <Grid2 size={12}>
           {isXs ? (
             <>
               <Box sx={{ height: 64 }} />
               <Box
                 sx={{
                   position: "fixed",
+                  // Acima do conteúdo, abaixo dos diálogos: com z-index maior
+                  // que o do modal, os botões ficavam por cima do formulário
+                  // aberto em tela cheia.
                   bottom: 16,
                   right: 16,
-                  zIndex: 9999,
+                  zIndex: (theme) => theme.zIndex.fab,
+                  pb: "env(safe-area-inset-bottom)",
                 }}
               >
                 <Stack spacing={1} alignItems="flex-end">
@@ -182,8 +186,8 @@ export default function ClubsToolbar({
               )}
             </Stack>
           )}
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Paper>
   );
 }

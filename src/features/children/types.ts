@@ -70,6 +70,8 @@ export type Paginated<T> = {
 
 export type ChildFilters = {
   searchString?: string;
+  /** Filtra pelo clubinho por identidade; prefira este ao número. */
+  clubId?: string;
   clubNumber?: number;
   birthDateFrom?: string;
   birthDateTo?: string;

@@ -1,5 +1,5 @@
 import api from "@/config/axiosConfig";
-import type { CoordinatorProfile, ClubSimple, PageDto } from "./types";
+import type { CoordinatorProfile, ClubSimple, PageDto, CoordinatorSimpleOption } from "./types";
 
 export type ListCoordinatorsParams = {
   page: number; 
@@ -66,5 +66,11 @@ export async function apiMoveClub(
 
 export async function apiListClubsSimple() {
   const { data } = await api.get<ClubSimple[]>("/clubs/all");
+  return data;
+}
+
+/** Coordenadores no formato usado pelos seletores de formulário. */
+export async function apiListCoordinatorsSimple(): Promise<CoordinatorSimpleOption[]> {
+  const { data } = await api.get<CoordinatorSimpleOption[]>("/coordinator-profiles/simple");
   return data;
 }

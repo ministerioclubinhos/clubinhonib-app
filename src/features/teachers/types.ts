@@ -34,3 +34,10 @@ export type TeacherQuery = {
   sort?: "updatedAt" | "createdAt" | "name" | "clubNumber";
   order?: "asc" | "desc";
 };
+
+/** Contrato de `GET /teacher-profiles/simple`. */
+export type TeacherSimpleOption = {
+  teacherProfileId: string;
+  name: string;
+  vinculado: boolean;
+};

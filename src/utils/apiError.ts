@@ -251,6 +251,19 @@ export const isInternalError = (error: unknown): boolean => {
     return code !== null && Object.values(InternalErrorCode).includes(code as InternalErrorCode);
 };
 
+/**
+ * A requisição foi cancelada, e não falhou.
+ *
+ * As telas com busca digitada abortam a busca anterior a cada tecla; o
+ * cancelamento chega ao `catch` como qualquer erro, mas não é um.
+ */
+export const isCancelledRequest = (error: unknown): boolean => {
+    if (axios.isCancel(error)) return true;
+
+    // Um `AbortController` disparado fora do axios chega como DOMException.
+    return (error as { name?: string })?.name === 'AbortError';
+};
+
 export const logApiError = (error: unknown, context?: string): void => {
     const analyzed = analyzeError(error);
     const prefix = context ? `[${context}]` : '[API Error]';

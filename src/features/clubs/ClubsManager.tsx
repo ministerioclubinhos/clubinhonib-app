@@ -1,53 +1,65 @@
 import React, { useCallback, useState } from "react";
-import { Alert, Box, CircularProgress } from "@mui/material";
-import { useTheme, useMediaQuery } from "@mui/material";
+import { Alert, Box, CircularProgress, useMediaQuery, useTheme } from "@mui/material";
+import { useSelector } from "react-redux";
+import type { SortingState } from "@tanstack/react-table";
+
+import BackHeader from "@/components/common/header/BackHeader";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
+import { selectIsAdmin } from "@/store/selectors/routeSelectors";
+
 import ClubsToolbar from "./components/ClubsToolbar";
 import ClubsTable from "./components/ClubsTable";
 import ClubViewDialog from "./components/ClubViewDialog";
 import ClubFormDialog from "./components/ClubFormDialog";
-import { useClubDetails, useClubMutations, useClubs, useOptions } from "./hooks";
 import {
-  ClubResponseDto,
-  CreateClubForm,
-  EditClubForm,
-  Weekday,
+  useClubDetails,
+  useClubFormOptions,
+  useClubMutations,
+  useClubs,
+} from "./hooks";
+import {
+  DEFAULT_CLUB_SORT,
+  DEFAULT_PAGE_SIZE,
+  EMPTY_CLUB_FORM,
+} from "./constants";
+import {
+  buildCreateClubRequest,
+  buildUpdateClubRequest,
+  toClubFormValues,
+} from "./utils";
+import type {
   ClubFilters,
+  ClubFormValues,
+  ClubResponse,
   ClubSort,
+  ClubSortField,
 } from "./types";
-import { apiFetchClubs } from "./api";
-import BackHeader from "@/components/common/header/BackHeader";
-import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
-import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
-import { useSelector } from "react-redux";
-import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
 export default function ClubsManager() {
   const isAdmin = useSelector(selectIsAdmin);
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [filters, setFilters] = useState<ClubFilters>({
-    searchString: "",
-  });
-
-  const [pageSize, setPageSize] = useState<number>(12);
+  const [filters, setFilters] = useState<ClubFilters>({ searchString: "" });
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [pageIndex, setPageIndex] = useState<number>(0);
-  const [sorting, setSorting] = useState<ClubSort>({ id: "updatedAt", desc: true });
+  const [sorting, setSorting] = useState<ClubSort>(DEFAULT_CLUB_SORT);
 
-  const { rows, total, loading, error, setError, fetchPage } =
-    useClubs(pageIndex, pageSize, sorting, filters);
-
-  const doRefresh = useCallback(() => {
-    fetchPage();
-  }, [fetchPage]);
+  const { rows, total, loading, error, setError, fetchPage } = useClubs(
+    pageIndex,
+    pageSize,
+    sorting,
+    filters,
+  );
 
   const { viewing, setViewing, loading: viewingLoading, fetchClub } = useClubDetails();
-  const handleOpenView = (club: ClubResponseDto) => {
-    setViewing(club);
-    fetchClub(club.id);
-  };
+  const { coordinators, teachers, reloadOptions } = useClubFormOptions();
 
-  const { coordinators, teachers, reloadOptions } = useOptions();
+  const refresh = useCallback(async () => {
+    await fetchPage();
+    await reloadOptions();
+  }, [fetchPage, reloadOptions]);
 
   const {
     dialogLoading,
@@ -57,146 +69,72 @@ export default function ClubsManager() {
     updateClub,
     deleteClub,
     toggleActive,
-  } = useClubMutations(async (page, limit) => {
-    await apiFetchClubs({ page, limit, filters, sort: sorting });
-    await fetchPage();
-  });
+  } = useClubMutations(refresh);
 
-  const sanitizeIds = (arr?: Array<string | null | undefined>) =>
-    Array.from(
-      new Set(
-        (arr ?? []).filter(
-          (v): v is string => typeof v === "string" && v.trim() !== ""
-        )
-      )
-    );
+  const [creating, setCreating] = useState<ClubFormValues | null>(null);
+  const [editing, setEditing] = useState<{ id: string; values: ClubFormValues } | null>(
+    null,
+  );
+  const [confirmDelete, setConfirmDelete] = useState<ClubResponse | null>(null);
+  const [confirmToggleActive, setConfirmToggleActive] = useState<ClubResponse | null>(
+    null,
+  );
 
-  const [creating, setCreating] = useState<CreateClubForm | null>(null);
-  const openCreate = () =>
-    setCreating({
-      number: 0,
-      weekday: "saturday" as Weekday,
-      time: null,
-      isActive: true,
-      address: {
-        street: "",
-        district: "",
-        city: "",
-        state: "",
-        postalCode: "",
-      } as any,
-      coordinatorProfileId: null,
-      teacherProfileIds: [],
-    });
-
-  const submitCreate = async () => {
-    if (!creating) return;
-
-    const addressPayload = creating.address ? { ...creating.address } : undefined;
-    if (addressPayload) {
-      delete (addressPayload as any).id;
-      delete (addressPayload as any).createdAt;
-      delete (addressPayload as any).updatedAt;
-    }
-
-    const payload: CreateClubForm = {
-      ...creating,
-      address: addressPayload as CreateClubForm['address'],
-      teacherProfileIds: sanitizeIds(creating.teacherProfileIds),
-    };
-
-    if (!payload.teacherProfileIds?.length) delete (payload as any).teacherProfileIds;
-
-    if (
-      payload.coordinatorProfileId === undefined ||
-      payload.coordinatorProfileId === null
-    ) {
-      delete (payload as any).coordinatorProfileId;
-    }
-
-    if (payload.time === "") delete (payload as any).time;
-
-    await createClub(payload, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions();
-    setCreating(null);
+  const handleOpenView = (club: ClubResponse) => {
+    setViewing(club);
+    void fetchClub(club.id);
   };
 
-  const [editing, setEditing] = useState<EditClubForm | null>(null);
+  const openCreate = () => {
+    setDialogError("");
+    setCreating({ ...EMPTY_CLUB_FORM, address: { ...EMPTY_CLUB_FORM.address } });
+  };
 
-  const startEdit = (c: ClubResponseDto) => {
-    setEditing({
-      id: c.id,
-      number: c.number,
-      weekday: c.weekday,
-      time: c.time ?? null,
-      isActive: c.isActive,
-      address: c.address,
-      coordinatorProfileId: c.coordinator?.id ?? null,
-      teacherProfileIds: (c.teachers ?? []).map((t) => t.id),
-    });
+  const startEdit = (club: ClubResponse) => {
+    setDialogError("");
+    setEditing({ id: club.id, values: toClubFormValues(club) });
+  };
+
+  // O formulário só fecha quando a API aceita: se fechasse antes, o erro
+  // devolvido não teria onde aparecer.
+  const submitCreate = async () => {
+    if (!creating) return;
+    const ok = await createClub(buildCreateClubRequest(creating));
+    if (ok) setCreating(null);
   };
 
   const submitEdit = async () => {
     if (!editing) return;
-
-    const { id, ...rest } = editing;
-    const teacherIds = sanitizeIds(rest.teacherProfileIds) ?? [];
-
-    const addressPayload = rest.address ? { ...rest.address } : undefined;
-    if (addressPayload) {
-      delete (addressPayload as any).id;
-      delete (addressPayload as any).createdAt;
-      delete (addressPayload as any).updatedAt;
-    }
-
-    const payload: Omit<EditClubForm, "id"> & { teacherProfileIds: string[] } = {
-      ...rest,
-      address: addressPayload as EditClubForm['address'],
-      teacherProfileIds: teacherIds,
-    };
-
-    if ((payload as any).time === "") {
-      (payload as any).time = null;
-    }
-
-    if (rest.coordinatorProfileId === undefined) {
-      delete (payload as any).coordinatorProfileId;
-    }
-
-    await updateClub(id, payload, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions();
-    setEditing(null);
+    const ok = await updateClub(editing.id, buildUpdateClubRequest(editing.values));
+    if (ok) setEditing(null);
   };
-
-  const [confirmDelete, setConfirmDelete] = useState<ClubResponseDto | null>(null);
-  const askDelete = (c: ClubResponseDto) => setConfirmDelete(c);
 
   const submitDelete = async () => {
     if (!confirmDelete) return;
-    await deleteClub(confirmDelete.id, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions();
-    setConfirmDelete(null);
+    const ok = await deleteClub(confirmDelete.id);
+    if (ok) setConfirmDelete(null);
   };
 
-  const [confirmToggleActive, setConfirmToggleActive] = useState<ClubResponseDto | null>(null);
-  const askToggleActive = (club: ClubResponseDto) => setConfirmToggleActive(club);
   const submitToggleActive = async () => {
     if (!confirmToggleActive) return;
-    await toggleActive(confirmToggleActive.id, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions();
-    setConfirmToggleActive(null);
+    const ok = await toggleActive(confirmToggleActive.id);
+    if (ok) setConfirmToggleActive(null);
   };
 
-  React.useEffect(() => {
-    doRefresh();
-  }, [doRefresh]);
+  const tableSorting: SortingState = sorting ? [sorting] : [];
+  const handleSortingChange = (next: SortingState) => {
+    const first = next[0];
+    setSorting(first ? { id: first.id as ClubSortField, desc: first.desc } : null);
+  };
 
   return (
     <Box
       sx={{
         px: { xs: 2, md: 0 },
-        py: { xs: 0, md: 0 },
+        // `dvh` acompanha a barra do navegador no celular; `vh` fica de reserva
+        // para quem não suporta.
         minHeight: "100vh",
+        "@supports (min-height: 100dvh)": { minHeight: "100dvh" },
         bgcolor: "#f9fafb",
       }}
     >
@@ -204,12 +142,12 @@ export default function ClubsManager() {
 
       <ClubsToolbar
         filters={filters}
-        onChange={(updater) => {
-          setFilters(updater);
+        onChange={(applyFilters) => {
+          setFilters(applyFilters);
           setPageIndex(0);
         }}
         onCreateClick={openCreate}
-        onRefreshClick={doRefresh}
+        onRefreshClick={() => void fetchPage()}
         isXs={isXs}
       />
 
@@ -218,6 +156,7 @@ export default function ClubsManager() {
           <CircularProgress />
         </Box>
       )}
+
       {error && !loading && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
           {error}
@@ -232,14 +171,12 @@ export default function ClubsManager() {
         pageSize={pageSize}
         setPageIndex={setPageIndex}
         setPageSize={setPageSize}
-        sorting={sorting ? ([sorting] as any) : []}
-        setSorting={(s) =>
-          setSorting(Array.isArray(s) ? (s[0] ?? null) : (s as any))
-        }
+        sorting={tableSorting}
+        setSorting={handleSortingChange}
         onOpenView={handleOpenView}
         onStartEdit={startEdit}
-        onAskDelete={askDelete}
-        onToggleActive={askToggleActive}
+        onAskDelete={setConfirmDelete}
+        onToggleActive={setConfirmToggleActive}
       />
 
       <ClubViewDialog
@@ -253,7 +190,7 @@ export default function ClubsManager() {
         mode="create"
         open={!!creating}
         value={creating}
-        onChange={(v) => setCreating(v as CreateClubForm)}
+        onChange={setCreating}
         onCancel={() => {
           setCreating(null);
           setDialogError("");
@@ -268,8 +205,10 @@ export default function ClubsManager() {
       <ClubFormDialog
         mode="edit"
         open={!!editing}
-        value={editing}
-        onChange={(v) => setEditing(v as EditClubForm)}
+        value={editing?.values ?? null}
+        onChange={(values) =>
+          setEditing((current) => (current ? { ...current, values } : current))
+        }
         onCancel={() => {
           setEditing(null);
           setDialogError("");

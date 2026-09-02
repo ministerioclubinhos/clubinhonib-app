@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
-  Box, Card, CardContent, Chip, Grid, IconButton, Stack,
+  Box, Card, CardContent, Chip, Grid2, IconButton, Stack,
   Typography, MenuItem, Select, FormControl, InputLabel,
-  Divider, TablePagination, Tooltip, Collapse, ButtonBase,
-  Paper, Avatar, Fade
+  Divider, TablePagination, Tooltip, ButtonBase,
+  Paper, Avatar
 } from "@mui/material";
 import {
   Visibility, Edit, Delete, SwapVert,
@@ -13,13 +13,21 @@ import {
   Phone as PhoneIcon, ToggleOn, ToggleOff,
 } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
-import { ClubResponseDto } from "../types";
-import { formatDate, weekdayLabel } from "@/utils/dateUtils";
+import { formatDate } from "@/utils/dateUtils";
+
+import {
+  CLUB_SORT_OPTIONS,
+  DEFAULT_CLUB_SORT,
+  EMPTY_VALUE,
+  PAGE_SIZE_OPTIONS,
+} from "../constants";
+import { formatUserLabel, formatWeekday } from "../utils";
+import type { ClubResponse } from "../types";
 import { CopyButton } from "@/utils/components";
 
 type Props = {
   isAdmin: boolean;
-  rows: ClubResponseDto[];
+  rows: ClubResponse[];
   total: number;
   pageIndex: number;
   pageSize: number;
@@ -27,10 +35,10 @@ type Props = {
   setPageSize: (n: number) => void;
   sorting: SortingState;
   setSorting: (s: SortingState) => void;
-  onOpenView: (club: ClubResponseDto) => void;
-  onStartEdit: (club: ClubResponseDto) => void;
-  onAskDelete: (club: ClubResponseDto) => void;
-  onToggleActive: (club: ClubResponseDto) => void;
+  onOpenView: (club: ClubResponse) => void;
+  onStartEdit: (club: ClubResponse) => void;
+  onAskDelete: (club: ClubResponse) => void;
+  onToggleActive: (club: ClubResponse) => void;
 };
 
 export default function ClubsCards(props: Props) {
@@ -38,25 +46,19 @@ export default function ClubsCards(props: Props) {
   const [open, setOpen] = useState<Set<string>>(new Set());
   const toggle = (id: string) =>
     setOpen((prev) => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
 
-  const currentSort = sorting?.[0] ?? { id: "updatedAt", desc: true };
-  const sortField = String(currentSort.id ?? "updatedAt");
+  const currentSort =
+    sorting?.[0] ?? { id: DEFAULT_CLUB_SORT?.id ?? "number", desc: false };
+  const sortField = String(currentSort.id);
   const sortDesc = !!currentSort.desc;
 
   const handleSortField = (field: string) => setSorting([{ id: field, desc: sortDesc }]);
   const toggleSortDir = () => setSorting([{ id: sortField, desc: !sortDesc }]);
-
-  const sortOptions = useMemo(() => ([
-    { id: "number", label: "Número" },
-    { id: "weekday", label: "Dia da semana" },
-    { id: "time", label: "Horário" },
-    { id: "updatedAt", label: "Atualizado em" },
-    { id: "createdAt", label: "Criado em" },
-  ]), []);
 
   return (
     <Box sx={{ px: { xs: 0, sm: 1 }, py: 0 }}>
@@ -75,7 +77,11 @@ export default function ClubsCards(props: Props) {
             onChange={(e) => handleSortField(String(e.target.value))}
             sx={{ ".MuiSelect-select": { py: 0.75 } }}
           >
-            {sortOptions.map(o => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+            {CLUB_SORT_OPTIONS.map((option) => (
+              <MenuItem key={option.id} value={option.id}>
+                {option.label}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <Tooltip title={sortDesc ? "Ordem: Descendente" : "Ordem: Ascendente"}>
@@ -85,15 +91,16 @@ export default function ClubsCards(props: Props) {
         </Tooltip>
       </Stack>
 
-      <Grid container spacing={{ xs: 0.75, sm: 1.25 }}>
+      <Grid2 container spacing={{ xs: 0.75, sm: 1.25 }}>
         {rows.map((c) => {
           const expanded = open.has(c.id);
-          const coordName = c.coordinator?.user?.name || c.coordinator?.user?.email || "—";
+          const coordName = formatUserLabel(c.coordinator?.user);
           const teachers = c.teachers ?? [];
-          const addrPreview = c.address ? `${c.address.city} / ${c.address.state}` : "—";
+          const addrPreview =
+            [c.address?.city, c.address?.state].filter(Boolean).join(" / ") || EMPTY_VALUE;
 
           return (
-            <Grid item xs={12} key={c.id}>
+            <Grid2 size={12} key={c.id}>
               <Card
                 variant="outlined"
                 sx={{
@@ -154,7 +161,7 @@ export default function ClubsCards(props: Props) {
                             whiteSpace: "nowrap"
                           }}
                         >
-                          {weekdayLabel(c.weekday)}
+                          {formatWeekday(c.weekday)}
                         </Typography>
                         {c.time && (
                           <>
@@ -318,10 +325,12 @@ export default function ClubsCards(props: Props) {
                                   <Chip
                                     key={t.id}
                                     size="small"
-                                    label={t.user?.name || t.user?.email || t.id}
+                                    label={formatUserLabel(t.user)}
                                     variant="outlined"
                                     color="primary"
-                                    sx={{ fontWeight: 500 }}
+                                    // Um e-mail longo não pode empurrar o card
+                                    // para fora da largura da tela.
+                                    sx={{ fontWeight: 500, maxWidth: "100%" }}
                                   />
                                 ))}
                               </Box>
@@ -354,10 +363,19 @@ export default function ClubsCards(props: Props) {
 
                               <Stack spacing={0.5}>
                                 <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4 }}>
-                                  {c.address.street}{c.address.number ? `, ${c.address.number}` : ""}
+                                  {[c.address.street, c.address.number]
+                                    .filter(Boolean)
+                                    .join(", ") || EMPTY_VALUE}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
-                                  {c.address.district} • {c.address.city} / {c.address.state}
+                                  {[
+                                    c.address.district,
+                                    [c.address.city, c.address.state]
+                                      .filter(Boolean)
+                                      .join(" / "),
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" • ") || EMPTY_VALUE}
                                 </Typography>
                                 {c.address.postalCode && (
                                   <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4 }}>
@@ -439,7 +457,9 @@ export default function ClubsCards(props: Props) {
                         onClick={() => onOpenView(c)}
                         sx={{ 
                           color: "primary.main",
-                          p: { xs: 0.75, sm: 1 },
+                          p: { xs: 1.25, sm: 1 },
+                          minWidth: { xs: 44, sm: "auto" },
+                          minHeight: { xs: 44, sm: "auto" },
                           "&:hover": { bgcolor: "primary.50" },
                           "& .MuiSvgIcon-root": {
                             fontSize: { xs: 30, sm: 26 }
@@ -455,7 +475,9 @@ export default function ClubsCards(props: Props) {
                         onClick={() => onStartEdit(c)}
                         sx={{ 
                           color: "info.main",
-                          p: { xs: 0.75, sm: 1 },
+                          p: { xs: 1.25, sm: 1 },
+                          minWidth: { xs: 44, sm: "auto" },
+                          minHeight: { xs: 44, sm: "auto" },
                           "&:hover": { bgcolor: "info.50" },
                           "& .MuiSvgIcon-root": {
                             fontSize: { xs: 24, sm: 26 }
@@ -473,7 +495,9 @@ export default function ClubsCards(props: Props) {
                             color={c.isActive ? "success" : "default"}
                             onClick={() => onToggleActive(c)}
                             sx={{
-                              p: { xs: 0.75, sm: 1 },
+                              p: { xs: 1.25, sm: 1 },
+                          minWidth: { xs: 44, sm: "auto" },
+                          minHeight: { xs: 44, sm: "auto" },
                               "&:hover": { bgcolor: c.isActive ? "success.50" : "action.hover" },
                               "& .MuiSvgIcon-root": {
                                 fontSize: { xs: 24, sm: 26 }
@@ -489,7 +513,9 @@ export default function ClubsCards(props: Props) {
                             color="error" 
                             onClick={() => onAskDelete(c)}
                             sx={{ 
-                              p: { xs: 0.75, sm: 1 },
+                              p: { xs: 1.25, sm: 1 },
+                          minWidth: { xs: 44, sm: "auto" },
+                          minHeight: { xs: 44, sm: "auto" },
                               "&:hover": { bgcolor: "error.50" },
                               "& .MuiSvgIcon-root": {
                                 fontSize: { xs: 24, sm: 26 }
@@ -504,10 +530,10 @@ export default function ClubsCards(props: Props) {
                   </Stack>
                 </Box>
               </Card>
-            </Grid>
+            </Grid2>
           );
         })}
-      </Grid>
+      </Grid2>
 
       <Divider sx={{ mt: 1.25 }} />
       <TablePagination
@@ -517,7 +543,7 @@ export default function ClubsCards(props: Props) {
         onPageChange={(_, p) => setPageIndex(p)}
         rowsPerPage={pageSize}
         onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPageIndex(0); }}
-        rowsPerPageOptions={[6, 12, 24]}
+        rowsPerPageOptions={PAGE_SIZE_OPTIONS}
         labelRowsPerPage="Linhas:"
         labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
         slotProps={{
@@ -541,7 +567,9 @@ export default function ClubsCards(props: Props) {
           ".MuiTablePagination-actions": {
             marginLeft: { xs: 0.5, sm: 1 },
             "& .MuiIconButton-root": {
-              padding: { xs: "4px", sm: "8px" },
+              padding: { xs: "10px", sm: "8px" },
+              minWidth: { xs: 44, sm: "auto" },
+              minHeight: { xs: 44, sm: "auto" },
             }
           }
         }}

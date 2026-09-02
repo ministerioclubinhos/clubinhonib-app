@@ -1,20 +1,16 @@
 import React from "react";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Grid,
-  Divider,
+  Grid2,
   Chip,
   Box,
   Typography,
   Paper,
   Skeleton,
   Stack,
-  Tooltip,
-  IconButton,
   Link,
   useMediaQuery,
   useTheme,
@@ -27,22 +23,19 @@ import {
   SchoolOutlined,
   PlaceOutlined,
   Update as UpdateIcon,
-  LocationCityOutlined,
-  MapOutlined,
-  LocalPostOfficeOutlined,
   AccessTime as AccessTimeIcon,
-  ContentCopy,
-  Phone as PhoneIcon,
-  WhatsApp,
 } from "@mui/icons-material";
-import { ClubResponseDto, WEEKDAYS } from "../types";
 import { fmtDate } from "@/utils/dates";
 import { CopyButton, initials } from "@/utils/components";
+
+import { EMPTY_VALUE } from "../constants";
+import { formatUserLabel, formatWeekday } from "../utils";
+import type { ClubResponse } from "../types";
 
 type Props = {
   open: boolean;
   loading: boolean;
-  club: ClubResponseDto | null;
+  club: ClubResponse | null;
   onClose: () => void;
 };
 
@@ -74,8 +67,7 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   
-  const weekdayLabel =
-    club && WEEKDAYS.find((w) => w.value === club.weekday)?.label;
+  const weekdayLabel = club ? formatWeekday(club.weekday) : undefined;
 
   const address = club?.address;
   const teachers = club?.teachers ?? [];
@@ -86,11 +78,12 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
       onClose={onClose}
       fullWidth
       maxWidth="lg"
+      fullScreen={isXs}
       PaperProps={{
         sx: {
-          width: isXs ? "98%" : "44rem",
+          width: { xs: "100%", sm: "44rem" },
           m: 0,
-          borderRadius: { xs: 2, sm: 3 },
+          borderRadius: { xs: 0, sm: 3 },
           overflow: "hidden",
         },
       }}
@@ -185,36 +178,36 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
           </Typography>
         ) : (
           <Stack spacing={2}>
-            <Grid container spacing={1.25}>
-              <Grid item xs={12} sm={6}>
+            <Grid2 container spacing={1.25}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <LineCard icon={<NumbersOutlined fontSize="small" />} title="Número">
                   <Typography variant="body1" fontWeight={600}>
                     #{club.number}
                   </Typography>
                 </LineCard>
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <LineCard icon={<CalendarToday fontSize="small" />} title="Dia da semana">
                   <Typography variant="body1">
                     {weekdayLabel || "—"}
                   </Typography>
                 </LineCard>
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <LineCard icon={<AccessTimeIcon fontSize="small" />} title="Horário">
                   <Typography variant="body1">
                     {club.time || "—"}
                   </Typography>
                 </LineCard>
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <LineCard icon={<UpdateIcon fontSize="small" />} title="Atualizado em">
                   <Typography variant="body1">
                     {fmtDate(club.updatedAt)}
                   </Typography>
                 </LineCard>
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
 
             <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
               <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={1}>
@@ -234,33 +227,43 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
             </Paper>
 
             {address && (
-              <Grid container spacing={1.25}>
-                <Grid item xs={12}>
+              <Grid2 container spacing={1.25}>
+                <Grid2 size={12}>
                   <LineCard icon={<PlaceOutlined fontSize="small" />} title="Endereço">
                     <Stack spacing={0.5}>
+                      {/* Campo do endereço pode vir nulo; só entra na linha o
+                          que existe, para não sobrar separador solto. */}
                       <Typography variant="body1" fontWeight={600}>
-                        {address.street}
-                        {address.number && `, ${address.number}`}
+                        {[address.street, address.number]
+                          .filter(Boolean)
+                          .join(", ") || EMPTY_VALUE}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {address.district} • {address.city} - {address.state}
+                        {[
+                          address.district,
+                          [address.city, address.state].filter(Boolean).join(" - "),
+                        ]
+                          .filter(Boolean)
+                          .join(" • ") || EMPTY_VALUE}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        CEP: {address.postalCode}
-                      </Typography>
+                      {address.postalCode && (
+                        <Typography variant="body2" color="text.secondary">
+                          CEP: {address.postalCode}
+                        </Typography>
+                      )}
                     </Stack>
                   </LineCard>
-                </Grid>
-              </Grid>
+                </Grid2>
+              </Grid2>
             )}
 
-            <Grid container spacing={1.25}>
-              <Grid item xs={12}>
+            <Grid2 container spacing={1.25}>
+              <Grid2 size={12}>
                 <LineCard icon={<PersonOutline fontSize="small" />} title="Coordenador">
                   {club.coordinator ? (
                     <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                       <Typography variant="body1" fontWeight={600}>
-                        {club.coordinator.user?.name || club.coordinator.user?.email || club.coordinator.id}
+                        {formatUserLabel(club.coordinator.user)}
                       </Typography>
                       {club.coordinator.user?.phone && (
                         <>
@@ -277,11 +280,11 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                     </Typography>
                   )}
                 </LineCard>
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
 
-            <Grid container spacing={1.25}>
-              <Grid item xs={12}>
+            <Grid2 container spacing={1.25}>
+              <Grid2 size={12}>
                 <LineCard icon={<SchoolOutlined fontSize="small" />} title="Professores">
                   {teachers.length > 0 ? (
                     <Stack spacing={1}>
@@ -309,8 +312,8 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
                     </Typography>
                   )}
                 </LineCard>
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
           </Stack>
         )}
       </DialogContent>
@@ -323,7 +326,12 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
           justifyContent: "space-between",
         }}
       >
-        <Button fullWidth={isXs} onClick={onClose} variant="outlined">
+        <Button
+          fullWidth={isXs}
+          size={isXs ? "large" : "medium"}
+          onClick={onClose}
+          variant="outlined"
+        >
           Fechar
         </Button>
       </DialogActions>

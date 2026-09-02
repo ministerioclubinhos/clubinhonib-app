@@ -26,6 +26,7 @@ import ClubinhoSectionImageView from './ClubinhoSectionImageView/ClubinhoSection
 import HomeIcon from '@mui/icons-material/Home';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import { isCancelledRequest } from '@/utils/apiError';
 import {
   setSectionData,
   appendSections,
@@ -175,8 +176,8 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
         }
 
         setHasMore(data.page * data.limit < data.total);
-      } catch (err: any) {
-        if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+      } catch (err: unknown) {
+        if (!isCancelledRequest(err)) {
           console.error('Erro ao carregar o feed:', err);
           setError('Erro ao carregar o feed. Tente novamente mais tarde.');
         }

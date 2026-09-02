@@ -1,5 +1,18 @@
-import api from "@/config/axiosConfig";
-import { FeedbackData } from "@/store/slices/feedback/feedbackSlice";
+import api from '@/config/axiosConfig';
+import { FeedbackData } from '@/store/slices/feedback/feedbackSlice';
+import { FEEDBACKS_ENDPOINT } from './constants';
+import { CreateFeedbackRequest, FeedbackResponse } from './types';
+
+/** Envia uma avaliação do site. */
+export async function apiCreateFeedback(
+  payload: CreateFeedbackRequest,
+): Promise<FeedbackResponse> {
+  const { data } = await api.post<FeedbackResponse>(
+    FEEDBACKS_ENDPOINT,
+    payload,
+  );
+  return data;
+}
 
 export async function apiListFeedbacks(): Promise<FeedbackData[]> {
   const { data } = await api.get<FeedbackData[]>("/site-feedbacks");

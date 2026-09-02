@@ -10,13 +10,18 @@ import {
 import { Visibility, Edit, Delete, AccessTime, ToggleOn, ToggleOff } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import { ClubResponseDto, WEEKDAYS } from "../types";
+import { formatUserLabel, formatWeekday } from "../utils";
+import { PAGE_SIZE_OPTIONS } from "../constants";
+import type { ClubResponse } from "../types";
 import { fmtDate } from "@/utils/dates";
 import ClubsCards from "./ClubsCards";
 
+/** Largura sugerida da coluna, declarada em `meta`. */
+type ClubColumnMeta = { width?: number };
+
 type Props = {
   isAdmin: boolean;
-  rows: ClubResponseDto[];
+  rows: ClubResponse[];
   total: number;
   pageIndex: number;
   pageSize: number;
@@ -24,10 +29,10 @@ type Props = {
   setPageSize: (n: number) => void;
   sorting: SortingState;
   setSorting: (s: SortingState) => void;
-  onOpenView: (club: ClubResponseDto) => void;
-  onStartEdit: (club: ClubResponseDto) => void;
-  onAskDelete: (club: ClubResponseDto) => void;
-  onToggleActive: (club: ClubResponseDto) => void;
+  onOpenView: (club: ClubResponse) => void;
+  onStartEdit: (club: ClubResponse) => void;
+  onAskDelete: (club: ClubResponse) => void;
+  onToggleActive: (club: ClubResponse) => void;
 };
 
 export default function ClubsTable(props: Props) {
@@ -47,8 +52,8 @@ function ClubsTableDesktop(props: Props) {
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
 
-  const columns = useMemo<ColumnDef<ClubResponseDto>[]>(() => {
-    const base: ColumnDef<ClubResponseDto>[] = [
+  const columns = useMemo<ColumnDef<ClubResponse>[]>(() => {
+    const base: ColumnDef<ClubResponse>[] = [
       {
         accessorKey: "number",
         header: "Nº",
@@ -59,9 +64,7 @@ function ClubsTableDesktop(props: Props) {
         accessorKey: "weekday",
         header: "Dia da semana",
         cell: ({ getValue }) => {
-          const v = String(getValue() ?? "");
-          const label = WEEKDAYS.find((w) => w.value === v)?.label ?? v;
-          return <Typography>{label}</Typography>;
+          return <Typography>{formatWeekday(String(getValue() ?? ""))}</Typography>;
         },
         meta: { width: 150 },
       },
@@ -83,9 +86,11 @@ function ClubsTableDesktop(props: Props) {
         id: "coordinator",
         header: "Coordenador",
         cell: ({ row }) => {
-          const c = row.original.coordinator;
-          const label = c?.user?.name || c?.user?.email || "—";
-          return <Typography noWrap>{label}</Typography>;
+          return (
+            <Typography noWrap>
+              {formatUserLabel(row.original.coordinator?.user)}
+            </Typography>
+          );
         },
         meta: { width: 240 },
       },
@@ -101,7 +106,7 @@ function ClubsTableDesktop(props: Props) {
                 <Chip
                   key={t.id}
                   size="small"
-                  label={t.user?.name || t.user?.email || t.id}
+                  label={formatUserLabel(t.user)}
                   variant="outlined"
                 />
               ))}
@@ -139,7 +144,7 @@ function ClubsTableDesktop(props: Props) {
               cell: ({ getValue }) => <>{fmtDate(getValue() as string)}</>,
               meta: { width: 170 },
             },
-          ] as ColumnDef<ClubResponseDto>[])
+          ] as ColumnDef<ClubResponse>[])
         : []),
       {
         id: "actions",
@@ -217,7 +222,7 @@ function ClubsTableDesktop(props: Props) {
               <TableRow key={hg.id}>
                 {hg.headers.map((header) => {
                   const sorted = header.column.getIsSorted();
-                  const width = (header.column.columnDef.meta as any)?.width;
+                  const width = (header.column.columnDef.meta as ClubColumnMeta | undefined)?.width;
                   const isActions = header.column.id === "actions";
                   return (
                     <TableCell key={header.id} sx={{ width }}>
@@ -265,7 +270,7 @@ function ClubsTableDesktop(props: Props) {
         onPageChange={(_, p) => setPageIndex(p)}
         rowsPerPage={pageSize}
         onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPageIndex(0); }}
-        rowsPerPageOptions={[12, 24, 50]}
+        rowsPerPageOptions={PAGE_SIZE_OPTIONS}
         labelRowsPerPage="Linhas por página:"
         labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
       />

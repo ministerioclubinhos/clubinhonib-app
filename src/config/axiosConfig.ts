@@ -163,6 +163,13 @@ const handleGlobalError = (error: AxiosError, analyzed: AnalyzedError) => {
 apiAxios.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
+    // Requisição cancelada não é erro: as telas com busca digitada abortam a
+    // busca anterior a cada tecla, e tratar isso como falha enchia o console e
+    // mostrava toast de erro ao usuário que só estava digitando.
+    if (axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
+
     const originalRequest = error.config as CustomAxiosRequestConfig;
     const status = error.response?.status;
     const url = originalRequest?.url || '';

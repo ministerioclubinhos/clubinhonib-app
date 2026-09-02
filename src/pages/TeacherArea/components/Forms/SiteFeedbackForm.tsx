@@ -11,53 +11,48 @@ import {
     Select,
     InputLabel,
     FormControl,
+    FormHelperText,
 } from '@mui/material';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setFeedbacks } from '@/store/slices/feedback/feedbackSlice';
-import api from '@/config/axiosConfig';
 import { FeedbackCategory, FeedbackCategoryLabels } from '@/store/slices/types';
+import { RootState } from '@/store/slices';
+import {
+    apiCreateFeedback,
+    buildFeedbackRequest,
+    FeedbackFormErrors,
+    validateFeedbackForm,
+} from '@/features/feedback';
 import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 
 
-export interface FeedbackData {
-    id?: string;
-    createdAt: string;
-    updatedAt: string;
-    name: string;
-    email?: string;
-    rating: number;
-    comment: string;
-    category: string;
-    published?: boolean;
-}
-
 const SiteFeedbackForm: React.FC = () => {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
+    // Quem avalia já está autenticado: o nome vem do perfil e a API assina a
+    // avaliação com ele, então o formulário não pergunta.
+    const user = useSelector((state: RootState) => state.auth.user);
     const [rating, setRating] = useState<number | null>(null);
     const [comment, setComment] = useState('');
     const [category, setCategory] = useState('');
-    const [errors, setErrors] = useState({ name: false, rating: false, comment: false, email: false });
+    const [errors, setErrors] = useState<FeedbackFormErrors>({
+        rating: false,
+        comment: false,
+        category: false,
+    });
     const [submitted, setSubmitted] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const validateEmail = (email: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return email === '' || emailRegex.test(email);
-    };
-
     const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
 
-        const newErrors = {
-            name: name.trim() === '',
-            rating: rating === null,
-            comment: comment.trim() === '',
-            email: !validateEmail(email),
+        const values = {
+            rating,
+            comment,
+            category: category as FeedbackCategory | '',
         };
+        const newErrors = validateFeedbackForm(values);
 
         setErrors(newErrors);
 
@@ -65,20 +60,11 @@ const SiteFeedbackForm: React.FC = () => {
             return;
         }
 
-        const newFeedback: FeedbackData = {
-            name,
-            email: email || undefined,
-            rating: rating!,
-            comment,
-            category,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            published: false,
-        };
-
         try {
-            const response = await api.post('/site-feedbacks', newFeedback);
-            dispatch(setFeedbacks([response.data]));
+            // Só os campos preenchidos vão no corpo: id, datas e `read` são do
+            // servidor, e a API recusa a requisição inteira se eles chegarem.
+            const created = await apiCreateFeedback(buildFeedbackRequest(values));
+            dispatch(setFeedbacks([created]));
             setSubmitted(true);
             resetForm();
             setTimeout(() => {
@@ -92,12 +78,14 @@ const SiteFeedbackForm: React.FC = () => {
     };
 
     const resetForm = () => {
-        setName('');
-        setEmail('');
         setRating(null);
         setComment('');
         setCategory('');
-        setErrors({ name: false, rating: false, comment: false, email: false });
+        setErrors({
+            rating: false,
+            comment: false,
+            category: false,
+        });
     };
 
     const handleCancel = () => {
@@ -123,30 +111,10 @@ const SiteFeedbackForm: React.FC = () => {
                 Avalie nosso site
             </Typography>
 
-            <TextField
-                label="Seu nome"
-                variant="outlined"
-                fullWidth
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                sx={{ mb: 2 }}
-                error={errors.name}
-                helperText={errors.name ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
-                required
-                inputProps={{ 'aria-label': 'Seu nome' }}
-            />
-
-            <TextField
-                label="E-mail (opcional)"
-                variant="outlined"
-                fullWidth
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                sx={{ mb: 2 }}
-                error={errors.email}
-                helperText={errors.email ? FORM_VALIDATION_MESSAGES.INVALID_EMAIL : ''}
-                inputProps={{ 'aria-label': 'E-mail (opcional)' }}
-            />
+            <Typography variant="body2" color="text.secondary" mb={2}>
+                Avaliando como <strong>{user?.name ?? 'sua conta'}</strong>
+                {user?.email ? ` (${user.email})` : ''}.
+            </Typography>
 
             <Typography gutterBottom component="legend">
                 Nota:
@@ -164,7 +132,7 @@ const SiteFeedbackForm: React.FC = () => {
                 </Typography>
             )}
 
-            <FormControl fullWidth sx={{ mb: 2 }}>
+            <FormControl fullWidth sx={{ mb: 2 }} error={errors.category}>
                 <InputLabel id="category-label">Sobre o que é seu feedback?</InputLabel>
                 <Select
                     labelId="category-label"
@@ -180,6 +148,11 @@ const SiteFeedbackForm: React.FC = () => {
                         </MenuItem>
                     ))}
                 </Select>
+                {errors.category && (
+                    <FormHelperText>
+                        {FORM_VALIDATION_MESSAGES.REQUIRED_FIELD}
+                    </FormHelperText>
+                )}
             </FormControl>
 
             <TextField

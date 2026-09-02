@@ -14,7 +14,7 @@ import PageRenderer from './components/PageRenderer/PageRenderer';
 import Home from './pages/Home/Home';
 import About from './pages/About/About';
 import Contact from './pages/Contact/Contact';
-import Event from './pages/Event/Event';
+import EventosPage from './pages/Event/EventosPage';
 import Login from './pages/Login/Login';
 import TeacherArea from './pages/TeacherArea/TeacherArea';
 import ClubinhoFeedView from './pages/PageView/ClubinhoFeedView/ClubinhoFeedView';
@@ -160,7 +160,7 @@ function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/sobre" element={<About />} />
                   <Route path="/contato" element={<Contact />} />
-                  <Route path="/eventos" element={<Event />} />
+                  <Route path="/eventos" element={<EventosPage />} />
                   <Route path="/feed-clubinho" element={<ClubinhoFeedView feed />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/esqueci-senha" element={<ForgotPassword />} />

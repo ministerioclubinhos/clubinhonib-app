@@ -7,7 +7,8 @@ import {
 import { useSelector } from "react-redux";
 import { UserRole } from "@/types/shared";
 import { CreateChildForm, EditChildForm } from "../types";
-import { apiFetchSimpleClubs } from "@/features/clubs/api";
+import { apiFetchClubOptions } from "@/features/clubs/api";
+import type { ClubSelectOption } from "@/features/clubs/types";
 import ClubAutocomplete from "@/features/clubs/components/form/ClubAutocomplete";
 import { RootState } from "@/store/slices";
 import { SimpleDatePicker, SimplePhoneInput } from "@/components/common/inputs";
@@ -47,7 +48,7 @@ export default function ChildFormDialog({
 
   const effectiveClubId = (value as any).clubId ?? null;
 
-  const [clubOptions, setClubOptions] = React.useState<Array<{ id: string; detalhe: string; coordinator: boolean }>>([]);
+  const [clubOptions, setClubOptions] = React.useState<ClubSelectOption[]>([]);
   const [loadingClubDetail, setLoadingClubDetail] = React.useState(false);
   const [clubDetailErr, setClubDetailErr] = React.useState<string>("");
 
@@ -59,7 +60,7 @@ export default function ChildFormDialog({
       try {
         setLoadingClubDetail(true);
         setClubDetailErr("");
-        const items = await apiFetchSimpleClubs();
+        const items = await apiFetchClubOptions();
         if (!cancelled) setClubOptions(Array.isArray(items) ? items : []);
       } catch (e: any) {
         if (!cancelled) setClubDetailErr(e?.response?.data?.message || e?.message || "Falha ao carregar clubinhos");
@@ -73,7 +74,7 @@ export default function ChildFormDialog({
   const selectedClubDetail = React.useMemo(() => {
     if (!effectiveClubId) return null;
     const found = clubOptions.find(o => o.id === effectiveClubId);
-    return found?.detalhe ?? null;
+    return found?.label ?? null;
   }, [effectiveClubId, clubOptions]);
 
   const [showErrors, setShowErrors] = React.useState(false);

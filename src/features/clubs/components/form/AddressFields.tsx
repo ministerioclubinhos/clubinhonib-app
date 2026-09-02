@@ -1,85 +1,86 @@
 import React from "react";
-import { Grid, TextField } from "@mui/material";
-import { AddressResponseDto } from "../../types";
+import { Grid2, TextField } from "@mui/material";
+
+import type { ClubAddressInput } from "../../types";
 
 type Props = {
-  value: Partial<AddressResponseDto>;
-  onChange: (addr: Partial<AddressResponseDto>) => void;
+  value: ClubAddressInput;
+  onChange: (address: ClubAddressInput) => void;
 };
 
-export default function AddressFields({ value = {}, onChange }: Props) {
-  const v = value || {};
-  const set = (key: keyof AddressResponseDto, val: string) =>
-    onChange({ ...v, [key]: val });
+/** Campos do endereço do clubinho, no mesmo formato que a API aceita. */
+export default function AddressFields({ value, onChange }: Props) {
+  const set = (key: keyof ClubAddressInput, next: string) =>
+    onChange({ ...value, [key]: next });
 
   return (
     <>
-      <Grid item xs={12} md={8}>
+      <Grid2 size={{ xs: 12, md: 8 }}>
         <TextField
           label="Rua"
           fullWidth
-          value={v.street ?? ""}
+          value={value.street ?? ""}
           onChange={(e) => set("street", e.target.value)}
         />
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} md={4}>
+      <Grid2 size={{ xs: 12, md: 4 }}>
         <TextField
           label="Número"
           fullWidth
-          value={v.number ?? ""}
+          value={value.number ?? ""}
           onChange={(e) => set("number", e.target.value)}
         />
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} md={6}>
+      <Grid2 size={{ xs: 12, md: 6 }}>
         <TextField
           label="Bairro"
           fullWidth
-          value={v.district ?? ""}
+          value={value.district ?? ""}
           onChange={(e) => set("district", e.target.value)}
         />
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} md={6}>
+      <Grid2 size={{ xs: 12, md: 6 }}>
         <TextField
           label="Complemento"
           fullWidth
           placeholder="Bloco, apto, referência…"
-          value={v.complement ?? ""}
+          value={value.complement ?? ""}
           onChange={(e) => set("complement", e.target.value)}
         />
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} md={6}>
+      <Grid2 size={{ xs: 12, md: 6 }}>
         <TextField
           label="Cidade"
           fullWidth
-          value={v.city ?? ""}
+          value={value.city ?? ""}
           onChange={(e) => set("city", e.target.value)}
         />
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} md={2}>
+      <Grid2 size={{ xs: 12, md: 2 }}>
         <TextField
           label="Estado"
           fullWidth
-          inputProps={{ maxLength: 2 }}
+          slotProps={{ htmlInput: { maxLength: 2 } }}
           placeholder="UF"
-          value={v.state ?? ""}
+          value={value.state ?? ""}
           onChange={(e) => set("state", e.target.value.toUpperCase())}
         />
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} md={4}>
+      <Grid2 size={{ xs: 12, md: 4 }}>
         <TextField
           label="CEP"
           fullWidth
           placeholder="00000-000"
-          value={v.postalCode ?? ""}
+          value={value.postalCode ?? ""}
           onChange={(e) => set("postalCode", e.target.value)}
         />
-      </Grid>
+      </Grid2>
     </>
   );
 }

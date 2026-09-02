@@ -1,5 +1,5 @@
 import api from "@/config/axiosConfig";
-import { TeacherProfile, ClubSimple, Page, TeacherQuery } from "./types";
+import { TeacherProfile, ClubSimple, Page, TeacherQuery, TeacherSimpleOption } from "./types";
 
 export async function apiListTeachers(params: TeacherQuery) {
   const { data } = await api.get<Page<TeacherProfile>>("/teacher-profiles", { params });
@@ -21,5 +21,11 @@ export async function apiUnassignTeacherFromClub(teacherId: string, clubId: stri
 
 export async function apiListClubsSimple() {
   const { data } = await api.get<ClubSimple[]>("/clubs/all");
+  return data;
+}
+
+/** Professores no formato usado pelos seletores de formulário. */
+export async function apiListTeachersSimple(): Promise<TeacherSimpleOption[]> {
+  const { data } = await api.get<TeacherSimpleOption[]>("/teacher-profiles/simple");
   return data;
 }

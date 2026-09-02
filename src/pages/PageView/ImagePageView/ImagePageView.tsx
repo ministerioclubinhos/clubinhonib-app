@@ -27,6 +27,7 @@ import SectionImagePageView from './SectionImagePageView';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import { FofinhoButton } from './../../TeacherArea/components';
+import { isCancelledRequest } from '@/utils/apiError';
 import {
   setSectionData,
   appendSections,
@@ -182,8 +183,8 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
         }
 
         setHasMore(data.page * data.limit < data.total);
-      } catch (err: any) {
-        if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+      } catch (err: unknown) {
+        if (!isCancelledRequest(err)) {
           console.error('Erro ao carregar a seção:', err);
           setError('Erro ao carregar a seção. Tente novamente mais tarde.');
         }

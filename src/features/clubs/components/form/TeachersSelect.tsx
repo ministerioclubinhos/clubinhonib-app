@@ -16,7 +16,9 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { TeacherOption } from "../../types";
+import type { SelectChangeEvent } from "@mui/material";
+
+import type { TeacherOption } from "../../types";
 
 type Props = {
   value: string[];
@@ -44,14 +46,6 @@ export default function TeachersSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  const fingerprint = useMemo(
-    () =>
-      (options ?? [])
-        .map((o) => `${o.teacherProfileId}:${o.vinculado ? 1 : 0}`)
-        .join("|"),
-    [options]
-  );
-
   const safeValue = useMemo(
     () =>
       Array.from(
@@ -69,7 +63,7 @@ export default function TeachersSelect({
       (options ?? []).filter(
         (opt) => !opt.vinculado || safeValue.includes(opt.teacherProfileId)
       ),
-    [fingerprint, safeValue]
+    [options, safeValue]
   );
 
   const q = normalize(query);
@@ -87,8 +81,8 @@ export default function TeachersSelect({
     !!opt.vinculado && !selectedSet.has(opt.teacherProfileId);
 
   const handleChange = useCallback(
-    (e: any) => {
-      const raw = (e.target.value ?? []) as Array<string | null | undefined>;
+    (event: SelectChangeEvent<string[]>) => {
+      const raw = (event.target.value ?? []) as Array<string | null | undefined>;
       const cleaned = Array.from(
         new Set(
           raw.filter(
@@ -115,8 +109,8 @@ export default function TeachersSelect({
     onChange(next);
   }, [safeValue, visibleOptions, onChange]);
 
-  const stopPropagation = (e: React.KeyboardEvent | React.MouseEvent) => {
-    e.stopPropagation();
+  const stopPropagation = (event: React.SyntheticEvent) => {
+    event.stopPropagation();
   };
 
   const renderSelected = useCallback(
@@ -149,8 +143,9 @@ export default function TeachersSelect({
     [isXs, options]
   );
 
-  const menuWidth = isXs ? "96vw" : 560;
-  const menuMaxHeight = isXs ? "75vh" : 480;
+  // Mesma conta do seletor de coordenador: largura útil menos a margem.
+  const menuWidth = isXs ? "calc(100vw - 32px)" : 560;
+  const menuMaxHeight = isXs ? "75dvh" : 480;
 
   const actionsDirection = isXs ? "column" : "row";
   const actionsButtonProps = isXs ? { fullWidth: true, size: "medium" as const } : { size: "small" as const };
@@ -183,8 +178,8 @@ export default function TeachersSelect({
             borderColor: "divider",
             py: 1,
           }}
-          onKeyDown={stopPropagation as any}
-          onClick={stopPropagation as any}
+          onKeyDown={stopPropagation}
+          onClick={stopPropagation}
         >
           <Box sx={{ px: 2, pb: 1 }}>
             <TextField
@@ -195,7 +190,7 @@ export default function TeachersSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={stopPropagation}
-              inputProps={{ "aria-label": "Buscar professor" }}
+              slotProps={{ htmlInput: { "aria-label": "Buscar professor" } }}
             />
           </Box>
 

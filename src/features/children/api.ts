@@ -6,8 +6,10 @@ export async function apiFetchChildren(args: {
   limit: number;
   filters?: ChildFilters;
   sort?: ChildSort;
+  /** Permite cancelar a busca quando outra começa. */
+  signal?: AbortSignal;
 }) {
-  const { page, limit, filters, sort } = args;
+  const { page, limit, filters, sort, signal } = args;
   const orderBy = sort?.id ?? 'updatedAt';
   const order = sort?.desc ? 'DESC' : 'ASC';
 
@@ -18,6 +20,7 @@ export async function apiFetchChildren(args: {
       orderBy,
       order,
       searchString: filters?.searchString || undefined,
+      clubId: filters?.clubId || undefined,
       clubNumber: filters?.clubNumber ?? undefined,
       birthDateFrom: filters?.birthDateFrom || undefined,
       birthDateTo: filters?.birthDateTo || undefined,
@@ -25,6 +28,7 @@ export async function apiFetchChildren(args: {
       joinedTo: filters?.joinedTo || undefined,
       isActive: filters?.isActive !== undefined ? filters.isActive : undefined,
     },
+    signal,
   });
   return data;
 }

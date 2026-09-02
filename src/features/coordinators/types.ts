@@ -48,3 +48,10 @@ export type CoordinatorFilters = {
   hasClubs: "all" | "yes" | "no";
   clubNumber?: number | "";
 };
+
+/** Contrato de `GET /coordinator-profiles/simple`. */
+export type CoordinatorSimpleOption = {
+  coordinatorProfileId: string;
+  name: string;
+  vinculado: boolean;
+};
