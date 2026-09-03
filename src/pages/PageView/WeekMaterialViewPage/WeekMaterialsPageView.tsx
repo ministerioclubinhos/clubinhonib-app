@@ -232,8 +232,9 @@ export default function WeekMaterialsPageView({
               <Tabs
                 value={activeTab}
                 onChange={(_, value: number) => setActiveTab(value)}
-                variant={isMobile ? 'fullWidth' : 'scrollable'}
-                scrollButtons={isMobile ? false : 'auto'}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
                 aria-label="Tipos de material disponíveis"
                 sx={{
                   '& .MuiTab-root': {
@@ -257,16 +258,19 @@ export default function WeekMaterialsPageView({
                         gap={isMobile ? 0.5 : 1}
                         sx={{ width: '100%' }}
                       >
-                        <Typography component="span">{tab.icon}</Typography>
-                        {!isMobile && (
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            sx={{ fontWeight: 'inherit', whiteSpace: 'nowrap' }}
-                          >
-                            {tab.label}
-                          </Typography>
-                        )}
+                        <Typography component="span" sx={{ fontSize: { xs: '1rem', md: '1.2rem' } }}>
+                          {tab.icon}
+                        </Typography>
+                        <Typography
+                          component="span"
+                          sx={{
+                            fontWeight: 'inherit',
+                            whiteSpace: 'nowrap',
+                            fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem' },
+                          }}
+                        >
+                          {tab.label}
+                        </Typography>
                         <Chip
                           label={tab.items.length}
                           size="small"
