@@ -34,6 +34,8 @@ export async function apiListPagelasPaginated(
 ): Promise<Paginated<PagelaResponse>> {
   const filters: PagelaFilters = {
     searchString: params.searchString,
+    year: params.year,
+    week: params.week,
     present: params.present,
     didMeditation: params.didMeditation,
     recitedVerse: params.recitedVerse,

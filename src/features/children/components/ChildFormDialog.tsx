@@ -2,7 +2,8 @@ import React from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Grid, TextField, Alert, Typography, CircularProgress,
-  FormControl, InputLabel, Select, MenuItem, Stack, Skeleton, Box, FormHelperText
+  FormControl, InputLabel, Select, MenuItem, Stack, Skeleton, Box, FormHelperText,
+  useMediaQuery, useTheme
 } from "@mui/material";
 import { useSelector } from "react-redux";
 import { UserRole } from "@/types/shared";
@@ -28,54 +29,24 @@ export default function ChildFormDialog({
   mode, open, value, onChange, onCancel, onSubmit, error, loading,
 }: Props) {
   const isCreate = mode === "create";
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   if (!value) return null;
 
   const user = useSelector((state: RootState) => state.auth.user);
-  const isTeacher = user?.role === UserRole.TEACHER;
   const teacherClub = user?.teacherProfile?.club ?? null;
-  const teacherClubId = teacherClub?.id ?? null;
+  const userClubId = teacherClub?.id ?? null;
 
   const setField = <K extends keyof (CreateChildForm & EditChildForm)>(key: K, val: any) =>
     onChange({ ...(value as any), [key]: val } as any);
 
   React.useEffect(() => {
-    if (!isTeacher) return;
-    if (!teacherClubId) return;
-    if ((value as any).clubId !== teacherClubId) {
-      setField("clubId", teacherClubId);
+    if (isCreate && userClubId && !(value as any).clubId) {
+      setField("clubId", userClubId);
     }
-  }, [isTeacher, teacherClubId]);
+  }, [isCreate, userClubId]);
 
   const effectiveClubId = (value as any).clubId ?? null;
-
-  const [clubOptions, setClubOptions] = React.useState<ClubSelectOption[]>([]);
-  const [loadingClubDetail, setLoadingClubDetail] = React.useState(false);
-  const [clubDetailErr, setClubDetailErr] = React.useState<string>("");
-
-  React.useEffect(() => {
-    if (!isTeacher) return;
-    if (clubOptions.length > 0) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoadingClubDetail(true);
-        setClubDetailErr("");
-        const items = await apiFetchClubOptions();
-        if (!cancelled) setClubOptions(Array.isArray(items) ? items : []);
-      } catch (e: any) {
-        if (!cancelled) setClubDetailErr(e?.response?.data?.message || e?.message || "Falha ao carregar clubinhos");
-      } finally {
-        if (!cancelled) setLoadingClubDetail(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [isTeacher]);
-
-  const selectedClubDetail = React.useMemo(() => {
-    if (!effectiveClubId) return null;
-    const found = clubOptions.find(o => o.id === effectiveClubId);
-    return found?.label ?? null;
-  }, [effectiveClubId, clubOptions]);
 
   const [showErrors, setShowErrors] = React.useState(false);
 
@@ -87,7 +58,6 @@ export default function ChildFormDialog({
     district: !!(value as any).address?.district?.trim(),
     city: !!(value as any).address?.city?.trim(),
     state: !!(value as any).address?.state?.trim(),
-    clubId: !!effectiveClubId,
   };
 
   const hasErrors = Object.values(req).some(v => !v);
@@ -98,7 +68,7 @@ export default function ChildFormDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onCancel} maxWidth="md" fullWidth fullScreen={isMobile}>
       <DialogTitle>{isCreate ? "Cadastrar Criança" : "Editar Criança"}</DialogTitle>
 
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
@@ -174,52 +144,12 @@ export default function ChildFormDialog({
           </Grid>
 
           <Grid item xs={12} md={6}>
-            {isTeacher ? (
-              <Stack spacing={0.75}>
-                <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.8 }}>
-                  Clubinho (obrigatório)
-                </Typography>
-
-                {loadingClubDetail ? (
-                  <Skeleton variant="rounded" height={40} />
-                ) : clubDetailErr ? (
-                  <Alert severity="warning">{clubDetailErr}</Alert>
-                ) : selectedClubDetail ? (
-                  <Box
-                    sx={{
-                      px: 1.25,
-                      py: 1,
-                      borderRadius: 1.5,
-                      bgcolor: "action.hover",
-                      border: "1px solid",
-                      borderColor: (showErrors && !req.clubId) ? "error.main" : "divider",
-                      fontWeight: 700,
-                      lineHeight: 1.2,
-                    }}
-                    title={selectedClubDetail}
-                  >
-                    {selectedClubDetail}
-                  </Box>
-                ) : (
-                  <Alert severity="info">Seu perfil não possui um club vinculado.</Alert>
-                )}
-
-                {showErrors && !req.clubId && (
-                  <Typography variant="caption" color="error">
-                    Selecione um Clubinho
-                  </Typography>
-                )}
-              </Stack>
-            ) : (
-              <ClubAutocomplete
-                value={effectiveClubId}
-                onChange={(id) => setField("clubId", id)}
-                required
-                label="Clubinho (obrigatório)"
-                errorText={showErrors && !req.clubId ? "Selecione um Clubinho" : undefined}
-                fetchOnMount
-              />
-            )}
+            <ClubAutocomplete
+              value={effectiveClubId}
+              onChange={(id) => setField("clubId", id)}
+              label="Clubinho"
+              fetchOnMount
+            />
           </Grid>
 
           <Grid item xs={12}>

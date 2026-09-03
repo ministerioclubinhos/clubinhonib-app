@@ -4,6 +4,7 @@ import {
   Box, Avatar, Tooltip, IconButton, useTheme, Divider,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import PhoneIcon from "@mui/icons-material/Phone";
@@ -31,12 +32,14 @@ export default function ChildCard({
   child,
   onClick,
   onEdit,
+  onDelete,
   onRefresh,
   onToggleActive
 }: {
   child: ChildSimpleResponseDto;
   onClick: (c: ChildSimpleResponseDto) => void;
   onEdit?: (c: ChildSimpleResponseDto) => void;
+  onDelete?: (c: ChildSimpleResponseDto) => void;
   onRefresh?: () => void;
   onToggleActive?: (c: ChildSimpleResponseDto) => void;
 }) {
@@ -94,26 +97,51 @@ export default function ChildCard({
         </Tooltip>
         )}
 
-        {!!onEdit && (
-          <Tooltip title="Editar criança">
-            <IconButton
-              size="small"
-              onClick={(e) => { e.stopPropagation(); onEdit(child); }}
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                bgcolor: "background.paper",
-                border: "1px solid",
-                borderColor: "divider",
-                zIndex: 3,
-                "&:hover": { bgcolor: "background.paper" },
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        )}
+        <Stack
+          direction="row"
+          spacing={0.5}
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            zIndex: 3,
+          }}
+        >
+          {!!onEdit && (
+            <Tooltip title="Editar criança">
+              <IconButton
+                size="small"
+                onClick={(e) => { e.stopPropagation(); onEdit(child); }}
+                sx={{
+                  bgcolor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  "&:hover": { bgcolor: "background.paper" },
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          {!!onDelete && (
+            <Tooltip title="Excluir criança">
+              <IconButton
+                size="small"
+                onClick={(e) => { e.stopPropagation(); onDelete(child); }}
+                sx={{
+                  bgcolor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  color: "error.main",
+                  "&:hover": { bgcolor: "error.50" },
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
 
         <Box
           sx={{

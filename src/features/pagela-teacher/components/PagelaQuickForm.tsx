@@ -22,7 +22,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { useSelector } from "react-redux";
 import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from "../types";
-import { todayISO } from "../utils";
+import { todayISO, getISOWeekYear } from "../utils";
 
 type Props = {
   initial?: Pagela | null;
@@ -61,8 +61,14 @@ export default function PagelaQuickForm({
 
   const effectiveTeacherProfileId = teacherProfileIdFromRedux ?? teacherProfileId ?? null;
 
-  const [yearText, setYearText] = React.useState<string>("");
-  const [weekText, setWeekText] = React.useState<string>("");
+  const currentIso = React.useMemo(() => getISOWeekYear(new Date()), []);
+
+  const [yearText, setYearText] = React.useState<string>(
+    initial?.year ? String(initial.year) : String(currentIso.year)
+  );
+  const [weekText, setWeekText] = React.useState<string>(
+    initial?.week ? String(initial.week) : String(currentIso.week)
+  );
 
   const [editing, setEditing] = React.useState<boolean>(!!initial?.id);
   const [currentId, setCurrentId] = React.useState<string | null>(initial?.id ?? null);
@@ -85,8 +91,13 @@ export default function PagelaQuickForm({
     } else {
       setEditing(false);
       setCurrentId(null);
-      setYearText("");
-      setWeekText("");
+      const iso = getISOWeekYear(new Date());
+      setYearText(String(iso.year));
+      setWeekText(String(iso.week));
+      setPresent(false);
+      setMed(false);
+      setVerse(false);
+      setNotes("");
     }
   }, [initial]);
 

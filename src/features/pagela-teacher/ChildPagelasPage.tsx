@@ -22,8 +22,10 @@ import { ArrowBack, FamilyRestroom, Phone, Add } from "@mui/icons-material";
 import { useChildrenBrowser, useChildPagelas } from "./hooks";
 import PagelaList from "./components/PagelaList";
 import PagelaQuickForm from "./components/PagelaQuickForm";
-import type { ChildSimpleResponseDto } from "../children/types";
+import { apiFetchChild } from "../children/api";
+import type { ChildSimpleResponseDto, ChildResponseDto } from "../children/types";
 import type { Pagela } from "./types";
+import { getISOWeekYear } from "./utils";
 
 function genderPastel(seed: string, gender?: string) {
   const hash = Array.from(seed).reduce((a, ch) => (a * 33 + ch.charCodeAt(0)) % 1000, 7);
@@ -48,11 +50,42 @@ export default function ChildPagelasPage() {
 
   const { byId, loading: loadingChildren, error: cError, setError: setCErr, setSearchString } =
     useChildrenBrowser();
-  React.useEffect(() => {
-    if (!loc.state?.child && !byId.get(childId)) setSearchString("");
-  }, [childId]);
 
-  const child = loc.state?.child || byId.get(childId) || null;
+  const [directChild, setDirectChild] = React.useState<any | null>(null);
+  const [fetchingChild, setFetchingChild] = React.useState(false);
+
+  React.useEffect(() => {
+    if (childId && !loc.state?.child && !byId.get(childId)) {
+      let cancelled = false;
+      (async () => {
+        try {
+          setFetchingChild(true);
+          const full: ChildResponseDto = await apiFetchChild(childId);
+          if (!cancelled) {
+            setDirectChild({
+              id: full.id,
+              name: full.name,
+              guardianName: full.guardianName,
+              guardianPhone: full.guardianPhone,
+              gender: full.gender,
+              clubId: full.club?.id ?? null,
+              isActive: full.isActive,
+            });
+          }
+        } catch (err: any) {
+          if (!cancelled) {
+            setCErr(err?.response?.data?.message || err?.message || "Criança não encontrada");
+          }
+        } finally {
+          if (!cancelled) setFetchingChild(false);
+        }
+      })();
+      return () => { cancelled = true; };
+    }
+  }, [childId, loc.state?.child]);
+
+  const child = loc.state?.child || directChild || byId.get(childId) || null;
+  const currentIso = React.useMemo(() => getISOWeekYear(new Date()), []);
   const colors = React.useMemo(
     () => genderPastel(child?.name || childId, (child as any)?.gender),
     [child, childId]
@@ -322,8 +355,8 @@ export default function ChildPagelasPage() {
                 childId={childId}
                 childName={child?.name || ""}
                 childGender={child?.gender || ""}
-                defaultYear={0}
-                defaultWeek={0}
+                defaultYear={currentIso.year}
+                defaultWeek={currentIso.week}
                 teacherProfileId={TEACHER_PROFILE_ID}
                 findPagela={findPagela}
                 onCreate={async (p) => {
@@ -403,8 +436,8 @@ export default function ChildPagelasPage() {
               childId={childId}
               childName={child?.name || ""}
               childGender={child?.gender || ""}
-              defaultYear={0}
-              defaultWeek={0}
+              defaultYear={currentIso.year}
+              defaultWeek={currentIso.week}
               teacherProfileId={TEACHER_PROFILE_ID}
               findPagela={findPagela}
               onCreate={async (p) => {

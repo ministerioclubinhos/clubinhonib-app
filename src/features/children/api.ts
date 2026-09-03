@@ -57,13 +57,21 @@ export async function apiFetchChildSimple(params?: {
   return data; // Return full paginated response
 }
 
+function sanitizeAddress<T extends { address?: any }>(payload: T): T {
+  if (!payload || !payload.address) return payload;
+  const { id, createdAt, updatedAt, ...cleanAddress } = payload.address;
+  return { ...payload, address: cleanAddress };
+}
+
 export async function apiCreateChild(payload: CreateChildForm) {
-  const { data } = await api.post<ChildResponseDto>("/children", payload);
+  const cleaned = sanitizeAddress(payload);
+  const { data } = await api.post<ChildResponseDto>("/children", cleaned);
   return data;
 }
 
 export async function apiUpdateChild(id: string, payload: Omit<EditChildForm, "id">) {
-  const { data } = await api.put<ChildResponseDto>(`/children/${id}`, payload);
+  const cleaned = sanitizeAddress(payload);
+  const { data } = await api.put<ChildResponseDto>(`/children/${id}`, cleaned);
   return data;
 }
 

@@ -75,6 +75,8 @@ export type PagelasQueryParams = {
 /** Filtros da tela, antes de virarem query string. */
 export type PagelaFilters = {
   searchString?: string;
+  year?: number;
+  week?: number;
   present?: boolean;
   didMeditation?: boolean;
   recitedVerse?: boolean;

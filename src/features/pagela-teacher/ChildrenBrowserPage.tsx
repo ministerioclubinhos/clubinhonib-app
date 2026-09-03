@@ -6,20 +6,22 @@ import {
 } from "@mui/material";
 import { Search, PersonAdd, ArrowBack, FilterAltOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useSnackbar } from "notistack";
 
 import { useChildrenBrowser } from "./hooks";
 import ChildCard from "./components/ChildCard";
-import { CreateChildForm, EditChildForm, ChildResponseDto } from "../children/types";
+import { CreateChildForm, EditChildForm, ChildResponseDto, ChildSimpleResponseDto } from "../children/types";
 import { useChildMutations } from "../children/hooks";
 import ChildFormDialog from "../children/components/ChildFormDialog";
 import { apiFetchChild } from "../children/api";
 import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
-import { ChildSimpleResponseDto } from "../children/types";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 import { extractErrorMessage } from "@/utils/apiError";
 
 export default function ChildrenBrowserPage() {
   const nav = useNavigate();
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const pageSize = isMobile ? 5 : 10;
@@ -45,6 +47,7 @@ export default function ChildrenBrowserPage() {
   const [creating, setCreating] = React.useState<CreateChildForm | null>(null);
   const [editing, setEditing] = React.useState<EditChildForm | null>(null);
   const [confirmToggleActive, setConfirmToggleActive] = React.useState<ChildSimpleResponseDto | null>(null);
+  const [confirmDelete, setConfirmDelete] = React.useState<ChildSimpleResponseDto | null>(null);
 
   const {
     dialogLoading,
@@ -52,6 +55,7 @@ export default function ChildrenBrowserPage() {
     setDialogError,
     createChild,
     updateChild,
+    deleteChild,
     toggleActive,
   } = useChildMutations(async () => {
     await refetch();
@@ -75,9 +79,9 @@ export default function ChildrenBrowserPage() {
     if (!payload.joinedAt) payload.joinedAt = null;
     if (!payload.clubId) payload.clubId = null as any;
 
-    // O formulário só fecha quando a API aceita; o erro fica visível nele.
-    const ok = await createChild(payload, 1, 12);
+    const ok = await createChild(payload, page, pageSize);
     if (ok) {
+      enqueueSnackbar("Criança cadastrada com sucesso!", { variant: "success" });
       setCreating(null);
       setDialogError("");
     }
@@ -116,9 +120,20 @@ export default function ChildrenBrowserPage() {
   const submitEdit = async () => {
     if (!editing) return;
     const { id, ...rest } = editing;
-    const ok = await updateChild(id, rest, 1, 12);
+    const ok = await updateChild(id, rest, page, pageSize);
     if (ok) {
+      enqueueSnackbar("Criança atualizada com sucesso!", { variant: "success" });
       setEditing(null);
+      setDialogError("");
+    }
+  };
+
+  const submitDelete = async () => {
+    if (!confirmDelete) return;
+    const ok = await deleteChild(confirmDelete.id, page, pageSize);
+    if (ok) {
+      enqueueSnackbar("Criança excluída com sucesso!", { variant: "success" });
+      setConfirmDelete(null);
       setDialogError("");
     }
   };
@@ -298,6 +313,25 @@ export default function ChildrenBrowserPage() {
         <Box textAlign="center" my={6}>
           <CircularProgress />
         </Box>
+      ) : items.length === 0 ? (
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            textAlign: "center",
+            borderRadius: 3,
+            border: "1px dashed",
+            borderColor: "divider",
+            bgcolor: "white",
+          }}
+        >
+          <Typography variant="h6" color="text.secondary" fontWeight={700}>
+            Nenhuma criança encontrada
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Tente alterar os termos da busca ou ajustar os filtros selecionados.
+          </Typography>
+        </Paper>
       ) : (
         <>
           <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
@@ -307,6 +341,7 @@ export default function ChildrenBrowserPage() {
                   child={child}
                   onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
                   onEdit={(c) => openEdit(c.id)}
+                  onDelete={(c) => setConfirmDelete(c)}
                   onRefresh={refetch}
                   onToggleActive={(c) => {
                     setConfirmToggleActive(c);
@@ -360,6 +395,17 @@ export default function ChildrenBrowserPage() {
         loading={dialogLoading}
       />
 
+      <DeleteConfirmDialog
+        open={!!confirmDelete}
+        title={confirmDelete?.name || ""}
+        onClose={() => {
+          setConfirmDelete(null);
+          setDialogError("");
+        }}
+        onConfirm={submitDelete}
+        loading={dialogLoading}
+      />
+
       <ToggleActiveConfirmDialog
         open={!!confirmToggleActive}
         title={confirmToggleActive?.name || ""}
@@ -373,15 +419,24 @@ export default function ChildrenBrowserPage() {
 
           try {
             const fullChild = await apiFetchChild(confirmToggleActive.id);
-            await toggleActive(fullChild.id, 1, 20, undefined, undefined);
-            await refetch();
-            setConfirmToggleActive(null);
+            const ok = await toggleActive(fullChild.id, page, pageSize, undefined, undefined);
+            if (ok) {
+              enqueueSnackbar(
+                confirmToggleActive.isActive
+                  ? "Criança desativada com sucesso"
+                  : "Criança ativada com sucesso",
+                { variant: "info" }
+              );
+              setConfirmToggleActive(null);
+              setDialogError("");
+              await refetch();
+            }
           } catch (err: unknown) {
             setDialogError(extractErrorMessage(err, "Erro ao alterar status da criança"));
           }
         }}
         loading={dialogLoading}
       />
-    </Box >
+    </Box>
   );
 }

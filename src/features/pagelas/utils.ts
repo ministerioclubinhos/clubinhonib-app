@@ -91,6 +91,8 @@ export function buildPagelasQuery(args: {
     childId,
     page,
     limit,
+    year: filters?.year,
+    week: filters?.week,
     searchString: filters?.searchString?.trim() || undefined,
     present: filters?.present,
     didMeditation: filters?.didMeditation,
