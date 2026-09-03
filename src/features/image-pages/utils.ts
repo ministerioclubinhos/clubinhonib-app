@@ -5,6 +5,8 @@ import {
   ImagePageFormValues,
   ImagePageRequest,
   ImagePageResponse,
+  ImagePageSortField,
+  ImagePageSortOrder,
   ImageSectionDraft,
 } from './types';
 
@@ -137,14 +139,34 @@ export const toSectionDrafts = (
 export const countMedia = (sections: ImageSectionDraft[]): number =>
   sections.reduce((total, section) => total + section.mediaItems.length, 0);
 
-/** Filtra galerias por título. */
-export const filterByTitle = (
-  pages: ImagePageResponse[],
-  term: string,
-): ImagePageResponse[] => {
-  const normalized = term.trim().toLowerCase();
-  if (!normalized) return pages;
-  return pages.filter((page) =>
-    (page.title || '').toLowerCase().includes(normalized),
-  );
-};
+/**
+ * Formata a data que a API devolve em ISO.
+ *
+ * Uma data inválida vira travessão em vez de "Invalid Date" no card.
+ */
+export function formatDate(value?: string | null): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('pt-BR');
+}
+
+/** Duas letras do título, para o avatar do card. */
+export function pageInitials(title: string): string {
+  const parts = title.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+/** Divide o valor do seletor de ordenação em campo e direção. */
+export function parseSortOption(value: string): {
+  sort: ImagePageSortField;
+  order: ImagePageSortOrder;
+} {
+  const [sort, order] = value.split(':');
+  return {
+    sort: sort === 'title' ? 'title' : 'createdAt',
+    order: order === 'ASC' ? 'ASC' : 'DESC',
+  };
+}

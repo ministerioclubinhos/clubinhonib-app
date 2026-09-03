@@ -53,7 +53,10 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
         link.click();
         document.body.removeChild(link);
         setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      } catch {
+      } catch (error: unknown) {
+        // O download é uma conveniência: sem ele o modal ainda fecha, mas o
+        // erro precisa aparecer em algum lugar em vez de sumir.
+        console.error('Falha ao baixar o documento:', error);
       }
     })();
 

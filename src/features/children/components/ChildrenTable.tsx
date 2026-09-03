@@ -45,7 +45,6 @@ function ChildrenTableDesktop(props: Props) {
   
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
 
   const columns = useMemo<ColumnDef<ChildResponseDto>[]>(() => ([
     {

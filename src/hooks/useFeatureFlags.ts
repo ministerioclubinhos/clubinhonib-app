@@ -1,38 +1,34 @@
-import { useState, useEffect } from 'react';
-import { FeatureFlags, MOCKED_FEATURE_FLAGS } from '@/constants/featureFlags';
+import { useFeatureFlagsContext } from '@/features/feature-flags/FeatureFlagsProvider';
+import type { FeatureFlags } from '@/constants/featureFlags';
 
 export interface UseFeatureFlagsReturn {
   flags: FeatureFlags;
   loading: boolean;
   error: string | null;
+  refresh: () => Promise<void>;
 }
 
+/**
+ * As feature flags que valem para a sessão atual.
+ *
+ * A busca acontece uma vez só, no `FeatureFlagsProvider`: todas as telas leem
+ * o mesmo estado, e ligar uma flag no painel se reflete em todas elas sem
+ * recarregar a página.
+ */
 export const useFeatureFlags = (): UseFeatureFlagsReturn => {
-  const [flags, setFlags] = useState<FeatureFlags>(MOCKED_FEATURE_FLAGS);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { flags, loading, error, refresh } = useFeatureFlagsContext();
+  return { flags, loading, error, refresh };
+};
 
-  useEffect(() => {
-    // import api from '@/config/axiosConfig';
-    //
-    // const fetchFlags = async () => {
-    //   setLoading(true);
-    //   setError(null);
-    //   try {
-    //     const { data } = await api.get<Partial<FeatureFlags>>('/feature-flags');
-    //     setFlags({ ...MOCKED_FEATURE_FLAGS, ...data });
-    //   } catch (err) {
-    //     setError('Could not load feature flags.');
-    //     setFlags(MOCKED_FEATURE_FLAGS);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-    //
-    // fetchFlags();
-  }, []);
-
-  return { flags, loading, error };
+/**
+ * Uma flag específica, inclusive as criadas no painel depois do build.
+ *
+ * Enquanto o mapa não chega vale o padrão embutido, e não `false`: esconder
+ * tudo durante o carregamento faria a tela piscar a cada navegação.
+ */
+export const useFeatureEnabled = (key: string): boolean => {
+  const { isEnabled } = useFeatureFlagsContext();
+  return isEnabled(key);
 };
 
 export default useFeatureFlags;

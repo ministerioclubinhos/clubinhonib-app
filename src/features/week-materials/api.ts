@@ -1,22 +1,39 @@
+import type { AxiosRequestConfig } from 'axios';
+
 import api from '@/config/axiosConfig';
 import { MULTIPART_HEADERS, WEEK_MATERIALS_ENDPOINT } from './constants';
-import { WeekMaterialResponse } from './types';
-import { sortByCreationDesc } from './utils';
+import {
+  PaginatedWeekMaterials,
+  WeekMaterialQuery,
+  WeekMaterialResponse,
+} from './types';
 
-/** Lists every week material page, newest first. */
-export async function listWeekMaterials(): Promise<WeekMaterialResponse[]> {
-  const { data } = await api.get<WeekMaterialResponse[]>(
+/**
+ * Lista as páginas de materiais semanais, em resumo.
+ *
+ * Busca, filtro e ordenação são resolvidos pela API: antes a listagem inteira
+ * — com todas as mídias de cada página — era baixada só para ser peneirada e
+ * ordenada aqui.
+ */
+export async function listWeekMaterials(
+  query: WeekMaterialQuery,
+  config?: AxiosRequestConfig,
+): Promise<PaginatedWeekMaterials> {
+  const { data } = await api.get<PaginatedWeekMaterials>(
     WEEK_MATERIALS_ENDPOINT,
+    { ...config, params: query },
   );
-  return sortByCreationDesc(data);
+  return data;
 }
 
 /** Loads a single week material page with its media. */
 export async function getWeekMaterial(
   id: string,
+  config?: AxiosRequestConfig,
 ): Promise<WeekMaterialResponse> {
   const { data } = await api.get<WeekMaterialResponse>(
     `${WEEK_MATERIALS_ENDPOINT}/${id}`,
+    config,
   );
   return data;
 }

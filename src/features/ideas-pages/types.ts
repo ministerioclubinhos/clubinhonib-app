@@ -33,6 +33,50 @@ export interface IdeasSectionResponse {
   medias: IdeasMediaResponse[];
 }
 
+/**
+ * Resumo da página na listagem do painel.
+ *
+ * A listagem não traz seções nem mídias: carregar o conteúdo inteiro de cada
+ * página era o que fazia a tela demorar a abrir.
+ */
+export interface IdeasPageSummary {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  public: boolean;
+  /** Endereço da página; `null` quando a rota não existe. */
+  routePath: string | null;
+  sectionCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Envelope paginado devolvido pela API. */
+export interface PaginatedIdeasPages {
+  data: IdeasPageSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  pageCount: number;
+}
+
+/** Campo pelo qual a listagem pode ser ordenada. */
+export type IdeasPageSortField = 'createdAt' | 'title';
+
+/** Direção da ordenação. */
+export type IdeasPageSortOrder = 'ASC' | 'DESC';
+
+/** Filtros aplicados pela API, não pela tela. */
+export interface IdeasPageQuery {
+  page?: number;
+  limit?: number;
+  searchString?: string;
+  public?: boolean;
+  sort?: IdeasPageSortField;
+  order?: IdeasPageSortOrder;
+}
+
 /** Rota exposta por `/ideas-pages`. */
 export interface IdeasRouteResponse {
   title: string;

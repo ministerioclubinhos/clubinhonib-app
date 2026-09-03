@@ -1,87 +1,139 @@
 import React from "react";
-import { Card, CardContent, Typography, IconButton, Tooltip, Box, Button } from "@mui/material";
-import { Delete, Edit, Publish, Visibility } from "@mui/icons-material";
-import { CommentData } from "store/slices/comment/commentsSlice";
+import { IconButton, Tooltip, Typography } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
+import PublicIcon from "@mui/icons-material/Public";
+import PublicOffIcon from "@mui/icons-material/PublicOff";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+
+import { ListingCard } from "@/components/common/listing";
+
+import { commentInitials, formatDateTime } from "../utils";
+import type { CommentResponse } from "../types";
 
 type Props = {
-  comment: CommentData;
-  onView: (c: CommentData) => void;
-  onEdit: (c: CommentData) => void;
-  onAskPublish: (c: CommentData) => void;
-  onAskDelete: (c: CommentData) => void;
-  truncate?: (s: string, len?: number) => string;
+  comment: CommentResponse;
+  onView: () => void;
+  onEdit: () => void;
+  onTogglePublished: () => void;
+  onDelete: () => void;
+  disabled?: boolean;
 };
 
+const ICON_SX = { fontSize: 16 } as const;
+
+/** Um comentário na grade. */
 export default function CommentCard({
-  comment, onView, onEdit, onAskPublish, onAskDelete, truncate = (s, l = 80) => (s?.length > l ? s.slice(0, l) + "..." : s),
+  comment,
+  onView,
+  onEdit,
+  onTogglePublished,
+  onDelete,
+  disabled,
 }: Props) {
   return (
-    <Card
-      sx={{
-        borderRadius: 3,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        p: 2,
-        bgcolor: comment.published ? "#e6f4ea" : "#fff3e0",
-        border: comment.published ? "1px solid #4caf50" : "1px solid #ff9800",
-        transition: "transform 0.2s, box-shadow 0.2s",
-        "&:hover": { transform: "translateY(-4px)", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" },
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        width: "100%",
-      }}
-    >
-      <Tooltip title="Excluir Comentário">
-        <IconButton
-          size="small"
-          onClick={() => onAskDelete(comment)}
-          sx={{ position: "absolute", top: 8, right: 8, color: "#d32f2f", bgcolor: "rgba(255,255,255,0.8)", "&:hover": { bgcolor: "#ffebee" } }}
-        >
-          <Delete fontSize="small" />
-        </IconButton>
-      </Tooltip>
-
-      <CardContent sx={{ flexGrow: 1, pb: 2 }}>
-        <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "1.1rem", md: "1.3rem" }, color: "#1a3c34" }}>
-          {comment.name || "Sem Nome"}
+    <ListingCard
+      avatar={commentInitials(comment.name)}
+      title={comment.name}
+      subtitle={`Clubinho ${comment.clubinho}`}
+      // Publicado descansa em verde; pendente chama atenção.
+      accent={comment.published ? "success" : "warning"}
+      onClick={onView}
+      badges={[
+        comment.published
+          ? { label: "Publicado", color: "success" }
+          : { label: "Aguardando publicação", color: "warning" },
+      ]}
+      excerpt={comment.comment}
+      meta={[
+        {
+          icon: <HomeWorkIcon sx={ICON_SX} />,
+          label: comment.neighborhood,
+        },
+        {
+          icon: <ScheduleIcon sx={ICON_SX} />,
+          label: formatDateTime(comment.createdAt),
+        },
+      ]}
+      footer={
+        <Typography variant="caption" color="text.secondary" noWrap>
+          {comment.published ? "Visível no site" : "Fora do site"}
         </Typography>
-
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: { xs: "0.85rem", md: "0.95rem" }, lineHeight: 1.5 }}>
-          {truncate(comment.comment || "")}
-        </Typography>
-
-        <Typography
-          variant="caption"
-          color={comment.published ? "success.main" : "warning.main"}
-          sx={{ fontWeight: "medium", fontSize: { xs: "0.8rem", md: "0.9rem" } }}
-        >
-          {comment.published ? "Publicado" : "Não Publicado"}
-        </Typography>
-      </CardContent>
-
-      <Box sx={{ display: "flex", gap: 1, justifyContent: "center", flexWrap: "wrap", p: 2, borderTop: "1px solid #e0e0e0" }}>
-        <Tooltip title="Ver detalhes do comentário">
-          <Button variant="outlined" size="small" startIcon={<Visibility />} onClick={() => onView(comment)}
-            sx={{ flex: 1, minWidth: 100 }} >
-            Detalhes
-          </Button>
-        </Tooltip>
-        <Tooltip title="Editar comentário">
-          <Button variant="outlined" size="small" startIcon={<Edit />} onClick={() => onEdit(comment)}
-            sx={{ flex: 1, minWidth: 100 }} >
-            Editar
-          </Button>
-        </Tooltip>
-        {!comment.published && (
-          <Tooltip title="Publicar comentário">
-            <Button variant="contained" size="small" startIcon={<Publish />} onClick={() => onAskPublish(comment)}
-              sx={{ flex: 1, minWidth: 100, bgcolor: "#4caf50", "&:hover": { bgcolor: "#43a047" } }}>
-              Publicar
-            </Button>
+      }
+      actions={
+        <>
+          <Tooltip title="Ver detalhes">
+            <IconButton
+              size="small"
+              color="primary"
+              aria-label="Ver detalhes"
+              onClick={(event) => {
+                event.stopPropagation();
+                onView();
+              }}
+            >
+              <VisibilityIcon fontSize="small" />
+            </IconButton>
           </Tooltip>
-        )}
-      </Box>
-    </Card>
+
+          <Tooltip title="Editar">
+            <span>
+              <IconButton
+                size="small"
+                color="info"
+                disabled={disabled}
+                aria-label="Editar"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onEdit();
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Tooltip title={comment.published ? "Despublicar" : "Publicar"}>
+            <span>
+              <IconButton
+                size="small"
+                color={comment.published ? "default" : "success"}
+                disabled={disabled}
+                aria-label={comment.published ? "Despublicar" : "Publicar"}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onTogglePublished();
+                }}
+              >
+                {comment.published ? (
+                  <PublicOffIcon fontSize="small" />
+                ) : (
+                  <PublicIcon fontSize="small" />
+                )}
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Tooltip title="Excluir">
+            <span>
+              <IconButton
+                size="small"
+                color="error"
+                disabled={disabled}
+                aria-label="Excluir"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDelete();
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </>
+      }
+    />
   );
 }

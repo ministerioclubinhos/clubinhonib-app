@@ -15,7 +15,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { extractErrorInfo } from '@/utils/apiError';
 import { AuthErrorCode } from '@/types/api-error';
-import { ChangePasswordDto } from '../types';
+import { ChangePasswordRequest } from '../types';
 import { apiChangePassword } from '../api';
 
 interface PasswordChangeFormProps {
@@ -24,12 +24,12 @@ interface PasswordChangeFormProps {
 }
 
 const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isCommonUser }) => {
-  const [formData, setFormData] = useState<ChangePasswordDto>({
+  const [formData, setFormData] = useState<ChangePasswordRequest>({
     currentPassword: '',
     newPassword: '',
   });
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<Partial<Record<keyof ChangePasswordDto | 'confirmPassword', string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof ChangePasswordRequest | 'confirmPassword', string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -40,7 +40,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
     next: { currentPassword: string; newPassword: string; confirmPassword: string },
     touched?: Partial<Record<'currentPassword' | 'newPassword' | 'confirmPassword', boolean>>
   ) => {
-    const newErrors: Partial<Record<keyof ChangePasswordDto | 'confirmPassword', string>> = {};
+    const newErrors: Partial<Record<keyof ChangePasswordRequest | 'confirmPassword', string>> = {};
 
     const should = (key: 'currentPassword' | 'newPassword' | 'confirmPassword') =>
       touched?.[key] ?? true;
@@ -67,7 +67,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
   };
 
   const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof ChangePasswordDto | 'confirmPassword', string>> = {};
+    const newErrors: Partial<Record<keyof ChangePasswordRequest | 'confirmPassword', string>> = {};
 
     if (isCommonUser && !formData.currentPassword?.trim()) {
       newErrors.currentPassword = 'Senha atual é obrigatória';
@@ -113,7 +113,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
 
     setIsSubmitting(true);
     try {
-      const payload: ChangePasswordDto = {
+      const payload: ChangePasswordRequest = {
         newPassword: formData.newPassword,
         ...(isCommonUser && formData.currentPassword ? { currentPassword: formData.currentPassword } : {}),
       };

@@ -1,17 +1,58 @@
-import api from '@/config/axiosConfig';
-import { IDEAS_PAGES_ENDPOINT, MULTIPART_HEADERS } from './constants';
-import { IdeasPageResponse } from './types';
+import type { AxiosRequestConfig } from 'axios';
 
-/** Lista todas as páginas de ideias. */
-export async function apiListIdeasPages(): Promise<IdeasPageResponse[]> {
-  const { data } = await api.get<IdeasPageResponse[]>(IDEAS_PAGES_ENDPOINT);
-  return data ?? [];
+import api from '@/config/axiosConfig';
+import {
+  IDEAS_PAGES_ENDPOINT,
+  IDEAS_PAGES_SELECTOR_LIMIT,
+  MULTIPART_HEADERS,
+} from './constants';
+import {
+  IdeasPageQuery,
+  IdeasPageResponse,
+  IdeasPageSummary,
+  PaginatedIdeasPages,
+} from './types';
+
+/**
+ * Lista as páginas de ideias, em resumo.
+ *
+ * Busca, filtro e ordenação são resolvidos pela API: antes a listagem inteira
+ * — com todas as seções e mídias — era baixada só para ser peneirada aqui.
+ */
+export async function apiListIdeasPages(
+  query: IdeasPageQuery,
+  config?: AxiosRequestConfig,
+): Promise<PaginatedIdeasPages> {
+  const { data } = await api.get<PaginatedIdeasPages>(IDEAS_PAGES_ENDPOINT, {
+    ...config,
+    params: query,
+  });
+  return data;
 }
 
-/** Carrega uma página de ideias pelo id. */
-export async function apiGetIdeasPage(id: string): Promise<IdeasPageResponse> {
+/**
+ * Páginas oferecidas no seletor de destino de uma ideia.
+ *
+ * O seletor precisa apenas de id e título; uma página só de resumos cobre o
+ * acervo inteiro sem carregar seção nenhuma.
+ */
+export async function apiListIdeasPageOptions(): Promise<IdeasPageSummary[]> {
+  const page = await apiListIdeasPages({
+    limit: IDEAS_PAGES_SELECTOR_LIMIT,
+    sort: 'title',
+    order: 'ASC',
+  });
+  return page.data;
+}
+
+/** Carrega uma página de ideias pelo id, com suas seções. */
+export async function apiGetIdeasPage(
+  id: string,
+  config?: AxiosRequestConfig,
+): Promise<IdeasPageResponse> {
   const { data } = await api.get<IdeasPageResponse>(
     `${IDEAS_PAGES_ENDPOINT}/${id}`,
+    config,
   );
   return data;
 }

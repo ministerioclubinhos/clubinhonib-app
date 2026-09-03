@@ -3,8 +3,13 @@ import { Box, Typography, Container, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CTASectionProps } from '../types';
+import { FEATURE } from '@/features/feature-flags';
+import { useFeatureEnabled } from '@/hooks';
 
 const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
+  // Sem formulário de contato o convite não teria para onde levar.
+  const showContact = useFeatureEnabled(FEATURE.CONTACT_FORM);
+
   return (
     <Box
       sx={{
@@ -103,7 +108,7 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
                   Explorar Recursos
                 </Button>
               </motion.div>
-            ) : (
+            ) : showContact ? (
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -133,7 +138,7 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
                   Entre em Contato
                 </Button>
               </motion.div>
-            )}
+            ) : null}
           </Box>
         </motion.div>
       </Container>

@@ -108,8 +108,10 @@ export default function ChildrenManager() {
     if (!payload.joinedAt) payload.joinedAt = null;
     if (!payload.clubId) payload.clubId = null as any;
 
-    await createChild(payload, pageIndex + 1, pageSize, filters, sorting);
-    setCreating(null);
+    // O formulário só fecha quando a API aceita: se fechasse antes, o erro
+    // devolvido não teria onde aparecer.
+    const ok = await createChild(payload, pageIndex + 1, pageSize, filters, sorting);
+    if (ok) setCreating(null);
   };
 
   const [editing, setEditing] = useState<EditChildForm | null>(null);
@@ -138,8 +140,8 @@ export default function ChildrenManager() {
     }
 
     const payload = { ...rest, address: addressPayload };
-    await updateChild(id, payload, pageIndex + 1, pageSize, filters, sorting);
-    setEditing(null);
+    const ok = await updateChild(id, payload, pageIndex + 1, pageSize, filters, sorting);
+    if (ok) setEditing(null);
   };
 
   const [confirmDelete, setConfirmDelete] = useState<ChildResponseDto | null>(

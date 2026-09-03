@@ -11,8 +11,6 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -55,21 +53,6 @@ export const WeekMonthSummary: React.FC = () => {
       </Paper>
     );
   }
-
-  const weekVsMonth = [
-    {
-      period: 'Esta Semana',
-      total: data.pagelas.thisWeek.total,
-      presenceRate: data.pagelas.thisWeek.presenceRate,
-      decisions: data.acceptedChrists.thisWeek,
-    },
-    {
-      period: 'Este Mês',
-      total: data.pagelas.thisMonth.total,
-      presenceRate: data.pagelas.thisMonth.presenceRate,
-      decisions: data.acceptedChrists.thisMonth,
-    },
-  ];
 
   const getTrend = (weekValue: number, monthValue: number) => {
     const weeklyAvg = monthValue / 4;

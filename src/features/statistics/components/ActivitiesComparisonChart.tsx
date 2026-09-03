@@ -1,5 +1,5 @@
 import { toChartNumber } from '../types/chart.types';
-import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
+import type { ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,

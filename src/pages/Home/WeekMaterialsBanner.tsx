@@ -1,13 +1,14 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
+import { useVisibleRoutes } from '@/features/feature-flags';
 import { Box, Typography, Button, Container } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MediaTargetType } from 'store/slices/types';
 
 const WeekMaterialsBanner: React.FC = () => {
-  const routes = useSelector((state: RootState) => state.routes.routes);
+  const routes = useVisibleRoutes();
   const { user } = useSelector((state: RootState) => state.auth);
   const currentWeekRoute = routes.find(
     (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.current === true

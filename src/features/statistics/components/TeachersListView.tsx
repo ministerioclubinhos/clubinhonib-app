@@ -33,7 +33,6 @@ import {
   ExpandLess,
   FilterList,
   Refresh,
-  School,
   Group,
   Star,
   CheckCircle,

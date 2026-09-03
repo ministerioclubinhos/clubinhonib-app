@@ -15,6 +15,8 @@ import {
   IdeasPageFormValues,
   IdeasPageRequest,
   IdeasPageResponse,
+  IdeasPageSortField,
+  IdeasPageSortOrder,
   IdeasSectionDraft,
 } from './types';
 
@@ -201,14 +203,27 @@ export const replaceMediasOfType = (
 export const countMedia = (sections: IdeasSectionDraft[]): number =>
   sections.reduce((total, section) => total + section.medias.length, 0);
 
-/** Filtra páginas por título. */
-export const filterByTitle = (
-  pages: IdeasPageResponse[],
-  term: string,
-): IdeasPageResponse[] => {
-  const normalized = term.trim().toLowerCase();
-  if (!normalized) return pages;
-  return pages.filter((page) =>
-    (page.title || '').toLowerCase().includes(normalized),
-  );
-};
+
+/**
+ * Formata a data que a API devolve em ISO.
+ *
+ * Uma data inválida vira travessão em vez de "Invalid Date" no card.
+ */
+export function formatDate(value?: string | null): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('pt-BR');
+}
+
+/** Divide o valor do seletor de ordenação em campo e direção. */
+export function parseSortOption(value: string): {
+  sort: IdeasPageSortField;
+  order: IdeasPageSortOrder;
+} {
+  const [sort, order] = value.split(':');
+  return {
+    sort: sort === 'title' ? 'title' : 'createdAt',
+    order: order === 'ASC' ? 'ASC' : 'DESC',
+  };
+}

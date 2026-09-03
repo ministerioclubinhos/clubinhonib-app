@@ -1,66 +1,173 @@
-import { fmtDate } from "@/utils/dates";
+import React from "react";
 import {
-  Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Stack,
-  Button, Paper, Grid
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { CommentData } from "store/slices/comment/commentsSlice";
+import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
+import PersonIcon from "@mui/icons-material/Person";
+import PublicIcon from "@mui/icons-material/Public";
+import PublicOffIcon from "@mui/icons-material/PublicOff";
+import ScheduleIcon from "@mui/icons-material/Schedule";
 
-interface Props { comment: CommentData | null; open: boolean; onClose: () => void; }
+import { formatDateTime } from "../utils";
+import type { CommentResponse } from "../types";
 
-export default function CommentDetailsModal({ comment, open, onClose }: Props) {
+type Props = {
+  comment: CommentResponse | null;
+  onClose: () => void;
+  onEdit: () => void;
+  onTogglePublished: () => void;
+  onDelete: () => void;
+};
+
+/** Uma linha de dado do detalhe. */
+function DetailRow({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md"
-      PaperProps={{ sx: { width: "100%", m: "10px auto", p: "5px", borderRadius: 3, bgcolor: "#fafafa" } }}>
-      <DialogTitle textAlign="center" fontWeight="bold" sx={{ fontSize: "1.5rem", color: "#333", p: "5px" }}>
-        Detalhes do Comentário
-      </DialogTitle>
-      <DialogContent sx={{ p: "5px", overflowX: "auto" }}>
-        {comment && (
-          <Stack spacing={3} sx={{ mt: 2, mx: "auto", maxWidth: "100%" }}>
-            <Paper elevation={1} sx={{ p: "5px", borderRadius: 2, bgcolor: "#fff" }}>
-              <Typography variant="h6" fontWeight="bold" color="primary" textAlign="center" mb={2}>
-                Informações do Comentário
-              </Typography>
-              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", textAlign: "left", width: "100%", mt: 4 }}>
-                <Grid container spacing={2} sx={{ maxWidth: 800, width: "100%", px: { xs: 2, md: 0 } }}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body1"><strong>Nome:</strong> {comment.name || "Sem Nome"}</Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
-                      <strong>Comentário:</strong> {comment.comment || "Sem Comentário"}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body1"><strong>Clubinho:</strong> {comment.clubinho || "Não informado"}</Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body1"><strong>Bairro:</strong> {comment.neighborhood || "Não informado"}</Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body1">
-                      <strong>Status:</strong> {comment.published ? "Publicado" : "Não Publicado"}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body1"><strong>Criado em:</strong> {fmtDate(comment.createdAt)}</Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body1"><strong>Atualizado em:</strong> {fmtDate(comment.updatedAt)}</Typography>
-                  </Grid>
-                  {comment.id && (
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="body1"><strong>ID:</strong> {comment.id}</Typography>
-                    </Grid>
-                  )}
-                </Grid>
-              </Box>
-            </Paper>
-          </Stack>
-        )}
+    <Stack direction="row" spacing={1.25} alignItems="flex-start">
+      <Box sx={{ color: "text.secondary", mt: 0.25 }}>{icon}</Box>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="caption" color="text.secondary">
+          {label}
+        </Typography>
+        <Box sx={{ wordBreak: "break-word" }}>{children}</Box>
+      </Box>
+    </Stack>
+  );
+}
+
+export default function CommentDetailsModal({
+  comment,
+  onClose,
+  onEdit,
+  onTogglePublished,
+  onDelete,
+}: Props) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  if (!comment) return null;
+
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      fullScreen={isMobile}
+      PaperProps={{ sx: { borderRadius: { xs: 0, sm: 3 } } }}
+    >
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ p: 2, pb: 1 }}
+      >
+        <DialogTitle sx={{ p: 0, fontSize: { xs: "1rem", md: "1.15rem" } }}>
+          Detalhes do comentário
+        </DialogTitle>
+        <IconButton onClick={onClose} aria-label="Fechar">
+          <CloseIcon />
+        </IconButton>
+      </Stack>
+
+      <DialogContent dividers>
+        <Stack spacing={2}>
+          <DetailRow icon={<PersonIcon fontSize="small" />} label="Quem comentou">
+            <Typography>{comment.name}</Typography>
+          </DetailRow>
+
+          <DetailRow icon={<HomeWorkIcon fontSize="small" />} label="Clubinho e bairro">
+            <Typography>
+              Clubinho {comment.clubinho} · {comment.neighborhood}
+            </Typography>
+          </DetailRow>
+
+          <DetailRow icon={<ScheduleIcon fontSize="small" />} label="Enviado em">
+            <Typography>{formatDateTime(comment.createdAt)}</Typography>
+          </DetailRow>
+
+          <Chip
+            size="small"
+            label={comment.published ? "Publicado" : "Aguardando publicação"}
+            color={comment.published ? "success" : "warning"}
+            sx={{ alignSelf: "flex-start" }}
+          />
+
+          <Divider />
+
+          <Box>
+            <Typography variant="caption" color="text.secondary">
+              Comentário
+            </Typography>
+            <Typography sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              {comment.comment}
+            </Typography>
+          </Box>
+        </Stack>
       </DialogContent>
-      <DialogActions sx={{ justifyContent: "center", p: "5px" }}>
-        <Button variant="outlined" onClick={onClose} sx={{ minWidth: 100 }}>Fechar</Button>
+
+      <DialogActions
+        sx={{
+          p: 2,
+          gap: 1,
+          flexDirection: { xs: "column-reverse", sm: "row" },
+          alignItems: { xs: "stretch", sm: "center" },
+        }}
+      >
+        <Button onClick={onClose} fullWidth={isMobile}>
+          Fechar
+        </Button>
+
+        <Button
+          onClick={onEdit}
+          variant="outlined"
+          fullWidth={isMobile}
+          startIcon={<EditIcon />}
+        >
+          Editar
+        </Button>
+
+        <Button
+          onClick={onTogglePublished}
+          variant="outlined"
+          color={comment.published ? "inherit" : "success"}
+          fullWidth={isMobile}
+          startIcon={comment.published ? <PublicOffIcon /> : <PublicIcon />}
+        >
+          {comment.published ? "Despublicar" : "Publicar"}
+        </Button>
+
+        <Button
+          onClick={onDelete}
+          variant="contained"
+          color="error"
+          fullWidth={isMobile}
+          startIcon={<DeleteIcon />}
+        >
+          Excluir
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -10,6 +10,8 @@ import {
   MeditationFormValues,
   MeditationRequest,
   MeditationResponse,
+  MeditationSortField,
+  MeditationSortOrder,
   MeditationWeekDay,
 } from './types';
 
@@ -152,3 +154,46 @@ export const toFormValues = (
   file: null,
   storedMedia: meditation?.media ?? null,
 });
+
+/** Duas letras do tema, para o avatar do card. */
+export function meditationInitials(topic: string): string {
+  const parts = topic.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+/** Data de hoje como `YYYY-MM-DD`, no fuso local. */
+export function todayAsDateOnly(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
+/**
+ * Situação do período da meditação em relação a hoje.
+ *
+ * A comparação é feita entre textos `YYYY-MM-DD`, que ordenam igual às datas:
+ * converter para `Date` traria de volta o deslocamento de fuso.
+ */
+export function periodStatus(meditation: {
+  startDate: string;
+  endDate: string;
+}): 'current' | 'upcoming' | 'past' {
+  const today = todayAsDateOnly();
+  if (meditation.startDate > today) return 'upcoming';
+  if (meditation.endDate < today) return 'past';
+  return 'current';
+}
+
+/** Divide o valor do seletor de ordenação em campo e direção. */
+export function parseSortOption(value: string): {
+  sort: MeditationSortField;
+  order: MeditationSortOrder;
+} {
+  const [sort, order] = value.split(':');
+  const field: MeditationSortField =
+    sort === 'topic' ? 'topic' : sort === 'createdAt' ? 'createdAt' : 'startDate';
+  return { sort: field, order: order === 'ASC' ? 'ASC' : 'DESC' };
+}

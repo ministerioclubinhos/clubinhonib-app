@@ -6,9 +6,6 @@ import {
 } from "@mui/material";
 import { Search, PersonAdd, ArrowBack, FilterAltOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/slices";
-import { UserRole } from "@/types/shared";
 
 import { useChildrenBrowser } from "./hooks";
 import ChildCard from "./components/ChildCard";
@@ -26,9 +23,6 @@ export default function ChildrenBrowserPage() {
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const pageSize = isMobile ? 5 : 10;
-
-  const user = useSelector((state: RootState) => (state.auth as any).user);
-  const isAdmin = user?.role === UserRole.ADMIN;
 
   const {
     searchString,
@@ -81,11 +75,12 @@ export default function ChildrenBrowserPage() {
     if (!payload.joinedAt) payload.joinedAt = null;
     if (!payload.clubId) payload.clubId = null as any;
 
-    try {
-      await createChild(payload, 1, 12);
+    // O formulário só fecha quando a API aceita; o erro fica visível nele.
+    const ok = await createChild(payload, 1, 12);
+    if (ok) {
       setCreating(null);
       setDialogError("");
-    } catch { }
+    }
   };
 
   const openEdit = async (childId: string) => {
@@ -121,11 +116,11 @@ export default function ChildrenBrowserPage() {
   const submitEdit = async () => {
     if (!editing) return;
     const { id, ...rest } = editing;
-    try {
-      await updateChild(id, rest, 1, 12);
+    const ok = await updateChild(id, rest, 1, 12);
+    if (ok) {
       setEditing(null);
       setDialogError("");
-    } catch { }
+    }
   };
 
   React.useEffect(() => {

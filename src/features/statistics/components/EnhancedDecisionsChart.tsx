@@ -1,4 +1,4 @@
-import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
+import type { ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import type { PieLabelRenderProps } from 'recharts';
 import { Box, Paper, Typography, CircularProgress, useTheme, Grid2, LinearProgress, Chip, useMediaQuery } from '@mui/material';

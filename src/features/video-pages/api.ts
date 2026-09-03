@@ -1,17 +1,39 @@
+import type { AxiosRequestConfig } from 'axios';
+
 import api from '@/config/axiosConfig';
 import { MULTIPART_HEADERS, VIDEO_PAGES_ENDPOINT } from './constants';
-import { VideoPageResponse } from './types';
+import {
+  PaginatedVideoPages,
+  VideoPageQuery,
+  VideoPageResponse,
+} from './types';
 
-/** Lista todas as galerias de vídeo. */
-export async function apiListVideoPages(): Promise<VideoPageResponse[]> {
-  const { data } = await api.get<VideoPageResponse[]>(VIDEO_PAGES_ENDPOINT);
-  return data ?? [];
+/**
+ * Lista as galerias de vídeo, em resumo.
+ *
+ * Busca, filtro e ordenação são resolvidos pela API: antes a listagem inteira
+ * — com todos os vídeos de cada página — era baixada só para ser peneirada
+ * aqui.
+ */
+export async function apiListVideoPages(
+  query: VideoPageQuery,
+  config?: AxiosRequestConfig,
+): Promise<PaginatedVideoPages> {
+  const { data } = await api.get<PaginatedVideoPages>(VIDEO_PAGES_ENDPOINT, {
+    ...config,
+    params: query,
+  });
+  return data;
 }
 
-/** Carrega uma galeria de vídeos pelo id. */
-export async function apiGetVideoPage(id: string): Promise<VideoPageResponse> {
+/** Carrega uma galeria de vídeos pelo id, com seus vídeos. */
+export async function apiGetVideoPage(
+  id: string,
+  config?: AxiosRequestConfig,
+): Promise<VideoPageResponse> {
   const { data } = await api.get<VideoPageResponse>(
     `${VIDEO_PAGES_ENDPOINT}/${id}`,
+    config,
   );
   return data;
 }

@@ -7,7 +7,6 @@ import {
   Typography,
   Button,
   Box,
-  Grid,
   IconButton,
   Paper,
   Tooltip,
@@ -16,13 +15,19 @@ import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import LinkIcon from '@mui/icons-material/Link';
-import { DocumentItem } from '../types';
-import { mediaTypeLabel, platformLabel, uploadTypeLabel } from '../utils';
+import type { DocumentResponse } from '../types';
+import {
+  formatDate,
+  formatFileSize,
+  mediaTypeLabel,
+  platformLabel,
+  uploadTypeLabel,
+} from '../utils';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  document: DocumentItem | null;
+  document: DocumentResponse | null;
 }
 
 const DetailField = ({ label, value }: { label: string; value?: string | number | null }) => (
@@ -81,6 +86,11 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
           <Paper variant="outlined" sx={{ p: 2, mt: 1, borderRadius: 2, borderColor: 'divider' }}>
             <DetailField label="Nome" value={document?.name} />
             <DetailField label="Descrição" value={document?.description} />
+            <DetailField label="Criado em" value={formatDate(document?.createdAt)} />
+            <DetailField
+              label="Atualizado em"
+              value={formatDate(document?.updatedAt)}
+            />
           </Paper>
         </Box>
 
@@ -94,6 +104,14 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
             <DetailField label="Plataforma" value={platformLabel(document?.media?.platformType)} />
             <DetailField label="Tipo de upload" value={uploadTypeLabel(document?.media?.uploadType)} />
             <DetailField label="Tipo de mídia" value={mediaTypeLabel(document?.media?.mediaType)} />
+            <DetailField
+              label="Arquivo"
+              value={document?.media?.originalName ?? '—'}
+            />
+            <DetailField
+              label="Tamanho"
+              value={formatFileSize(document?.media?.size)}
+            />
             <Box sx={{ py: 1.5 }}>
               <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
                 URL

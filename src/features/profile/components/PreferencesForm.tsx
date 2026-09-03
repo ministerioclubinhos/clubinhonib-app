@@ -16,8 +16,8 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import SaveIcon from '@mui/icons-material/Save';
-import { UserPreferences, UpdateUserPreferencesDto } from '../types';
-import { apiUpdateCompleteProfile, apiUpdateProfileById } from '../api';
+import { UserPreferences, UserPreferencesInput } from '../types';
+import { apiUpdateMyCompleteProfile, apiUpdateProfileById } from '../api';
 import { extractErrorMessage } from '@/utils/apiError';
 
 interface PreferencesFormProps {
@@ -48,7 +48,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
   onError,
   userId,
 }) => {
-  const [formData, setFormData] = useState<UpdateUserPreferencesDto>({
+  const [formData, setFormData] = useState<UserPreferencesInput>({
     loveLanguages: '',
     temperaments: '',
     favoriteColor: '',
@@ -107,7 +107,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      const payload: UpdateUserPreferencesDto = {};
+      const payload: UserPreferencesInput = {};
 
       if (formData.loveLanguages !== (preferences?.loveLanguages || '')) {
         payload.loveLanguages = formData.loveLanguages || undefined;
@@ -140,7 +140,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
       if (userId) {
         await apiUpdateProfileById(userId, { preferences: payload });
       } else {
-        await apiUpdateCompleteProfile({ preferences: payload });
+        await apiUpdateMyCompleteProfile({ preferences: payload });
       }
 
       setSuccess(true);

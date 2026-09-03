@@ -6,8 +6,6 @@ import {
   Alert,
   Container,
   IconButton,
-  useTheme,
-  useMediaQuery,
   Fab,
   Zoom,
 } from '@mui/material';
@@ -39,8 +37,6 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
 
@@ -162,7 +158,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
     );
   }
 
-  const { title, subtitle, description, sections } = ideasPage;
+  const { title, description, sections } = ideasPage;
 
   return (
     <Box

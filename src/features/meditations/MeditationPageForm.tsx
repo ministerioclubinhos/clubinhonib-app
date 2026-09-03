@@ -14,17 +14,19 @@ import {
   useTheme,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { SimpleDatePicker } from '@/components/common/inputs';
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
-import { RootState } from '@/store/slices';
 
 import MeditationDaysEditor from './components/MeditationDaysEditor';
 import MeditationMediaField from './components/MeditationMediaField';
 import { MEDITATION_DAYS_COUNT, MEDITATION_ROUTES } from './constants';
-import { useMeditationForm, useUnsavedChangesGuard } from './hooks';
+import {
+  useMeditationById,
+  useMeditationForm,
+  useUnsavedChangesGuard,
+} from './hooks';
 import { isFriday, isMonday } from './utils';
 
 interface MeditationPageFormProps {
@@ -40,15 +42,19 @@ export default function MeditationPageForm({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const storedMeditation = useSelector(
-    (state: RootState) => state.meditation.meditationData,
-  );
+  // A meditação vem do id na URL. Antes ela vinha do store, que não é
+  // persistido: um F5 direto nesta rota abria o formulário vazio.
+  const { id } = useParams<{ id: string }>();
+  const {
+    meditation: loadedMeditation,
+    loading: loadingMeditation,
+    error: loadError,
+  } = useMeditationById(fromTemplatePage ? undefined : id);
 
   const [hasDayDraft, setHasDayDraft] = useState(false);
 
-  // A edição depende da meditação carregada no store, que não é persistido: um
-  // F5 direto nesta rota deixaria o formulário vazio e só falharia ao salvar.
-  const isMissingMeditation = !fromTemplatePage && !storedMeditation;
+  const isMissingMeditation =
+    !fromTemplatePage && !loadingMeditation && !loadedMeditation;
 
   const {
     values,
@@ -63,7 +69,7 @@ export default function MeditationPageForm({
     save,
   } = useMeditationForm({
     isCreation: fromTemplatePage,
-    meditation: storedMeditation,
+    meditation: loadedMeditation,
   });
 
   useUnsavedChangesGuard(isDirty || hasDayDraft);
@@ -71,6 +77,17 @@ export default function MeditationPageForm({
   const startDateInvalid = Boolean(values.startDate) && !isMonday(values.startDate);
   const endDateInvalid = Boolean(values.endDate) && !isFriday(values.endDate);
   const daysMissing = MEDITATION_DAYS_COUNT - days.length;
+
+  if (loadingMeditation) {
+    return (
+      <Box
+        component="section"
+        sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   if (isMissingMeditation) {
     return (
@@ -88,8 +105,8 @@ export default function MeditationPageForm({
             </Button>
           }
         >
-          <AlertTitle>Nenhuma meditação selecionada</AlertTitle>
-          Abra a meditação que você quer editar pela lista de meditações.
+          <AlertTitle>Meditação não encontrada</AlertTitle>
+          {loadError || 'Abra a meditação que você quer editar pela lista.'}
         </Alert>
       </Box>
     );
@@ -173,7 +190,7 @@ export default function MeditationPageForm({
         <MeditationMediaField
           values={values}
           onChange={setValue}
-          savedFileName={storedMeditation?.media?.originalName}
+          savedFileName={loadedMeditation?.media?.originalName}
         />
       </Paper>
 

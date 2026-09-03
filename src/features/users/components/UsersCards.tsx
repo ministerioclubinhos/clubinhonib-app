@@ -2,14 +2,14 @@ import React, { useMemo, useState } from "react";
 import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
   Typography, MenuItem, Select, FormControl, InputLabel,
-  Divider, TablePagination, Tooltip, Collapse, Paper, Avatar,
+  Divider, TablePagination, Tooltip, Paper, Avatar,
   Slide, ButtonBase, Link
 } from "@mui/material";
 import {
   Visibility, Edit, Delete, SwapVert,
   ExpandMore as ExpandMoreIcon,
-  PhoneIphone, AlternateEmail, AccessTime, WhatsApp,
-  ContentCopy, Phone as PhoneIcon, Badge
+  PhoneIphone, AlternateEmail, WhatsApp,
+  ContentCopy,
 } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
 import { UserRow } from "../types";
@@ -72,9 +72,10 @@ export default function UsersCards(props: Props) {
 
   const toggle = (id: string) =>
     setOpen(prev => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
 
   const currentSort = sorting?.[0] ?? { id: "updatedAt", desc: true };

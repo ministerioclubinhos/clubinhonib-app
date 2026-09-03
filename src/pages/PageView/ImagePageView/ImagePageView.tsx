@@ -6,8 +6,6 @@ import {
   Container,
   Typography,
   Alert,
-  Tooltip,
-  Fab,
   Skeleton,
   Paper,
   Grid,
@@ -15,14 +13,11 @@ import {
   useTheme,
   useMediaQuery,
   Chip,
-  Stack,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '@/config/axiosConfig';
 import { RootState, AppDispatch } from '@/store/slices';
-import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import { UserRole } from '@/types/shared';
 import SectionImagePageView from './SectionImagePageView';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
@@ -136,11 +131,9 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const section = useSelector((state: RootState) => state.imageSectionPagination.section);
 
-  const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
   const defaultSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID;
 
   const observer = useRef<IntersectionObserver | null>(null);

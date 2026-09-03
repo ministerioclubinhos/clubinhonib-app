@@ -9,15 +9,15 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import SaveIcon from '@mui/icons-material/Save';
-import { Profile, UpdateProfileDto } from '../types';
-import { apiUpdateProfile } from '../api';
+import { MyProfile, UpdateMyAccountRequest } from '../types';
+import { apiUpdateMyAccount } from '../api';
 import { digitsOnly, maskPhoneBR, maskCPF } from '../../../utils/masks';
 import { isValidEmail, normalizeEmail, isValidCPF } from '../../../utils/validators';
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 import { AUTH_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface ProfileEditFormProps {
-  profile: Profile | null;
+  profile: MyProfile | null;
   onUpdate: () => void;
   onError: (error: string) => void;
 }
@@ -27,13 +27,13 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
   onUpdate,
   onError,
 }) => {
-  const [formData, setFormData] = useState<UpdateProfileDto>({
+  const [formData, setFormData] = useState<UpdateMyAccountRequest>({
     name: '',
     email: '',
     phone: '',
     cpf: '',
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof UpdateProfileDto, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof UpdateMyAccountRequest, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -49,7 +49,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
   }, [profile]);
 
   const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof UpdateProfileDto, string>> = {};
+    const newErrors: Partial<Record<keyof UpdateMyAccountRequest, string>> = {};
 
     if (!formData.name || !formData.name.trim()) {
       newErrors.name = FORM_VALIDATION_MESSAGES.REQUIRED_FIELD;
@@ -100,7 +100,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      const payload: UpdateProfileDto = {
+      const payload: UpdateMyAccountRequest = {
         name: formData.name ? formData.name.trim() : undefined,
         email: formData.email ? normalizeEmail(formData.email) : undefined,
         phone: digitsOnly(formData.phone) || undefined,
@@ -109,7 +109,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
 
       console.log('ProfileEditForm Payload:', payload);
 
-      Object.keys(payload).forEach(key => payload[key as keyof UpdateProfileDto] === undefined && delete payload[key as keyof UpdateProfileDto]);
+      Object.keys(payload).forEach(key => payload[key as keyof UpdateMyAccountRequest] === undefined && delete payload[key as keyof UpdateMyAccountRequest]);
 
       if (Object.keys(payload).length === 0) {
         onError('Nenhuma alteração detectada para enviar.');
@@ -117,12 +117,14 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
         return;
       }
 
-      await apiUpdateProfile(payload);
+      await apiUpdateMyAccount(payload);
       setSuccess(true);
       onUpdate();
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      const errorData = err?.response?.data;
+    } catch (err: unknown) {
+      const errorData = (
+        err as { response?: { data?: { message?: string; field?: string } } }
+      )?.response?.data;
       const errorMessage = errorData?.message || 'Erro ao atualizar perfil';
       const errorField = errorData?.field;
 

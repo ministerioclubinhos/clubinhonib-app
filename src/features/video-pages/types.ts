@@ -46,6 +46,48 @@ export interface VideoPageResponse {
   videos: VideoItemResponse[];
 }
 
+/**
+ * Resumo da página na listagem do painel.
+ *
+ * A listagem não traz os vídeos: só a contagem, que é o que o card mostra.
+ */
+export interface VideoPageSummary {
+  id: string;
+  title: string;
+  description: string;
+  public: boolean;
+  /** Endereço público da página; `null` quando a rota não existe. */
+  routePath: string | null;
+  videoCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Envelope paginado devolvido pela API. */
+export interface PaginatedVideoPages {
+  data: VideoPageSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  pageCount: number;
+}
+
+/** Campo pelo qual a listagem pode ser ordenada. */
+export type VideoPageSortField = 'createdAt' | 'title';
+
+/** Direção da ordenação. */
+export type VideoPageSortOrder = 'ASC' | 'DESC';
+
+/** Filtros aplicados pela API, não pela tela. */
+export interface VideoPageQuery {
+  page?: number;
+  limit?: number;
+  searchString?: string;
+  public?: boolean;
+  sort?: VideoPageSortField;
+  order?: VideoPageSortOrder;
+}
+
 /** Campos da página editados no formulário. */
 export interface VideoPageFormValues {
   title: string;

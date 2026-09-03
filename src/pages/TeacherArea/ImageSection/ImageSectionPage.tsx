@@ -5,7 +5,7 @@ import { Box, Button, Container, Typography, Paper, useTheme, useMediaQuery, Ico
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { motion } from 'framer-motion';
 
-import api from '@/config/axiosConfig';
+import { apiCreateImageSection } from '@/features/image-sections';
 import { setData, clearData, SectionData } from '@/store/slices/image-section/imageSectionSlice';
 import { MediaType, MediaUploadType, MediaPlatform } from '@/store/slices/types';
 import { RootState } from '@/store/slices';
@@ -85,10 +85,11 @@ export default function ImageSectionPage() {
       return { ...base, id: media.id };
     });
 
+    // `public` não vai no corpo: as fotos entram na fila e quem leva ao feed
+    // é a administração. A API recusa a requisição inteira se ele chegar.
     const payload = {
       caption: sectionData!.caption,
       description: sectionData!.description,
-      public: sectionData!.public,
       mediaItems,
     };
 
@@ -98,9 +99,7 @@ export default function ImageSectionPage() {
 
   const saveSection = async (formData: FormData) => {
 
-    await api.post('/image-sections', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    await apiCreateImageSection(formData);
 
     setNotification({
       open: true,

@@ -16,8 +16,8 @@ import { motion } from 'framer-motion';
 import { extractErrorMessage } from '@/utils/apiError';
 import SaveIcon from '@mui/icons-material/Save';
 import { SimpleDatePicker } from '@/components/common/inputs/DatePickerInput';
-import { PersonalData, UpdatePersonalDataDto } from '../types';
-import { apiUpdateCompleteProfile, apiUpdateProfileById } from '../api';
+import { PersonalData, PersonalDataInput } from '../types';
+import { apiUpdateMyCompleteProfile, apiUpdateProfileById } from '../api';
 import { maskPhoneBR, digitsOnly } from '@/utils/masks';
 
 interface PersonalDataFormProps {
@@ -34,12 +34,12 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({
   userId,
 }) => {
   const [birthDate, setBirthDate] = useState<Dayjs | null>(null);
-  const [formData, setFormData] = useState<Omit<UpdatePersonalDataDto, 'birthDate'>>({
+  const [formData, setFormData] = useState<Omit<PersonalDataInput, 'birthDate'>>({
     gender: '',
     gaLeaderName: '',
     gaLeaderContact: '',
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof UpdatePersonalDataDto, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof PersonalDataInput, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -55,7 +55,7 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({
   }, [personalData]);
 
   const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof UpdatePersonalDataDto, string>> = {};
+    const newErrors: Partial<Record<keyof PersonalDataInput, string>> = {};
 
     if (birthDate && !birthDate.isValid()) {
       newErrors.birthDate = 'Data inválida';
@@ -86,7 +86,7 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({
       // Simplificado: Envia sempre os dados atuais do formulário
       const newBirthDate = birthDate ? birthDate.format('YYYY-MM-DD') : '';
 
-      const payload: UpdatePersonalDataDto = {
+      const payload: PersonalDataInput = {
         birthDate: newBirthDate || undefined,
         gender: formData.gender || undefined,
         gaLeaderName: formData.gaLeaderName?.trim() || undefined,
@@ -101,7 +101,7 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({
         // Na verdade, se tudo for undefined, o objeto terá chaves com valores undefined.
         // A API deve ignorar undefineds ou tratar.
         // Vamos limpar chaves undefined para garantir.
-        Object.keys(payload).forEach(key => payload[key as keyof UpdatePersonalDataDto] === undefined && delete payload[key as keyof UpdatePersonalDataDto]);
+        Object.keys(payload).forEach(key => payload[key as keyof PersonalDataInput] === undefined && delete payload[key as keyof PersonalDataInput]);
       }
 
       if (Object.keys(payload).length === 0) {
@@ -113,7 +113,7 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({
       if (userId) {
         await apiUpdateProfileById(userId, { personalData: payload });
       } else {
-        await apiUpdateCompleteProfile({ personalData: payload });
+        await apiUpdateMyCompleteProfile({ personalData: payload });
       }
 
       setSuccess(true);

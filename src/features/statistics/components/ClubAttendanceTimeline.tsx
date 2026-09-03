@@ -7,12 +7,10 @@ import {
   useTheme,
   Grid2,
   Chip,
-  LinearProgress,
   Alert,
   AlertTitle,
   TextField,
   MenuItem,
-  Button,
   TablePagination,
   Collapse,
   IconButton,
@@ -23,9 +21,7 @@ import {
   Cancel,
   Warning,
   Info,
-  CalendarToday,
   TrendingUp,
-  TrendingDown,
   ExpandMore,
   ExpandLess,
 } from '@mui/icons-material';
@@ -61,7 +57,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
 
   const [timelinePage, setTimelinePage] = React.useState(1);
   const [timelineLimit, setTimelineLimit] = React.useState(20);
-  const [missingWeeksPage, setMissingWeeksPage] = React.useState(1);
+  const [, setMissingWeeksPage] = React.useState(1);
 
   const [expandedTimeline, setExpandedTimeline] = React.useState(true);
   const [expandedMissingWeeks, setExpandedMissingWeeks] = React.useState(false);

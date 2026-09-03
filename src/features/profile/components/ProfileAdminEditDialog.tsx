@@ -13,14 +13,14 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { CompleteProfileListItem } from '../types';
+import { CompleteProfile } from '../types';
 import PersonalDataForm from './PersonalDataForm';
 import PreferencesForm from './PreferencesForm';
 
 interface ProfileAdminEditDialogProps {
     open: boolean;
     onClose: () => void;
-    profile: CompleteProfileListItem | null;
+    profile: CompleteProfile | null;
     onUpdate: () => void;
 }
 
@@ -55,7 +55,7 @@ const ProfileAdminEditDialog: React.FC<ProfileAdminEditDialogProps> = ({
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [tabValue, setTabValue] = useState(0);
-    const [error, setError] = useState<string | null>(null);
+    const [, setError] = useState<string | null>(null);
 
     if (!profile) return null;
 

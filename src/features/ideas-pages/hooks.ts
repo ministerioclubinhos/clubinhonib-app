@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,91 +13,193 @@ import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 // O guarda de alterações não salvas é o mesmo em todos os formulários.
 export { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 
+import { useAbortController, useDebouncedValue } from '@/hooks';
+import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
+
 import {
   apiCreateIdeasPage,
   apiDeleteIdeasPage,
+  apiGetIdeasPage,
   apiListIdeasPages,
   apiUpdateIdeasPage,
 } from './api';
-import { IDEAS_PAGE_SEARCH_DEBOUNCE_MS } from './constants';
+import { IDEAS_PAGES_DEFAULT_LIMIT } from './constants';
 import {
   IdeasPageFormErrors,
   IdeasPageFormValues,
   IdeasPageResponse,
+  IdeasPageSortField,
+  IdeasPageSortOrder,
+  IdeasPageSummary,
   IdeasSectionDraft,
 } from './types';
 import {
   buildIdeasPageFormData,
-  filterByTitle,
   toFormValues,
   toSectionDrafts,
 } from './utils';
 
-interface UseIdeasPagesResult {
-  pages: IdeasPageResponse[];
-  filtered: IdeasPageResponse[];
-  loading: boolean;
-  isFiltering: boolean;
-  error: string;
-  search: string;
-  setSearch: (term: string) => void;
-  setError: (message: string) => void;
-  fetchPages: () => Promise<void>;
-  removePage: (id: string) => Promise<void>;
+/** Filtros que a tela envia à API. */
+interface IdeasPageListFilters {
+  /** `''` para todas; `'true'`/`'false'` para o recorte de visibilidade. */
+  visibility: string;
+  sort: IdeasPageSortField;
+  order: IdeasPageSortOrder;
 }
 
-/** Listagem administrativa das páginas de ideias, com busca e exclusão. */
-export function useIdeasPages(): UseIdeasPagesResult {
-  const [pages, setPages] = useState<IdeasPageResponse[]>([]);
-  const [filtered, setFiltered] = useState<IdeasPageResponse[]>([]);
+const INITIAL_FILTERS: IdeasPageListFilters = {
+  visibility: '',
+  sort: 'createdAt',
+  order: 'DESC',
+};
+
+/** Página de páginas de ideias, com busca e filtros resolvidos pela API. */
+export function useIdeasPages() {
+  const [items, setItems] = useState<IdeasPageSummary[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(IDEAS_PAGES_DEFAULT_LIMIT);
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [isFiltering, setIsFiltering] = useState(false);
+  const [filters, setFilters] = useState<IdeasPageListFilters>(INITIAL_FILTERS);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
+
+  // Trocar busca ou filtro recomeça da primeira página: a página 5 do
+  // resultado anterior quase nunca existe no novo.
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
+
+  useEffect(() => {
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await apiListIdeasPages(
+          {
+            page,
+            limit: pageSize,
+            searchString: debouncedSearch.trim() || undefined,
+            public:
+              filters.visibility === ''
+                ? undefined
+                : filters.visibility === 'true',
+            sort: filters.sort,
+            order: filters.order,
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.data) ? data.data : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(
+          extractErrorMessage(err, 'Erro ao carregar as páginas de ideias'),
+        );
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  return {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  };
+}
+
+/** Exclusão da página a partir da listagem. */
+export function useIdeasPageMutations(refresh: () => void) {
+  const dispatch = useDispatch<AppDispatch>();
+  const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState('');
+
+  const remove = useCallback(
+    async (id: string) => {
+      setSaving(true);
+      setActionError('');
+      try {
+        await apiDeleteIdeasPage(id);
+        // A página tem rota própria; o menu da área do professor vem dela.
+        await dispatch(fetchRoutes());
+        refresh();
+        return true;
+      } catch (err: unknown) {
+        setActionError(extractErrorMessage(err, 'Erro ao excluir a página'));
+        return false;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [dispatch, refresh],
+  );
+
+  return { saving, actionError, setActionError, remove };
+}
+
+/**
+ * Carrega a página da edição pelo id da URL.
+ *
+ * Antes a tela dependia do que a listagem tinha deixado no store; um F5 na
+ * rota de edição abria o formulário vazio.
+ */
+export function useIdeasPageById(id: string | undefined) {
+  const [page, setPage] = useState<IdeasPageResponse | null>(null);
+  const [loading, setLoading] = useState(Boolean(id));
   const [error, setError] = useState('');
 
-  const fetchPages = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await apiListIdeasPages();
-      setPages(data);
-      setFiltered(data);
-    } catch (fetchError) {
-      console.error('Erro ao buscar páginas de ideias:', fetchError);
-      setError('Erro ao buscar páginas de ideias');
-    } finally {
+  const nextController = useAbortController();
+
+  useEffect(() => {
+    if (!id) {
+      setPage(null);
       setLoading(false);
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    fetchPages();
-  }, [fetchPages]);
+    const controller = nextController();
 
-  useEffect(() => {
-    setIsFiltering(true);
-    const timer = setTimeout(() => {
-      setFiltered(filterByTitle(pages, search));
-      setIsFiltering(false);
-    }, IDEAS_PAGE_SEARCH_DEBOUNCE_MS);
+    const run = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await apiGetIdeasPage(id, { signal: controller.signal });
+        setPage(data);
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, 'Erro ao carregar a página'));
+        setPage(null);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
-  }, [search, pages]);
+    void run();
+  }, [id, nextController]);
 
-  const removePage = useCallback(
-    async (id: string) => {
-      await apiDeleteIdeasPage(id);
-      await fetchPages();
-    },
-    [fetchPages],
-  );
-
-  const state = useMemo(
-    () => ({ pages, filtered, loading, isFiltering, error }),
-    [pages, filtered, loading, isFiltering, error],
-  );
-
-  return { ...state, search, setSearch, setError, fetchPages, removePage };
+  return { page, loading, error };
 }
 
 const NO_ERRORS: IdeasPageFormErrors = {

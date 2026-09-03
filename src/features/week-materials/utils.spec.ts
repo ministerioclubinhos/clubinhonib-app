@@ -8,15 +8,16 @@ import {
   WeekMaterialMediaDraft,
   WeekMaterialPageRequest,
   WeekMaterialResponse,
+  WeekMaterialSummary,
 } from './types';
 import {
   buildFileFieldName,
   buildWeekMaterialFormData,
-  filterByTitle,
   formatDate,
+  parseSortOption,
   selectMediaByType,
-  sortByCreationDesc,
   toMediaRequest,
+  totalMediaCount,
   truncate,
 } from './utils';
 
@@ -99,35 +100,12 @@ describe('week material utils', () => {
 
   describe('formatDate', () => {
     it('falls back when there is no date', () => {
-      expect(formatDate()).toBe('Não disponível');
+      // Travessão é o mesmo vazio usado nas demais listagens do painel.
+      expect(formatDate()).toBe('—');
     });
 
     it('formats an ISO date for pt-BR', () => {
       expect(formatDate('2026-01-01T12:00:00.000Z')).toContain('2026');
-    });
-  });
-
-  describe('filterByTitle', () => {
-    const list = [material({ title: 'Semana 1' }), material({ title: 'Páscoa' })];
-
-    it('returns everything for an empty term', () => {
-      expect(filterByTitle(list, '   ')).toHaveLength(2);
-    });
-
-    it('matches case-insensitively', () => {
-      expect(filterByTitle(list, 'páSCOa').map((m) => m.title)).toEqual(['Páscoa']);
-    });
-  });
-
-  describe('sortByCreationDesc', () => {
-    it('puts the newest page first without mutating the input', () => {
-      const list = [
-        material({ id: 'old', createdAt: '2025-01-01T00:00:00.000Z' }),
-        material({ id: 'new', createdAt: '2026-01-01T00:00:00.000Z' }),
-      ];
-
-      expect(sortByCreationDesc(list).map((m) => m.id)).toEqual(['new', 'old']);
-      expect(list.map((m) => m.id)).toEqual(['old', 'new']);
     });
   });
 
@@ -363,6 +341,65 @@ describe('week material utils', () => {
         'video_1.mp4',
         WEEK_MATERIAL_PAYLOAD_FIELD,
       ]);
+    });
+  });
+});
+
+describe('contrato do resumo de /week-material-pages', () => {
+  const summary: WeekMaterialSummary = {
+    id: 'page-1',
+    title: 'Semana da gratidão',
+    subtitle: 'Visita semanal',
+    description: 'Materiais da semana',
+    currentWeek: true,
+    routePath: 'materiais_semanal_semana_da_gratidao',
+    videoCount: 2,
+    documentCount: 1,
+    imageCount: 0,
+    audioCount: 3,
+    createdAt: '2026-01-10T12:00:00.000Z',
+    updatedAt: '2026-01-11T12:00:00.000Z',
+  };
+
+  it('tem exatamente os campos que a listagem usa', () => {
+    expect(Object.keys(summary).sort()).toEqual([
+      'audioCount',
+      'createdAt',
+      'currentWeek',
+      'description',
+      'documentCount',
+      'id',
+      'imageCount',
+      'routePath',
+      'subtitle',
+      'title',
+      'updatedAt',
+      'videoCount',
+    ]);
+  });
+
+  it('aceita página sem rota', () => {
+    expect({ ...summary, routePath: null }.routePath).toBeNull();
+  });
+
+  it('soma as mídias dos quatro tipos', () => {
+    expect(totalMediaCount(summary)).toBe(6);
+  });
+
+  it('formata a data e protege contra valor inválido', () => {
+    expect(formatDate(summary.createdAt)).toMatch(/\d{2}\/\d{2}\/\d{4}/);
+    expect(formatDate('data-quebrada')).toBe('—');
+    expect(formatDate(undefined)).toBe('—');
+  });
+
+  it('divide a opção de ordenação em campo e direção', () => {
+    expect(parseSortOption('title:ASC')).toEqual({
+      sort: 'title',
+      order: 'ASC',
+    });
+    expect(parseSortOption('qualquer')).toEqual({
+      sort: 'createdAt',
+      order: 'DESC',
     });
   });
 });

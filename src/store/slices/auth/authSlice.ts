@@ -1,27 +1,18 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import apiAxios from '@/config/axiosConfig';
 
-import { PersonalData, UserPreferences, ProfileImage, UserRole, TeacherProfileLite, CoordinatorProfileLite } from '@/types/shared';
+import type { MyProfile } from '@/features/profile/types';
 import { authService } from './auth.service';
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  cpf?: string | null;
-  active?: boolean;
-  commonUser?: boolean;
-  phone?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  completed?: boolean;
-  teacherProfile?: TeacherProfileLite | null;
-  coordinatorProfile?: CoordinatorProfileLite | null;
-  personalData?: PersonalData;
-  preferences?: UserPreferences;
-  image?: ProfileImage;
-}
+/**
+ * O usuário logado.
+ *
+ * É exatamente o que `GET /auth/me` devolve — o mesmo `MyProfileResponseDto`
+ * de `GET /profile`. Antes quase todo campo era opcional aqui porque
+ * `/auth/me` deixava `active`, `completed`, `createdAt` e `updatedAt` de fora;
+ * agora os dois endpoints respondem o contrato inteiro.
+ */
+export type User = MyProfile;
 
 interface GoogleUser {
   name: string;
@@ -63,7 +54,6 @@ const initialState: AuthState = {
   emailVerificationAlert: null,
 };
 
-const IS_DEV = import.meta.env.DEV === true;
 
 const clean = (s: string) => s.replace(/^"|"$/g, '');
 
@@ -91,7 +81,7 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
 
 export const linkTeacherClub = createAsyncThunk<User, number, { rejectValue: string }>(
   'auth/linkTeacherClub',
-  async (clubNumber, { dispatch, rejectWithValue }) => {
+  async (clubNumber, { rejectWithValue }) => {
     try {
       await authService.linkTeacherClub(clubNumber);
       const user = await authService.getCurrentUser();
@@ -124,7 +114,7 @@ export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
       } else {
         dispatch(logout());
       }
-    } catch (e: any) {
+    } catch {
       return rejectWithValue('Falha ao inicializar auth');
     }
   }
@@ -155,7 +145,9 @@ const authSlice = createSlice({
       try {
         localStorage.setItem('accessToken', state.accessToken!);
         localStorage.setItem('refreshToken', state.refreshToken!);
-      } catch { }
+      } catch {
+        // Navegador sem armazenamento: a sessão vale só enquanto a aba viver.
+      }
     },
     logout: (state) => {
       state.accessToken = null;
@@ -169,7 +161,9 @@ const authSlice = createSlice({
       try {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-      } catch { }
+      } catch {
+        // Nada gravado para remover; o estado em memória já foi limpo.
+      }
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
@@ -218,7 +212,9 @@ const authSlice = createSlice({
         try {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
-        } catch { }
+        } catch {
+          // Nada gravado para remover; o estado em memória já foi limpo.
+        }
       })
       .addCase(linkTeacherClub.fulfilled, (state, action) => {
         state.user = action.payload;

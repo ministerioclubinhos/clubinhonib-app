@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { AppDispatch } from '@/store/slices';
 import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import { setWeekMaterialData } from '@/store/slices/week-material/weekMaterialSlice';
 import {
   FORM_VALIDATION_MESSAGES,
   GENERIC_ERROR_MESSAGES,
 } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
+
+import { useAbortController, useDebouncedValue } from '@/hooks';
+import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
 import {
   createWeekMaterial,
@@ -19,14 +21,17 @@ import {
   setCurrentWeek,
   updateWeekMaterial,
 } from './api';
-import { WEEK_MATERIAL_SEARCH_DEBOUNCE_MS } from './constants';
+import { WEEK_MATERIALS_DEFAULT_LIMIT } from './constants';
 import {
   WeekMaterialFormErrors,
   WeekMaterialFormValues,
   WeekMaterialMediaDraft,
   WeekMaterialResponse,
+  WeekMaterialSortField,
+  WeekMaterialSortOrder,
+  WeekMaterialSummary,
 } from './types';
-import { buildWeekMaterialFormData, filterByTitle } from './utils';
+import { buildWeekMaterialFormData } from './utils';
 
 const LIST_ERROR_MESSAGE = 'Erro ao buscar materiais semanais';
 const DETAIL_ERROR_MESSAGE =
@@ -35,82 +40,183 @@ const DETAIL_ERROR_MESSAGE =
 // O guarda de alterações não salvas é o mesmo em todos os formulários.
 export { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 
-interface UseWeekMaterialsResult {
-  materials: WeekMaterialResponse[];
-  filtered: WeekMaterialResponse[];
-  search: string;
-  setSearch: (value: string) => void;
-  loading: boolean;
-  isFiltering: boolean;
-  error: string;
-  setError: (value: string) => void;
-  fetchAll: () => Promise<void>;
-  remove: (id: string) => Promise<void>;
-  markAsCurrent: (id: string) => Promise<void>;
+/** Filtros que a tela envia à API. */
+interface WeekMaterialListFilters {
+  /** `''` para todas; `'true'`/`'false'` para o recorte da semana atual. */
+  currentWeek: string;
+  sort: WeekMaterialSortField;
+  order: WeekMaterialSortOrder;
 }
 
-/** Owns the admin list of week material pages: loading, search and mutations. */
-export function useWeekMaterials(): UseWeekMaterialsResult {
-  const [materials, setMaterials] = useState<WeekMaterialResponse[]>([]);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+const INITIAL_FILTERS: WeekMaterialListFilters = {
+  currentWeek: '',
+  sort: 'createdAt',
+  order: 'DESC',
+};
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      setMaterials(await listWeekMaterials());
-    } catch {
-      setError(LIST_ERROR_MESSAGE);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+/** Página de materiais semanais, com busca e filtros resolvidos pela API. */
+export function useWeekMaterials() {
+  const [items, setItems] = useState<WeekMaterialSummary[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(WEEK_MATERIALS_DEFAULT_LIMIT);
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] =
+    useState<WeekMaterialListFilters>(INITIAL_FILTERS);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
+
+  // Trocar busca ou filtro recomeça da primeira página: a página 5 do
+  // resultado anterior quase nunca existe no novo.
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(
-      () => setDebouncedSearch(search),
-      WEEK_MATERIAL_SEARCH_DEBOUNCE_MS,
-    );
-    return () => window.clearTimeout(timeoutId);
-  }, [search]);
+    const controller = nextController();
 
-  const filtered = useMemo(
-    () => filterByTitle(materials, debouncedSearch),
-    [materials, debouncedSearch],
+    const run = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await listWeekMaterials(
+          {
+            page,
+            limit: pageSize,
+            searchString: debouncedSearch.trim() || undefined,
+            currentWeek:
+              filters.currentWeek === ''
+                ? undefined
+                : filters.currentWeek === 'true',
+            sort: filters.sort,
+            order: filters.order,
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.data) ? data.data : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, LIST_ERROR_MESSAGE));
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  return {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  };
+}
+
+/** Exclusão e publicação da semana, a partir da listagem. */
+export function useWeekMaterialMutations(refresh: () => void) {
+  const dispatch = useDispatch<AppDispatch>();
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState('');
+
+  const run = useCallback(
+    async (action: () => Promise<void>, fallbackMessage: string) => {
+      setActionLoading(true);
+      setActionError('');
+      try {
+        await action();
+        // A página tem rota pública, e o banner da home lê essas rotas.
+        await dispatch(fetchRoutes());
+        refresh();
+        return true;
+      } catch (err: unknown) {
+        setActionError(extractErrorMessage(err, fallbackMessage));
+        return false;
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [dispatch, refresh],
   );
 
   const remove = useCallback(
-    async (id: string) => {
-      await deleteWeekMaterial(id);
-      await fetchAll();
-    },
-    [fetchAll],
+    (id: string) =>
+      run(async () => {
+        await deleteWeekMaterial(id);
+      }, 'Erro ao excluir a página'),
+    [run],
   );
 
   const markAsCurrent = useCallback(
-    async (id: string) => {
-      await setCurrentWeek(id);
-      await fetchAll();
-    },
-    [fetchAll],
+    (id: string) =>
+      run(async () => {
+        await setCurrentWeek(id);
+      }, 'Erro ao publicar a página como material da semana'),
+    [run],
   );
 
-  return {
-    materials,
-    filtered,
-    search,
-    setSearch,
-    loading,
-    isFiltering: search !== debouncedSearch,
-    error,
-    setError,
-    fetchAll,
-    remove,
-    markAsCurrent,
-  };
+  return { actionLoading, actionError, setActionError, remove, markAsCurrent };
+}
+
+/**
+ * Carrega uma página pelo id, com todas as suas mídias.
+ *
+ * A listagem só traz o resumo; tanto o detalhe quanto a edição pedem a página
+ * inteira por aqui. Antes a edição dependia do que a listagem havia deixado no
+ * store, e um F5 abria o formulário vazio.
+ */
+export function useWeekMaterialById(id: string | undefined) {
+  const [material, setMaterial] = useState<WeekMaterialResponse | null>(null);
+  const [loading, setLoading] = useState(Boolean(id));
+  const [error, setError] = useState('');
+
+  const nextController = useAbortController();
+
+  useEffect(() => {
+    if (!id) {
+      setMaterial(null);
+      setLoading(false);
+      return;
+    }
+
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await getWeekMaterial(id, { signal: controller.signal });
+        setMaterial(data);
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, DETAIL_ERROR_MESSAGE));
+        setMaterial(null);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [id, nextController]);
+
+  return { material, loading, error };
 }
 
 interface UseWeekMaterialPageResult {
@@ -120,14 +226,14 @@ interface UseWeekMaterialPageResult {
 }
 
 /**
- * Owns the public page of one week material: loads it and keeps the Redux copy
- * in sync so the admin form can edit the page that is being viewed.
+ * Página pública de um material semanal.
+ *
+ * O estado é local: a cópia no Redux existia só para a edição do painel, que
+ * hoje carrega a página pelo id da URL.
  */
 export function useWeekMaterialPage(
   idToFetch: string,
 ): UseWeekMaterialPageResult {
-  const dispatch = useDispatch<AppDispatch>();
-
   const [material, setMaterial] = useState<WeekMaterialResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,7 +248,6 @@ export function useWeekMaterialPage(
         const data = await getWeekMaterial(idToFetch);
         if (!active) return;
         setMaterial(data);
-        dispatch(setWeekMaterialData(data));
       } catch {
         if (active) setError(DETAIL_ERROR_MESSAGE);
       } finally {
@@ -154,7 +259,7 @@ export function useWeekMaterialPage(
     return () => {
       active = false;
     };
-  }, [idToFetch, dispatch]);
+  }, [idToFetch]);
 
   return { material, loading, error };
 }

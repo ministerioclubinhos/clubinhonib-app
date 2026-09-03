@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '@/config/axiosConfig';
 import { useApiError } from '@/hooks/useApiError';
 import { UserErrorCode } from '@/types/api-error';
-import { getErrorMessage, logApiError } from '@/utils/apiError';
+import { logApiError } from '@/utils/apiError';
 
 import { PASSWORD_RECOVERY_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
@@ -48,7 +48,6 @@ const ForgotPassword: React.FC = () => {
         hasFieldError,
         getFieldError,
         clearFieldError,
-        isErrorCode,
     } = useApiError();
 
     const navigate = useNavigate();

@@ -38,13 +38,6 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
     genderLabel: item.gender === 'M' ? 'Masculino' : 'Feminino',
   }));
 
-  const ageGroupColors = [
-    theme.palette.primary.main,
-    theme.palette.success.main,
-    theme.palette.warning.main,
-    theme.palette.error.main,
-  ];
-
   return (
     <Grid2 container spacing={3}>
 

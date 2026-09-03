@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { UserRole } from '@/types/shared';
 
@@ -9,8 +9,22 @@ vi.mock('react-redux', () => ({
     selector({ auth: { isAuthenticated: true, user: { role: UserRole.ADMIN } } }),
 }));
 
+/**
+ * As flags que o menu consulta. O teste controla o valor para exercitar o
+ * item aparecendo e sumindo.
+ */
+let flags: Record<string, boolean> = {
+  children_area: true,
+  pagelas: true,
+  club_control: true,
+  statistics: true,
+  photo_moderation: true,
+  idea_moderation: true,
+  comment_moderation: true,
+};
+
 vi.mock('@/hooks', () => ({
-  useFeatureFlags: () => ({ flags: { coordinator_children_access: true } }),
+  useFeatureFlags: () => ({ flags }),
 }));
 
 import AdminLayout from './AdminLayout';
@@ -33,6 +47,18 @@ const expandedSection = () =>
     ?.textContent;
 
 describe('AdminLayout · sidebar', () => {
+  beforeEach(() => {
+    flags = {
+      children_area: true,
+      pagelas: true,
+      club_control: true,
+      statistics: true,
+      photo_moderation: true,
+      idea_moderation: true,
+      comment_moderation: true,
+    };
+  });
+
   describe('seção aberta conforme a rota', () => {
     it('abre Operacional em Controle de Clubinhos', () => {
       renderAt('/adm/controle-clubinhos');
@@ -76,6 +102,42 @@ describe('AdminLayout · sidebar', () => {
       renderAt('/adm/editar-pagina-semana');
 
       expect(expandedSection()).toBeUndefined();
+    });
+  });
+
+  describe('feature flags', () => {
+    it('esconde o item quando a flag do recurso está desligada', () => {
+      // A rota também deixa de existir; deixar o item no menu levaria o
+      // administrador a um redirecionamento.
+      flags = { ...flags, statistics: false };
+
+      renderAt('/adm/controle-clubinhos');
+
+      expect(screen.queryByText('Estatísticas')).not.toBeInTheDocument();
+      expect(screen.getByText('Controle de Clubinhos')).toBeInTheDocument();
+    });
+
+    it('esconde a seção inteira quando todos os itens dela estão desligados', () => {
+      flags = {
+        ...flags,
+        statistics: false,
+        club_control: false,
+      };
+
+      renderAt('/adm');
+
+      expect(sectionHeader('Operacional')).toBeUndefined();
+    });
+
+    it('desligar um recurso não derruba os outros', () => {
+      flags = { ...flags, pagelas: false };
+
+      renderAt('/adm/paginas-materiais-semanais');
+
+      expect(screen.queryByText('Pagelas')).not.toBeInTheDocument();
+      // "Clubinhos" é também o título de uma seção; o item é o do menu.
+      expect(screen.getAllByText('Clubinhos').length).toBeGreaterThan(0);
+      expect(screen.getByText('Materiais semanais')).toBeInTheDocument();
     });
   });
 

@@ -2,14 +2,11 @@ import React, { useState } from 'react';
 import { 
   Box, 
   Typography, 
-  Paper, 
   Grid, 
   Modal, 
   IconButton, 
-  Tooltip, 
   Skeleton,
   useTheme,
-  useMediaQuery,
   Chip,
   Stack,
   Avatar,
@@ -33,7 +30,6 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
-import type { SectionData } from 'store/slices/image/imageSlice';
 import { motion } from 'framer-motion';
 
 /**
@@ -115,7 +111,6 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
   const [showAll, setShowAll] = useState(false);
   const [hoveredImage, setHoveredImage] = useState<number | null>(null);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   if (!mediaItems || mediaItems.length === 0) return null;
 

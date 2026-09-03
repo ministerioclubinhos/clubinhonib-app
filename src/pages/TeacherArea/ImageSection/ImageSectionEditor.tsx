@@ -9,8 +9,6 @@ import {
   IconButton,
   Grid,
   Paper,
-  Card,
-  CardContent,
   useTheme,
   useMediaQuery,
 } from '@mui/material';

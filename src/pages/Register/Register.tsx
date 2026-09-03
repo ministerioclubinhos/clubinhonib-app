@@ -21,7 +21,7 @@ import api from '@/config/axiosConfig';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { PhoneInput, extractPhoneDigits } from '@/components/common/inputs';
-import { FORM_VALIDATION_MESSAGES, AUTH_ERROR_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 interface RegisterProps {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Typography, Button, useTheme, useMediaQuery, IconButton, Tooltip } from '@mui/material';
+import { Box, Typography, Button, useTheme, useMediaQuery, Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';

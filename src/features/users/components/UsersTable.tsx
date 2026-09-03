@@ -308,31 +308,3 @@ function UsersTableDesktop({
     </Paper>
   );
 }
-
-function StackedPhoneWithWA({ user }: { user: UserRow }) {
-  const { user: loggedUser } = useSelector((state: RootState) => state.auth);
-  const wa = buildWhatsappLink(user.name, loggedUser?.name, user.phone);
-  return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
-      <Typography noWrap title={user.phone || undefined} sx={{ mr: 0.25 }}>
-        {user.phone ? String(user.phone) : "—"}
-      </Typography>
-      <Tooltip title={wa ? "WhatsApp" : "Sem telefone"}>
-        <span>
-          <IconButton
-            size="small"
-            color="success"
-            component="a"
-            href={wa || undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            disabled={!wa}
-            aria-label="abrir WhatsApp"
-          >
-            <WhatsApp fontSize="small" />
-          </IconButton>
-        </span>
-      </Tooltip>
-    </Box>
-  );
-}

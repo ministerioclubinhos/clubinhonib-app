@@ -1,7 +1,7 @@
 import * as React from "react";
 import {
   Card, CardActionArea, CardContent, Stack, Typography,
-  Box, Avatar, Tooltip, IconButton, useTheme, Divider, Button
+  Box, Avatar, Tooltip, IconButton, useTheme, Divider,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
@@ -9,11 +9,11 @@ import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import ToggleOnIcon from "@mui/icons-material/ToggleOn";
-import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 
 import { ChildSimpleResponseDto } from "@/features/children/types";
 import DecisionModal from "./DecisionModal";
+import { FEATURE } from "@/features/feature-flags";
+import { useFeatureEnabled } from "@/hooks";
 
 function genderPastel(seed: string, gender: string | undefined) {
   const hash = Array.from(seed).reduce((acc, ch) => (acc * 33 + ch.charCodeAt(0)) % 1000, 7);
@@ -49,6 +49,7 @@ export default function ChildCard({
 
   const alreadyAccepted = child.acceptedChrists?.length > 0;
   const [modalOpen, setModalOpen] = React.useState(false);
+  const canRegisterDecision = useFeatureEnabled(FEATURE.ACCEPTED_CHRISTS);
 
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -72,6 +73,8 @@ export default function ChildCard({
               : "linear-gradient(180deg, #1e1e1e 0%, #161616 100%)",
         }}
       >
+        {/* O registro da decisão só aparece enquanto o recurso está no ar. */}
+        {canRegisterDecision && (
         <Tooltip title={alreadyAccepted ? "Registrar reconciliação" : "Registrar decisão por Jesus"}>
           <IconButton
             onClick={(e) => { e.stopPropagation(); setModalOpen(true); }}
@@ -89,6 +92,7 @@ export default function ChildCard({
             <FavoriteIcon sx={{ color: alreadyAccepted ? theme.palette.error.main : "#ccc" }} />
           </IconButton>
         </Tooltip>
+        )}
 
         {!!onEdit && (
           <Tooltip title="Editar criança">
@@ -282,7 +286,7 @@ export default function ChildCard({
         )}
       </Card>
       <DecisionModal
-        open={modalOpen}
+        open={modalOpen && canRegisterDecision}
         onClose={handleCloseModal}
         child={child}
         onSuccess={async () => {

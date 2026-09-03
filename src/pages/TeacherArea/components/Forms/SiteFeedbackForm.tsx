@@ -13,9 +13,8 @@ import {
     FormControl,
     FormHelperText,
 } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setFeedbacks } from '@/store/slices/feedback/feedbackSlice';
 import { FeedbackCategory, FeedbackCategoryLabels } from '@/store/slices/types';
 import { RootState } from '@/store/slices';
 import {
@@ -41,7 +40,6 @@ const SiteFeedbackForm: React.FC = () => {
     });
     const [submitted, setSubmitted] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -63,8 +61,10 @@ const SiteFeedbackForm: React.FC = () => {
         try {
             // Só os campos preenchidos vão no corpo: id, datas e `read` são do
             // servidor, e a API recusa a requisição inteira se eles chegarem.
-            const created = await apiCreateFeedback(buildFeedbackRequest(values));
-            dispatch(setFeedbacks([created]));
+            // A avaliação é do servidor a partir daqui; a tela só confirma o
+            // envio. Guardá-la em Redux sobrescrevia a listagem inteira do
+            // painel por um único item, e ninguém lia esse estado.
+            await apiCreateFeedback(buildFeedbackRequest(values));
             setSubmitted(true);
             resetForm();
             setTimeout(() => {

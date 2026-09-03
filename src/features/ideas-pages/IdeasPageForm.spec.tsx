@@ -30,17 +30,22 @@ const formState = {
 
 // Só o hook de estado do formulário é substituído: o guard de saída continua
 // sendo o real, para que os testes de beforeunload valham alguma coisa.
+// A página da edição vem do id na URL; o teste controla o que a busca devolve.
+let loadedPage: { id: string } | null = { id: 'page-1' };
+let loadingPage = false;
+
 vi.mock('./hooks', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./hooks')>();
-  return { ...actual, useIdeasPageForm: () => formState };
+  return {
+    ...actual,
+    useIdeasPageForm: () => formState,
+    useIdeasPageById: () => ({
+      page: loadedPage,
+      loading: loadingPage,
+      error: '',
+    }),
+  };
 });
-
-let storedPage: unknown = { id: 'page-1' };
-
-vi.mock('react-redux', () => ({
-  useDispatch: () => vi.fn(),
-  useSelector: () => storedPage,
-}));
 
 import IdeasPageForm from './IdeasPageForm';
 
@@ -74,7 +79,8 @@ describe('IdeasPageForm', () => {
     formState.saving = false;
     formState.isDirty = false;
     formState.feedback = null;
-    storedPage = { id: 'page-1' };
+    loadedPage = { id: 'page-1' };
+    loadingPage = false;
   });
 
   it('mostra o título de edição apenas fora do fluxo de criação', () => {
@@ -82,16 +88,16 @@ describe('IdeasPageForm', () => {
     expect(screen.getByText('Editar Página de Ideias')).toBeInTheDocument();
   });
 
-  it('avisa quando a edição é aberta sem página no store', () => {
-    storedPage = null;
+  it('avisa quando a edição é aberta sem a página carregada', () => {
+    loadedPage = null;
     renderForm({ fromTemplatePage: false });
 
-    expect(screen.getByText('Nenhuma página selecionada')).toBeInTheDocument();
+    expect(screen.getByText('Página não encontrada')).toBeInTheDocument();
     expect(screen.queryByLabelText(/Título da página/)).not.toBeInTheDocument();
   });
 
-  it('não exige página no store durante a criação', () => {
-    storedPage = null;
+  it('não exige página carregada durante a criação', () => {
+    loadedPage = null;
     renderForm({ fromTemplatePage: true });
 
     expect(screen.getByLabelText(/Título da página/)).toBeInTheDocument();

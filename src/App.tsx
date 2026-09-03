@@ -29,7 +29,6 @@ import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 import { fetchRoutes } from './store/slices/route/routeSlice';
 import { initAuth, logout } from './store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
-import { useFeatureFlags } from '@/hooks';
 
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
@@ -50,7 +49,7 @@ import CoordinatorProfilesManager from './features/coordinators/CoordinatorProfi
 import TeacherProfilesManager from './features/teachers/TeacherProfilesManager';
 import ClubsManager from './features/clubs/ClubsManager';
 import ContactsManager from './features/contacts/ContactsManager';
-import MeditationManager from './features/meditations/MeditationManager';
+import MeditationsManager from './features/meditations/MeditationsManager';
 import ChildrenManager from './features/children/ChildrenManager';
 import ChildrenBrowserPage from './features/pagela-teacher/ChildrenBrowserPage';
 import ChildPagelasPage from './features/pagela-teacher/ChildPagelasPage';
@@ -59,16 +58,17 @@ import PagelaClubsManager from './features/pagela-clubs/PagelaClubsManager';
 import CommentsManager from './features/comments/CommentsManager';
 import FeedbackManager from './features/feedback/FeedbackManager';
 import UsersManager from './features/users/UsersManager';
-import InformativeBannerLManager from './features/informatives/InformativeBannerLManager';
+import InformativesManager from './features/informatives/InformativesManager';
 import ImageSectionManager from './features/image-sections/ImageSectionManager';
-import ImagePageManager from './features/image-pages/ImagePageManager';
+import ImagePagesManager from './features/image-pages/ImagePagesManager';
 import IdeasSectionManager from './features/ideas-sections/IdeasSectionManager';
 import IdeasSectionPage from './pages/TeacherArea/IdeasSection/IdeasSectionPage';
+import IdeasSectionReviewPage from './features/ideas-sections/IdeasSectionReviewPage';
 import DocumentsManager from './features/documents/DocumentsManager';
-import { IdeasManager, IdeasPageForm } from './features/ideas-pages';
-import VideosManager from './features/video-pages/VideosManager';
+import { IdeasPagesManager, IdeasPageForm } from './features/ideas-pages';
+import VideoPagesManager from './features/video-pages/VideoPagesManager';
 import {
-  WeekMaterialManager,
+  WeekMaterialsManager,
   WeekMaterialPageForm,
 } from './features/week-materials';
 import { MeditationPageForm } from './features/meditations';
@@ -76,16 +76,22 @@ import { ImagePageForm } from './features/image-pages';
 import { VideoPageForm } from './features/video-pages';
 import StatisticsPage from './features/statistics/StatisticsPage';
 import ClubControlPage from './features/club-control/ClubControlPage';
+import {
+  FEATURE,
+  FeatureFlagsManager,
+  FeatureRoute,
+  useVisibleRoutes,
+} from './features/feature-flags';
 import { ProfilesManager, ProfilePage } from './features/profile';
 import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
 import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
-  const dynamicRoutes = useSelector((state: RootStateType) => state.routes.routes);
+  // Uma página cujo recurso está desligado não chega a virar rota.
+  const dynamicRoutes = useVisibleRoutes();
   const { initialized, loadingUser } = useSelector((state: RootStateType) => state.auth);
   const [forceReady, setForceReady] = useState(false);
-  const { flags } = useFeatureFlags();
 
   useEffect(() => {
     dispatch(fetchRoutes());
@@ -159,59 +165,99 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/sobre" element={<About />} />
-                  <Route path="/contato" element={<Contact />} />
-                  <Route path="/eventos" element={<EventosPage />} />
-                  <Route path="/feed-clubinho" element={<ClubinhoFeedView feed />} />
+                  <Route element={<FeatureRoute flag={FEATURE.CONTACT_FORM} />}>
+                    <Route path="/contato" element={<Contact />} />
+                  </Route>
+                  <Route element={<FeatureRoute flag={FEATURE.EVENTS_SECTION} />}>
+                    <Route path="/eventos" element={<EventosPage />} />
+                  </Route>
+                  <Route element={<FeatureRoute flag={FEATURE.CLUBINHO_FEED} />}>
+                    <Route path="/feed-clubinho" element={<ClubinhoFeedView feed />} />
+                  </Route>
                   <Route path="/login" element={<Login />} />
-                  <Route path="/esqueci-senha" element={<ForgotPassword />} />
-                  <Route path="/redefinir-senha" element={<ResetPassword />} />
-                  <Route path="/recuperar-senha/:token" element={<ResetPassword />} />
+                  {/*
+                    Sem recuperação de senha, quem esqueceu precisa falar com a
+                    administração; por isso as três rotas caem juntas.
+                  */}
+                  <Route element={<FeatureRoute flag={FEATURE.PASSWORD_RECOVERY} redirectTo="/login" />}>
+                    <Route path="/esqueci-senha" element={<ForgotPassword />} />
+                    <Route path="/redefinir-senha" element={<ResetPassword />} />
+                    <Route path="/recuperar-senha/:token" element={<ResetPassword />} />
+                  </Route>
                   <Route path="/verificar-email" element={<EmailVerificationInstructions />} />
-                  <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
-                  <Route path="/cadastrar" element={<Register commonUser />} />
-                  <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} />
+                  <Route element={<FeatureRoute flag={FEATURE.PUBLIC_REGISTRATION} redirectTo="/login" />}>
+                    <Route path="/cadastrar" element={<Register commonUser />} />
+                    {/*
+                      O cadastro por Google exige as duas: a porta de entrada e
+                      o provedor.
+                    */}
+                    <Route element={<FeatureRoute flag={FEATURE.GOOGLE_LOGIN} redirectTo="/cadastrar" />}>
+                      <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
+                    </Route>
+                  </Route>
+                  <Route element={<FeatureRoute flag={FEATURE.SPECIAL_FAMILY_DAY} />}>
+                    <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} />
+                  </Route>
 
                   <Route path="/acesso-negado" element={<AccessDeniedPage />} />
                   <Route path="*" element={<NotFoundPage />} />
 
                   <Route element={<ProtectedRoute />}>
                     <Route path="/area-do-professor" element={<TeacherArea />} />
-                    <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
-                    <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
-                    <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
-                    <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
                     <Route path="/meu-perfil" element={<ProfilePage />} />
+
+                    {/*
+                      Cada recurso abaixo tem uma flag própria: com ela
+                      desligada a rota deixa de existir, e o atalho que leva
+                      até ela também some da tela.
+                    */}
+                    <Route element={<FeatureRoute flag={FEATURE.CLUB_PHOTO_UPLOAD} redirectTo="/area-do-professor" />}>
+                      <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
+                    </Route>
+                    <Route element={<FeatureRoute flag={FEATURE.WEEKLY_MATERIALS} redirectTo="/area-do-professor" />}>
+                      <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
+                    </Route>
+                    <Route element={<FeatureRoute flag={FEATURE.SITE_FEEDBACK} redirectTo="/area-do-professor" />}>
+                      <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
+                    </Route>
+                    <Route element={<FeatureRoute flag={FEATURE.IDEA_SUBMISSION} redirectTo="/area-do-professor" />}>
+                      <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
+                    </Route>
                   </Route>
 
-                  <Route element={
-                    <ProtectedRoute
-                      requiredRole={(() => {
-                        const roles: UserRole[] = [UserRole.ADMIN];
-                        if (flags.coordinator_children_access) roles.push(UserRole.COORDINATOR);
-                        if (flags.teacher_children_access) roles.push(UserRole.TEACHER);
-                        return roles;
-                      })()}
-                    />
-                  }>
-                    <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
-                    <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
+                  {/*
+                    Quem entra na Área das Crianças é decidido pelos perfis
+                    alvo da própria flag: o mapa já responde `false` para um
+                    perfil que ela não alcança. A rota só exige a sessão.
+                  */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={<FeatureRoute flag={FEATURE.CHILDREN_AREA} />}>
+                      <Route path="/area-das-criancas" element={<ChildrenBrowserPage />} />
+                      <Route path="/area-das-criancas/:childId" element={<ChildPagelasPage />} />
+                    </Route>
                   </Route>
 
                   <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.COORDINATOR]} />}>
                     <Route path="/adm" element={<AdminLayout />}>
                       <Route index element={<AdminDashboardPage />} />
-                      <Route path="meditacoes" element={<MeditationManager />} />
-                      <Route path="comentarios" element={<CommentsManager />} />
+                      <Route path="meditacoes" element={<MeditationsManager />} />
+                      <Route element={<FeatureRoute flag={FEATURE.COMMENT_MODERATION} redirectTo="/adm" />}>
+                        <Route path="comentarios" element={<CommentsManager />} />
+                      </Route>
                       <Route path="documentos" element={<DocumentsManager />} />
-                      <Route path="informativos" element={<InformativeBannerLManager />} />
+                      <Route path="informativos" element={<InformativesManager />} />
                       <Route path="feedbacks" element={<FeedbackManager />} />
                       <Route path="contatos" element={<ContactsManager />} />
-                      <Route path="paginas-materiais-semanais" element={<WeekMaterialManager />} />
-                      <Route path="paginas-fotos" element={<ImagePageManager />} />
-                      <Route path="fotos-clubinhos" element={<ImageSectionManager />} />
-                      <Route path="ideias-compartilhadas" element={<IdeasSectionManager />} />
-                      <Route path="paginas-videos" element={<VideosManager />} />
-                      <Route path="paginas-ideias" element={<IdeasManager />} />
+                      <Route path="paginas-materiais-semanais" element={<WeekMaterialsManager />} />
+                      <Route path="paginas-fotos" element={<ImagePagesManager />} />
+                      <Route element={<FeatureRoute flag={FEATURE.PHOTO_MODERATION} redirectTo="/adm" />}>
+                        <Route path="fotos-clubinhos" element={<ImageSectionManager />} />
+                      </Route>
+                      <Route element={<FeatureRoute flag={FEATURE.IDEA_MODERATION} redirectTo="/adm" />}>
+                        <Route path="ideias-compartilhadas" element={<IdeasSectionManager />} />
+                      </Route>
+                      <Route path="paginas-videos" element={<VideoPagesManager />} />
+                      <Route path="paginas-ideias" element={<IdeasPagesManager />} />
                       <Route path="criar-pagina" element={<SelecPageTemplate />} />
                       <Route path="usuarios" element={<UsersManager />} />
                       <Route path="perfis" element={<ProfilesManager />} />
@@ -219,19 +265,38 @@ function App() {
                       <Route path="professores" element={<TeacherProfilesManager />} />
                       <Route path="criancas" element={<ChildrenManager />} />
                       <Route path="clubinhos" element={<ClubsManager />} />
-                      <Route path="pagelas" element={<PagelaClubsManager />} />
+                      <Route element={<FeatureRoute flag={FEATURE.PAGELAS} redirectTo="/adm" />}>
+                        <Route path="pagelas" element={<PagelaClubsManager />} />
+                      </Route>
                       <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN]} />}>
-                        <Route path="estatisticas" element={<StatisticsPage />} />
-                        <Route path="controle-clubinhos" element={<ClubControlPage />} />
+                        <Route element={<FeatureRoute flag={FEATURE.STATISTICS} redirectTo="/adm" />}>
+                          <Route path="estatisticas" element={<StatisticsPage />} />
+                        </Route>
+                        <Route element={<FeatureRoute flag={FEATURE.CLUB_CONTROL} redirectTo="/adm" />}>
+                          <Route path="controle-clubinhos" element={<ClubControlPage />} />
+                        </Route>
+                        {/*
+                          O painel de flags não passa por FeatureRoute: ele é a
+                          própria chave de casa, e desligar uma flag não pode
+                          trancar quem precisa religá-la.
+                        */}
+                        <Route path="feature-flags" element={<FeatureFlagsManager />} />
                       </Route>
 
-                      <Route path="editar-meditacao" element={<MeditationPageForm fromTemplatePage={false} />} />
-                      <Route path="editar-pagina-imagens" element={<ImagePageForm fromTemplatePage={false} />} />
-                      <Route path="editar-pagina-videos" element={<VideoPageForm fromTemplatePage={false} />} />
-                      <Route path="editar-pagina-semana" element={<WeekMaterialPageForm fromTemplatePage={false} />} />
-                      <Route path="editar-pagina-ideias" element={<IdeasPageForm fromTemplatePage={false} />} />
-                      <Route path="editar-imagens-clubinho" element={<ImageSectionEditorAdmin />} />
-                      <Route path="editar-ideias-compartilhadas" element={<IdeasSectionPage />} />
+                      <Route path="editar-meditacao/:id" element={<MeditationPageForm fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-imagens/:id" element={<ImagePageForm fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-videos/:id" element={<VideoPageForm fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-semana/:id" element={<WeekMaterialPageForm fromTemplatePage={false} />} />
+                      <Route path="editar-pagina-ideias/:id" element={<IdeasPageForm fromTemplatePage={false} />} />
+                      {/* Com o id na rota, recarregar a página não perde a revisão. */}
+                      {/* A revisão acompanha a fila que a originou. */}
+                      <Route element={<FeatureRoute flag={FEATURE.PHOTO_MODERATION} redirectTo="/adm" />}>
+                        <Route path="editar-imagens-clubinho/:id" element={<ImageSectionEditorAdmin />} />
+                        <Route path="editar-imagens-clubinho" element={<ImageSectionEditorAdmin />} />
+                      </Route>
+                      <Route element={<FeatureRoute flag={FEATURE.IDEA_MODERATION} redirectTo="/adm" />}>
+                        <Route path="editar-ideias-compartilhadas/:id" element={<IdeasSectionReviewPage />} />
+                      </Route>
                     </Route>
                   </Route>
 

@@ -1,17 +1,38 @@
+import type { AxiosRequestConfig } from 'axios';
+
 import api from '@/config/axiosConfig';
 import { MEDITATIONS_ENDPOINT, MULTIPART_HEADERS } from './constants';
-import { MeditationResponse } from './types';
+import {
+  MeditationQuery,
+  MeditationResponse,
+  PaginatedMeditations,
+} from './types';
 
-/** Lista todas as meditações cadastradas. */
-export async function listMeditations(): Promise<MeditationResponse[]> {
-  const { data } = await api.get<MeditationResponse[]>(MEDITATIONS_ENDPOINT);
+/**
+ * Lista as meditações.
+ *
+ * Busca, período e ordenação são resolvidos pela API: antes a listagem inteira
+ * era baixada só para ser peneirada no navegador.
+ */
+export async function listMeditations(
+  query: MeditationQuery,
+  config?: AxiosRequestConfig,
+): Promise<PaginatedMeditations> {
+  const { data } = await api.get<PaginatedMeditations>(MEDITATIONS_ENDPOINT, {
+    ...config,
+    params: query,
+  });
   return data;
 }
 
 /** Carrega uma meditação pelo id. */
-export async function getMeditation(id: string): Promise<MeditationResponse> {
+export async function getMeditation(
+  id: string,
+  config?: AxiosRequestConfig,
+): Promise<MeditationResponse> {
   const { data } = await api.get<MeditationResponse>(
     `${MEDITATIONS_ENDPOINT}/${id}`,
+    config,
   );
   return data;
 }

@@ -50,6 +50,34 @@ export interface MeditationResponse {
   updatedAt: string;
 }
 
+/** Envelope paginado devolvido pela API. */
+export interface PaginatedMeditations {
+  data: MeditationResponse[];
+  total: number;
+  page: number;
+  limit: number;
+  pageCount: number;
+}
+
+/** Campo pelo qual a listagem pode ser ordenada. */
+export type MeditationSortField = 'startDate' | 'topic' | 'createdAt';
+
+/** Direção da ordenação. */
+export type MeditationSortOrder = 'ASC' | 'DESC';
+
+/** Recorte de período aceito pela API. */
+export type MeditationPeriodFilter = 'current' | 'upcoming' | 'past';
+
+/** Filtros aplicados pela API, não pela tela. */
+export interface MeditationQuery {
+  page?: number;
+  limit?: number;
+  searchString?: string;
+  period?: MeditationPeriodFilter;
+  sort?: MeditationSortField;
+  order?: MeditationSortOrder;
+}
+
 /** Um dia em edição no formulário. */
 export interface MeditationDayDraft {
   /** Presente apenas quando o dia já veio da API. */

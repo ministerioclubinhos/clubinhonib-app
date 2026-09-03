@@ -3,7 +3,7 @@ import { Paper, Box, Typography, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
 import { MotivationSectionProps } from '../../types';
 
-const MotivationSection: React.FC<MotivationSectionProps> = ({ motivationText }) => {
+const MotivationSection: React.FC<MotivationSectionProps> = () => {
   const theme = useTheme();
 
   return (

@@ -7,7 +7,6 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-  Stack,
 } from "@mui/material";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import ToggleOnIcon from "@mui/icons-material/ToggleOn";

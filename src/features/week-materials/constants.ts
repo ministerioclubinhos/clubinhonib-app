@@ -16,17 +16,38 @@ export const MULTIPART_HEADERS = {
   'Content-Type': 'multipart/form-data',
 } as const;
 
-/** Delay applied to the title search of the admin list. */
-export const WEEK_MATERIAL_SEARCH_DEBOUNCE_MS = 300;
-
 /** Maximum characters of the description rendered in a card. */
 export const WEEK_MATERIAL_CARD_DESCRIPTION_MAX_CHARS = 100;
 
 /** Rotas administrativas usadas pelas telas de material semanal. */
 export const WEEK_MATERIAL_ROUTES = {
+  /** O id vai na URL: sem ele um F5 na edição perdia a página carregada. */
   EDIT_PAGE: '/adm/editar-pagina-semana',
   MANAGE_PAGES: '/adm/paginas-materiais-semanais',
 } as const;
+
+/** Caminho da edição de uma página específica. */
+export const weekMaterialEditPath = (id: string): string =>
+  `${WEEK_MATERIAL_ROUTES.EDIT_PAGE}/${id}`;
+
+/** Tamanho de página padrão e opções oferecidas na paginação. */
+export const WEEK_MATERIALS_DEFAULT_LIMIT = 12;
+export const WEEK_MATERIALS_PAGE_SIZE_OPTIONS = [12, 24, 48];
+
+/** Opções do filtro de publicação, na ordem em que aparecem. */
+export const WEEK_MATERIAL_CURRENT_OPTIONS = [
+  { value: '', label: 'Todas' },
+  { value: 'true', label: 'Material da semana' },
+  { value: 'false', label: 'Demais páginas' },
+] as const;
+
+/** Opções de ordenação, na ordem em que aparecem. */
+export const WEEK_MATERIAL_SORT_OPTIONS = [
+  { value: 'createdAt:DESC', label: 'Mais recentes' },
+  { value: 'createdAt:ASC', label: 'Mais antigas' },
+  { value: 'title:ASC', label: 'Título (A–Z)' },
+  { value: 'title:DESC', label: 'Título (Z–A)' },
+] as const;
 
 /** Multipart field prefix used for each uploaded media type. */
 export const WEEK_MATERIAL_FILE_PREFIX: Record<MediaType, string> = {

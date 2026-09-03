@@ -9,16 +9,16 @@ import {
     useTheme,
     useMediaQuery,
 } from '@mui/material';
-import { CompleteProfileListItem } from '../types';
-import { getGenderStyle } from '../constants/profileConstants';
-import { getDaysUntilBirthday, getInitials } from '../utils/profileHelpers';
+import { CompleteProfile } from '../types';
+import { getGenderStyle } from './profileStyles';
+import { getDaysUntilBirthday, getInitials } from '../utils';
 
 interface BirthdaySectionProps {
     title: string;
     emoji: string;
-    profiles: CompleteProfileListItem[];
+    profiles: CompleteProfile[];
     variant: 'today' | 'week' | 'month';
-    onProfileClick: (profile: CompleteProfileListItem) => void;
+    onProfileClick: (profile: CompleteProfile) => void;
 }
 
 const BirthdaySection: React.FC<BirthdaySectionProps> = ({

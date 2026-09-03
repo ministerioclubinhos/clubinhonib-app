@@ -20,6 +20,7 @@ import 'slick-carousel/slick/slick-theme.css';
 import api from '@/config/axiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
+import { useVisibleRoutes } from '@/features/feature-flags';
 import {
   setDocumentData,
   clearDocumentData,
@@ -34,7 +35,7 @@ const DocumentsSection: React.FC = () => {
   const documentData = useSelector(
     (state: RootState) => state.document.documentData
   );
-  const routes = useSelector((state: RootState) => state.routes.routes);
+  const routes = useVisibleRoutes();
   const [openModal, setOpenModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');

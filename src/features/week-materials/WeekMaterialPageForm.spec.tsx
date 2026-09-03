@@ -39,17 +39,22 @@ const formState = {
 
 // Só o hook de estado do formulário é substituído: o guard de saída continua
 // sendo o real, para que os testes de beforeunload valham alguma coisa.
+// A página da edição vem do id na URL; o teste controla o que a busca devolve.
+let loadedMaterial: { id: string } | null = { id: 'page-1' };
+let loadingMaterial = false;
+
 vi.mock('./hooks', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./hooks')>();
-  return { ...actual, useWeekMaterialForm: () => formState };
+  return {
+    ...actual,
+    useWeekMaterialForm: () => formState,
+    useWeekMaterialById: () => ({
+      material: loadedMaterial,
+      loading: loadingMaterial,
+      error: '',
+    }),
+  };
 });
-
-let storedMaterial: unknown = { id: 'page-1' };
-
-vi.mock('react-redux', () => ({
-  useDispatch: () => vi.fn(),
-  useSelector: () => storedMaterial,
-}));
 
 import WeekMaterialPageForm from './WeekMaterialPageForm';
 
@@ -77,7 +82,8 @@ describe('WeekMaterialPageForm', () => {
     formState.errors = { title: false, subtitle: false, description: false };
     formState.saving = false;
     formState.isDirty = false;
-    storedMaterial = { id: 'page-1' };
+    loadedMaterial = { id: 'page-1' };
+    loadingMaterial = false;
   });
 
   it('mostra o resumo vazio quando nenhum material foi adicionado', () => {
@@ -236,18 +242,18 @@ describe('WeekMaterialPageForm', () => {
   });
 
   it('avisa quando a edição é aberta sem página carregada, em vez de um formulário vazio', () => {
-    storedMaterial = null;
+    loadedMaterial = null;
 
     renderForm({ fromTemplatePage: false });
 
-    expect(screen.getByText('Nenhuma página selecionada')).toBeInTheDocument();
+    expect(screen.getByText('Página não encontrada')).toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: /salvar página/i }),
     ).not.toBeInTheDocument();
   });
 
-  it('mostra o formulário de criação mesmo sem página no store', () => {
-    storedMaterial = null;
+  it('mostra o formulário de criação mesmo sem página carregada', () => {
+    loadedMaterial = null;
 
     renderForm({ fromTemplatePage: true });
 

@@ -14,11 +14,9 @@ import {
   CircularProgress,
   Grid,
   useTheme,
-  useMediaQuery,
   Chip,
   Stack,
   IconButton,
-  Tooltip,
   Dialog,
   DialogContent,
 } from '@mui/material';
@@ -43,7 +41,6 @@ import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 const CommentsSection: React.FC = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const rawComments = useSelector((state: RootState) => state.comments.comments);
   const comments = useMemo(() => rawComments?.filter((c) => c.published) || [], [rawComments]);
 

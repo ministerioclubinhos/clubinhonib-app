@@ -51,6 +51,54 @@ export interface WeekMaterialResponse {
   updatedAt: string;
 }
 
+/**
+ * Resumo da página na listagem do painel.
+ *
+ * A listagem não traz as mídias: só quantas há de cada tipo, que é o que o
+ * card mostra.
+ */
+export interface WeekMaterialSummary {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  /** A página publicada como o material da semana. */
+  currentWeek: boolean;
+  /** Endereço público da página; `null` quando a rota não existe. */
+  routePath: string | null;
+  videoCount: number;
+  documentCount: number;
+  imageCount: number;
+  audioCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Envelope paginado devolvido pela API. */
+export interface PaginatedWeekMaterials {
+  data: WeekMaterialSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  pageCount: number;
+}
+
+/** Campo pelo qual a listagem pode ser ordenada. */
+export type WeekMaterialSortField = 'createdAt' | 'title';
+
+/** Direção da ordenação. */
+export type WeekMaterialSortOrder = 'ASC' | 'DESC';
+
+/** Filtros aplicados pela API, não pela tela. */
+export interface WeekMaterialQuery {
+  page?: number;
+  limit?: number;
+  searchString?: string;
+  currentWeek?: boolean;
+  sort?: WeekMaterialSortField;
+  order?: WeekMaterialSortOrder;
+}
+
 /** Media item as sent to the API inside `weekMaterialsPageData`. */
 export interface WeekMaterialMediaRequest {
   id?: string;

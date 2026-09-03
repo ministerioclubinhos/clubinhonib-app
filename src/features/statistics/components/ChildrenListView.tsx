@@ -35,7 +35,6 @@ import {
   Refresh,
   Star,
   CheckCircle,
-  TrendingUp,
 } from '@mui/icons-material';
 import { useChildren } from '../hooks';
 import { ChildrenStatsQueryDto } from '../api';

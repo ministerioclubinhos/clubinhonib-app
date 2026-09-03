@@ -1,13 +1,11 @@
 import { Fragment, useState, useMemo } from "react";
 import { 
-  Card, 
   Typography, 
   Box, 
   Dialog, 
   IconButton,
   Paper,
   useTheme,
-  useMediaQuery,
   Chip,
   Zoom,
 } from "@mui/material";
@@ -26,7 +24,6 @@ interface Props {
 const VideoCard = ({ video }: Props) => {
   const [open, setOpen] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const thumb = useMemo(() => getPreferredThumb(video), [video]);
 
   const fileSize = video.size ? `${(video.size / 1024 / 1024).toFixed(1)} MB` : null;

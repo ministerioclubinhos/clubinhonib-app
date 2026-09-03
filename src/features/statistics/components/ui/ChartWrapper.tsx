@@ -19,10 +19,8 @@ import {
 } from '@mui/material';
 import {
   MoreVert,
-  Download,
   Fullscreen,
   FullscreenExit,
-  Share,
   Refresh,
   PictureAsPdf,
   Image,
@@ -33,7 +31,6 @@ import {
   Timeline,
   PieChart,
   InfoOutlined,
-  OpenInNew,
   ZoomIn,
   ZoomOut,
   FitScreen,

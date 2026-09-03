@@ -11,10 +11,21 @@ import {
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import YouTubeIcon from "@mui/icons-material/YouTube";
+import FlagIcon from "@mui/icons-material/Flag";
+
+import { useSelector } from "react-redux";
+import { Link as RouterLink } from "react-router-dom";
+import { RootState } from "@/store/slices";
+import { UserRole } from "@/types/shared";
+import { FEATURE } from "@/features/feature-flags";
+import { useFeatureFlags } from "@/hooks";
 
 const Footer: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { flags } = useFeatureFlags();
+  const isAdmin = !!isAuthenticated && user?.role === UserRole.ADMIN;
 
   return (
     <Box
@@ -42,8 +53,12 @@ const Footer: React.FC = () => {
         <Stack direction="row" spacing={3} justifyContent="center" flexWrap="wrap">
           <Link href="/" underline="hover" color="inherit" fontWeight="medium">Início</Link>
           <Link href="/sobre" underline="hover" color="inherit" fontWeight="medium">Sobre</Link>
-          <Link href="/eventos" underline="hover" color="inherit" fontWeight="medium">Eventos</Link>
-          <Link href="/contato" underline="hover" color="inherit" fontWeight="medium">Contato</Link>
+          {flags[FEATURE.EVENTS_SECTION] && (
+            <Link href="/eventos" underline="hover" color="inherit" fontWeight="medium">Eventos</Link>
+          )}
+          {flags[FEATURE.CONTACT_FORM] && (
+            <Link href="/contato" underline="hover" color="inherit" fontWeight="medium">Contato</Link>
+          )}
         </Stack>
 
         <Stack direction="row" spacing={2} justifyContent="center">
@@ -68,6 +83,27 @@ const Footer: React.FC = () => {
               Diego Seven System
             </Link>
           </Typography>
+
+          {isAdmin && (
+            <Box sx={{ mt: 0.5, opacity: 0.45, transition: "opacity 0.2s ease", "&:hover": { opacity: 1 } }}>
+              <Link
+                component={RouterLink}
+                to="/adm/feature-flags"
+                color="inherit"
+                underline="hover"
+                sx={{
+                  fontSize: "0.75rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  color: "rgba(255, 255, 255, 0.9)",
+                }}
+              >
+                <FlagIcon sx={{ fontSize: "0.85rem" }} />
+                <span>Feature Flags</span>
+              </Link>
+            </Box>
+          )}
         </Stack>
       </Stack>
     </Box>

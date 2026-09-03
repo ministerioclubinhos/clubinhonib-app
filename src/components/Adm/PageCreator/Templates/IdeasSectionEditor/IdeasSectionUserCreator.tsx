@@ -14,7 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import { IdeasSection } from '@/store/slices/ideas/ideasSlice';
 import { clearIdeasSectionData } from '@/store/slices/ideas/ideasSlice';
 import { IdeasSectionFields } from '@/features/ideas-pages';
-import api from '@/config/axiosConfig';
+import { apiCreateIdeasSection } from '@/features/ideas-sections';
+import { extractErrorMessage } from '@/utils/apiError';
 import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
@@ -88,15 +89,7 @@ export function IdeasSectionUserCreator() {
 
       const mediaTypeCounters = { video: 0, document: 0, image: 0 };
 
-      const mediasPayload = sectionData.medias.map((media, index) => {
-        console.log(`🔍 Processando mídia ${index}:`, {
-          title: media.title,
-          mediaType: media.mediaType,
-          uploadType: media.uploadType,
-          hasFile: !!media.file,
-          hasUrl: !!media.url
-        });
-
+      const mediasPayload = sectionData.medias.map((media) => {
         const baseItem = {
           title: media.title,
           description: media.description,
@@ -107,7 +100,6 @@ export function IdeasSectionUserCreator() {
 
         if (media.uploadType === 'upload' && media.mediaType !== 'audio') {
           if (!media.file) {
-            console.error(`❌ Mídia de upload "${media.title}" não tem arquivo!`);
             throw new Error(`Mídia de upload "${media.title}" não tem arquivo associado`);
           }
 
@@ -115,14 +107,12 @@ export function IdeasSectionUserCreator() {
           const count = mediaTypeCounters[media.mediaType as keyof typeof mediaTypeCounters];
           const fieldKey = count === 1 ? `${media.mediaType}_upload` : `${media.mediaType}${count}_upload`;
 
-          console.log(`📁 Adicionando arquivo: ${fieldKey}`, media.file.name);
           formData.append(fieldKey, media.file);
 
           return { ...baseItem, fieldKey, originalName: media.file.name };
         }
 
         if (media.uploadType === 'link' && media.url) {
-          console.log(`🔗 Link externo: ${media.title}`, media.url);
           return {
             ...baseItem,
             url: media.url,
@@ -143,13 +133,12 @@ export function IdeasSectionUserCreator() {
       formData.append('sectionData', JSON.stringify({
         title: sectionData.title,
         description: sectionData.description,
-        public: true,
         medias: mediasPayload,
       }));
 
-      await api.post('/ideas-sections', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      // `public` não vai no corpo: a ideia entra na fila e quem publica é a
+      // administração. A API recusa a requisição inteira se ele chegar.
+      await apiCreateIdeasSection(formData);
 
       dispatch(clearIdeasSectionData());
 
@@ -169,11 +158,10 @@ export function IdeasSectionUserCreator() {
       setTimeout(() => {
         navigate('/area-do-professor');
       }, 2000);
-    } catch (error) {
-      console.error('Erro ao compartilhar ideia:', error);
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: GENERIC_ERROR_MESSAGES.SAVE_ERROR,
+        message: extractErrorMessage(error, GENERIC_ERROR_MESSAGES.SAVE_ERROR),
         severity: 'error',
       });
     } finally {

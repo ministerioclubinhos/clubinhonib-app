@@ -1,5 +1,4 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Box, IconButton, Typography, useMediaQuery, useTheme } from '@mui/material';
 import Slider from 'react-slick';
 import { motion, Variants } from 'framer-motion';
@@ -7,10 +6,10 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { MediaTargetType } from 'store/slices/types';
+import { useVisibleRoutes } from '@/features/feature-flags';
 import { RouteData } from 'store/slices/route/routeSlice';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { RootState } from '@/store/slices';
 
 const AUTOPLAY_MS = 6000;
 
@@ -35,7 +34,7 @@ const InformativeBanner: React.FC = () => {
   const [activeSlide, setActiveSlide] = useState(0);
   const sliderRef = useRef<Slider | null>(null);
 
-  const routes = useSelector((state: RootState) => state.routes.routes) as RouteData[];
+  const routes = useVisibleRoutes();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 

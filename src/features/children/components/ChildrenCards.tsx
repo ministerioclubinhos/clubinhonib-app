@@ -2,8 +2,8 @@ import React, { useMemo, useState } from "react";
 import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
   Typography, MenuItem, Select, FormControl, InputLabel,
-  Divider, TablePagination, Tooltip, Collapse, ButtonBase,
-  Paper, Avatar, Link
+  Divider, TablePagination, Tooltip, ButtonBase,
+  Paper, Avatar,
 } from "@mui/material";
 import { Visibility, Edit, Delete, SwapVert, CakeOutlined, PlaceOutlined, ExpandMore as ExpandMoreIcon, LocationOnOutlined, Phone as PhoneIcon, ChildCare, PersonOutlined, WhatsApp, ToggleOn, ToggleOff } from "@mui/icons-material";
 import { SortingState } from "@tanstack/react-table";
@@ -11,7 +11,7 @@ import { ChildResponseDto } from "../types";
 import { RootState } from "@/store/slices";
 import { useSelector } from "react-redux";
 import { buildWhatsappLink } from "@/utils/whatsapp";
-import { formatDate, gLabel, ageFrom, timeDifference } from "@/utils/dateUtils";
+import { formatDate, gLabel, timeDifference } from "@/utils/dateUtils";
 import { CopyButton, initials } from "@/utils/components";
 
 type Props = {
@@ -40,9 +40,10 @@ export default function ChildrenCards(props: Props) {
   
   const toggle = (id: string) =>
     setOpen((prev) => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
 
   const currentSort = sorting?.[0] ?? { id: "updatedAt", desc: true };
@@ -90,7 +91,6 @@ export default function ChildrenCards(props: Props) {
       <Grid container spacing={{ xs: 1, sm: 1.25 }}>
         {rows.map((c) => {
           const expanded = open.has(c.id);
-          const age = ageFrom(c.birthDate);
           const ageDetailedText = timeDifference(c.birthDate);
           const tenure = timeDifference(c.joinedAt);
           const addrPreview = c.address ? `${c.address.city} / ${c.address.state}` : "—";

@@ -11,7 +11,6 @@ import {
   Select,
   FormControl,
   InputLabel,
-  Box,
   Fab,
 } from "@mui/material";
 import { Clear, Refresh } from "@mui/icons-material";

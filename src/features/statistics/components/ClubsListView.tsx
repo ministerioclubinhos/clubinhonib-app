@@ -20,7 +20,6 @@ import {
   Collapse,
   IconButton,
   useTheme,
-  Avatar,
   Card,
   CardContent,
   useMediaQuery,

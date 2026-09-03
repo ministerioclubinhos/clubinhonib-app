@@ -74,6 +74,8 @@ export default function TeacherProfilesManager() {
         setDialogError("");
         await Promise.all([fetchPage(), refreshClubs()]);
       } catch {
+        // O hook já registrou a mensagem em `dialogError`; aqui só não seguimos
+        // para o fechamento do diálogo nem para a recarga da lista.
       }
     },
     [byNumber, setClub, fetchPage, refreshClubs, setDialogError]
@@ -87,6 +89,7 @@ export default function TeacherProfilesManager() {
         setDialogError("");
         await Promise.all([fetchPage(), refreshClubs()]);
       } catch {
+        // O hook já registrou a mensagem em `dialogError`.
       }
     },
     [clearClub, fetchPage, refreshClubs, setDialogError]

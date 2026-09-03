@@ -41,18 +41,42 @@ describe('week materials api', () => {
     vi.clearAllMocks();
   });
 
-  it('lists pages sorted from the newest to the oldest', async () => {
+  it('manda paginação, busca e ordenação para a API', async () => {
+    // A ordem e o filtro deixaram de ser feitos aqui: quem resolve é o banco.
     mocked.get.mockResolvedValue({
-      data: [
-        material('old', '2025-01-01T00:00:00.000Z'),
-        material('new', '2026-01-01T00:00:00.000Z'),
-      ],
+      data: { data: [], total: 0, page: 1, limit: 12, pageCount: 0 },
     });
 
-    const result = await listWeekMaterials();
+    const query = {
+      page: 2,
+      limit: 12,
+      searchString: 'gratidão',
+      currentWeek: true,
+      sort: 'title' as const,
+      order: 'ASC' as const,
+    };
 
-    expect(mocked.get).toHaveBeenCalledWith(WEEK_MATERIALS_ENDPOINT);
-    expect(result.map((item) => item.id)).toEqual(['new', 'old']);
+    const result = await listWeekMaterials(query);
+
+    expect(mocked.get).toHaveBeenCalledWith(WEEK_MATERIALS_ENDPOINT, {
+      params: query,
+    });
+    expect(result.total).toBe(0);
+  });
+
+  it('repassa o sinal de cancelamento da requisição', async () => {
+    mocked.get.mockResolvedValue({
+      data: { data: [], total: 0, page: 1, limit: 12, pageCount: 0 },
+    });
+
+    const controller = new AbortController();
+    await listWeekMaterials({ page: 1 }, { signal: controller.signal });
+
+    const [, config] = mocked.get.mock.calls[0] as [
+      string,
+      { signal?: AbortSignal },
+    ];
+    expect(config.signal).toBe(controller.signal);
   });
 
   it('loads one page by id', async () => {
@@ -60,7 +84,12 @@ describe('week materials api', () => {
 
     await getWeekMaterial('page-1');
 
-    expect(mocked.get).toHaveBeenCalledWith(`${WEEK_MATERIALS_ENDPOINT}/page-1`);
+    // O segundo argumento é a configuração do Axios, que agora carrega o
+    // sinal de cancelamento quando a tela informa um.
+    expect(mocked.get).toHaveBeenCalledWith(
+      `${WEEK_MATERIALS_ENDPOINT}/page-1`,
+      undefined,
+    );
   });
 
   it('loads the published page of the week', async () => {

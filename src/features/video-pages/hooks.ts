@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,9 +10,13 @@ import {
 } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
+import { useAbortController, useDebouncedValue } from '@/hooks';
+import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
+
 import {
   apiCreateVideoPage,
   apiDeleteVideoPage,
+  apiGetVideoPage,
   apiListVideoPages,
   apiUpdateVideoPage,
 } from './api';
@@ -20,76 +24,179 @@ import {
   VideoDraft,
   VideoPageFormErrors,
   VideoPageFormValues,
+  VideoPageSortField,
+  VideoPageSortOrder,
+  VideoPageSummary,
 } from './types';
 import {
   buildVideoPageFormData,
   toFormValues,
   toVideoDrafts,
 } from './utils';
-import { VIDEO_PAGE_SEARCH_DEBOUNCE_MS } from './constants';
+import { VIDEO_PAGES_DEFAULT_LIMIT } from './constants';
 import { VideoPageResponse } from './types';
 
-function useDebounced<T>(value: T, delay = 300) {
-  const [debounced, setDebounced] = useState(value);
-  const timer = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (timer.current) window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setDebounced(value), delay) as unknown as number;
-    return () => {
-      if (timer.current) window.clearTimeout(timer.current);
-    };
-  }, [value, delay]);
-
-  return debounced;
+/** Filtros que a tela envia à API. */
+interface VideoPageListFilters {
+  /** `''` para todas; `'true'`/`'false'` para o recorte de visibilidade. */
+  visibility: string;
+  sort: VideoPageSortField;
+  order: VideoPageSortOrder;
 }
 
-export function useVideoPages() {
-  const [pages, setPages] = useState<VideoPageResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounced(search, VIDEO_PAGE_SEARCH_DEBOUNCE_MS);
+const INITIAL_FILTERS: VideoPageListFilters = {
+  visibility: '',
+  sort: 'createdAt',
+  order: 'DESC',
+};
 
-  const fetchPages = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const list = await apiListVideoPages();
-      setPages(list);
-    } catch {
-      setError('Erro ao buscar páginas de vídeos');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+/** Página de galerias de vídeo, com busca e filtros resolvidos pela API. */
+export function useVideoPages() {
+  const [items, setItems] = useState<VideoPageSummary[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(VIDEO_PAGES_DEFAULT_LIMIT);
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<VideoPageListFilters>(INITIAL_FILTERS);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
+
+  // Trocar busca ou filtro recomeça da primeira página: a página 5 do
+  // resultado anterior quase nunca existe no novo.
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
 
   useEffect(() => {
-    fetchPages();
-  }, [fetchPages]);
+    const controller = nextController();
 
-  const filtered = useMemo(() => {
-    const term = debouncedSearch.trim().toLowerCase();
-    if (!term) return pages;
-    return pages.filter((p) => p.title?.toLowerCase().includes(term));
-  }, [pages, debouncedSearch]);
+    const run = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await apiListVideoPages(
+          {
+            page,
+            limit: pageSize,
+            searchString: debouncedSearch.trim() || undefined,
+            public:
+              filters.visibility === ''
+                ? undefined
+                : filters.visibility === 'true',
+            sort: filters.sort,
+            order: filters.order,
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.data) ? data.data : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(
+          extractErrorMessage(err, 'Erro ao carregar as páginas de vídeos'),
+        );
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
 
-  const removePage = useCallback(async (id: string) => {
-    await apiDeleteVideoPage(id);
-    await fetchPages();
-  }, [fetchPages]);
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
 
   return {
-    pages,
-    filtered,
-    loading,
-    error,
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
     search,
     setSearch,
-    fetchPages,
-    removePage,
+    filters,
+    setFilters,
+    loading,
+    error,
     setError,
+    refresh,
   };
+}
+
+/** Exclusão da página a partir da listagem. */
+export function useVideoPageMutations(refresh: () => void) {
+  const dispatch = useDispatch<AppDispatch>();
+  const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState('');
+
+  const remove = useCallback(
+    async (id: string) => {
+      setSaving(true);
+      setActionError('');
+      try {
+        await apiDeleteVideoPage(id);
+        // A página tem rota pública; o menu do site vem dessas rotas.
+        await dispatch(fetchRoutes());
+        refresh();
+        return true;
+      } catch (err: unknown) {
+        setActionError(extractErrorMessage(err, 'Erro ao excluir a página'));
+        return false;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [dispatch, refresh],
+  );
+
+  return { saving, actionError, setActionError, remove };
+}
+
+/**
+ * Carrega a página da edição pelo id da URL.
+ *
+ * Antes a tela dependia do que a listagem tinha deixado no store; um F5 na
+ * rota de edição abria o formulário vazio.
+ */
+export function useVideoPageById(id: string | undefined) {
+  const [page, setPage] = useState<VideoPageResponse | null>(null);
+  const [loading, setLoading] = useState(Boolean(id));
+  const [error, setError] = useState('');
+
+  const nextController = useAbortController();
+
+  useEffect(() => {
+    if (!id) {
+      setPage(null);
+      setLoading(false);
+      return;
+    }
+
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await apiGetVideoPage(id, { signal: controller.signal });
+        setPage(data);
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, 'Erro ao carregar a página'));
+        setPage(null);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [id, nextController]);
+
+  return { page, loading, error };
 }
 
 // O guarda de alterações não salvas é o mesmo em todos os formulários.

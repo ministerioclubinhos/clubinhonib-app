@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FEATURE } from '@/features/feature-flags';
+import { useFeatureFlags } from '@/hooks';
 import {
   Box,
   CircularProgress,
@@ -12,20 +14,15 @@ import {
   Grid,
   IconButton,
   useTheme,
-  useMediaQuery,
-  Chip,
   Button,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '@/config/axiosConfig';
 import { RootState, AppDispatch } from '@/store/slices';
-import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import { UserRole } from '@/types/shared';
 import ClubinhoSectionImageView from './ClubinhoSectionImageView/ClubinhoSectionImageView';
 import HomeIcon from '@mui/icons-material/Home';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { isCancelledRequest } from '@/utils/apiError';
 import {
   setSectionData,
@@ -49,8 +46,6 @@ const feedContainerSx = {
 } as const;
 
 function SectionSkeleton() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
     <motion.div
@@ -120,7 +115,7 @@ function SectionSkeleton() {
   );
 }
 
-export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps) {
+export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -131,8 +126,8 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { flags } = useFeatureFlags();
   const section = useSelector((state: RootState) => state.imageSectionPagination.section);
 
   const feedSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID;
@@ -372,7 +367,8 @@ export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps)
                 width={{ xs: '100%', sm: 'auto' }}
                 justifyContent={{ xs: 'space-between', sm: 'flex-end' }}
               >
-                {isAuthenticated && (
+                {/* O atalho acompanha a flag: sem envio de fotos ele não tem destino. */}
+                {isAuthenticated && flags[FEATURE.CLUB_PHOTO_UPLOAD] && (
                   <Button
                     onClick={() => navigate('/imagens-clubinho')}
                     variant="contained"

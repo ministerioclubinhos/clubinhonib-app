@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
+import { useVisibleRoutes } from '@/features/feature-flags';
 import { Box, Typography, Button, Paper } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { MediaTargetType } from 'store/slices/types';
@@ -9,7 +10,7 @@ import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 const TeacherWeekBanner: React.FC = () => {
-  const routes = useSelector((state: RootState) => state.routes.routes);
+  const routes = useVisibleRoutes();
   const { user } = useSelector((state: RootState) => state.auth);
   const currentWeekRoute = routes.find(
     (route) => route.entityType === MediaTargetType.WeekMaterialsPage && route.current === true

@@ -5,10 +5,13 @@ import WeekMaterialsBanner from './WeekMaterialsBanner';
 import CardsSection from './CardsSection';
 import { FEATURES } from './constants';
 import { useComments, useAuth } from './hooks';
+import { FEATURE } from '@/features/feature-flags';
+import { useFeatureEnabled } from '@/hooks';
 
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const comments = useComments();
+  const showTestimonials = useFeatureEnabled(FEATURE.HOME_COMMENTS);
 
   return (
     <Box
@@ -27,7 +30,7 @@ const Home: React.FC = () => {
 
       <FeaturesSection features={FEATURES} />
 
-      {comments && comments.filter(c => c.id).length > 0 && (
+      {showTestimonials && comments && comments.filter(c => c.id).length > 0 && (
         <TestimonialsSection testimonials={comments.filter(c => c.id) as any} />
       )}
       

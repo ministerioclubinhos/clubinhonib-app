@@ -18,18 +18,20 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
-import { RootState } from '@/store/slices';
 import { MediaItem } from '@/store/slices/types';
 
 import AddImagesDialog from './components/AddImagesDialog';
 import ImageSectionEditor from './components/ImageSectionEditor';
 import { IMAGE_PAGE_ROUTES } from './constants';
-import { useImagePageForm, useUnsavedChangesGuard } from './hooks';
-import { ImagePageResponse, ImageSectionDraft } from './types';
+import {
+  useImagePageById,
+  useImagePageForm,
+  useUnsavedChangesGuard,
+} from './hooks';
+import { ImageSectionDraft } from './types';
 import { countMedia } from './utils';
 
 interface ImagePageFormProps {
@@ -52,15 +54,18 @@ export default function ImagePageForm({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const storedPage = useSelector(
-    (state: RootState) => state.image.imageData,
-  ) as ImagePageResponse | null;
+  // A galeria vem do id na URL. Antes ela vinha do store, que não é
+  // persistido: um F5 direto nesta rota abria o formulário vazio.
+  const { id } = useParams<{ id: string }>();
+  const {
+    page: loadedPage,
+    loading: loadingPage,
+    error: loadError,
+  } = useImagePageById(fromTemplatePage ? undefined : id);
 
   const [sectionForImages, setSectionForImages] = useState<number | null>(null);
 
-  // A edição depende da galeria carregada no store, que não é persistido: um F5
-  // direto nesta rota deixaria o formulário vazio e só falharia ao salvar.
-  const isMissingPage = !fromTemplatePage && !storedPage;
+  const isMissingPage = !fromTemplatePage && !loadingPage && !loadedPage;
 
   const {
     values,
@@ -73,7 +78,7 @@ export default function ImagePageForm({
     feedback,
     dismissFeedback,
     save,
-  } = useImagePageForm({ isCreation: fromTemplatePage, page: storedPage });
+  } = useImagePageForm({ isCreation: fromTemplatePage, page: loadedPage });
 
   useUnsavedChangesGuard(isDirty);
 
@@ -95,6 +100,17 @@ export default function ImagePageForm({
     setSectionForImages(null);
   };
 
+  if (loadingPage) {
+    return (
+      <Box
+        component="section"
+        sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   if (isMissingPage) {
     return (
       <Box component="section" sx={{ py: { xs: 2, md: 3 } }}>
@@ -111,8 +127,8 @@ export default function ImagePageForm({
             </Button>
           }
         >
-          <AlertTitle>Nenhuma galeria selecionada</AlertTitle>
-          Abra a galeria que você quer editar pela lista de páginas de fotos.
+          <AlertTitle>Galeria não encontrada</AlertTitle>
+          {loadError || 'Abra a galeria que você quer editar pela lista.'}
         </Alert>
       </Box>
     );

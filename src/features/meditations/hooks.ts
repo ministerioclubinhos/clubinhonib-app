@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,18 +11,29 @@ import {
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 import { MediaUploadType } from '@/store/slices/types';
 
+import { useAbortController, useDebouncedValue } from '@/hooks';
+import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
+
 import {
   createMeditation,
   deleteMeditation,
+  getMeditation,
   listMeditations,
   updateMeditation,
 } from './api';
-import { MEDITATION_DAYS_COUNT, MEDITATION_ROUTES } from './constants';
+import {
+  MEDITATIONS_DEFAULT_LIMIT,
+  MEDITATION_DAYS_COUNT,
+  MEDITATION_ROUTES,
+} from './constants';
 import {
   MeditationDayDraft,
   MeditationFormErrors,
   MeditationFormValues,
+  MeditationPeriodFilter,
   MeditationResponse,
+  MeditationSortField,
+  MeditationSortOrder,
 } from './types';
 import {
   buildMeditationFormData,
@@ -31,69 +42,165 @@ import {
   toDayDrafts,
   toFormValues,
 } from './utils';
-import { MEDITATION_SEARCH_DEBOUNCE_MS } from './constants';
 
-export function useMeditationsList() {
-  const [all, setAll] = useState<MeditationResponse[]>([]);
+/** Filtros que a tela envia à API. */
+interface MeditationListFilters {
+  /** `''` para todas; `current`, `upcoming` ou `past` para o recorte. */
+  period: string;
+  sort: MeditationSortField;
+  order: MeditationSortOrder;
+}
+
+const INITIAL_FILTERS: MeditationListFilters = {
+  period: '',
+  sort: 'startDate',
+  order: 'DESC',
+};
+
+/** Página de meditações, com busca e filtros resolvidos pela API. */
+export function useMeditations() {
   const [items, setItems] = useState<MeditationResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filtering, setFiltering] = useState(false);
-  const [error, setError] = useState('');
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(MEDITATIONS_DEFAULT_LIMIT);
   const [search, setSearch] = useState('');
-  const debounceRef = useRef<number | undefined>(undefined);
+  const [filters, setFilters] = useState<MeditationListFilters>(INITIAL_FILTERS);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await listMeditations();
-      setAll(data);
-      setItems(data);
-    } catch {
-      setError('Erro ao buscar meditações.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
 
-  useEffect(() => { load(); }, [load]);
+  // Trocar busca ou filtro recomeça da primeira página: a página 5 do
+  // resultado anterior quase nunca existe no novo.
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
 
   useEffect(() => {
-    setFiltering(true);
-    if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(() => {
-      const q = search.trim().toLowerCase();
-      const filtered = !q ? all : all.filter(m => m.topic.toLowerCase().includes(q));
-      setItems(filtered);
-      setFiltering(false);
-    }, MEDITATION_SEARCH_DEBOUNCE_MS);
-    return () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); };
-  }, [search, all]);
+    const controller = nextController();
 
-  const remove = useCallback(async (m: MeditationResponse) => {
-    setLoading(true);
-    try {
-      await deleteMeditation(m.id);
-      await load();
-    } catch {
-      setError('Erro ao deletar meditação.');
-    } finally {
-      setLoading(false);
-    }
-  }, [load]);
+    const run = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await listMeditations(
+          {
+            page,
+            limit: pageSize,
+            searchString: debouncedSearch.trim() || undefined,
+            period: (filters.period || undefined) as
+              | MeditationPeriodFilter
+              | undefined,
+            sort: filters.sort,
+            order: filters.order,
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.data) ? data.data : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, 'Erro ao carregar as meditações'));
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
 
   return {
-    meditations: items,
-    allMeditations: all,
-    loading,
-    filtering,
-    error,
-    setError,
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
     search,
     setSearch,
-    reload: load,
-    removeMeditation: remove,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
   };
+}
+
+/** Exclusão da meditação a partir da listagem. */
+export function useMeditationMutations(refresh: () => void) {
+  const dispatch = useDispatch<AppDispatch>();
+  const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState('');
+
+  const remove = useCallback(
+    async (id: string) => {
+      setSaving(true);
+      setActionError('');
+      try {
+        await deleteMeditation(id);
+        // A meditação tem rota pública; o menu do site vem dessas rotas.
+        await dispatch(fetchRoutes());
+        refresh();
+        return true;
+      } catch (err: unknown) {
+        setActionError(extractErrorMessage(err, 'Erro ao excluir a meditação'));
+        return false;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [dispatch, refresh],
+  );
+
+  return { saving, actionError, setActionError, remove };
+}
+
+/**
+ * Carrega a meditação da edição pelo id da URL.
+ *
+ * Antes a tela dependia do que a listagem tinha deixado no store; um F5 na
+ * rota de edição abria o formulário vazio.
+ */
+export function useMeditationById(id: string | undefined) {
+  const [meditation, setMeditation] = useState<MeditationResponse | null>(null);
+  const [loading, setLoading] = useState(Boolean(id));
+  const [error, setError] = useState('');
+
+  const nextController = useAbortController();
+
+  useEffect(() => {
+    if (!id) {
+      setMeditation(null);
+      setLoading(false);
+      return;
+    }
+
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await getMeditation(id, { signal: controller.signal });
+        setMeditation(data);
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, 'Erro ao carregar a meditação'));
+        setMeditation(null);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [id, nextController]);
+
+  return { meditation, loading, error };
 }
 
 

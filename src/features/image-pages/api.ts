@@ -1,21 +1,43 @@
+import type { AxiosRequestConfig } from 'axios';
+
 import api from '@/config/axiosConfig';
 import {
   IMAGE_PAGES_ENDPOINT,
   IMAGE_SECTIONS_PAGE_SIZE,
   MULTIPART_HEADERS,
 } from './constants';
-import { ImagePageResponse, PaginatedImageSectionsResponse } from './types';
+import {
+  ImagePageQuery,
+  ImagePageResponse,
+  PaginatedImagePages,
+  PaginatedImageSectionsResponse,
+} from './types';
 
-/** Lista todas as galerias de fotos. */
-export async function apiListImagePages(): Promise<ImagePageResponse[]> {
-  const { data } = await api.get<ImagePageResponse[]>(IMAGE_PAGES_ENDPOINT);
-  return data ?? [];
+/**
+ * Lista as galerias de fotos, em resumo.
+ *
+ * Busca, filtro e ordenação são resolvidos pela API: antes a listagem inteira
+ * — com todas as seções e imagens — era baixada só para ser peneirada aqui.
+ */
+export async function apiListImagePages(
+  query: ImagePageQuery,
+  config?: AxiosRequestConfig,
+): Promise<PaginatedImagePages> {
+  const { data } = await api.get<PaginatedImagePages>(IMAGE_PAGES_ENDPOINT, {
+    ...config,
+    params: query,
+  });
+  return data;
 }
 
-/** Carrega uma galeria pelo id. */
-export async function apiGetImagePage(id: string): Promise<ImagePageResponse> {
+/** Carrega uma galeria pelo id, com suas seções. */
+export async function apiGetImagePage(
+  id: string,
+  config?: AxiosRequestConfig,
+): Promise<ImagePageResponse> {
   const { data } = await api.get<ImagePageResponse>(
     `${IMAGE_PAGES_ENDPOINT}/${id}`,
+    config,
   );
   return data;
 }

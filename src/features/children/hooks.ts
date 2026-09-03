@@ -52,6 +52,12 @@ export function useChildDetails() {
   return { viewing, setViewing, loading, fetchChild };
 }
 
+/**
+ * Escritas da tela de crianças.
+ *
+ * Cada operação devolve se deu certo: sem isso a tela fechava o formulário
+ * mesmo quando a API recusava, e a mensagem de erro nunca chegava a aparecer.
+ */
 export function useChildMutations(refetch: (page: number, limit: number, filters?: ChildFilters, sort?: ChildSort) => Promise<void> | void) {
   const [dialogLoading, setDialogLoading] = useState(false);
   const [dialogError, setDialogError] = useState("");
@@ -62,8 +68,10 @@ export function useChildMutations(refetch: (page: number, limit: number, filters
     try {
       await apiCreateChild(payload);
       await refetch(page, limit, filters, sort);
+      return true;
     } catch (err: unknown) {
       setDialogError(extractErrorMessage(err, "Erro ao criar criança"));
+      return false;
     } finally {
       setDialogLoading(false);
     }
@@ -75,8 +83,10 @@ export function useChildMutations(refetch: (page: number, limit: number, filters
     try {
       await apiUpdateChild(id, payload);
       await refetch(page, limit, filters, sort);
+      return true;
     } catch (err: unknown) {
       setDialogError(extractErrorMessage(err, "Erro ao atualizar criança"));
+      return false;
     } finally {
       setDialogLoading(false);
     }
@@ -88,8 +98,10 @@ export function useChildMutations(refetch: (page: number, limit: number, filters
     try {
       await apiDeleteChild(id);
       await refetch(page, limit, filters, sort);
+      return true;
     } catch (err: unknown) {
       setDialogError(extractErrorMessage(err, "Erro ao remover criança"));
+      return false;
     } finally {
       setDialogLoading(false);
     }
@@ -101,8 +113,10 @@ export function useChildMutations(refetch: (page: number, limit: number, filters
     try {
       await apiToggleChildActive(id);
       await refetch(page, limit, filters, sort);
+      return true;
     } catch (err: unknown) {
       setDialogError(extractErrorMessage(err, "Erro ao alterar status da criança"));
+      return false;
     } finally {
       setDialogLoading(false);
     }

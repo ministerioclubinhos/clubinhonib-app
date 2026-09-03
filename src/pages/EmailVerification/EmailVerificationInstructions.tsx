@@ -16,7 +16,7 @@ const EmailVerificationInstructions: React.FC = () => {
           </p>
           <ol>
             <li>Acesse seu e-mail pessoal (verifique também a caixa de spam).</li>
-            <li>Procure por um e-mail com o título <b>"Amazon Web Services – Email Address Verification Request"</b>.</li>
+            <li>Procure por um e-mail com o título <b>&ldquo;Amazon Web Services – Email Address Verification Request&rdquo;</b>.</li>
             <li>Abra o e-mail e clique no link destacado conforme a imagem abaixo:</li>
           </ol>
         </div>

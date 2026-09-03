@@ -183,7 +183,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                       fontWeight: 400,
                     }}
                   >
-                    "{testimonials[currentIndex].comment}"
+                    &ldquo;{testimonials[currentIndex].comment}&rdquo;
                   </Typography>
 
                   <Typography

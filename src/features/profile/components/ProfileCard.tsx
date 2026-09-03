@@ -13,12 +13,12 @@ import {
     Palette as PaletteIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { CompleteProfileListItem } from '../types';
-import { roleConfig, getGenderStyle } from '../constants/profileConstants';
-import { getBirthdayStatus, calculateAge, formatBirthDateShort, getInitials } from '../utils/profileHelpers';
+import { CompleteProfile } from '../types';
+import { roleConfig, getGenderStyle } from './profileStyles';
+import { getBirthdayStatus, calculateAge, formatBirthDateShort, getInitials } from '../utils';
 
 interface ProfileCardProps {
-    profile: CompleteProfileListItem;
+    profile: CompleteProfile;
     index: number;
     onClick: () => void;
 }

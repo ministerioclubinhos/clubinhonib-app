@@ -22,11 +22,8 @@ import {
   useTheme,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import { AppDispatch, RootState } from '@/store/slices';
-import { clearWeekMaterialData } from '@/store/slices/week-material/weekMaterialSlice';
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 import { MediaType } from '@/store/slices/types';
 
@@ -36,7 +33,11 @@ import {
   WEEK_MATERIAL_ROUTES,
   WEEK_MEDIA_EDITOR_CONFIG,
 } from './constants';
-import { useUnsavedChangesGuard, useWeekMaterialForm } from './hooks';
+import {
+  useUnsavedChangesGuard,
+  useWeekMaterialById,
+  useWeekMaterialForm,
+} from './hooks';
 import { toMediaDraft } from './utils';
 import { WeekMaterialMediaDraft } from './types';
 
@@ -70,10 +71,14 @@ const EMPTY_MEDIA: WeekMaterialMediaDraft = {
 export default function WeekMaterialPageForm({
   fromTemplatePage = false,
 }: WeekMaterialPageFormProps) {
-  const dispatch = useDispatch<AppDispatch>();
-  const storedMaterial = useSelector(
-    (state: RootState) => state.weekMaterial.weekMaterialSData,
-  );
+  // A página vem do id na URL. Antes ela vinha do store, que não é
+  // persistido: um F5 direto nesta rota abria o formulário vazio.
+  const { id } = useParams<{ id: string }>();
+  const {
+    material: loadedMaterial,
+    loading: loadingMaterial,
+    error: loadError,
+  } = useWeekMaterialById(fromTemplatePage ? undefined : id);
 
   const navigate = useNavigate();
   const theme = useTheme();
@@ -82,9 +87,8 @@ export default function WeekMaterialPageForm({
   const [pendingTab, setPendingTab] = useState<number | null>(null);
   const [hasMediaDraft, setHasMediaDraft] = useState(false);
 
-  // A edição depende da página carregada no store, que não é persistido: um F5
-  // direto nesta rota deixaria o formulário vazio e só falharia ao salvar.
-  const isMissingPageToEdit = !fromTemplatePage && !storedMaterial;
+  const isMissingPageToEdit =
+    !fromTemplatePage && !loadingMaterial && !loadedMaterial;
 
   const {
     values,
@@ -100,29 +104,28 @@ export default function WeekMaterialPageForm({
     save,
   } = useWeekMaterialForm({
     isCreation: fromTemplatePage,
-    pageId: storedMaterial?.id,
+    pageId: loadedMaterial?.id,
   });
 
   useEffect(() => {
     if (fromTemplatePage) {
-      dispatch(clearWeekMaterialData());
       reset(EMPTY_VALUES, EMPTY_MEDIA);
     }
-  }, [fromTemplatePage, dispatch, reset]);
+  }, [fromTemplatePage, reset]);
 
   useEffect(() => {
-    if (fromTemplatePage || !storedMaterial) return;
+    if (fromTemplatePage || !loadedMaterial) return;
 
     reset(
       {
-        pageTitle: storedMaterial.title,
-        pageSubtitle: storedMaterial.subtitle,
-        pageDescription: storedMaterial.description,
-        currentWeek: storedMaterial.currentWeek,
+        pageTitle: loadedMaterial.title,
+        pageSubtitle: loadedMaterial.subtitle,
+        pageDescription: loadedMaterial.description,
+        currentWeek: loadedMaterial.currentWeek,
       },
-      toMediaDraft(storedMaterial),
+      toMediaDraft(loadedMaterial),
     );
-  }, [fromTemplatePage, storedMaterial, reset]);
+  }, [fromTemplatePage, loadedMaterial, reset]);
 
   const activeTab = WEEK_MATERIAL_MEDIA_TABS[tab];
   const activeKey = MEDIA_DRAFT_KEY[activeTab.mediaType];
@@ -156,6 +159,17 @@ export default function WeekMaterialPageForm({
     setPendingTab(null);
   };
 
+  if (loadingMaterial) {
+    return (
+      <Box
+        component="section"
+        sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   if (isMissingPageToEdit) {
     return (
       <Box component="section" sx={{ py: { xs: 2, md: 3 } }}>
@@ -172,8 +186,8 @@ export default function WeekMaterialPageForm({
             </Button>
           }
         >
-          <AlertTitle>Nenhuma página selecionada</AlertTitle>
-          Abra a página que você quer editar pela lista de materiais semanais.
+          <AlertTitle>Página não encontrada</AlertTitle>
+          {loadError || 'Abra a página que você quer editar pela lista.'}
         </Alert>
       </Box>
     );

@@ -34,8 +34,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
-import { apiGetAllProfiles } from './api';
-import { CompleteProfileListItem, QueryProfilesDto, PaginationMeta } from './types';
+import { apiFetchProfiles } from './api';
+import { CompleteProfile, ProfilesQueryParams, ProfilesPaginationMeta } from './types';
 import {
   ProfileAdminEditDialog,
   ProfileDetailModal,
@@ -43,17 +43,17 @@ import {
   ProfileCard,
   ProfileCardSkeleton,
 } from './components';
-import { roleConfig } from './constants/profileConstants';
-import { getBirthdayStatus, getDaysUntilBirthday } from './utils/profileHelpers';
+import { roleConfig } from './components/profileStyles';
+import { getBirthdayStatus, getDaysUntilBirthday } from './utils';
 import { extractErrorMessage } from '@/utils/apiError';
 
 
 const ProfilesManager: React.FC = () => {
-  const [profiles, setProfiles] = useState<CompleteProfileListItem[]>([]);
-  const [allProfiles, setAllProfiles] = useState<CompleteProfileListItem[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [selectedProfile, setSelectedProfile] = useState<CompleteProfileListItem | null>(null);
-  const [editingProfile, setEditingProfile] = useState<CompleteProfileListItem | null>(null);
+  const [profiles, setProfiles] = useState<CompleteProfile[]>([]);
+  const [allProfiles, setAllProfiles] = useState<CompleteProfile[]>([]);
+  const [meta, setMeta] = useState<ProfilesPaginationMeta | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<CompleteProfile | null>(null);
+  const [editingProfile, setEditingProfile] = useState<CompleteProfile | null>(null);
 
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -62,7 +62,7 @@ const ProfilesManager: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  const [filters, setFilters] = useState<QueryProfilesDto>({
+  const [filters, setFilters] = useState<ProfilesQueryParams>({
     page: 1,
     limit: 12,
     sortBy: 'name',
@@ -88,7 +88,7 @@ const ProfilesManager: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiGetAllProfiles(filters);
+      const response = await apiFetchProfiles(filters);
       setProfiles(response.items);
       setMeta(response.meta);
     } catch (err: unknown) {
@@ -101,9 +101,11 @@ const ProfilesManager: React.FC = () => {
   const loadAllProfilesForBirthdays = useCallback(async () => {
     try {
       setLoadingBirthdays(true);
-      const response = await apiGetAllProfiles({ limit: 1000 });
+      const response = await apiFetchProfiles({ limit: 1000 });
       setAllProfiles(response.items);
     } catch {
+      // A faixa de aniversariantes é acessória: sem ela a listagem segue.
+      setAllProfiles([]);
     } finally {
       setLoadingBirthdays(false);
     }
@@ -113,9 +115,9 @@ const ProfilesManager: React.FC = () => {
   useEffect(() => { loadAllProfilesForBirthdays(); }, [loadAllProfilesForBirthdays]);
 
   const { birthdayToday, birthdayWeek, birthdayMonth } = useMemo(() => {
-    const today: CompleteProfileListItem[] = [];
-    const week: CompleteProfileListItem[] = [];
-    const month: CompleteProfileListItem[] = [];
+    const today: CompleteProfile[] = [];
+    const week: CompleteProfile[] = [];
+    const month: CompleteProfile[] = [];
 
     allProfiles.forEach((profile) => {
       const status = getBirthdayStatus(profile.personalData?.birthDate);
@@ -124,7 +126,7 @@ const ProfilesManager: React.FC = () => {
       else if (status === 'this-month') month.push(profile);
     });
 
-    const sortByBirthday = (a: CompleteProfileListItem, b: CompleteProfileListItem) => {
+    const sortByBirthday = (a: CompleteProfile, b: CompleteProfile) => {
       const daysA = getDaysUntilBirthday(a.personalData?.birthDate) ?? 999;
       const daysB = getDaysUntilBirthday(b.personalData?.birthDate) ?? 999;
       return daysA - daysB;
@@ -145,7 +147,7 @@ const ProfilesManager: React.FC = () => {
   };
 
   const handleSortChange = (e: SelectChangeEvent<string>) => {
-    const [sortBy, order] = e.target.value.split('-') as [QueryProfilesDto['sortBy'], QueryProfilesDto['order']];
+    const [sortBy, order] = e.target.value.split('-') as [ProfilesQueryParams['sortBy'], ProfilesQueryParams['order']];
     setFilters(prev => ({ ...prev, sortBy, order, page: 1 }));
   };
 
@@ -153,7 +155,7 @@ const ProfilesManager: React.FC = () => {
     setFilters(prev => ({ ...prev, limit: e.target.value as number, page: 1 }));
   };
 
-  const handleAdvancedFilterChange = (field: keyof QueryProfilesDto, value: string) => {
+  const handleAdvancedFilterChange = (field: keyof ProfilesQueryParams, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value || undefined, page: 1 }));
   };
 

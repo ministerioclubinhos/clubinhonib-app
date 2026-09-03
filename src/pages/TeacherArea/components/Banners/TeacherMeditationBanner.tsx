@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
 import { AppDispatch, RootState } from 'store/slices';
+import { useVisibleRoutes } from '@/features/feature-flags';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   setMeditationData,
@@ -27,7 +28,7 @@ export default function TeacherMeditationBanner() {
     (state: RootState) => state.meditation.meditationData
   );
 
-  const routes = useSelector((state: RootState) => state.routes.routes);
+  const routes = useVisibleRoutes();
 
   const today = new Date();
   const weekdayName = today.toLocaleDateString('en-US', { weekday: 'long' });

@@ -1,187 +1,151 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Grid,
-  CircularProgress,
-  Alert,
-  TextField,
-  Container,
-  InputAdornment,
-  IconButton,
-  Tooltip,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Chip,
-  Stack,
-} from '@mui/material';
-import { Search, Clear, Edit, Delete, Add } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import IdeasSectionCard from './components/IdeasSectionCard';
-import IdeasSectionDetailsModal from './components/IdeasSectionDetailsModal';
-import { deleteIdeasSection } from './api';
-import { useIdeasSections } from './hooks';
-import { IdeasSection as IdeasSectionType } from './types';
-import { setIdeasSectionData } from '@/store/slices/ideas/ideasSlice';
-import { IdeasSection } from '@/store/slices/ideas/ideasSlice';
-import { MediaType, MediaUploadType, MediaPlatform } from '@/store/slices/types';
-import BackHeader from '@/components/common/header/BackHeader';
-import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
+import React, { useState } from "react";
+import { Grid2 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
+import { ListingLayout, ListingToolbar } from "@/components/common/listing";
+import type { ListingFilter } from "@/components/common/listing";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+
+import IdeasSectionCard from "./components/IdeasSectionCard";
+import IdeasSectionDetailsModal from "./components/IdeasSectionDetailsModal";
+import { useIdeasSectionMutations, useIdeasSections } from "./hooks";
+import {
+  IDEAS_SECTIONS_PAGE_SIZE_OPTIONS,
+  IDEAS_SECTION_SORT_OPTIONS,
+  ideasSectionReviewPath,
+} from "./constants";
+import type { IdeasSectionResponse } from "./types";
+import { parseSortOption } from "./utils";
+
+/**
+ * Fila de ideias compartilhadas pela base.
+ *
+ * Quem envia uma ideia não a publica: ela chega aqui e a administração decide
+ * se e em qual página ela entra.
+ */
 export default function IdeasSectionManager() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const {
-    filteredSections,
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
     loading,
-    isFiltering,
     error,
     setError,
-    searchTerm,
-    setSearchTerm,
-    fetchSections,
+    refresh,
   } = useIdeasSections();
 
-  const [sectionToDelete, setSectionToDelete] = useState<IdeasSectionType | null>(null);
-  const [selectedSection, setSelectedSection] = useState<IdeasSectionType | null>(null);
+  const { actionLoading, actionError, setActionError, remove } =
+    useIdeasSectionMutations(refresh);
 
-  useEffect(() => { 
-    fetchSections();
-  }, [fetchSections]);
+  const [viewing, setViewing] = useState<IdeasSectionResponse | null>(null);
+  const [confirmDelete, setConfirmDelete] =
+    useState<IdeasSectionResponse | null>(null);
 
-  const handleEdit = (section: IdeasSectionType) => {
-    const ideasSection: IdeasSection = {
-      id: section.id,
-      title: section.title,
-      description: section.description,
-      public: section.public,
-      createdAt: section.createdAt,
-      updatedAt: section.updatedAt,
-      medias: (section.medias || []).map(media => ({
-        id: media.id,
-        title: media.title,
-        description: media.description,
-        uploadType: media.uploadType as MediaUploadType,
-        mediaType: media.mediaType as MediaType,
-        isLocalFile: media.isLocalFile,
-        url: media.url,
-        platformType: media.platformType as MediaPlatform || undefined,
-        originalName: media.originalName || undefined,
-        size: media.size || undefined,
-        createdAt: media.createdAt,
-        updatedAt: media.updatedAt,
-      })),
-    };
-    
-    dispatch(setIdeasSectionData(ideasSection));
-    
-    navigate('/adm/editar-ideias-compartilhadas');
+  /** Leva a ideia para a tela de revisão, onde a página é escolhida. */
+  const handleReview = (section: IdeasSectionResponse) => {
+    // O id vai na URL: a tela de revisão carrega a ideia por conta própria, e
+    // um F5 lá não perde mais o que estava sendo revisado.
+    navigate(ideasSectionReviewPath(section.id));
   };
 
   const handleDelete = async () => {
-    if (!sectionToDelete || !sectionToDelete.id) return;
-    const id = sectionToDelete.id;
-    setSectionToDelete(null);
-    try {
-      await deleteIdeasSection(id);
-      await fetchSections();
-    } catch (e) {
-      console.error('Erro ao deletar seção de ideias:', e);
-      setError('Erro ao deletar seção de ideias');
+    if (!confirmDelete) return;
+
+    const ok = await remove(confirmDelete.id);
+    if (ok) {
+      setConfirmDelete(null);
+      setViewing(null);
     }
   };
 
-  const isBusy = loading || isFiltering;
-  const hasQuery = Boolean(searchTerm);
+  const listingFilters: ListingFilter[] = [
+    {
+      id: "sort",
+      label: "Ordenar por",
+      value: `${filters.sort}:${filters.order}`,
+      options: [...IDEAS_SECTION_SORT_OPTIONS],
+      onChange: (value) =>
+        setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
+    },
+  ];
 
   return (
-    <Box sx={{ bgcolor: '#f5f7fa', minHeight: '100vh' }}>
-      <Container sx={{ maxWidth: { xs: '100%', md: '100%' }, px: { xs: 2, md: 3 }, pt: { xs: 0, md: 4 }, pb: 4 }}>
-        <BackHeader title="Ideias compartilhadas" />
-        
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Box sx={{ maxWidth: 560, flex: 1, mr: 2 }}>
-            <TextField
-              fullWidth
-              placeholder="Buscar por título ou descrição..."
-              label="Buscar seções"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              inputProps={{ 'aria-label': 'Buscar Ideias compartilhadas' }}
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search fontSize="small" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    {isFiltering && <CircularProgress size={18} sx={{ mr: hasQuery ? 1 : 0 }} />}
-                    {hasQuery && (
-                      <Tooltip title="Limpar">
-                        <IconButton size="small" onClick={() => setSearchTerm('')}>
-                          <Clear fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Box>
-        </Box>
-
-        {isBusy ? (
-          <Box textAlign="center" mt={10}><CircularProgress /></Box>
-        ) : error ? (
-          <Box textAlign="center" mt={10}>
-            <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
-          </Box>
-        ) : filteredSections.length === 0 ? (
-          <Box textAlign="center" mt={10}>
-            <Alert severity="info">
-              {hasQuery ? 'Nenhuma seção encontrada com os filtros aplicados.' : 'Nenhuma seção de ideias cadastrada.'}
-            </Alert>
-          </Box>
-        ) : (
-          <Grid container spacing={3} alignItems="stretch">
-            {filteredSections.map((section) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={section.id} sx={{ display: 'flex' }}>
-                <IdeasSectionCard
-                  section={section}
-                  onDelete={(section) => setSectionToDelete(section)}
-                  onEdit={handleEdit}
-                  onViewDetails={(section) => setSelectedSection(section)}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        )}
-
-        <DeleteConfirmDialog
-          open={!!sectionToDelete}
-          title={sectionToDelete?.title || 'Seção'}
-          onClose={() => setSectionToDelete(null)}
-          onConfirm={handleDelete}
+    <ListingLayout
+      title="Ideias compartilhadas"
+      summary={
+        total > 0
+          ? `${total} ideia(s) aguardando decisão`
+          : "Nenhuma ideia para os filtros atuais"
+      }
+      toolbar={
+        <ListingToolbar
+          searchValue={search}
+          searchPlaceholder="Buscar por título ou descrição…"
+          onSearchChange={setSearch}
+          filters={listingFilters}
+          onRefresh={refresh}
         />
+      }
+      loading={loading}
+      error={error || actionError}
+      onDismissError={() => {
+        setError("");
+        setActionError("");
+      }}
+      itemCount={items.length}
+      emptyTitle="Nenhuma ideia na fila"
+      emptySubtitle="Quando alguém compartilhar uma ideia, ela aparece aqui para revisão."
+      pagination={{
+        page,
+        pageSize,
+        total,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+      }}
+      pageSizeOptions={IDEAS_SECTIONS_PAGE_SIZE_OPTIONS}
+      overlays={
+        <>
+          <IdeasSectionDetailsModal
+            section={viewing}
+            open={!!viewing}
+            onClose={() => setViewing(null)}
+            onReview={() => {
+              if (viewing) handleReview(viewing);
+            }}
+            onDelete={() => {
+              if (viewing) setConfirmDelete(viewing);
+            }}
+          />
 
-        <IdeasSectionDetailsModal
-          section={selectedSection}
-          open={!!selectedSection}
-          onClose={() => setSelectedSection(null)}
-        />
-
-      </Container>
-    </Box>
+          <DeleteConfirmDialog
+            open={!!confirmDelete}
+            title={confirmDelete ? `ideia "${confirmDelete.title}"` : ""}
+            onClose={() => setConfirmDelete(null)}
+            onConfirm={handleDelete}
+          />
+        </>
+      }
+    >
+      {items.map((section) => (
+        <Grid2 key={section.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+          <IdeasSectionCard
+            section={section}
+            disabled={actionLoading}
+            onView={() => setViewing(section)}
+            onReview={() => handleReview(section)}
+            onDelete={() => setConfirmDelete(section)}
+          />
+        </Grid2>
+      ))}
+    </ListingLayout>
   );
 }

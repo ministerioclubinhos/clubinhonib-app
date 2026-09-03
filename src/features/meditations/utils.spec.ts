@@ -17,9 +17,13 @@ import {
   buildMeditationPayload,
   isFriday,
   isMonday,
+  meditationInitials,
+  parseSortOption,
+  periodStatus,
   sortDays,
   toDayDrafts,
   toFormValues,
+  todayAsDateOnly,
   weekDayLabel,
 } from './utils';
 
@@ -295,6 +299,37 @@ describe('meditation utils', () => {
       expect(payload.days).toHaveLength(5);
       expect(payload.days[0].day).toBe(MeditationWeekDay.Monday);
       expect(payload.days[0]).not.toHaveProperty('id');
+    });
+  });
+});
+
+describe('apresentação da listagem', () => {
+  it('monta as iniciais do avatar', () => {
+    expect(meditationInitials('Deus é fiel')).toBe('DÉ');
+    expect(meditationInitials('Fé')).toBe('FÉ');
+    expect(meditationInitials('   ')).toBe('?');
+  });
+
+  it('classifica o período em relação a hoje', () => {
+    const hoje = todayAsDateOnly();
+
+    expect(periodStatus({ startDate: hoje, endDate: hoje })).toBe('current');
+    expect(
+      periodStatus({ startDate: '2999-01-01', endDate: '2999-01-05' }),
+    ).toBe('upcoming');
+    expect(
+      periodStatus({ startDate: '2000-01-03', endDate: '2000-01-07' }),
+    ).toBe('past');
+  });
+
+  it('divide a opção de ordenação em campo e direção', () => {
+    expect(parseSortOption('topic:ASC')).toEqual({
+      sort: 'topic',
+      order: 'ASC',
+    });
+    expect(parseSortOption('qualquer')).toEqual({
+      sort: 'startDate',
+      order: 'DESC',
     });
   });
 });

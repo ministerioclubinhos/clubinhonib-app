@@ -108,7 +108,7 @@ export default function IdeasPageSelectionModal({
                           {page.subtitle}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {page.sections?.length || 0} seção(ões) • 
+                          {page.sectionCount} seção(ões) •
                           {page.public ? ' Público' : ' Privado'}
                         </Typography>
                       </Box>

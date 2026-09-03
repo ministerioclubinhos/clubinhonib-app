@@ -6,13 +6,16 @@ import { IMAGE_PAGE_PAYLOAD_FIELD } from './constants';
 import {
   ImagePageFormValues,
   ImagePageRequest,
+  ImagePageSummary,
   ImageSectionDraft,
 } from './types';
 import {
   buildImagePageFormData,
   buildMediaFieldKey,
   countMedia,
-  filterByTitle,
+  formatDate,
+  pageInitials,
+  parseSortOption,
   toSectionDrafts,
   truncate,
 } from './utils';
@@ -62,12 +65,9 @@ const readPayload = (formData: FormData): ImagePageRequest =>
   JSON.parse(formData.get(IMAGE_PAGE_PAYLOAD_FIELD) as string) as ImagePageRequest;
 
 describe('image page utils', () => {
-  describe('truncate e filterByTitle', () => {
-    it('corta texto e filtra sem diferenciar maiúsculas', () => {
+  describe('truncate', () => {
+    it('corta o texto no limite informado', () => {
       expect(truncate('abcdef', 3)).toBe('abc...');
-      expect(
-        filterByTitle([{ title: 'Retiro' }] as never, 'RETIRO'),
-      ).toHaveLength(1);
     });
   });
 
@@ -173,6 +173,61 @@ describe('image page utils', () => {
 
       expect(payload.sections).toHaveLength(1);
       expect(payload.sections[0].id).toBe('s2');
+    });
+  });
+});
+
+describe('contrato do resumo de /image-pages', () => {
+  const summary: ImagePageSummary = {
+    id: 'page-1',
+    title: 'Retiro 2026',
+    description: 'Fotos do retiro',
+    public: true,
+    routePath: 'galeria_imagens_retiro_2026',
+    sectionCount: 3,
+    createdAt: '2026-01-10T12:00:00.000Z',
+    updatedAt: '2026-01-11T12:00:00.000Z',
+  };
+
+  it('tem exatamente os campos que a listagem usa', () => {
+    expect(Object.keys(summary).sort()).toEqual([
+      'createdAt',
+      'description',
+      'id',
+      'public',
+      'routePath',
+      'sectionCount',
+      'title',
+      'updatedAt',
+    ]);
+  });
+
+  it('aceita galeria sem rota', () => {
+    const semRota: ImagePageSummary = { ...summary, routePath: null };
+
+    expect(semRota.routePath).toBeNull();
+  });
+
+  it('formata a data e protege contra valor inválido', () => {
+    expect(formatDate(summary.createdAt)).toMatch(/\d{2}\/\d{2}\/\d{4}/);
+    expect(formatDate('data-quebrada')).toBe('—');
+    expect(formatDate(null)).toBe('—');
+  });
+
+  it('monta as iniciais do avatar', () => {
+    expect(pageInitials('Retiro 2026')).toBe('R2');
+    expect(pageInitials('Retiro')).toBe('RE');
+    expect(pageInitials('   ')).toBe('?');
+  });
+
+  it('divide a opção de ordenação em campo e direção', () => {
+    expect(parseSortOption('title:ASC')).toEqual({
+      sort: 'title',
+      order: 'ASC',
+    });
+    expect(parseSortOption('qualquer')).toEqual({
+      sort: 'createdAt',
+      order: 'DESC',
     });
   });
 });

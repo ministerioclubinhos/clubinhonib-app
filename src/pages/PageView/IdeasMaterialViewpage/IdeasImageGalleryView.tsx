@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme, useMediaQuery, IconButton, Tooltip, Dialog, DialogContent, Slide } from '@mui/material';
+import { Box, Typography, useTheme, useMediaQuery, IconButton, Dialog, DialogContent, Slide } from '@mui/material';
 import { motion } from 'framer-motion';
 import ImageIcon from '@mui/icons-material/Image';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';

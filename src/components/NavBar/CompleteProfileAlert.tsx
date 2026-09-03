@@ -11,7 +11,7 @@ import {
     Box,
 } from '@mui/material';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import { ProfileAlert } from '@/features/profile/hooks/useProfileAlerts';
+import { ProfileAlert } from '@/features/profile/hooks';
 
 export interface CompleteProfileAlertProps {
     alerts: ProfileAlert[];

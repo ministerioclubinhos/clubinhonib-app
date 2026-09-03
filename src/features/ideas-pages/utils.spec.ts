@@ -14,7 +14,6 @@ import {
   buildIdeasPagePayload,
   buildMediaFieldKey,
   countMedia,
-  filterByTitle,
   fileExtensionOf,
   isUploadedMedia,
   mediasOfType,
@@ -286,7 +285,7 @@ describe('utils da página de ideias', () => {
     });
   });
 
-  describe('countMedia e filterByTitle', () => {
+  describe('countMedia', () => {
     it('soma as mídias de todas as seções', () => {
       expect(
         countMedia([
@@ -294,16 +293,6 @@ describe('utils da página de ideias', () => {
           section({ medias: [linkedVideo(), uploadedImage()] }),
         ]),
       ).toBe(3);
-    });
-
-    it('filtra por título, ignorando caixa e espaços', () => {
-      const pages = [
-        { title: 'Ideias de Natal' },
-        { title: 'Brincadeiras' },
-      ] as IdeasPageResponse[];
-
-      expect(filterByTitle(pages, '  natal ')).toHaveLength(1);
-      expect(filterByTitle(pages, '')).toHaveLength(2);
     });
   });
 });

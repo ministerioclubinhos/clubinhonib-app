@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
     Dialog,
-    DialogContent,
     Box,
     Typography,
     Chip,
@@ -36,14 +35,14 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { UserRole } from '@/types/shared';
-import { CompleteProfileListItem } from '../types';
-import { roleConfig, getGenderStyle } from '../constants/profileConstants';
-import { getBirthdayStatus, calculateAge, formatBirthDate, getInitials } from '../utils/profileHelpers';
+import { CompleteProfile } from '../types';
+import { roleConfig, getGenderStyle } from './profileStyles';
+import { getBirthdayStatus, calculateAge, formatBirthDate, getInitials } from '../utils';
 import { buildWhatsappLink } from '@/utils/whatsapp';
 import ImagePreviewModal from './ImagePreviewModal';
 
 interface ProfileDetailModalProps {
-    profile: CompleteProfileListItem | null;
+    profile: CompleteProfile | null;
     open: boolean;
     onClose: () => void;
     userRole?: string;
@@ -481,7 +480,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
                                             </Typography>
                                         </Stack>
                                         <Typography variant="caption" sx={{ fontStyle: 'italic', color: 'text.secondary', fontSize: '0.75rem' }}>
-                                            "{profile.preferences.whatMakesYouSmile}"
+                                            &ldquo;{profile.preferences.whatMakesYouSmile}&rdquo;
                                         </Typography>
                                     </Box>
                                 )}

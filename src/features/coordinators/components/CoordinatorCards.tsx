@@ -2,8 +2,8 @@ import React, { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   Box, Card, CardContent, Chip, Grid, IconButton, Stack,
-  Typography, Divider, TablePagination, Tooltip, Collapse, Select, MenuItem, FormControl, InputLabel,
-  Paper, Avatar, Slide, ButtonBase, Link
+  Typography, Divider, TablePagination, Tooltip, Select, MenuItem, FormControl, InputLabel,
+  Paper, Avatar, Slide, ButtonBase,
 } from "@mui/material";
 import { 
   Visibility, Link as LinkIcon, ExpandMore as ExpandMoreIcon, SwapVert, Phone as PhoneIcon, SupervisorAccount, GroupOutlined, SchoolOutlined, WhatsApp
@@ -40,9 +40,10 @@ export default function CoordinatorCards(props: Props) {
   
   const toggle = (id: string) =>
     setOpen((prev) => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
 
   const currentSort = sorting?.[0] ?? { id: "updatedAt", desc: true };

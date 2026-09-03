@@ -13,9 +13,7 @@ import eventsReducer from './events/eventsSlice';
 import commentsReducer from './comment/commentsSlice';
 import documentReducer from './documents/documentSlice';
 import ideasReducer from './ideas/ideasSlice';
-import informativeBannerReducer from './informative/informativeBannerSlice';
 import imageSectionPaginationReducer from './image-section-pagination/imageSectionPaginationSlice';
-import feedbackReducer from './feedback/feedbackSlice';
 
 const authPersistConfig = {
   key: 'auth',
@@ -35,9 +33,7 @@ const rootReducer = combineReducers({
   comments: commentsReducer,
   document: documentReducer,
   ideas: ideasReducer,
-  informativeBanner: informativeBannerReducer,
   imageSectionPagination: imageSectionPaginationReducer,
-  feedback: feedbackReducer,
 });
 
 export const store = configureStore({

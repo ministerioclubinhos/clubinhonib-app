@@ -1,133 +1,192 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { Grid2 } from "@mui/material";
+
 import {
-  Box,
-  Grid,
-  Snackbar,
-  Alert,
-  CircularProgress,
-  TextField,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
+  ListingLayout,
+  ListingToolbar,
+  type ListingFilter,
+} from "@/components/common/listing";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import { FeedbackCategory, FeedbackCategoryLabels } from "@/store/slices/types";
+
 import FeedbackCard from "./components/FeedbackCard";
 import FeedbackDetailsModal from "./components/FeedbackDetailsModal";
-import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
-import { useFeedbackList, useFeedbackMutations, useFeedbackSearch } from "./hooks";
-import { FeedbackData } from "@/store/slices/feedback/feedbackSlice";
-import BackHeader from "@/components/common/header/BackHeader";
+import { useFeedbackMutations, useFeedbacks } from "./hooks";
+import {
+  FEEDBACKS_PAGE_SIZE_OPTIONS,
+  FEEDBACK_MAX_RATING,
+  FEEDBACK_MIN_RATING,
+} from "./constants";
+import type { FeedbackResponse } from "./types";
 
-const FeedbackManager: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { items, loading, error, setError, refresh } = useFeedbackList();
-  const { search, setSearch, filtered } = useFeedbackSearch(items);
-  const { mLoading, mError, setMError, deleteOne, markAsRead } = useFeedbackMutations(refresh);
-  const [selected, setSelected] = React.useState<FeedbackData | null>(null);
-  const [toDelete, setToDelete] = React.useState<FeedbackData | null>(null);
-  const [snackbar, setSnackbar] = React.useState({
-    open: false,
-    message: "",
-    severity: "success" as "success" | "error",
-  });
+/** Valor usado quando o filtro está sem seleção. */
+const ANY = "";
 
-  const showSnackbar = (message: string, severity: "success" | "error") =>
-    setSnackbar({ open: true, message, severity });
+export default function FeedbackManager() {
+  const {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  } = useFeedbacks();
 
-  const handleDelete = async () => {
-    if (!toDelete) return;
-    try {
-      await deleteOne(toDelete.id || "");
-      showSnackbar("Feedback excluído com sucesso", "success");
-    } catch {
-      showSnackbar("Erro ao excluir feedback", "error");
-    } finally {
-      setToDelete(null);
-    }
+  const { actionLoading, actionError, setActionError, setRead, remove } =
+    useFeedbackMutations(refresh);
+
+  const [viewing, setViewing] = useState<FeedbackResponse | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<FeedbackResponse | null>(
+    null,
+  );
+
+  const toolbarFilters = useMemo<ListingFilter[]>(
+    () => [
+      {
+        id: "read",
+        label: "Situação",
+        value: filters.read === undefined ? ANY : String(filters.read),
+        options: [
+          { value: ANY, label: "Todas" },
+          { value: "false", label: "Não lidas" },
+          { value: "true", label: "Lidas" },
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            read: value === ANY ? undefined : value === "true",
+          })),
+      },
+      {
+        id: "category",
+        label: "Categoria",
+        value: filters.category ?? ANY,
+        options: [
+          { value: ANY, label: "Todas" },
+          ...Object.values(FeedbackCategory).map((category) => ({
+            value: category,
+            label: FeedbackCategoryLabels[category],
+          })),
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            category: value === ANY ? undefined : (value as FeedbackCategory),
+          })),
+      },
+      {
+        id: "rating",
+        label: "Nota",
+        value: filters.rating ? String(filters.rating) : ANY,
+        options: [
+          { value: ANY, label: "Todas" },
+          ...Array.from(
+            { length: FEEDBACK_MAX_RATING - FEEDBACK_MIN_RATING + 1 },
+            (_, index) => {
+              const rating = FEEDBACK_MAX_RATING - index;
+              return { value: String(rating), label: `${rating} estrelas` };
+            },
+          ),
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            rating: value === ANY ? undefined : Number(value),
+          })),
+      },
+    ],
+    [filters, setFilters],
+  );
+
+  const handleToggleRead = async (feedback: FeedbackResponse) => {
+    const ok = await setRead(feedback.id, !feedback.read);
+    if (ok && viewing?.id === feedback.id) setViewing(null);
   };
 
-  const handleMarkAsRead = async () => {
-    if (!selected) return;
-    try {
-      await markAsRead(selected.id || "");
-      showSnackbar("Feedback marcado como lido", "success");
-    } catch {
-      showSnackbar("Erro ao marcar como lido", "error");
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+
+    const ok = await remove(confirmDelete.id);
+    if (ok) {
+      setConfirmDelete(null);
+      setViewing(null);
     }
   };
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 2, md: 4 } }}>
-      <BackHeader title="Feedbacks Recebidos" />
-
-      <TextField
-        fullWidth
-        placeholder="Buscar por nome, email, comentário ou categoria..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        sx={{ mb: 4, maxWidth: { xs: "100%", md: "60%" }, mx: "auto" }}
-        size={isMobile ? "small" : "medium"}
-      />
-
-      {(loading || mLoading) && !items.length ? (
-        <Box display="flex" justifyContent="center" mt={6}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {filtered.map((feedback) => (
-            <Grid item xs={12} sm={6} md={3} key={feedback.id}>
-              <FeedbackCard
-                feedback={feedback}
-                onView={() => setSelected(feedback)}
-                onDelete={() => setToDelete(feedback)}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
-
+    <ListingLayout
+      title="Avaliações do site"
+      summary={
+        total > 0
+          ? `${total} avaliação(ões) encontrada(s)`
+          : "Nenhuma avaliação para os filtros atuais"
+      }
+      toolbar={
+        <ListingToolbar
+          searchValue={search}
+          searchPlaceholder="Buscar por nome, e-mail ou comentário…"
+          onSearchChange={setSearch}
+          filters={toolbarFilters}
+          onRefresh={refresh}
+        />
+      }
+      loading={loading}
+      error={error || actionError}
+      onDismissError={() => {
+        setError("");
+        setActionError("");
+      }}
+      itemCount={items.length}
+      emptyTitle="Nenhuma avaliação encontrada"
+      emptySubtitle="Ajuste a busca ou os filtros para ver outros resultados."
+      pagination={{
+        page,
+        pageSize,
+        total,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+      }}
+      pageSizeOptions={FEEDBACKS_PAGE_SIZE_OPTIONS}
+      overlays={
+        <>
       <FeedbackDetailsModal
-        feedback={selected}
-        onClose={() => setSelected(null)}
-        onMarkAsRead={handleMarkAsRead}
+        feedback={viewing}
+        onClose={() => setViewing(null)}
+        onToggleRead={() => viewing && void handleToggleRead(viewing)}
         onDelete={() => {
-          if (selected) setToDelete(selected);
-          setSelected(null);
+          if (viewing) setConfirmDelete(viewing);
         }}
       />
 
       <DeleteConfirmDialog
-        open={!!toDelete}
-        title={toDelete?.name || ""}
-        onClose={() => setToDelete(null)}
+        open={!!confirmDelete}
+        title={confirmDelete ? `avaliação de ${confirmDelete.name}` : ""}
+        onClose={() => setConfirmDelete(null)}
         onConfirm={handleDelete}
       />
+        </>
+      }
+    >
+      {items.map((feedback) => (
+        <Grid2 key={feedback.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+          <FeedbackCard
+            feedback={feedback}
+            disabled={actionLoading}
+            onView={() => setViewing(feedback)}
+            onToggleRead={() => void handleToggleRead(feedback)}
+            onDelete={() => setConfirmDelete(feedback)}
+          />
+        </Grid2>
+      ))}
 
-      {(error || mError) && (
-        <Box mt={2}>
-          <Alert
-            severity="error"
-            onClose={() => {
-              if (error) setError("");
-              if (mError) setMError("");
-            }}
-          >
-            {error || mError}
-          </Alert>
-        </Box>
-      )}
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-      >
-        <Alert severity={snackbar.severity} variant="filled">
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+    </ListingLayout>
   );
-};
-
-export default FeedbackManager;
+}

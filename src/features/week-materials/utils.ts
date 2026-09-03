@@ -11,6 +11,8 @@ import {
   WeekMaterialMediaRequest,
   WeekMaterialPageRequest,
   WeekMaterialResponse,
+  WeekMaterialSortField,
+  WeekMaterialSortOrder,
 } from './types';
 
 /** Shortens a text for card display, appending an ellipsis when cut. */
@@ -19,29 +21,17 @@ export const truncate = (
   max = WEEK_MATERIAL_CARD_DESCRIPTION_MAX_CHARS,
 ): string => (text.length > max ? `${text.slice(0, max)}...` : text);
 
-/** Formats an ISO date for the pt-BR UI. */
-export const formatDate = (date?: string): string =>
-  date ? new Date(date).toLocaleString('pt-BR') : 'Não disponível';
-
-/** Filters pages by title, case-insensitively. */
-export const filterByTitle = (
-  materials: WeekMaterialResponse[],
-  term: string,
-): WeekMaterialResponse[] => {
-  const normalized = term.trim().toLowerCase();
-  if (!normalized) return materials;
-  return materials.filter((material) =>
-    (material.title || '').toLowerCase().includes(normalized),
-  );
+/**
+ * Formats an ISO date for the pt-BR UI.
+ *
+ * Uma data inválida vira travessão em vez de "Invalid Date" no card.
+ */
+export const formatDate = (date?: string | null): string => {
+  if (!date) return '—';
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return '—';
+  return parsed.toLocaleDateString('pt-BR');
 };
-
-/** Sorts pages from the newest to the oldest. */
-export const sortByCreationDesc = (
-  materials: WeekMaterialResponse[],
-): WeekMaterialResponse[] =>
-  [...materials].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
 
 /** True when the item holds a file that must be uploaded with the request. */
 export const isUploadedMedia = (item: MediaItem): boolean =>
@@ -159,3 +149,30 @@ export const selectMediaByType = (
       return [];
   }
 };
+
+/** Divide o valor do seletor de ordenação em campo e direção. */
+export function parseSortOption(value: string): {
+  sort: WeekMaterialSortField;
+  order: WeekMaterialSortOrder;
+} {
+  const [sort, order] = value.split(':');
+  return {
+    sort: sort === 'title' ? 'title' : 'createdAt',
+    order: order === 'ASC' ? 'ASC' : 'DESC',
+  };
+}
+
+/** Total de mídias da página, somando os quatro tipos. */
+export function totalMediaCount(summary: {
+  videoCount: number;
+  documentCount: number;
+  imageCount: number;
+  audioCount: number;
+}): number {
+  return (
+    summary.videoCount +
+    summary.documentCount +
+    summary.imageCount +
+    summary.audioCount
+  );
+}

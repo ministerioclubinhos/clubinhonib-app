@@ -16,6 +16,7 @@ import { useDispatch } from 'react-redux';
 import { logout, User } from '@/store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from '@/hooks';
+import { FEATURE } from '@/features/feature-flags';
 import api from '@/config/axiosConfig';
 import PersonIcon from '@mui/icons-material/Person';
 import SchoolIcon from '@mui/icons-material/School';
@@ -64,7 +65,6 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
 
     const isAdmin = user?.role === UserRole.ADMIN;
     const isCoordinator = user?.role === UserRole.COORDINATOR;
-    const isTeacher = user?.role === UserRole.TEACHER;
 
     const { flags } = useFeatureFlags();
 
@@ -140,7 +140,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                     Área do Professor
                 </Button>
 
-                {(isAdmin || (isCoordinator && flags.coordinator_children_access) || (isTeacher && flags.teacher_children_access)) && (
+                {flags[FEATURE.CHILDREN_AREA] && (
                     <Button
                         onClick={() => handleNavigate('/area-das-criancas')}
                         fullWidth
@@ -281,7 +281,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                     Área do Professor
                 </MenuItem>
 
-                {(isAdmin || (isCoordinator && flags.coordinator_children_access) || (isTeacher && flags.teacher_children_access)) && (
+                {flags[FEATURE.CHILDREN_AREA] && (
                     <MenuItem onClick={() => handleNavigate('/area-das-criancas')}>
                         <ListItemIcon>
                             <ChildCareIcon fontSize="small" />

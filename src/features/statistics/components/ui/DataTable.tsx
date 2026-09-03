@@ -15,9 +15,6 @@ import {
   InputAdornment,
   IconButton,
   Tooltip,
-  Chip,
-  Avatar,
-  LinearProgress,
   Skeleton,
   useTheme,
   alpha,
@@ -29,28 +26,17 @@ import {
   ListItemText,
   Divider,
   useMediaQuery,
-  Card,
-  CardContent,
   Stack,
   Badge,
 } from '@mui/material';
 import {
   Search,
   Clear,
-  FilterList,
   Download,
   ViewColumn,
-  MoreVert,
-  ArrowUpward,
-  ArrowDownward,
   Refresh,
-  CheckCircle,
-  Cancel,
-  Star,
-  StarBorder,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { visuallyHidden } from '@mui/utils';
 
 export interface Column<T> {
   id: keyof T | string;

@@ -16,16 +16,18 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
-import { RootState } from '@/store/slices';
 
 import IdeasSectionEditor from './components/IdeasSectionEditor';
 import { IDEAS_PAGE_ROUTES } from './constants';
-import { useIdeasPageForm, useUnsavedChangesGuard } from './hooks';
-import { IdeasPageResponse, IdeasSectionDraft } from './types';
+import {
+  useIdeasPageById,
+  useIdeasPageForm,
+  useUnsavedChangesGuard,
+} from './hooks';
+import { IdeasSectionDraft } from './types';
 import { countMedia } from './utils';
 
 interface IdeasPageFormProps {
@@ -48,18 +50,21 @@ export default function IdeasPageForm({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const storedPage = useSelector(
-    (state: RootState) => state.ideas.ideasData,
-  ) as IdeasPageResponse | null;
+  // A página vem do id na URL. Antes ela vinha do store, que não é
+  // persistido: um F5 direto nesta rota abria o formulário vazio.
+  const { id } = useParams<{ id: string }>();
+  const {
+    page: loadedPage,
+    loading: loadingPage,
+    error: loadError,
+  } = useIdeasPageById(fromTemplatePage ? undefined : id);
 
   // Uma mídia começada em qualquer seção conta como alteração pendente.
   const [sectionDrafts, setSectionDrafts] = useState<Record<number, boolean>>(
     {},
   );
 
-  // A edição depende da página carregada no store, que não é persistido: um F5
-  // direto nesta rota deixaria o formulário vazio e só falharia ao salvar.
-  const isMissingPage = !fromTemplatePage && !storedPage;
+  const isMissingPage = !fromTemplatePage && !loadingPage && !loadedPage;
 
   const {
     values,
@@ -72,7 +77,7 @@ export default function IdeasPageForm({
     feedback,
     dismissFeedback,
     save,
-  } = useIdeasPageForm({ isCreation: fromTemplatePage, page: storedPage });
+  } = useIdeasPageForm({ isCreation: fromTemplatePage, page: loadedPage });
 
   const hasMediaDraft = Object.values(sectionDrafts).some(Boolean);
   useUnsavedChangesGuard(isDirty || hasMediaDraft);
@@ -97,6 +102,17 @@ export default function IdeasPageForm({
     [],
   );
 
+  if (loadingPage) {
+    return (
+      <Box
+        component="section"
+        sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   if (isMissingPage) {
     return (
       <Box component="section" sx={{ py: { xs: 2, md: 3 } }}>
@@ -113,8 +129,8 @@ export default function IdeasPageForm({
             </Button>
           }
         >
-          <AlertTitle>Nenhuma página selecionada</AlertTitle>
-          Abra a página que você quer editar pela lista de páginas de ideias.
+          <AlertTitle>Página não encontrada</AlertTitle>
+          {loadError || 'Abra a página que você quer editar pela lista.'}
         </Alert>
       </Box>
     );

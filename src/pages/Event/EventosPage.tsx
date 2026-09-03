@@ -1,6 +1,8 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { gradients } from "@/theme";
+import { extractErrorMessage } from "@/utils/apiError";
 import {
+  Alert,
   Box,
   Button,
   Container,
@@ -85,6 +87,7 @@ export default function EventosPage() {
 
   const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false);
   const [deleteTargetEvent, setDeleteTargetEvent] = useState<AppEvent | null>(null);
+  const [error, setError] = useState("");
 
   const fetchEventos = useCallback(async () => {
     setLoading(true);
@@ -93,7 +96,12 @@ export default function EventosPage() {
       const mapped = mapEventsWithFallbackDate(res.data || []);
       dispatch(setEvents(mapped as any));
       setEventosState(mapped);
-    } catch {
+      setError("");
+    } catch (err: unknown) {
+      // Sem isto a falha virava uma agenda vazia, indistinguível de não haver
+      // evento nenhum.
+      setError(extractErrorMessage(err, "Erro ao carregar a agenda"));
+      setEventosState([]);
     } finally {
       setLoading(false);
     }
@@ -137,7 +145,9 @@ export default function EventosPage() {
       await api.delete(`/events/${deleteTargetEvent.id}`);
       closeDeleteModal();
       await fetchEventos();
-    } catch {
+    } catch (err: unknown) {
+      // O modal fica aberto: o evento continua lá, e a pessoa precisa saber.
+      setError(extractErrorMessage(err, "Erro ao excluir o evento"));
     }
   };
 
@@ -179,6 +189,12 @@ export default function EventosPage() {
       <Box sx={{ minHeight: "100vh", background: gradients.subtle.greenWhiteSoft }}>
 
         <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 2.5, md: 4 }, px: { xs: 1.5, sm: 2, md: 3 } }}>
+          {error ? (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+              {error}
+            </Alert>
+          ) : null}
+
           <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }}>
             <Box
               sx={{

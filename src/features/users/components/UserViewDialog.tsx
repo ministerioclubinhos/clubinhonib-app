@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
@@ -12,7 +11,6 @@ import {
   Stack,
   Tooltip,
   IconButton,
-  Divider,
   Alert,
   Link,
   Paper,
@@ -24,13 +22,10 @@ import {
   WhatsApp,
   PhoneIphone,
   AlternateEmail,
-  Badge,
   AccessTime,
-  ContentCopy,
-  Phone as PhoneIcon,
 } from "@mui/icons-material";
 import { useSelector } from "react-redux";
-import { SENSITIVE_KEYS, UserRow } from "../types";
+import { UserRow } from "../types";
 import { UserRole } from "@/types/shared";
 import { buildWhatsappLink } from "@/utils/whatsapp";
 import { formatDate } from "@/utils/dateUtils";

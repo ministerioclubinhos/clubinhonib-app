@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, type ReactNode } from "react";
+import React, { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
@@ -53,10 +53,22 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from "@/hooks";
+import { FEATURE } from "@/features/feature-flags";
+import type { FeatureKey } from "@/features/feature-flags";
 
 const drawerWidth = 240;
 
-type NavItem = { label: string; to: string; icon: ReactNode };
+/**
+ * Um item do menu. `flag` amarra o item a uma feature flag: com ela desligada
+ * o item some para todo mundo, inclusive para o administrador, porque a rota
+ * correspondente também deixa de existir.
+ */
+type NavItem = {
+  label: string;
+  to: string;
+  icon: ReactNode;
+  flag?: FeatureKey;
+};
 type SectionId = "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "interacoes" | "operacional";
 type Section = { id: SectionId; title: string; items: NavItem[] };
 type MobileTab = "tudo" | SectionId;
@@ -103,7 +115,7 @@ function AdminLayout() {
         title: "Clubinhos",
         items: [
           { label: "Clubinhos", to: "/adm/clubinhos", icon: <Groups /> },
-          { label: "Pagelas", to: "/adm/pagelas", icon: <Assignment /> },
+          { label: "Pagelas", to: "/adm/pagelas", icon: <Assignment />, flag: FEATURE.PAGELAS },
         ],
       },
       {
@@ -121,7 +133,7 @@ function AdminLayout() {
         title: "Mídias",
         items: [
           { label: "Páginas de fotos", to: "/adm/paginas-fotos", icon: <PhotoLibrary /> },
-          { label: "Fotos dos clubinhos", to: "/adm/fotos-clubinhos", icon: <Collections /> },
+          { label: "Fotos dos clubinhos", to: "/adm/fotos-clubinhos", icon: <Collections />, flag: FEATURE.PHOTO_MODERATION },
           { label: "Páginas de vídeos", to: "/adm/paginas-videos", icon: <VideoLibrary /> },
         ],
       },
@@ -131,14 +143,14 @@ function AdminLayout() {
         items: [
           { label: "Materiais semanais", to: "/adm/paginas-materiais-semanais", icon: <EventNote /> },
           { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
-          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <TipsAndUpdates /> },
+          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <TipsAndUpdates />, flag: FEATURE.IDEA_MODERATION },
         ],
       },
       {
         id: "interacoes",
         title: "Interações",
         items: [
-          { label: "Comentários", to: "/adm/comentarios", icon: <Comment /> },
+          { label: "Comentários", to: "/adm/comentarios", icon: <Comment />, flag: FEATURE.COMMENT_MODERATION },
           { label: "Contatos", to: "/adm/contatos", icon: <ContactMail /> },
           { label: "Feedbacks", to: "/adm/feedbacks", icon: <RateReview /> },
         ],
@@ -147,34 +159,51 @@ function AdminLayout() {
         id: "operacional",
         title: "Operacional",
         items: [
-          { label: "Controle de Clubinhos", to: "/adm/controle-clubinhos", icon: <Checklist /> },
-          { label: "Estatísticas", to: "/adm/estatisticas", icon: <BarChart /> },
+          { label: "Controle de Clubinhos", to: "/adm/controle-clubinhos", icon: <Checklist />, flag: FEATURE.CLUB_CONTROL },
+          { label: "Estatísticas", to: "/adm/estatisticas", icon: <BarChart />, flag: FEATURE.STATISTICS },
+          // Feature flags não entram no menu: o acesso é pelo rodapé, e só
+          // para administradores.
         ],
       },
     ],
     []
   );
 
-  const coordinatorAllowed = new Set<string>([
-    ...(flags.coordinator_children_access ? ["/adm/criancas"] : []),
-    "/adm/professores",
-    "/adm/clubinhos",
-    "/adm/pagelas",
-    "/adm/perfis",
-  ]);
+  /** As rotas que um coordenador enxerga; a das crianças depende da flag. */
+  const coordinatorAllowed = useMemo(
+    () =>
+      new Set<string>([
+        ...(flags[FEATURE.CHILDREN_AREA] ? ["/adm/criancas"] : []),
+        "/adm/professores",
+        "/adm/clubinhos",
+        "/adm/pagelas",
+        "/adm/perfis",
+      ]),
+    [flags],
+  );
 
-  const canSeeItem = (item: NavItem): boolean => {
-    if (isAdmin) return true;
-    if (isCoordinator) return coordinatorAllowed.has(item.to);
-    return false;
-  };
+  /**
+   * Um item aparece quando as duas condições passam: a flag do recurso está
+   * ligada e o perfil tem acesso. São dimensões independentes — o admin passa
+   * pelo perfil, mas não por cima de um recurso desligado.
+   */
+  const canSeeItem = useCallback(
+    (item: NavItem): boolean => {
+      if (item.flag && !flags[item.flag]) return false;
+      if (isAdmin) return true;
+      if (isCoordinator) return coordinatorAllowed.has(item.to);
+      return false;
+    },
+    [flags, isAdmin, isCoordinator, coordinatorAllowed],
+  );
 
-  const sections = useMemo<Section[]>(() => {
-    const filtered = allSections
-      .map((sec) => ({ ...sec, items: sec.items.filter(canSeeItem) }))
-      .filter((sec) => sec.items.length > 0);
-    return filtered;
-  }, [allSections, isAdmin, isCoordinator]);
+  const sections = useMemo<Section[]>(
+    () =>
+      allSections
+        .map((sec) => ({ ...sec, items: sec.items.filter(canSeeItem) }))
+        .filter((sec) => sec.items.length > 0),
+    [allSections, canSeeItem],
+  );
 
   /**
    * Descobre a seção a partir do próprio menu, casando o prefixo mais longo.

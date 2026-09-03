@@ -1,124 +1,178 @@
 import React from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, Typography, IconButton, Box, Divider, Chip,
-  useMediaQuery, useTheme
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  Rating,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import EmailIcon from "@mui/icons-material/Email";
-import StarIcon from "@mui/icons-material/Star";
-import CommentIcon from "@mui/icons-material/Comment";
 import CategoryIcon from "@mui/icons-material/Category";
-import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { FeedbackData } from "@/store/slices/feedback/feedbackSlice";
-import { FeedbackCategory, FeedbackCategoryLabels } from "@/store/slices/types";
+import EmailIcon from "@mui/icons-material/Email";
+import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
+import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
+import PersonIcon from "@mui/icons-material/Person";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+
+import { EMPTY_VALUE, FEEDBACK_MAX_RATING } from "../constants";
+import { feedbackCategoryLabel, formatDateTime } from "../utils";
+import type { FeedbackResponse } from "../types";
 
 type Props = {
-  feedback: FeedbackData | null;
+  feedback: FeedbackResponse | null;
   onClose: () => void;
-  onMarkAsRead: () => void;
+  onToggleRead: () => void;
   onDelete: () => void;
 };
 
-const FeedbackDetailsModal: React.FC<Props> = ({ feedback, onClose, onMarkAsRead, onDelete }) => {
+/** Uma linha de dado do detalhe. */
+function DetailRow({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Stack direction="row" spacing={1.25} alignItems="flex-start">
+      <Box sx={{ color: "text.secondary", mt: 0.25 }}>{icon}</Box>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="caption" color="text.secondary">
+          {label}
+        </Typography>
+        <Box sx={{ wordBreak: "break-word" }}>{children}</Box>
+      </Box>
+    </Stack>
+  );
+}
+
+export default function FeedbackDetailsModal({
+  feedback,
+  onClose,
+  onToggleRead,
+  onDelete,
+}: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   if (!feedback) return null;
-
-  const categoryLabel =
-    FeedbackCategoryLabels[feedback.category as FeedbackCategory] || feedback.category;
-
-  const handleMarkAsRead = () => {
-    onMarkAsRead();
-    onClose();
-  };
 
   return (
     <Dialog
-      open={!!feedback}
+      open
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 3, width: isMobile ? "98%" : "auto" } }}
+      fullScreen={isMobile}
+      PaperProps={{ sx: { borderRadius: { xs: 0, sm: 3 } } }}
     >
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, pb: 0 }}>
-        <DialogTitle
-          sx={{ p: 0, display: "flex", alignItems: "center", gap: 1, fontSize: { xs: ".9rem", md: "1.1rem" } }}
-        >
-          <MarkEmailReadIcon color="primary" />
-          Detalhes do Feedback
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ p: 2, pb: 1 }}
+      >
+        <DialogTitle sx={{ p: 0, fontSize: { xs: "1rem", md: "1.15rem" } }}>
+          Detalhes da avaliação
         </DialogTitle>
         <IconButton onClick={onClose} aria-label="Fechar">
           <CloseIcon />
         </IconButton>
-      </Box>
+      </Stack>
 
-      <DialogContent sx={{ mt: 2, px: isMobile ? 2 : 3 }}>
-        <Box display="flex" alignItems="center" mb={1}>
-          <CommentIcon sx={{ mr: 1 }} />
-          <Typography><strong>Nome:</strong> {feedback.name}</Typography>
-        </Box>
+      <DialogContent dividers>
+        <Stack spacing={2}>
+          <DetailRow icon={<PersonIcon fontSize="small" />} label="Quem avaliou">
+            <Typography>{feedback.name}</Typography>
+          </DetailRow>
 
-        <Box display="flex" alignItems="center" mb={1}>
-          <EmailIcon sx={{ mr: 1 }} />
-          <Typography><strong>Email:</strong> {feedback.email || "Não informado"}</Typography>
-        </Box>
+          <DetailRow icon={<EmailIcon fontSize="small" />} label="E-mail">
+            <Typography>{feedback.email ?? EMPTY_VALUE}</Typography>
+          </DetailRow>
 
-        <Box display="flex" alignItems="center" mb={1}>
-          <StarIcon sx={{ mr: 1 }} />
-          <Typography><strong>Nota:</strong> {feedback.rating}/5</Typography>
-        </Box>
+          <DetailRow icon={<CategoryIcon fontSize="small" />} label="Categoria">
+            <Typography>{feedbackCategoryLabel(feedback.category)}</Typography>
+          </DetailRow>
 
-        <Box display="flex" alignItems="center" mb={1}>
-          <CategoryIcon sx={{ mr: 1 }} />
-          <Typography><strong>Categoria:</strong> {categoryLabel}</Typography>
-        </Box>
+          <DetailRow icon={<ScheduleIcon fontSize="small" />} label="Enviada em">
+            <Typography>{formatDateTime(feedback.createdAt)}</Typography>
+          </DetailRow>
 
-        <Divider sx={{ my: 2 }} />
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Rating
+              value={feedback.rating}
+              max={FEEDBACK_MAX_RATING}
+              readOnly
+              size="small"
+            />
+            <Typography variant="body2" color="text.secondary">
+              {feedback.rating} de {FEEDBACK_MAX_RATING}
+            </Typography>
+            <Chip
+              size="small"
+              label={feedback.read ? "Lida" : "Não lida"}
+              color={feedback.read ? "success" : "warning"}
+            />
+          </Stack>
 
-        <Typography variant="subtitle2" gutterBottom><strong>Comentário:</strong></Typography>
-        <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", mb: 2 }}>
-          {feedback.comment}
-        </Typography>
+          <Divider />
 
-        <Chip
-          label={feedback.read ? "Lido" : "Não lido"}
-          color={feedback.read ? "success" : "warning"}
-          size="small"
-        />
+          <Box>
+            <Typography variant="caption" color="text.secondary">
+              Comentário
+            </Typography>
+            <Typography sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              {feedback.comment}
+            </Typography>
+          </Box>
+        </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, flexDirection: isMobile ? "column" : "row", gap: 1 }}>
-        <Button onClick={onClose} fullWidth={isMobile} size={isMobile ? "small" : "medium"}>
+      <DialogActions
+        sx={{
+          p: 2,
+          gap: 1,
+          flexDirection: { xs: "column-reverse", sm: "row" },
+          alignItems: { xs: "stretch", sm: "center" },
+        }}
+      >
+        <Button onClick={onClose} fullWidth={isMobile}>
           Fechar
         </Button>
 
-        {!feedback.read ? (
-          <Button
-            onClick={handleMarkAsRead}
-            variant="contained"
-            color="primary"
-            fullWidth={isMobile}
-            size={isMobile ? "small" : "medium"}
-          >
-            Marcar como lido
-          </Button>
-        ) : (
-          <Button
-            onClick={onDelete}
-            variant="contained"
-            color="error"
-            startIcon={<DeleteIcon />}
-            fullWidth={isMobile}
-            size={isMobile ? "small" : "medium"}
-          >
-            Excluir
-          </Button>
-        )}
+        <Button
+          onClick={onToggleRead}
+          variant="outlined"
+          fullWidth={isMobile}
+          startIcon={
+            feedback.read ? <MarkEmailUnreadIcon /> : <MarkEmailReadIcon />
+          }
+        >
+          {feedback.read ? "Marcar como não lida" : "Marcar como lida"}
+        </Button>
+
+        <Button
+          onClick={onDelete}
+          variant="contained"
+          color="error"
+          fullWidth={isMobile}
+          startIcon={<DeleteIcon />}
+        >
+          Excluir
+        </Button>
       </DialogActions>
     </Dialog>
   );
-};
-
-export default FeedbackDetailsModal;
+}

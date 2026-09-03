@@ -1,4 +1,4 @@
-import React, { memo, Suspense } from 'react';
+import React, { memo } from 'react';
 import {
   Box,
   Grid2,
@@ -20,11 +20,10 @@ import {
   Favorite,
   CalendarMonth,
   ArrowForward,
-  AutoAwesome,
   EmojiEvents,
 } from '@mui/icons-material';
-import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
-import { motion, AnimatePresence } from 'framer-motion';
+import type { ChartTooltipProps } from '../types/chart.types';
+import { motion } from 'framer-motion';
 import {
   ComposedChart,
   Line,
@@ -44,7 +43,6 @@ import { useStatistics } from '../context';
 import { useOverview, usePagelasChartData, useInsights } from '../hooks';
 import { StatCard, ChartWrapper } from '../components/ui';
 
-const MotionBox = motion.create(Box);
 
 // Custom tooltip for charts
 const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {

@@ -21,8 +21,10 @@ import { ArrowBack, Search, Clear } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from 'store/slices';
+import { FEATURE, useVisibleRoutes } from '@/features/feature-flags';
+import { useFeatureEnabled } from '@/hooks';
 import { MediaTargetType } from 'store/slices/types';
-import { WEEK_MATERIAL_SEARCH_DEBOUNCE_MS } from '@/features/week-materials';
+import { LISTING_SEARCH_DEBOUNCE_MS } from '@/hooks';
 import { FofinhoButton } from '../Buttons';
 
 const SPECIAL_FAMILY_DAY_ID = import.meta.env.VITE_SPECIAL_FAMILY_DAY_ID || '';
@@ -31,7 +33,8 @@ const WeekMaterialsList = () => {
     const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const routes = useSelector((state: RootState) => state.routes.routes);
+    const routes = useVisibleRoutes();
+    const showSpecialFamilyDay = useFeatureEnabled(FEATURE.SPECIAL_FAMILY_DAY);
     const loading = useSelector((state: RootState) => state.routes.loading);
     const [filter, setFilter] = useState('');
     const [debouncedFilter, setDebouncedFilter] = useState('');
@@ -54,7 +57,7 @@ const WeekMaterialsList = () => {
     useEffect(() => {
         const timeoutId = window.setTimeout(
             () => setDebouncedFilter(filter),
-            WEEK_MATERIAL_SEARCH_DEBOUNCE_MS
+            LISTING_SEARCH_DEBOUNCE_MS
         );
         return () => window.clearTimeout(timeoutId);
     }, [filter]);
@@ -364,6 +367,9 @@ const WeekMaterialsList = () => {
                                                         variant="contained"
                                                         component={Link}
                                                         to={
+                                                            // O desvio para o Dia da Família só
+                                                            // vale enquanto a página existe.
+                                                            showSpecialFamilyDay &&
                                                             SPECIAL_FAMILY_DAY_ID &&
                                                             route.idToFetch === SPECIAL_FAMILY_DAY_ID
                                                                 ? '/dia-especial-familia'

@@ -1,5 +1,4 @@
-import { toChartNumber } from '../types/chart.types';
-import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
+import type { ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,
@@ -19,7 +18,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   Cell,
 } from 'recharts';
@@ -63,13 +61,6 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
   const topTeachers = [...data.byTeacher]
     .sort((a, b) => b.total - a.total)
     .slice(0, 10);
-
-  const getPerformanceColor = (rate: number) => {
-    if (rate >= 90) return theme.palette.success.main;
-    if (rate >= 75) return theme.palette.info.main;
-    if (rate >= 60) return theme.palette.warning.main;
-    return theme.palette.error.main;
-  };
 
   const getInitials = (name: string) => {
     const parts = name.split(' ');

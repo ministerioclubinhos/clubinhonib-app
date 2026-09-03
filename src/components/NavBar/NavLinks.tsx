@@ -1,14 +1,13 @@
-import React, { Fragment, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Button, Stack } from '@mui/material';
 import { RootState } from '@/store/slices';
-import { logout } from '@/store/slices/auth/authSlice';
-import { UserRole } from "@/types/shared";
-import api from '@/config/axiosConfig';
 import UserMenu from './UserMenu';
 import CompleteProfileAlert from './CompleteProfileAlert';
-import { useProfileAlerts } from '@/features/profile/hooks/useProfileAlerts';
+import { useProfileAlerts } from '@/features/profile/hooks';
+import { FEATURE } from '@/features/feature-flags';
+import { useFeatureFlags } from '@/hooks';
 import LinkClubModal from '@/features/auth/components/LinkClubModal';
 
 interface Props {
@@ -19,17 +18,19 @@ interface Props {
 const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { flags } = useFeatureFlags();
   const profileAlerts = useProfileAlerts();
   const [linkClubOpen, setLinkClubOpen] = useState(false);
 
+  // O convite para se vincular só existe enquanto o pedido de vínculo existe.
   const needsClubLink = useMemo(
     () =>
+      flags[FEATURE.CLUB_LINK_REQUEST] &&
       user?.role === 'teacher' &&
       (!user?.teacherProfile || !user?.teacherProfile?.club),
-    [user],
+    [flags, user],
   );
 
   const allAlerts = useMemo(() => {
@@ -44,24 +45,9 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
     ];
   }, [profileAlerts, needsClubLink]);
 
-  const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
 
-  const isTeacher = isAuthenticated && user?.role === UserRole.TEACHER;
-  const isCoordinator = isAuthenticated && user?.role === UserRole.COORDINATOR;
 
   const handleClick = () => closeMenu?.();
-
-  const handleLogout = async () => {
-    try {
-      await api.post('/auth/logout');
-    } catch (error) {
-      console.warn('[Logout] Erro ao fazer logout:', error);
-    } finally {
-      dispatch(logout());
-      navigate('/');
-      closeMenu?.();
-    }
-  };
 
   const renderLink = (to: string, label: string) => {
     const active = location.pathname === to || location.pathname.startsWith(to + '/');
@@ -120,10 +106,14 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
         sx={{ flexGrow: 1, justifyContent: isMobile ? 'flex-start' : 'center' }}
       >
         {renderLink('/', 'Início')}
-        {renderLink('/feed-clubinho', 'Feed Clubinho')}
+        {/*
+          O link some junto com a rota: com a flag desligada, clicar aqui só
+          levaria a um redirecionamento de volta.
+        */}
+        {flags[FEATURE.CLUBINHO_FEED] && renderLink('/feed-clubinho', 'Feed Clubinho')}
         {renderLink('/sobre', 'Sobre')}
-        {renderLink('/eventos', 'Eventos')}
-        {renderLink('/contato', 'Contato')}
+        {flags[FEATURE.EVENTS_SECTION] && renderLink('/eventos', 'Eventos')}
+        {flags[FEATURE.CONTACT_FORM] && renderLink('/contato', 'Contato')}
       </Stack>
 
       {/* User Actions Group */}
@@ -141,7 +131,9 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
         renderLink('/login', 'Entrar')
       )}
 
-      <LinkClubModal open={linkClubOpen} onClose={() => setLinkClubOpen(false)} />
+      {flags[FEATURE.CLUB_LINK_REQUEST] && (
+        <LinkClubModal open={linkClubOpen} onClose={() => setLinkClubOpen(false)} />
+      )}
     </Stack>
   );
 };

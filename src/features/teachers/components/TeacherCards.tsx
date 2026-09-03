@@ -12,7 +12,6 @@ import {
   Divider,
   TablePagination,
   Tooltip,
-  Collapse,
   Select,
   MenuItem,
   FormControl,
@@ -21,7 +20,6 @@ import {
   Avatar,
   Slide,
   ButtonBase,
-  Link
 } from "@mui/material";
 import {
   Visibility,
@@ -29,7 +27,6 @@ import {
   LinkOff as LinkOffIcon,
   ExpandMore as ExpandMoreIcon,
   SwapVert,
-  ContentCopy,
   Phone as PhoneIcon,
   SchoolOutlined,
   GroupOutlined,
@@ -76,9 +73,10 @@ export default function TeacherCards({
   
   const toggle = (id: string) =>
     setOpen((prev) => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
 
   const currentSort = sorting?.[0] ?? { id: "updatedAt", desc: true };

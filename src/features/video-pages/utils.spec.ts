@@ -3,12 +3,19 @@ import { describe, expect, it } from 'vitest';
 import { MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 
 import { VIDEO_PAGE_PAYLOAD_FIELD } from './constants';
-import { VideoDraft, VideoPageFormValues, VideoPageRequest } from './types';
+import {
+  VideoDraft,
+  VideoPageFormValues,
+  VideoPageRequest,
+  VideoPageSummary,
+} from './types';
 import {
   buildVideoFieldKey,
   buildVideoPageFormData,
-  filterByTitle,
+  formatDate,
   isUploadedVideo,
+  pageInitials,
+  parseSortOption,
   toVideoDrafts,
   truncate,
 } from './utils';
@@ -48,18 +55,6 @@ describe('video page utils', () => {
     it('corta textos longos e mantém curtos', () => {
       expect(truncate('abcdef', 3)).toBe('abc...');
       expect(truncate('ab', 3)).toBe('ab');
-    });
-  });
-
-  describe('filterByTitle', () => {
-    it('filtra sem diferenciar maiúsculas', () => {
-      const pages = [
-        { title: 'Retiro' },
-        { title: 'Páscoa' },
-      ] as ReturnType<typeof filterByTitle>;
-
-      expect(filterByTitle(pages, 'RETIRO')).toHaveLength(1);
-      expect(filterByTitle(pages, '  ')).toHaveLength(2);
     });
   });
 
@@ -158,6 +153,61 @@ describe('video page utils', () => {
         'video-1',
         VIDEO_PAGE_PAYLOAD_FIELD,
       ]);
+    });
+  });
+});
+
+describe('contrato do resumo de /video-pages', () => {
+  const summary: VideoPageSummary = {
+    id: 'page-1',
+    title: 'Louvores 2026',
+    description: 'Vídeos do louvor',
+    public: true,
+    routePath: 'galeria_videos_louvores_2026',
+    videoCount: 4,
+    createdAt: '2026-01-10T12:00:00.000Z',
+    updatedAt: '2026-01-11T12:00:00.000Z',
+  };
+
+  it('tem exatamente os campos que a listagem usa', () => {
+    expect(Object.keys(summary).sort()).toEqual([
+      'createdAt',
+      'description',
+      'id',
+      'public',
+      'routePath',
+      'title',
+      'updatedAt',
+      'videoCount',
+    ]);
+  });
+
+  it('aceita página sem rota', () => {
+    const semRota: VideoPageSummary = { ...summary, routePath: null };
+
+    expect(semRota.routePath).toBeNull();
+  });
+
+  it('formata a data e protege contra valor inválido', () => {
+    expect(formatDate(summary.createdAt)).toMatch(/\d{2}\/\d{2}\/\d{4}/);
+    expect(formatDate('data-quebrada')).toBe('—');
+    expect(formatDate(null)).toBe('—');
+  });
+
+  it('monta as iniciais do avatar', () => {
+    expect(pageInitials('Louvores 2026')).toBe('L2');
+    expect(pageInitials('Louvores')).toBe('LO');
+    expect(pageInitials('   ')).toBe('?');
+  });
+
+  it('divide a opção de ordenação em campo e direção', () => {
+    expect(parseSortOption('title:DESC')).toEqual({
+      sort: 'title',
+      order: 'DESC',
+    });
+    expect(parseSortOption('qualquer')).toEqual({
+      sort: 'createdAt',
+      order: 'DESC',
     });
   });
 });

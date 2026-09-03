@@ -57,6 +57,49 @@ export interface ImagePageResponse {
   sections: ImageSectionResponse[];
 }
 
+/**
+ * Resumo da galeria na listagem do painel.
+ *
+ * A listagem não traz seções nem imagens: carregar o conteúdo inteiro de cada
+ * galeria era o que fazia a tela demorar a abrir.
+ */
+export interface ImagePageSummary {
+  id: string;
+  title: string;
+  description: string;
+  public: boolean;
+  /** Endereço público da galeria; `null` quando a rota não existe. */
+  routePath: string | null;
+  sectionCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Envelope paginado devolvido pela API. */
+export interface PaginatedImagePages {
+  data: ImagePageSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  pageCount: number;
+}
+
+/** Campo pelo qual a listagem pode ser ordenada. */
+export type ImagePageSortField = 'createdAt' | 'title';
+
+/** Direção da ordenação. */
+export type ImagePageSortOrder = 'ASC' | 'DESC';
+
+/** Filtros aplicados pela API, não pela tela. */
+export interface ImagePageQuery {
+  page?: number;
+  limit?: number;
+  searchString?: string;
+  public?: boolean;
+  sort?: ImagePageSortField;
+  order?: ImagePageSortOrder;
+}
+
 /** Resposta paginada de seções de uma galeria. */
 export interface PaginatedImageSectionsResponse {
   id: string;

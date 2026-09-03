@@ -2,7 +2,6 @@ import React, { memo, useState, useCallback, useMemo } from 'react';
 import {
   Box,
   Grid2,
-  Paper,
   Typography,
   Avatar,
   Chip,
@@ -11,7 +10,6 @@ import {
   alpha,
   Card,
   CardContent,
-  Stack,
   Divider,
   useMediaQuery,
 } from '@mui/material';

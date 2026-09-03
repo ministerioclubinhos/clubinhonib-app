@@ -15,7 +15,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import VideoCard from "./VideoCard";
-import { useAuthRole } from "@/utils/useAuthRole";
 import { useVideoPage } from "./hooks";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
@@ -25,15 +24,10 @@ interface VideoPageViewProps {
 
 export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
   const navigate = useNavigate();
-  const { isAdmin } = useAuthRole();
   const { videoData, loading, error, isDeleting, deletePage } = useVideoPage(idToFetch);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  const handleEditPage = () => {
-    navigate('/adm/editar-pagina-videos', { state: { fromTemplatePage: false } });
-  };
 
   const handleBack = () => {
     console.log('handleBack called in PageVideoView');

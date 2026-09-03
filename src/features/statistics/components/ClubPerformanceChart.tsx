@@ -1,5 +1,4 @@
-import { toChartNumber } from '../types/chart.types';
-import type { ChartTooltipEntry, ChartTooltipProps } from '../types/chart.types';
+import type { ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,
@@ -53,7 +52,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
       })
       .sort((a, b) => b.presenceRate - a.presenceRate)
       .slice(0, 10)
-      .map((club, index) => ({
+      .map((club) => ({
         ...club,
         presenceRate: Number(club.presenceRate) || 0,
         clubNumber: Number(club.clubNumber) || 0,

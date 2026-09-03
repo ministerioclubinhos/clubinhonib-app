@@ -17,13 +17,11 @@ import {
   Badge,
   Popover,
   List,
-  ListItem,
   ListItemIcon,
   ListItemText,
   ListItemButton,
   useMediaQuery,
   InputAdornment,
-  Autocomplete,
 } from '@mui/material';
 import {
   FilterList,
@@ -40,14 +38,13 @@ import {
   Clear,
   Search,
   TuneOutlined,
-  CheckCircle,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/pt-br';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useStatistics } from '../../context';
 import { PeriodShortcut } from '../../api';
 
@@ -69,7 +66,6 @@ const quickPeriods: QuickPeriod[] = [
   { id: PeriodShortcut.THIS_YEAR, label: 'Este Ano', icon: <Event />, color: '#ef4444' },
 ];
 
-const MotionBox = motion.create(Box);
 
 export const SmartFilters: React.FC = memo(() => {
   const theme = useTheme();

@@ -7,7 +7,6 @@ import {
   useTheme,
   alpha,
   Tooltip,
-  IconButton,
 } from '@mui/material';
 import {
   TrendingUp,

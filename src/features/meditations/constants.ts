@@ -21,11 +21,33 @@ export const MULTIPART_HEADERS = {
 /** Rotas administrativas das telas de meditação. */
 export const MEDITATION_ROUTES = {
   MANAGE: '/adm/meditacoes',
+  /** O id vai na URL: sem ele um F5 na edição perdia a meditação carregada. */
   EDIT: '/adm/editar-meditacao',
 } as const;
 
-/** Atraso aplicado à busca por tema na listagem. */
-export const MEDITATION_SEARCH_DEBOUNCE_MS = 300;
+/** Caminho da edição de uma meditação específica. */
+export const meditationEditPath = (id: string): string =>
+  `${MEDITATION_ROUTES.EDIT}/${id}`;
+
+/** Tamanho de página padrão e opções oferecidas na paginação. */
+export const MEDITATIONS_DEFAULT_LIMIT = 12;
+export const MEDITATIONS_PAGE_SIZE_OPTIONS = [12, 24, 48];
+
+/** Opções do filtro de período, na ordem em que aparecem. */
+export const MEDITATION_PERIOD_OPTIONS = [
+  { value: '', label: 'Todas' },
+  { value: 'current', label: 'Desta semana' },
+  { value: 'upcoming', label: 'Futuras' },
+  { value: 'past', label: 'Encerradas' },
+] as const;
+
+/** Opções de ordenação, na ordem em que aparecem. */
+export const MEDITATION_SORT_OPTIONS = [
+  { value: 'startDate:DESC', label: 'Período mais recente' },
+  { value: 'startDate:ASC', label: 'Período mais antigo' },
+  { value: 'topic:ASC', label: 'Tema (A–Z)' },
+  { value: 'topic:DESC', label: 'Tema (Z–A)' },
+] as const;
 
 /** Dias da semana da meditação, na ordem de exibição. */
 export const MEDITATION_WEEK_DAYS: readonly MeditationWeekDay[] = [

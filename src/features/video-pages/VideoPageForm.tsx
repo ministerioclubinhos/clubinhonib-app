@@ -16,16 +16,17 @@ import {
   useTheme,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
-import { RootState } from '@/store/slices';
 
 import VideoEditor from './components/VideoEditor';
 import { VIDEO_PAGE_ROUTES } from './constants';
-import { useUnsavedChangesGuard, useVideoPageForm } from './hooks';
-import { VideoPageResponse } from './types';
+import {
+  useUnsavedChangesGuard,
+  useVideoPageById,
+  useVideoPageForm,
+} from './hooks';
 
 interface VideoPageFormProps {
   /** True quando o admin cria a galeria a partir da galeria de modelos. */
@@ -40,15 +41,18 @@ export default function VideoPageForm({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const storedPage = useSelector(
-    (state: RootState) => state.video.videoData,
-  ) as VideoPageResponse | null;
+  // A página vem do id na URL. Antes ela vinha do store, que não é
+  // persistido: um F5 direto nesta rota abria o formulário vazio.
+  const { id } = useParams<{ id: string }>();
+  const {
+    page: loadedPage,
+    loading: loadingPage,
+    error: loadError,
+  } = useVideoPageById(fromTemplatePage ? undefined : id);
 
   const [hasVideoDraft, setHasVideoDraft] = useState(false);
 
-  // A edição depende da galeria carregada no store, que não é persistido: um F5
-  // direto nesta rota deixaria o formulário vazio e só falharia ao salvar.
-  const isMissingPage = !fromTemplatePage && !storedPage;
+  const isMissingPage = !fromTemplatePage && !loadingPage && !loadedPage;
 
   const {
     values,
@@ -61,9 +65,20 @@ export default function VideoPageForm({
     feedback,
     dismissFeedback,
     save,
-  } = useVideoPageForm({ isCreation: fromTemplatePage, page: storedPage });
+  } = useVideoPageForm({ isCreation: fromTemplatePage, page: loadedPage });
 
   useUnsavedChangesGuard(isDirty || hasVideoDraft);
+
+  if (loadingPage) {
+    return (
+      <Box
+        component="section"
+        sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   if (isMissingPage) {
     return (
@@ -81,8 +96,8 @@ export default function VideoPageForm({
             </Button>
           }
         >
-          <AlertTitle>Nenhuma galeria selecionada</AlertTitle>
-          Abra a galeria que você quer editar pela lista de páginas de vídeos.
+          <AlertTitle>Página não encontrada</AlertTitle>
+          {loadError || 'Abra a página que você quer editar pela lista.'}
         </Alert>
       </Box>
     );

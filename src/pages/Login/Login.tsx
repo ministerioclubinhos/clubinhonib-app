@@ -13,6 +13,8 @@ import {
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { FEATURE } from '@/features/feature-flags';
+import { useFeatureFlags } from '@/hooks';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 import api from '@/config/axiosConfig';
@@ -47,11 +49,11 @@ const Login: React.FC = () => {
     getFieldError,
     clearFieldError,
     setError,
-    isErrorCode,
   } = useApiError();
 
   const dispatch = useDispatch<AppDispatchType>();
   const navigate = useNavigate();
+  const { flags } = useFeatureFlags();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -72,7 +74,10 @@ const Login: React.FC = () => {
   const bootstrapAfterLogin = async (accessToken: string) => {
     try {
       api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-    } catch { }
+    } catch {
+      // O interceptor põe o token a cada requisição; este atalho é só para a
+      // chamada seguinte não esperar o próximo ciclo.
+    }
     try {
       await dispatch(fetchCurrentUser()).unwrap();
     } catch (e) {
@@ -257,14 +262,16 @@ const Login: React.FC = () => {
                 helperText={getFieldError('password')}
               />
 
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: -1 }}>
-                <Button
-                  onClick={() => navigate('/esqueci-senha')}
-                  sx={{ textTransform: 'none', fontSize: '0.875rem' }}
-                >
-                  Esqueci minha senha
-                </Button>
-              </Box>
+              {flags[FEATURE.PASSWORD_RECOVERY] && (
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: -1 }}>
+                  <Button
+                    onClick={() => navigate('/esqueci-senha')}
+                    sx={{ textTransform: 'none', fontSize: '0.875rem' }}
+                  >
+                    Esqueci minha senha
+                  </Button>
+                </Box>
+              )}
 
               <Button
                 type="submit"
@@ -278,18 +285,22 @@ const Login: React.FC = () => {
               </Button>
             </Box>
 
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
-            </Box>
+            {flags[FEATURE.GOOGLE_LOGIN] && (
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+              </Box>
+            )}
 
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={() => navigate('/cadastrar')}
-              sx={{ mt: 3, fontWeight: 'bold' }}
-            >
-              Cadastre-se
-            </Button>
+            {flags[FEATURE.PUBLIC_REGISTRATION] && (
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => navigate('/cadastrar')}
+                sx={{ mt: 3, fontWeight: 'bold' }}
+              >
+                Cadastre-se
+              </Button>
+            )}
 
             {verificationNeeded && verificationMessage && (
               <Alert severity="info" sx={{ mt: 3 }}>
