@@ -54,6 +54,7 @@ import { RootState } from "@/store/slices";
 import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from "@/hooks";
 import { FEATURE } from "@/features/feature-flags";
+import { coordinatorAllowedRoutes } from "@/constants/adminAccess";
 import type { FeatureKey } from "@/features/feature-flags";
 
 const drawerWidth = 240;
@@ -169,16 +170,9 @@ function AdminLayout() {
     []
   );
 
-  /** As rotas que um coordenador enxerga; a das crianças depende da flag. */
+  /** As rotas que um coordenador enxerga; a lista é a mesma do painel. */
   const coordinatorAllowed = useMemo(
-    () =>
-      new Set<string>([
-        ...(flags[FEATURE.CHILDREN_AREA] ? ["/adm/criancas"] : []),
-        "/adm/professores",
-        "/adm/clubinhos",
-        "/adm/pagelas",
-        "/adm/perfis",
-      ]),
+    () => coordinatorAllowedRoutes(flags),
     [flags],
   );
 

@@ -180,4 +180,7 @@ export type TeacherOption = {
   teacherProfileId: string;
   name: string;
   vinculado: boolean;
+  /** Onde o professor está hoje; `null` quando não tem turma. */
+  clubId: string | null;
+  clubNumber: number | null;
 };

@@ -25,6 +25,14 @@ type Props = {
   options: TeacherOption[];
   onChange: (ids: string[]) => void;
   name?: string;
+  /**
+   * Clubinhos que quem está editando alcança. Um professor que está em outro
+   * clubinho pode ser trazido — a API move o vínculo —, mas o coordenador só
+   * move quem já está sob a coordenação dele.
+   */
+  reachableClubIds?: Set<string>;
+  /** O clubinho sendo editado; nulo na criação. */
+  currentClubId?: string | null;
 };
 
 function normalize(s?: string | null) {
@@ -39,6 +47,8 @@ export default function TeachersSelect({
   options,
   onChange,
   name = "Selecionar professores",
+  reachableClubIds,
+  currentClubId = null,
 }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
@@ -58,13 +68,12 @@ export default function TeachersSelect({
     [value]
   );
 
-  const baseVisible = useMemo(
-    () =>
-      (options ?? []).filter(
-        (opt) => !opt.vinculado || safeValue.includes(opt.teacherProfileId)
-      ),
-    [options, safeValue]
-  );
+  /**
+   * Todo mundo aparece. Antes, quem já tinha turma sumia da lista, e não havia
+   * como descobrir por que aquele professor não estava lá — nem trazê-lo, que
+   * é uma operação legítima e que a API aceita.
+   */
+  const baseVisible = options ?? [];
 
   const q = normalize(query);
   const visibleOptions = useMemo(() => {
@@ -77,8 +86,31 @@ export default function TeachersSelect({
   }, [baseVisible, q]);
 
   const selectedSet = useMemo(() => new Set(safeValue), [safeValue]);
-  const isDisabled = (opt: TeacherOption) =>
-    !!opt.vinculado && !selectedSet.has(opt.teacherProfileId);
+
+  /** De onde o professor viria, quando vem de outro clubinho. */
+  const movingFrom = useCallback(
+    (opt: TeacherOption): number | null =>
+      opt.clubId && opt.clubId !== currentClubId ? opt.clubNumber : null,
+    [currentClubId]
+  );
+
+  /**
+   * Sem alcance ao clubinho atual do professor, trazê-lo tiraria a turma de
+   * outra coordenação — a API recusa, então a opção fica desabilitada com o
+   * motivo à vista.
+   */
+  const blockedReason = useCallback(
+    (opt: TeacherOption): string | null => {
+      if (selectedSet.has(opt.teacherProfileId)) return null;
+      if (!opt.clubId || opt.clubId === currentClubId) return null;
+      if (!reachableClubIds || reachableClubIds.has(opt.clubId)) return null;
+
+      return "Em um clubinho de outra coordenação";
+    },
+    [selectedSet, currentClubId, reachableClubIds]
+  );
+
+  const isDisabled = (opt: TeacherOption) => blockedReason(opt) !== null;
 
   const handleChange = useCallback(
     (event: SelectChangeEvent<string[]>) => {
@@ -242,7 +274,12 @@ export default function TeachersSelect({
               <ListItemText
                 primaryTypographyProps={{ noWrap: true }}
                 primary={t.name}
-                secondary={t.vinculado && !isSelected ? "vinculado" : undefined}
+                secondary={
+                  blockedReason(t) ??
+                  (movingFrom(t) !== null && !isSelected
+                    ? `No Clubinho ${movingFrom(t)} — será movido`
+                    : undefined)
+                }
                 secondaryTypographyProps={{ color: "text.secondary" }}
               />
             </MenuItem>

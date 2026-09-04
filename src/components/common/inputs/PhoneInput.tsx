@@ -77,9 +77,7 @@ export function PhoneInput<T extends FieldValues>({
   );
 }
 
-export function extractPhoneDigits(phone: string): string {
-  return phone?.replace(/\D/g, '') || '';
-}
+
 
 interface SimplePhoneInputProps {
   value: string;

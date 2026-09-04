@@ -12,7 +12,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { useTheme, alpha } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-import type { ChildResponseDto } from "@/features/children/types";
+import type { ChildResponse } from "@/features/children/types";
 import type { PagelaResponse, PagelaStatus } from "@/features/pagelas/types";
 import { EMPTY_VALUE } from "@/features/pagelas/constants";
 import { pagelaStatus, weekSearchIsMeaningful } from "@/features/pagelas/utils";
@@ -23,7 +23,7 @@ import { usePagelasBrowser } from "../hooks";
 import { formatDate } from "../utils";
 
 type Props = {
-  child: ChildResponseDto | null;
+  child: ChildResponse | null;
 };
 
 export function PagelasPanel({ child }: Props) {

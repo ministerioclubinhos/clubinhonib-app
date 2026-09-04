@@ -154,9 +154,24 @@ export type UpdateCompleteProfileRequest = {
 
 export type CreateCompleteProfileRequest = UpdateCompleteProfileRequest;
 
-/** Campo de ordenação aceito por `GET /profiles`. */
+/** Campo de ordenação aceito por `GET /profiles` (`ProfileSortField`). */
 export type ProfileSortField = "name" | "email" | "createdAt" | "birthDate";
 export type ProfileSortOrder = "ASC" | "DESC";
+
+/**
+ * Aniversariante do mês (`ProfileBirthdayResponseDto`).
+ *
+ * É o recorte mínimo de `GET /profiles/birthdays`: nem contato, nem
+ * preferências, nem dados pessoais além do dia do aniversário.
+ */
+export type ProfileBirthday = {
+  id: string;
+  name: string;
+  role: string;
+  /** `YYYY-MM-DD`. */
+  birthDate: string;
+  image: ProfileImage | null;
+};
 
 /** Query string de `GET /profiles` (`ProfilesQueryParams`). */
 export type ProfilesQueryParams = {
@@ -165,7 +180,7 @@ export type ProfilesQueryParams = {
   q?: string;
   name?: string;
   email?: string;
-  role?: string;
+  role?: UserRole;
   loveLanguages?: string;
   temperaments?: string;
   favoriteColor?: string;

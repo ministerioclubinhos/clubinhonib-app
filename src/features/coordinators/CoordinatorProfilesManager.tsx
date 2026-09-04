@@ -1,238 +1,237 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { Grid2 } from "@mui/material";
+import { useSelector } from "react-redux";
+
 import {
-  Box,
-  Alert,
-  CircularProgress,
-  useMediaQuery,
-  useTheme,
-  Snackbar,
-} from "@mui/material";
-import MuiAlert from "@mui/material/Alert";
-import type { SortingState } from "@tanstack/react-table";
-import CoordinatorToolbar from "./components/CoordinatorToolbar";
-import CoordinatorTable from "./components/CoordinatorTable";
-import CoordinatorCards from "./components/CoordinatorCards";
+  ListingLayout,
+  ListingToolbar,
+  type ListingFilter,
+} from "@/components/common/listing";
+import ConfirmDialog from "@/components/common/modal/ConfirmDialog";
+import type { RootState } from "@/store/slices";
+import { clubLinkPermissionsOf } from "@/utils/clubLinkPermissions";
+
+import CoordinatorCard from "./components/CoordinatorCard";
+import CoordinatorClubsDialog from "./components/CoordinatorClubsDialog";
 import CoordinatorViewDialog from "./components/CoordinatorViewDialog";
-import CoordinatorLinkDialog from "./components/CoordinatorLinkDialog";
 import {
+  useClubOptions,
+  useCoordinatorDetails,
   useCoordinatorMutations,
-  useCoordinatorProfiles,
-  useClubsIndex,
+  useCoordinators,
 } from "./hooks";
-import type { CoordinatorFilters, CoordinatorProfile } from "./types";
-import BackHeader from "@/components/common/header/BackHeader";
+import { ANY_FILTER, COORDINATORS_PAGE_SIZE_OPTIONS } from "./constants";
+import { clubLabel, coordinatorName } from "./utils";
+import type { CoordinatorClub, CoordinatorResponse } from "./types";
 
 export default function CoordinatorProfilesManager() {
-  const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const [pageSize, setPageSize] = React.useState<number>(12);
-  const [pageIndex, setPageIndex] = React.useState<number>(0);
-  const [sorting, setSorting] = React.useState<SortingState>([
-    { id: "updatedAt", desc: true },
-  ]);
-
-  const [filters, setFilters] = React.useState<CoordinatorFilters>({
-    searchString: "",
-    active: "all",
-    hasClubs: "all",
-    clubNumber: "",
-  });
-
-  const { rows, total, loading, error, setError, fetchPage, refreshOne } =
-    useCoordinatorProfiles(pageIndex, pageSize, sorting, filters);
-
-  const doRefresh = React.useCallback(() => {
-    fetchPage();
-  }, [fetchPage]);
+  const role = useSelector((state: RootState) => state.auth.user?.role);
+  const permissions = clubLinkPermissionsOf(role);
 
   const {
-    byNumber,
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  } = useCoordinators();
+
+  const {
+    clubs,
     loading: clubsLoading,
     error: clubsError,
     refresh: refreshClubs,
-  } = useClubsIndex();
-
-  const [snack, setSnack] = React.useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error" | "info" | "warning";
-  }>({ open: false, message: "", severity: "success" });
-
-  const showSnack = React.useCallback(
-    (message: string, severity: typeof snack.severity = "success") => {
-      setSnack({ open: true, message, severity });
-    },
-    []
-  );
-
-  const closeSnack = (_?: unknown, reason?: string) => {
-    if (reason === "clickaway") return;
-    setSnack((s) => ({ ...s, open: false }));
-  };
-
-  const [viewing, setViewing] = React.useState<CoordinatorProfile | null>(null);
-  const [linking, setLinking] = React.useState<CoordinatorProfile | null>(null);
-  const [linkNumber, setLinkNumber] = React.useState<string>("");
-  const [unlinkNumber, setUnlinkNumber] = React.useState<string>("");
+  } = useClubOptions();
 
   const {
-    dialogLoading,
-    dialogError,
-    setDialogError,
+    actionLoading,
+    actionError,
+    setActionError,
     assignClub,
     unassignClub,
-  } = useCoordinatorMutations(fetchPage, refreshOne);
+  } = useCoordinatorMutations(refresh);
 
-  const closeLinkDialog = React.useCallback(() => {
-    setLinking(null);
-    setDialogError("");
-    setLinkNumber("");
-    setUnlinkNumber("");
-  }, [setDialogError]);
+  const { fetchOne } = useCoordinatorDetails();
 
-  const onLinkConfirm = async () => {
-    if (!linking?.id || !linkNumber) return;
-    const num = Number(linkNumber);
-    const club = byNumber.get(num);
-    if (!num || !club) {
-      setDialogError("Clubinho não encontrado pelo número informado.");
-      return;
-    }
-    try {
-      const msg = await assignClub(linking.id, club.id);
-      showSnack(msg || "Club atribuído ao coordenador com sucesso", "success");
-      closeLinkDialog();
-    } catch {
-      showSnack("Falha ao vincular clubinho", "error");
-    }
+  const [viewing, setViewing] = useState<CoordinatorResponse | null>(null);
+  const [managing, setManaging] = useState<CoordinatorResponse | null>(null);
+  const [confirmUnassign, setConfirmUnassign] = useState<CoordinatorClub | null>(
+    null,
+  );
+
+  const toolbarFilters = useMemo<ListingFilter[]>(
+    () => [
+      {
+        id: "active",
+        label: "Situação",
+        value: filters.active === undefined ? ANY_FILTER : String(filters.active),
+        options: [
+          { value: ANY_FILTER, label: "Ativos e inativos" },
+          { value: "true", label: "Ativos" },
+          { value: "false", label: "Inativos" },
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            active: value === ANY_FILTER ? undefined : value === "true",
+          })),
+      },
+      {
+        id: "hasClubs",
+        label: "Vínculo",
+        value:
+          filters.hasClubs === undefined ? ANY_FILTER : String(filters.hasClubs),
+        options: [
+          { value: ANY_FILTER, label: "Com e sem clubinho" },
+          { value: "true", label: "Com clubinho" },
+          { value: "false", label: "Sem clubinho" },
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            hasClubs: value === ANY_FILTER ? undefined : value === "true",
+          })),
+      },
+    ],
+    [filters, setFilters],
+  );
+
+  const reloadAll = () => {
+    refresh();
+    void refreshClubs();
   };
 
-  const onUnlinkConfirm = async () => {
-    if (!linking?.id || !unlinkNumber) return;
-    const num = Number(unlinkNumber);
-    const club = byNumber.get(num);
-    if (!num || !club) {
-      setDialogError("Clubinho não encontrado pelo número informado.");
-      return;
-    }
-    try {
-      const msg = await unassignClub(linking.id, club.id);
-      showSnack(msg || "Club removido do coordenador com sucesso", "success");
-      closeLinkDialog();
-    } catch {
-      showSnack("Falha ao desvincular clubinho", "error");
-    }
+  /**
+   * O diálogo fica aberto durante as escritas, então o coordenador em edição é
+   * recarregado da API. Remontá-lo aqui dava números errados: um clubinho
+   * recém-vinculado aparecia com zero professores mesmo tendo turma.
+   */
+  const syncManaging = async (coordinatorId: string) => {
+    const fresh = await fetchOne(coordinatorId);
+    if (fresh) setManaging(fresh);
+
+    setViewing(null);
+    void refreshClubs();
   };
 
-  React.useEffect(() => {
-    doRefresh();
-  }, [doRefresh]);
-  React.useEffect(() => {
-    refreshClubs();
-  }, [refreshClubs]);
+  const handleAssign = async (clubId: string) => {
+    if (!managing) return;
+
+    const ok = await assignClub(managing.id, clubId);
+    if (ok) await syncManaging(managing.id);
+  };
+
+  const handleUnassign = async () => {
+    if (!managing || !confirmUnassign) return;
+
+    const ok = await unassignClub(managing.id, confirmUnassign.id);
+    if (ok) {
+      setConfirmUnassign(null);
+      await syncManaging(managing.id);
+    }
+  };
 
   return (
-    <Box
-      sx={{
-        px: { xs: 2, md: 0 },
-        py: { xs: 0, md: 0 },
-        minHeight: "100vh",
-        bgcolor: "#f9fafb"
+    <ListingLayout
+      title="Coordenadores"
+      summary={
+        total > 0
+          ? `${total} coordenador(es) encontrado(s)`
+          : "Nenhum coordenador para os filtros atuais"
+      }
+      toolbar={
+        <ListingToolbar
+          searchValue={search}
+          searchPlaceholder="Buscar por coordenador, e-mail, telefone ou professor…"
+          onSearchChange={setSearch}
+          filters={toolbarFilters}
+          onRefresh={reloadAll}
+        />
+      }
+      loading={loading}
+      error={error || clubsError || actionError}
+      onDismissError={() => {
+        setError("");
+        setActionError("");
       }}
+      itemCount={items.length}
+      emptyTitle="Nenhum coordenador encontrado"
+      emptySubtitle="Ajuste a busca ou os filtros para ver outros resultados."
+      pagination={{
+        page,
+        pageSize,
+        total,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+      }}
+      pageSizeOptions={COORDINATORS_PAGE_SIZE_OPTIONS}
+      overlays={
+        <>
+          <CoordinatorViewDialog
+            coordinator={viewing}
+            onClose={() => setViewing(null)}
+            onManageClubs={() => {
+              if (viewing) setManaging(viewing);
+            }}
+          />
+
+          <CoordinatorClubsDialog
+            open={!!managing}
+            coordinator={managing}
+            clubs={clubs}
+            clubsLoading={clubsLoading}
+            loading={actionLoading}
+            error={actionError}
+            canManage={permissions.canManageCoordinatorLinks}
+            onAssign={(clubId) => void handleAssign(clubId)}
+            onUnassign={setConfirmUnassign}
+            onClose={() => {
+              setManaging(null);
+              setActionError("");
+            }}
+          />
+
+          {/* Desvincular tira do coordenador o acesso às crianças da turma, e
+              a operação não se desfaz sozinha. */}
+          <ConfirmDialog
+            open={!!confirmUnassign}
+            title="Desvincular clubinho"
+            content={
+              confirmUnassign && managing
+                ? `Remover ${clubLabel(confirmUnassign)} de ${coordinatorName(
+                    managing,
+                  )}?`
+                : ""
+            }
+            confirmText="Desvincular"
+            confirmColor="warning"
+            loading={actionLoading}
+            onClose={() => setConfirmUnassign(null)}
+            onConfirm={handleUnassign}
+          />
+        </>
+      }
     >
-      <BackHeader title="Gerenciar Coordenadores" />
-      <CoordinatorToolbar
-        filters={filters}
-        onChange={(updater) => {
-          setFilters(updater);
-          setPageIndex(0);
-        }}
-        onRefresh={doRefresh}
-        isXs={isXs}
-      />
-
-      {(loading && !rows.length) || clubsLoading ? (
-        <Box textAlign="center" my={6}>
-          <CircularProgress />
-        </Box>
-      ) : null}
-
-      {(error || clubsError) && !(loading || clubsLoading) && (
-        <Alert
-          severity="error"
-          sx={{ mb: 2 }}
-          onClose={() => {
-            setError("");
-            setDialogError("");
-          }}
-        >
-          {error || clubsError}
-        </Alert>
-      )}
-
-      {isXs ? (
-        <CoordinatorCards
-          rows={rows}
-          total={total}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          setPageIndex={setPageIndex}
-          setPageSize={setPageSize}
-          sorting={sorting}
-          setSorting={setSorting}
-          onView={(c) => setViewing(c)}
-          onLink={(c) => setLinking(c)}
-        />
-      ) : (
-        <CoordinatorTable
-          rows={rows}
-          total={total}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          setPageIndex={setPageIndex}
-          setPageSize={setPageSize}
-          sorting={sorting}
-          setSorting={setSorting}
-          onView={(c) => setViewing(c)}
-          onLink={(c) => setLinking(c)}
-        />
-      )}
-
-      <CoordinatorViewDialog
-        open={!!viewing}
-        coordinator={viewing}
-        onClose={() => setViewing(null)}
-      />
-
-      <CoordinatorLinkDialog
-        open={!!linking}
-        coordinator={linking}
-        linkNumber={linkNumber}
-        unlinkNumber={unlinkNumber}
-        onChangeLink={setLinkNumber}
-        onChangeUnlink={setUnlinkNumber}
-        onLink={onLinkConfirm}
-        onUnlink={onUnlinkConfirm}
-        loading={dialogLoading}
-        error={dialogError}
-        onClose={closeLinkDialog}
-      />
-
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3500}
-        onClose={closeSnack}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <MuiAlert
-          elevation={6}
-          variant="filled"
-          severity={snack.severity}
-          onClose={closeSnack}
-        >
-          {snack.message}
-        </MuiAlert>
-      </Snackbar>
-    </Box>
+      {items.map((coordinator) => (
+        <Grid2 key={coordinator.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+          <CoordinatorCard
+            coordinator={coordinator}
+            disabled={actionLoading}
+            onView={() => setViewing(coordinator)}
+            canManage={permissions.canManageCoordinatorLinks}
+            onManageClubs={() => setManaging(coordinator)}
+          />
+        </Grid2>
+      ))}
+    </ListingLayout>
   );
 }

@@ -23,7 +23,7 @@ import { useChildrenBrowser, useChildPagelas } from "./hooks";
 import PagelaList from "./components/PagelaList";
 import PagelaQuickForm from "./components/PagelaQuickForm";
 import { apiFetchChild } from "../children/api";
-import type { ChildSimpleResponseDto, ChildResponseDto } from "../children/types";
+import type { ChildListItem, ChildResponse } from "../children/types";
 import type { Pagela } from "./types";
 import { getISOWeekYear } from "./utils";
 
@@ -44,7 +44,7 @@ const TEACHER_PROFILE_ID: string | null = null;
 export default function ChildPagelasPage() {
   const { childId = "" } = useParams();
   const nav = useNavigate();
-  const loc = useLocation() as { state?: { child?: ChildSimpleResponseDto } };
+  const loc = useLocation() as { state?: { child?: ChildListItem } };
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -60,7 +60,7 @@ export default function ChildPagelasPage() {
       (async () => {
         try {
           setFetchingChild(true);
-          const full: ChildResponseDto = await apiFetchChild(childId);
+          const full: ChildResponse = await apiFetchChild(childId);
           if (!cancelled) {
             setDirectChild({
               id: full.id,

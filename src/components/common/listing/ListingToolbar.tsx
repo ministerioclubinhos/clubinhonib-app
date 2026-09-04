@@ -32,6 +32,15 @@ type Props = {
   onRefresh: () => void;
   /** Ação principal da tela, quando existe. */
   action?: React.ReactNode;
+  /**
+   * Filtros que não cabem num seletor — intervalos de data, campos numéricos.
+   * Aparecem em uma segunda linha, e no celular dentro do painel recolhível.
+   */
+  extraFilters?: React.ReactNode;
+  /** Quantos desses filtros extras estão preenchidos, para o contador. */
+  extraFilterCount?: number;
+  /** Limpa busca e filtros de uma vez; sem isto o botão não aparece. */
+  onClearFilters?: () => void;
 };
 
 /** Alvo mínimo confortável para o dedo. */
@@ -53,13 +62,23 @@ export default function ListingToolbar({
   filters = [],
   onRefresh,
   action,
+  extraFilters,
+  extraFilterCount = 0,
+  onClearFilters,
 }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const activeFilterCount = filters.filter((filter) => filter.value !== "").length;
+  const activeFilterCount =
+    filters.filter((filter) => filter.value !== "").length + extraFilterCount;
   const showFilters = !isMobile || filtersOpen;
+  const hasFilters = filters.length > 0 || !!extraFilters;
+
+  const clearAll = () => {
+    filters.forEach((filter) => filter.onChange(""));
+    onClearFilters?.();
+  };
 
   const filterFields = filters.map((filter) => (
     <FormControl
@@ -131,7 +150,7 @@ export default function ListingToolbar({
           {/* No celular as ações ficam ao lado da busca, na mesma linha. */}
           {isMobile ? (
             <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
-              {filters.length > 0 ? (
+              {hasFilters ? (
                 <Tooltip title="Filtros">
                   <IconButton
                     onClick={() => setFiltersOpen((open) => !open)}
@@ -165,6 +184,21 @@ export default function ListingToolbar({
             {filterFields}
 
             <Stack direction="row" spacing={1} alignItems="center">
+              {extraFilters ? (
+                <Tooltip title="Mais filtros">
+                  <IconButton
+                    onClick={() => setFiltersOpen((open) => !open)}
+                    aria-label="Mais filtros"
+                    aria-expanded={filtersOpen}
+                    color={extraFilterCount > 0 ? "primary" : "default"}
+                  >
+                    <Badge badgeContent={extraFilterCount} color="primary">
+                      <FilterListIcon />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              ) : null}
+
               <Tooltip title="Recarregar">
                 <IconButton onClick={onRefresh} aria-label="Recarregar">
                   <RefreshIcon />
@@ -176,16 +210,36 @@ export default function ListingToolbar({
         ) : null}
       </Stack>
 
+      {/* No desktop os filtros extras abrem numa segunda linha; empilhados com
+          os seletores, eles empurrariam a grade para fora da primeira tela. */}
+      {!isMobile && extraFilters ? (
+        <Collapse in={filtersOpen} unmountOnExit>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            flexWrap="wrap"
+            useFlexGap
+            alignItems="center"
+            sx={{ mt: 1.5 }}
+          >
+            {extraFilters}
+            {activeFilterCount > 0 ? (
+              <Button size="small" type="button" onClick={clearAll}>
+                Limpar filtros
+              </Button>
+            ) : null}
+          </Stack>
+        </Collapse>
+      ) : null}
+
       {isMobile ? (
         <>
           <Collapse in={showFilters} unmountOnExit>
             <Stack spacing={1.5} sx={{ mt: 1.5 }}>
               {filterFields}
+              {extraFilters}
               {activeFilterCount > 0 ? (
-                <Button
-                  size="small"
-                  onClick={() => filters.forEach((filter) => filter.onChange(""))}
-                >
+                <Button size="small" type="button" onClick={clearAll}>
                   Limpar filtros
                 </Button>
               ) : null}

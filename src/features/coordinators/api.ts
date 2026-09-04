@@ -1,53 +1,73 @@
 import api from "@/config/axiosConfig";
-import type { CoordinatorProfile, ClubSimple, PageDto, CoordinatorSimpleOption } from "./types";
 
-export type ListCoordinatorsParams = {
-  page: number; 
-  limit: number;
-  sort?: "updatedAt" | "createdAt" | "name";
-  order?: "asc" | "desc";
-  q?: string;
-  active?: boolean;
-  hasClubs?: boolean;
-  clubNumber?: number;
-  searchString?: string;
-};
+import { COORDINATORS_ENDPOINT } from "./constants";
+import { buildCoordinatorsQuery } from "./utils";
+import type {
+  ApiMessage,
+  CoordinatorFilters,
+  CoordinatorResponse,
+  CoordinatorSimpleOption,
+  CoordinatorSortField,
+  CoordinatorSortOrder,
+  PageResponse,
+} from "./types";
 
-export type ApiMessage = { message?: string };
+/** Página de coordenadores, com busca e filtros aplicados pela API. */
+export async function apiFetchCoordinators(
+  args: {
+    page: number;
+    limit: number;
+    filters?: CoordinatorFilters;
+    sort?: CoordinatorSortField;
+    order?: CoordinatorSortOrder;
+  },
+  options?: { signal?: AbortSignal },
+): Promise<PageResponse<CoordinatorResponse>> {
+  const { data } = await api.get<PageResponse<CoordinatorResponse>>(
+    COORDINATORS_ENDPOINT,
+    { params: buildCoordinatorsQuery(args), signal: options?.signal },
+  );
 
-export async function apiListCoordinators(params: ListCoordinatorsParams) {
-  const { data } = await api.get<PageDto<CoordinatorProfile>>(
-    "/coordinator-profiles",
-    { params }
+  return data;
+}
+
+export async function apiFetchCoordinator(
+  id: string,
+): Promise<CoordinatorResponse> {
+  const { data } = await api.get<CoordinatorResponse>(
+    `${COORDINATORS_ENDPOINT}/${id}`,
   );
   return data;
 }
 
-export async function apiGetCoordinator(coordinatorId: string) {
-  const { data } = await api.get<CoordinatorProfile>(
-    `/coordinator-profiles/${coordinatorId}`
+/** Coordenadores no formato usado pelos seletores de formulário. */
+export async function apiListCoordinatorsSimple(): Promise<
+  CoordinatorSimpleOption[]
+> {
+  const { data } = await api.get<CoordinatorSimpleOption[]>(
+    `${COORDINATORS_ENDPOINT}/simple`,
   );
   return data;
 }
 
 export async function apiAssignClub(
   coordinatorId: string,
-  clubId: string
+  clubId: string,
 ): Promise<ApiMessage> {
   const { data } = await api.patch<ApiMessage>(
-    `/coordinator-profiles/${coordinatorId}/assign-club`,
-    { clubId }
+    `${COORDINATORS_ENDPOINT}/${coordinatorId}/assign-club`,
+    { clubId },
   );
   return data;
 }
 
 export async function apiUnassignClub(
   coordinatorId: string,
-  clubId: string
+  clubId: string,
 ): Promise<ApiMessage> {
   const { data } = await api.patch<ApiMessage>(
-    `/coordinator-profiles/${coordinatorId}/unassign-club`,
-    { clubId }
+    `${COORDINATORS_ENDPOINT}/${coordinatorId}/unassign-club`,
+    { clubId },
   );
   return data;
 }
@@ -55,22 +75,11 @@ export async function apiUnassignClub(
 export async function apiMoveClub(
   fromCoordinatorId: string,
   clubId: string,
-  toCoordinatorProfileId: string
+  toCoordinatorProfileId: string,
 ): Promise<ApiMessage> {
   const { data } = await api.patch<ApiMessage>(
-    `/coordinator-profiles/${fromCoordinatorId}/move-club`,
-    { clubId, toCoordinatorProfileId }
+    `${COORDINATORS_ENDPOINT}/${fromCoordinatorId}/move-club`,
+    { clubId, toCoordinatorProfileId },
   );
-  return data;
-}
-
-export async function apiListClubsSimple() {
-  const { data } = await api.get<ClubSimple[]>("/clubs/all");
-  return data;
-}
-
-/** Coordenadores no formato usado pelos seletores de formulário. */
-export async function apiListCoordinatorsSimple(): Promise<CoordinatorSimpleOption[]> {
-  const { data } = await api.get<CoordinatorSimpleOption[]>("/coordinator-profiles/simple");
   return data;
 }

@@ -93,8 +93,6 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({
         gaLeaderContact: digitsOnly(formData.gaLeaderContact) || undefined,
       };
 
-      console.log('PersonalDataForm Payload:', payload);
-
       if (Object.keys(payload).length === 0) {
         // Se realmente estiver tudo vazio (o que é difícil dado que birthDate pode ser string vazia pra limpar),
         // mas vamos deixar passar se tiver valor.

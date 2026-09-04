@@ -1,10 +1,27 @@
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
+import { useAbortController, useDebouncedValue } from "@/hooks";
 import type { RootState } from "@/store/slices";
+import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
 
-import { PROFILE_REQUIRED_PERSONAL_DATA, PROFILE_REQUIRED_PREFERENCES } from "./constants";
-import type { MyProfile, PersonalData, UserPreferences } from "./types";
+import { apiFetchProfileBirthdays, apiFetchProfiles } from "./api";
+import {
+  PROFILES_DEFAULT_LIMIT,
+  PROFILES_DEFAULT_SORT,
+  PROFILE_REQUIRED_PERSONAL_DATA,
+  PROFILE_REQUIRED_PREFERENCES,
+} from "./constants";
+import { splitBirthdaysByProximity } from "./utils";
+import type {
+  CompleteProfile,
+  MyProfile,
+  PersonalData,
+  ProfileBirthday,
+  ProfilesPaginationMeta,
+  ProfilesQueryParams,
+  UserPreferences,
+} from "./types";
 
 /** Pendência do perfil, com o atalho para onde resolvê-la. */
 export interface ProfileAlert {
@@ -92,4 +109,134 @@ export function useProfileAlerts(): ProfileAlert[] {
 
     return alerts;
   }, [user, emailVerificationAlert]);
+}
+
+/** Filtros da listagem administrativa de perfis. */
+export type ProfilesFilters = Pick<
+  ProfilesQueryParams,
+  "role" | "loveLanguages" | "temperaments" | "favoriteColor"
+>;
+
+/** Ordenação da listagem administrativa de perfis. */
+export type ProfilesSort = Pick<ProfilesQueryParams, "sortBy" | "order">;
+
+/** Página de perfis, com busca e filtros resolvidos pela API. */
+export function useProfiles() {
+  const [items, setItems] = useState<CompleteProfile[]>([]);
+  const [meta, setMeta] = useState<ProfilesPaginationMeta | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PROFILES_DEFAULT_LIMIT);
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<ProfilesFilters>({});
+  const [sort, setSort] = useState<ProfilesSort>({
+    sortBy: PROFILES_DEFAULT_SORT,
+    order: "ASC",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
+
+  useEffect(() => setPage(1), [debouncedSearch, filters, sort, pageSize]);
+
+  useEffect(() => {
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiFetchProfiles(
+          {
+            page,
+            limit: pageSize,
+            q: debouncedSearch || undefined,
+            ...filters,
+            ...sort,
+          },
+          { signal: controller.signal },
+        );
+        setItems(data.items);
+        setMeta(data.meta);
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, "Erro ao carregar os perfis"));
+        setItems([]);
+        setMeta(null);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [
+    page,
+    pageSize,
+    debouncedSearch,
+    filters,
+    sort,
+    reloadToken,
+    nextController,
+  ]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  return {
+    items,
+    meta,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    sort,
+    setSort,
+    loading,
+    error,
+    setError,
+    refresh,
+  };
+}
+
+/**
+ * Aniversariantes do mês, já separados por proximidade.
+ *
+ * A faixa é acessória: se a chamada falhar, a listagem segue sem ela.
+ */
+export function useProfileBirthdays(reloadToken = 0) {
+  const [birthdays, setBirthdays] = useState<ProfileBirthday[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    const run = async () => {
+      setLoading(true);
+      try {
+        const data = await apiFetchProfileBirthdays();
+        if (active) setBirthdays(data);
+      } catch {
+        if (active) setBirthdays([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void run();
+    return () => {
+      active = false;
+    };
+  }, [reloadToken]);
+
+  const groups = useMemo(
+    () => splitBirthdaysByProximity(birthdays),
+    [birthdays],
+  );
+
+  return { ...groups, loading };
 }

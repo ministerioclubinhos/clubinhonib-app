@@ -11,7 +11,7 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
-import { ChildSimpleResponseDto } from "@/features/children/types";
+import { ChildListItem } from "@/features/children/types";
 import DecisionModal from "./DecisionModal";
 import { FEATURE } from "@/features/feature-flags";
 import { useFeatureEnabled } from "@/hooks";
@@ -36,12 +36,12 @@ export default function ChildCard({
   onRefresh,
   onToggleActive
 }: {
-  child: ChildSimpleResponseDto;
-  onClick: (c: ChildSimpleResponseDto) => void;
-  onEdit?: (c: ChildSimpleResponseDto) => void;
-  onDelete?: (c: ChildSimpleResponseDto) => void;
+  child: ChildListItem;
+  onClick: (c: ChildListItem) => void;
+  onEdit?: (c: ChildListItem) => void;
+  onDelete?: (c: ChildListItem) => void;
   onRefresh?: () => void;
-  onToggleActive?: (c: ChildSimpleResponseDto) => void;
+  onToggleActive?: (c: ChildListItem) => void;
 }) {
   const theme = useTheme();
   const colors = genderPastel(child.name || child.id, child.gender);

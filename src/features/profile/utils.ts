@@ -3,6 +3,7 @@ import type {
   ChangePasswordRequest,
   MyProfile,
   PersonalDataInput,
+  ProfileBirthday,
   ProfileClub,
   UpdateCompleteProfileRequest,
   UpdateMyAccountRequest,
@@ -303,4 +304,38 @@ export const calculateAge = (dateStr?: string): number | null => {
         console.debug('calculateAge: Date parsing error', e);
         return null;
     }
+};
+
+/**
+ * Aniversariantes do mês separados por proximidade.
+ *
+ * A tela montava isto varrendo mil perfis completos; agora a API devolve só
+ * quem faz aniversário no mês e a separação acontece aqui.
+ */
+export const splitBirthdaysByProximity = (
+    birthdays: ProfileBirthday[],
+): {
+    today: ProfileBirthday[];
+    week: ProfileBirthday[];
+    month: ProfileBirthday[];
+} => {
+    const today: ProfileBirthday[] = [];
+    const week: ProfileBirthday[] = [];
+    const month: ProfileBirthday[] = [];
+
+    birthdays.forEach((profile) => {
+        const status = getBirthdayStatus(profile.birthDate);
+        if (status === 'today') today.push(profile);
+        else if (status === 'this-week') week.push(profile);
+        else if (status === 'this-month') month.push(profile);
+    });
+
+    const byProximity = (a: ProfileBirthday, b: ProfileBirthday) =>
+        (getDaysUntilBirthday(a.birthDate) ?? Number.MAX_SAFE_INTEGER) -
+        (getDaysUntilBirthday(b.birthDate) ?? Number.MAX_SAFE_INTEGER);
+
+    week.sort(byProximity);
+    month.sort(byProximity);
+
+    return { today, week, month };
 };

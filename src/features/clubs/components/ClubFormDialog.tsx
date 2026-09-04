@@ -23,6 +23,8 @@ import {
 import { useSelector } from "react-redux";
 
 import { selectIsAdmin } from "@/store/selectors/routeSelectors";
+import type { RootState } from "@/store/slices";
+import { clubLinkPermissionsOf } from "@/utils/clubLinkPermissions";
 
 import AddressFields from "./form/AddressFields";
 import CoordinatorSelect from "./form/CoordinatorSelect";
@@ -47,6 +49,12 @@ type Props = {
   loading: boolean;
   coordinatorOptions: CoordinatorOption[];
   teacherOptions: TeacherOption[];
+  /** Clubinhos que quem está editando alcança; limita de onde trazer professor. */
+  reachableClubIds?: Set<string>;
+  /** O clubinho sendo editado; nulo na criação. */
+  clubId?: string | null;
+  /** Coordenador que o clubinho tinha ao abrir o formulário. */
+  initialCoordinatorProfileId?: string | null;
 };
 
 export default function ClubFormDialog({
@@ -60,10 +68,30 @@ export default function ClubFormDialog({
   loading,
   coordinatorOptions,
   teacherOptions,
+  reachableClubIds,
+  clubId = null,
+  initialCoordinatorProfileId = null,
 }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const role = useSelector((state: RootState) => state.auth.user?.role);
+  const permissions = clubLinkPermissionsOf(role);
   const isAdmin = useSelector(selectIsAdmin);
+
+  /**
+   * Quem sai do clubinho quando a escolha muda. Trocar o coordinador aqui é uma
+   * edição visível, mas o nome de quem perde a turma precisa estar à vista.
+   */
+  const replacedCoordinatorName = React.useMemo(() => {
+    const current = initialCoordinatorProfileId;
+    if (!current || current === value?.coordinatorProfileId) return undefined;
+
+    const name = coordinatorOptions.find(
+      (option) => option.coordinatorProfileId === current,
+    )?.name;
+
+    return name ? `Substitui ${name} na coordenação deste clubinho.` : undefined;
+  }, [initialCoordinatorProfileId, value?.coordinatorProfileId, coordinatorOptions]);
   const isCreate = mode === "create";
 
   const teachersKey = React.useMemo(
@@ -169,12 +197,16 @@ export default function ClubFormDialog({
             />
           </Grid2>
 
-          {isAdmin && (
+          {/* Definir o coordenador é atributo do clubinho, e o valor atual está
+              à vista — por isso a troca acontece aqui, enquanto a tela de
+              coordenadores recusa: lá o dono atual não aparece. */}
+          {permissions.canManageCoordinatorLinks && (
             <Grid2 size={12}>
               <CoordinatorSelect
                 value={value.coordinatorProfileId}
                 options={coordinatorOptions}
                 onChange={(coordinatorProfileId) => patch({ coordinatorProfileId })}
+                helperText={replacedCoordinatorName}
               />
             </Grid2>
           )}
@@ -209,6 +241,8 @@ export default function ClubFormDialog({
               key={teachersKey}
               value={value.teacherProfileIds}
               options={teacherOptions}
+              reachableClubIds={reachableClubIds}
+              currentClubId={clubId}
               onChange={(teacherProfileIds) => patch({ teacherProfileIds })}
             />
           </Grid2>

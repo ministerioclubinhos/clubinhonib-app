@@ -1,126 +1,148 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  apiCreateChild, apiDeleteChild, apiFetchChild, apiFetchChildren, apiUpdateChild, apiToggleChildActive
-} from "./api";
-import { ChildFilters, ChildResponseDto, ChildSort, CreateChildForm, EditChildForm } from "./types";
-import { extractErrorMessage } from "@/utils/apiError";
 
-export function useChildren(pageIndex: number, pageSize: number, sorting: ChildSort, filters: ChildFilters) {
-  const [rows, setRows] = useState<ChildResponseDto[]>([]);
+import { useAbortController, useDebouncedValue } from "@/hooks";
+import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
+
+import {
+  apiCreateChild,
+  apiDeleteChild,
+  apiFetchChildren,
+  apiToggleChildActive,
+  apiUpdateChild,
+} from "./api";
+import { CHILDREN_DEFAULT_LIMIT } from "./constants";
+import type { ChildFilters, ChildFormValues, ChildResponse } from "./types";
+import { toCreateChildRequest, toUpdateChildRequest } from "./utils";
+
+/** Página de crianças, com busca e filtros resolvidos pela API. */
+export function useChildren() {
+  const [items, setItems] = useState<ChildResponse[]>([]);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(CHILDREN_DEFAULT_LIMIT);
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<Omit<ChildFilters, "searchString">>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const fetchPage = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await apiFetchChildren({
-        page: pageIndex + 1,
-        limit: pageSize,
-        filters,
-        sort: sorting,
-      });
-      const meta = (data as any)?.meta;
-      setRows(Array.isArray((data as any)?.data) ? (data as any).data : []);
-      setTotal(Number(meta?.totalItems ?? (data as any)?.total ?? 0));
-    } catch (err: unknown) {
-      setError(extractErrorMessage(err, "Erro ao listar crianças"));
-    } finally {
-      setLoading(false);
-    }
-  }, [pageIndex, pageSize, filters, sorting]);
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
 
-  useEffect(() => { fetchPage(); }, [fetchPage]);
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
 
-  return { rows, total, loading, error, setError, fetchPage };
+  useEffect(() => {
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiFetchChildren(
+          {
+            page,
+            limit: pageSize,
+            filters: { ...filters, searchString: debouncedSearch || undefined },
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.data) ? data.data : []);
+        setTotal(Number(data?.meta?.totalItems ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, "Erro ao carregar as crianças"));
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  return {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  };
 }
 
-export function useChildDetails() {
-  const [viewing, setViewing] = useState<ChildResponseDto | null>(null);
-  const [loading, setLoading] = useState(false);
+/** Escritas da tela. Cada operação devolve se deu certo. */
+export function useChildMutations(refresh: () => void) {
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState("");
 
-  const fetchChild = useCallback(async (id: string) => {
-    setLoading(true);
-    try {
-      setViewing(await apiFetchChild(id));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const run = useCallback(
+    async (action: () => Promise<void>, fallbackMessage: string) => {
+      setActionLoading(true);
+      setActionError("");
+      try {
+        await action();
+        refresh();
+        return true;
+      } catch (err: unknown) {
+        setActionError(extractErrorMessage(err, fallbackMessage));
+        return false;
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [refresh],
+  );
 
-  return { viewing, setViewing, loading, fetchChild };
-}
+  const createChild = useCallback(
+    (values: ChildFormValues) =>
+      run(async () => {
+        await apiCreateChild(toCreateChildRequest(values));
+      }, "Erro ao cadastrar a criança"),
+    [run],
+  );
 
-/**
- * Escritas da tela de crianças.
- *
- * Cada operação devolve se deu certo: sem isso a tela fechava o formulário
- * mesmo quando a API recusava, e a mensagem de erro nunca chegava a aparecer.
- */
-export function useChildMutations(refetch: (page: number, limit: number, filters?: ChildFilters, sort?: ChildSort) => Promise<void> | void) {
-  const [dialogLoading, setDialogLoading] = useState(false);
-  const [dialogError, setDialogError] = useState("");
+  const updateChild = useCallback(
+    (id: string, values: ChildFormValues) =>
+      run(async () => {
+        await apiUpdateChild(id, toUpdateChildRequest(values));
+      }, "Erro ao atualizar a criança"),
+    [run],
+  );
 
-  const createChild = useCallback(async (payload: CreateChildForm, page: number, limit: number, filters?: ChildFilters, sort?: ChildSort) => {
-    setDialogLoading(true);
-    setDialogError("");
-    try {
-      await apiCreateChild(payload);
-      await refetch(page, limit, filters, sort);
-      return true;
-    } catch (err: unknown) {
-      setDialogError(extractErrorMessage(err, "Erro ao criar criança"));
-      return false;
-    } finally {
-      setDialogLoading(false);
-    }
-  }, [refetch]);
+  const deleteChild = useCallback(
+    (id: string) =>
+      run(async () => {
+        await apiDeleteChild(id);
+      }, "Erro ao remover a criança"),
+    [run],
+  );
 
-  const updateChild = useCallback(async (id: string, payload: Omit<EditChildForm, "id">, page: number, limit: number, filters?: ChildFilters, sort?: ChildSort) => {
-    setDialogLoading(true);
-    setDialogError("");
-    try {
-      await apiUpdateChild(id, payload);
-      await refetch(page, limit, filters, sort);
-      return true;
-    } catch (err: unknown) {
-      setDialogError(extractErrorMessage(err, "Erro ao atualizar criança"));
-      return false;
-    } finally {
-      setDialogLoading(false);
-    }
-  }, [refetch]);
+  const toggleActive = useCallback(
+    (id: string) =>
+      run(async () => {
+        await apiToggleChildActive(id);
+      }, "Erro ao alterar a situação da criança"),
+    [run],
+  );
 
-  const deleteChild = useCallback(async (id: string, page: number, limit: number, filters?: ChildFilters, sort?: ChildSort) => {
-    setDialogLoading(true);
-    setDialogError("");
-    try {
-      await apiDeleteChild(id);
-      await refetch(page, limit, filters, sort);
-      return true;
-    } catch (err: unknown) {
-      setDialogError(extractErrorMessage(err, "Erro ao remover criança"));
-      return false;
-    } finally {
-      setDialogLoading(false);
-    }
-  }, [refetch]);
-
-  const toggleActive = useCallback(async (id: string, page: number, limit: number, filters?: ChildFilters, sort?: ChildSort) => {
-    setDialogLoading(true);
-    setDialogError("");
-    try {
-      await apiToggleChildActive(id);
-      await refetch(page, limit, filters, sort);
-      return true;
-    } catch (err: unknown) {
-      setDialogError(extractErrorMessage(err, "Erro ao alterar status da criança"));
-      return false;
-    } finally {
-      setDialogLoading(false);
-    }
-  }, [refetch]);
-
-  return { dialogLoading, dialogError, setDialogError, createChild, updateChild, deleteChild, toggleActive };
+  return {
+    actionLoading,
+    actionError,
+    setActionError,
+    createChild,
+    updateChild,
+    deleteChild,
+    toggleActive,
+  };
 }

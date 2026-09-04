@@ -54,7 +54,8 @@ export default function ClubsManager() {
   );
 
   const { viewing, setViewing, loading: viewingLoading, fetchClub } = useClubDetails();
-  const { coordinators, teachers, reloadOptions } = useClubFormOptions();
+  const { coordinators, teachers, reachableClubIds, reloadOptions } =
+    useClubFormOptions();
 
   const refresh = useCallback(async () => {
     await fetchPage();
@@ -72,9 +73,12 @@ export default function ClubsManager() {
   } = useClubMutations(refresh);
 
   const [creating, setCreating] = useState<ClubFormValues | null>(null);
-  const [editing, setEditing] = useState<{ id: string; values: ClubFormValues } | null>(
-    null,
-  );
+  const [editing, setEditing] = useState<{
+    id: string;
+    values: ClubFormValues;
+    /** Coordenador que o clubinho tinha ao abrir o formulário. */
+    initialCoordinatorProfileId: string | null;
+  } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<ClubResponse | null>(null);
   const [confirmToggleActive, setConfirmToggleActive] = useState<ClubResponse | null>(
     null,
@@ -92,7 +96,12 @@ export default function ClubsManager() {
 
   const startEdit = (club: ClubResponse) => {
     setDialogError("");
-    setEditing({ id: club.id, values: toClubFormValues(club) });
+    const values = toClubFormValues(club);
+    setEditing({
+      id: club.id,
+      values,
+      initialCoordinatorProfileId: values.coordinatorProfileId,
+    });
   };
 
   // O formulário só fecha quando a API aceita: se fechasse antes, o erro
@@ -200,6 +209,7 @@ export default function ClubsManager() {
         loading={dialogLoading}
         coordinatorOptions={coordinators}
         teacherOptions={teachers}
+        reachableClubIds={reachableClubIds}
       />
 
       <ClubFormDialog
@@ -218,6 +228,9 @@ export default function ClubsManager() {
         loading={dialogLoading}
         coordinatorOptions={coordinators}
         teacherOptions={teachers}
+        reachableClubIds={reachableClubIds}
+        clubId={editing?.id ?? null}
+        initialCoordinatorProfileId={editing?.initialCoordinatorProfileId ?? null}
       />
 
       <DeleteConfirmDialog

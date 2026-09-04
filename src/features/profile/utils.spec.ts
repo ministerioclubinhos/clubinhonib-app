@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { UserRole } from "@/types/shared";
 
@@ -9,10 +9,11 @@ import {
   formatDateOnly,
   profileClubs,
   requiresCurrentPassword,
+  splitBirthdaysByProximity,
   validateAccountForm,
   validatePasswordForm,
 } from "./utils";
-import type { MyProfile } from "./types";
+import type { MyProfile, ProfileBirthday } from "./types";
 
 /**
  * Trava o formato do que sai daqui para a API.
@@ -131,4 +132,52 @@ describe("profile utils", () => {
     expect(formatDateOnly("1990-05-20")).toBe("20/05/1990");
     expect(formatDateOnly(null)).toBe("—");
   });
+});
+
+describe('splitBirthdaysByProximity', () => {
+    const birthday = (id: string, birthDate: string): ProfileBirthday => ({
+        id,
+        name: `Pessoa ${id}`,
+        role: 'teacher',
+        birthDate,
+        image: null,
+    });
+
+    beforeEach(() => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-05-10T12:00:00'));
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('separa hoje, a semana e o resto do mês', () => {
+        const { today, week, month } = splitBirthdaysByProximity([
+            birthday('a', '1990-05-10'),
+            birthday('b', '1990-05-12'),
+            birthday('c', '1990-05-28'),
+        ]);
+
+        expect(today.map((p) => p.id)).toEqual(['a']);
+        expect(week.map((p) => p.id)).toEqual(['b']);
+        expect(month.map((p) => p.id)).toEqual(['c']);
+    });
+
+    it('ordena por proximidade dentro de cada faixa', () => {
+        const { month } = splitBirthdaysByProximity([
+            birthday('longe', '1990-05-30'),
+            birthday('perto', '1990-05-20'),
+        ]);
+
+        expect(month.map((p) => p.id)).toEqual(['perto', 'longe']);
+    });
+
+    it('devolve faixas vazias quando não há aniversariante', () => {
+        const { today, week, month } = splitBirthdaysByProximity([]);
+
+        expect(today).toEqual([]);
+        expect(week).toEqual([]);
+        expect(month).toEqual([]);
+    });
 });

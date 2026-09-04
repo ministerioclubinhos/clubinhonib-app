@@ -47,6 +47,7 @@ import { RootState } from "@/store/slices";
 import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from "@/hooks";
 import { FEATURE } from "@/features/feature-flags";
+import { coordinatorAllowedRoutes } from "@/constants/adminAccess";
 import type { FeatureKey } from "@/features/feature-flags";
 
 type SectionId = "all" | "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "interacoes" | "operacional";
@@ -133,14 +134,10 @@ export default function AdminDashboardPage() {
   }, [isMobile]);
 
   const normalizedQuery = query.trim().toLowerCase();
-  const coordinatorAllowed = new Set<string>([
-    ...(flags[FEATURE.CHILDREN_AREA] ? ["/adm/criancas"] : []),
-    "/adm/professores",
-    "/adm/clubinhos",
-    "/adm/pagelas",
-    "/adm/usuarios",
-    "/adm/perfis",
-  ]);
+  const coordinatorAllowed = React.useMemo(
+    () => coordinatorAllowedRoutes(flags),
+    [flags],
+  );
 
   /**
    * Um card aparece quando as duas condições passam: a flag do recurso está

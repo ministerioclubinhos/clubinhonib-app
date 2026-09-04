@@ -1,4 +1,4 @@
-import type { ChildResponseDto } from "@/features/children/types";
+import type { ChildResponse } from "@/features/children/types";
 import type { ClubResponse } from "@/features/clubs/types";
 
 /**
@@ -15,7 +15,7 @@ export type PagelaBrowseStep = "clubs" | "children" | "pagelas";
 /** O que a tela tem selecionado no momento. */
 export type PagelaSelection = {
   club: ClubResponse | null;
-  child: ChildResponseDto | null;
+  child: ChildResponse | null;
 };
 
 /**

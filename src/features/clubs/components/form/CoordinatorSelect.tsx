@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 import {
   FormControl,
+  FormHelperText,
   InputLabel,
   Select,
   MenuItem,
@@ -23,6 +24,8 @@ type Props = {
   options: CoordinatorOption[];
   onChange: (val: string | null) => void;
   label?: string;
+  /** Aviso exibido abaixo do campo — por exemplo, quem perde a coordenação. */
+  helperText?: string;
 };
 
 function normalize(s?: string | null) {
@@ -37,6 +40,7 @@ export default function CoordinatorSelect({
   options,
   onChange,
   label = "Coordenador (opcional)",
+  helperText,
 }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
@@ -166,6 +170,7 @@ export default function CoordinatorSelect({
           ))
         )}
       </Select>
+      {helperText ? <FormHelperText>{helperText}</FormHelperText> : null}
     </FormControl>
   );
 }

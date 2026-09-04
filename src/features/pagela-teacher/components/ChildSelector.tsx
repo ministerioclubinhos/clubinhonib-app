@@ -3,13 +3,13 @@ import {
   Autocomplete, Avatar, Box, CircularProgress, ListItem, ListItemAvatar,
   ListItemText, TextField, Typography, Chip
 } from "@mui/material";
-import { ChildSimpleResponseDto } from "@/features/children/types";
+import { ChildListItem } from "@/features/children/types";
 
 type Props = {
   loading: boolean;
-  items: ChildSimpleResponseDto[];
-  value: ChildSimpleResponseDto | null;
-  onChange: (child: ChildSimpleResponseDto | null) => void;
+  items: ChildListItem[];
+  value: ChildListItem | null;
+  onChange: (child: ChildListItem | null) => void;
   onSearch: (q: string) => void;
 };
 

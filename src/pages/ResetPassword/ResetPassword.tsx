@@ -57,7 +57,7 @@ const ResetPassword: React.FC = () => {
             try {
                 const response = await api.get(
                     `/auth/reset-password/validate?token=${token}`,
-                    { skipGlobalError: true } as any
+                    { skipGlobalError: true }
                 );
                 if (response.data.valid) {
                     setIsValidToken(true);
@@ -97,7 +97,7 @@ const ResetPassword: React.FC = () => {
             await api.post(
                 '/auth/reset-password',
                 { token, newPassword },
-                { skipGlobalError: true } as any
+                { skipGlobalError: true }
             );
             setSuccessMessage(AUTH_SUCCESS_MESSAGES.PASSWORD_CHANGED);
             setTimeout(() => navigate('/login'), 3000);

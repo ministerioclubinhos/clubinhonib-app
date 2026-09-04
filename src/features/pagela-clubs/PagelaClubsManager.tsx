@@ -24,7 +24,7 @@ import { PagelasPanel } from "./components/PagelasPanel";
 import { ChildrenPanel } from "./components/ChildrenPanel";
 
 import type { ClubResponse } from "@/features/clubs/types";
-import type { ChildResponseDto } from "@/features/children/types";
+import type { ChildResponse } from "@/features/children/types";
 import BackHeader from "@/components/common/header/BackHeader";
 import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
@@ -42,7 +42,7 @@ export default function PagelaClubsManager() {
   const scope = viewerScopeOf(isAdmin);
 
   const [selectedClub, setSelectedClub] = useState<ClubResponse | null>(null);
-  const [selectedChild, setSelectedChild] = useState<ChildResponseDto | null>(null);
+  const [selectedChild, setSelectedChild] = useState<ChildResponse | null>(null);
   const [mobileStep, setMobileStep] = useState<PagelaBrowseStep>("clubs");
 
   useEffect(() => {

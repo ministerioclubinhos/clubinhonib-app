@@ -1,4 +1,6 @@
-import type { ProfileSortField } from "./types";
+import { UserRole } from "@/types/shared";
+
+import type { ProfileSortField, ProfileSortOrder } from "./types";
 
 /**
  * Abas da tela `/meu-perfil`, na ordem em que aparecem.
@@ -37,6 +39,29 @@ export const PROFILES_PAGE_SIZE_OPTIONS = [12, 24, 48];
 
 /** Ordenação inicial da listagem. */
 export const PROFILES_DEFAULT_SORT: ProfileSortField = "name";
+
+/** Papéis oferecidos como filtro rápido; `all` limpa o filtro. */
+export const PROFILES_ROLE_FILTERS = [
+  "all",
+  UserRole.TEACHER,
+  UserRole.COORDINATOR,
+  UserRole.ADMIN,
+] as const;
+
+/** Ordenações oferecidas, no formato `campo-direção` do seletor. */
+export const PROFILE_SORT_OPTIONS: ReadonlyArray<{
+  value: `${ProfileSortField}-${ProfileSortOrder}`;
+  label: string;
+}> = [
+  { value: "name-ASC", label: "Nome (A-Z)" },
+  { value: "name-DESC", label: "Nome (Z-A)" },
+  { value: "email-ASC", label: "E-mail (A-Z)" },
+  { value: "email-DESC", label: "E-mail (Z-A)" },
+  { value: "createdAt-DESC", label: "Mais recentes" },
+  { value: "createdAt-ASC", label: "Mais antigos" },
+  { value: "birthDate-ASC", label: "Aniversário (jan-dez)" },
+  { value: "birthDate-DESC", label: "Aniversário (dez-jan)" },
+];
 
 /**
  * Campos que precisam estar preenchidos para o perfil ser considerado completo.

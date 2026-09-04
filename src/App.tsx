@@ -58,6 +58,7 @@ import PagelaClubsManager from './features/pagela-clubs/PagelaClubsManager';
 import CommentsManager from './features/comments/CommentsManager';
 import FeedbackManager from './features/feedback/FeedbackManager';
 import UsersManager from './features/users/UsersManager';
+import UnsubscribePage from './features/email-preferences/UnsubscribePage';
 import InformativesManager from './features/informatives/InformativesManager';
 import ImageSectionManager from './features/image-sections/ImageSectionManager';
 import ImagePagesManager from './features/image-pages/ImagePagesManager';
@@ -185,6 +186,9 @@ function App() {
                     <Route path="/recuperar-senha/:token" element={<ResetPassword />} />
                   </Route>
                   <Route path="/verificar-email" element={<EmailVerificationInstructions />} />
+                  {/* Chegada do link no rodapé dos e-mails; sem sessão, porque
+                      quem clica num e-mail antigo não está logado. */}
+                  <Route path="/descadastrar" element={<UnsubscribePage />} />
                   <Route element={<FeatureRoute flag={FEATURE.PUBLIC_REGISTRATION} redirectTo="/login" />}>
                     <Route path="/cadastrar" element={<Register commonUser />} />
                     {/*

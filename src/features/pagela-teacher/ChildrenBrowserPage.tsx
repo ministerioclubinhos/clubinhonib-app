@@ -10,7 +10,8 @@ import { useSnackbar } from "notistack";
 
 import { useChildrenBrowser } from "./hooks";
 import ChildCard from "./components/ChildCard";
-import { CreateChildForm, EditChildForm, ChildResponseDto, ChildSimpleResponseDto } from "../children/types";
+import type { ChildFormValues, ChildResponse, ChildListItem } from "../children/types";
+import { childToForm, emptyChildForm } from "../children/utils";
 import { useChildMutations } from "../children/hooks";
 import ChildFormDialog from "../children/components/ChildFormDialog";
 import { apiFetchChild } from "../children/api";
@@ -44,42 +45,29 @@ export default function ChildrenBrowserPage() {
     handlePageChange,
   } = useChildrenBrowser(pageSize);
 
-  const [creating, setCreating] = React.useState<CreateChildForm | null>(null);
-  const [editing, setEditing] = React.useState<EditChildForm | null>(null);
-  const [confirmToggleActive, setConfirmToggleActive] = React.useState<ChildSimpleResponseDto | null>(null);
-  const [confirmDelete, setConfirmDelete] = React.useState<ChildSimpleResponseDto | null>(null);
+  const [creating, setCreating] = React.useState<ChildFormValues | null>(null);
+  const [editing, setEditing] = React.useState<ChildFormValues | null>(null);
+  const [confirmToggleActive, setConfirmToggleActive] = React.useState<ChildListItem | null>(null);
+  const [confirmDelete, setConfirmDelete] = React.useState<ChildListItem | null>(null);
 
   const {
-    dialogLoading,
-    dialogError,
-    setDialogError,
+    actionLoading: dialogLoading,
+    actionError: dialogError,
+    setActionError: setDialogError,
     createChild,
     updateChild,
     deleteChild,
     toggleActive,
-  } = useChildMutations(async () => {
-    await refetch();
+  } = useChildMutations(() => {
+    void refetch();
   });
 
-  const openCreate = () =>
-    setCreating({
-      name: "",
-      gender: "M",
-      guardianName: "",
-      guardianPhone: "",
-      birthDate: "",
-      joinedAt: null,
-      clubId: null,
-      address: { street: "", district: "", city: "", state: "", postalCode: "" } as any,
-    });
+  const openCreate = () => setCreating(emptyChildForm());
 
   const submitCreate = async () => {
     if (!creating) return;
-    const payload = { ...creating };
-    if (!payload.joinedAt) payload.joinedAt = null;
-    if (!payload.clubId) payload.clubId = null as any;
 
-    const ok = await createChild(payload, page, pageSize);
+    const ok = await createChild(creating);
     if (ok) {
       enqueueSnackbar("Criança cadastrada com sucesso!", { variant: "success" });
       setCreating(null);
@@ -89,38 +77,23 @@ export default function ChildrenBrowserPage() {
 
   const openEdit = async (childId: string) => {
     try {
-      const full: ChildResponseDto = await apiFetchChild(childId);
-      setEditing({
-        id: full.id,
-        name: full.name ?? "",
-        gender: (full.gender as any) ?? "M",
-        guardianName: full.guardianName ?? "",
-        guardianPhone: full.guardianPhone ?? "",
-        birthDate: full.birthDate ?? "",
-        joinedAt: (full as any).joinedAt ?? null,
-        clubId: (full as any)?.club?.id ?? null,
-        address: full.address
-          ? {
-            street: full.address.street ?? "",
-            number: (full.address as any).number ?? "",
-            district: full.address.district ?? "",
-            city: full.address.city ?? "",
-            state: full.address.state ?? "",
-            postalCode: full.address.postalCode ?? "",
-            complement: (full.address as any).complement ?? "",
-          }
-          : { street: "", number: "", district: "", city: "", state: "", postalCode: "", complement: "" } as any,
-      });
+      const full: ChildResponse = await apiFetchChild(childId);
+      setEditing(childToForm(full));
       setDialogError("");
-    } catch (e: any) {
-      setDialogError(e?.response?.data?.message || e?.message || "Não foi possível abrir a criança para edição");
+    } catch (err: unknown) {
+      setDialogError(
+        extractErrorMessage(
+          err,
+          "Não foi possível abrir a criança para edição",
+        ),
+      );
     }
   };
 
   const submitEdit = async () => {
-    if (!editing) return;
-    const { id, ...rest } = editing;
-    const ok = await updateChild(id, rest, page, pageSize);
+    if (!editing?.id) return;
+
+    const ok = await updateChild(editing.id, editing);
     if (ok) {
       enqueueSnackbar("Criança atualizada com sucesso!", { variant: "success" });
       setEditing(null);
@@ -130,7 +103,7 @@ export default function ChildrenBrowserPage() {
 
   const submitDelete = async () => {
     if (!confirmDelete) return;
-    const ok = await deleteChild(confirmDelete.id, page, pageSize);
+    const ok = await deleteChild(confirmDelete.id);
     if (ok) {
       enqueueSnackbar("Criança excluída com sucesso!", { variant: "success" });
       setConfirmDelete(null);
@@ -371,7 +344,7 @@ export default function ChildrenBrowserPage() {
         mode="create"
         open={!!creating}
         value={creating}
-        onChange={(v) => setCreating(v as CreateChildForm)}
+        onChange={setCreating}
         onCancel={() => {
           setCreating(null);
           setDialogError("");
@@ -385,7 +358,7 @@ export default function ChildrenBrowserPage() {
         mode="edit"
         open={!!editing}
         value={editing}
-        onChange={(v) => setEditing(v as EditChildForm)}
+        onChange={setEditing}
         onCancel={() => {
           setEditing(null);
           setDialogError("");
@@ -419,7 +392,7 @@ export default function ChildrenBrowserPage() {
 
           try {
             const fullChild = await apiFetchChild(confirmToggleActive.id);
-            const ok = await toggleActive(fullChild.id, page, pageSize, undefined, undefined);
+            const ok = await toggleActive(fullChild.id);
             if (ok) {
               enqueueSnackbar(
                 confirmToggleActive.isActive

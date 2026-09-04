@@ -27,6 +27,23 @@ const apiAxios = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+/**
+ * `skipGlobalError` faz parte do contrato público do cliente.
+ *
+ * Sem declará-la, cada chamada que precisava tratar o erro localmente
+ * escrevia `as any` para passar pelo type-check — e o `any` apagava a
+ * verificação do resto da configuração junto.
+ */
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    /**
+     * O interceptor não mostra a falha: quem chamou dá o retorno na própria
+     * tela. Use só quando o fluxo local mostra a mensagem por completo.
+     */
+    skipGlobalError?: boolean;
+  }
+}
+
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
   skipGlobalError?: boolean;

@@ -10,9 +10,9 @@ import {
   apiUpdatePagela,
   apiDeletePagela,
 } from "./api";
-import { apiFetchChildSimple } from "@/features/children/api";
+import { apiFetchChildrenSimple } from "@/features/children/api";
 import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
-import type { ChildSimpleResponseDto } from "../children/types";
+import type { ChildListItem } from "../children/types";
 
 export type Tri = "any" | "yes" | "no";
 /** O filtro de três estados vira booleano, ou some quando é "qualquer um". */
@@ -32,7 +32,7 @@ export function useChildrenBrowser(pageSize: number = 20) {
   const [searchString, setSearchString] = useState("");
   const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(undefined);
   const [acceptedChristFilter, setAcceptedChristFilter] = useState<boolean | undefined>(undefined);
-  const [items, setItems] = useState<ChildSimpleResponseDto[]>([]);
+  const [items, setItems] = useState<ChildListItem[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -45,7 +45,7 @@ export function useChildrenBrowser(pageSize: number = 20) {
     setLoading(true);
     setChildrenError("");
     try {
-      const response = await apiFetchChildSimple({
+      const response = await apiFetchChildrenSimple({
         searchString: debouncedSearch || undefined,
         isActive: isActiveFilter,
         acceptedChrist: acceptedChristFilter,

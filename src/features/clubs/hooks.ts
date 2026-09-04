@@ -10,6 +10,7 @@ import {
   apiCreateClub,
   apiDeleteClub,
   apiFetchClub,
+  apiFetchClubOptions,
   apiFetchClubs,
   apiToggleClubActive,
   apiUpdateClub,
@@ -184,13 +185,19 @@ export function useClubMutations(refresh: () => Promise<void> | void) {
 export function useClubFormOptions() {
   const [coordinators, setCoordinators] = useState<CoordinatorOption[]>([]);
   const [teachers, setTeachers] = useState<TeacherOption[]>([]);
+  const [reachableClubIds, setReachableClubIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [error, setError] = useState("");
 
   const loadOptions = useCallback(async () => {
     try {
-      const [coordinatorList, teacherList] = await Promise.all([
+      const [coordinatorList, teacherList, clubList] = await Promise.all([
         apiListCoordinatorsSimple(),
         apiListTeachersSimple(),
+        // A rota já devolve ao coordenador apenas os clubinhos dele, então o
+        // conjunto é exatamente o que ele alcança.
+        apiFetchClubOptions(),
       ]);
 
       setCoordinators(
@@ -204,8 +211,11 @@ export function useClubFormOptions() {
           teacherProfileId: item.teacherProfileId,
           name: item.name,
           vinculado: Boolean(item.vinculado),
+          clubId: item.clubId ?? null,
+          clubNumber: item.clubNumber ?? null,
         })),
       );
+      setReachableClubIds(new Set((clubList ?? []).map((club) => club.id)));
     } catch (err: unknown) {
       setError(extractErrorMessage(err, "Erro ao carregar as opções do formulário"));
     }
@@ -215,5 +225,11 @@ export function useClubFormOptions() {
     void loadOptions();
   }, [loadOptions]);
 
-  return { coordinators, teachers, error, reloadOptions: loadOptions };
+  return {
+    coordinators,
+    teachers,
+    reachableClubIds,
+    error,
+    reloadOptions: loadOptions,
+  };
 }

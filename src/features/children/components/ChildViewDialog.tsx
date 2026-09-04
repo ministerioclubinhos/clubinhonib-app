@@ -1,78 +1,63 @@
-import React, { useMemo } from "react";
+import React from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogActions,
-  Button,
+  Avatar,
   Box,
-  Typography,
+  Button,
   Chip,
-  Grid,
-  Stack,
-  Tooltip,
-  IconButton,
-  Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  Grid2,
   Link,
   Paper,
+  Stack,
+  Typography,
   useMediaQuery,
   useTheme,
-  Avatar,
-  Skeleton,
 } from "@mui/material";
-import {
-  WhatsApp,
-  PhoneIphone,
-  ContentCopy,
-  Phone as PhoneIcon,
-  Map,
-  Cake,
-  Group,
-  Home,
-  MenuBook,
-  ToggleOn,
-  ToggleOff,
-} from "@mui/icons-material";
-import { ChildResponseDto } from "../types";
-import { fmtDate } from "@/utils/dates";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import CakeIcon from "@mui/icons-material/Cake";
+import GroupsIcon from "@mui/icons-material/Groups";
+import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
+import PlaceIcon from "@mui/icons-material/Place";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import { useSelector } from "react-redux";
+
+import type { RootState } from "@/store/slices";
+import { anchorProps } from "@/utils/textUtils";
 import { buildWhatsappLink } from "@/utils/whatsapp";
 
-const calcAge = (iso?: string) => {
-  if (!iso) return undefined;
-  const b = new Date(iso);
-  if (Number.isNaN(b.getTime())) return undefined;
-  const today = new Date();
-  let age = today.getFullYear() - b.getFullYear();
-  const m = today.getMonth() - b.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
-  return age;
+import { EMPTY_VALUE, Gender } from "../constants";
+import {
+  ageInYears,
+  childInitials,
+  clubLabel,
+  formatDateOnly,
+  formatPhone,
+  genderLabel,
+} from "../utils";
+import type { ChildResponse } from "../types";
+
+type Props = {
+  child: ChildResponse | null;
+  onClose: () => void;
+  onEdit: () => void;
+  onToggleActive: () => void;
 };
 
-const initials = (name?: string) =>
-  (name || "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(s => s[0]?.toUpperCase())
-    .join("") || "C";
-
-function CopyButton({ value, title = "Copiar" }: { value?: string; title?: string }) {
-  const copyToClipboard = (text?: string) => {
-    if (!text) return;
-    navigator.clipboard?.writeText(String(text)).catch(() => {});
-  };
-  return (
-    <Tooltip title={title}>
-      <IconButton size="small" onClick={() => copyToClipboard(value)}>
-        <ContentCopy fontSize="inherit" />
-      </IconButton>
-    </Tooltip>
-  );
-}
-
-function LineCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+/** Um dado da criança, rotulado. */
+function DetailCard({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2, height: "100%" }}>
-      <Stack spacing={0.5} sx={{ height: "100%" }}>
+      <Stack spacing={0.5}>
         <Stack direction="row" spacing={0.75} alignItems="center">
           {icon}
           <Typography variant="caption" color="text.secondary">
@@ -85,261 +70,212 @@ function LineCard({ icon, title, children }: { icon: React.ReactNode; title: str
   );
 }
 
-type Props = { 
-  open: boolean; 
-  loading: boolean; 
-  child: ChildResponseDto | null; 
-  onClose: () => void; 
-  onEdit?: (id: string) => void;
-  onToggleActive?: (child: ChildResponseDto) => void;
-};
+/** Endereço completo em uma linha. */
+function fullAddress(child: ChildResponse): string {
+  const address = child.address;
+  if (!address) return EMPTY_VALUE;
 
-export default function ChildViewDialog({ open, loading, child, onClose, onEdit, onToggleActive }: Props) {
+  const street = [address.street, address.number].filter(Boolean).join(", ");
+  const parts = [
+    street,
+    address.complement,
+    address.district,
+    [address.city, address.state].filter(Boolean).join("/"),
+    address.postalCode,
+  ].filter((part) => part && String(part).trim());
+
+  return parts.length ? parts.join(" · ") : EMPTY_VALUE;
+}
+
+/** Detalhes de uma criança. */
+export default function ChildViewDialog({
+  child,
+  onClose,
+  onEdit,
+  onToggleActive,
+}: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const loggedUser = useSelector((state: RootState) => state.auth.user);
 
-  const age = useMemo(() => calcAge(child?.birthDate), [child?.birthDate]);
+  const whatsappLink = React.useMemo(
+    () =>
+      child
+        ? (buildWhatsappLink(
+            child.guardianName,
+            loggedUser?.name,
+            child.guardianPhone,
+          ) ?? undefined)
+        : undefined,
+    [child, loggedUser?.name],
+  );
 
-  const waLink = useMemo(() => {
-    if (!child?.guardianPhone) return null;
-    return buildWhatsappLink({ id: child.id, name: child.name, phone: child.guardianPhone } as any);
-  }, [child?.guardianPhone, child?.name, child?.id]);
-
-  const mapsHref = child?.address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        [
-          child.address.street,
-          child.address.number,
-          child.address.district,
-          child.address.city,
-          child.address.state,
-          child.address.postalCode,
-        ]
-          .filter(Boolean)
-          .join(", ")
-      )}`
-    : undefined;
+  const age = child ? ageInYears(child.birthDate) : null;
 
   return (
     <Dialog
-      open={open}
+      open={!!child}
       onClose={onClose}
       fullWidth
-      maxWidth="lg"
-      PaperProps={{
-        sx: {
-          width: { xs: "98%", sm: "44rem" },
-          m: 0,
-          borderRadius: { xs: 2, sm: 3 },
-          overflow: "hidden",
-        },
-      }}
+      maxWidth="sm"
+      aria-labelledby="child-view-title"
     >
-      <Box
-        sx={{
-          px: { xs: 2, sm: 3 },
-          pt: { xs: 2, sm: 3 },
-          pb: { xs: 1.25, sm: 1.5 },
-          background: "linear-gradient(135deg, rgba(3,155,229,.08) 0%, rgba(156,39,176,.08) 100%)",
-          borderBottom: 1,
-          borderColor: "divider",
-        }}
-      >
-        {!child ? (
-          <Typography variant="h6">Detalhes da Criança</Typography>
-        ) : (
-          <Stack spacing={1.25}>
-            <Stack direction="row" spacing={1.25} alignItems="center">
+      {child ? (
+        <>
+          <Box
+            sx={{
+              px: { xs: 2, sm: 3 },
+              pt: { xs: 2, sm: 3 },
+              pb: 1.5,
+              borderBottom: 1,
+              borderColor: "divider",
+            }}
+          >
+            <Stack direction="row" spacing={1.5} alignItems="center">
               <Avatar
                 sx={{
                   width: 48,
                   height: 48,
-                  bgcolor: child.gender === "F" ? "secondary.main" : "primary.main",
-                  color: "white",
                   fontWeight: 700,
+                  bgcolor:
+                    child.gender === Gender.FEMALE
+                      ? "secondary.main"
+                      : "primary.main",
+                  color: "common.white",
                 }}
               >
-                {initials(child.name)}
+                {childInitials(child.name)}
               </Avatar>
+
               <Box sx={{ minWidth: 0 }}>
-                <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
-                  <Typography variant="h6" fontWeight={800} noWrap={!isXs} title={child.name}>
-                    {child.name || "—"}
-                  </Typography>
-                  <Chip size="small" label={child.gender === "F" ? "Feminino" : "Masculino"} color="default" />
-                  {typeof age === "number" && <Chip size="small" label={`${age} anos`} color="default" />}
-                  <Chip 
-                    size="small" 
-                    label={child.isActive ? "Ativo" : "Inativo"} 
-                    color={child.isActive ? "success" : "default"} 
-                    variant={child.isActive ? "filled" : "outlined"} 
-                  />
-                  {child.club ? (
-                    <Chip size="small" label={`Clubinho #${child.club.number}${child.club.weekday ? ` • ${child.club.weekday}` : ""}`} color="primary" variant="outlined" />
-                  ) : (
-                    <Chip size="small" label="Sem clubinho" variant="outlined" />
-                  )}
-                </Stack>
-              </Box>
-            </Stack>
-          </Stack>
-        )}
-      </Box>
-
-      <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
-        {loading ? (
-          <Skeleton height={200} />
-        ) : !child ? (
-          <Alert severity="info">Nenhuma criança selecionada.</Alert>
-        ) : (
-          <Stack spacing={2}>
-            
-            <Grid container spacing={1.25}>
-              <Grid item xs={12} sm={6}>
-                <LineCard icon={<PhoneIphone fontSize="small" />} title="Telefone do Responsável">
-                  <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap">
-                    {child.guardianPhone ? (
-                      <>
-                        <Link href={waLink || undefined} target="_blank" underline="hover" sx={{ fontSize: ".95rem" }}>
-                          {child.guardianPhone}
-                        </Link>
-                        <Tooltip title={waLink ? "Abrir WhatsApp" : "Sem número"}>
-                          <span>
-                            <IconButton size="small" color="success" component="a" href={waLink || undefined} target="_blank" disabled={!waLink}>
-                              <WhatsApp fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        <CopyButton value={child.guardianPhone} title="Copiar telefone" />
-                      </>
-                    ) : (
-                      <Typography variant="body2">—</Typography>
-                    )}
-                  </Stack>
-                </LineCard>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <LineCard icon={<Group fontSize="small" />} title="Responsável">
-                  <Typography>{child.guardianName}</Typography>
-                </LineCard>
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={1.25}>
-              <Grid item xs={12} sm={6}>
-                <LineCard icon={<Cake fontSize="small" />} title="Nascimento">
-                  <Typography>
-                    {fmtDate(child.birthDate)} {typeof age === "number" && `(${age} anos)`}
-                  </Typography>
-                </LineCard>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <LineCard icon={<PhoneIcon fontSize="small" />} title="No Clubinho desde">
-                  <Typography>{fmtDate(child.joinedAt || "")}</Typography>
-                </LineCard>
-              </Grid>
-            </Grid>
-
-            <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                <Home fontSize="small" />
-                <Typography variant="caption" color="text.secondary">Endereço</Typography>
-              </Stack>
-              {child.address ? (
-                <Grid container spacing={1.25}>
-                  <Grid item xs={12} sm={8}>
-                    <Typography>{child.address.street} {child.address.number}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Typography>{child.address.district}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography>{child.address.city}/{child.address.state}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography>{child.address.postalCode}</Typography>
-                  </Grid>
-                  {child.address.complement && (
-                    <Grid item xs={12}>
-                      <Typography>{child.address.complement}</Typography>
-                    </Grid>
-                  )}
-                  <Grid item xs={12}>
-                    <Stack direction="row" spacing={1}>
-                      {mapsHref && (
-                        <Button size="small" component="a" href={mapsHref} target="_blank" startIcon={<Map fontSize="small" />}>
-                          Abrir no Maps
-                        </Button>
-                      )}
-                      <CopyButton value={mapsHref} title="Copiar endereço" />
-                    </Stack>
-                  </Grid>
-                </Grid>
-              ) : (
-                <Typography variant="body2">Nenhum endereço cadastrado.</Typography>
-              )}
-            </Paper>
-
-            <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
-              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" flexWrap="wrap">
-                <Stack direction="row" spacing={1} alignItems="center">
+                <Typography
+                  id="child-view-title"
+                  variant="h6"
+                  fontWeight={800}
+                  noWrap={!isXs}
+                >
+                  {child.name}
+                </Typography>
+                <Stack direction="row" spacing={0.75} sx={{ mt: 0.5 }} flexWrap="wrap" useFlexGap>
                   <Chip
                     size="small"
-                    label={child.isActive ? "Ativo" : "Inativo"}
+                    label={child.isActive ? "Ativa" : "Inativa"}
                     color={child.isActive ? "success" : "default"}
                     variant={child.isActive ? "filled" : "outlined"}
                   />
-                  <Typography variant="body2" color="text.secondary">
-                    Status da criança
-                  </Typography>
-                </Stack>
-                {onToggleActive && (
-                  <Button
-                    variant="outlined"
-                    color={child.isActive ? "warning" : "success"}
-                    startIcon={child.isActive ? <ToggleOff /> : <ToggleOn />}
-                    onClick={() => onToggleActive(child)}
+                  <Chip size="small" label={genderLabel(child.gender)} variant="outlined" />
+                  <Chip
                     size="small"
-                  >
-                    {child.isActive ? "Desativar" : "Ativar"}
-                  </Button>
-                )}
-              </Stack>
-            </Paper>
+                    label={clubLabel(child)}
+                    color={child.club ? "primary" : "default"}
+                    variant="outlined"
+                  />
+                </Stack>
+              </Box>
+            </Stack>
+          </Box>
 
-            <Grid container spacing={1.25}>
-              <Grid item xs={12} sm={6}>
-                <LineCard icon={<MenuBook fontSize="small" />} title="Criado em">
-                  <Typography>{fmtDate(child.createdAt)}</Typography>
-                </LineCard>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <LineCard icon={<MenuBook fontSize="small" />} title="Atualizado em">
-                  <Typography>{fmtDate(child.updatedAt)}</Typography>
-                </LineCard>
-              </Grid>
-            </Grid>
-          </Stack>
-        )}
-      </DialogContent>
+          <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
+            <Grid2 container spacing={1.25}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <DetailCard icon={<CakeIcon fontSize="small" />} title="Nascimento">
+                  <Typography>
+                    {formatDateOnly(child.birthDate)}
+                    {age === null ? "" : ` · ${age} ano(s)`}
+                  </Typography>
+                </DetailCard>
+              </Grid2>
 
-      <DialogActions
-        sx={{
-          p: { xs: 1.5, sm: 2 },
-          gap: 1,
-          flexWrap: "wrap",
-          justifyContent: "space-between",
-        }}
-      >
-        {child && (
-          <Button fullWidth={isXs} onClick={() => onEdit?.(child.id)} variant="outlined" color="primary">
-            Editar
-          </Button>
-        )}
-        <Button fullWidth={isXs} onClick={onClose} variant="contained">
-          Fechar
-        </Button>
-      </DialogActions>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <DetailCard
+                  icon={<GroupsIcon fontSize="small" />}
+                  title="No clubinho desde"
+                >
+                  <Typography>{formatDateOnly(child.joinedAt)}</Typography>
+                </DetailCard>
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <DetailCard
+                  icon={<PhoneIphoneIcon fontSize="small" />}
+                  title="Responsável"
+                >
+                  <Typography>{child.guardianName}</Typography>
+                  {child.guardianPhone ? (
+                    <Link href={`tel:${child.guardianPhone}`} underline="hover">
+                      {formatPhone(child.guardianPhone)}
+                    </Link>
+                  ) : (
+                    <Typography variant="body2">{EMPTY_VALUE}</Typography>
+                  )}
+                </DetailCard>
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <DetailCard icon={<PlaceIcon fontSize="small" />} title="Endereço">
+                  <Typography variant="body2">{fullAddress(child)}</Typography>
+                </DetailCard>
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <DetailCard
+                  icon={<AccessTimeIcon fontSize="small" />}
+                  title="Cadastrada em"
+                >
+                  <Typography>{formatDateOnly(child.createdAt)}</Typography>
+                </DetailCard>
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <DetailCard
+                  icon={<AccessTimeIcon fontSize="small" />}
+                  title="Atualizada em"
+                >
+                  <Typography>{formatDateOnly(child.updatedAt)}</Typography>
+                </DetailCard>
+              </Grid2>
+            </Grid2>
+          </DialogContent>
+
+          <DialogActions
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              gap: 1,
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
+            <Button
+              type="button"
+              fullWidth={isXs}
+              variant="contained"
+              color="success"
+              startIcon={<WhatsAppIcon />}
+              disabled={!whatsappLink}
+              {...anchorProps(whatsappLink)}
+            >
+              Falar com o responsável
+            </Button>
+
+            <Stack direction="row" spacing={1} sx={{ width: isXs ? "100%" : "auto" }}>
+              <Button type="button" fullWidth={isXs} onClick={onEdit}>
+                Editar
+              </Button>
+              <Button
+                type="button"
+                fullWidth={isXs}
+                color={child.isActive ? "warning" : "success"}
+                onClick={onToggleActive}
+              >
+                {child.isActive ? "Inativar" : "Reativar"}
+              </Button>
+              <Button type="button" fullWidth={isXs} onClick={onClose}>
+                Fechar
+              </Button>
+            </Stack>
+          </DialogActions>
+        </>
+      ) : null}
     </Dialog>
   );
 }

@@ -4,7 +4,10 @@ import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
 import { apiFetchClubs } from "@/features/clubs/api";
 import type { ClubResponse } from "@/features/clubs/types";
 import { apiFetchChildren } from "@/features/children/api";
-import type { ChildResponseDto, Paginated as ChildrenPage } from "@/features/children/types";
+import type {
+  ChildResponse,
+  PaginatedChildren as ChildrenPage,
+} from "@/features/children/types";
 import { apiFetchPagelas } from "@/features/pagelas/api";
 import type { PagelaResponse } from "@/features/pagelas/types";
 import {
@@ -116,15 +119,15 @@ export function useClubsBrowser(): BrowserState<ClubResponse> {
  * `/children` responde com `meta.totalItems`, mas o tipo do front admite as
  * duas formas históricas; ler nos dois lugares evita um total zerado.
  */
-function childrenTotalOf(page: ChildrenPage<ChildResponseDto>): number {
-  return Number(page?.meta?.totalItems ?? page?.total ?? 0);
+function childrenTotalOf(page: ChildrenPage<ChildResponse>): number {
+  return Number(page?.meta?.totalItems ?? 0);
 }
 
 /** Crianças do clubinho selecionado. */
 export function useChildrenBrowser(
   club: ClubResponse | null,
-): BrowserState<ChildResponseDto> {
-  const [rows, setRows] = useState<ChildResponseDto[]>([]);
+): BrowserState<ChildResponse> {
+  const [rows, setRows] = useState<ChildResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -152,14 +155,17 @@ export function useChildrenBrowser(
       setLoading(true);
       setError("");
       try {
-        const data = await apiFetchChildren({
-          page,
-          limit: CHILDREN_PAGE_LIMIT,
-          // Pelo id, e não pelo número do clubinho: o número é rótulo.
-          filters: { clubId, searchString: debouncedSearch || undefined },
-          sort: { id: "name", desc: false },
-          signal: controller.signal,
-        });
+        const data = await apiFetchChildren(
+          {
+            page,
+            limit: CHILDREN_PAGE_LIMIT,
+            // Pelo id, e não pelo número do clubinho: o número é rótulo.
+            filters: { clubId, searchString: debouncedSearch || undefined },
+            orderBy: "name",
+            order: "ASC",
+          },
+          { signal: controller.signal },
+        );
         setRows(Array.isArray(data?.data) ? data.data : []);
         setTotal(childrenTotalOf(data));
       } catch (err: unknown) {
@@ -189,7 +195,7 @@ export function useChildrenBrowser(
 }
 
 /** Pagelas da criança selecionada, com o tamanho de página ajustável. */
-export function usePagelasBrowser(child: ChildResponseDto | null) {
+export function usePagelasBrowser(child: ChildResponse | null) {
   const [rows, setRows] = useState<PagelaResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);

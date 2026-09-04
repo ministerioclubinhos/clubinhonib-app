@@ -107,8 +107,6 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
         cpf: digitsOnly(formData.cpf) || undefined,
       };
 
-      console.log('ProfileEditForm Payload:', payload);
-
       Object.keys(payload).forEach(key => payload[key as keyof UpdateMyAccountRequest] === undefined && delete payload[key as keyof UpdateMyAccountRequest]);
 
       if (Object.keys(payload).length === 0) {

@@ -1,85 +1,99 @@
 import api from "@/config/axiosConfig";
-import { ChildResponseDto, Paginated, CreateChildForm, EditChildForm, ChildFilters, ChildSort, ChildSimpleResponseDto } from "./types";
 
-export async function apiFetchChildren(args: {
-  page: number;
-  limit: number;
-  filters?: ChildFilters;
-  sort?: ChildSort;
-  /** Permite cancelar a busca quando outra começa. */
-  signal?: AbortSignal;
-}) {
-  const { page, limit, filters, sort, signal } = args;
-  const orderBy = sort?.id ?? 'updatedAt';
-  const order = sort?.desc ? 'DESC' : 'ASC';
+import { CHILDREN_ENDPOINT } from "./constants";
+import { buildChildrenQuery } from "./utils";
+import type {
+  ChildFilters,
+  ChildListItem,
+  ChildResponse,
+  ChildSortField,
+  ChildSortOrder,
+  CreateChildRequest,
+  DeleteChildResponse,
+  PaginatedChildren,
+  UpdateChildRequest,
+} from "./types";
 
-  const { data } = await api.get<Paginated<ChildResponseDto>>("/children", {
-    params: {
-      page,
-      limit,
-      orderBy,
-      order,
-      searchString: filters?.searchString || undefined,
-      clubId: filters?.clubId || undefined,
-      clubNumber: filters?.clubNumber ?? undefined,
-      birthDateFrom: filters?.birthDateFrom || undefined,
-      birthDateTo: filters?.birthDateTo || undefined,
-      joinedFrom: filters?.joinedFrom || undefined,
-      joinedTo: filters?.joinedTo || undefined,
-      isActive: filters?.isActive !== undefined ? filters.isActive : undefined,
-    },
-    signal,
-  });
+/** Página de crianças, com busca e filtros aplicados pela API. */
+export async function apiFetchChildren(
+  args: {
+    page: number;
+    limit: number;
+    filters?: ChildFilters;
+    orderBy?: ChildSortField;
+    order?: ChildSortOrder;
+  },
+  options?: { signal?: AbortSignal },
+): Promise<PaginatedChildren<ChildResponse>> {
+  const { data } = await api.get<PaginatedChildren<ChildResponse>>(
+    CHILDREN_ENDPOINT,
+    { params: buildChildrenQuery(args), signal: options?.signal },
+  );
+
   return data;
 }
 
-export async function apiFetchChild(id: string) {
-  const { data } = await api.get<ChildResponseDto>(`/children/${id}`);
+export async function apiFetchChild(id: string): Promise<ChildResponse> {
+  const { data } = await api.get<ChildResponse>(`${CHILDREN_ENDPOINT}/${id}`);
   return data;
 }
 
-export async function apiFetchChildSimple(params?: {
+/** Crianças no formato usado pelos seletores de formulário. */
+export async function apiFetchChildrenSimple(params?: {
   searchString?: string;
   isActive?: boolean;
   acceptedChrist?: boolean;
   page?: number;
   limit?: number;
-}) {
-  const { data } = await api.get<Paginated<ChildSimpleResponseDto>>(`/children/simple`, {
-    params: {
-      searchString: params?.searchString || undefined,
-      isActive: params?.isActive !== undefined ? params.isActive : undefined,
-      acceptedChrist: params?.acceptedChrist !== undefined ? params.acceptedChrist : undefined,
-      page: params?.page || 1,
-      limit: params?.limit || 20,
+}): Promise<PaginatedChildren<ChildListItem>> {
+  const { data } = await api.get<PaginatedChildren<ChildListItem>>(
+    `${CHILDREN_ENDPOINT}/simple`,
+    {
+      params: {
+        searchString: params?.searchString?.trim() || undefined,
+        isActive: params?.isActive,
+        acceptedChrist: params?.acceptedChrist,
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 20,
+      },
     },
-  });
-  return data; // Return full paginated response
-}
+  );
 
-function sanitizeAddress<T extends { address?: any }>(payload: T): T {
-  if (!payload || !payload.address) return payload;
-  const { id, createdAt, updatedAt, ...cleanAddress } = payload.address;
-  return { ...payload, address: cleanAddress };
-}
-
-export async function apiCreateChild(payload: CreateChildForm) {
-  const cleaned = sanitizeAddress(payload);
-  const { data } = await api.post<ChildResponseDto>("/children", cleaned);
   return data;
 }
 
-export async function apiUpdateChild(id: string, payload: Omit<EditChildForm, "id">) {
-  const cleaned = sanitizeAddress(payload);
-  const { data } = await api.put<ChildResponseDto>(`/children/${id}`, cleaned);
+export async function apiCreateChild(
+  payload: CreateChildRequest,
+): Promise<ChildResponse> {
+  const { data } = await api.post<ChildResponse>(CHILDREN_ENDPOINT, payload);
   return data;
 }
 
-export async function apiDeleteChild(id: string) {
-  await api.delete(`/children/${id}`);
+export async function apiUpdateChild(
+  id: string,
+  payload: UpdateChildRequest,
+): Promise<ChildResponse> {
+  const { data } = await api.put<ChildResponse>(
+    `${CHILDREN_ENDPOINT}/${id}`,
+    payload,
+  );
+  return data;
 }
 
-export async function apiToggleChildActive(id: string) {
-  const { data } = await api.patch<ChildResponseDto>(`/children/${id}/toggle-active`);
+export async function apiDeleteChild(
+  id: string,
+): Promise<DeleteChildResponse> {
+  const { data } = await api.delete<DeleteChildResponse>(
+    `${CHILDREN_ENDPOINT}/${id}`,
+  );
+  return data;
+}
+
+export async function apiToggleChildActive(
+  id: string,
+): Promise<ChildResponse> {
+  const { data } = await api.patch<ChildResponse>(
+    `${CHILDREN_ENDPOINT}/${id}/toggle-active`,
+  );
   return data;
 }

@@ -70,3 +70,77 @@ the other way round.
 - **Nothing scrolls sideways.** Menus size with `calc(100vw - 32px)` rather
   than `vw`, long names are clipped or wrapped, and height uses `dvh` where
   supported so the browser bar does not cut the page.
+
+
+## 👩‍🏫 `/adm/professores` and `/adm/coordenadores`
+
+Both screens use the shared admin listing shell (see
+[Components](./components.md)) and manage the link between a person and a club.
+
+- The club is chosen from `GET /clubs/simple-options`, not typed as a number. A
+  number typed by hand could name a club that does not exist, and the mistake
+  only surfaced when the request failed. The option list also reports whether a
+  club already has a coordinator.
+- `TeacherClubDialog` assigns, swaps or clears a teacher's single club.
+- `CoordinatorClubsDialog` shows the coordinator's current clubs with a per-row
+  unlink action and an autocomplete for the next one; already linked clubs are
+  removed from the options.
+- Every unlink goes through a confirmation — from the card and from inside the
+  dialog alike. The same gesture used to ask in one place and not in the other,
+  and the person lost access to the club's children with no warning.
+- After a write, the coordinator being edited is re-read from the API instead of
+  patched locally: a freshly linked club used to show zero teachers even when it
+  had a class.
+
+### One dialog, three screens
+
+`LinkManagerDialog` (`src/components/common/linking/`) is the single component
+behind every link/unlink dialog: current links with a per-row unlink, an
+autocomplete that shows disabled options *with the reason*, one place for the
+loading and error states, and a read-only mode for profiles that may look but
+not change. Teacher ↔ club and coordinator ↔ clubs are the same operation seen
+from different sides, so they are one component with different labels.
+
+The club create/edit form is the third door onto the same links, through
+`coordinatorProfileId` and `teacherProfileIds`.
+
+### Moving
+
+The two sides differ on purpose, because a club is an attribute of a teacher but
+a scarce resource for a coordinator:
+
+- **Teacher**: picking another club moves them, in one request — from the
+  teacher screen and from the club form alike. The club form's teacher selector
+  now lists everyone and says where each one would come from (`No Clubinho 13 —
+  será movido`); it used to hide anyone who already had a class, with no way to
+  tell why they were missing.
+- **Coordinator**: from the coordinator screen a club that already has one is
+  shown disabled with the reason, because its current owner is not on screen and
+  the API answers `409`. From the **club form** the current coordinator is the
+  field's value, so replacing it is allowed — and the form says who loses the
+  club.
+
+### What a coordinator may do
+
+`src/utils/clubLinkPermissions.ts` mirrors the API's policy, and every screen
+reads it from there instead of deciding on its own:
+
+| | Admin | Coordinator |
+| --- | --- | --- |
+| Link/unlink a teacher's club | ✅ | ✅, only between clubs they coordinate |
+| Link/unlink/transfer a coordinator's clubs | ✅ | ❌ — the dialog opens read-only |
+| Set a club's coordinator in the club form | ✅ | ❌ — the field is hidden |
+
+Hiding a control is not authorization: the API enforces all of it again. But
+offering an action that always answers `403` is an invitation to error, so the
+dialogs open read-only with the reason instead of failing on submit. Options a
+coordinator cannot take — a teacher currently in another coordination — are
+listed and disabled, again with the reason.
+
+### Access
+
+`GET /teacher-profiles` and `GET /coordinator-profiles` are open to admins and
+coordinators only — the listings carry the e-mail and phone of every colleague.
+Assigning or clearing a teacher's club is allowed for an admin, and for a
+coordinator only within the clubs they coordinate. Every write on
+`/coordinator-profiles` is admin-only.

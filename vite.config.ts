@@ -22,6 +22,10 @@ export default defineConfig(() => ({
     environment: "jsdom",
     globals: true,
     setupFiles: "./src/setupTests.ts",
-    css: false
+    css: false,
+    // O pacote de seletores de data importa `@mui/material/useMediaQuery` como
+    // diretório, o que o Node não resolve em ESM. Transformá-lo aqui faz a
+    // resolução passar pelo Vite, como acontece no navegador.
+    server: { deps: { inline: [/@mui\/x-date-pickers/] } }
   }
 }));

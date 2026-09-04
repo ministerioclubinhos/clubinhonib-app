@@ -19,6 +19,33 @@ We leverage a centralized error handling strategy defined in `src/utils/apiError
 - **User Feedback**: Errors are often displayed via `notistack` (toast notifications) or specific form field errors using `react-hook-form`.
 - **Constants**: All error messages are centralized in `src/constants/errorMessages.ts` to prevent hardcoding.
 
+## 🧱 Feature contracts
+
+Each feature keeps its API surface in four files, and nothing outside them talks
+to the network:
+
+| File | Responsibility |
+| --- | --- |
+| `types.ts` | Mirrors the NestJS DTOs field by field — request payloads, query strings and response contracts. Nothing here is inferred from usage. |
+| `constants.ts` | Endpoint path, pagination defaults, page-size options, enums and labels. |
+| `utils.ts` | Pure functions: the query builder, the form validator, the payload builders and the formatters. |
+| `api.ts` | The HTTP calls, always through the shared Axios client, always typed on both ends. |
+| `hooks.ts` | Server state, debounce, request cancellation and the mutations. |
+
+Conventions the people features follow, which a new listing should copy:
+
+- **The query builder lives in `utils.ts`, not in `api.ts`.** It drops empty
+  filters instead of sending `q=` or `role=all`, which the API would reject or
+  interpret as a filter on the empty string.
+- **The search box is debounced and every request is cancellable.** A superseded
+  request is aborted, and `isCancelledRequest` keeps the cancellation out of the
+  error state.
+- **A mutation returns whether it succeeded.** The dialog only closes on `true`,
+  so a rejected payload still has somewhere to show its message.
+- **Dates that are calendar days stay strings.** `YYYY-MM-DD` is formatted by
+  splitting the text, never by `new Date`, which would read it as UTC and show
+  the previous day west of Greenwich.
+
 ## 🌐 Environment Variables
 
 The application uses different environment configurations located in `env/`:

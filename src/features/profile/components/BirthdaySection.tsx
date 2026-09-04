@@ -9,16 +9,17 @@ import {
     useTheme,
     useMediaQuery,
 } from '@mui/material';
-import { CompleteProfile } from '../types';
+import type { ProfileBirthday } from '../types';
 import { getGenderStyle } from './profileStyles';
 import { getDaysUntilBirthday, getInitials } from '../utils';
 
 interface BirthdaySectionProps {
     title: string;
     emoji: string;
-    profiles: CompleteProfile[];
+    profiles: ProfileBirthday[];
     variant: 'today' | 'week' | 'month';
-    onProfileClick: (profile: CompleteProfile) => void;
+    /** Filtra a listagem abaixo pela pessoa escolhida. */
+    onProfileClick: (profile: ProfileBirthday) => void;
 }
 
 const BirthdaySection: React.FC<BirthdaySectionProps> = ({
@@ -98,7 +99,7 @@ const BirthdaySection: React.FC<BirthdaySectionProps> = ({
 
                 <Stack direction="row" spacing={-0.8}>
                     {profiles.slice(0, visibleAvatars).map((profile) => {
-                        const days = getDaysUntilBirthday(profile.personalData?.birthDate);
+                        const days = getDaysUntilBirthday(profile.birthDate);
                         return (
                             <Tooltip
                                 key={profile.id}
@@ -115,7 +116,7 @@ const BirthdaySection: React.FC<BirthdaySectionProps> = ({
                                         fontWeight: 700,
                                         border: '2px solid white',
                                         cursor: 'pointer',
-                                        background: profile.image?.url ? 'transparent' : getGenderStyle(profile.personalData?.gender).gradient,
+                                        background: profile.image?.url ? 'transparent' : getGenderStyle(undefined).gradient,
                                         transition: 'transform 0.2s',
                                         '&:hover': {
                                             transform: 'scale(1.15)',
@@ -137,7 +138,7 @@ const BirthdaySection: React.FC<BirthdaySectionProps> = ({
                                         +{profiles.length - visibleAvatars} pessoas:
                                     </Typography>
                                     {profiles.slice(visibleAvatars).map((p) => {
-                                        const days = getDaysUntilBirthday(p.personalData?.birthDate);
+                                        const days = getDaysUntilBirthday(p.birthDate);
                                         return (
                                             <Typography
                                                 key={p.id}

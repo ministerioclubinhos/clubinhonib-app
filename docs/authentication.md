@@ -70,3 +70,23 @@ subfolders are gone — role and gender styling is presentation and moved to
 - `birthDate` is a calendar day, never a timestamp. Format it with
   `formatDateOnly`, which reads the string by components — `new Date(str)`
   parses it as UTC midnight and shows the previous day in Manaus.
+
+### `/adm` navigation and roles
+
+`/adm` is guarded for admins and coordinators. Which entries a coordinator sees
+is declared once, in `src/constants/adminAccess.ts`, and read by both the sidebar
+(`AdminLayout`) and the dashboard (`AdminDashboardPage`). The two used to keep
+their own copies, and they had diverged: the dashboard offered `/adm/usuarios` to
+coordinators, but `GET /users` is admin-only, so the card led to a screen that
+answered `403` to every request.
+
+Hiding a card is not authorization. The API enforces the same policy
+independently:
+
+| Screen | Admin | Coordinator |
+| --- | --- | --- |
+| `/adm/usuarios` | ✅ | ❌ (`AdminRoleGuard`) |
+| `/adm/perfis` | ✅ all profiles | ✅ only their clubs' teachers |
+| `/adm/professores` | ✅ | ✅ reads; writes limited to their clubs |
+| `/adm/coordenadores` | ✅ | ❌ in the menu; the API allows reads, refuses writes |
+| `/adm/criancas` | ✅ | ✅ scoped to their clubs |

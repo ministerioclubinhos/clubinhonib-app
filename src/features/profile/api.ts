@@ -2,6 +2,7 @@ import api from "@/config/axiosConfig";
 
 import type {
   ApiMessage,
+  ProfileBirthday,
   ChangePasswordRequest,
   CompleteProfile,
   CreateCompleteProfileRequest,
@@ -85,6 +86,7 @@ export async function apiUpdateMyCompleteProfile(
 
 export async function apiFetchProfiles(
   params?: ProfilesQueryParams,
+  options?: { signal?: AbortSignal },
 ): Promise<PaginatedProfilesResponse> {
   // Parâmetro vazio vira filtro vazio no back; melhor nem enviar.
   const cleaned: Record<string, string | number> = {};
@@ -97,8 +99,21 @@ export async function apiFetchProfiles(
 
   const { data } = await api.get<PaginatedProfilesResponse>("/profiles", {
     params: cleaned,
+    signal: options?.signal,
   });
 
+  return data;
+}
+
+/**
+ * Aniversariantes do mês.
+ *
+ * A faixa da tela pedia a listagem inteira com `limit=1000` para descobrir
+ * isto; agora a API devolve só quem faz aniversário no mês e só o que a faixa
+ * mostra.
+ */
+export async function apiFetchProfileBirthdays(): Promise<ProfileBirthday[]> {
+  const { data } = await api.get<ProfileBirthday[]>("/profiles/birthdays");
   return data;
 }
 

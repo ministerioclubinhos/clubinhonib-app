@@ -10,6 +10,28 @@ This module focuses on the core beneficiaries of the system: the children. It ha
   - `src/features/pagela-clubs/`: The `/adm/pagelas` screen (clubs → children → pagelas).
   - `src/features/pagela-teacher/`: The teacher area, consuming the same contract.
 
+## 🧒 `/adm/criancas` — managing children
+
+The screen uses the shared admin listing shell (see
+[Components](./components.md)): a grid of `ChildCard`, a debounced search over
+name, guardian and phone, a select for the active filter, and an expandable area
+with the club number and the two date ranges (birth date, joined date).
+
+### Contract notes
+
+- `gender` is the `Gender` enum (`M` | `F`) on both sides. The API rejects any
+  other value; it used to accept any string up to 255 characters.
+- The listing's default ordering is `orderBy=name&order=ASC`. It used to send
+  `orderBy=updatedAt`, which the API did not support, so the results came back
+  sorted by name while the screen believed they were sorted by last change.
+- `meta.orderBy` and `meta.order` report the ordering actually applied.
+- The address payload carries only the seven address fields. Global validation
+  rejects unknown properties, so `id`, `createdAt` and `updatedAt` must be
+  stripped before sending a previously loaded address back.
+- Birth and join dates are calendar days (`YYYY-MM-DD`) and are formatted by
+  splitting the text — never through `new Date`, which would read them as UTC
+  and show the previous day in Manaus.
+
 ## 👶 Features
 
 - **Child Profiles**: Detailed records including personal info, guardians, and medical notes.

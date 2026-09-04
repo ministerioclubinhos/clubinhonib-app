@@ -12,7 +12,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useTheme, alpha } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-import type { ChildResponseDto } from "@/features/children/types";
+import type { ChildResponse } from "@/features/children/types";
 import type { ClubResponse } from "@/features/clubs/types";
 import { EmptyState } from "./common/EmptyState";
 import { PlaceholderCard } from "./common/PlaceholderCard";
@@ -26,7 +26,7 @@ import { formatDate, formatPhone, initialsFromName } from "../utils";
 
 type Props = {
   club: ClubResponse | null;
-  onSelect: (child: ChildResponseDto) => void;
+  onSelect: (child: ChildResponse) => void;
   selectedId: string | null;
 };
 

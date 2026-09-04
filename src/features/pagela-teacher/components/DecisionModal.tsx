@@ -4,14 +4,14 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { apiCreateAcceptedChrist } from "../api";
-import type { ChildSimpleResponseDto } from "@/features/children/types";
+import type { ChildListItem } from "@/features/children/types";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  child: ChildSimpleResponseDto;
+  child: ChildListItem;
   onSuccess?: () => void;
 }
 
