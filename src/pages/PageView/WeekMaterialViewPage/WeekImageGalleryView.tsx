@@ -262,7 +262,7 @@ export default function WeekImageGallery({ image }: Props) {
                 bgcolor: 'rgba(0,0,0,0.7)',
               },
             }}
-          >
+           aria-label="Fechar">
             <CloseIcon />
           </IconButton>
           

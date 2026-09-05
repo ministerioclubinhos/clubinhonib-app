@@ -10,8 +10,6 @@ import {
   Alert,
   Stack,
   Tooltip,
-  Dialog,
-  IconButton,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
@@ -23,6 +21,7 @@ import { apiUpdateProfileImage } from '../api';
 import { fetchCurrentUser } from '@/store/slices/auth/authSlice';
 import type { AppDispatch } from '@/store/slices';
 import { extractErrorMessage } from '@/utils/apiError';
+import ImageZoomDialog from './ImageZoomDialog';
 
 interface ProfileImageUploadProps {
   currentImageUrl?: string;
@@ -679,50 +678,11 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
         </Box>
       </Box>
 
-      <Dialog
+      <ImageZoomDialog
         open={previewOpen}
+        imageUrl={imageToShow || ''}
         onClose={() => setPreviewOpen(false)}
-        maxWidth="md"
-        slotProps={{
-          paper: {
-            sx: {
-              bgcolor: 'transparent',
-              boxShadow: 'none',
-              overflow: 'visible',
-            },
-          },
-        }}
-      >
-        <Box sx={{ position: 'relative' }}>
-          <IconButton
-            onClick={() => setPreviewOpen(false)}
-            sx={{
-              position: 'absolute',
-              top: -20,
-              right: -20,
-              bgcolor: 'rgba(0,0,0,0.7)',
-              color: 'white',
-              '&:hover': {
-                bgcolor: 'rgba(0,0,0,0.85)',
-              },
-              zIndex: 1,
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          <Box
-            component="img"
-            src={imageToShow || ''}
-            alt="Foto de perfil ampliada"
-            sx={{
-              maxWidth: '90vw',
-              maxHeight: '80vh',
-              borderRadius: 2,
-              objectFit: 'contain',
-            }}
-          />
-        </Box>
-      </Dialog>
+      />
     </motion.div>
   );
 };

@@ -15,6 +15,7 @@ import {
 import SchoolIcon from '@mui/icons-material/School';
 import { AppDispatch } from '@/store/slices';
 import { linkTeacherClub } from '@/store/slices/auth/authSlice';
+import { linkClubErrorMessage, validateClubNumber } from '../utils';
 
 interface LinkClubModalProps {
     open: boolean;
@@ -28,9 +29,10 @@ const LinkClubModal: React.FC<LinkClubModalProps> = ({ open, onClose }) => {
     const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async () => {
-        const num = parseInt(clubNumber, 10);
-        if (!num || num < 1) {
-            setError('Informe um número de clubinho válido.');
+        const checagem = validateClubNumber(clubNumber);
+
+        if (!checagem.valid) {
+            setError(checagem.message);
             return;
         }
 
@@ -38,11 +40,11 @@ const LinkClubModal: React.FC<LinkClubModalProps> = ({ open, onClose }) => {
         setError(null);
 
         try {
-            await dispatch(linkTeacherClub(num)).unwrap();
+            await dispatch(linkTeacherClub(checagem.clubNumber)).unwrap();
             setClubNumber('');
             onClose();
-        } catch (err: any) {
-            setError(typeof err === 'string' ? err : 'Erro ao vincular clubinho. Verifique o número e tente novamente.');
+        } catch (err: unknown) {
+            setError(linkClubErrorMessage(err));
         } finally {
             setLoading(false);
         }

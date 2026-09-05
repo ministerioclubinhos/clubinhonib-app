@@ -208,7 +208,7 @@ export function IdeasSectionUserCreator() {
               height: { xs: '40px', md: '48px' },
               fontSize: { xs: '1.2rem', md: '1.5rem' },
             }}
-          >
+           aria-label="Voltar">
             <ArrowBack />
           </IconButton>
         </Box>

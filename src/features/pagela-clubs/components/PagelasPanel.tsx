@@ -253,13 +253,13 @@ export function PagelasPanel({ child }: Props) {
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flexWrap: "wrap", gap: 1 }}>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
           <Tooltip title="- por página">
-            <IconButton onClick={() => stepLimit(-1)} size={isMobile ? "small" : "medium"}>
+            <IconButton onClick={() => stepLimit(-1)} size={isMobile ? "small" : "medium"} aria-label="- por página">
               <ChevronLeftIcon />
             </IconButton>
           </Tooltip>
           <Typography variant="body2" sx={{ fontSize: isMobile ? "0.75rem" : "0.875rem" }}>{limit}/pág.</Typography>
           <Tooltip title="+ por página">
-            <IconButton onClick={() => stepLimit(1)} size={isMobile ? "small" : "medium"}>
+            <IconButton onClick={() => stepLimit(1)} size={isMobile ? "small" : "medium"} aria-label="+ por página">
               <ChevronRightIcon />
             </IconButton>
           </Tooltip>

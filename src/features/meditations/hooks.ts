@@ -14,13 +14,7 @@ import { MediaUploadType } from '@/store/slices/types';
 import { useAbortController, useDebouncedValue } from '@/hooks';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import {
-  createMeditation,
-  deleteMeditation,
-  getMeditation,
-  listMeditations,
-  updateMeditation,
-} from './api';
+import { createMeditation, deleteMeditation, getMeditation, listMeditations, updateMeditation } from './api';
 import {
   MEDITATIONS_DEFAULT_LIMIT,
   MEDITATION_DAYS_COUNT,

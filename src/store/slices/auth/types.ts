@@ -16,6 +16,22 @@ export interface AuthResponse {
     };
 }
 
+/**
+ * Resposta de `POST /auth/register`.
+ *
+ * O back declara `AuthRegisterResponseDto`: mensagem, o usuário criado e o
+ * estado do envio de confirmação. Não vêm tokens — a conta nasce inativa e só
+ * ganha sessão depois de confirmar o e-mail.
+ */
+export interface RegisterResponse {
+    message: string;
+    user?: User;
+    emailVerification?: {
+        verificationEmailSent: boolean;
+        message?: string;
+    };
+}
+
 export interface RegisterUserDto {
     name: string;
     email: string;

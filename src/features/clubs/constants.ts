@@ -55,6 +55,9 @@ export const DEFAULT_CLUB_SORT: ClubSort = { id: "number", desc: false };
 export const DEFAULT_PAGE_SIZE = 12;
 export const PAGE_SIZE_OPTIONS = [12, 24, 50];
 
+/** Valor do filtro "qualquer situação" nos seletores da barra. */
+export const ANY_FILTER = "";
+
 /**
  * Espera antes de buscar enquanto se digita.
  *

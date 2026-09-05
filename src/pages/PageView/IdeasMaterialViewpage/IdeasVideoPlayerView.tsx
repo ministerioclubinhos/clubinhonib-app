@@ -15,7 +15,7 @@ interface Props {
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
-    children: React.ReactElement<any, any>;
+    children: React.ReactElement;
   },
   ref: React.Ref<unknown>,
 ) {
@@ -281,7 +281,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
                 size="small"
                 onClick={() => setOpenModal(true)}
                 sx={{ color: theme.palette.text.secondary }}
-              >
+               aria-label="Expandir vídeo">
                 <FullscreenIcon />
               </IconButton>
             </Tooltip>
@@ -347,7 +347,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
           <Typography variant="h6" component="div">
             {video.title}
           </Typography>
-          <IconButton onClick={() => setOpenModal(false)} sx={{ color: 'white' }}>
+          <IconButton onClick={() => setOpenModal(false)} sx={{ color: 'white' }} aria-label="Fechar">
             <CloseIcon />
           </IconButton>
         </Box>

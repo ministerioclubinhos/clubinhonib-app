@@ -17,10 +17,6 @@ import {
   Alert,
   CircularProgress,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   useTheme,
   FormControlLabel,
   Checkbox,
@@ -49,6 +45,8 @@ import {
 import { useCreateException, useWeekdayExceptions, useDeleteException } from '../hooks';
 import dayjs from 'dayjs';
 import { getClubControlErrorMessage } from '../errorMessage';
+import ExceptionDeleteDialog from './ExceptionDeleteDialog';
+import { SUGGESTED_HOLIDAYS } from '../constants';
 
 const EXCEPTION_TYPES = [
   { value: 'holiday', label: 'Feriado', icon: <EventBusy />, color: '#ff9800' },
@@ -581,7 +579,7 @@ export const ExceptionManagement: React.FC = () => {
                                       description: `${dayjs(exception.exceptionDate).format('DD/MM/YYYY')} - ${exception.reason}`,
                                     })
                                   }
-                                >
+                                 aria-label="Excluir">
                                   <Delete />
                                 </IconButton>
                               </TableCell>
@@ -643,17 +641,7 @@ export const ExceptionManagement: React.FC = () => {
               Clique para preencher automaticamente o formulário
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {[
-                { date: '2024-12-25', label: 'Natal', recurrent: true },
-                { date: '2025-01-01', label: 'Ano Novo', recurrent: true },
-                { date: '2025-04-21', label: 'Tiradentes', recurrent: true },
-                { date: '2025-05-01', label: 'Trabalho', recurrent: true },
-                { date: '2025-09-07', label: 'Independência', recurrent: true },
-                { date: '2025-10-12', label: 'N. Sra. Aparecida', recurrent: true },
-                { date: '2025-11-02', label: 'Finados', recurrent: true },
-                { date: '2025-11-15', label: 'Proclamação', recurrent: true },
-                { date: '2025-11-20', label: 'Consciência Negra', recurrent: true },
-              ].map((holiday) => (
+              {SUGGESTED_HOLIDAYS.map((holiday) => (
                 <Chip
                   key={holiday.date}
                   label={`${holiday.label} (${dayjs(holiday.date).format('DD/MM')})`}
@@ -676,49 +664,15 @@ export const ExceptionManagement: React.FC = () => {
         </Grid2>
       </Grid2>
 
-      <Dialog
+      <ExceptionDeleteDialog
         open={deleteDialog.open}
-        onClose={() => setDeleteDialog({ open: false, exceptionId: '', description: '' })}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Warning sx={{ color: theme.palette.warning.main, fontSize: 28 }} />
-          Confirmar Exclusão
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" gutterBottom>
-            Tem certeza que deseja excluir a exceção <strong>{deleteDialog.description}</strong>?
-          </Typography>
-          <Alert severity="info" sx={{ mt: 2 }} icon={<Info />}>
-            <Typography variant="body2" fontWeight="bold" gutterBottom>
-              ℹ️ O que acontece após a exclusão:
-            </Typography>
-            <Typography variant="caption" display="block">
-              A data voltará a ser considerada como <strong>dia normal de funcionamento</strong> para
-              <strong> TODOS os clubinhos</strong> que funcionam neste dia da semana.
-              As pagelas desta data voltarão a ser cobradas normalmente.
-            </Typography>
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => setDeleteDialog({ open: false, exceptionId: '', description: '' })}
-            variant="outlined"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleDelete}
-            color="error"
-            variant="contained"
-            disabled={deleteException.isPending}
-            startIcon={deleteException.isPending ? <CircularProgress size={16} /> : <Delete />}
-          >
-            {deleteException.isPending ? 'Excluindo...' : 'Excluir Exceção'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        description={deleteDialog.description}
+        loading={deleteException.isPending}
+        onConfirm={handleDelete}
+        onCancel={() =>
+          setDeleteDialog({ open: false, exceptionId: '', description: '' })
+        }
+      />
 
       <Snackbar
         open={snackbar.open}

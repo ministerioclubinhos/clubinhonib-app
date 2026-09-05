@@ -23,6 +23,7 @@ import { RootState } from '@/store/slices';
 import { PhoneInput, extractPhoneDigits } from '@/components/common/inputs';
 import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
+import type { Resolver } from 'react-hook-form';
 
 interface RegisterProps {
   commonUser: boolean;
@@ -51,7 +52,9 @@ const getSchema = (commonUser: boolean) =>
       .required(FORM_VALIDATION_MESSAGES.REQUIRED_FIELD),
     role: (commonUser
       ? Yup.mixed<RoleChoice>().oneOf(['', 'teacher', 'coordinator'])
-      : Yup.mixed<RoleChoice>().oneOf(['teacher', 'coordinator']).required('Selecione seu perfil')) as any,
+      : Yup.mixed<RoleChoice>()
+          .oneOf(['teacher', 'coordinator'])
+          .required('Selecione seu perfil')),
   });
 
 interface FormData {
@@ -80,7 +83,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
     setValue,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: yupResolver(getSchema(commonUser)) as any,
+    resolver: yupResolver(getSchema(commonUser)) as Resolver<FormData>,
     defaultValues: {
       name: '',
       email: '',

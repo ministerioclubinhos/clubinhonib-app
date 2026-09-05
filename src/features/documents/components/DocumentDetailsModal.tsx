@@ -73,7 +73,7 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DescriptionOutlinedIcon /> Detalhes do documento
         </Box>
-        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }} aria-label="Fechar">
           <CloseRoundedIcon />
         </IconButton>
       </DialogTitle>
@@ -122,7 +122,7 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
                 </Typography>
                 {url && (
                   <Tooltip title="Copiar URL">
-                    <IconButton onClick={handleCopyUrl} size="small" color="primary" sx={{ flexShrink: 0 }}>
+                    <IconButton onClick={handleCopyUrl} size="small" color="primary" sx={{ flexShrink: 0 }} aria-label="Copiar URL">
                       <ContentCopyRoundedIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>

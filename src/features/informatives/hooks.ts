@@ -6,12 +6,7 @@ import type { AppDispatch } from '@/store/slices';
 import { fetchRoutes } from '@/store/slices/route/routeSlice';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import {
-  apiCreateInformative,
-  apiDeleteInformative,
-  apiListInformatives,
-  apiUpdateInformative,
-} from './api';
+import { apiCreateInformative, apiDeleteInformative, apiListInformatives, apiUpdateInformative } from './api';
 import { INFORMATIVES_DEFAULT_LIMIT } from './constants';
 import type {
   InformativeFormValues,

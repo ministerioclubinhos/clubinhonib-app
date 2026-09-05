@@ -21,11 +21,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import IdeasDocumentViewer from './IdeasDocumentViewer';
 import IdeasImageGalleryView from './IdeasImageGalleryView';
 import IdeasVideoPlayerView from './IdeasVideoPlayerView';
+import type { MediaItem } from '@/store/slices/types';
 
 interface MediaTypeCardProps {
     type: string;
     icon: React.ReactNode;
-    items: any[];
+    items: MediaItem[];
     color: string;
     emoji: string;
     sectionId: string;
@@ -35,7 +36,7 @@ interface MediaTypeCardProps {
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
-        children: React.ReactElement<any, any>;
+        children: React.ReactElement;
     },
     ref: React.Ref<unknown>,
 ) {
@@ -143,7 +144,7 @@ export default function MediaTypeCard({
                                 transition: 'transform 0.3s ease',
                                 p: { xs: '5px', sm: 1 },
                             }}
-                        >
+                         aria-label="Mostrar ou esconder os arquivos">
                             <ExpandMoreIcon fontSize="small" />
                         </IconButton>
                     </Box>

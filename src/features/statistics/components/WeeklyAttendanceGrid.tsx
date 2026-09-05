@@ -199,7 +199,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, mt: { xs: 2, sm: 0 } }}>
-            <IconButton size="small" onClick={handlePrevWeek} disabled={academicWeek === null || academicWeek <= 1}>
+            <IconButton size="small" onClick={handlePrevWeek} disabled={academicWeek === null || academicWeek <= 1} aria-label="Semana anterior">
               <NavigateBefore />
             </IconButton>
             <TextField
@@ -230,7 +230,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                 </MenuItem>
               ))}
             </TextField>
-            <IconButton size="small" onClick={handleNextWeek}>
+            <IconButton size="small" onClick={handleNextWeek} aria-label="Próxima semana">
               <NavigateNext />
             </IconButton>
           </Box>

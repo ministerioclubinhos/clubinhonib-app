@@ -22,7 +22,7 @@ import {
 import { motion } from 'framer-motion';
 import { useStatistics } from '../context';
 import { useChildren } from '../hooks';
-import { ChildrenStatsQueryDto, ChildStat } from '../api';
+import type { ChildrenStatsQueryDto, ChildStat } from '../types';
 import { StatCard, DataTable, Column } from '../components/ui';
 
 const MotionCard = motion.create(Card);

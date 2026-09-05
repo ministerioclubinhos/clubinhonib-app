@@ -16,13 +16,7 @@ export { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { useAbortController, useDebouncedValue } from '@/hooks';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import {
-  apiCreateIdeasPage,
-  apiDeleteIdeasPage,
-  apiGetIdeasPage,
-  apiListIdeasPages,
-  apiUpdateIdeasPage,
-} from './api';
+import { apiCreateIdeasPage, apiDeleteIdeasPage, apiGetIdeasPage, apiListIdeasPages, apiUpdateIdeasPage } from './api';
 import { IDEAS_PAGES_DEFAULT_LIMIT } from './constants';
 import {
   IdeasPageFormErrors,

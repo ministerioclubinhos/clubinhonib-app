@@ -28,7 +28,7 @@ import {
 } from 'recharts';
 import { CompareArrows } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 /** Barra de atividade exibida no tooltip. */
 interface ActivitiesTooltipPayload {

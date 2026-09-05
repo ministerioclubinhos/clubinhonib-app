@@ -102,7 +102,8 @@ export type ApiErrorCode =
 
 export interface ApiErrorDetail {
     field?: string;
-    [key: string]: any;
+    /** O back manda o que for útil para a tela; o valor não é conhecido aqui. */
+    [key: string]: unknown;
 }
 
 export interface ApiErrorData {

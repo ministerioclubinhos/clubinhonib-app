@@ -97,6 +97,8 @@ describe("pagelas utils", () => {
   });
 
   it("a query da listagem só leva o que QueryPagelasDto aceita", () => {
+    // A API roda `forbidNonWhitelisted`: um campo a mais aqui derruba a
+    // requisição inteira com 400, não é ignorado.
     const params = buildPagelasQuery({
       childId: "child-1",
       page: 2,
@@ -113,9 +115,23 @@ describe("pagelas utils", () => {
         "present",
         "recitedVerse",
         "searchString",
+        "week",
+        "year",
       ].sort(),
     );
     expect(params.searchString).toBe("2026-48");
+  });
+
+  it("o recorte de ano e semana chega na query", () => {
+    const params = buildPagelasQuery({
+      childId: "child-1",
+      page: 1,
+      limit: 10,
+      filters: { year: 2026, week: 48 },
+    });
+
+    expect(params.year).toBe(2026);
+    expect(params.week).toBe(48);
   });
 
   it("classifica a semana da criança", () => {

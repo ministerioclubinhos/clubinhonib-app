@@ -4,10 +4,11 @@ import { Box, Typography, Container, Grid, Card, CardContent, CardMedia } from '
 import { motion } from 'framer-motion';
 import { MediaTargetType } from 'store/slices/types';
 import { useVisibleRoutes } from '@/features/feature-flags';
+import type { RouteData } from '@/store/slices/route/routeSlice';
 
 const CardsSection: React.FC = () => {
   const routes = useVisibleRoutes();
-  const [cards, setCards] = useState<any[]>([]);
+  const [cards, setCards] = useState<RouteData[]>([]);
 
   useEffect(() => {
     const feedImageGalleryId = import.meta.env.VITE_FEED_MINISTERIO_ID;

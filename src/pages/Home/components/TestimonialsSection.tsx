@@ -230,7 +230,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
               },
               transition: 'all 0.3s ease',
             }}
-          >
+           aria-label="Depoimento anterior">
             <ChevronLeft />
           </IconButton>
 
@@ -250,7 +250,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
               },
               transition: 'all 0.3s ease',
             }}
-          >
+           aria-label="Próximo depoimento">
             <ChevronRight />
           </IconButton>
 

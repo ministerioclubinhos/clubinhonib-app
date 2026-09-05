@@ -1,4 +1,8 @@
 import api from "@/config/axiosConfig";
+import type {
+  AcceptedChristResponse,
+  CreateAcceptedChristRequest,
+} from "@/features/children/types";
 
 import { apiFetchPagelas } from "@/features/pagelas/api";
 import type {
@@ -52,11 +56,19 @@ export async function apiListPagelasPaginated(
   );
 }
 
-export async function apiCreateAcceptedChrist(payload: {
-  childId: string;
-  decision: "ACCEPTED" | "RECONCILED";
-  notes?: string | null;
-}) {
-  const { data } = await api.post("/accepted-christs", payload);
+/**
+ * Registra a decisão de uma criança.
+ *
+ * A rota exige sessão e confere o clubinho: um professor só registra decisão de
+ * criança da turma dele. Criança fora do alcance responde 404, igual ao que
+ * responderia se não existisse.
+ */
+export async function apiCreateAcceptedChrist(
+  payload: CreateAcceptedChristRequest,
+): Promise<AcceptedChristResponse> {
+  const { data } = await api.post<AcceptedChristResponse>(
+    "/accepted-christs",
+    payload,
+  );
   return data;
 }

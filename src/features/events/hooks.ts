@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import {
-  apiCreateEvent,
-  apiDeleteEvent,
-  apiListEvents,
-  apiUpdateEvent,
-} from './api';
+import { apiCreateEvent, apiDeleteEvent, apiListEvents, apiUpdateEvent } from './api';
 import { EventFormErrors, EventFormValues, EventResponse } from './types';
 import { buildEventFormData, sortByDate, validateEventForm } from './utils';
 

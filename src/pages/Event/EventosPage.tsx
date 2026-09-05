@@ -46,7 +46,7 @@ export type AppEvent = {
   location: string;
   date: string;
   description: string;
-  media?: { url: string; originalName?: string; size?: number };
+  media?: { url: string; originalName?: string; size?: number; createdAt?: string };
   createdAt?: string;
   updatedAt?: string;
   audience?: string;
@@ -55,22 +55,31 @@ export type AppEvent = {
 type ViewMode = "cards" | "calendar";
 type AddEditMode = "add" | "edit";
 
-const mapEventsWithFallbackDate = (raw: any[]): AppEvent[] =>
-  (raw || []).map((e: any) => {
-    const hasDate = e?.date && String(e.date).trim();
-    const fallback = e?.media?.createdAt || e?.createdAt || null;
+/**
+ * O evento como a API o devolve, antes do recuo de data.
+ *
+ * `date` pode vir vazio em registros antigos; a tela ordena por data, então
+ * cai para a data da mídia ou a de criação em vez de mostrar um vazio.
+ */
+type RawEvent = Omit<AppEvent, 'date'> & { date?: string | null };
+
+const mapEventsWithFallbackDate = (raw: RawEvent[]): AppEvent[] =>
+  (raw || []).map((evento) => {
+    const temData = Boolean(evento.date && String(evento.date).trim());
+    const recuo = evento.media?.createdAt ?? evento.createdAt ?? '';
 
     return {
-      ...e,
-      date: hasDate ? e.date : fallback,
-    } as AppEvent;
+      ...evento,
+      date: temData ? String(evento.date) : recuo,
+    };
   });
 
 export default function EventosPage() {
   const dispatch = useDispatch();
 
-  const authState = useSelector((state: RootState) => state.auth) as any;
-  const { isAuthenticated, user } = authState;
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth,
+  );
 
   const isAdmin = Boolean(isAuthenticated && user?.role === UserRole.ADMIN);
 
@@ -94,7 +103,7 @@ export default function EventosPage() {
     try {
       const res = await api.get("/events");
       const mapped = mapEventsWithFallbackDate(res.data || []);
-      dispatch(setEvents(mapped as any));
+      dispatch(setEvents(mapped));
       setEventosState(mapped);
       setError("");
     } catch (err: unknown) {

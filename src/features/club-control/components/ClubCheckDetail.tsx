@@ -18,8 +18,9 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { PersonOff, CheckCircle, Warning, Error as ErrorIcon, Info } from '@mui/icons-material';
-import { ClubCheckResult } from '../api';
+import type { ClubCheckResult } from '../types';
 import dayjs from 'dayjs';
+import { clubStatusLabel, clubStatusSeverity } from '../utils';
 
 interface ClubCheckDetailProps {
   open: boolean;
@@ -38,44 +39,29 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
     return null;
   }
 
+  // Rótulo e gravidade vêm de `utils.ts`: a cópia local aqui não tratava
+  // `pending`, `inactive` nem `out_of_period`, que caíam no genérico.
   const getStatusConfig = (status: string) => {
-    switch (status) {
-      case 'ok':
-        return {
-          icon: <CheckCircle />,
-          color: 'success' as const,
-          bgcolor: '#4caf5020',
-          label: '✅ Completo',
-        };
-      case 'partial':
-        return {
-          icon: <Warning />,
-          color: 'warning' as const,
-          bgcolor: '#ff980020',
-          label: '⚠️ Parcial',
-        };
-      case 'missing':
-        return {
-          icon: <ErrorIcon />,
-          color: 'error' as const,
-          bgcolor: '#f4433620',
-          label: '🔴 Faltando',
-        };
-      case 'exception':
-        return {
-          icon: <Info />,
-          color: 'info' as const,
-          bgcolor: '#2196f320',
-          label: 'ℹ️ Exceção',
-        };
-      default:
-        return {
-          icon: <Info />,
-          color: 'default' as const,
-          bgcolor: '#60606020',
-          label: 'Desconhecido',
-        };
-    }
+    const severity = clubStatusSeverity(status);
+    const icones: Record<string, React.ReactElement> = {
+      success: <CheckCircle />,
+      warning: <Warning />,
+      error: <ErrorIcon />,
+      info: <Info />,
+    };
+    const fundos: Record<string, string> = {
+      success: '#4caf5020',
+      warning: '#ff980020',
+      error: '#f4433620',
+      info: '#2196f320',
+    };
+
+    return {
+      icon: icones[severity],
+      color: severity,
+      bgcolor: fundos[severity],
+      label: clubStatusLabel(status),
+    };
   };
 
   const statusConfig = clubCheck ? getStatusConfig(clubCheck.status) : null;

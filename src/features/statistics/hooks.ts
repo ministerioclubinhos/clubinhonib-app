@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { statisticsApi, PagelasStatsQueryDto, AcceptedChristsStatsQueryDto, ChildrenStatsQueryDto, ClubsStatsQueryDto, TeachersStatsQueryDto } from './api';
-import { clubControlApi, CurrentWeekInfo } from '../club-control/api';
+import { statisticsApi } from './api';
+import type { PagelasStatsQueryDto, AcceptedChristsStatsQueryDto, ChildrenStatsQueryDto, ClubsStatsQueryDto, TeachersStatsQueryDto } from './types';
+import { clubControlApi } from '../club-control/api';
+import type { CurrentWeekInfo } from '../club-control/types';
 
 export const usePagelasChartData = (filters?: PagelasStatsQueryDto) => {
   return useQuery({

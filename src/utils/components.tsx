@@ -13,7 +13,7 @@ export function CopyButton({ value, title = "Copiar" }: { value?: string; title?
         size="small" 
         onClick={() => copyToClipboard(value)}
         sx={{ p: 0.5 }}
-      >
+       aria-label="Copiar">
         <ContentCopy fontSize="small" />
       </IconButton>
     </Tooltip>

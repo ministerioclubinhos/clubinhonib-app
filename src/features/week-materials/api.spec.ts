@@ -12,15 +12,7 @@ vi.mock('@/config/axiosConfig', () => ({
 
 import api from '@/config/axiosConfig';
 
-import {
-  createWeekMaterial,
-  deleteWeekMaterial,
-  getCurrentWeekMaterial,
-  getWeekMaterial,
-  listWeekMaterials,
-  setCurrentWeek,
-  updateWeekMaterial,
-} from './api';
+import { createWeekMaterial, deleteWeekMaterial, getCurrentWeekMaterial, getWeekMaterial, listWeekMaterials, setCurrentWeek, updateWeekMaterial } from './api';
 import { MULTIPART_HEADERS, WEEK_MATERIALS_ENDPOINT } from './constants';
 import { WeekMaterialResponse } from './types';
 

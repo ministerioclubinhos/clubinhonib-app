@@ -102,7 +102,7 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
           <DescriptionOutlinedIcon />
           {displayTitle}
         </Box>
-        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }} aria-label="Fechar">
           <CloseIcon />
         </IconButton>
       </DialogTitle>

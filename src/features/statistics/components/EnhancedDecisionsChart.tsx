@@ -19,7 +19,7 @@ import {
 } from 'recharts';
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { useAcceptedChristsChartData } from '../hooks';
-import { AcceptedChristsStatsQueryDto } from '../api';
+import type { AcceptedChristsStatsQueryDto } from '../types';
 
 
 interface EnhancedDecisionsChartProps {

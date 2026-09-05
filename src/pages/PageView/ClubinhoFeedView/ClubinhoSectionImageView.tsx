@@ -31,6 +31,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 import { motion } from 'framer-motion';
+import type { SxProps, Theme } from '@mui/material';
 
 /**
  * As props declaram o que o componente consome, em vez de derivarem do tipo da
@@ -64,7 +65,7 @@ const getPlatformIcon = (platform?: MediaPlatform | string) => {
   }
 };
 
-const ImageWithSkeleton: React.FC<{ src: string; alt: string; sx?: any; onClick?: () => void }> = ({
+const ImageWithSkeleton: React.FC<{ src: string; alt: string; sx?: SxProps<Theme>; onClick?: () => void }> = ({
   src,
   alt,
   sx,
@@ -327,7 +328,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
                               backdropFilter: 'blur(4px)',
                             }}
                           >
-                            {getPlatformIcon((item as any).platformType)}
+                            {getPlatformIcon(item.platformType)}
                           </Box>
                         </motion.div>
 
@@ -430,7 +431,7 @@ const ClubinhoSectionImageView: React.FC<SectionItemProps> = ({
                     bgcolor: 'rgba(255,255,255,0.2)',
                   },
                 }}
-              >
+               aria-label="Fechar">
                 <CloseIcon />
               </IconButton>
 

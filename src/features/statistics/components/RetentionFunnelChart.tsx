@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { TrendingUp, TrendingDown, Group, Timer } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 interface RetentionFunnelChartProps {
   filters?: PagelasStatsQueryDto;

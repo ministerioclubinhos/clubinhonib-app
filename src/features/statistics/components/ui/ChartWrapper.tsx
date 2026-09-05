@@ -384,7 +384,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
 
             {onRefresh && (
               <Tooltip title="Atualizar">
-                <IconButton size="small" onClick={onRefresh}>
+                <IconButton size="small" onClick={onRefresh} aria-label="Atualizar">
                   <Refresh />
                 </IconButton>
               </Tooltip>
@@ -392,7 +392,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
 
             {fullscreenable && (
               <Tooltip title={isFullscreen ? 'Sair da tela cheia' : 'Tela cheia'}>
-                <IconButton size="small" onClick={toggleFullscreen}>
+                <IconButton size="small" onClick={toggleFullscreen} aria-label="Atualizar">
                   {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
                 </IconButton>
               </Tooltip>
@@ -401,7 +401,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
             {exportable && (
               <>
                 <Tooltip title="Opcoes">
-                  <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)}>
+                  <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)} aria-label="Opcoes">
                     <MoreVert />
                   </IconButton>
                 </Tooltip>

@@ -23,7 +23,7 @@ import {
 } from 'recharts';
 import { School, TrendingUp, EmojiEvents } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 /** Professor exibido no tooltip. */
 interface TeacherTooltipPayload {

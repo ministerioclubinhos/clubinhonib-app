@@ -1,21 +1,54 @@
-export const BRAND_GREEN = "#81d742";
+import { MAX_ISO_WEEK, MIN_ISO_WEEK } from "./constants";
 
-export function todayISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+/**
+ * Regras puras da área do professor.
+ *
+ * `BRAND_GREEN` saiu daqui para `constants.ts`, e continua reexportado porque
+ * os componentes já a importavam deste caminho.
+ */
+export { BRAND_GREEN } from "./constants";
+
+/**
+ * Data de hoje em `YYYY-MM-DD`, pelos componentes locais.
+ *
+ * `toISOString()` converteria para UTC antes de recortar e, em fuso positivo,
+ * devolveria o dia anterior.
+ */
+export function todayISO(): string {
+  const hoje = new Date();
+  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoje.getDate()).padStart(2, "0");
+
+  return `${hoje.getFullYear()}-${mes}-${dia}`;
 }
-export function clampWeek(w: number) {
-  return Math.max(1, Math.min(53, w));
+
+/** Mantém a semana dentro dos limites ISO. */
+export function clampWeek(week: number): number {
+  return Math.max(MIN_ISO_WEEK, Math.min(MAX_ISO_WEEK, week));
 }
-export function toLabelWeek(year: number, week: number) {
-  return `Ano: ${year} Semana: ${String(week).padStart(2,"0")}`;
+
+/** Rótulo de ano e semana, como a barra de navegação mostra. */
+export function toLabelWeek(year: number, week: number): string {
+  return `Ano: ${year} Semana: ${String(week).padStart(2, "0")}`;
 }
-export function getISOWeekYear(date: Date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  const year = d.getUTCFullYear();
-  const yearStart = new Date(Date.UTC(year, 0, 1));
-  const week = Math.ceil((((+d - +yearStart) / 86400000) + 1) / 7);
+
+/**
+ * Ano e semana ISO de uma data.
+ *
+ * A semana é a da quinta-feira: é ela que decide a qual ano a semana pertence
+ * quando a virada de ano cai no meio dela.
+ */
+export function getISOWeekYear(date: Date): { year: number; week: number } {
+  const quinta = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  );
+  quinta.setUTCDate(quinta.getUTCDate() + 4 - (quinta.getUTCDay() || 7));
+
+  const year = quinta.getUTCFullYear();
+  const inicioDoAno = new Date(Date.UTC(year, 0, 1));
+  const week = Math.ceil(
+    ((quinta.getTime() - inicioDoAno.getTime()) / 86400000 + 1) / 7,
+  );
+
   return { year, week };
 }
-

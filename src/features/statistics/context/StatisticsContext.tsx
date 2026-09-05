@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
-import { PagelasStatsQueryDto, PeriodShortcut } from '../api';
+import { PeriodShortcut } from '../types';
+import type { PagelasStatsQueryDto } from '../types';
 import dayjs from 'dayjs';
 
 export interface DateRange {

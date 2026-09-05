@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import { RetentionFunnelChart, DemographicCharts } from '../components';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 interface RetentionTabProps {
 	filters: PagelasStatsQueryDto;

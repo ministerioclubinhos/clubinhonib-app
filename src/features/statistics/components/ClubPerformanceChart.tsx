@@ -24,7 +24,7 @@ import {
 } from 'recharts';
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 /** Clubinho exibido no tooltip. */
 interface ClubTooltipPayload {

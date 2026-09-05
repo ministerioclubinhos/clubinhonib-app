@@ -16,10 +16,6 @@ import {
   Chip,
   Alert,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   useTheme,
   TablePagination,
   Snackbar,
@@ -30,12 +26,15 @@ import {
   Stack,
   Divider,
 } from '@mui/material';
-import { Delete, Add, CalendarMonth, CheckCircle, Info, Warning, Edit } from '@mui/icons-material';
+import { Delete, Add, CalendarMonth, CheckCircle, Info, Edit } from '@mui/icons-material';
 import { useCreatePeriod, useAcademicPeriods, useDeletePeriod, useUpdatePeriod } from '../hooks';
-import { AcademicPeriod } from '../api';
+import type { AcademicPeriod } from '../types';
 import dayjs from 'dayjs';
 import { SimpleDatePicker } from '@/components/common/inputs';
 import { getClubControlErrorMessage } from '../errorMessage';
+import { validatePeriodDates } from '../utils';
+import PeriodDeleteDialog from './PeriodDeleteDialog';
+import PeriodEditDialog from './PeriodEditDialog';
 
 export const PeriodManagement: React.FC = () => {
   const theme = useTheme();
@@ -153,16 +152,14 @@ export const PeriodManagement: React.FC = () => {
     e.preventDefault();
     if (!editDialog.period) return;
 
-    if (
-      editFormData.startDate > editFormData.endDate ||
-      dayjs(editFormData.startDate).year() !== editDialog.period.year ||
-      dayjs(editFormData.endDate).year() !== editDialog.period.year
-    ) {
-      setSnackbar({
-        open: true,
-        message: 'Informe datas válidas, em ordem, dentro do ano letivo.',
-        severity: 'warning',
-      });
+    const checagem = validatePeriodDates(
+      editFormData.startDate,
+      editFormData.endDate,
+      editDialog.period.year,
+    );
+
+    if (!checagem.valid) {
+      setSnackbar({ open: true, message: checagem.message!, severity: 'warning' });
       return;
     }
 
@@ -596,7 +593,7 @@ export const PeriodManagement: React.FC = () => {
                                     color="primary"
                                     onClick={() => handleOpenEdit(period)}
                                     title="Editar período"
-                                  >
+                                   aria-label="Editar">
                                     <Edit />
                                   </IconButton>
                                   <IconButton
@@ -610,7 +607,7 @@ export const PeriodManagement: React.FC = () => {
                                       })
                                     }
                                     title="Excluir período"
-                                  >
+                                   aria-label="Excluir">
                                     <Delete />
                                   </IconButton>
                                 </Box>
@@ -658,117 +655,25 @@ export const PeriodManagement: React.FC = () => {
         </Grid2>
       </Grid2>
 
-      <Dialog
+      <PeriodEditDialog
         open={editDialog.open}
-        onClose={handleCloseEdit}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Edit sx={{ color: theme.palette.primary.main, fontSize: 28 }} />
-          Editar Período Letivo
-        </DialogTitle>
-        <form onSubmit={handleSubmitEdit}>
-          <DialogContent>
-            {editDialog.period && (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                <Typography variant="body2">
-                  Editando período do ano <strong>{editDialog.period.year}</strong>
-                </Typography>
-              </Alert>
-            )}
-            <Grid2 container spacing={2} sx={{ mt: 1 }}>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <SimpleDatePicker
-                  value={editFormData.startDate}
-                  onChange={(value) => setEditFormData({ ...editFormData, startDate: value })}
-                  label="Data de Início"
-                  required
-                  margin="none"
-                />
-              </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <SimpleDatePicker
-                  value={editFormData.endDate}
-                  onChange={(value) => setEditFormData({ ...editFormData, endDate: value })}
-                  label="Data de Término"
-                  required
-                  margin="none"
-                />
-              </Grid2>
-              <Grid2 size={12}>
-                <TextField
-                  fullWidth
-                  label="Descrição"
-                  value={editFormData.description}
-                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                  placeholder="Ex: Ano Letivo 2024 - Atualizado"
-                />
-              </Grid2>
-            </Grid2>
-          </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button
-              onClick={handleCloseEdit}
-              variant="outlined"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              color="primary"
-              variant="contained"
-              disabled={updatePeriod.isPending}
-              startIcon={updatePeriod.isPending ? <CircularProgress size={16} /> : <Edit />}
-            >
-              {updatePeriod.isPending ? 'Salvando...' : 'Salvar Alterações'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+        period={editDialog.period}
+        values={editFormData}
+        loading={updatePeriod.isPending}
+        onChange={setEditFormData}
+        onSubmit={handleSubmitEdit}
+        onCancel={handleCloseEdit}
+      />
 
-      <Dialog
+      <PeriodDeleteDialog
         open={deleteDialog.open}
-        onClose={() => setDeleteDialog({ open: false, periodId: '', description: '' })}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Warning sx={{ color: theme.palette.error.main, fontSize: 28 }} />
-          Confirmar Exclusão
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" gutterBottom>
-            Tem certeza que deseja excluir o período <strong>{deleteDialog.description}</strong>?
-          </Typography>
-          <Alert severity="warning" sx={{ mt: 2 }} icon={<Warning />}>
-            <Typography variant="body2" fontWeight="bold" gutterBottom>
-              ⚠️ Atenção: Esta ação não pode ser desfeita!
-            </Typography>
-            <Typography variant="caption" display="block">
-              A exclusão deste período afetará <strong>TODOS os clubinhos</strong> do sistema.
-              As semanas relacionadas a este período não serão mais monitoradas.
-            </Typography>
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => setDeleteDialog({ open: false, periodId: '', description: '' })}
-            variant="outlined"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleDelete}
-            color="error"
-            variant="contained"
-            disabled={deletePeriod.isPending}
-            startIcon={deletePeriod.isPending ? <CircularProgress size={16} /> : <Delete />}
-          >
-            {deletePeriod.isPending ? 'Excluindo...' : 'Excluir Período'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        description={deleteDialog.description}
+        loading={deletePeriod.isPending}
+        onConfirm={handleDelete}
+        onCancel={() =>
+          setDeleteDialog({ open: false, periodId: '', description: '' })
+        }
+      />
 
       <Snackbar
         open={snackbar.open}

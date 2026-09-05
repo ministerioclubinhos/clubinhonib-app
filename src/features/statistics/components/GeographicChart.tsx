@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 interface GeographicChartProps {
   filters?: PagelasStatsQueryDto;

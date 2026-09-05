@@ -15,7 +15,7 @@ interface Props {
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
-    children: React.ReactElement<any, any>;
+    children: React.ReactElement;
   },
   ref: React.Ref<unknown>,
 ) {
@@ -200,7 +200,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
               bgcolor: 'rgba(0,0,0,0.8)',
             }
           }}
-        >
+         aria-label="Fechar">
           <CloseIcon />
         </IconButton>
 

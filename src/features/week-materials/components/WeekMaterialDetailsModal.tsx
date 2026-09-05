@@ -65,7 +65,7 @@ export default function WeekMaterialDetailsModal({
           onClick={onClose}
           sx={{ position: 'absolute', top: 8, right: 8, color: '#555' }}
           disabled={isDeleting}
-        >
+         aria-label="Fechar">
           <Close />
         </IconButton>
 
@@ -165,7 +165,7 @@ export default function WeekMaterialDetailsModal({
                                 onClick={() => handleCopyUrl(item.url)}
                                 title="Copiar URL"
                                 sx={{ color: '#1976d2' }}
-                              >
+                               aria-label="Copiar">
                                 <ContentCopy fontSize="small" />
                               </IconButton>
                             </Box>

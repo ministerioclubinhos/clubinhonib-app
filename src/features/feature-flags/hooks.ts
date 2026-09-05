@@ -3,15 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAbortController, useDebouncedValue } from '@/hooks';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import {
-  apiCreateFeatureFlag,
-  apiDeleteFeatureFlag,
-  apiGetFeatureFlagStats,
-  apiListFeatureFlags,
-  apiSyncFeatureFlagCatalog,
-  apiToggleFeatureFlag,
-  apiUpdateFeatureFlag,
-} from './api';
+import { apiCreateFeatureFlag, apiDeleteFeatureFlag, apiGetFeatureFlagStats, apiListFeatureFlags, apiSyncFeatureFlagCatalog, apiToggleFeatureFlag, apiUpdateFeatureFlag } from './api';
 import { FEATURE_FLAGS_DEFAULT_LIMIT } from './constants';
 import type {
   FeatureFlagAudience,

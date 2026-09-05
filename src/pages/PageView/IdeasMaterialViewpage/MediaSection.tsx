@@ -4,15 +4,16 @@ import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ImageIcon from '@mui/icons-material/Image';
 import MediaTypeCard from './MediaTypeCard';
+import type { MediaItem } from '@/store/slices/types';
 
 interface MediaSectionProps {
     sectionId: string;
     sectionIndex: number;
     title: string;
     description: string;
-    videos: any[];
-    documents: any[];
-    images: any[];
+    videos: MediaItem[];
+    documents: MediaItem[];
+    images: MediaItem[];
     expandedKey: string | null;
     onToggleMediaType: (sectionId: string, mediaType: string) => void;
 }

@@ -3,6 +3,7 @@ import apiAxios from '@/config/axiosConfig';
 
 import type { MyProfile } from '@/features/profile/types';
 import { authService } from './auth.service';
+import { getErrorMessage } from '@/utils/apiError';
 
 /**
  * O usuário logado.
@@ -72,9 +73,8 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 'Erro ao buscar usuário';
-      return rejectWithValue(errorMessage);
+    } catch (error: unknown) {
+      return rejectWithValue(getErrorMessage(error, 'Erro ao buscar usuário'));
     }
   }
 );
@@ -86,9 +86,10 @@ export const linkTeacherClub = createAsyncThunk<User, number, { rejectValue: str
       await authService.linkTeacherClub(clubNumber);
       const user = await authService.getCurrentUser();
       return user;
-    } catch (error: any) {
-      const msg = error?.response?.data?.message || 'Erro ao vincular clubinho';
-      return rejectWithValue(msg);
+    } catch (error: unknown) {
+      return rejectWithValue(
+        getErrorMessage(error, 'Erro ao vincular clubinho'),
+      );
     }
   }
 );

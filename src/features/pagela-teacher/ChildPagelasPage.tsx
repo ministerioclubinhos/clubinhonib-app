@@ -26,6 +26,7 @@ import { apiFetchChild } from "../children/api";
 import type { ChildListItem, ChildResponse } from "../children/types";
 import type { Pagela } from "./types";
 import { getISOWeekYear } from "./utils";
+import { getErrorMessage } from "@/utils/apiError";
 
 function genderPastel(seed: string, gender?: string) {
   const hash = Array.from(seed).reduce((a, ch) => (a * 33 + ch.charCodeAt(0)) % 1000, 7);
@@ -48,11 +49,20 @@ export default function ChildPagelasPage() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const { byId, loading: loadingChildren, error: cError, setError: setCErr, setSearchString } =
-    useChildrenBrowser();
+  const {
+    byId,
+    loading: loadingChildren,
+    error: cError,
+    setError: setCErr,
+  } = useChildrenBrowser();
 
-  const [directChild, setDirectChild] = React.useState<any | null>(null);
-  const [fetchingChild, setFetchingChild] = React.useState(false);
+  // O que a tela monta a partir de `ChildResponse` é um recorte de
+  // `ChildListItem`: as decisões não são carregadas aqui.
+  const [directChild, setDirectChild] = React.useState<Omit<
+    ChildListItem,
+    "acceptedChrists"
+  > | null>(null);
+  const [, setFetchingChild] = React.useState(false);
 
   React.useEffect(() => {
     if (childId && !loc.state?.child && !byId.get(childId)) {
@@ -72,9 +82,9 @@ export default function ChildPagelasPage() {
               isActive: full.isActive,
             });
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           if (!cancelled) {
-            setCErr(err?.response?.data?.message || err?.message || "Criança não encontrada");
+            setCErr(getErrorMessage(err, "Criança não encontrada"));
           }
         } finally {
           if (!cancelled) setFetchingChild(false);
@@ -87,7 +97,7 @@ export default function ChildPagelasPage() {
   const child = loc.state?.child || directChild || byId.get(childId) || null;
   const currentIso = React.useMemo(() => getISOWeekYear(new Date()), []);
   const colors = React.useMemo(
-    () => genderPastel(child?.name || childId, (child as any)?.gender),
+    () => genderPastel(child?.name || childId, child?.gender),
     [child, childId]
   );
 
@@ -288,7 +298,7 @@ export default function ChildPagelasPage() {
                       fontWeight: 700,
                     }}
                   >
-                    Pagela {((child as any)?.gender === "F" ? "da" : "do")}{" "}
+                    Pagela {(child?.gender === "F" ? "da" : "do")}{" "}
                     <Box component="span" sx={{ fontWeight: 900 }}>
                       {child?.name || "Criança"}
                     </Box>

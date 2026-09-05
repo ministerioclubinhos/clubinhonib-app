@@ -204,7 +204,7 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
                             transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                             transition: 'transform 0.3s ease',
                           }}
-                        >
+                         aria-label="Mostrar ou esconder a seção">
                           <ExpandMoreIcon />
                         </IconButton>
                       )}

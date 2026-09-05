@@ -3,6 +3,7 @@ export { default as StatisticsPage } from './StatisticsPage';
 
 
 // API and hooks
+export * from './types';
 export * from './api';
 export * from './hooks';
 

@@ -344,7 +344,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
                       bgcolor: 'rgba(255,255,255,0.3)',
                     },
                   }}
-                >
+                 aria-label="Ir para a página inicial">
                   <HomeIcon />
                 </IconButton>
                 <Typography
@@ -424,8 +424,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
                       fontSize: { xs: '1rem', sm: '1.2rem' },
                       width: { xs: 36, sm: 40 },
                       height: { xs: 36, sm: 40 },
-                    }}
-                  >
+                    }} aria-label="Atualizar Feed">
                     <RefreshIcon fontSize="inherit" />
                   </IconButton>
                 </Tooltip>

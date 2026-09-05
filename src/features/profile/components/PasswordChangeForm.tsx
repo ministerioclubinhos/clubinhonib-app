@@ -190,7 +190,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
                           <IconButton
                             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                             edge="end"
-                          >
+                           aria-label="Mostrar ou esconder a senha">
                             {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
                         </InputAdornment>
@@ -235,7 +235,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
                         <IconButton
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           edge="end"
-                        >
+                         aria-label="Mostrar ou esconder a senha">
                           {showNewPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
@@ -279,7 +279,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
                         <IconButton
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           edge="end"
-                        >
+                         aria-label="Mostrar ou esconder a senha">
                           {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>

@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { Star, EmojiEvents, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useInsights } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 interface TopEngagedChildrenProps {
   filters?: PagelasStatsQueryDto;

@@ -31,19 +31,19 @@ export default function WeekPicker({
     <Box sx={{ display: "flex", gap: 1, alignItems: "center", justifyContent: "space-between" }}>
       <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
         <Tooltip title="Semana anterior">
-          <IconButton size="small" onClick={dec}>
+          <IconButton size="small" onClick={dec} aria-label="Semana anterior">
             <ChevronLeft />
           </IconButton>
         </Tooltip>
 
         <Tooltip title="Semana atual">
-          <IconButton size="small" onClick={goToday}>
+          <IconButton size="small" onClick={goToday} aria-label="Semana atual">
             <Today />
           </IconButton>
         </Tooltip>
 
         <Tooltip title="Próxima semana">
-          <IconButton size="small" onClick={inc}>
+          <IconButton size="small" onClick={inc} aria-label="Próxima semana">
             <ChevronRight />
           </IconButton>
         </Tooltip>

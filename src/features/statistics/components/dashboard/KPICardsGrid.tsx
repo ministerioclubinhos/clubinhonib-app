@@ -3,11 +3,13 @@ import React from 'react';
 import { Box, Grid2 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatCard } from '../ui/StatCard';
+import type { StatCardProps } from '../ui/StatCard';
 
 const MotionGrid = motion.create(Grid2);
 
 interface KPICardsGridProps {
-    activeKPIs: any[];
+    /** Um KPI é o que o `StatCard` recebe, menos o que a grade controla. */
+    activeKPIs: Omit<StatCardProps, 'loading' | 'compact'>[];
     isLoading: boolean;
     isMobile: boolean;
     activeCategory: string;

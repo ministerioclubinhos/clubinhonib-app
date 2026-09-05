@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { FEATURE } from '@/features/feature-flags';
 import { useFeatureFlags } from '@/hooks';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import type { CredentialResponse } from '@react-oauth/google';
 
 import api from '@/config/axiosConfig';
 import { RootState as RootStateType, AppDispatch as AppDispatchType } from '@/store/slices';
@@ -30,7 +31,7 @@ import { useApiError } from '@/hooks/useApiError';
 import { AuthErrorCode, UserErrorCode } from '@/types/api-error';
 import { logApiError } from '@/utils/apiError';
 
-const log = (message: string, ...args: any[]) => {
+const log = (message: string, ...args: unknown[]) => {
   if (import.meta.env.DEV) console.log(message, ...args);
 };
 
@@ -101,7 +102,7 @@ const Login: React.FC = () => {
       const response = await api.post<LoginResponse>(
         '/auth/login',
         { email, password },
-        { skipGlobalError: true } as any
+        { skipGlobalError: true }
       );
 
       if (response.data.user.active === false) {
@@ -140,14 +141,16 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (
+    credentialResponse: CredentialResponse,
+  ) => {
     setLoading(true);
     clearError();
     log('[Login] Login com Google bem-sucedido:', credentialResponse);
 
     try {
       const { credential } = credentialResponse;
-      const res = await api.post('/auth/google', { token: credential }, { skipGlobalError: true } as any);
+      const res = await api.post('/auth/google', { token: credential }, { skipGlobalError: true });
 
       if (res.data.active === false) {
         if (res.data.emailVerification) {

@@ -13,14 +13,7 @@ import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 import { useAbortController, useDebouncedValue } from '@/hooks';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import {
-  createWeekMaterial,
-  deleteWeekMaterial,
-  getWeekMaterial,
-  listWeekMaterials,
-  setCurrentWeek,
-  updateWeekMaterial,
-} from './api';
+import { createWeekMaterial, deleteWeekMaterial, getWeekMaterial, listWeekMaterials, setCurrentWeek, updateWeekMaterial } from './api';
 import { WEEK_MATERIALS_DEFAULT_LIMIT } from './constants';
 import {
   WeekMaterialFormErrors,

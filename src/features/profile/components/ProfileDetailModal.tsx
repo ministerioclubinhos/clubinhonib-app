@@ -151,7 +151,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
                             bgcolor: 'rgba(255,255,255,0.2)',
                             '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
                         }}
-                    >
+                     aria-label="Editar">
                         <EditIcon fontSize="small" />
                     </IconButton>
                 )}
@@ -168,7 +168,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
                         bgcolor: 'rgba(255,255,255,0.2)',
                         '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
                     }}
-                >
+                 aria-label="Fechar">
                     <CloseIcon fontSize="small" />
                 </IconButton>
 
@@ -311,8 +311,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
                                         height: 36,
                                         '&:hover': { bgcolor: '#128C7E', transform: 'scale(1.05)' },
                                         transition: 'all 0.2s',
-                                    }}
-                                >
+                                    }} aria-label="WhatsApp">
                                     <WhatsAppIcon fontSize="small" />
                                 </IconButton>
                             </Tooltip>
@@ -328,7 +327,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
                                         height: 36,
                                         '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' },
                                     }}
-                                >
+                                 aria-label="Copiar">
                                     {copied === 'phone' ? (
                                         <Typography sx={{ fontSize: '0.7rem', color: 'success.main' }}>✓</Typography>
                                     ) : (
@@ -347,8 +346,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
                                         width: 36,
                                         height: 36,
                                         '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' },
-                                    }}
-                                >
+                                    }} aria-label="Enviar email">
                                     <EmailIcon fontSize="small" />
                                 </IconButton>
                             </Tooltip>
@@ -364,7 +362,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
                                         height: 36,
                                         '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' },
                                     }}
-                                >
+                                 aria-label="Copiar">
                                     {copied === 'email' ? (
                                         <Typography sx={{ fontSize: '0.7rem', color: 'success.main' }}>✓</Typography>
                                     ) : (
@@ -396,7 +394,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
                                         size="small"
                                         onClick={() => handleCopy(profile.personalData?.gaLeaderContact || '', 'ga')}
                                         sx={{ ml: 'auto', p: 0.5 }}
-                                    >
+                                     aria-label="Copiar contato do líder">
                                         {copied === 'ga' ? (
                                             <Typography sx={{ fontSize: '0.6rem', color: 'success.main' }}>✓</Typography>
                                         ) : (

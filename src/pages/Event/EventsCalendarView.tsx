@@ -214,11 +214,11 @@ export default function EventsCalendarView({
 
           <Box className="events-calendar-box">
             <Box className="custom-calendar-header">
-              <IconButton onClick={handlePrevMonth} className="month-nav-button">
+              <IconButton onClick={handlePrevMonth} className="month-nav-button" aria-label="Mês anterior">
                 <ChevronLeftIcon />
               </IconButton>
               <Typography className="month-label">{monthLabel}</Typography>
-              <IconButton onClick={handleNextMonth} className="month-nav-button">
+              <IconButton onClick={handleNextMonth} className="month-nav-button" aria-label="Próximo mês">
                 <ChevronRightIcon />
               </IconButton>
             </Box>
@@ -375,13 +375,13 @@ export default function EventsCalendarView({
                       {isAdmin && (
                         <>
                           <Tooltip title="Editar">
-                            <IconButton size="small" onClick={() => onEdit(ev)} className="events-icon-button-edit">
+                            <IconButton size="small" onClick={() => onEdit(ev)} className="events-icon-button-edit" aria-label="Editar">
                               <EditIcon sx={{ fontSize: 18, color: "#0ea5e9" }} />
                             </IconButton>
                           </Tooltip>
 
                           <Tooltip title="Excluir">
-                            <IconButton size="small" onClick={() => onDelete(ev)} className="events-icon-button-delete">
+                            <IconButton size="small" onClick={() => onDelete(ev)} className="events-icon-button-delete" aria-label="Excluir">
                               <DeleteIcon sx={{ fontSize: 18, color: "#ef4444" }} />
                             </IconButton>
                           </Tooltip>

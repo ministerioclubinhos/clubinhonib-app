@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextField, MenuItem, Grid2, Box, Typography } from '@mui/material';
 import { CalendarToday, Info } from '@mui/icons-material';
-import { PeriodShortcut } from '../api';
+import { PeriodShortcut } from '../types';
 import { getPeriodDescription } from '../utils/periodHelpers';
 import { SimpleDatePicker } from '@/components/common/inputs';
 

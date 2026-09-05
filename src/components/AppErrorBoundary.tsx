@@ -2,7 +2,7 @@ import React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorPage from '@/pages/Error/ErrorPage';
 
-const logError = (error: any, info: React.ErrorInfo) => {
+const logError = (error: unknown, info: React.ErrorInfo) => {
     console.error('[ErrorBoundary] Caught error:', error, info);
 };
 

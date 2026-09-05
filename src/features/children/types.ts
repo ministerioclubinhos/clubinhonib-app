@@ -7,12 +7,37 @@ import type { Gender } from "./constants";
  * mudar, este arquivo muda junto.
  */
 
-/** Decisão registrada (`AcceptedChristShortDto`). */
+/** Decisão da criança. Espelha o enum `DecisionType` da API. */
+export type DecisionType = "ACCEPTED" | "RECONCILED";
+
+/** Decisão registrada, no recorte curto (`AcceptedChristShortDto`). */
 export type AcceptedChristShort = {
   id: string;
-  decision: "ACCEPTED" | "RECONCILED" | null;
+  decision: DecisionType | null;
   createdAt: string;
   updatedAt: string;
+};
+
+/**
+ * Decisão no contrato completo (`AcceptedChristResponseDto`).
+ *
+ * A criança entra só pelo id: a resposta não repete responsável, telefone e
+ * endereço de quem acabou de ser registrado.
+ */
+export type AcceptedChristResponse = {
+  id: string;
+  decision: DecisionType | null;
+  childId: string;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** Corpo de `POST /accepted-christs` (`CreateAcceptedChristDto`). */
+export type CreateAcceptedChristRequest = {
+  childId: string;
+  decision?: DecisionType;
+  notes?: string | null;
 };
 
 /** Endereço no contrato de resposta (`AddressResponseDto`). */

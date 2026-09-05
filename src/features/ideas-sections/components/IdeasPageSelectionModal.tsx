@@ -60,7 +60,7 @@ export default function IdeasPageSelectionModal({
       >
         Selecionar Página de Ideias
         <Tooltip title="Fechar">
-          <IconButton onClick={onClose} size="small">
+          <IconButton onClick={onClose} size="small" aria-label="Fechar">
             <Close />
           </IconButton>
         </Tooltip>

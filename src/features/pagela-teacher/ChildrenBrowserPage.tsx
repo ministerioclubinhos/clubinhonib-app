@@ -309,7 +309,7 @@ export default function ChildrenBrowserPage() {
         <>
           <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
             {items.map((child) => (
-              <Grid key={child.id} item xs={12} sm={6} md={4} lg={3} xl={2.4 as any}>
+              <Grid key={child.id} item xs={12} sm={6} md={4} lg={3} xl={2.4}>
                 <ChildCard
                   child={child}
                   onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}

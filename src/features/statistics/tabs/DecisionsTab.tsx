@@ -1,6 +1,6 @@
 import React from 'react';
 import { EnhancedDecisionsChart } from '../components';
-import { AcceptedChristsStatsQueryDto } from '../api';
+import type { AcceptedChristsStatsQueryDto } from '../types';
 
 interface DecisionsTabProps {
 	filters: AcceptedChristsStatsQueryDto;

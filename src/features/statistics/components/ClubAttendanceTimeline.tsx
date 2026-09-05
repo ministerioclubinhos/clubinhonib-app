@@ -28,6 +28,7 @@ import {
 import { useClubAttendance, useClubs } from '../hooks';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
+import type { ClubAttendanceAnalysisDto } from '../types';
 
 dayjs.locale('pt-br');
 
@@ -130,7 +131,9 @@ export const ClubAttendanceTimeline: React.FC = () => {
     return translations[type.toLowerCase()] || type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  const formattedAlertMessage = (alert: any) => {
+  const formattedAlertMessage = (
+    alert: ClubAttendanceAnalysisDto['alerts'][number],
+  ) => {
     if (alert.lastPagelaDate) {
       // Override message if we have a structured date, to ensure proper localization
       return `Última pagela: ${dayjs(alert.lastPagelaDate).locale('pt-br').format('dddd, D [de] MMMM [de] YYYY')}`;
@@ -376,7 +379,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                   {dayjs(data.period.endDate).format('DD/MM/YYYY')}
                 </Typography>
               </Box>
-              <IconButton size="small">
+              <IconButton size="small" aria-label="Mostrar ou esconder a seção">
                 {expandedTimeline ? <ExpandLess /> : <ExpandMore />}
               </IconButton>
             </Box>
@@ -503,7 +506,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                   ⚠️ Semanas Faltantes ({data.missingWeeksPagination?.total || data.missingWeeks.length})
                 </Typography>
-                <IconButton size="small">
+                <IconButton size="small" aria-label="Mostrar ou esconder a seção">
                   {expandedMissingWeeks ? <ExpandLess /> : <ExpandMore />}
                 </IconButton>
               </Box>

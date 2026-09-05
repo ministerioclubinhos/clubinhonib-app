@@ -18,7 +18,7 @@ import {
   TrendingUp,
   Groups,
 } from '@mui/icons-material';
-import { WeekCheckResult } from '../api';
+import type { WeekCheckResult } from '../types';
 
 interface SummaryCardsProps {
   summary: WeekCheckResult['summary'];

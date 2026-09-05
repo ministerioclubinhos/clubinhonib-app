@@ -16,9 +16,6 @@ import {
   useTheme,
   Chip,
   Stack,
-  IconButton,
-  Dialog,
-  DialogContent,
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/slices';
@@ -30,13 +27,13 @@ import PersonIcon from '@mui/icons-material/Person';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import HomeIcon from '@mui/icons-material/Home';
 import SendIcon from '@mui/icons-material/Send';
-import CloseIcon from '@mui/icons-material/Close';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import api from '@/config/axiosConfig';
 import { setComments } from 'store/slices/comment/commentsSlice';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import CommentDetailDialog from './CommentDetailDialog';
 
 const CommentsSection: React.FC = () => {
   const dispatch = useDispatch();
@@ -614,110 +611,10 @@ const CommentsSection: React.FC = () => {
         </Box>
       </Paper>
 
-      <Dialog
-        open={!!selectedComment}
+      <CommentDetailDialog
+        comment={selectedComment}
         onClose={() => setSelectedComment(null)}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
-            m: { xs: 2, md: 4 },
-          },
-        }}
-      >
-        {selectedComment && (
-          <DialogContent sx={{ p: { xs: 2.5, md: 4 } }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar
-                sx={{
-                  bgcolor: 'primary.main',
-                  mr: 2,
-                  width: { xs: 44, md: 52 },
-                  height: { xs: 44, md: 52 },
-                  fontSize: { xs: '1.1rem', md: '1.3rem' },
-                }}
-              >
-                {selectedComment.name.charAt(0).toUpperCase()}
-              </Avatar>
-              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                <Typography
-                  variant="h6"
-                  fontWeight="bold"
-                  color="primary.main"
-                  sx={{ fontSize: { xs: '1rem', md: '1.15rem' }, lineHeight: 1.3 }}
-                >
-                  {selectedComment.name}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontSize: { xs: '0.72rem', md: '0.78rem' } }}
-                >
-                  {new Date(selectedComment.createdAt).toLocaleDateString('pt-BR')}
-                </Typography>
-              </Box>
-              <IconButton
-                aria-label="Fechar comentário"
-                onClick={() => setSelectedComment(null)}
-                sx={{ color: 'text.secondary' }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </Box>
-
-            <Paper
-              elevation={1}
-              sx={{
-                p: { xs: 2, md: 2.5 },
-                borderRadius: 2,
-                background: 'linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)',
-                borderLeft: `4px solid ${theme.palette.primary.main}`,
-                mb: 2,
-                maxHeight: '55vh',
-                overflowY: 'auto',
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: { xs: '0.95rem', md: '1.05rem' },
-                  lineHeight: 1.7,
-                  color: 'text.primary',
-                  fontStyle: 'italic',
-                  whiteSpace: 'pre-line',
-                }}
-              >
-                “{selectedComment.comment}”
-              </Typography>
-            </Paper>
-
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              <Chip
-                icon={<HomeIcon />}
-                label={selectedComment.clubinho}
-                size="small"
-                sx={{
-                  bgcolor: 'primary.light',
-                  color: 'white',
-                  '& .MuiChip-icon': { color: 'white' },
-                }}
-              />
-              <Chip
-                icon={<LocationOnIcon />}
-                label={selectedComment.neighborhood}
-                size="small"
-                sx={{
-                  bgcolor: 'secondary.light',
-                  color: 'white',
-                  '& .MuiChip-icon': { color: 'white' },
-                }}
-              />
-            </Stack>
-          </DialogContent>
-        )}
-      </Dialog>
+      />
 
       <Snackbar
         open={successSnackbarOpen}

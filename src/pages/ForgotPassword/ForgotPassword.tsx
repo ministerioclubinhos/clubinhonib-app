@@ -76,7 +76,7 @@ const ForgotPassword: React.FC = () => {
             const response = await api.post(
                 '/auth/forgot-password',
                 { email },
-                { skipGlobalError: true } as any
+                { skipGlobalError: true }
             );
 
             if (response.data?.status === 'VERIFICATION_EMAIL_SENT' || response.data?.message?.includes('verifi')) {

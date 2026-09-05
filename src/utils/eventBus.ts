@@ -1,25 +1,33 @@
 import { ErrorCategory } from './apiError';
 
-type EventCallback<T = any> = (detail: T) => void;
+/**
+ * Um ouvinte do barramento.
+ *
+ * O padrão é `unknown`, e não `any`: quem escuta sem declarar o payload
+ * precisa checá-lo antes de usar, em vez de recebê-lo sem checagem nenhuma.
+ */
+type EventCallback<T = unknown> = (detail: T) => void;
 
 class EventBus {
-    private events: { [key: string]: EventCallback[] } = {};
+    private events: { [key: string]: EventCallback<never>[] } = {};
 
-    on<T = any>(event: string, callback: EventCallback<T>): void {
+    on<T = unknown>(event: string, callback: EventCallback<T>): void {
         if (!this.events[event]) {
             this.events[event] = [];
         }
-        this.events[event].push(callback);
+        this.events[event].push(callback as EventCallback<never>);
     }
 
-    off<T = any>(event: string, callback: EventCallback<T>): void {
+    off<T = unknown>(event: string, callback: EventCallback<T>): void {
         if (!this.events[event]) return;
         this.events[event] = this.events[event].filter((cb) => cb !== callback);
     }
 
-    emit<T = any>(event: string, detail: T): void {
+    emit<T = unknown>(event: string, detail: T): void {
         if (!this.events[event]) return;
-        this.events[event].forEach((callback) => callback(detail));
+        this.events[event].forEach((callback) =>
+            (callback as EventCallback<T>)(detail),
+        );
     }
 }
 

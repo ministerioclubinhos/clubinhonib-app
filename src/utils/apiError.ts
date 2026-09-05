@@ -63,7 +63,10 @@ export const getApiErrorData = (error: unknown): ApiErrorData | null => {
     return null;
 };
 
-export const getErrorMessage = (error: unknown, defaultMessage = GENERIC_ERROR_MESSAGES.UNEXPECTED): string => {
+export const getErrorMessage = (
+    error: unknown,
+    defaultMessage: string = GENERIC_ERROR_MESSAGES.UNEXPECTED,
+): string => {
     if (isApiError(error)) {
         return error.response?.data.error.message || defaultMessage;
     }

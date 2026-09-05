@@ -3,16 +3,8 @@ import {
   Box,
   Paper,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TablePagination,
-  Avatar,
   Chip,
-  LinearProgress,
   CircularProgress,
   TextField,
   MenuItem,
@@ -21,11 +13,7 @@ import {
   Collapse,
   IconButton,
   useTheme,
-  Card,
-  CardContent,
   useMediaQuery,
-  Stack,
-  Divider,
   Skeleton,
 } from '@mui/material';
 import {
@@ -33,13 +21,13 @@ import {
   ExpandLess,
   FilterList,
   Refresh,
-  Star,
-  CheckCircle,
 } from '@mui/icons-material';
 import { useChildren } from '../hooks';
-import { ChildrenStatsQueryDto } from '../api';
+import type { ChildrenStatsQueryDto } from '../types';
 import { PeriodFilter } from './PeriodFilter';
 import { getPeriodDates } from '../utils/periodHelpers';
+import ChildrenListDesktop from './ChildrenListDesktop';
+import ChildrenListMobile from './ChildrenListMobile';
 
 export const ChildrenListView: React.FC = () => {
   const theme = useTheme();
@@ -61,7 +49,10 @@ export const ChildrenListView: React.FC = () => {
 
   const { data, isLoading } = useChildren(filters);
 
-  const handleFilterChange = (field: keyof ChildrenStatsQueryDto, value: any) => {
+  const handleFilterChange = <K extends keyof ChildrenStatsQueryDto>(
+    field: K,
+    value: ChildrenStatsQueryDto[K],
+  ) => {
     setFilters({ ...filters, [field]: value || undefined, page: 1 });
   };
 
@@ -75,19 +66,6 @@ export const ChildrenListView: React.FC = () => {
 
   const handleReset = () => {
     setFilters({ page: 1, limit: 20, sortBy: 'engagementScore', sortOrder: 'DESC' });
-  };
-
-  const getEngagementColor = (score: number) => {
-    if (score >= 90) return 'success';
-    if (score >= 75) return 'info';
-    if (score >= 60) return 'warning';
-    return 'default';
-  };
-
-  const getInitials = (name: string) => {
-    const parts = name.split(' ');
-    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    return name.substring(0, 2).toUpperCase();
   };
 
   if (!data && !isLoading) {
@@ -205,7 +183,7 @@ export const ChildrenListView: React.FC = () => {
           </Box>
           <Box>
             <Button size="small" startIcon={<Refresh />} onClick={handleReset}>Limpar</Button>
-            <IconButton size="small" onClick={() => setFiltersExpanded(!filtersExpanded)}>
+            <IconButton size="small" onClick={() => setFiltersExpanded(!filtersExpanded)} aria-label="Mostrar ou esconder os filtros">
               {filtersExpanded ? <ExpandLess /> : <ExpandMore />}
             </IconButton>
           </Box>
@@ -251,7 +229,10 @@ export const ChildrenListView: React.FC = () => {
                 select
                 label="Gênero"
                 value={filters.gender || ''}
-                onChange={(e) => handleFilterChange('gender', e.target.value)}
+                onChange={(e) => handleFilterChange(
+                    'gender',
+                    e.target.value as ChildrenStatsQueryDto['gender'],
+                  )}
                 size="small"
               >
                 <MenuItem value="">Todos</MenuItem>
@@ -361,7 +342,12 @@ export const ChildrenListView: React.FC = () => {
                 select
                 label="Ordenar por"
                 value={filters.sortBy || 'engagementScore'}
-                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'sortBy',
+                    e.target.value as ChildrenStatsQueryDto['sortBy'],
+                  )
+                }
                 size="small"
               >
                 <MenuItem value="name">Nome</MenuItem>
@@ -378,7 +364,12 @@ export const ChildrenListView: React.FC = () => {
                 select
                 label="Ordem"
                 value={filters.sortOrder || 'DESC'}
-                onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'sortOrder',
+                    e.target.value as ChildrenStatsQueryDto['sortOrder'],
+                  )
+                }
                 size="small"
               >
                 <MenuItem value="ASC">Crescente</MenuItem>
@@ -398,284 +389,9 @@ export const ChildrenListView: React.FC = () => {
       ) : (
         <>
           {isMobile ? (
-            <Stack spacing={1.5} sx={{ width: '100%', maxWidth: '100%' }}>
-              {data.children.length === 0 ? (
-                <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2, textAlign: 'center' }}>
-                  <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                    Nenhuma criança encontrada com os filtros selecionados
-                  </Typography>
-                </Paper>
-              ) : (
-                data.children.map((child) => (
-                  <Card key={child.childId} elevation={1} sx={{
-                    borderRadius: 1.5,
-                    width: '100%',
-                    maxWidth: '100%',
-                    overflow: 'hidden',
-                    borderLeft: `4px solid ${child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main}`,
-                    position: 'relative',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '3px',
-                      background: `linear-gradient(90deg, ${child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main} 0%, ${child.gender === 'F' ? theme.palette.secondary.light : theme.palette.info.light} 100%)`,
-                    },
-                  }}>
-                    <CardContent sx={{
-                      p: { xs: 1, sm: 2 },
-                      '&:last-child': { pb: { xs: 1, sm: 2 } },
-                      width: '100%',
-                      maxWidth: '100%',
-                    }}>
-                      <Stack spacing={1}>
-
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                            <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }}>
-                              #{child.rank}
-                            </Typography>
-                            <Avatar
-                              sx={{
-                                width: { xs: 28, sm: 36 },
-                                height: { xs: 28, sm: 36 },
-                                bgcolor: child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main,
-                                fontSize: { xs: 11, sm: 14 },
-                              }}
-                            >
-                              {getInitials(child.name)}
-                            </Avatar>
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' }, wordBreak: 'break-word' }}>
-                                {child.name}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, wordBreak: 'break-word' }}>
-                                {child.gender === 'M' ? 'Masculino' : 'Feminino'} • {child.age} anos
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </Box>
-
-                        <Divider sx={{ my: 0.5 }} />
-
-                        <Grid2 container spacing={1}>
-                          <Grid2 size={6}>
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                                Clubinho
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' }, wordBreak: 'break-word' }}>
-                                {child.club ? `#${child.club.number}` : '-'}
-                              </Typography>
-                            </Box>
-                          </Grid2>
-                          <Grid2 size={6}>
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                                Cidade
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' }, wordBreak: 'break-word' }}>
-                                {child.address ? `${child.address.city}, ${child.address.state}` : '-'}
-                              </Typography>
-                            </Box>
-                          </Grid2>
-                          <Grid2 size={6}>
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                                Tempo
-                              </Typography>
-                              <Chip
-                                label={`${child.monthsParticipating}m`}
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }}
-                              />
-                            </Box>
-                          </Grid2>
-                          <Grid2 size={6}>
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                                Pagelas
-                              </Typography>
-                              <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
-                                {child.stats.totalPagelas}
-                              </Typography>
-                            </Box>
-                          </Grid2>
-                        </Grid2>
-
-                        <Box>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                              Presença
-                            </Typography>
-                            <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
-                              {child.stats.presenceRate.toFixed(1)}%
-                            </Typography>
-                          </Box>
-                          <LinearProgress
-                            variant="determinate"
-                            value={child.stats.presenceRate}
-                            sx={{
-                              height: { xs: 4, sm: 6 },
-                              borderRadius: 2,
-                              bgcolor: `${theme.palette.success.main}15`,
-                              '& .MuiLinearProgress-bar': {
-                                bgcolor: theme.palette.success.main,
-                                borderRadius: 2,
-                              },
-                            }}
-                          />
-                        </Box>
-
-                        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
-                          <Chip
-                            icon={<Star sx={{ fontSize: { xs: 12, sm: 16 } }} />}
-                            label={`${child.stats.engagementScore.toFixed(0)}`}
-                            size="small"
-                            color={getEngagementColor(child.stats.engagementScore)}
-                            sx={{
-                              fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                              height: { xs: 20, sm: 24 },
-                              '& .MuiChip-label': { px: { xs: 0.5, sm: 1 } }
-                            }}
-                          />
-                          {child.isActive && (
-                            <Chip label="Ativo" size="small" color="success" variant="outlined" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }} />
-                          )}
-                          {child.decisions.hasDecision && (
-                            <Chip
-                              icon={<CheckCircle sx={{ fontSize: { xs: 12, sm: 16 } }} />}
-                              label={child.decisions.decisionType}
-                              size="small"
-                              color="success"
-                              sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, height: { xs: 20, sm: 24 } }}
-                            />
-                          )}
-                        </Box>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </Stack>
+            <ChildrenListMobile data={data} />
           ) : (
-
-            <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ bgcolor: 'primary.main' }}>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Ranking</TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Criança</TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Idade</TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Clubinho</TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Cidade</TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Tempo</TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Pagelas</TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Presença</TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Engajamento</TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Status</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data.children.map((child) => (
-                    <TableRow key={child.childId} hover>
-                      <TableCell>
-                        <Typography fontWeight="bold" color="primary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>#{child.rank}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Avatar
-                            sx={{
-                              width: 36,
-                              height: 36,
-                              bgcolor: child.gender === 'F' ? theme.palette.secondary.main : theme.palette.info.main,
-                              fontSize: 14,
-                            }}
-                          >
-                            {getInitials(child.name)}
-                          </Avatar>
-                          <Box>
-                            <Typography fontWeight="medium" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.name}</Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                              {child.gender === 'M' ? 'Masculino' : 'Feminino'}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.age} anos</TableCell>
-                      <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                        {child.club ? `#${child.club.number}` : '-'}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                        {child.address ? `${child.address.city}, ${child.address.state}` : '-'}
-                      </TableCell>
-                      <TableCell align="center">
-                        <Chip
-                          label={`${child.monthsParticipating}m`}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{child.stats.totalPagelas}</TableCell>
-                      <TableCell align="right">
-                        <Box>
-                          <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                            {child.stats.presenceRate.toFixed(1)}%
-                          </Typography>
-                          <LinearProgress
-                            variant="determinate"
-                            value={child.stats.presenceRate}
-                            sx={{
-                              mt: 0.5,
-                              height: 4,
-                              borderRadius: 2,
-                              bgcolor: `${theme.palette.success.main}15`,
-                              '& .MuiLinearProgress-bar': {
-                                bgcolor: theme.palette.success.main,
-                              },
-                            }}
-                          />
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Chip
-                          icon={<Star />}
-                          label={child.stats.engagementScore.toFixed(0)}
-                          size="small"
-                          color={getEngagementColor(child.stats.engagementScore)}
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                          {child.isActive && (
-                            <Chip label="Ativo" size="small" color="success" variant="outlined" />
-                          )}
-                          {child.decisions.hasDecision && (
-                            <Chip
-                              icon={<CheckCircle />}
-                              label={child.decisions.decisionType}
-                              size="small"
-                              color="success"
-                            />
-                          )}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {data.children.length === 0 && (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                    Nenhuma criança encontrada com os filtros selecionados
-                  </Typography>
-                </Box>
-              )}
-            </TableContainer>
+            <ChildrenListDesktop data={data} />
           )}
 
           {data.pagination && (

@@ -13,13 +13,7 @@ import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 import { useAbortController, useDebouncedValue } from '@/hooks';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import {
-  apiCreateImagePage,
-  apiDeleteImagePage,
-  apiGetImagePage,
-  apiListImagePages,
-  apiUpdateImagePage,
-} from './api';
+import { apiCreateImagePage, apiDeleteImagePage, apiGetImagePage, apiListImagePages, apiUpdateImagePage } from './api';
 import { IMAGE_PAGES_DEFAULT_LIMIT } from './constants';
 import {
   ImagePageFormErrors,

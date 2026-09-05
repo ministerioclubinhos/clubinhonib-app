@@ -33,6 +33,17 @@ interface EventFormModalProps {
   };
 }
 
+/** Públicos aceitos por um evento. */
+type EventAudience = 'all' | 'teachers' | 'coordinators';
+
+const EVENT_AUDIENCES: EventAudience[] = ['all', 'teachers', 'coordinators'];
+
+/** Público do evento; valor desconhecido cai em "todos". */
+const toEventAudience = (value?: string): EventAudience =>
+  EVENT_AUDIENCES.includes(value as EventAudience)
+    ? (value as EventAudience)
+    : 'all';
+
 const EventFormModal: React.FC<EventFormModalProps> = ({
   open,
   onClose,
@@ -50,7 +61,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
-  const [audience, setAudience] = useState<'all' | 'teachers' | 'coordinators'>('all');
+  const [audience, setAudience] = useState<EventAudience>('all');
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -75,7 +86,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
       }
       setLocation(initialData.location || '');
       setDescription(initialData.description || '');
-      setAudience((initialData.audience as any) || 'all');
+      setAudience(toEventAudience(initialData.audience));
       setImageFile(null);
       setExistingImageUrl(initialData.media?.url || null);
       setRemoveImage(false);
@@ -271,7 +282,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
                       size="small"
                       onClick={() => setRemoveImage(true)}
                       sx={{ color: 'error.main' }}
-                    >
+                     aria-label="Excluir">
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Box>
@@ -302,7 +313,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
                         }
                       }}
                       sx={{ color: 'error.main' }}
-                    >
+                     aria-label="Excluir">
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Box>

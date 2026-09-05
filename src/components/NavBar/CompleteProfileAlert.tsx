@@ -53,8 +53,7 @@ const CompleteProfileAlert: React.FC<CompleteProfileAlertProps> = ({
             <Tooltip title="Notificações" arrow>
                 <IconButton
                     onClick={handleClick}
-                    sx={{ ml: 1, p: 0.5, color: '#fff' }}
-                >
+                    sx={{ ml: 1, p: 0.5, color: '#fff' }} aria-label="Notificações">
                     <Badge color="error" overlap="circular" badgeContent={alerts.length}>
                         <NotificationsActiveIcon sx={{ fontSize: 26 }} />
                     </Badge>

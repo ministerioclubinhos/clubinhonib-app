@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { clubControlApi, CreateAcademicPeriodDto, CreateWeekdayExceptionDto } from './api';
+import { clubControlApi } from './api';
+import type { CreateAcademicPeriodDto, CreateWeekdayExceptionDto } from './types';
 
 export const useControlDashboard = (page: number = 1, limit: number = 20) => {
   return useQuery({

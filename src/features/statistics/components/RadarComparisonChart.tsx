@@ -4,7 +4,7 @@ import React from 'react';
 import { Box, Paper, Typography, CircularProgress, useTheme, Grid2 } from '@mui/material';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, ResponsiveContainer, Tooltip } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 /** Ponto do radar exibido no tooltip. */
 interface RadarTooltipPayload {

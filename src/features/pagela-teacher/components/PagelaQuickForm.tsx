@@ -23,6 +23,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import { useSelector } from "react-redux";
 import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from "../types";
 import { todayISO, getISOWeekYear } from "../utils";
+import type { RootState } from '@/store/slices';
 
 type Props = {
   initial?: Pagela | null;
@@ -56,7 +57,7 @@ export default function PagelaQuickForm({
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
   const teacherProfileIdFromRedux = useSelector(
-    (s: any) => s?.auth?.user?.teacherProfile?.id ?? null
+    (s: RootState) => s.auth.user?.teacherProfile?.id ?? null
   ) as string | null;
 
   const effectiveTeacherProfileId = teacherProfileIdFromRedux ?? teacherProfileId ?? null;

@@ -30,3 +30,11 @@ The source code follows a feature-based modular architecture:
 - **Feature Slices**: We prefer co-locating logic within `features/` rather than separating by type (e.g., all actions in one folder).
 - **Container/Presenter**: Complex pages often separate the data fetching (Container/Hook) from the rendering (Component).
 - **Atomic Design (Loose)**: `components/` generally contains Atoms and Molecules, while `features/` contains Organisms and Templates.
+
+## 🧾 Dívida conhecida
+
+[`pendencias-tecnicas.md`](pendencias-tecnicas.md) lista o que a varredura de
+setembro de 2026 encontrou fora do padrão descrito aqui — features sem
+`types`/`utils`/`constants`, arquivos longos demais, telas ainda fora do
+`ListingLayout` — em ordem de prioridade e com caixas para marcar conforme for
+resolvido.

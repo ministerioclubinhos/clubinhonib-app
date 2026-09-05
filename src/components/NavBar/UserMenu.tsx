@@ -210,8 +210,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                         size="small"
                         aria-controls={open ? 'account-menu' : undefined}
                         aria-haspopup="true"
-                        aria-expanded={open ? 'true' : undefined}
-                    >
+                        aria-expanded={open ? 'true' : undefined} aria-label="Configurações da conta">
                         <Avatar
                             sx={{
                                 width: 40,

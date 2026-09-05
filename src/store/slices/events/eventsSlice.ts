@@ -8,7 +8,13 @@ export interface EventData {
   date: string;
   location: string;
   description: string;
-  media?: any;
+  /** O arquivo do evento, quando há um. */
+  media?: {
+    url: string;
+    originalName?: string;
+    size?: number;
+    createdAt?: string;
+  };
   audience?: string;
 }
 
@@ -24,8 +30,8 @@ const eventsSlice = createSlice({
   name: 'events',
   initialState,
   reducers: {
-    setEvents: (state, action: PayloadAction<any[]>) => {
-      state.events = action.payload as any;
+    setEvents: (state, action: PayloadAction<EventData[]>) => {
+      state.events = action.payload;
     },
     clearEvents: (state) => {
       state.events = null;

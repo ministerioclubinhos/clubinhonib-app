@@ -25,6 +25,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from "../types";
 import { todayISO, toLabelWeek } from "../utils";
+import type { ChipProps } from '@mui/material';
 
 type Props = {
   childName?: string;
@@ -108,10 +109,10 @@ export default function PagelaQuickCard({
     }
   };
 
-  const ChipYes = (props: any) => (
+  const ChipYes = (props: ChipProps) => (
     <Chip size="small" color="success" icon={<CheckCircle sx={{ fontSize: 16 }} />} {...props} />
   );
-  const ChipNo = (props: any) => (
+  const ChipNo = (props: ChipProps) => (
     <Chip size="small" variant="outlined" icon={<RadioButtonUnchecked sx={{ fontSize: 16 }} />} {...props} />
   );
 

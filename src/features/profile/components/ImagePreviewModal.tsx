@@ -55,7 +55,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ open, onClose, im
                         bgcolor: 'rgba(0,0,0,0.5)',
                         '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
                     }}
-                >
+                 aria-label="Fechar">
                     <CloseIcon />
                 </IconButton>
                 <Box

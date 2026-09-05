@@ -163,7 +163,7 @@ export default function EventPageCreator() {
                 color="error"
                 onClick={() => handleRemoveEvent(index)}
                 sx={{ position: 'absolute', top: 8, right: 8 }}
-              >
+               aria-label="Excluir">
                 <Delete fontSize="small" />
               </IconButton>
             </Box>

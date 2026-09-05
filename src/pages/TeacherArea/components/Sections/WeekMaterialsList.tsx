@@ -137,7 +137,7 @@ const WeekMaterialsList = () => {
                                     transition: 'all 0.2s ease',
                                 }}
                                 size={isMobile ? "medium" : "large"}
-                            >
+                             aria-label="Voltar">
                                 <ArrowBack fontSize={isMobile ? "medium" : "large"} />
                             </IconButton>
                         </Box>
@@ -266,7 +266,7 @@ const WeekMaterialsList = () => {
                                             size="small"
                                             onClick={() => setFilter('')}
                                             sx={{ mr: -1 }}
-                                        >
+                                         aria-label="Limpar">
                                             <Clear fontSize="small" />
                                         </IconButton>
                                     ),

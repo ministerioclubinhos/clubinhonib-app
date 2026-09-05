@@ -266,7 +266,7 @@ function AdminLayout() {
             size="small"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             sx={{ color: "text.secondary", "&:hover": { color: "primary.main" } }}
-          >
+           aria-label="Recolher menu">
             {sidebarCollapsed ? (
               <ChevronRight fontSize="small" />
             ) : (
@@ -430,7 +430,7 @@ function AdminLayout() {
       {isMobile && (
         <AppBar position="fixed" color="inherit" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
           <Toolbar>
-            <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{ mr: 2 }}>
+            <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{ mr: 2 }} aria-label="Abrir menu">
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" noWrap sx={{ fontSize: 18 }}>

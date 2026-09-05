@@ -13,13 +13,7 @@ import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 import { useAbortController, useDebouncedValue } from '@/hooks';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import {
-  apiCreateVideoPage,
-  apiDeleteVideoPage,
-  apiGetVideoPage,
-  apiListVideoPages,
-  apiUpdateVideoPage,
-} from './api';
+import { apiCreateVideoPage, apiDeleteVideoPage, apiGetVideoPage, apiListVideoPages, apiUpdateVideoPage } from './api';
 import {
   VideoDraft,
   VideoPageFormErrors,

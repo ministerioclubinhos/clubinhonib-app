@@ -48,10 +48,17 @@ export interface Column<T> {
   filterable?: boolean;
   hidden?: boolean;
   sticky?: boolean;
-  format?: (value: any, row: T) => React.ReactNode;
+  /**
+   * Formata o valor da célula.
+   *
+   * Declarado como método de propósito: cada coluna formata só o campo dela, e
+   * a checagem bivariante do TypeScript para métodos é o que permite isso sem
+   * cair num `any`.
+   */
+  format?(value: T[keyof T], row: T): React.ReactNode;
   renderCell?: (row: T, index: number) => React.ReactNode;
   headerRender?: () => React.ReactNode;
-  getValue?: (row: T) => any;
+  getValue?: (row: T) => T[keyof T];
 }
 
 export interface DataTableProps<T> {
@@ -100,7 +107,7 @@ export interface DataTableProps<T> {
 
 const MotionTableRow = motion.create(TableRow);
 
-function DataTableComponent<T extends Record<string, any>>({
+function DataTableComponent<T extends object>({
   columns,
   data,
   loading = false,
@@ -281,7 +288,7 @@ function DataTableComponent<T extends Record<string, any>>({
                 ),
                 endAdornment: localSearch && (
                   <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => handleSearch('')}>
+                    <IconButton size="small" onClick={() => handleSearch('')} aria-label="Limpar">
                       <Clear />
                     </IconButton>
                   </InputAdornment>
@@ -393,7 +400,7 @@ function DataTableComponent<T extends Record<string, any>>({
                   ),
                   endAdornment: localSearch && (
                     <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => handleSearch('')}>
+                      <IconButton size="small" onClick={() => handleSearch('')} aria-label="Limpar">
                         <Clear />
                       </IconButton>
                     </InputAdornment>
@@ -405,7 +412,7 @@ function DataTableComponent<T extends Record<string, any>>({
             {actions}
 
             <Tooltip title="Colunas visiveis">
-              <IconButton size="small" onClick={(e) => setColumnMenuAnchor(e.currentTarget)}>
+              <IconButton size="small" onClick={(e) => setColumnMenuAnchor(e.currentTarget)} aria-label="Colunas visiveis">
                 <Badge badgeContent={columns.length - visibleColumnsList.length} color="primary">
                   <ViewColumn />
                 </Badge>
@@ -414,7 +421,7 @@ function DataTableComponent<T extends Record<string, any>>({
 
             {onRefresh && (
               <Tooltip title="Atualizar">
-                <IconButton size="small" onClick={onRefresh}>
+                <IconButton size="small" onClick={onRefresh} aria-label="Atualizar">
                   <Refresh />
                 </IconButton>
               </Tooltip>
@@ -423,7 +430,7 @@ function DataTableComponent<T extends Record<string, any>>({
             {exportable && (
               <>
                 <Tooltip title="Exportar">
-                  <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)}>
+                  <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)} aria-label="Exportar">
                     <Download />
                   </IconButton>
                 </Tooltip>

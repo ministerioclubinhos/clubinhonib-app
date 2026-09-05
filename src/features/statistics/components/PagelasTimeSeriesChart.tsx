@@ -19,7 +19,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 interface PagelasTimeSeriesChartProps {
   filters?: PagelasStatsQueryDto;

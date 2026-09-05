@@ -46,7 +46,11 @@ import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/pt-br';
 import { motion } from 'framer-motion';
 import { useStatistics } from '../../context';
-import { PeriodShortcut } from '../../api';
+import { PeriodShortcut } from '../../types';
+import {
+  PERIOD_SHORTCUT_LABELS,
+  QUICK_PERIOD_ORDER,
+} from '../../constants';
 
 dayjs.locale('pt-br');
 
@@ -57,14 +61,22 @@ interface QuickPeriod {
   color: string;
 }
 
-const quickPeriods: QuickPeriod[] = [
-  { id: PeriodShortcut.TODAY, label: 'Hoje', icon: <Today />, color: '#6366f1' },
-  { id: PeriodShortcut.THIS_WEEK, label: 'Esta Semana', icon: <DateRange />, color: '#10b981' },
-  { id: PeriodShortcut.THIS_MONTH, label: 'Este Mes', icon: <CalendarMonth />, color: '#f59e0b' },
-  { id: PeriodShortcut.LAST_7_DAYS, label: '7 Dias', icon: <History />, color: '#8b5cf6' },
-  { id: PeriodShortcut.LAST_30_DAYS, label: '30 Dias', icon: <History />, color: '#ec4899' },
-  { id: PeriodShortcut.THIS_YEAR, label: 'Este Ano', icon: <Event />, color: '#ef4444' },
-];
+/** Ícone e cor de cada atalho; o rótulo vem de `constants.ts`. */
+const PERIOD_STYLE: Record<PeriodShortcut, { icon: React.ReactNode; color: string }> = {
+  [PeriodShortcut.TODAY]: { icon: <Today />, color: '#6366f1' },
+  [PeriodShortcut.THIS_WEEK]: { icon: <DateRange />, color: '#10b981' },
+  [PeriodShortcut.THIS_MONTH]: { icon: <CalendarMonth />, color: '#f59e0b' },
+  [PeriodShortcut.LAST_7_DAYS]: { icon: <History />, color: '#8b5cf6' },
+  [PeriodShortcut.LAST_30_DAYS]: { icon: <History />, color: '#ec4899' },
+  [PeriodShortcut.THIS_YEAR]: { icon: <Event />, color: '#ef4444' },
+  [PeriodShortcut.CUSTOM]: { icon: <DateRange />, color: '#64748b' },
+};
+
+const quickPeriods: QuickPeriod[] = QUICK_PERIOD_ORDER.map((id) => ({
+  id,
+  label: PERIOD_SHORTCUT_LABELS[id],
+  ...PERIOD_STYLE[id],
+}));
 
 
 export const SmartFilters: React.FC = memo(() => {
@@ -191,14 +203,14 @@ export const SmartFilters: React.FC = memo(() => {
               <IconButton
                 size="small"
                 onClick={(e) => setSavedFiltersAnchor(e.currentTarget)}
-              >
+               aria-label="Filtros salvos">
                 <Badge badgeContent={state.favorites.length} color="primary">
                   <BookmarkBorder />
                 </Badge>
               </IconButton>
             </Tooltip>
             <Tooltip title="Limpar filtros">
-              <IconButton size="small" onClick={resetFilters}>
+              <IconButton size="small" onClick={resetFilters} aria-label="Limpar filtros">
                 <Refresh />
               </IconButton>
             </Tooltip>
@@ -306,7 +318,7 @@ export const SmartFilters: React.FC = memo(() => {
                     ),
                     endAdornment: searchValue && (
                       <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => setSearchValue('')}>
+                        <IconButton size="small" onClick={() => setSearchValue('')} aria-label="Limpar">
                           <Clear sx={{ fontSize: 18 }} />
                         </IconButton>
                       </InputAdornment>

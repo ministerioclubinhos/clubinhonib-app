@@ -38,7 +38,7 @@ import {
   CheckCircle,
 } from '@mui/icons-material';
 import { useTeachers } from '../hooks';
-import { TeachersStatsQueryDto } from '../api';
+import type { TeachersStatsQueryDto } from '../types';
 import { useStatistics } from '../context';
 
 export const TeachersListView: React.FC = () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GeographicChart } from '../components';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 interface GeographicTabProps {
 	filters: PagelasStatsQueryDto;

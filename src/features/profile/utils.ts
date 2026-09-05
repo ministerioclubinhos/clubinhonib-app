@@ -224,8 +224,7 @@ export const getBirthdayStatus = (birthDateStr?: string): BirthdayStatus => {
         }
 
         return null;
-    } catch (e) {
-        console.debug('getBirthdayStatus: Date parsing error', e);
+    } catch {
         return null;
     }
 };
@@ -250,8 +249,7 @@ export const getDaysUntilBirthday = (birthDateStr?: string): number | null => {
 
         const diffTime = birthdayThisYear.getTime() - today.getTime();
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    } catch (e) {
-        console.debug('getDaysUntilBirthday: Date parsing error', e);
+    } catch {
         return null;
     }
 };
@@ -265,8 +263,7 @@ export const formatBirthDate = (dateStr?: string): string => {
         const [, month, day] = dateStr.split('-').map(Number);
         const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
         return `${day} de ${months[month - 1]}`;
-    } catch (e) {
-        console.debug('formatBirthDate: Date parsing error', e);
+    } catch {
         return dateStr;
     }
 };
@@ -280,8 +277,7 @@ export const formatBirthDateShort = (dateStr?: string): string => {
         const [, month, day] = dateStr.split('-').map(Number);
         const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
         return `${day} ${months[month - 1]}`;
-    } catch (e) {
-        console.debug('formatBirthDateShort: Date parsing error', e);
+    } catch {
         return dateStr;
     }
 };
@@ -300,8 +296,7 @@ export const calculateAge = (dateStr?: string): number | null => {
             age--;
         }
         return age;
-    } catch (e) {
-        console.debug('calculateAge: Date parsing error', e);
+    } catch {
         return null;
     }
 };

@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useAcceptedChristsChartData } from '../hooks';
-import { AcceptedChristsStatsQueryDto } from '../api';
+import type { AcceptedChristsStatsQueryDto } from '../types';
 
 interface AcceptedChristsChartProps {
   filters?: AcceptedChristsStatsQueryDto;

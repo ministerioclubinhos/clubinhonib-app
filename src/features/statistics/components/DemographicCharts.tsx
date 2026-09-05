@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Paper, Typography, CircularProgress, Grid2, useTheme } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 interface DemographicChartsProps {
   filters?: PagelasStatsQueryDto;

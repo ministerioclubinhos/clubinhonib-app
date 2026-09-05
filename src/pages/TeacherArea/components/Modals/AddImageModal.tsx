@@ -285,7 +285,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                                 transition: 'all 0.2s ease',
                               }}
                               size="small"
-                            >
+                             aria-label="Excluir">
                               <DeleteIcon color="error" fontSize="small" />
                             </IconButton>
 

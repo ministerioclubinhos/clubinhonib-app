@@ -26,7 +26,7 @@ import {
 } from 'recharts';
 import { ShowChart, BarChart as BarChartIcon, Timeline } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 interface AdvancedPagelasChartProps {
   filters?: PagelasStatsQueryDto;

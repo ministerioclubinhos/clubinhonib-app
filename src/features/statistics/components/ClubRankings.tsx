@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { EmojiEvents, TrendingUp } from '@mui/icons-material';
 import { useInsights } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
 
 interface ClubRankingsProps {
   filters?: PagelasStatsQueryDto;

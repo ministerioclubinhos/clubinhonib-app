@@ -219,7 +219,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
                   },
                   transition: 'all 0.3s ease',
                 }}
-              >
+               aria-label="Voltar">
                 <ArrowBackIcon />
               </IconButton>
             </Box>

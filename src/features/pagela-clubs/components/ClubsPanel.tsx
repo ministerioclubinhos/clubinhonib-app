@@ -326,7 +326,7 @@ export function ClubsPanel({ onSelect, selectedId, scope }: Props) {
 
             <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flexWrap: "wrap", gap: 1 }}>
                 <Tooltip title="Recarregar">
-                    <IconButton onClick={reload} size={isMobile ? "small" : "medium"}>
+                    <IconButton onClick={reload} size={isMobile ? "small" : "medium"} aria-label="Recarregar">
                         <RefreshIcon />
                     </IconButton>
                 </Tooltip>

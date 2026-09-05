@@ -91,7 +91,7 @@ export default function ChildCard({
               zIndex: 3,
               "&:hover": { bgcolor: "background.paper" },
             }}
-          >
+           aria-label="Registrar decisão">
             <FavoriteIcon sx={{ color: alreadyAccepted ? theme.palette.error.main : "#ccc" }} />
           </IconButton>
         </Tooltip>
@@ -118,7 +118,7 @@ export default function ChildCard({
                   borderColor: "divider",
                   "&:hover": { bgcolor: "background.paper" },
                 }}
-              >
+               aria-label="Editar criança">
                 <EditIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -136,7 +136,7 @@ export default function ChildCard({
                   color: "error.main",
                   "&:hover": { bgcolor: "error.50" },
                 }}
-              >
+               aria-label="Excluir criança">
                 <DeleteIcon fontSize="small" />
               </IconButton>
             </Tooltip>

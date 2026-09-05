@@ -10,7 +10,7 @@ import {
   Info,
   CalendarToday,
 } from '@mui/icons-material';
-import { WeekCheckResult } from '../api';
+import type { WeekCheckResult } from '../types';
 
 interface NoClubsMessageProps {
   data: WeekCheckResult;

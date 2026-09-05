@@ -323,7 +323,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
                       bgcolor: 'rgba(255,255,255,0.3)',
                     },
                   }}
-                >
+                 aria-label="Voltar">
                   <ArrowBackIcon />
                 </IconButton>
                 <PhotoLibraryIcon sx={{ fontSize: { xs: '2rem', md: '2.5rem' } }} />
@@ -343,7 +343,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
               📸 {section.title}
             </Typography>
 
-            {(section as any).subtitle && (
+            {section.subtitle && (
               <Typography
                 variant="h5"
                 fontWeight="600"
@@ -354,7 +354,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
                   textShadow: '0 1px 2px rgba(0,0,0,0.2)',
                 }}
               >
-                {(section as any).subtitle}
+                {section.subtitle}
               </Typography>
             )}
 

@@ -33,6 +33,7 @@ const fallbackImageUrl = import.meta.env.VITE_CLUBINHO_FALLBACK_IMAGE_URL || imp
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
 import { AppEvent } from "./EventosPage";
+import type { Theme } from '@mui/material';
 
 dayjs.locale("pt-br");
 
@@ -76,7 +77,7 @@ const createEventArrangement = (eventos: AppEvent[]) => {
   };
 };
 
-const getEstiloCard = (status: string, theme: any) => {
+const getEstiloCard = (status: string, theme: Theme) => {
   switch (status) {
     case "hoje":
       return {
@@ -307,7 +308,7 @@ export default function EventsCardsView({ eventos, isAdmin, onOpenDetails, onAdd
                         width: { xs: 32, md: 40 },
                         height: { xs: 32, md: 40 },
                       }}
-                    >
+                     aria-label="Editar">
                       <EditIcon sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }} />
                     </IconButton>
                   </Tooltip>
@@ -322,7 +323,7 @@ export default function EventsCardsView({ eventos, isAdmin, onOpenDetails, onAdd
                         width: { xs: 32, md: 40 },
                         height: { xs: 32, md: 40 },
                       }}
-                    >
+                     aria-label="Excluir">
                       <DeleteIcon sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }} />
                     </IconButton>
                   </Tooltip>

@@ -311,7 +311,7 @@ export default function ImageSectionEditor({
                                 transition: 'all 0.2s ease',
                               }}
                               size={isMobile ? "small" : "medium"}
-                            >
+                             aria-label="Excluir">
                               <DeleteIcon color="error" fontSize={isMobile ? "small" : "medium"} />
                             </IconButton>
 
