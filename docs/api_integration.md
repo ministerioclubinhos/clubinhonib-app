@@ -46,6 +46,18 @@ Conventions the people features follow, which a new listing should copy:
   splitting the text, never by `new Date`, which would read it as UTC and show
   the previous day west of Greenwich.
 
+### Log records (`observability-audit`)
+
+`GET /log-records/observability` and `GET /log-records/audit` use the same
+`Paginated<T>` envelope as the other listings (`data`, `total`, `page`,
+`limit`, `pageCount`). Two things are specific to this feature:
+
+- the date range is mandatory and validated on the client before the request
+  (`from < to`, at most 31 days), mirroring the API's `422 VAL_4005`;
+- a `409 LOG_9101` is not a failure: it means the API stores logs as files
+  and cannot list or delete them. The feature shows an informational state
+  instead of the retry alert.
+
 ## 🌐 Environment Variables
 
 The application uses different environment configurations located in `env/`:

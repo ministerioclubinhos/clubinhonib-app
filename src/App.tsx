@@ -84,6 +84,7 @@ import {
   useVisibleRoutes,
 } from './features/feature-flags';
 import { ProfilesManager, ProfilePage } from './features/profile';
+import { ObservabilityAuditPage } from './features/observability-audit';
 import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
 import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
 
@@ -285,6 +286,13 @@ function App() {
                           trancar quem precisa religá-la.
                         */}
                         <Route path="feature-flags" element={<FeatureFlagsManager />} />
+                        {/*
+                          Consulta somente leitura dos registros técnicos e de
+                          auditoria. Como as flags, não entra no menu nem no
+                          painel: o atalho é o link discreto do rodapé, e a
+                          API exige o papel de administrador de qualquer jeito.
+                        */}
+                        <Route path="observabilidade-auditoria" element={<ObservabilityAuditPage />} />
                       </Route>
 
                       <Route path="editar-meditacao/:id" element={<MeditationPageForm fromTemplatePage={false} />} />

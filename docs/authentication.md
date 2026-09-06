@@ -90,3 +90,5 @@ independently:
 | `/adm/professores` | ✅ | ✅ reads; writes limited to their clubs |
 | `/adm/coordenadores` | ✅ | ❌ in the menu; the API allows reads, refuses writes |
 | `/adm/criancas` | ✅ | ✅ scoped to their clubs |
+| `/adm/feature-flags` | ✅ | ❌ (`AdminRoleGuard`) — no menu entry; footer link for admins |
+| `/adm/observabilidade-auditoria` | ✅ read-only | ❌ (`AdminRoleGuard`) — no menu entry; footer link for admins only. See [`observability-audit.md`](observability-audit.md) |

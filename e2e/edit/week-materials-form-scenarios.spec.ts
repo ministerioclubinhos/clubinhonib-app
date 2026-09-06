@@ -78,6 +78,7 @@ test.describe('Formulário de Material Semanal: Cenários com Validação Visual
   });
 
   test.afterAll(async () => {
+    if (!api) return;
     for (const id of createdIds.reverse()) {
       await api.delete(`/week-material-pages/${id}`);
     }
@@ -105,7 +106,7 @@ test.describe('Formulário de Material Semanal: Cenários com Validação Visual
     
     // Clica em salvar e aguarda confirmação visual (Toast / Alerta de Sucesso) na UI
     await form.getByRole('button', { name: 'Salvar Página' }).click();
-    await page.waitForURL(/\/detalhes-material-semanal/);
+    await expect(form).toBeHidden();
 
     // Validação na API após confirmação do sucesso na tela
     await expect.poll(async () => api.get<WeekPageResponse>(`/week-material-pages/${week.id}`)).toMatchObject({
@@ -183,7 +184,7 @@ test.describe('Formulário de Material Semanal: Cenários com Validação Visual
 
     // Salvar formulário e aguardar resposta visual de sucesso (Toast)
     await form.getByRole('button', { name: 'Salvar Página' }).click();
-    await page.waitForURL(/\/detalhes-material-semanal/);
+    await expect(form).toBeHidden();
 
     // Validar pela API que as 4 mídias estão salvas
     await expect.poll(async () => {
@@ -255,7 +256,7 @@ test.describe('Formulário de Material Semanal: Cenários com Validação Visual
 
     // Salvar página e aguardar toast de sucesso na tela
     await form.getByRole('button', { name: 'Salvar Página' }).click();
-    await page.waitForURL(/\/detalhes-material-semanal/);
+    await expect(form).toBeHidden();
 
     // Conferencia na API
     await expect.poll(async () => {
@@ -312,7 +313,7 @@ test.describe('Formulário de Material Semanal: Cenários com Validação Visual
 
     // Salvar página e aguardar o toast de confirmação
     await form.getByRole('button', { name: 'Salvar Página' }).click();
-    await page.waitForURL(/\/detalhes-material-semanal/);
+    await expect(form).toBeHidden();
 
     // Conferir na API que restou apenas 1 vídeo com título editado
     await expect.poll(async () => {

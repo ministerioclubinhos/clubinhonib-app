@@ -12,12 +12,14 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import FlagIcon from "@mui/icons-material/Flag";
+import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
 
 import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { RootState } from "@/store/slices";
 import { UserRole } from "@/types/shared";
 import { FEATURE } from "@/features/feature-flags";
+import { OBSERVABILITY_AUDIT_ROUTE, OBSERVABILITY_AUDIT_TEST_IDS } from "@/features/observability-audit/constants";
 import { useFeatureFlags } from "@/hooks";
 
 const Footer: React.FC = () => {
@@ -85,7 +87,14 @@ const Footer: React.FC = () => {
           </Typography>
 
           {isAdmin && (
-            <Box sx={{ mt: 0.5, opacity: 0.45, transition: "opacity 0.2s ease", "&:hover": { opacity: 1 } }}>
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent="center"
+              flexWrap="wrap"
+              useFlexGap
+              sx={{ mt: 0.5, opacity: 0.45, transition: "opacity 0.2s ease", "&:hover, &:focus-within": { opacity: 1 } }}
+            >
               <Link
                 component={RouterLink}
                 to="/adm/feature-flags"
@@ -96,13 +105,32 @@ const Footer: React.FC = () => {
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 0.5,
+                  minHeight: 44,
                   color: "rgba(255, 255, 255, 0.9)",
                 }}
               >
                 <FlagIcon sx={{ fontSize: "0.85rem" }} />
                 <span>Feature Flags</span>
               </Link>
-            </Box>
+              <Link
+                data-testid={OBSERVABILITY_AUDIT_TEST_IDS.footerLink}
+                component={RouterLink}
+                to={OBSERVABILITY_AUDIT_ROUTE}
+                color="inherit"
+                underline="hover"
+                sx={{
+                  fontSize: "0.75rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  minHeight: 44,
+                  color: "rgba(255, 255, 255, 0.9)",
+                }}
+              >
+                <MonitorHeartIcon sx={{ fontSize: "0.85rem" }} />
+                <span>Observabilidade e auditoria</span>
+              </Link>
+            </Stack>
           )}
         </Stack>
       </Stack>

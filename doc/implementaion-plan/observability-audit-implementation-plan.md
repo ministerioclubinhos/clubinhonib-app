@@ -1,9 +1,22 @@
 # Plano de Implementação Frontend — Observabilidade e Auditoria
 
-**Status:** plano de implementação; nenhuma alteração de código, API, ambiente
-ou infraestrutura está autorizada por este documento.
+**Status:** implementado em 2026-09-05 (Fases 1 a 5). Este documento continua
+sendo a referência do desenho; o estado final está em
+[`docs/observability-audit.md`](../../docs/observability-audit.md).
 
 **Última revisão:** 2026-09-05
+
+**Contratos FE-BE fechados na implementação (seção 4):** FE-BE-001
+`GET /log-records/observability` e `GET /log-records/audit`; FE-BE-002/008 DTOs
+`ObservabilityRecordResponseDto`/`AuditRecordResponseDto` sem stack, metadata
+ou fingerprint de dedup; FE-BE-003 filtros `level`/`errorCode`/`sourceType` e
+`actorId`/`actorRole`/`outcome`/`actionName`/`sourceType`; FE-BE-004 envelope
+`{ data, nextCursor }` com cursor base64url opaco; FE-BE-005 `from`/`to`
+obrigatórios, ISO-8601, máximo de 31 dias, `422 VAL_4005`; FE-BE-006 ordenação
+por `occurredAt` decrescente; FE-BE-007 sem `total`; FE-BE-009 `400` (query
+fora da allowlist), `401`, `403`, `422`, `500` no envelope padrão; FE-BE-010 a
+mesma API responde com storage `file` ou `dynamodb`. D-008 do plano do backend
+registra a escolha por API administrativa somente leitura.
 
 **Escopo do repositório:** `clubinhonib-app`
 
