@@ -56,7 +56,7 @@ export default function ImagePageListCard({
   }
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`image-pages-image-page-list-card-${page.id}`}
       avatar={<CollectionsOutlinedIcon fontSize="small" />}
       title={page.title}
       accent={page.public ? 'success' : 'default'}

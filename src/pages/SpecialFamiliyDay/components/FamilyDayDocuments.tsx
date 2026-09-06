@@ -19,7 +19,7 @@ export const FamilyDayDocuments = ({
   if (documents.length === 0) return null;
 
   return (
-    <Box
+    <Box data-testid="special-familiy-day-family-day-documents"
       sx={{
         height: "100%",
         p: { xs: 2, sm: 2.8 },

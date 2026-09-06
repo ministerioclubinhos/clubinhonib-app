@@ -66,7 +66,7 @@ export default function WeekMaterialListCard({
   ];
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`week-materials-week-material-list-card-${material.id}`}
       avatar={<EventNoteOutlinedIcon fontSize="small" />}
       title={material.title}
       subtitle={material.subtitle || undefined}

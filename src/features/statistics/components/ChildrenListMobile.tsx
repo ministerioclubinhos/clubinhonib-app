@@ -35,7 +35,7 @@ export default function ChildrenListMobile({ data }: Props) {
   const getEngagementColor = engagementColor;
 
   return (
-            <Stack spacing={1.5} sx={{ width: '100%', maxWidth: '100%' }}>
+            <Stack data-testid="statistics-children-list-mobile" spacing={1.5} sx={{ width: '100%', maxWidth: '100%' }}>
               {data.children.length === 0 ? (
                 <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2, textAlign: 'center' }}>
                   <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>

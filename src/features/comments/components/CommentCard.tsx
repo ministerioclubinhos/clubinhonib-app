@@ -34,7 +34,7 @@ export default function CommentCard({
   disabled,
 }: Props) {
   return (
-    <ListingCard
+    <ListingCard data-testid={`comments-comment-card-${comment.id}`}
       avatar={commentInitials(comment.name)}
       title={comment.name}
       subtitle={`Clubinho ${comment.clubinho}`}

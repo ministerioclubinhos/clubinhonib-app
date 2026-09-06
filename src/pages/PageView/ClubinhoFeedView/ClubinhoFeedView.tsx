@@ -48,7 +48,7 @@ const feedContainerSx = {
 function SectionSkeleton() {
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-clubinho-feed-view-section-skeleton"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -200,7 +200,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
 
   if (loading) {
     return (
-      <Container maxWidth={false} sx={feedContainerSx}>
+      <Container data-testid="page-view-clubinho-feed-view" maxWidth={false} sx={feedContainerSx}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -216,7 +216,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
 
   if (error) {
     return (
-      <Container maxWidth={false} sx={feedContainerSx}>
+      <Container data-testid="page-view-clubinho-feed-view" maxWidth={false} sx={feedContainerSx}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -245,7 +245,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
 
   if (!section) {
     return (
-      <Container maxWidth={false} sx={feedContainerSx}>
+      <Container data-testid="page-view-clubinho-feed-view" maxWidth={false} sx={feedContainerSx}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -293,7 +293,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
   }
 
   return (
-    <Container maxWidth={false} sx={feedContainerSx}>
+    <Container data-testid="page-view-clubinho-feed-view" maxWidth={false} sx={feedContainerSx}>
 
       <motion.div
         initial={{ opacity: 0, y: -20 }}

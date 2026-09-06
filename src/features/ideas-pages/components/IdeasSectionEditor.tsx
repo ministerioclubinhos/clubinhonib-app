@@ -50,7 +50,7 @@ export default function IdeasSectionEditor({
   const [confirmRemove, setConfirmRemove] = useState(false);
 
   return (
-    <Paper variant="outlined" sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
+    <Paper data-testid="ideas-pages-ideas-section-editor" variant="outlined" sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
       <Box
         sx={{
           display: 'flex',

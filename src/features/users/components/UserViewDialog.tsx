@@ -49,7 +49,7 @@ function DetailCard({
   children: React.ReactNode;
 }) {
   return (
-    <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2, height: "100%" }}>
+    <Paper data-testid="users-user-view-dialog-detail-card" variant="outlined" sx={{ p: 1.25, borderRadius: 2, height: "100%" }}>
       <Stack spacing={0.5}>
         <Stack direction="row" spacing={0.75} alignItems="center">
           {icon}
@@ -85,7 +85,7 @@ export default function UserViewDialog({ user, onClose, onEdit }: Props) {
   );
 
   return (
-    <Dialog
+    <Dialog data-testid="users-user-view-dialog"
       open={!!user}
       onClose={onClose}
       fullWidth

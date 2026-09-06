@@ -27,7 +27,7 @@ const CardsSection: React.FC = () => {
   if (!cards.length) return null;
 
   return (
-    <Box
+    <Box data-testid="home-cards-section"
       sx={{
         py: { xs: 6, md: 10 },
         background: '#f9f9f9',

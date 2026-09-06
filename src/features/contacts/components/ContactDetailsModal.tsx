@@ -46,7 +46,7 @@ function DetailRow({
   children: React.ReactNode;
 }) {
   return (
-    <Stack direction="row" spacing={1.25} alignItems="flex-start">
+    <Stack data-testid="contacts-contact-details-modal-detail-row" direction="row" spacing={1.25} alignItems="flex-start">
       <Box sx={{ color: "text.secondary", mt: 0.25 }}>{icon}</Box>
       <Box sx={{ minWidth: 0 }}>
         <Typography variant="caption" color="text.secondary">
@@ -72,7 +72,7 @@ export default function ContactDetailsModal({
   const whatsapp = whatsappHref(contact.phone);
 
   return (
-    <Dialog
+    <Dialog data-testid="contacts-contact-details-modal"
       open
       onClose={onClose}
       maxWidth="sm"

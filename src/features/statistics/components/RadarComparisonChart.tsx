@@ -21,7 +21,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-radar-comparison-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -31,7 +31,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
 
   if (!data || !data.byGender || !data.byAgeGroup) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-radar-comparison-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar dados</Typography>
       </Paper>
     );
@@ -74,7 +74,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
   const CustomTooltip = ({ active, payload }: ChartTooltipProps<RadarTooltipPayload>) => {
     if (active && payload && payload.length) {
       return (
-        <Paper
+        <Paper data-testid="statistics-radar-comparison-chart-custom-tooltip"
           elevation={8}
           sx={{
             p: 2,
@@ -101,7 +101,7 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
   };
 
   return (
-    <Grid2 container spacing={3}>
+    <Grid2 data-testid="statistics-radar-comparison-chart" container spacing={3}>
 
       <Grid2 size={{ xs: 12, md: 6 }}>
         <Paper

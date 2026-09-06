@@ -58,7 +58,7 @@ const DocumentMediaForm: React.FC<Props> = ({
 
   return (
     <Fragment>
-      <Grid item xs={12} sm={6}>
+      <Grid data-testid="documents-document-media-form" item xs={12} sm={6}>
         <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}>
           <InputLabel>Tipo de upload</InputLabel>
           <Select
@@ -83,7 +83,7 @@ const DocumentMediaForm: React.FC<Props> = ({
       {uploadType === MediaUploadType.LINK && (
         <Fragment>
           {hasCurrentAttachment && existingMedia?.type === 'link' && (
-            <Grid item xs={12}>
+            <Grid data-testid="documents-document-media-form" item xs={12}>
               <Paper
                 variant="outlined"
                 sx={{
@@ -111,7 +111,7 @@ const DocumentMediaForm: React.FC<Props> = ({
               </Paper>
             </Grid>
           )}
-          <Grid item xs={12} sm={6}>
+          <Grid data-testid="documents-document-media-form" item xs={12} sm={6}>
             <TextField
               fullWidth
               label="URL do documento"
@@ -123,7 +123,7 @@ const DocumentMediaForm: React.FC<Props> = ({
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid data-testid="documents-document-media-form" item xs={12} sm={6}>
             <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}>
               <InputLabel>Plataforma</InputLabel>
               <Select
@@ -142,7 +142,7 @@ const DocumentMediaForm: React.FC<Props> = ({
       )}
 
       {uploadType === MediaUploadType.UPLOAD && (
-        <Grid item xs={12}>
+        <Grid data-testid="documents-document-media-form" item xs={12}>
           {hasCurrentAttachment && existingMedia?.type === 'upload' && (
             <Paper
               variant="outlined"

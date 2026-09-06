@@ -21,7 +21,7 @@ const Home: React.FC = () => {
   const showTestimonials = useFeatureEnabled(FEATURE.HOME_COMMENTS);
 
   return (
-    <Box
+    <Box data-testid="home"
       sx={{
         minHeight: '100vh',
         display: 'flex',

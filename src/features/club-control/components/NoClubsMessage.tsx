@@ -20,7 +20,7 @@ export const NoClubsMessage: React.FC<NoClubsMessageProps> = ({ data }) => {
   const theme = useTheme();
 
   return (
-    <Paper
+    <Paper data-testid="club-control-no-clubs-message"
       elevation={0}
       sx={{
         p: 4,

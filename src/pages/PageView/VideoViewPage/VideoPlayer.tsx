@@ -109,7 +109,7 @@ const VideoPlayer = ({ video }: { video: MediaItem }) => {
   }
 
   return (
-    <Alert 
+    <Alert data-testid="page-view-video-view-page-video-player"
       severity="warning" 
       sx={{ 
         borderRadius: { xs: 3, md: 4 },

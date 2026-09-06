@@ -160,7 +160,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
   // Loading state
   if (loading) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-chart-wrapper"
         elevation={0}
         sx={{
           p: { xs: 2, md: 3 },
@@ -185,7 +185,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
   // Error state
   if (error) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-chart-wrapper"
         elevation={0}
         sx={{
           p: { xs: 2, md: 3 },
@@ -218,7 +218,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
   // Empty state
   if (isEmpty) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-chart-wrapper"
         elevation={0}
         sx={{
           p: { xs: 2, md: 3 },
@@ -259,7 +259,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
   }
 
   return (
-    <MotionBox
+    <MotionBox data-testid="statistics-ui-chart-wrapper"
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}

@@ -55,7 +55,7 @@ export default function ClubsListMobileCards({
   const getStatusConfig = (status: string) => statusConfigOf(status, theme);
 
   return (
-        <Box sx={{ p: { xs: 1, sm: 2 } }}>
+        <Box data-testid="club-control-clubs-list-mobile-cards" sx={{ p: { xs: 1, sm: 2 } }}>
           {clubs.map((club) => {
             const statusConfig = getStatusConfig(club.status);
             const isExpanded = expandedClubs.has(club.clubId);

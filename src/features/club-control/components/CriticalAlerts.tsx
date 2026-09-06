@@ -29,7 +29,7 @@ export const CriticalAlerts: React.FC<CriticalAlertsProps> = ({ alerts }) => {
   }
 
   return (
-    <Box sx={{ mb: 3 }}>
+    <Box data-testid="club-control-critical-alerts" sx={{ mb: 3 }}>
       {alerts.map((alert, index) => (
         <Alert
           key={index}

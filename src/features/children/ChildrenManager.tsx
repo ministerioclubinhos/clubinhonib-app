@@ -124,7 +124,7 @@ export default function ChildrenManager() {
   };
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="children-children-manager"
       title="Crianças"
       summary={
         total > 0

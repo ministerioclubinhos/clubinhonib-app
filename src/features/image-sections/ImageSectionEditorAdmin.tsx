@@ -198,7 +198,7 @@ export default function ImageSectionEditorAdmin() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <Box data-testid="image-sections-image-section-editor-admin" sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
         <CircularProgress />
       </Box>
     );
@@ -206,7 +206,7 @@ export default function ImageSectionEditorAdmin() {
 
   if (loadError) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container data-testid="image-sections-image-section-editor-admin" maxWidth="lg" sx={{ py: 4 }}>
         <Alert
           severity="error"
           action={
@@ -226,7 +226,7 @@ export default function ImageSectionEditorAdmin() {
   const noAr = sectionData.public;
 
   return (
-    <Box
+    <Box data-testid="image-sections-image-section-editor-admin"
       sx={{
         minHeight: '100vh',
         '@supports (min-height: 100dvh)': { minHeight: '100dvh' },

@@ -69,7 +69,7 @@ export default function AddImagesDialog({
   };
 
   return (
-    <Dialog
+    <Dialog data-testid="image-pages-add-images-dialog"
       open={open}
       onClose={close}
       fullWidth

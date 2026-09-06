@@ -25,7 +25,7 @@ export const FamilyDayMaterials = ({
   }
 
   return (
-    <Box
+    <Box data-testid="special-familiy-day-family-day-materials"
       id="materiais"
       component="section"
       sx={{

@@ -55,7 +55,7 @@ export default function PeriodEditDialog({
   const theme = useTheme();
 
   return (
-      <Dialog
+      <Dialog data-testid="club-control-period-edit-dialog"
         open={open}
         onClose={onCancel}
         maxWidth="sm"

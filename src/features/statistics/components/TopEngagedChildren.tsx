@@ -37,7 +37,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+      <Paper data-testid="statistics-top-engaged-children" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -47,7 +47,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
 
   if (error || !data) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+      <Paper data-testid="statistics-top-engaged-children" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
         <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Erro ao carregar crianças mais engajadas</Typography>
       </Paper>
     );
@@ -87,7 +87,7 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
   };
 
   return (
-    <Paper elevation={3} sx={{
+    <Paper data-testid="statistics-top-engaged-children" elevation={3} sx={{
       p: { xs: 2, sm: 3 },
       borderRadius: 2,
       width: '98%',

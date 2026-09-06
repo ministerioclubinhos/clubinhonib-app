@@ -41,7 +41,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-video-view-page-page-video-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -78,7 +78,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
 
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-video-view-page-page-video-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -102,7 +102,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
 
   if (!videoData) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-video-view-page-page-video-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -138,7 +138,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
   const totalVideos = videoData.videos?.length || 0;
 
   return (
-    <Box
+    <Box data-testid="page-view-video-view-page-page-video-view"
       sx={{
         minHeight: '100vh',
         pt: 0,

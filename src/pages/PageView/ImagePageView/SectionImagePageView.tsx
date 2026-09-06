@@ -84,7 +84,7 @@ const ImageWithSkeleton: React.FC<{ src: string; alt: string; sx?: SxProps<Theme
 }) => {
   const [loaded, setLoaded] = useState(false);
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box data-testid="page-view-image-page-view-section-image-page-view-image-with-skeleton" sx={{ position: 'relative' }}>
       {!loaded && (
         <Skeleton
           variant="rectangular"
@@ -138,7 +138,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
   const heroSrc = getMediaPreviewUrl(mediaItems[0] as MediaItem);
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-image-page-view-section-image-page-view"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -8 }}

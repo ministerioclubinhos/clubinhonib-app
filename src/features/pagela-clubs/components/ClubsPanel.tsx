@@ -63,7 +63,7 @@ export function ClubsPanel({ onSelect, selectedId, scope }: Props) {
     const limit = CLUBS_PAGE_LIMIT;
 
     return (
-        <Stack sx={{ height: "100%" }} spacing={2}>
+        <Stack data-testid="pagela-clubs-clubs-panel" sx={{ height: "100%" }} spacing={2}>
             <TextField
                 size="small"
                 placeholder="Endereço / nº do clubinho.."

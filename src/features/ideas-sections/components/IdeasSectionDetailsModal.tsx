@@ -43,15 +43,15 @@ type Props = {
 
 /** Ícone que representa o tipo da mídia. */
 function MediaIcon({ mediaType }: { mediaType: string }) {
-  if (mediaType === "video") return <VideocamIcon fontSize="small" />;
-  if (mediaType === "document") return <DescriptionIcon fontSize="small" />;
-  return <ImageIcon fontSize="small" />;
+  if (mediaType === "video") return <VideocamIcon data-testid="ideas-sections-ideas-section-details-modal-media-icon" fontSize="small" />;
+  if (mediaType === "document") return <DescriptionIcon data-testid="ideas-sections-ideas-section-details-modal-media-icon" fontSize="small" />;
+  return <ImageIcon data-testid="ideas-sections-ideas-section-details-modal-media-icon" fontSize="small" />;
 }
 
 /** Uma mídia da ideia, com o link para abri-la. */
 function MediaRow({ media }: { media: IdeasSectionMedia }) {
   return (
-    <Stack
+    <Stack data-testid="ideas-sections-ideas-section-details-modal-media-row"
       direction="row"
       spacing={1.25}
       alignItems="center"
@@ -101,7 +101,7 @@ export default function IdeasSectionDetailsModal({
   const pendente = isPending(section);
 
   return (
-    <Dialog
+    <Dialog data-testid="ideas-sections-ideas-section-details-modal"
       open={open}
       onClose={onClose}
       maxWidth="sm"

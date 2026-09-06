@@ -51,7 +51,7 @@ const FofinhoButton: React.FC<FofinhoButtonProps & { fullWidth?: boolean }> = ({
   const paletteKey = toPaletteKey(color);
 
   return (
-    <Button
+    <Button data-testid="teacher-area-buttons-fofinho-button"
       variant="contained"
       color={color}
       component={Link}
@@ -185,7 +185,7 @@ const ButtonSection: React.FC<ButtonSectionProps> = ({ references }) => {
   if (buttonsToRender.length === 1) {
     const btn = buttonsToRender[0];
     return (
-      <Box display="flex" justifyContent="center" mt={2} mb={4} px={2}>
+      <Box data-testid="teacher-area-buttons-fofinho-button-button-section" display="flex" justifyContent="center" mt={2} mb={4} px={2}>
         <Box maxWidth={420} width="100%">
           <FofinhoButton {...btn} fullWidth />
         </Box>
@@ -194,7 +194,7 @@ const ButtonSection: React.FC<ButtonSectionProps> = ({ references }) => {
   }
 
   return (
-    <Box sx={{ px: 2, mt: 2, mb: 4 }}>
+    <Box data-testid="teacher-area-buttons-fofinho-button-button-section" sx={{ px: 2, mt: 2, mb: 4 }}>
       <Grid container spacing={2} alignItems="stretch">
         {buttonsToRender.map((button, index) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex' }}>

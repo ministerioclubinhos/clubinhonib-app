@@ -205,7 +205,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
+    <GoogleOAuthProvider data-testid="login" clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
       <Box
         sx={{
           minHeight: 'calc(100vh - var(--app-header-h, 64px))',

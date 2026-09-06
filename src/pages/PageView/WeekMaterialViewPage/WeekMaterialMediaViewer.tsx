@@ -20,13 +20,13 @@ export default function WeekMaterialMediaViewer({
 }: WeekMaterialMediaViewerProps) {
   switch (mediaType) {
     case MediaType.VIDEO:
-      return <WeekVideoPlayerView video={item} />;
+      return <WeekVideoPlayerView data-testid="page-view-week-material-view-page-week-material-media-viewer" video={item} />;
     case MediaType.DOCUMENT:
-      return <WeekDocumentViewer document={item} />;
+      return <WeekDocumentViewer data-testid="page-view-week-material-view-page-week-material-media-viewer" document={item} />;
     case MediaType.IMAGE:
-      return <WeekImageGalleryView image={item} />;
+      return <WeekImageGalleryView data-testid="page-view-week-material-view-page-week-material-media-viewer" image={item} />;
     case MediaType.AUDIO:
-      return <WeekAudioPlayerView audio={item} />;
+      return <WeekAudioPlayerView data-testid="page-view-week-material-view-page-week-material-media-viewer" audio={item} />;
     default:
       return null;
   }

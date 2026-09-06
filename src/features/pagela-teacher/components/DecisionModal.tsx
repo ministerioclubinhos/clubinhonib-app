@@ -62,7 +62,7 @@ export default function DecisionModal({ open, onClose, child, onSuccess }: Props
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
+    <Dialog data-testid="pagela-teacher-decision-modal" open={open} onClose={handleClose} fullWidth maxWidth="xs">
       <DialogTitle sx={{ fontSize: { xs: "0.85rem", sm: "1rem" } }}>{title}</DialogTitle>
       <DialogContent sx={{ position: "relative", overflow: "hidden" }}>
         <Box sx={{
@@ -131,7 +131,7 @@ function RowSwitch({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <FormControlLabel
+    <FormControlLabel data-testid="pagela-teacher-decision-modal-row-switch"
       control={<Switch checked={checked} onChange={(_, v) => onChange(v)} />}
       label={
         <Stack direction="row" spacing={0.75} alignItems="center">

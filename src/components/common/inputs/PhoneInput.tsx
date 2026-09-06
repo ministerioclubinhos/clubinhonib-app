@@ -12,7 +12,7 @@ const PhoneMaskInput = forwardRef<HTMLInputElement, PhoneMaskInputProps>(
   function PhoneMaskInput(props, ref) {
     const { onChange, name, ...rest } = props;
     return (
-      <IMaskInput
+      <IMaskInput data-testid="inputs-phone-input-phone-mask-input"
         {...rest}
         mask="(00) 00000-0000"
         definitions={{
@@ -52,7 +52,7 @@ export function PhoneInput<T extends FieldValues>({
   margin = 'normal',
 }: PhoneInputProps<T>) {
   return (
-    <Controller
+    <Controller data-testid="inputs-phone-input"
       name={name}
       control={control}
       render={({ field }) => (
@@ -96,7 +96,7 @@ const SimplePhoneMaskInput = forwardRef<HTMLInputElement, { onChange: (event: { 
   function SimplePhoneMaskInput(props, ref) {
     const { onChange, ...rest } = props;
     return (
-      <IMaskInput
+      <IMaskInput data-testid="inputs-phone-input-simple-phone-mask-input"
         {...rest}
         mask="(00) 00000-0000"
         definitions={{
@@ -123,7 +123,7 @@ export function SimplePhoneInput({
   margin = 'normal',
 }: SimplePhoneInputProps) {
   return (
-    <TextField
+    <TextField data-testid="inputs-phone-input-simple-phone-input"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       label={label}

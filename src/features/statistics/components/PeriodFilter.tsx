@@ -28,7 +28,7 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
   const description = showDescription ? getPeriodDescription(period, startDate, endDate) : null;
 
   return (
-    <Box>
+    <Box data-testid="statistics-period-filter">
       <Grid2 container spacing={2}>
         <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
           <TextField

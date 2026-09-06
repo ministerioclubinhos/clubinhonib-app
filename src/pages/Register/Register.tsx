@@ -133,7 +133,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box data-testid="register" sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Box component="main" sx={{ flex: '1 0 auto' }}>
         <Container
           maxWidth="sm"

@@ -161,7 +161,7 @@ export default function WeekMaterialPageForm({
 
   if (loadingMaterial) {
     return (
-      <Box
+      <Box data-testid="week-materials-week-material-page-form"
         component="section"
         sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}
       >
@@ -172,7 +172,7 @@ export default function WeekMaterialPageForm({
 
   if (isMissingPageToEdit) {
     return (
-      <Box component="section" sx={{ py: { xs: 2, md: 3 } }}>
+      <Box data-testid="week-materials-week-material-page-form" component="section" sx={{ py: { xs: 2, md: 3 } }}>
         <Alert
           severity="info"
           action={
@@ -194,7 +194,7 @@ export default function WeekMaterialPageForm({
   }
 
   return (
-    <Box component="section" sx={{ pb: { xs: 2, md: 3 } }}>
+    <Box data-testid="week-materials-week-material-page-form" component="section" sx={{ pb: { xs: 2, md: 3 } }}>
       {!fromTemplatePage && (
         <Typography
           variant="h5"

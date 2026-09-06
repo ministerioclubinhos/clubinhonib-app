@@ -14,7 +14,7 @@ export default function MediaPreview({
 }: MediaPreviewProps) {
   if (mediaType === MediaType.VIDEO) {
     return item.uploadType === MediaUploadType.LINK ? (
-      <Box sx={{ aspectRatio: '16/9' }}>
+      <Box data-testid="media-media-preview" sx={{ aspectRatio: '16/9' }}>
         <iframe
           src={item.url}
           title={item.title}
@@ -23,7 +23,7 @@ export default function MediaPreview({
         />
       </Box>
     ) : (
-      <video controls style={{ width: '100%', marginTop: 8 }}>
+      <video data-testid="media-media-preview" controls style={{ width: '100%', marginTop: 8 }}>
         <source src={item.url} />
       </video>
     );
@@ -31,7 +31,7 @@ export default function MediaPreview({
 
   if (mediaType === MediaType.IMAGE) {
     return (
-      <Box
+      <Box data-testid="media-media-preview"
         component="img"
         src={item.url}
         alt={item.title}
@@ -42,7 +42,7 @@ export default function MediaPreview({
 
   if (mediaType === MediaType.AUDIO) {
     return (
-      <audio controls style={{ width: '100%', marginTop: 8 }}>
+      <audio data-testid="media-media-preview" controls style={{ width: '100%', marginTop: 8 }}>
         <source src={item.url} />
         <Typography variant="body2">Seu navegador não suporta áudio.</Typography>
       </audio>

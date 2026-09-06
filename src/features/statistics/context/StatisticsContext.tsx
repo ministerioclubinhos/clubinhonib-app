@@ -473,7 +473,7 @@ export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     [state, actionsValue, computedValue]
   );
 
-  return <StatisticsContext.Provider value={value}>{children}</StatisticsContext.Provider>;
+  return <StatisticsContext.Provider data-testid="statistics-context-statistics-context-statistics-provider" value={value}>{children}</StatisticsContext.Provider>;
 };
 
 // Hook

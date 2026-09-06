@@ -36,7 +36,7 @@ export default function ClubsListDesktop({ data }: Props) {
 
   return (
 
-            <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
+            <TableContainer data-testid="statistics-clubs-list-desktop" component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'primary.main' }}>

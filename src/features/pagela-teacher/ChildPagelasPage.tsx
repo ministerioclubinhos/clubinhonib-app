@@ -140,7 +140,7 @@ export default function ChildPagelasPage() {
   }, [child?.name]);
 
   return (
-    <Box
+    <Box data-testid="pagela-teacher-child-pagelas-page"
       sx={{
         px: { xs: 2, md: 4 },
         pt: { xs: 3, md: 5 },

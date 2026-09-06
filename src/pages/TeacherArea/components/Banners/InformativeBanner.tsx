@@ -231,7 +231,7 @@ const InformativeBanner: React.FC = () => {
 
   if (isSingle) {
     return (
-      <motion.div
+      <motion.div data-testid="teacher-area-banners-informative-banner"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -242,7 +242,7 @@ const InformativeBanner: React.FC = () => {
   }
 
   return (
-    <motion.div
+    <motion.div data-testid="teacher-area-banners-informative-banner"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}

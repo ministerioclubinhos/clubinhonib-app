@@ -11,10 +11,11 @@ import {
 } from "@mui/material";
 
 import BackHeader from "@/components/common/header/BackHeader";
+import type { TestIdProps } from "@/types/testIds";
 
 import type { ListingPagination } from "./types";
 
-type Props = {
+interface Props extends TestIdProps {
   title: string;
   /** Contagem e contexto, exibidos abaixo do título. */
   summary?: React.ReactNode;
@@ -32,7 +33,7 @@ type Props = {
   children: React.ReactNode;
   /** Diálogos da tela, fora da grade. */
   overlays?: React.ReactNode;
-};
+}
 
 /** Quantos esqueletos aparecem enquanto a primeira página carrega. */
 const SKELETON_COUNT = 6;
@@ -45,6 +46,7 @@ const SKELETON_COUNT = 6;
  * pareçam a mesma família.
  */
 export default function ListingLayout({
+  "data-testid": testId = "listing-listing-layout",
   title,
   summary,
   toolbar,
@@ -63,7 +65,7 @@ export default function ListingLayout({
   const showEmpty = !loading && !error && itemCount === 0;
 
   return (
-    <Box
+    <Box data-testid={testId}
       sx={{
         px: { xs: 2, md: 0 },
         pb: 4,

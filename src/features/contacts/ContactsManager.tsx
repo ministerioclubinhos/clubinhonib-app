@@ -80,7 +80,7 @@ export default function ContactsManager() {
   };
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="contacts-contacts-manager"
       title="Mensagens de contato"
       summary={
         total > 0

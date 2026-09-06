@@ -224,7 +224,7 @@ export default function ClubsManager() {
   };
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="clubs-clubs-manager"
       title="Clubinhos"
       summary={
         total > 0

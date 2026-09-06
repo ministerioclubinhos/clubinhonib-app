@@ -197,7 +197,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 
   return (
     <Fragment>
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <Dialog data-testid="event-event-form-modal" open={open} onClose={onClose} fullWidth maxWidth="sm">
         <DialogTitle sx={{ fontFamily: 'Roboto, sans-serif' }}>
           {mode === 'add' ? 'Adicionar Evento' : 'Editar Evento'}
           <IconButton
@@ -376,7 +376,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-      <Snackbar
+      <Snackbar data-testid="event-event-form-modal"
         open={snackbar.open}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}

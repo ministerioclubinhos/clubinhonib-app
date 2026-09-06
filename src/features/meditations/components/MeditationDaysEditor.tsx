@@ -116,7 +116,7 @@ export default function MeditationDaysEditor({
   };
 
   return (
-    <Box>
+    <Box data-testid="meditations-meditation-days-editor">
       {(!isComplete || isEditing) && (
         <Paper
           variant="outlined"

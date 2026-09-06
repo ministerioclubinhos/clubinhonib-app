@@ -137,7 +137,7 @@ export default function ImageSectionPage() {
   };
 
   return (
-    <Box
+    <Box data-testid="teacher-area-image-section-image-section-page"
       sx={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',

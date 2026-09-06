@@ -11,7 +11,7 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
   const showContact = useFeatureEnabled(FEATURE.CONTACT_FORM);
 
   return (
-    <Box
+    <Box data-testid="home-ctasection"
       sx={{
         py: { xs: 6, md: 10 },
         background: '#ffffff',

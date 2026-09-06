@@ -22,10 +22,11 @@ import {
 import LinkOffIcon from "@mui/icons-material/LinkOff";
 
 import { CardActionButton } from "@/components/common/listing";
+import type { TestIdProps } from "@/types/testIds";
 
 import type { LinkCardinality, LinkOption, LinkedItem } from "./types";
 
-type Props = {
+interface Props extends TestIdProps {
   open: boolean;
   /** Nome do lado que está sendo editado — o professor, o clubinho, o coordenador. */
   subjectName: string;
@@ -55,7 +56,7 @@ type Props = {
   onAdd: (optionId: string) => void;
   onUnlink: (item: LinkedItem) => void;
   onClose: () => void;
-};
+}
 
 /**
  * Gerencia os vínculos de um lado só.
@@ -65,6 +66,7 @@ type Props = {
  * se desfaz sozinha.
  */
 export default function LinkManagerDialog({
+  "data-testid": testId = "linking-link-manager-dialog",
   open,
   subjectName,
   title,
@@ -125,7 +127,7 @@ export default function LinkManagerDialog({
   const hasBlockedOptions = availableOptions.some((o) => !!o.blockedReason);
 
   return (
-    <Dialog
+    <Dialog data-testid={testId}
       open={open}
       // Fechar durante a gravação deixaria a tela sem saber o resultado.
       onClose={loading ? undefined : onClose}

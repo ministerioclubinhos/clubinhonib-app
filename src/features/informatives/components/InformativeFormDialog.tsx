@@ -77,7 +77,7 @@ export default function InformativeFormDialog({
   };
 
   return (
-    <Dialog
+    <Dialog data-testid="informatives-informative-form-dialog"
       open={open}
       onClose={saving ? undefined : onClose}
       maxWidth="sm"

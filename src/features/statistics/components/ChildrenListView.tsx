@@ -70,14 +70,14 @@ export const ChildrenListView: React.FC = () => {
 
   if (!data && !isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-children-list-view" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar crianças</Typography>
       </Paper>
     );
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+    <Box data-testid="statistics-children-list-view" sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
 
       <Grid2 container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0 }}>
         <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>

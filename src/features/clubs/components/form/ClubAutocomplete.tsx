@@ -66,7 +66,7 @@ export default function ClubAutocomplete({
 
   return (
     <>
-      <Autocomplete
+      <Autocomplete data-testid="clubs-form-club-autocomplete"
         options={options}
         value={selected}
         disabled={disabled}
@@ -102,7 +102,7 @@ export default function ClubAutocomplete({
         )}
       />
       {(helperText || loadError) && (
-        <FormHelperText error={!!loadError}>
+        <FormHelperText data-testid="clubs-form-club-autocomplete" error={!!loadError}>
           {loadError ? loadError : helperText}
         </FormHelperText>
       )}

@@ -183,7 +183,7 @@ export default function TeachersSelect({
   const actionsButtonProps = isXs ? { fullWidth: true, size: "medium" as const } : { size: "small" as const };
 
   return (
-    <FormControl fullWidth>
+    <FormControl data-testid="clubs-form-teachers-select" fullWidth>
       <InputLabel>{name}</InputLabel>
       <Select
         multiple

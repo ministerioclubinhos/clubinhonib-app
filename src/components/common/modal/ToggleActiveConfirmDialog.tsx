@@ -43,7 +43,7 @@ export default function ToggleActiveConfirmDialog({
   const actionCapitalized = isActive ? "Desativar" : "Ativar";
 
   return (
-    <Dialog
+    <Dialog data-testid="modal-toggle-active-confirm-dialog"
       open={open}
       onClose={loading ? undefined : onClose}
       maxWidth="xs"

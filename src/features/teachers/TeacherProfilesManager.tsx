@@ -128,7 +128,7 @@ export default function TeacherProfilesManager() {
   };
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="teachers-teacher-profiles-manager"
       title="Professores"
       summary={
         total > 0

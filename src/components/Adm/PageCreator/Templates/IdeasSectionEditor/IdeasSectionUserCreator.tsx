@@ -170,7 +170,7 @@ export function IdeasSectionUserCreator() {
   };
 
   return (
-    <Box
+    <Box data-testid="adm-page-creator-templates-ideas-section-editor-ideas-section-user-creator"
       sx={{
         minHeight: '100vh',
         display: 'flex',

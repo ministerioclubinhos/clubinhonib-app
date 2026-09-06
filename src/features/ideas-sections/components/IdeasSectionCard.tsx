@@ -32,7 +32,7 @@ export default function IdeasSectionCard({
   const pendente = isPending(section);
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`ideas-sections-ideas-section-card-${section.id}`}
       avatar={<PermMediaIcon />}
       title={section.title}
       subtitle={mediaSummary(section)}

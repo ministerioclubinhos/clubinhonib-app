@@ -105,7 +105,7 @@ export default function DocumentsManager() {
   );
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="documents-documents-manager"
       title="Documentos"
       summary={`${total} ${total === 1 ? 'documento' : 'documentos'}`}
       toolbar={

@@ -26,7 +26,7 @@ export const ChildrenStatisticsCard: React.FC<ChildrenStatisticsCardProps> = ({
   const theme = useTheme();
 
   return (
-    <Paper
+    <Paper data-testid="club-control-children-statistics-card"
       elevation={0}
       sx={{
         p: { xs: 1.5, sm: 2 },

@@ -87,7 +87,7 @@ export default function IdeasPagesManager() {
   );
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="ideas-pages-ideas-pages-manager"
       title="Páginas de ideias"
       summary={`${total} ${total === 1 ? 'página' : 'páginas'}`}
       toolbar={

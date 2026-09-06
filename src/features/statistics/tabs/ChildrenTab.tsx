@@ -45,7 +45,7 @@ const ChildMobileCard: React.FC<{ child: ChildStat; index: number }> = memo(({ c
   };
 
   return (
-    <MotionCard
+    <MotionCard data-testid="statistics-tabs-children-tab-child-mobile-card"
       elevation={0}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -414,7 +414,7 @@ export const ChildrenTab: React.FC = memo(() => {
   );
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box data-testid="statistics-tabs-children-tab" sx={{ width: '100%' }}>
       {/* Summary Cards */}
       <Grid2 container spacing={2} sx={{ mb: 3 }}>
         <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }}>

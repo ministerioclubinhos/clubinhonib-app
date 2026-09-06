@@ -14,7 +14,7 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+      <Box data-testid="statistics-demographic-charts" sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -22,7 +22,7 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
 
   if (error || !data || !data.byGender || !data.byAgeGroup || !data.byParticipationTime) {
     return (
-      <Box sx={{ py: 4, textAlign: 'center' }}>
+      <Box data-testid="statistics-demographic-charts" sx={{ py: 4, textAlign: 'center' }}>
         <Typography color="error">Erro ao carregar dados demográficos</Typography>
       </Box>
     );
@@ -39,7 +39,7 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
   }));
 
   return (
-    <Grid2 container spacing={3}>
+    <Grid2 data-testid="statistics-demographic-charts" container spacing={3}>
 
       <Grid2 size={{ xs: 12, md: 6 }}>
         <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2, height: '100%' }}>

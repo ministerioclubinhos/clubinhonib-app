@@ -130,7 +130,7 @@ const ResetPassword: React.FC = () => {
 
     if (validating) {
         return (
-            <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box data-testid="reset-password" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <CircularProgress />
             </Box>
         );
@@ -138,7 +138,7 @@ const ResetPassword: React.FC = () => {
 
     if (!isValidToken || !token) {
         return (
-            <Box sx={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+            <Box data-testid="reset-password" sx={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
                 <Paper elevation={3} sx={{ p: 4, textAlign: 'center', maxWidth: 480, width: '100%' }}>
                     <Typography variant="h5" color="error" gutterBottom fontWeight="bold">
                         Link Inválido ou Expirado
@@ -157,7 +157,7 @@ const ResetPassword: React.FC = () => {
     const isSuccess = successMessage !== null;
 
     return (
-        <Box
+        <Box data-testid="reset-password"
             sx={{
                 minHeight: 'calc(100vh - var(--app-header-h, 64px))',
                 display: 'flex',

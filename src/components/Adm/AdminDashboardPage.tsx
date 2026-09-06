@@ -189,7 +189,7 @@ export default function AdminDashboardPage() {
     const allFiltered = order.flatMap((sec) => grouped[sec]);
 
     return (
-      <Box sx={{ width: "100%", px: 2, pb: 8, mt: 0, pt: 0 }}>
+      <Box data-testid="adm-admin-dashboard-page-mobile-list" sx={{ width: "100%", px: 2, pb: 8, mt: 0, pt: 0 }}>
         {!isSimpleMode && (
           <Box
             sx={{
@@ -361,7 +361,7 @@ export default function AdminDashboardPage() {
     const greetName =
       (user?.name && user.name.split(" ")[0]) || (isAdmin ? "Admin" : isCoordinator ? "Coordenador(a)" : "Usuário");
     return (
-      <Box sx={{ width: "100%", px: { xs: 2, md: 6 }, pt: { xs: 4, md: 0 } }}>
+      <Box data-testid="adm-admin-dashboard-page-desktop-grid" sx={{ width: "100%", px: { xs: 2, md: 6 }, pt: { xs: 4, md: 0 } }}>
         <Typography
           variant="h4"
           fontWeight="bold"
@@ -455,5 +455,5 @@ export default function AdminDashboardPage() {
     );
   };
 
-  return isMobile ? <MobileList /> : <DesktopGrid />;
+  return isMobile ? <MobileList data-testid="adm-admin-dashboard-page" /> : <DesktopGrid data-testid="adm-admin-dashboard-page" />;
 }

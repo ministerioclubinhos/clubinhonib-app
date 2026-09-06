@@ -24,7 +24,7 @@ export default function CardActionButton({
   children,
 }: Props) {
   return (
-    <Tooltip title={label}>
+    <Tooltip data-testid="listing-card-action-button" title={label}>
       <span>
         <IconButton
           size="small"

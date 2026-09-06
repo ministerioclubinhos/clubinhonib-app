@@ -122,7 +122,7 @@ export default function FeedbackManager() {
   };
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="feedback-feedback-manager"
       title="Avaliações do site"
       summary={
         total > 0

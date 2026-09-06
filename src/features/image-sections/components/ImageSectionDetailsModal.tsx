@@ -50,7 +50,7 @@ export default function ImageSectionDetailsModal({
 
   return (
     <>
-      <Dialog
+      <Dialog data-testid="image-sections-image-section-details-modal"
         open={open}
         onClose={onClose}
         maxWidth="md"
@@ -194,7 +194,7 @@ export default function ImageSectionDetailsModal({
       </Dialog>
 
       {/* Revisar foto é olhar de perto: um toque amplia sem sair da tela. */}
-      <Dialog
+      <Dialog data-testid="image-sections-image-section-details-modal"
         open={!!ampliada}
         onClose={() => setAmpliada(null)}
         maxWidth="lg"

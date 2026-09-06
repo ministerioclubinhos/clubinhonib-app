@@ -13,5 +13,5 @@ export default function IdeasSectionPage() {
     document.title = 'Compartilhar Ideia Incrível';
   }, []);
 
-  return <IdeasSectionUserCreator />;
+  return <IdeasSectionUserCreator data-testid="teacher-area-ideas-section-ideas-section-page" />;
 }

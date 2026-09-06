@@ -85,7 +85,7 @@ export default function DocumentFormDialog({
   const storedMedia = values.storedMedia;
 
   return (
-    <Dialog
+    <Dialog data-testid="documents-document-form-dialog"
       open={open}
       onClose={saving ? undefined : onClose}
       maxWidth="md"

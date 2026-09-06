@@ -84,7 +84,7 @@ export default function IdeasSectionReviewPage() {
 
   if (loading) {
     return (
-      <Box sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}>
+      <Box data-testid="ideas-sections-ideas-section-review-page" sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}>
         <CircularProgress />
       </Box>
     );
@@ -92,7 +92,7 @@ export default function IdeasSectionReviewPage() {
 
   if (!section) {
     return (
-      <Box component="section" sx={{ p: { xs: 2, md: 3 } }}>
+      <Box data-testid="ideas-sections-ideas-section-review-page" component="section" sx={{ p: { xs: 2, md: 3 } }}>
         <Alert
           severity="info"
           action={
@@ -113,7 +113,7 @@ export default function IdeasSectionReviewPage() {
   }
 
   return (
-    <Box
+    <Box data-testid="ideas-sections-ideas-section-review-page"
       sx={{
         px: { xs: 2, md: 0 },
         pb: 4,

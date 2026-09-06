@@ -8,7 +8,7 @@ const logError = (error: unknown, info: React.ErrorInfo) => {
 
 const AppErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
-        <ErrorBoundary
+        <ErrorBoundary data-testid="app-error-boundary"
             FallbackComponent={ErrorPage}
             onError={logError}
             onReset={() => {

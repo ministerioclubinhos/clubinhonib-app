@@ -4,7 +4,7 @@ import NavLinks from './NavLinks';
 
 const DesktopNavigation: React.FC = () => {
   return (
-    <Box
+    <Box data-testid="nav-bar-desktop-navigation"
       sx={{
         display: { xs: 'none', md: 'flex' },
         bgcolor: '#81d742',

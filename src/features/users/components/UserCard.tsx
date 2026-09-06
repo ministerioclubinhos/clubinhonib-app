@@ -54,7 +54,7 @@ export default function UserCard({
   }
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`users-user-card-${user.id}`}
       avatar={userInitials(user.name)}
       title={user.name}
       subtitle={user.email}

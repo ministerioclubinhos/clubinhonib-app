@@ -86,7 +86,7 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
   };
 
   return (
-    <Stack
+    <Stack data-testid="nav-bar-nav-links"
       direction={isMobile ? 'column' : 'row'}
       spacing={isMobile ? 1.5 : 4} // Standard spacing for links
       alignItems={isMobile ? 'stretch' : 'center'}

@@ -151,7 +151,7 @@ export default function EventsCalendarView({
 
   return (
     <>
-      <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}>
+      <motion.div data-testid="event-events-calendar-view" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}>
         <Paper elevation={0} className="events-paper-root">
           <Box className="events-header-box">
             {isMobile ? (
@@ -322,7 +322,7 @@ export default function EventsCalendarView({
         </Paper>
       </motion.div>
 
-      <Dialog
+      <Dialog data-testid="event-events-calendar-view"
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         fullWidth

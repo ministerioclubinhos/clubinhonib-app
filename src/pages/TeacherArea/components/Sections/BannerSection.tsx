@@ -24,7 +24,7 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showMeditationBanner }) =
     showMeditationBanner && flags[FEATURE.WEEKLY_MEDITATION];
 
   return (
-    <Grid
+    <Grid data-testid="teacher-area-sections-banner-section"
       container
       spacing={{ xs: 2, md: 3 }}
       alignItems="stretch"

@@ -105,7 +105,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
     const hasGaInfo = profile.personalData?.gaLeaderName || profile.personalData?.gaLeaderContact;
 
     return (
-        <Dialog
+        <Dialog data-testid="profile-profile-detail-modal"
             open={open}
             onClose={onClose}
             maxWidth="xs"
@@ -138,7 +138,7 @@ const ProfileDetailModal: React.FC<ProfileDetailModalProps> = ({
                     textAlign: 'center',
                 }}
             >
-                {userRole === UserRole.COORDINATOR && (
+                {userRole === UserRole.ADMIN && (
                     <IconButton
                         onClick={onEdit}
                         size="small"

@@ -9,7 +9,7 @@ interface RankingsTabProps {
 
 const RankingsTab: React.FC<RankingsTabProps> = ({ filters }) => {
 	return (
-		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+		<Box data-testid="statistics-tabs-rankings-tab" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 			<ClubRankings filters={filters} />
 			<TopEngagedChildren filters={filters} />
 		</Box>

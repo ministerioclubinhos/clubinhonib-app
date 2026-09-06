@@ -39,7 +39,7 @@ export default function DeleteConfirmDialog({
   } as const;
 
   return (
-    <Dialog
+    <Dialog data-testid="modal-delete-confirm-dialog"
       open={open}
       onClose={loading ? undefined : onClose}
       maxWidth="xs"

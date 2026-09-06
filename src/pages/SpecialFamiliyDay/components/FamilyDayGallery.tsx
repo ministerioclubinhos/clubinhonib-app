@@ -20,7 +20,7 @@ export const FamilyDayGallery = ({ images }: { images: MediaItem[] }) => {
   if (images.length === 0) return null;
 
   return (
-    <Box
+    <Box data-testid="special-familiy-day-family-day-gallery"
       component="section"
       sx={{
         position: "relative",
@@ -344,7 +344,7 @@ const Counter = ({
   label: string;
   accent?: boolean;
 }) => (
-  <Box
+  <Box data-testid="special-familiy-day-family-day-gallery-counter"
     sx={{
       px: 1.5,
       py: 1,

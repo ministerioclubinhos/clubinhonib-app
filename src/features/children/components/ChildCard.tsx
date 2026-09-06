@@ -64,7 +64,7 @@ export default function ChildCard({
   ];
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`children-child-card-${child.id}`}
       avatar={childInitials(child.name)}
       title={child.name}
       subtitle={`Responsável: ${child.guardianName}`}

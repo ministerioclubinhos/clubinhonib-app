@@ -94,7 +94,7 @@ const SiteFeedbackForm: React.FC = () => {
     };
 
     return (
-        <Box
+        <Box data-testid="teacher-area-forms-site-feedback-form"
             sx={{
                 maxWidth: 500,
                 mx: 'auto',

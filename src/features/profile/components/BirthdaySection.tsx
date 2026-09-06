@@ -50,7 +50,7 @@ const BirthdaySection: React.FC<BirthdaySectionProps> = ({
     const visibleAvatars = isXs ? 2 : 3;
 
     return (
-        <Paper
+        <Paper data-testid="profile-birthday-section"
             elevation={0}
             sx={{
                 background: config.bg,

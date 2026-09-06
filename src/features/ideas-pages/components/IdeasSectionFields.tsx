@@ -56,7 +56,7 @@ export default function IdeasSectionFields<T extends IdeasSectionFieldsValue>({
 
   return (
     <>
-      <Grid2 container spacing={2}>
+      <Grid2 data-testid="ideas-pages-ideas-section-fields" container spacing={2}>
         <Grid2 size={{ xs: 12, md: 5 }}>
           <TextField
             label={
@@ -93,7 +93,7 @@ export default function IdeasSectionFields<T extends IdeasSectionFieldsValue>({
         </Grid2>
       </Grid2>
 
-      <Tabs
+      <Tabs data-testid="ideas-pages-ideas-section-fields"
         value={activeTab}
         onChange={(_event, value: number) => setActiveTab(value)}
         variant={isMobile ? 'fullWidth' : 'standard'}
@@ -120,7 +120,7 @@ export default function IdeasSectionFields<T extends IdeasSectionFieldsValue>({
         })}
       </Tabs>
 
-      <MediaEditor
+      <MediaEditor data-testid="ideas-pages-ideas-section-fields"
         // A troca de aba precisa remontar o editor: ele guarda o rascunho em
         // estado local, que não faz sentido no outro tipo de mídia.
         key={tab.mediaType}

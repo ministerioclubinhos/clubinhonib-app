@@ -50,7 +50,7 @@ const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
 
   if (active && payload && payload.length) {
     return (
-      <Paper
+      <Paper data-testid="statistics-tabs-overview-tab-custom-tooltip"
         elevation={8}
         sx={{
           p: 2,
@@ -84,7 +84,7 @@ const TopChildrenList: React.FC = memo(() => {
 
   if (isLoading) {
     return (
-      <Box>
+      <Box data-testid="statistics-tabs-overview-tab-top-children-list">
         {[1, 2, 3, 4, 5].map((i) => (
           <Skeleton key={i} height={60} sx={{ mb: 1, borderRadius: 2 }} />
         ))}
@@ -96,14 +96,14 @@ const TopChildrenList: React.FC = memo(() => {
 
   if (topChildren.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 4 }}>
+      <Box data-testid="statistics-tabs-overview-tab-top-children-list" sx={{ textAlign: 'center', py: 4 }}>
         <Typography color="text.secondary">Nenhum dado disponivel</Typography>
       </Box>
     );
   }
 
   return (
-    <Box>
+    <Box data-testid="statistics-tabs-overview-tab-top-children-list">
       {topChildren.map((child, index) => (
         <motion.div
           key={child.childId}
@@ -212,7 +212,7 @@ export const OverviewTab: React.FC = memo(() => {
   }, [chartData, theme]);
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box data-testid="statistics-tabs-overview-tab" sx={{ width: '100%' }}>
       {/* Quick Stats Row */}
       <Grid2 container spacing={2} sx={{ mb: 3 }}>
         <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>

@@ -56,7 +56,7 @@ export default function TeacherCard({
   ];
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`teachers-teacher-card-${teacher.id}`}
       avatar={teacherInitials(name)}
       title={name}
       subtitle={teacher.user?.email}

@@ -415,7 +415,7 @@ function AdminLayout() {
   );
 
   return (
-    <Box
+    <Box data-testid="adm-admin-layout"
       style={cssVars}
       sx={{
         display: "flex",

@@ -64,7 +64,7 @@ export default function WeekMaterialsPageView({
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-week-material-view-page-week-materials-page-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <Box
           display="flex"
           justifyContent="center"
@@ -79,7 +79,7 @@ export default function WeekMaterialsPageView({
 
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-week-material-view-page-week-materials-page-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <Alert severity="error" sx={{ mt: 2 }}>
           {error}
         </Alert>
@@ -89,7 +89,7 @@ export default function WeekMaterialsPageView({
 
   if (!material) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-week-material-view-page-week-materials-page-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <Alert severity="info">Nenhum material encontrado.</Alert>
       </Container>
     );
@@ -98,7 +98,7 @@ export default function WeekMaterialsPageView({
   const currentTab = mediaTabs[activeTab];
 
   return (
-    <Box
+    <Box data-testid="page-view-week-material-view-page-week-materials-page-view"
       sx={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',

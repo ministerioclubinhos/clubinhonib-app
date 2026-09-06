@@ -9,7 +9,7 @@ interface RetentionTabProps {
 
 const RetentionTab: React.FC<RetentionTabProps> = ({ filters }) => {
 	return (
-		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+		<Box data-testid="statistics-tabs-retention-tab" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 			<RetentionFunnelChart filters={filters} />
 			<DemographicCharts filters={filters} />
 		</Box>

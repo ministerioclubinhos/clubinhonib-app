@@ -87,7 +87,7 @@ export default function ImagePagesManager() {
   );
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="image-pages-image-pages-manager"
       title="Páginas de fotos"
       summary={`${total} ${total === 1 ? 'galeria' : 'galerias'}`}
       toolbar={

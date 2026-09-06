@@ -11,7 +11,7 @@ interface Props {
 
 export default function DayDetailsDialog({ day, onClose }: Props) {
   return (
-    <Dialog
+    <Dialog data-testid="meditations-day-details-dialog"
       open={!!day}
       onClose={onClose}
       fullWidth

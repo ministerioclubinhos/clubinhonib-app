@@ -5,7 +5,7 @@ import { PhoneMaskProps } from '../types';
 const PhoneMask = forwardRef<HTMLInputElement, PhoneMaskProps>(function PhoneMask(props, ref) {
   const { onChange, name, ...rest } = props;
   return (
-    <IMaskInput
+    <IMaskInput data-testid="contact-phone-mask"
       {...rest}
       mask="(00) 00000-0000"
       definitions={{

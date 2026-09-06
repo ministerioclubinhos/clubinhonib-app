@@ -28,7 +28,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
   if (!testimonials || testimonials.length === 0) return null;
 
   return (
-    <Box
+    <Box data-testid="home-testimonials-section"
       sx={{
         py: { xs: 6, md: 10 },
         background: 'linear-gradient(135deg, #81d742 0%, #67bf1b 50%, #5aa814 100%)',

@@ -30,7 +30,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({ error, resetErrorBoundary }) => {
     };
 
     return (
-        <Box
+        <Box data-testid="error-error-page"
             sx={{
                 display: 'flex',
                 justifyContent: 'center',

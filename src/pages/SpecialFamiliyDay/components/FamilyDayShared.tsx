@@ -16,7 +16,7 @@ export const SectionEyebrow = ({
   color?: string;
   background?: string;
 }) => (
-  <Stack
+  <Stack data-testid="special-familiy-day-family-day-shared-section-eyebrow"
     direction="row"
     spacing={0.7}
     alignItems="center"
@@ -58,7 +58,7 @@ export const CarouselArrow = ({
   const isNext = direction === "next";
 
   return (
-    <Box
+    <Box data-testid="special-familiy-day-family-day-shared-carousel-arrow"
       component="button"
       type="button"
       aria-label={isNext ? "Próximo item" : "Item anterior"}

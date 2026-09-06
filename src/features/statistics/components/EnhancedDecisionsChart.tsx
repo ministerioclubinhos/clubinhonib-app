@@ -33,7 +33,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-enhanced-decisions-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -43,7 +43,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
 
   if (!data) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-enhanced-decisions-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar dados de decisões</Typography>
       </Paper>
     );
@@ -106,7 +106,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
   const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
-        <Paper
+        <Paper data-testid="statistics-enhanced-decisions-chart-custom-tooltip"
           elevation={8}
           sx={{
             p: 2,
@@ -166,7 +166,7 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
   };
 
   return (
-    <Box sx={{ width: '98%', maxWidth: '98%', overflowX: 'hidden', mx: 'auto' }}>
+    <Box data-testid="statistics-enhanced-decisions-chart" sx={{ width: '98%', maxWidth: '98%', overflowX: 'hidden', mx: 'auto' }}>
 
       <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: 3, width: '100%', maxWidth: '100%' }}>
         <Grid2 size={{ xs: 12, sm: 6, md: 4 }} sx={{ width: '100%', maxWidth: '100%' }}>

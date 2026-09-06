@@ -30,7 +30,7 @@ export default function WeekDocumentViewer({ document }: Props) {
   const fileSize = document.size ? `${(document.size / 1024 / 1024).toFixed(1)} MB` : null;
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-week-material-view-page-week-document-viewer"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}

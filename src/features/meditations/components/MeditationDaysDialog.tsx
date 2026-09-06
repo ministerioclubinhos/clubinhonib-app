@@ -34,7 +34,7 @@ export default function MeditationDaysDialog({
   );
 
   return (
-    <Dialog open={Boolean(meditation)} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog data-testid="meditations-meditation-days-dialog" open={Boolean(meditation)} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle
         sx={{
           display: 'flex',

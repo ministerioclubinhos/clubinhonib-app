@@ -40,7 +40,7 @@ function SectionSkeleton() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-image-page-view-section-skeleton"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -198,7 +198,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -214,7 +214,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -238,7 +238,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   if (!section) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -272,7 +272,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+    <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
 
       <motion.div
         initial={{ opacity: 0, y: -20 }}

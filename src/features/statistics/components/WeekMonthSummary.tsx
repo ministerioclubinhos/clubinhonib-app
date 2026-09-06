@@ -46,7 +46,7 @@ export const WeekMonthSummary: React.FC = () => {
 
   if (isLoading || !data) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-week-month-summary" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -69,7 +69,7 @@ export const WeekMonthSummary: React.FC = () => {
   const decisionTrend = getTrend(data.acceptedChrists.thisWeek, data.acceptedChrists.thisMonth);
 
   return (
-    <Grid2 container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
+    <Grid2 data-testid="statistics-week-month-summary" container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
 
       <Grid2 size={{ xs: 12, md: 6 }} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper

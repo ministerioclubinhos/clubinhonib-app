@@ -115,7 +115,7 @@ function App() {
 
   if (!forceReady && (!initialized || loadingUser)) {
     return (
-      <Box
+      <Box data-testid="app"
         sx={{
           height: '100vh',
           width: '100vw',
@@ -153,7 +153,7 @@ function App() {
   }
 
   return (
-    <AppErrorBoundary>
+    <AppErrorBoundary data-testid="app">
       <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
         <GlobalErrorHandler />
         <BrowserRouter>

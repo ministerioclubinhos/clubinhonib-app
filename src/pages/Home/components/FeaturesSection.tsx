@@ -5,7 +5,7 @@ import { FeaturesSectionProps } from '../types';
 
 const FeaturesSection: React.FC<FeaturesSectionProps> = ({ features }) => {
   return (
-    <Box
+    <Box data-testid="home-features-section"
       sx={{
         py: { xs: 6, md: 10 },
         background: '#ffffff',

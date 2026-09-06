@@ -354,7 +354,7 @@ export default function EventsCardsView({ eventos, isAdmin, onOpenDetails, onAdd
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div data-testid="event-events-cards-view" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
       {isMobile && isAdmin && (
         <Box sx={{ position: "fixed", bottom: 16, right: 16, zIndex: 9999 }}>
           <Tooltip title="Adicionar Evento">

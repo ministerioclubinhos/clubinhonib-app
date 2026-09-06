@@ -40,7 +40,7 @@ export const KPIDashboard: React.FC = memo(() => {
   } = useKPIData();
 
   return (
-    <Paper
+    <Paper data-testid="statistics-ui-kpidashboard"
       elevation={0}
       sx={{
         borderRadius: 4,

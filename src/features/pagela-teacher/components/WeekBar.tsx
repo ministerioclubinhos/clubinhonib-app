@@ -33,7 +33,7 @@ export default function WeekBar({ year, week, onChange, goCurrent }: Props) {
 
   if (isXs) {
     return (
-      <Stack spacing={1}>
+      <Stack data-testid="pagela-teacher-week-bar" spacing={1}>
         <Box
           sx={{
             display: "flex",
@@ -72,7 +72,7 @@ export default function WeekBar({ year, week, onChange, goCurrent }: Props) {
   }
 
   return (
-    <Box
+    <Box data-testid="pagela-teacher-week-bar"
       sx={{
         display: "flex",
         gap: 1,

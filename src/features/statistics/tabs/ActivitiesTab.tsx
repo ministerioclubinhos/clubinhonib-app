@@ -7,7 +7,7 @@ interface ActivitiesTabProps {
 }
 
 const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ filters }) => {
-	return <ActivitiesComparisonChart filters={filters} />;
+	return <ActivitiesComparisonChart data-testid="statistics-tabs-activities-tab" filters={filters} />;
 };
 
 export default ActivitiesTab;

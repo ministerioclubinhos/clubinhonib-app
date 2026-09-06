@@ -22,7 +22,7 @@ export default function FeatureRoute({ flag, redirectTo = '/' }: Props) {
 
   if (loading) {
     return (
-      <Box
+      <Box data-testid="feature-flags-feature-route"
         sx={{
           minHeight: '50vh',
           display: 'flex',
@@ -37,7 +37,7 @@ export default function FeatureRoute({ flag, redirectTo = '/' }: Props) {
 
   if (!isEnabled(flag)) {
     return (
-      <Navigate
+      <Navigate data-testid="feature-flags-feature-route"
         to={redirectTo}
         state={{ from: location, error: 'Recurso indisponível' }}
         replace
@@ -45,5 +45,5 @@ export default function FeatureRoute({ flag, redirectTo = '/' }: Props) {
     );
   }
 
-  return <Outlet />;
+  return <Outlet data-testid="feature-flags-feature-route" />;
 }

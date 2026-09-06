@@ -60,7 +60,7 @@ export default function ChildCard({
 
   return (
     <>
-      <Card
+      <Card data-testid="pagela-teacher-child-card"
         variant="outlined"
         sx={{
           borderRadius: 4,
@@ -313,7 +313,7 @@ export default function ChildCard({
           </>
         )}
       </Card>
-      <DecisionModal
+      <DecisionModal data-testid="pagela-teacher-child-card"
         open={modalOpen && canRegisterDecision}
         onClose={handleCloseModal}
         child={child}

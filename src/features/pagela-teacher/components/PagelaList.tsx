@@ -158,7 +158,7 @@ export default function PagelaList({
     };
 
   return (
-    <Stack spacing={1.75}>
+    <Stack data-testid="pagela-teacher-pagela-list" spacing={1.75}>
       <Box
         sx={{
           display: "grid",

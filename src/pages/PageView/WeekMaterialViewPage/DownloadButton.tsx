@@ -93,7 +93,7 @@ export default function DownloadButton({
   };
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-week-material-view-page-download-button"
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
     >

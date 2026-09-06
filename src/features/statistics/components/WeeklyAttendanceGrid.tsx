@@ -157,7 +157,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-weekly-attendance-grid" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -167,7 +167,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
 
   if (!data) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-weekly-attendance-grid" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar dados semanais</Typography>
       </Paper>
     );
@@ -178,7 +178,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
     academicWeek === currentWeekInfo?.academicWeek;
 
   return (
-    <Box>
+    <Box data-testid="statistics-weekly-attendance-grid">
       <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

@@ -65,7 +65,7 @@ export default function DownloadButton({
   };
 
   return (
-    <Button
+    <Button data-testid="page-view-ideas-material-viewpage-download-button"
       variant="contained"
       color="primary"
       startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <DownloadIcon />}

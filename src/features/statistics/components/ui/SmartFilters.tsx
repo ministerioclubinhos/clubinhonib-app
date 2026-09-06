@@ -146,7 +146,7 @@ export const SmartFilters: React.FC = memo(() => {
   const activePeriodData = quickPeriods.find(p => p.id === activePeriod);
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
+    <LocalizationProvider data-testid="statistics-ui-smart-filters" dateAdapter={AdapterDayjs} adapterLocale="pt-br">
       <Paper
         elevation={0}
         sx={{

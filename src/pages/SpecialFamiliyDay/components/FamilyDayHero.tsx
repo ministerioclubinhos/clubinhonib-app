@@ -39,7 +39,7 @@ const eventInfo = [
 ];
 
 const EventDetails = () => (
-  <Box sx={{ pb: { xs: 7, md: 10 } }}>
+  <Box data-testid="special-familiy-day-family-day-hero-event-details" sx={{ pb: { xs: 7, md: 10 } }}>
     <Container maxWidth={false} sx={sectionWidthSx}>
       <Box
         sx={{
@@ -126,7 +126,7 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialResponse }) => {
 
   return (
     <>
-      <Box
+      <Box data-testid="special-familiy-day-family-day-hero"
         component="section"
         sx={{
           position: "relative",
@@ -551,7 +551,7 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialResponse }) => {
         />
       </Box>
 
-      <EventDetails />
+      <EventDetails data-testid="special-familiy-day-family-day-hero" />
     </>
   );
 };

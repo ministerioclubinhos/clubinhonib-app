@@ -71,7 +71,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
 
   // Rótulo e gravidade vêm de `utils.ts`; aqui ficam só as escolhas visuais.
   return (
-    <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
+    <Paper data-testid="club-control-clubs-list-table" elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
       <Box
         sx={{
           p: { xs: 1.5, sm: 2 },

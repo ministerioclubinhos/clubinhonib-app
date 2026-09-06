@@ -32,7 +32,7 @@ export default function MediaSection({
     const theme = useTheme();
 
     return (
-        <motion.div
+        <motion.div data-testid="page-view-ideas-material-viewpage-media-section"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}

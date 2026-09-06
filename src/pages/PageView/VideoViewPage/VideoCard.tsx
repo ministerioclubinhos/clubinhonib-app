@@ -30,7 +30,7 @@ const VideoCard = ({ video }: Props) => {
 
   return (
     <Fragment>
-      <motion.div 
+      <motion.div data-testid="page-view-video-view-page-video-card"
         initial={{ opacity: 0, y: 16 }} 
         animate={{ opacity: 1, y: 0 }} 
         transition={{ duration: 0.4 }}
@@ -192,7 +192,7 @@ const VideoCard = ({ video }: Props) => {
         </Paper>
       </motion.div>
 
-      <Dialog 
+      <Dialog data-testid="page-view-video-view-page-video-card"
         fullWidth 
         maxWidth="lg" 
         open={open} 

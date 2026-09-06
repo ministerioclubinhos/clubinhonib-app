@@ -15,7 +15,7 @@ type Props = {
 
 export default function ChildSelector({ loading, items, value, onChange, onSearch }: Props) {
   return (
-    <Autocomplete
+    <Autocomplete data-testid="pagela-teacher-child-selector"
       fullWidth
       options={items}
       value={value}

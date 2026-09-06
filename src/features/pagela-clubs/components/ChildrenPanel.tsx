@@ -50,11 +50,11 @@ export function ChildrenPanel({ club, onSelect, selectedId }: Props) {
   const limit = CHILDREN_PAGE_LIMIT;
 
   if (!club) {
-    return <PlaceholderCard title="Escolha um Clubinho" subtitle="Clique em um Clubinho para ver suas crianças." />;
+    return <PlaceholderCard data-testid="pagela-clubs-children-panel" title="Escolha um Clubinho" subtitle="Clique em um Clubinho para ver suas crianças." />;
   }
 
   return (
-    <Stack sx={{ height: "100%" }} spacing={2}>
+    <Stack data-testid="pagela-clubs-children-panel" sx={{ height: "100%" }} spacing={2}>
       <TextField
         size="small"
         placeholder="Buscar por nome, responsável, telefone..."

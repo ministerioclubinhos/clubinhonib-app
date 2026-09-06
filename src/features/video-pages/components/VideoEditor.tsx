@@ -181,7 +181,7 @@ export default function VideoEditor({
   };
 
   return (
-    <Box>
+    <Box data-testid="video-pages-video-editor">
       <Paper
         variant="outlined"
         sx={{

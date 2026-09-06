@@ -34,7 +34,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper data-testid="statistics-club-rankings" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -44,7 +44,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
 
   if (error || !data) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
+      <Paper data-testid="statistics-club-rankings" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
         <Typography color="error">Erro ao carregar rankings</Typography>
       </Paper>
     );
@@ -71,7 +71,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+    <Paper data-testid="statistics-club-rankings" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 2, sm: 3 } }}>
         <EmojiEvents sx={{ color: theme.palette.warning.main, fontSize: { xs: 24, sm: 28 } }} />
         <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>

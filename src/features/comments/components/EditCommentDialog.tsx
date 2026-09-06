@@ -54,7 +54,7 @@ export default function EditCommentDialog({
   const hasErrors = Object.values(errors).some(Boolean);
 
   return (
-    <Dialog
+    <Dialog data-testid="comments-edit-comment-dialog"
       open={open}
       onClose={onCancel}
       maxWidth="sm"

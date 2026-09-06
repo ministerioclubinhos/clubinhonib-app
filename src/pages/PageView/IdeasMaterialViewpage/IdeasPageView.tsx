@@ -90,7 +90,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
 
   if (loading) {
     return (
-      <Box
+      <Box data-testid="page-view-ideas-material-viewpage-ideas-page-view"
         sx={{
           minHeight: '100vh',
           display: 'flex',
@@ -111,7 +111,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
 
   if (error) {
     return (
-      <Box
+      <Box data-testid="page-view-ideas-material-viewpage-ideas-page-view"
         sx={{
           minHeight: '100vh',
           display: 'flex',
@@ -137,7 +137,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
 
   if (!ideasPage) {
     return (
-      <Box
+      <Box data-testid="page-view-ideas-material-viewpage-ideas-page-view"
         sx={{
           minHeight: '100vh',
           display: 'flex',
@@ -161,7 +161,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
   const { title, description, sections } = ideasPage;
 
   return (
-    <Box
+    <Box data-testid="page-view-ideas-material-viewpage-ideas-page-view"
       sx={{
         minHeight: '100vh',
         pt: 0,

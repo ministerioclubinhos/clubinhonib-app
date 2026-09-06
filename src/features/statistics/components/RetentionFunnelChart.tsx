@@ -23,7 +23,7 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-retention-funnel-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -33,7 +33,7 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
 
   if (!data || !data.byParticipationTime || data.byParticipationTime.length === 0) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-retention-funnel-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Typography color="text.secondary">Sem dados de retenção para o período selecionado</Typography>
       </Paper>
     );
@@ -60,7 +60,7 @@ export const RetentionFunnelChart: React.FC<RetentionFunnelChartProps> = ({ filt
   };
 
   return (
-    <Paper
+    <Paper data-testid="statistics-retention-funnel-chart"
       elevation={0}
       sx={{
         p: { xs: 1.5, sm: 3 },

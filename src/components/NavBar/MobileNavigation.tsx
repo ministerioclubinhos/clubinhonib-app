@@ -11,7 +11,7 @@ const MobileNavigation: React.FC = () => {
   const closeDrawer = () => setOpen(false);
 
   return (
-    <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+    <Box data-testid="nav-bar-mobile-navigation" sx={{ display: { xs: 'block', md: 'none' } }}>
       <IconButton
         onClick={toggleDrawer}
         sx={{ color: '#fff' }}

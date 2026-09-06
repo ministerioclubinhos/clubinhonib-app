@@ -17,7 +17,7 @@ const WeekMaterialsBanner: React.FC = () => {
   if (!currentWeekRoute) return null;
 
   return (
-    <Box
+    <Box data-testid="home-week-materials-banner"
       sx={{
         width: '100%',
         py: { xs: 6, md: 10 },

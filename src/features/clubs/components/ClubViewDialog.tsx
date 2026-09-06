@@ -49,7 +49,7 @@ function LineCard({
   children: React.ReactNode;
 }) {
   return (
-    <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
+    <Paper data-testid="clubs-club-view-dialog-line-card" variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
       <Stack spacing={0.5}>
         <Stack direction="row" spacing={0.75} alignItems="center">
           {icon}
@@ -73,7 +73,7 @@ export default function ClubViewDialog({ open, loading, club, onClose }: Props) 
   const teachers = club?.teachers ?? [];
 
   return (
-    <Dialog
+    <Dialog data-testid="clubs-club-view-dialog"
       open={open}
       onClose={onClose}
       fullWidth

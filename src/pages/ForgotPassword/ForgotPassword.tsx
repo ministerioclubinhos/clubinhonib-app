@@ -141,7 +141,7 @@ const ForgotPassword: React.FC = () => {
     };
 
     return (
-        <Box
+        <Box data-testid="forgot-password"
             sx={{
                 minHeight: 'calc(100vh - var(--app-header-h, 64px))',
                 display: 'flex',

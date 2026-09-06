@@ -90,7 +90,7 @@ export const ClubsListView: React.FC = () => {
 
   if (isError) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-clubs-list-view" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="error" sx={{ mb: 1.5 }}>
           Não foi possível carregar os clubinhos.
         </Typography>
@@ -101,7 +101,7 @@ export const ClubsListView: React.FC = () => {
 
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+    <Box data-testid="statistics-clubs-list-view" sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
 
       <Grid2 container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: 3, width: '100%', maxWidth: '100%', margin: 0, display: 'flex', flexWrap: 'wrap' }}>
         <Grid2 size={{ xs: 6, sm: 6, md: 2.4 }} sx={{ width: '100%', maxWidth: '100%' }}>

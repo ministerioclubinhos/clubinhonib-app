@@ -162,7 +162,7 @@ export default function EventosPage() {
 
   if (loading) {
     return (
-      <Box
+      <Box data-testid="event-eventos-page"
         sx={{
           minHeight: "100vh",
           background: "linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 50%, #ffffff 100%)",
@@ -195,7 +195,7 @@ export default function EventosPage() {
 
   return (
     <Fragment>
-      <Box sx={{ minHeight: "100vh", background: gradients.subtle.greenWhiteSoft }}>
+      <Box data-testid="event-eventos-page" sx={{ minHeight: "100vh", background: gradients.subtle.greenWhiteSoft }}>
 
         <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 2.5, md: 4 }, px: { xs: 1.5, sm: 2, md: 3 } }}>
           {error ? (

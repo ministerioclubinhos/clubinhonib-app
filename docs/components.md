@@ -8,6 +8,25 @@ The application uses a component-based UI architecture built on top of **Materia
 - **Accessibility**: We follow WCAG guidelines where possible, leveraging MUI's built-in accessibility features.
 - **Theming**: Evaluating global theme customization in `src/styles/`.
 
+## 🧪 Playwright selector contract
+
+Every rendered component exposes a stable, kebab-case `data-testid` on its DOM
+root. Loading, empty, error and permission states, dialogs, menus, uploads and
+ambiguous or repeated actions receive their own descriptive selectors. A
+reusable component can receive a caller-owned `data-testid` when the domain context
+or stable API entity ID is required.
+
+Playwright should still prefer accessible locators such as role and label when
+they are unique. Test IDs are the stable fallback and the component-boundary
+contract. They must never depend on Portuguese display text, MUI/CSS classes,
+DOM order, array indexes, random values, timestamps or React-generated IDs.
+HTML `id` remains reserved for a unique document identity or accessibility
+relationships, because repeated components cannot legally share it.
+
+`npm run check:test-ids` scans every production TSX render root and fails when
+a component is created or changed without the selector contract. The command is
+also part of `npm run lint`.
+
 ## 🧩 Shared Components
 
 Located in `src/components/`, common components include:

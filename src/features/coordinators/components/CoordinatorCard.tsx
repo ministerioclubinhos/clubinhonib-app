@@ -68,7 +68,7 @@ export default function CoordinatorCard({
   }
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`coordinators-coordinator-card-${coordinator.id}`}
       avatar={coordinatorInitials(name)}
       title={name}
       subtitle={coordinator.user?.email}

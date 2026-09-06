@@ -64,7 +64,7 @@ export default function PagelaClubsManager() {
   };
 
   return (
-    <Box
+    <Box data-testid="pagela-clubs-pagela-clubs-manager"
       sx={{
         height: "100%",
         display: "flex",

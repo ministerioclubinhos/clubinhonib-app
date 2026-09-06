@@ -132,7 +132,7 @@ export default function ProfilesManager() {
 
   if (loading && items.length === 0) {
     return (
-      <Box sx={{ p: { xs: 2, sm: 3 }, width: "100%" }}>
+      <Box data-testid="profile-profiles-manager" sx={{ p: { xs: 2, sm: 3 }, width: "100%" }}>
         <Grid2 container spacing={2}>
           {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
             <Grid2 key={index} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
@@ -145,7 +145,7 @@ export default function ProfilesManager() {
   }
 
   return (
-    <Box
+    <Box data-testid="profile-profiles-manager"
       sx={{
         p: { xs: 2, sm: 3 },
         width: "100%",

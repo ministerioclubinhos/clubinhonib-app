@@ -79,7 +79,7 @@ export default function IdeasSectionManager() {
   ];
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="ideas-sections-ideas-section-manager"
       title="Ideias compartilhadas"
       summary={
         total > 0

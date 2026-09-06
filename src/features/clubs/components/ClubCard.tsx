@@ -67,7 +67,7 @@ export default function ClubCard({
   ];
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`clubs-club-card-${club.id}`}
       avatar={String(club.number)}
       title={`Clubinho ${club.number}`}
       subtitle={formatClubAddress(club.address)}

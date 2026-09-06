@@ -43,7 +43,7 @@ export default function InformativeListCard({
   }
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`informatives-informative-list-card-${informative.id}`}
       avatar={informativeInitials(informative.title)}
       title={informative.title}
       accent={informative.public ? 'success' : 'default'}

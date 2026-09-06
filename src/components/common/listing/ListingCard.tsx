@@ -12,9 +12,11 @@ import {
   useTheme,
 } from "@mui/material";
 
+import type { TestIdProps } from "@/types/testIds";
+
 import type { ListingBadge, ListingMeta } from "./types";
 
-type Props = {
+interface Props extends TestIdProps {
   /** Iniciais ou ícone no avatar. */
   avatar: React.ReactNode;
   title: string;
@@ -28,7 +30,7 @@ type Props = {
   footer?: React.ReactNode;
   actions?: React.ReactNode;
   onClick?: () => void;
-};
+}
 
 /** Quantas linhas do texto aparecem antes do recorte. */
 const EXCERPT_LINES = 3;
@@ -40,6 +42,7 @@ const EXCERPT_LINES = 3;
  * selos, trecho e rodapé com ações — para que pareçam a mesma família.
  */
 export default function ListingCard({
+  "data-testid": testId = "listing-listing-card",
   avatar,
   title,
   subtitle,
@@ -57,7 +60,7 @@ export default function ListingCard({
     accent === "default" ? theme.palette.grey[500] : (accentColor as { main: string }).main;
 
   return (
-    <Card
+    <Card data-testid={testId}
       variant="outlined"
       onClick={onClick}
       sx={{

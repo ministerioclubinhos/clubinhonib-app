@@ -37,7 +37,7 @@ const RankingsTab = React.lazy(() => import('./tabs/RankingsTab'));
 
 // Loading skeleton for tabs
 const TabSkeleton: React.FC = () => (
-  <Box sx={{ display: 'grid', gap: 2 }}>
+  <Box data-testid="statistics-statistics-page-tab-skeleton" sx={{ display: 'grid', gap: 2 }}>
     <Skeleton variant="rounded" height={80} />
     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
       {[1, 2, 3, 4].map((i) => (
@@ -65,7 +65,7 @@ const ScrollToTop: React.FC = memo(() => {
   };
 
   return (
-    <Zoom in={visible}>
+    <Zoom data-testid="statistics-statistics-page-scroll-to-top" in={visible}>
       <Fab
         color="primary"
         size="small"
@@ -121,7 +121,7 @@ const TabContent: React.FC = memo(() => {
   };
 
   return (
-    <Paper
+    <Paper data-testid="statistics-statistics-page-tab-content"
       elevation={0}
       sx={{
         borderRadius: 3,
@@ -155,7 +155,7 @@ const StatisticsContent: React.FC = memo(() => {
   const theme = useTheme();
 
   return (
-    <Box
+    <Box data-testid="statistics-statistics-page-statistics-content"
       sx={{
         minHeight: '100vh',
         bgcolor: alpha(theme.palette.primary.main, 0.02),
@@ -212,7 +212,7 @@ StatisticsContent.displayName = 'StatisticsContent';
 // Main page component with providers
 const StatisticsPage: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider data-testid="statistics-statistics-page" client={queryClient}>
       <StatisticsProvider>
         <StatisticsContent />
       </StatisticsProvider>

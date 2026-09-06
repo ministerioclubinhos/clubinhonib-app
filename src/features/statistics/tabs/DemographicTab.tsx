@@ -9,7 +9,7 @@ interface DemographicTabProps {
 
 const DemographicTab: React.FC<DemographicTabProps> = ({ filters }) => {
 	return (
-		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+		<Box data-testid="statistics-tabs-demographic-tab" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 			<RadarComparisonChart filters={filters} />
 			<DemographicCharts filters={filters} />
 		</Box>

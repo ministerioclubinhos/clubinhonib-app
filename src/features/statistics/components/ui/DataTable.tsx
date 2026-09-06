@@ -210,7 +210,7 @@ function DataTableComponent<T extends object>({
   // Loading skeleton
   if (loading) {
     return (
-      <Paper elevation={0} sx={{ borderRadius: 3, border: `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
+      <Paper data-testid="statistics-ui-data-table-data-table-component" elevation={0} sx={{ borderRadius: 3, border: `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
         {title && (
           <Box sx={{ p: { xs: 2, md: 3 }, borderBottom: `1px solid ${theme.palette.divider}` }}>
             <Skeleton variant="text" width="30%" height={28} />
@@ -229,7 +229,7 @@ function DataTableComponent<T extends object>({
   // Error state
   if (error) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-data-table-data-table-component"
         elevation={0}
         sx={{
           p: 4,
@@ -257,7 +257,7 @@ function DataTableComponent<T extends object>({
   // Mobile card view
   if (isMobile && mobileCardRender) {
     return (
-      <Box>
+      <Box data-testid="statistics-ui-data-table-data-table-component">
         {/* Mobile Header */}
         <Paper
           elevation={0}
@@ -349,7 +349,7 @@ function DataTableComponent<T extends object>({
 
   // Desktop table view
   return (
-    <Paper
+    <Paper data-testid="statistics-ui-data-table-data-table-component"
       elevation={0}
       sx={{
         borderRadius: 3,

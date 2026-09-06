@@ -182,7 +182,7 @@ export default function PagelaQuickForm({
   const article = childGender === "F" ? "a" : "o";
 
   return (
-    <Card
+    <Card data-testid="pagela-teacher-pagela-quick-form"
       variant="outlined"
       sx={{
         borderRadius: { xs: "24px 24px 0 0", sm: 4 },
@@ -338,7 +338,7 @@ function RowSwitch({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <FormControlLabel
+    <FormControlLabel data-testid="pagela-teacher-pagela-quick-form-row-switch"
       control={<Switch checked={checked} onChange={(_, v) => onChange(v)} />}
       label={
         <Stack direction="row" spacing={0.75} alignItems="center">

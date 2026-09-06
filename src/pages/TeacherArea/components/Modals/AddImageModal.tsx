@@ -74,7 +74,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
   };
 
   return (
-    <Dialog 
+    <Dialog data-testid="teacher-area-modals-add-image-modal"
       open={isOpen} 
       onClose={onClose} 
       fullWidth 

@@ -56,7 +56,7 @@ export default function MeditationMediaField({
   const fileName = values.file?.name ?? savedFileName ?? '';
 
   return (
-    <Grid2 container spacing={2}>
+    <Grid2 data-testid="meditations-meditation-media-field" container spacing={2}>
       <Grid2 size={{ xs: 12, sm: 6 }}>
         <FormControl fullWidth>
           <InputLabel id="meditation-upload-type">Tipo do material</InputLabel>

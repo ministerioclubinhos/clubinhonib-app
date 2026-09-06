@@ -50,7 +50,7 @@ const CompleteProfileAlert: React.FC<CompleteProfileAlertProps> = ({
 
     return (
         <>
-            <Tooltip title="Notificações" arrow>
+            <Tooltip data-testid="nav-bar-complete-profile-alert" title="Notificações" arrow>
                 <IconButton
                     onClick={handleClick}
                     sx={{ ml: 1, p: 0.5, color: '#fff' }} aria-label="Notificações">
@@ -59,7 +59,7 @@ const CompleteProfileAlert: React.FC<CompleteProfileAlertProps> = ({
                     </Badge>
                 </IconButton>
             </Tooltip>
-            <Menu
+            <Menu data-testid="nav-bar-complete-profile-alert"
                 anchorEl={anchorEl}
                 open={open}
                 onClose={handleClose}

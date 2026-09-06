@@ -63,7 +63,7 @@ export function PagelasPanel({ child }: Props) {
   };
 
   if (!child) {
-    return <PlaceholderCard title="Escolha uma criança" subtitle="Clique em uma criança para ver suas pagelas." />;
+    return <PlaceholderCard data-testid="pagela-clubs-pagelas-panel" title="Escolha uma criança" subtitle="Clique em uma criança para ver suas pagelas." />;
   }
 
   // A API só entende `2026-48`, `2026` ou `48`; qualquer outra coisa não
@@ -71,7 +71,7 @@ export function PagelasPanel({ child }: Props) {
   const searchIsUseful = weekSearchIsMeaningful(search);
 
   return (
-    <Stack sx={{ height: "100%" }} spacing={2}>
+    <Stack data-testid="pagela-clubs-pagelas-panel" sx={{ height: "100%" }} spacing={2}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
         <Chip label={`Total: ${total}`} color="info" variant="outlined" />
         <Chip

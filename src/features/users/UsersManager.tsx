@@ -139,7 +139,7 @@ export default function UsersManager() {
   };
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="users-users-manager"
       title="Usuários"
       summary={
         total > 0

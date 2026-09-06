@@ -45,7 +45,7 @@ export default function FeatureFlagListCard({
   ];
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`feature-flags-feature-flag-list-card-${flag.id}`}
       avatar={flagInitials(flag.key)}
       title={flag.name}
       subtitle={flag.key}

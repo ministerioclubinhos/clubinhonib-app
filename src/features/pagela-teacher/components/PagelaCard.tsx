@@ -66,7 +66,7 @@ export default function PagelaCard({
 
   const Chips = () =>
     isXs ? (
-      <Box
+      <Box data-testid="pagela-teacher-pagela-card-chips"
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
@@ -103,7 +103,7 @@ export default function PagelaCard({
         </Tooltip>
       </Box>
     ) : (
-      <Stack direction="row" spacing={0.75} flexWrap="wrap">
+      <Stack data-testid="pagela-teacher-pagela-card-chips" direction="row" spacing={0.75} flexWrap="wrap">
         <Chip
           size="small"
           color={row.present ? "success" : "default"}
@@ -132,7 +132,7 @@ export default function PagelaCard({
 
   return (
     <>
-      <Card
+      <Card data-testid="pagela-teacher-pagela-card"
         variant="outlined"
         sx={{
           borderRadius: 4,
@@ -212,7 +212,7 @@ export default function PagelaCard({
         </CardContent>
       </Card>
 
-      <DeleteConfirmDialog
+      <DeleteConfirmDialog data-testid="pagela-teacher-pagela-card"
         open={confirmOpen}
         title={weekTitle}
         onClose={() => (busy ? null : setConfirmOpen(false))}

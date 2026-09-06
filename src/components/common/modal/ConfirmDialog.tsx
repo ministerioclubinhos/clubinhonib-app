@@ -91,7 +91,7 @@ export default function ConfirmDialog({
   };
 
   return (
-    <Dialog
+    <Dialog data-testid="modal-confirm-dialog"
       open={open}
       onClose={handleClose}
       fullWidth={fullWidth}

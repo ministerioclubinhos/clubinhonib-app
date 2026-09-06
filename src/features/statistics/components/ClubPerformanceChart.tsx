@@ -63,7 +63,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-club-performance-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -73,7 +73,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
 
   if (!data) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-club-performance-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar dados dos clubinhos</Typography>
       </Paper>
     );
@@ -81,7 +81,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
 
   if (!data.byClub || data.byClub.length === 0) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-club-performance-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="text.secondary">Nenhum dado de clubinho disponível para o período selecionado</Typography>
       </Paper>
     );
@@ -111,7 +111,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <Paper
+        <Paper data-testid="statistics-club-performance-chart-custom-tooltip"
           elevation={8}
           sx={{
             p: 2,
@@ -144,7 +144,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
   };
 
   return (
-    <Paper
+    <Paper data-testid="statistics-club-performance-chart"
       elevation={0}
       sx={{
         p: { xs: 2, sm: 3 },

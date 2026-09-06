@@ -7,7 +7,7 @@ const EmailVerificationInstructions: React.FC = () => {
   const [showImageModal, setShowImageModal] = useState(false);
 
   return (
-    <div className="email-verification-fullscreen-bg">
+    <div data-testid="email-verification-email-verification-instructions" className="email-verification-fullscreen-bg">
       <div className="email-verification-instructions-container">
         <div className="email-verification-header">
           <h1>Verifique seu e-mail</h1>

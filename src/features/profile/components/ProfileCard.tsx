@@ -30,7 +30,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, index, onClick }) =>
     const age = calculateAge(profile.personalData?.birthDate);
 
     return (
-        <motion.div
+        <motion.div data-testid="profile-profile-card"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.02 }}

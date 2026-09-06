@@ -49,7 +49,7 @@ export const WeekNavigationHeader: React.FC<WeekNavigationHeaderProps> = ({
   const theme = useTheme();
 
   return (
-    <Paper
+    <Paper data-testid="club-control-week-navigation-header"
       elevation={0}
       sx={{
         p: { xs: 2, sm: 2.5 },

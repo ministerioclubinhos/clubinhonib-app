@@ -19,7 +19,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ open, onClose, im
     if (!imageUrl) return null;
 
     return (
-        <Dialog
+        <Dialog data-testid="profile-image-preview-modal"
             open={open}
             onClose={onClose}
             maxWidth="md"

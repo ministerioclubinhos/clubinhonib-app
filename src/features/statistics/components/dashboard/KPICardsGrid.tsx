@@ -22,7 +22,7 @@ export const KPICardsGrid: React.FC<KPICardsGridProps> = ({
     activeCategory,
 }) => {
     return (
-        <Box sx={{ p: { xs: 2, md: 3 } }}>
+        <Box data-testid="statistics-dashboard-kpicards-grid" sx={{ p: { xs: 2, md: 3 } }}>
             <AnimatePresence mode="wait">
                 <MotionGrid
                     key={activeCategory}

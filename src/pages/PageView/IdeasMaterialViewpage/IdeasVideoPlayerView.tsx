@@ -19,7 +19,7 @@ const Transition = React.forwardRef(function Transition(
   },
   ref: React.Ref<unknown>,
 ) {
-  return <Slide direction="up" ref={ref} {...props} />;
+  return <Slide data-testid="page-view-ideas-material-viewpage-ideas-video-player-view-transition" direction="up" ref={ref} {...props} />;
 });
 
 export default function IdeasVideoPlayerView({ video }: Props) {
@@ -247,7 +247,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
 
   return (
     <>
-      <Box sx={{
+      <Box data-testid="page-view-ideas-material-viewpage-ideas-video-player-view" sx={{
         width: '100%',
         p: { xs: 1.5, sm: 2, md: 3 },
         height: '100%',
@@ -319,7 +319,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
       </Box>
 
       {/* Expanded Video Modal */}
-      <Dialog
+      <Dialog data-testid="page-view-ideas-material-viewpage-ideas-video-player-view"
         open={openModal}
         slots={{ transition: Transition }}
         keepMounted

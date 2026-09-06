@@ -33,7 +33,7 @@ export default function ChildrenListDesktop({ data }: Props) {
 
   return (
 
-            <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
+            <TableContainer data-testid="statistics-children-list-desktop" component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'primary.main' }}>

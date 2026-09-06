@@ -8,7 +8,7 @@ interface AboutLayoutProps {
 const AboutLayout: React.FC<AboutLayoutProps> = ({ children }) => {
 
   return (
-    <Box
+    <Box data-testid="about-about-layout"
       component="main"
       sx={{
         minHeight: 'calc(100vh - 128px)',

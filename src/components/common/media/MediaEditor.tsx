@@ -165,7 +165,7 @@ export default function MediaEditor({
   };
 
   return (
-    <Box>
+    <Box data-testid="media-media-editor">
       <Paper
         variant="outlined"
         sx={{

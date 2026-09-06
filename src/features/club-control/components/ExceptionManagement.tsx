@@ -157,7 +157,7 @@ export const ExceptionManagement: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box data-testid="club-control-exception-management">
 
       <Paper
         elevation={0}

@@ -88,7 +88,7 @@ const MiniSparkline: React.FC<{ data: number[]; color: string }> = memo(({ data,
   }).join(' ');
 
   return (
-    <svg width={width} height={height} style={{ overflow: 'visible' }}>
+    <svg data-testid="statistics-ui-stat-card-mini-sparkline" width={width} height={height} style={{ overflow: 'visible' }}>
       <polyline
         points={points}
         fill="none"
@@ -159,7 +159,7 @@ export const StatCard: React.FC<StatCardProps> = memo(({
 
   if (loading) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-stat-card"
         elevation={0}
         sx={{
           p: compact ? { xs: 0.75, sm: 1.25 } : 2.5,
@@ -176,7 +176,7 @@ export const StatCard: React.FC<StatCardProps> = memo(({
   }
 
   return (
-    <MotionPaper
+    <MotionPaper data-testid="statistics-ui-stat-card"
       elevation={0}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}

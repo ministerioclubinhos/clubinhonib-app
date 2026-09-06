@@ -48,7 +48,7 @@ export default function SelecPageTemplate() {
   const handleChangeTemplate = useCallback(() => setSelectedId(null), []);
 
   return (
-    <Box
+    <Box data-testid="adm-page-creator-select-page-template-selec-page-template"
       component="main"
       sx={{
         minHeight: '100vh',

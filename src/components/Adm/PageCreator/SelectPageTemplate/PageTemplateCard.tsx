@@ -9,7 +9,7 @@ export default function PageTemplateCard({
   onSelect,
 }: PageTemplateCardProps) {
   return (
-    <Paper
+    <Paper data-testid="adm-page-creator-select-page-template-page-template-card"
       variant="outlined"
       sx={{
         height: '100%',

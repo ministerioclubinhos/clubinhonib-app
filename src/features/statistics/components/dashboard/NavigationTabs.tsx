@@ -35,7 +35,7 @@ export const NavigationTabs: React.FC = memo(() => {
   const activeTab = tabs.find((tab) => tab.id === state.activeTab) ?? tabs[0];
 
   return (
-    <Paper
+    <Paper data-testid="statistics-dashboard-navigation-tabs"
       elevation={0}
       sx={{
         mb: { xs: 2, md: 3 },

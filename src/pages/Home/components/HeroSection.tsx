@@ -7,7 +7,7 @@ import banner from '@/assets/banner.jpg';
 
 const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
   return (
-    <Box
+    <Box data-testid="home-hero-section"
       sx={{
         position: 'relative',
         width: '100%',

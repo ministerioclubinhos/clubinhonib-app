@@ -95,7 +95,7 @@ export default function MeditationsManager() {
   );
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="meditations-meditations-manager"
       title="Meditações"
       summary={`${total} ${total === 1 ? 'meditação' : 'meditações'}`}
       toolbar={

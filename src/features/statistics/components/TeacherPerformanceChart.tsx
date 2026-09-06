@@ -42,7 +42,7 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-teacher-performance-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -52,7 +52,7 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
 
   if (!data || !data.byTeacher || data.byTeacher.length === 0) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-teacher-performance-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="text.secondary">Sem dados de professores para o período selecionado</Typography>
       </Paper>
     );
@@ -74,7 +74,7 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <Paper
+        <Paper data-testid="statistics-teacher-performance-chart-custom-tooltip"
           elevation={8}
           sx={{
             p: 2,
@@ -102,7 +102,7 @@ export const TeacherPerformanceChart: React.FC<TeacherPerformanceChartProps> = (
   };
 
   return (
-    <Paper
+    <Paper data-testid="statistics-teacher-performance-chart"
       elevation={0}
       sx={{
         p: { xs: 1.5, sm: 3 },

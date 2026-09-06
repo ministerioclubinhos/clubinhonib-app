@@ -28,7 +28,7 @@ export default function WeekPicker({
   const label = toLabelWeek ? toLabelWeek(year, week) : `Ano ${year} • Semana ${week}`;
 
   return (
-    <Box sx={{ display: "flex", gap: 1, alignItems: "center", justifyContent: "space-between" }}>
+    <Box data-testid="pagela-teacher-week-picker" sx={{ display: "flex", gap: 1, alignItems: "center", justifyContent: "space-between" }}>
       <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
         <Tooltip title="Semana anterior">
           <IconButton size="small" onClick={dec} aria-label="Semana anterior">

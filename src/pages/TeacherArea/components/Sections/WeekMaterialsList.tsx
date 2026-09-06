@@ -76,7 +76,7 @@ const WeekMaterialsList = () => {
 
     if (loading) {
         return (
-            <Box
+            <Box data-testid="teacher-area-sections-week-materials-list"
                 sx={{
                     display: 'flex',
                     justifyContent: 'center',
@@ -94,7 +94,7 @@ const WeekMaterialsList = () => {
     };
 
     return (
-        <Box
+        <Box data-testid="teacher-area-sections-week-materials-list"
             sx={{
                 minHeight: '100vh',
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',

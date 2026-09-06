@@ -24,7 +24,7 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper data-testid="statistics-accepted-christs-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -34,7 +34,7 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
 
   if (error || !data) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper data-testid="statistics-accepted-christs-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Typography color="error">Erro ao carregar dados de decisões</Typography>
       </Paper>
     );
@@ -48,7 +48,7 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
   }));
 
   return (
-    <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+    <Paper data-testid="statistics-accepted-christs-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
       <Typography variant="h6" fontWeight="bold" gutterBottom>
         ✝️ Decisões por Cristo ao Longo do Tempo
       </Typography>

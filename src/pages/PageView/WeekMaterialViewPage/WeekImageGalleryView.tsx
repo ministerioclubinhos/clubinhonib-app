@@ -58,7 +58,7 @@ export default function WeekImageGallery({ image }: Props) {
 
   return (
     <>
-      <motion.div
+      <motion.div data-testid="page-view-week-material-view-page-week-image-gallery-view-week-image-gallery"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -2 }}
@@ -227,7 +227,7 @@ export default function WeekImageGallery({ image }: Props) {
         </Paper>
       </motion.div>
 
-      <Dialog
+      <Dialog data-testid="page-view-week-material-view-page-week-image-gallery-view-week-image-gallery"
         open={open}
         onClose={() => setOpen(false)}
         maxWidth="lg"

@@ -56,7 +56,7 @@ export default function IdeasPageListCard({
   }
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`ideas-pages-ideas-page-list-card-${page.id}`}
       avatar={<LightbulbOutlinedIcon fontSize="small" />}
       title={page.title}
       subtitle={page.subtitle || undefined}

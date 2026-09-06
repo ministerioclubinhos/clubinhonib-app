@@ -37,7 +37,7 @@ export default function FeedbackCard({
   disabled,
 }: Props) {
   return (
-    <ListingCard
+    <ListingCard data-testid={`feedback-feedback-card-${feedback.id}`}
       avatar={feedbackInitials(feedback.name)}
       title={feedback.name}
       subtitle={feedback.email ?? undefined}
@@ -131,7 +131,7 @@ export default function FeedbackCard({
 /** Nota em texto, para quem usa leitor de tela. */
 export function FeedbackRatingLabel({ rating }: { rating: number }) {
   return (
-    <Typography variant="caption" color="text.secondary">
+    <Typography data-testid="feedback-feedback-card-feedback-rating-label" variant="caption" color="text.secondary">
       {rating} de {FEEDBACK_MAX_RATING}
     </Typography>
   );

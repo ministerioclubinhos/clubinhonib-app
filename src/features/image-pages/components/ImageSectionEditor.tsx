@@ -50,7 +50,7 @@ export default function ImageSectionEditor({
     onChange({ ...section, mediaItems });
 
   return (
-    <Paper variant="outlined" sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
+    <Paper data-testid="image-pages-image-section-editor" variant="outlined" sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
       <Box
         sx={{
           display: 'flex',

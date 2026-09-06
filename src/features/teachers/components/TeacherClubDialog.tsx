@@ -58,7 +58,7 @@ export default function TeacherClubDialog({
   if (!teacher) return null;
 
   return (
-    <LinkManagerDialog
+    <LinkManagerDialog data-testid="teachers-teacher-club-dialog"
       open={open}
       title="Clubinho do professor"
       subjectName={teacherName(teacher)}

@@ -45,7 +45,7 @@ export default function WeekMaterialDetailsModal({
 
   return (
     <>
-      <Dialog
+      <Dialog data-testid="week-materials-week-material-details-modal"
         open={open}
         onClose={isDeleting ? undefined : onClose}
         fullWidth
@@ -211,7 +211,7 @@ export default function WeekMaterialDetailsModal({
         </DialogActions>
       </Dialog>
 
-      <DeleteConfirmDialog
+      <DeleteConfirmDialog data-testid="week-materials-week-material-details-modal"
         open={confirmOpen}
         title={material?.title}
         onClose={() => !isDeleting && setConfirmOpen(false)}

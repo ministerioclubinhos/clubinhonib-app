@@ -74,7 +74,7 @@ export default function CoordinatorClubsDialog({
   if (!coordinator) return null;
 
   return (
-    <LinkManagerDialog
+    <LinkManagerDialog data-testid="coordinators-coordinator-clubs-dialog"
       open={open}
       title="Clubinhos do coordenador"
       subjectName={coordinatorName(coordinator)}

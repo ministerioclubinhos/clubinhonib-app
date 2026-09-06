@@ -113,7 +113,7 @@ export default function CommentsManager() {
   };
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="comments-comments-manager"
       title="Comentários"
       summary={
         total > 0

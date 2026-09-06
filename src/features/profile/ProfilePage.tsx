@@ -169,7 +169,7 @@ const ProfilePage: React.FC = () => {
 
   if (!initialized || isLoading) {
     return (
-      <Box
+      <Box data-testid="profile-profile-page"
         sx={{
           minHeight: '100vh',
           display: 'flex',
@@ -185,7 +185,7 @@ const ProfilePage: React.FC = () => {
 
   if (error && !profile) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container data-testid="profile-profile-page" maxWidth="md" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
@@ -194,7 +194,7 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <Box
+    <Box data-testid="profile-profile-page"
       sx={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 50%, #ffffff 100%)',

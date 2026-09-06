@@ -103,7 +103,7 @@ export default function ListingToolbar({
   ));
 
   return (
-    <Paper
+    <Paper data-testid="listing-listing-toolbar"
       elevation={0}
       sx={{
         p: { xs: 1.5, md: 2 },

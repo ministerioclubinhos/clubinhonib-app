@@ -85,7 +85,7 @@ export default function ImageSectionEditor({
   };
 
   return (
-    <Box>
+    <Box data-testid="teacher-area-image-section-image-section-editor">
       <Grid container spacing={{ xs: 2, md: 3 }}>
         
         <Grid item xs={12} md={5}>

@@ -43,7 +43,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-advanced-pagelas-chart" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -53,7 +53,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
 
   if (!data) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-advanced-pagelas-chart" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
         <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Erro ao carregar dados</Typography>
       </Paper>
     );
@@ -61,7 +61,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
 
   if (!data.timeSeries || !data.timeSeries.total || data.timeSeries.total.length === 0) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-advanced-pagelas-chart" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
         <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Nenhum dado disponível para o período selecionado</Typography>
       </Paper>
     );
@@ -92,7 +92,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
   const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
-        <Paper
+        <Paper data-testid="statistics-advanced-pagelas-chart-custom-tooltip"
           elevation={8}
           sx={{
             p: 2,
@@ -293,7 +293,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
   };
 
   return (
-    <Paper
+    <Paper data-testid="statistics-advanced-pagelas-chart"
       elevation={0}
       sx={{
         p: { xs: 2, sm: 3 },

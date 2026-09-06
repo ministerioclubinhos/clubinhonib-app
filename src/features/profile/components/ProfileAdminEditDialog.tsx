@@ -34,7 +34,7 @@ function TabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
 
     return (
-        <div
+        <div data-testid="profile-profile-admin-edit-dialog-tab-panel"
             role="tabpanel"
             hidden={value !== index}
             id={`profile-tabpanel-${index}`}
@@ -69,7 +69,7 @@ const ProfileAdminEditDialog: React.FC<ProfileAdminEditDialogProps> = ({
     };
 
     return (
-        <Dialog
+        <Dialog data-testid="profile-profile-admin-edit-dialog"
             open={open}
             onClose={onClose}
             fullScreen={fullScreen}

@@ -117,7 +117,7 @@ export default function ClubFormDialog({
   return (
     // No celular o formulário ocupa a tela inteira: são muitos campos, e a
     // caixa estreita deixava o teclado cobrindo metade deles.
-    <Dialog
+    <Dialog data-testid="clubs-club-form-dialog"
       open={open}
       onClose={onCancel}
       maxWidth="md"

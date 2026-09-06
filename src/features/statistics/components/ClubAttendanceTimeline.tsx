@@ -143,7 +143,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-club-attendance-timeline" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -152,7 +152,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
   }
 
   return (
-    <Box>
+    <Box data-testid="statistics-club-attendance-timeline">
 
       <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2, sm: 3 }, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
         <Grid2 container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">

@@ -32,7 +32,7 @@ export default function UnsubscribePage() {
   const isLoading = status === "loading";
 
   return (
-    <Box
+    <Box data-testid="email-preferences-unsubscribe-page"
       sx={{
         minHeight: "100vh",
         "@supports (min-height: 100dvh)": { minHeight: "100dvh" },

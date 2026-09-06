@@ -87,7 +87,7 @@ const SpecialFamilyDayPage = () => {
 
   if (loading) {
     return (
-      <ThemeProvider theme={familyDayTheme}>
+      <ThemeProvider data-testid="special-familiy-day-special-family-day-page" theme={familyDayTheme}>
         <Box
           sx={{
             minHeight: "72vh",
@@ -123,7 +123,7 @@ const SpecialFamilyDayPage = () => {
 
   if (error || !data) {
     return (
-      <ThemeProvider theme={familyDayTheme}>
+      <ThemeProvider data-testid="special-familiy-day-special-family-day-page" theme={familyDayTheme}>
         <Box
           sx={{
             minHeight: "68vh",
@@ -149,7 +149,7 @@ const SpecialFamilyDayPage = () => {
   }
 
   return (
-    <ThemeProvider theme={familyDayTheme}>
+    <ThemeProvider data-testid="special-familiy-day-special-family-day-page" theme={familyDayTheme}>
       <Box
         sx={{
           minHeight: "100vh",

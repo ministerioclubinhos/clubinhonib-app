@@ -219,7 +219,7 @@ export default function FeatureFlagsManager() {
   );
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="feature-flags-feature-flags-manager"
       title="Feature flags"
       summary={summary}
       toolbar={

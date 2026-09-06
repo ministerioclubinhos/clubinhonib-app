@@ -40,7 +40,7 @@ const Transition = React.forwardRef(function Transition(
     },
     ref: React.Ref<unknown>,
 ) {
-    return <Slide direction="up" ref={ref} {...props} />;
+    return <Slide data-testid="page-view-ideas-material-viewpage-media-type-card-transition" direction="up" ref={ref} {...props} />;
 });
 
 export default function MediaTypeCard({
@@ -69,7 +69,7 @@ export default function MediaTypeCard({
 
     return (
         <>
-            <Card
+            <Card data-testid="page-view-ideas-material-viewpage-media-type-card"
                 sx={{
                     mb: { xs: '5px', sm: 2 },
                     borderRadius: { xs: 1, sm: 2 },
@@ -151,7 +151,7 @@ export default function MediaTypeCard({
                 </CardContent>
             </Card>
 
-            <Dialog
+            <Dialog data-testid="page-view-ideas-material-viewpage-media-type-card"
                 open={isExpanded}
                 slots={{ transition: Transition }}
                 keepMounted

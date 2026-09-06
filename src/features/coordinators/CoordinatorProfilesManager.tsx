@@ -141,7 +141,7 @@ export default function CoordinatorProfilesManager() {
   };
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="coordinators-coordinator-profiles-manager"
       title="Coordenadores"
       summary={
         total > 0

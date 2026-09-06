@@ -29,7 +29,7 @@ function DateRange({
   onChangeTo: (value: string) => void;
 }) {
   return (
-    <Stack spacing={0.5} sx={{ minWidth: { xs: "100%", md: 300 } }}>
+    <Stack data-testid="children-children-date-filters-date-range" spacing={0.5} sx={{ minWidth: { xs: "100%", md: 300 } }}>
       <Typography variant="caption" color="text.secondary">
         {label}
       </Typography>
@@ -60,7 +60,7 @@ function DateRange({
 export default function ChildrenDateFilters({ filters, onChange }: Props) {
   return (
     <>
-      <TextField
+      <TextField data-testid="children-children-date-filters"
         size="small"
         type="number"
         label="Nº do clubinho"
@@ -79,7 +79,7 @@ export default function ChildrenDateFilters({ filters, onChange }: Props) {
         sx={{ minWidth: { xs: "100%", md: 150 } }}
       />
 
-      <DateRange
+      <DateRange data-testid="children-children-date-filters"
         label="Nascimento"
         from={filters.birthDateFrom}
         to={filters.birthDateTo}
@@ -91,7 +91,7 @@ export default function ChildrenDateFilters({ filters, onChange }: Props) {
         }
       />
 
-      <DateRange
+      <DateRange data-testid="children-children-date-filters"
         label="Entrada no clubinho"
         from={filters.joinedFrom}
         to={filters.joinedTo}

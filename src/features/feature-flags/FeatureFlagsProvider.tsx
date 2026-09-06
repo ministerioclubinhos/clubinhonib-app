@@ -124,7 +124,7 @@ export function FeatureFlagsProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <FeatureFlagsContext.Provider value={value}>
+    <FeatureFlagsContext.Provider data-testid="feature-flags-feature-flags-provider" value={value}>
       {children}
     </FeatureFlagsContext.Provider>
   );

@@ -137,7 +137,7 @@ export default function ImageSectionManager() {
   };
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="image-sections-image-section-manager"
       title="Fotos dos clubinhos"
       summary={
         total > 0

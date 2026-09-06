@@ -41,7 +41,7 @@ export default function IdeasPageSelectionModal({
   };
 
   return (
-    <Dialog
+    <Dialog data-testid="ideas-sections-ideas-page-selection-modal"
       open={open}
       onClose={onClose}
       fullWidth

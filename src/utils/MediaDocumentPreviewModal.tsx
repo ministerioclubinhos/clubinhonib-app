@@ -71,7 +71,7 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
   const displayTitle = title || media.title || 'Visualizar documento';
 
   return (
-    <Dialog
+    <Dialog data-testid="utils-media-document-preview-modal"
       open={open}
       onClose={onClose}
       fullWidth

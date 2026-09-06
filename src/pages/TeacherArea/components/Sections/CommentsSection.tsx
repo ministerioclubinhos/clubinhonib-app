@@ -152,7 +152,7 @@ const CommentsSection: React.FC = () => {
   };
 
   return (
-    <motion.div
+    <motion.div data-testid="teacher-area-sections-comments-section"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}

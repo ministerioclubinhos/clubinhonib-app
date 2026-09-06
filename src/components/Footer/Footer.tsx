@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
   const isAdmin = !!isAuthenticated && user?.role === UserRole.ADMIN;
 
   return (
-    <Box
+    <Box data-testid="footer"
       component="footer"
       sx={{
         position: "relative",

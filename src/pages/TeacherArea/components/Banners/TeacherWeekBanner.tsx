@@ -20,7 +20,7 @@ const TeacherWeekBanner: React.FC = () => {
 
   if (!currentWeekRoute) {
     return (
-      <Paper
+      <Paper data-testid="teacher-area-banners-teacher-week-banner"
         elevation={3}
         sx={{
           width: '100%',
@@ -52,7 +52,7 @@ const TeacherWeekBanner: React.FC = () => {
   }
 
   return (
-    <motion.div
+    <motion.div data-testid="teacher-area-banners-teacher-week-banner"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}

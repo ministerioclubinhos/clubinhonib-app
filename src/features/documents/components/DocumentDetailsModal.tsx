@@ -31,7 +31,7 @@ interface Props {
 }
 
 const DetailField = ({ label, value }: { label: string; value?: string | number | null }) => (
-  <Box sx={{ py: 1.5 }}>
+  <Box data-testid="documents-document-details-modal-detail-field" sx={{ py: 1.5 }}>
     <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
       {label}
     </Typography>
@@ -49,7 +49,7 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
   };
 
   return (
-    <Dialog
+    <Dialog data-testid="documents-document-details-modal"
       open={open}
       onClose={onClose}
       maxWidth="sm"

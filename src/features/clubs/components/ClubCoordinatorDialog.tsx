@@ -73,7 +73,7 @@ export default function ClubCoordinatorDialog({
   if (!club) return null;
 
   return (
-    <LinkManagerDialog
+    <LinkManagerDialog data-testid="clubs-club-coordinator-dialog"
       open={open}
       title="Coordenador do clubinho"
       subjectName={`Clubinho ${club.number}`}

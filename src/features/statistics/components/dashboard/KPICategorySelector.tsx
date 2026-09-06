@@ -21,7 +21,7 @@ export const KPICategorySelector: React.FC<KPICategorySelectorProps> = ({
     const theme = useTheme();
 
     return (
-        <Box sx={{ px: { xs: 0, md: 2 }, pt: { xs: 0, md: 2 } }}>
+        <Box data-testid="statistics-dashboard-kpicategory-selector" sx={{ px: { xs: 0, md: 2 }, pt: { xs: 0, md: 2 } }}>
             {isMobile ? (
                 <Grid2 container spacing={1} sx={{ px: 1.5, pb: 0.5, mt: 1 }}>
                     {categories.map((cat) => {

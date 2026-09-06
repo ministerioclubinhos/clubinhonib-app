@@ -232,7 +232,7 @@ export const ControlDashboard: React.FC = () => {
   };
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8 }}>
+      <Box data-testid="club-control-control-dashboard" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8 }}>
         <CircularProgress size={60} />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
           Carregando dados de controle...
@@ -243,7 +243,7 @@ export const ControlDashboard: React.FC = () => {
 
   if (error) {
     return (
-      <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `2px solid ${theme.palette.error.main}` }}>
+      <Paper data-testid="club-control-control-dashboard" elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `2px solid ${theme.palette.error.main}` }}>
         <Alert severity="error" sx={{ borderRadius: 2, mb: 2 }}>
           <AlertTitle>Não foi possível carregar o painel</AlertTitle>
           Verifique sua conexão e tente novamente. Se o problema continuar, procure o suporte responsável.
@@ -260,7 +260,7 @@ export const ControlDashboard: React.FC = () => {
 
   if (!data) {
     return (
-      <Alert severity="warning" sx={{ borderRadius: 2 }}>
+      <Alert data-testid="club-control-control-dashboard" severity="warning" sx={{ borderRadius: 2 }}>
         <AlertTitle>⚠️ Nenhum Dado Disponível</AlertTitle>
         Não há dados disponíveis para esta semana.
       </Alert>
@@ -288,7 +288,7 @@ export const ControlDashboard: React.FC = () => {
 
   return (
 
-<Box sx={{ px: { xs: 1, sm: 2, md: 0 } }}>
+<Box data-testid="club-control-control-dashboard" sx={{ px: { xs: 1, sm: 2, md: 0 } }}>
       <WeekNavigationHeader
         academicWeek={academicWeek}
         academicYear={academicYear}

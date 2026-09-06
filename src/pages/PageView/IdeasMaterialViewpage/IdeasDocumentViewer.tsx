@@ -25,7 +25,7 @@ export default function IdeasDocumentViewer({ document }: Props) {
       document.platformType === 'googledrive');
 
   return (
-    <Box sx={{
+    <Box data-testid="page-view-ideas-material-viewpage-ideas-document-viewer" sx={{
       width: '100%',
       p: { xs: 1.5, sm: 2, md: 3 },
       height: '100%',

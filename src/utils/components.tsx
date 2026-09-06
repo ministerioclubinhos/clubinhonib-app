@@ -8,7 +8,7 @@ export function CopyButton({ value, title = "Copiar" }: { value?: string; title?
     navigator.clipboard?.writeText(String(text)).catch(() => {});
   };
   return (
-    <Tooltip title={title}>
+    <Tooltip data-testid="utils-copy-button" title={title}>
       <IconButton 
         size="small" 
         onClick={() => copyToClipboard(value)}

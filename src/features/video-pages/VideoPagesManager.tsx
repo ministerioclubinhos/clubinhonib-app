@@ -87,7 +87,7 @@ export default function VideoPagesManager() {
   );
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="video-pages-video-pages-manager"
       title="Páginas de vídeos"
       summary={`${total} ${total === 1 ? 'página' : 'páginas'}`}
       toolbar={

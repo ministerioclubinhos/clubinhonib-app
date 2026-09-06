@@ -37,7 +37,7 @@ export default function PeriodDeleteDialog({
   const theme = useTheme();
 
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
+    <Dialog data-testid="club-control-period-delete-dialog" open={open} onClose={onCancel} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Warning sx={{ color: theme.palette.error.main, fontSize: 28 }} />
         Confirmar Exclusão

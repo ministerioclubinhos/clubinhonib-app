@@ -106,7 +106,7 @@ export default function WeekMaterialsManager() {
   );
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="week-materials-week-materials-manager"
       title="Materiais semanais"
       summary={`${total} ${total === 1 ? 'página' : 'páginas'}`}
       toolbar={

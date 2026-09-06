@@ -17,7 +17,7 @@ type Props = {
  */
 export default function ImageZoomDialog({ open, imageUrl, onClose }: Props) {
   return (
-      <Dialog
+      <Dialog data-testid="profile-image-zoom-dialog"
         open={open}
         onClose={onClose}
         maxWidth="md"

@@ -85,7 +85,7 @@ export default function UserFormDialog({
   const showPasswordFields = isCreate || value.editPassword;
 
   return (
-    <Dialog
+    <Dialog data-testid="users-user-form-dialog"
       open={open}
       // Fechar durante a gravação deixaria a tela sem saber o resultado.
       onClose={loading ? undefined : onCancel}

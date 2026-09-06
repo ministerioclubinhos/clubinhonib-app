@@ -45,7 +45,7 @@ function DetailRow({
   children: React.ReactNode;
 }) {
   return (
-    <Stack direction="row" spacing={1.25} alignItems="flex-start">
+    <Stack data-testid="comments-comment-details-modal-detail-row" direction="row" spacing={1.25} alignItems="flex-start">
       <Box sx={{ color: "text.secondary", mt: 0.25 }}>{icon}</Box>
       <Box sx={{ minWidth: 0 }}>
         <Typography variant="caption" color="text.secondary">
@@ -70,7 +70,7 @@ export default function CommentDetailsModal({
   if (!comment) return null;
 
   return (
-    <Dialog
+    <Dialog data-testid="comments-comment-details-modal"
       open
       onClose={onClose}
       maxWidth="sm"

@@ -99,7 +99,7 @@ export default function FeatureFlagFormDialog({
   );
 
   return (
-    <Dialog
+    <Dialog data-testid="feature-flags-feature-flag-form-dialog"
       open={open}
       onClose={saving ? undefined : onClose}
       maxWidth="md"

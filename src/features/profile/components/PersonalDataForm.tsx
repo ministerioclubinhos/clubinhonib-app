@@ -126,7 +126,7 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({
   };
 
   return (
-    <motion.div
+    <motion.div data-testid="profile-personal-data-form"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}

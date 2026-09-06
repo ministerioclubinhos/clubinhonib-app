@@ -67,7 +67,7 @@ export const ClubCheckDetail: React.FC<ClubCheckDetailProps> = ({
   const statusConfig = clubCheck ? getStatusConfig(clubCheck.status) : null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog data-testid="club-control-club-check-detail" open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="h6" fontWeight="bold">
@@ -241,6 +241,6 @@ const Paper = ({
   elevation: _elevation,
   ...props
 }: BoxProps & { elevation?: number }) => {
-  return <Box {...props}>{children}</Box>;
+  return <Box data-testid="club-control-club-check-detail-paper" {...props}>{children}</Box>;
 };
 

@@ -36,7 +36,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section, index }) => {
   };
 
   return (
-    <Fade in timeout={800 + index * 200}>
+    <Fade data-testid="about-about-section" in timeout={800 + index * 200}>
       <Card
         sx={{
           background: getCardGradient(section.id),

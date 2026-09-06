@@ -58,7 +58,7 @@ const LinkClubModal: React.FC<LinkClubModalProps> = ({ open, onClose }) => {
     };
 
     return (
-        <Dialog
+        <Dialog data-testid="auth-link-club-modal"
             open={open}
             onClose={handleClose}
             maxWidth="xs"

@@ -33,7 +33,7 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper data-testid="statistics-geographic-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -43,7 +43,7 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
 
   if (error || !data || !data.byCity) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
+      <Paper data-testid="statistics-geographic-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
         <Typography color="error">Erro ao carregar dados geográficos</Typography>
       </Paper>
     );
@@ -54,7 +54,7 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
     .slice(0, 10);
 
   return (
-    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+    <Paper data-testid="statistics-geographic-chart" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
       <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
         🗺️ Análise Geográfica - Top 10 Cidades
       </Typography>

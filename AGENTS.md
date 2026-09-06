@@ -16,7 +16,7 @@ The frontend best-practices document is the canonical detailed guide. This file 
 ## Repository Context
 
 - Application: Clubinho NIB frontend.
-- Stack: React 19, strict TypeScript, Vite, React Router, Material UI/Emotion, Redux Toolkit, Axios, TanStack Query in selected features, React Hook Form/Yup, Vitest, and Testing Library.
+- Stack: React 19, strict TypeScript, Vite, React Router, Material UI/Emotion, Redux Toolkit, Axios, TanStack Query in selected features, React Hook Form/Yup, and Playwright (unit rules in Node plus real-browser flows).
 - Backend contract: sibling repository `../clubinhonib-api`.
 - User-facing language: Portuguese. Engineering documentation and code identifiers: English.
 
@@ -38,6 +38,7 @@ The frontend best-practices document is the canonical detailed guide. This file 
 14. Update the applicable domain documentation when a flow or contract changes.
 15. Do not modify environment, Amplify, CloudFormation, or deployment files unless explicitly requested.
 16. Preserve unrelated user changes and keep the final diff limited to the requested outcome.
+17. Every rendered component created or edited must expose a stable, descriptive `data-testid` for Playwright. Also tag critical or ambiguous controls, overlays, and loading/empty/error states. Use kebab-case domain/component/element names; never derive selectors from translated copy, CSS classes, array indexes, random values, or React-generated IDs. Use the HTML `id` attribute only for unique document identity and accessibility relationships (`label`, `aria-labelledby`, `aria-describedby`).
 
 ## Required Implementation Workflow
 
@@ -55,7 +56,9 @@ When existing code conflicts with the canonical guide, do not spread the inconsi
 ```bash
 NODE_OPTIONS='--max-old-space-size=2048' npm run type-check
 NODE_OPTIONS='--max-old-space-size=2048' npm run lint
-NODE_OPTIONS='--max-old-space-size=2048' npm test -- --run
+NODE_OPTIONS='--max-old-space-size=2048' npm run check:test-ids
+NODE_OPTIONS='--max-old-space-size=2048' npm run test:unit
+npm run test:e2e   # needs the app and the API running locally
 NODE_OPTIONS='--max-old-space-size=2048' npm run build
 ```
 

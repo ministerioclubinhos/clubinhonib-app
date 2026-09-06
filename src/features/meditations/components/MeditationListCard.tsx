@@ -58,7 +58,7 @@ export default function MeditationListCard({
   ];
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`meditations-meditation-list-card-${meditation.id}`}
       avatar={meditationInitials(meditation.topic)}
       title={meditation.topic}
       accent={status.color === 'default' ? 'default' : status.color}

@@ -24,7 +24,7 @@ const FrequencyTab: React.FC = () => {
 	};
 
 	return (
-		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+		<Box data-testid="statistics-tabs-frequency-tab" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 			<Tabs
 				value={subTab}
 				onChange={handleChange}

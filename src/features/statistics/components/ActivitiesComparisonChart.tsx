@@ -48,7 +48,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-activities-comparison-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -58,7 +58,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
 
   if (!data || !data.byGender || !data.byAgeGroup || !data.byParticipationTime) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-activities-comparison-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Typography color="error">Erro ao carregar dados</Typography>
       </Paper>
     );
@@ -103,7 +103,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
   const CustomTooltip = ({ active, payload }: ChartTooltipProps<ActivitiesTooltipPayload>) => {
     if (active && payload && payload.length) {
       return (
-        <Paper
+        <Paper data-testid="statistics-activities-comparison-chart-custom-tooltip"
           elevation={8}
           sx={{
             p: 2,
@@ -130,7 +130,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
   };
 
   return (
-    <Paper
+    <Paper data-testid="statistics-activities-comparison-chart"
       elevation={0}
       sx={{
         p: { xs: 1.5, sm: 3 },

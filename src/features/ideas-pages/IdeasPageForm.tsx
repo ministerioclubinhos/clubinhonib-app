@@ -104,7 +104,7 @@ export default function IdeasPageForm({
 
   if (loadingPage) {
     return (
-      <Box
+      <Box data-testid="ideas-pages-ideas-page-form"
         component="section"
         sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}
       >
@@ -115,7 +115,7 @@ export default function IdeasPageForm({
 
   if (isMissingPage) {
     return (
-      <Box component="section" sx={{ py: { xs: 2, md: 3 } }}>
+      <Box data-testid="ideas-pages-ideas-page-form" component="section" sx={{ py: { xs: 2, md: 3 } }}>
         <Alert
           severity="info"
           action={
@@ -137,7 +137,7 @@ export default function IdeasPageForm({
   }
 
   return (
-    <Box component="section" sx={{ pb: { xs: 2, md: 3 } }}>
+    <Box data-testid="ideas-pages-ideas-page-form" component="section" sx={{ pb: { xs: 2, md: 3 } }}>
       {!fromTemplatePage && (
         <Typography variant="h5" fontWeight={700} sx={{ mb: { xs: 2, md: 3 } }}>
           Editar Página de Ideias

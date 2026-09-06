@@ -4,7 +4,7 @@
 
 This document defines the mandatory engineering standards for `clubinhonib-app`. AI coding assistants and human developers MUST read it before creating, fixing, or refactoring frontend code.
 
-Current stack: React 19, strict TypeScript, Vite, React Router, Material UI/Emotion, Redux Toolkit with persistence, Axios, TanStack Query in selected features, React Hook Form/Yup, Vitest, and Testing Library.
+Current stack: React 19, strict TypeScript, Vite, React Router, Material UI/Emotion, Redux Toolkit with persistence, Axios, TanStack Query in selected features, React Hook Form/Yup, and Playwright.
 
 Core principles:
 
@@ -137,6 +137,40 @@ Material UI and existing shared components are the visual foundation. Before add
 - Icon-only actions require an `aria-label` and a tooltip when their purpose is not obvious.
 - Important Recharts visualizations and data tables need accessible context or a textual summary.
 
+### 5.1 Stable Playwright Selectors
+
+Every rendered component created or modified MUST expose a stable, descriptive
+`data-testid` on its rendered root. A component with distinct render branches
+(loading, empty, error, success, or permission denied) MUST keep a predictable
+selector in each rendered branch and SHOULD identify the state as a separate
+element when the E2E flow waits for it.
+
+Also add `data-testid` to critical or otherwise ambiguous interactions such as
+icon-only actions, repeated card actions, dialogs, menus, uploads, and controls
+whose accessible role and name do not identify one unique target. Names MUST be
+kebab-case and describe the domain, component, and element, for example
+`children-manager`, `children-manager-loading`, and
+`child-card-edit-action`. Repeated entities SHOULD include the stable API entity
+ID when a test must address one instance.
+
+- Prefer Playwright's user-facing locators (`getByRole`, `getByLabel`, and
+  `getByText`) when they uniquely describe the interaction. Use `getByTestId`
+  as the explicit contract for component roots, asynchronous states, and
+  ambiguous/repeated targets.
+- Never derive a selector from translated visible copy, a CSS or MUI class,
+  DOM position, array index, random value, timestamp, or React-generated ID.
+- A reusable component MAY accept a `data-testid` prop when the caller owns the
+  domain meaning. It MUST provide a stable component-level default when it
+  renders its own DOM root.
+- `data-testid` values may repeat for repeated instances; scope or filter the
+  locator, or pass an entity-specific `data-testid`. The HTML `id` attribute MUST be
+  unique in the document and is reserved for actual document identity, form
+  labels, and accessibility relationships such as `aria-labelledby` and
+  `aria-describedby`.
+- Component tests MUST verify new or changed selector contracts that E2E tests
+  depend on. Do not replace observable-behavior assertions with test-ID-only
+  assertions.
+
 Recommended component file order:
 
 1. React and third-party imports;
@@ -200,16 +234,22 @@ Every screen MUST work on mobile first and progressively enhance through MUI bre
 
 Every behavior change MUST add or update tests in the same delivery.
 
-- Components: rendering, interaction, loading, empty, success, and error states.
-- Hooks and TanStack Query: cache behavior, invalidation, successful mutations, and failed mutations.
-- API modules: method, endpoint, filters, payload, and response mapping.
-- Protected routes: anonymous user, allowed role, and denied role.
-- Forms: valid payload, validation failures, and API failures.
+All frontend tests run on Playwright (`playwright.config.ts`, sources in `e2e/`). There are three projects:
+
+- `unit` (`e2e/unit/*.spec.ts`): pure rules — utils, query and payload builders, validators. They run in Node, without browser or API, and import `src/` through the `@/` alias. A module tested here MUST NOT pull React or Material UI at runtime (import shared constants from their pure module, not from a UI barrel).
+- `setup` (`e2e/support/auth.setup.ts`): logs in as the administrator through the UI once and stores the session in `e2e/.auth/admin.json`.
+- `chromium` (`e2e/edit/**` and `e2e/flows/**`): real screens against the running app (`http://localhost:5173`) and API (`http://localhost:3000`). `edit/` covers every persisted edit flow; `flows/` covers screen behavior that used to be component tests (listings, dialogs, editors, sidebar, feature flags).
+
+What each kind of change needs:
+
+- Components and screens: a `flows` or `edit` test that creates its data through the API (`e2e/support/api.ts`), drives the real UI, and reads the API back to prove persistence. Cover rendering, interaction, loading, empty, success, and error states as the screen exposes them.
+- Hooks, API modules, and TanStack Query: assert through the network (`page.on('request')`, `page.waitForRequest`) — method, endpoint, filters, payload, and that a screen does not refetch in a loop.
+- Protected routes and feature flags: anonymous user, allowed role, denied role, flag on and off (restore the flag in `finally`).
+- Forms: valid payload, validation messages, and API failures shown on screen.
+- Pure rules: a `unit` test.
 - Bug fixes: add a regression test that fails before the fix.
 
-Use Vitest and Testing Library. Test user-observable behavior rather than implementation details. Mock network, time, and external services; tests MUST NOT call live services. Avoid broad snapshots.
-
-New or changed code should maintain at least 90% coverage in the affected scope, including meaningful branches.
+Test data MUST be created and removed by the test itself, with a unique suffix (`uniqueSuffix()`), and MUST never point at production. Prefer role-based locators and the `data-testid` convention from section 5.1; avoid broad screenshots.
 
 ### 10.1 Naming, Imports, and Public Feature APIs
 
@@ -247,31 +287,52 @@ New or changed code should maintain at least 90% coverage in the affected scope,
 
 ### 10.4 Frontend Test Blueprint
 
-```tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+```ts
+import { expect, test } from '@playwright/test';
 
-describe('ClubList', () => {
-  it('shows the API result and keeps query retries deterministic', async () => {
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    });
+import { ApiClient, uniqueSuffix } from '../support/api';
+import { cardOf, searchListing } from '../support/ui';
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ClubList />
-      </QueryClientProvider>,
-    );
+test.describe('Clubinhos: edição', () => {
+  let api: ApiClient;
+  let club: { id: string; number: number };
+  const suffix = uniqueSuffix();
 
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
-    await waitFor(() => expect(screen.getByText(/clubinho 12/i)).toBeVisible());
+  test.beforeAll(async () => {
+    api = await ApiClient.login();
+    club = await api.post('/clubs', { number: 7000 + Math.floor(Math.random() * 999), weekday: 'monday', address: { district: suffix, city: 'Campinas', state: 'SP' } });
+  });
+
+  test.afterAll(async () => {
+    await api.delete(`/clubs/${club.id}`);
+    await api.dispose();
+  });
+
+  test('edita o horário pela tela e a API reflete', async ({ page }) => {
+    await page.goto('/adm/clubinhos');
+    await searchListing(page, String(club.number));
+    await cardOf(page, 'clubs', 'club-card', club.id).getByRole('button', { name: 'Editar' }).click();
+
+    const dialog = page.getByTestId('clubs-club-form-dialog');
+    await dialog.getByLabel('Horário').fill('09:30');
+    await dialog.getByRole('button', { name: 'Salvar' }).click();
+
+    await expect.poll(async () => (await api.get<{ time: string }>(`/clubs/${club.id}`)).time).toBe('09:30');
   });
 });
 ```
 
-Use a focused API-module mock consistently within a test suite. Introduce an HTTP-mocking dependency only as an intentional repository-wide testing decision. Clear the `QueryClient` after each test and never share cache between tests.
+Pure rules stay small and browser-free:
+
+```ts
+import { expect, test } from '@playwright/test';
+
+import { buildClubQuery } from '@/features/clubs/utils';
+
+test('a busca vira searchString e a paginação começa em 1', () => {
+  expect(buildClubQuery({ search: ' 12 ' })).toEqual({ page: 1, limit: 12, searchString: '12' });
+});
+```
 
 ## 11. Domain Documentation
 
@@ -293,8 +354,17 @@ Run from `clubinhonib-app`:
 ```bash
 NODE_OPTIONS='--max-old-space-size=2048' npm run type-check
 NODE_OPTIONS='--max-old-space-size=2048' npm run lint
-NODE_OPTIONS='--max-old-space-size=2048' npm test -- --run
+NODE_OPTIONS='--max-old-space-size=2048' npm run check:test-ids
+NODE_OPTIONS='--max-old-space-size=2048' npm run test:unit
 NODE_OPTIONS='--max-old-space-size=2048' npm run build
+```
+
+With the app (`npm run start:local`) and the API (`npm run start:local` in `clubinhonib-api`) running locally, also run the browser projects:
+
+```bash
+npm run test:e2e              # setup + edit + flows
+npx playwright test e2e/edit  # only the persisted edit flows
+npm run test:report           # opens the HTML report in e2e/report
 ```
 
 Focused checks are acceptable during implementation. Before delivery, run checks proportional to the change scope. Do not run `lint:fix` indiscriminately in a worktree containing unrelated changes.
@@ -307,6 +377,8 @@ A frontend change is complete only when:
 - loading, empty, error, success, and permission states are handled;
 - mobile behavior and accessibility have been verified;
 - no new `any`, secret, sensitive log, or avoidable magic value was introduced;
+- every created or edited rendered component and critical ambiguous interaction
+  exposes a stable Playwright selector;
 - applicable tests and documentation were updated;
 - relevant type-check, lint, test, and build commands pass;
 - the final diff contains only task-related changes.

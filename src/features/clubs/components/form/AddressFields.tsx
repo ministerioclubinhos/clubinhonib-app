@@ -15,7 +15,7 @@ export default function AddressFields({ value, onChange }: Props) {
 
   return (
     <>
-      <Grid2 size={{ xs: 12, md: 8 }}>
+      <Grid2 data-testid="clubs-form-address-fields" size={{ xs: 12, md: 8 }}>
         <TextField
           label="Rua"
           fullWidth
@@ -24,7 +24,7 @@ export default function AddressFields({ value, onChange }: Props) {
         />
       </Grid2>
 
-      <Grid2 size={{ xs: 12, md: 4 }}>
+      <Grid2 data-testid="clubs-form-address-fields" size={{ xs: 12, md: 4 }}>
         <TextField
           label="Número"
           fullWidth
@@ -33,7 +33,7 @@ export default function AddressFields({ value, onChange }: Props) {
         />
       </Grid2>
 
-      <Grid2 size={{ xs: 12, md: 6 }}>
+      <Grid2 data-testid="clubs-form-address-fields" size={{ xs: 12, md: 6 }}>
         <TextField
           label="Bairro"
           fullWidth
@@ -42,7 +42,7 @@ export default function AddressFields({ value, onChange }: Props) {
         />
       </Grid2>
 
-      <Grid2 size={{ xs: 12, md: 6 }}>
+      <Grid2 data-testid="clubs-form-address-fields" size={{ xs: 12, md: 6 }}>
         <TextField
           label="Complemento"
           fullWidth
@@ -52,7 +52,7 @@ export default function AddressFields({ value, onChange }: Props) {
         />
       </Grid2>
 
-      <Grid2 size={{ xs: 12, md: 6 }}>
+      <Grid2 data-testid="clubs-form-address-fields" size={{ xs: 12, md: 6 }}>
         <TextField
           label="Cidade"
           fullWidth
@@ -61,7 +61,7 @@ export default function AddressFields({ value, onChange }: Props) {
         />
       </Grid2>
 
-      <Grid2 size={{ xs: 12, md: 2 }}>
+      <Grid2 data-testid="clubs-form-address-fields" size={{ xs: 12, md: 2 }}>
         <TextField
           label="Estado"
           fullWidth
@@ -72,7 +72,7 @@ export default function AddressFields({ value, onChange }: Props) {
         />
       </Grid2>
 
-      <Grid2 size={{ xs: 12, md: 4 }}>
+      <Grid2 data-testid="clubs-form-address-fields" size={{ xs: 12, md: 4 }}>
         <TextField
           label="CEP"
           fullWidth

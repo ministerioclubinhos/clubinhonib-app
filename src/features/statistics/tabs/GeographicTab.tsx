@@ -7,7 +7,7 @@ interface GeographicTabProps {
 }
 
 const GeographicTab: React.FC<GeographicTabProps> = ({ filters }) => {
-	return <GeographicChart filters={filters} />;
+	return <GeographicChart data-testid="statistics-tabs-geographic-tab" filters={filters} />;
 };
 
 export default GeographicTab;

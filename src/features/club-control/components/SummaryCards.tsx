@@ -36,7 +36,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   const theme = useTheme();
 
   return (
-    <Grid2 container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
+    <Grid2 data-testid="club-control-summary-cards" container spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: { xs: 2, sm: 3 } }}>
       <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
         <Card
           elevation={0}

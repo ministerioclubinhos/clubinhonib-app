@@ -211,7 +211,7 @@ export const PeriodManagement: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box data-testid="club-control-period-management">
 
       <Paper
         elevation={0}

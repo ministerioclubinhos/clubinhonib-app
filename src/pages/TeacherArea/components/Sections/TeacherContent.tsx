@@ -24,7 +24,7 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
   };
 
   return (
-    <Box>
+    <Box data-testid="teacher-area-sections-teacher-content">
       <Box
         textAlign="center"
         mb={5}

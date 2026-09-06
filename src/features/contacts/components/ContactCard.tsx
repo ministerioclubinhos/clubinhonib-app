@@ -31,7 +31,7 @@ export default function ContactCard({
   disabled,
 }: Props) {
   return (
-    <ListingCard
+    <ListingCard data-testid={`contacts-contact-card-${contact.id}`}
       avatar={contactInitials(contact.name)}
       title={contact.name}
       subtitle={contact.email}

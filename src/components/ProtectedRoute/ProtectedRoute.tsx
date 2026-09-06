@@ -30,7 +30,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (!initialized || loadingUser || (accessToken && !user)) {
     return (
-      <Box
+      <Box data-testid="protected-route"
         sx={{
           height: "100vh",
           display: "flex",
@@ -65,7 +65,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate data-testid="protected-route" to="/login" state={{ from: location }} replace />;
   }
 
   if (requiredRole) {
@@ -73,15 +73,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     const userRole = user?.role as UserRole | undefined;
 
     if (adminBypass && userRole === UserRole.ADMIN) {
-      return <Outlet />;
+      return <Outlet data-testid="protected-route" />;
     }
 
     if (!userRole || !rolesArray.includes(userRole)) {
-      return <Navigate to={redirectTo} state={{ error: "Acesso negado" }} replace />;
+      return <Navigate data-testid="protected-route" to={redirectTo} state={{ error: "Acesso negado" }} replace />;
     }
   }
 
-  return <Outlet />;
+  return <Outlet data-testid="protected-route" />;
 };
 
 export default ProtectedRoute;

@@ -33,7 +33,7 @@ export default function CommentDetailDialog({ comment, onClose }: Props) {
   const theme = useTheme();
 
   return (
-      <Dialog
+      <Dialog data-testid="teacher-area-sections-comment-detail-dialog"
         open={!!comment}
         onClose={onClose}
         fullWidth

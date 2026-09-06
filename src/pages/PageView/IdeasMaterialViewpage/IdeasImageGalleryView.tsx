@@ -19,7 +19,7 @@ const Transition = React.forwardRef(function Transition(
   },
   ref: React.Ref<unknown>,
 ) {
-  return <Slide direction="up" ref={ref} {...props} />;
+  return <Slide data-testid="page-view-ideas-material-viewpage-ideas-image-gallery-view-transition" direction="up" ref={ref} {...props} />;
 });
 
 export default function IdeasImageGalleryView({ image }: Props) {
@@ -47,7 +47,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
 
   return (
     <>
-      <Box sx={{
+      <Box data-testid="page-view-ideas-material-viewpage-ideas-image-gallery-view" sx={{
         width: '100%',
         p: { xs: 1.5, sm: 2, md: 3 },
         height: '100%',
@@ -169,7 +169,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
         </motion.div>
       </Box>
 
-      <Dialog
+      <Dialog data-testid="page-view-ideas-material-viewpage-ideas-image-gallery-view"
         open={openModal}
         slots={{ transition: Transition }}
         keepMounted

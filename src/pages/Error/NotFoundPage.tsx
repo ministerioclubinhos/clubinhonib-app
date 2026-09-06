@@ -11,7 +11,7 @@ const NotFoundPage: React.FC = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     return (
-        <Box
+        <Box data-testid="error-not-found-page"
             sx={{
                 minHeight: '100vh',
                 display: 'flex',

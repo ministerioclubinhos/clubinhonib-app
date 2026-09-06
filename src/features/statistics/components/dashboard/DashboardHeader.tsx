@@ -24,7 +24,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = memo(
     const { formattedPeriod } = useStatistics();
 
     return (
-      <MotionBox
+      <MotionBox data-testid="statistics-dashboard-dashboard-header"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}

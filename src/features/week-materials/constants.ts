@@ -1,5 +1,5 @@
 import { MediaType } from '@/store/slices/types';
-import { MEDIA_EDITOR_CONFIG } from '@/components/common/media';
+import { MEDIA_EDITOR_CONFIG } from '@/components/common/media/constants';
 
 /** Base path of the week material endpoints. */
 export const WEEK_MATERIALS_ENDPOINT = '/week-material-pages';

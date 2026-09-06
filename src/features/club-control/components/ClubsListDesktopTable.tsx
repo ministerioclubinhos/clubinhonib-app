@@ -60,7 +60,7 @@ export default function ClubsListDesktopTable({
 
   return (
 
-        <TableContainer
+        <TableContainer data-testid="club-control-clubs-list-desktop-table"
           sx={{
             maxHeight: 800,
             overflowX: 'auto',

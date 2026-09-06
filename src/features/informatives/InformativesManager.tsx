@@ -101,7 +101,7 @@ export default function InformativesManager() {
   );
 
   return (
-    <ListingLayout
+    <ListingLayout data-testid="informatives-informatives-manager"
       title="Informativos"
       summary={`${total} ${total === 1 ? 'informativo' : 'informativos'}`}
       toolbar={

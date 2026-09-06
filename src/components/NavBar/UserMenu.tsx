@@ -82,7 +82,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
 
     if (isMobile) {
         return (
-            <Box sx={{ width: '100%', pt: 2, pl: 2, borderTop: '1px solid rgba(255,255,255,0.2)', mt: 2 }}>
+            <Box data-testid="nav-bar-user-menu" sx={{ width: '100%', pt: 2, pl: 2, borderTop: '1px solid rgba(255,255,255,0.2)', mt: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, px: 0 }}>
                     <Avatar
                         sx={{ width: 40, height: 40, bgcolor: 'secondary.main', mr: 2 }}
@@ -203,7 +203,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
 
     return (
         <React.Fragment>
-            <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
+            <Box data-testid="nav-bar-user-menu" sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
                 <Tooltip title="Configurações da conta">
                     <IconButton
                         onClick={handleClick}
@@ -227,7 +227,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                     </IconButton>
                 </Tooltip>
             </Box>
-            <Menu
+            <Menu data-testid="nav-bar-user-menu"
                 anchorEl={anchorEl}
                 id="account-menu"
                 open={open}

@@ -29,7 +29,7 @@ const TeacherArea: React.FC = () => {
   const { flags } = useFeatureFlags();
 
   return (
-    <Container maxWidth={false} sx={CONTAINER_STYLES.main}>
+    <Container data-testid="teacher-area" maxWidth={false} sx={CONTAINER_STYLES.main}>
 
       {flags[FEATURE.INFORMATIVE_BANNERS] && <InformativeBanner />}
 

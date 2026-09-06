@@ -104,7 +104,7 @@ export default function ChildFormDialog({
   };
 
   return (
-    <Dialog
+    <Dialog data-testid="children-child-form-dialog"
       open={open}
       // Fechar durante a gravação deixaria a tela sem saber o resultado.
       onClose={loading ? undefined : onCancel}

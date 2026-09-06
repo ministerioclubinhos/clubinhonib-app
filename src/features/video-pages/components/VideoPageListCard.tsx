@@ -56,7 +56,7 @@ export default function VideoPageListCard({
   }
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`video-pages-video-page-list-card-${page.id}`}
       avatar={<VideoLibraryOutlinedIcon fontSize="small" />}
       title={page.title}
       accent={page.public ? 'success' : 'default'}

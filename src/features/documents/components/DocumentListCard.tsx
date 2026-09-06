@@ -54,7 +54,7 @@ export default function DocumentListCard({
   }
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`documents-document-list-card-${document.id}`}
       avatar={documentInitials(document.name)}
       title={document.name}
       accent={media ? 'primary' : 'warning'}

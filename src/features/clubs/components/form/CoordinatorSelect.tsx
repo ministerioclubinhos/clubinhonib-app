@@ -81,7 +81,7 @@ export default function CoordinatorSelect({
   const menuMaxH = isXs ? "70dvh" : 420;
 
   return (
-    <FormControl fullWidth>
+    <FormControl data-testid="clubs-form-coordinator-select" fullWidth>
       <InputLabel>{label}</InputLabel>
       <Select
         label={label}

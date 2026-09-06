@@ -36,7 +36,7 @@ function ThumbnailStrip({ section }: { section: ImageSectionResponse }) {
   const restantes = fotos.length - visiveis.length;
 
   return (
-    <Stack direction="row" spacing={0.75} sx={{ mt: 0.5 }}>
+    <Stack data-testid="image-sections-image-section-card-thumbnail-strip" direction="row" spacing={0.75} sx={{ mt: 0.5 }}>
       {visiveis.map((media) => (
         <Box
           key={media.id}
@@ -92,7 +92,7 @@ export default function ImageSectionCard({
   const pendente = isPending(section);
 
   return (
-    <ListingCard
+    <ListingCard data-testid={`image-sections-image-section-card-${section.id}`}
       avatar={<CollectionsIcon />}
       title={section.caption}
       subtitle={mediaSummary(section)}

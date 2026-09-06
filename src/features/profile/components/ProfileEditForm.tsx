@@ -146,14 +146,14 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
 
   if (!profile) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+      <Box data-testid="profile-profile-edit-form" sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <motion.div
+    <motion.div data-testid="profile-profile-edit-form"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
