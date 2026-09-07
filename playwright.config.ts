@@ -6,7 +6,9 @@ import { defineConfig, devices } from '@playwright/test';
  * Rodam contra o app em `http://localhost:5173` e a API em
  * `http://localhost:3000`, ambos já de pé (`npm run start:local` em cada
  * repositório). O projeto `setup` faz o login uma vez e guarda a sessão em
- * `e2e/.auth/admin.json`; os demais reaproveitam esse estado.
+ * `e2e/.auth/admin.json`; os demais reaproveitam esse estado. Ele também
+ * desliga as flags `email_*` antes de qualquer teste — ver
+ * `e2e/support/emailFlags.ts`.
  */
 const APP_URL = process.env.E2E_APP_URL ?? 'http://localhost:5173';
 
@@ -44,7 +46,15 @@ export default defineConfig({
      * navegador e sem API. É o que eram os testes unitários do Vitest.
      */
     { name: 'unit', testMatch: /unit\/.*\.spec\.ts/, use: { trace: 'off', screenshot: 'off' } },
-    { name: 'setup', testMatch: /support\/auth\.setup\.ts/ },
+    /**
+     * Login do administrador e desligamento dos envios de e-mail. Os dois
+     * passos rodam antes de qualquer teste de navegador; o segundo existe
+     * porque a suíte inteira dispara avisos e estourava a cota diária do
+     * provedor a cada rodada.
+     */
+    { name: 'setup', testMatch: /support\/.*\.setup\.ts/, teardown: 'teardown' },
+    /** Religa os envios, e só com `E2E_RESTORE_EMAIL_FLAGS=1`. */
+    { name: 'teardown', testMatch: /support\/.*\.teardown\.ts/ },
     /** Fluxos reais do painel e das telas, logado como administrador. */
     {
       name: 'chromium',
