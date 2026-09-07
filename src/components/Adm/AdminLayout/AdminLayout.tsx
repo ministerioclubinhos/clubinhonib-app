@@ -45,6 +45,7 @@ import {
   ExpandMore,
   Checklist,
   BarChart,
+  CalendarMonth,
   ChevronLeft,
   ChevronRight,
 } from "@mui/icons-material";
@@ -117,6 +118,7 @@ function AdminLayout() {
         items: [
           { label: "Clubinhos", to: "/adm/clubinhos", icon: <Groups /> },
           { label: "Pagelas", to: "/adm/pagelas", icon: <Assignment />, flag: FEATURE.PAGELAS },
+          { label: "Resumo Semanal", to: "/adm/resumo-semanal", icon: <CalendarMonth />, flag: FEATURE.CLUB_WEEKLY_SUMMARY },
         ],
       },
       {

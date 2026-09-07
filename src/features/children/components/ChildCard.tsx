@@ -33,7 +33,14 @@ type Props = {
   onView: () => void;
   onEdit: () => void;
   onToggleActive: () => void;
-  onDelete: () => void;
+  /**
+   * Ausente quando quem está vendo não pode excluir.
+   *
+   * Excluir uma criança é só do administrador: some a linha e, com ela, o
+   * histórico de pagelas. Sem a ação, o botão não aparece — desativar continua
+   * ali, que é a operação com volta.
+   */
+  onDelete?: () => void;
   disabled?: boolean;
 };
 
@@ -130,14 +137,16 @@ export default function ChildCard({
             )}
           </CardActionButton>
 
-          <CardActionButton
-            label="Excluir"
-            color="error"
-            disabled={disabled}
-            onClick={onDelete}
-          >
-            <DeleteIcon fontSize="small" />
-          </CardActionButton>
+          {onDelete && (
+            <CardActionButton
+              label="Excluir"
+              color="error"
+              disabled={disabled}
+              onClick={onDelete}
+            >
+              <DeleteIcon fontSize="small" />
+            </CardActionButton>
+          )}
         </>
       }
     />

@@ -25,12 +25,6 @@ type Props = {
   options: TeacherOption[];
   onChange: (ids: string[]) => void;
   name?: string;
-  /**
-   * Clubinhos que quem está editando alcança. Um professor que está em outro
-   * clubinho pode ser trazido — a API move o vínculo —, mas o coordenador só
-   * move quem já está sob a coordenação dele.
-   */
-  reachableClubIds?: Set<string>;
   /** O clubinho sendo editado; nulo na criação. */
   currentClubId?: string | null;
 };
@@ -47,7 +41,6 @@ export default function TeachersSelect({
   options,
   onChange,
   name = "Selecionar professores",
-  reachableClubIds,
   currentClubId = null,
 }: Props) {
   const theme = useTheme();
@@ -94,24 +87,6 @@ export default function TeachersSelect({
     [currentClubId]
   );
 
-  /**
-   * Sem alcance ao clubinho atual do professor, trazê-lo tiraria a turma de
-   * outra coordenação — a API recusa, então a opção fica desabilitada com o
-   * motivo à vista.
-   */
-  const blockedReason = useCallback(
-    (opt: TeacherOption): string | null => {
-      if (selectedSet.has(opt.teacherProfileId)) return null;
-      if (!opt.clubId || opt.clubId === currentClubId) return null;
-      if (!reachableClubIds || reachableClubIds.has(opt.clubId)) return null;
-
-      return "Em um clubinho de outra coordenação";
-    },
-    [selectedSet, currentClubId, reachableClubIds]
-  );
-
-  const isDisabled = (opt: TeacherOption) => blockedReason(opt) !== null;
-
   const handleChange = useCallback(
     (event: SelectChangeEvent<string[]>) => {
       const raw = (event.target.value ?? []) as Array<string | null | undefined>;
@@ -130,7 +105,7 @@ export default function TeachersSelect({
   const selectVisible = useCallback(() => {
     const next = new Set(safeValue);
     for (const o of visibleOptions) {
-      if (!isDisabled(o)) next.add(o.teacherProfileId);
+      next.add(o.teacherProfileId);
     }
     onChange(Array.from(next));
   }, [safeValue, visibleOptions, onChange]);
@@ -265,20 +240,24 @@ export default function TeachersSelect({
           </MenuItem>
         )}
 
+        {/*
+          Nenhuma opção fica desabilitada: o coordenador monta a equipe do
+          clubinho dele com qualquer professor. O que a linha avisa é a
+          consequência — vincular move o professor, tirando-o do clubinho onde
+          ele está hoje.
+        */}
         {visibleOptions.map((t) => {
           const isSelected = selectedSet.has(t.teacherProfileId);
-          const disabled = isDisabled(t);
           return (
-            <MenuItem key={t.teacherProfileId} value={t.teacherProfileId} disabled={disabled} dense>
+            <MenuItem key={t.teacherProfileId} value={t.teacherProfileId} dense>
               <Checkbox checked={isSelected} />
               <ListItemText
                 primaryTypographyProps={{ noWrap: true }}
                 primary={t.name}
                 secondary={
-                  blockedReason(t) ??
-                  (movingFrom(t) !== null && !isSelected
+                  movingFrom(t) !== null && !isSelected
                     ? `No Clubinho ${movingFrom(t)} — será movido`
-                    : undefined)
+                    : undefined
                 }
                 secondaryTypographyProps={{ color: "text.secondary" }}
               />

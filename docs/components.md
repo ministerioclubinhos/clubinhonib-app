@@ -35,6 +35,12 @@ Located in `src/components/`, common components include:
 - **`Footer/`**: Application footer.
 - **`Card/`**: Reusable card components for displaying content summaries.
 - **`Modal/`**: Standardized modals for forms and confirmations.
+  `ToggleActiveConfirmDialog` requires a `subject` (`ToggleActiveSubject`) and
+  reads its wording from `TOGGLE_ACTIVE_COPY`. The wording used to be hardcoded
+  for a child, so deactivating a **club** asked "Criança não frequenta mais o
+  clubinho?" — with the subject declared, the compiler makes any new caller say
+  which one it is, and a new subject is a row in that table rather than another
+  branch inside the component.
 - **`common/`**: primitive UI elements like custom buttons, inputs, or loading spinners.
 
 ## 📋 Admin listings
@@ -62,6 +68,19 @@ The people screens (`/adm/perfis`, `/adm/usuarios`, `/adm/professores`,
 `/adm/coordenadores`, `/adm/criancas`) use this shell, except `/adm/perfis`,
 which is a directory rather than a CRUD listing and keeps its own photo cards and
 birthday band.
+
+## 📅 Agenda pública em cards
+
+O modo de cards de `/eventos` pertence à feature `src/features/events/` e segue
+uma hierarquia temporal única:
+
+- eventos de hoje e futuros ficam visíveis em ordem cronológica;
+- eventos realizados ficam em uma seção secundária, recolhida inicialmente;
+- os selos `Hoje`, `Amanhã`, `Em breve`, `Programado` e `Realizado` usam cores
+  semânticas da paleta Material UI;
+- mídia ausente ou inválida recebe um placeholder estável, sem quebrar o card;
+- detalhes, edição, exclusão e inclusão mantêm nome acessível, `data-testid`
+  estável e alvo de toque de pelo menos 44 × 44 px.
 
 ## ⚠️ Key Dependencies
 

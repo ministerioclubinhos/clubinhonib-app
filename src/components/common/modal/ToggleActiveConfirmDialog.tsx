@@ -12,10 +12,21 @@ import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import ToggleOnIcon from "@mui/icons-material/ToggleOn";
 import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 
+import { TOGGLE_ACTIVE_COPY } from "./constants";
+import { ToggleActiveSubject } from "./types";
+
 interface Props {
   open: boolean;
   title?: string;
   isActive: boolean;
+  /**
+   * O que está sendo ativado ou desativado.
+   *
+   * Obrigatório: o texto do diálogo era fixo em "criança", e a tela de
+   * clubinhos herdava a pergunta errada. Declarar o assunto faz o compilador
+   * cobrar de quem reusar o diálogo.
+   */
+  subject: ToggleActiveSubject;
   onClose: () => void;
   onConfirm: () => Promise<void>;
   loading?: boolean;
@@ -25,6 +36,7 @@ export default function ToggleActiveConfirmDialog({
   open,
   title,
   isActive,
+  subject,
   onClose,
   onConfirm,
   loading = false,
@@ -41,6 +53,8 @@ export default function ToggleActiveConfirmDialog({
   } as const;
 
   const actionCapitalized = isActive ? "Desativar" : "Ativar";
+  const copy = TOGGLE_ACTIVE_COPY[subject];
+  const { question, consequence } = isActive ? copy.deactivate : copy.activate;
 
   return (
     <Dialog data-testid="modal-toggle-active-confirm-dialog"
@@ -86,9 +100,7 @@ export default function ToggleActiveConfirmDialog({
           id="toggle-active-dialog-description"
           sx={{ pt: 2, mb: 1.5, fontSize: fs.body, lineHeight: 1.5 }}
         >
-          {isActive 
-            ? "Criança não frequenta mais o clubinho?"
-            : "Criança voltou a frequentar o clubinho?"}
+          {question}
         </Typography>
 
         <Typography
@@ -100,7 +112,7 @@ export default function ToggleActiveConfirmDialog({
           }}
         >
           <strong style={{ fontSize: isMobile ? fs.strong.xs : fs.strong.sm }}>
-            {title ?? "esta criança"}
+            {title ?? copy.fallbackName}
           </strong>
         </Typography>
 
@@ -112,9 +124,7 @@ export default function ToggleActiveConfirmDialog({
             lineHeight: 1.4,
           }}
         >
-          {isActive 
-            ? "Esta criança ficará inativa e sairá das estatísticas do clubinho."
-            : "Esta criança ficará ativa e entrará nas estatísticas do clubinho."}
+          {consequence}
         </Typography>
       </DialogContent>
 

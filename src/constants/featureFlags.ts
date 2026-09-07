@@ -25,6 +25,8 @@ export interface FeatureFlags {
   statistics: boolean;
   /** Controle operacional dos clubinhos. */
   club_control: boolean;
+  /** Resumo semanal dos clubinhos: o desenho de todas as semanas letivas. */
+  club_weekly_summary: boolean;
   /** Gestão das pagelas no painel. */
   pagelas: boolean;
 
@@ -85,6 +87,7 @@ export const MOCKED_FEATURE_FLAGS: FeatureFlags = {
   clubinho_feed: true,
   statistics: true,
   club_control: true,
+  club_weekly_summary: true,
   pagelas: true,
 
   // O Dia Especial da Família é sazonal: nasce desligado.

@@ -31,7 +31,12 @@ dayjs.locale("pt-br");
 
 import { motion } from "framer-motion";
 
-import { AppEvent } from "./EventosPage";
+import {
+  eventTimeLabel,
+  expandAllOccurrences,
+  isClubMeeting,
+  type AppEvent,
+} from "@/features/events";
 import "./EventsCalendarView.css";
 
 type Props = {
@@ -45,7 +50,6 @@ type Props = {
 
 type DayKey = string;
 const toDayKey = (d: Dayjs) => d.format("YYYY-MM-DD");
-const toEventDayKey = (iso: string) => dayjs(iso).format("YYYY-MM-DD");
 
 function getStatusColor(dateISO: string) {
   const d = dayjs(dateISO);
@@ -73,23 +77,32 @@ export default function EventsCalendarView({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogEvents, setDialogEvents] = useState<AppEvent[]>([]);
 
+  /**
+   * Os eventos de cada dia do mês exibido.
+   *
+   * Um encontro de clubinho ocupa todos os sábados do período letivo, não só o
+   * primeiro: as datas vêm prontas da API, já sem os dias de exceção. Antes o
+   * calendário marcava um dia só e o clubinho sumia do resto do mês.
+   */
   const eventsByDay = useMemo(() => {
     const map = new Map<DayKey, AppEvent[]>();
 
-    for (const e of eventos) {
-      const k = toEventDayKey(e.date);
-      const list = map.get(k) || [];
-      list.push(e);
-      map.set(k, list);
-    }
+    const rangeStart = currentMonth.startOf("month").startOf("week").toDate();
+    const rangeEnd = currentMonth.endOf("month").endOf("week").toDate();
 
-    for (const [k, list] of map.entries()) {
-      list.sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
+    for (const occurrence of expandAllOccurrences(
+      eventos,
+      rangeStart,
+      rangeEnd,
+    )) {
+      const k = toDayKey(dayjs(occurrence.date));
+      const list = map.get(k) || [];
+      list.push(occurrence.event);
       map.set(k, list);
     }
 
     return map;
-  }, [eventos]);
+  }, [eventos, currentMonth]);
 
   const calendarDays = useMemo(() => {
     const firstDay = currentMonth.startOf("month");
@@ -338,7 +351,7 @@ export default function EventsCalendarView({
           <Stack spacing={1.5}>
             {dialogEvents.map((ev) => {
               const accent = getStatusColor(ev.date);
-              const hora = dayjs(ev.date).format("HH:mm");
+              const hora = eventTimeLabel(ev);
 
               return (
                 <Paper
@@ -358,7 +371,7 @@ export default function EventsCalendarView({
                         <Box className="events-event-detail-item">
                           <CalendarTodayIcon className="events-event-detail-icon" />
                           <Typography variant="body2" className="events-event-detail-text">
-                            {hora !== "00:00" ? hora : "Horário não informado"}
+                            {hora}
                           </Typography>
                         </Box>
 
@@ -372,7 +385,7 @@ export default function EventsCalendarView({
                     </Box>
 
                     <Box className="events-event-actions-container">
-                      {isAdmin && (
+                      {isAdmin && !isClubMeeting(ev) && (
                         <>
                           <Tooltip title="Editar">
                             <IconButton size="small" onClick={() => onEdit(ev)} className="events-icon-button-edit" aria-label="Editar">

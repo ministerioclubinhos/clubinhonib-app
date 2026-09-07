@@ -30,6 +30,13 @@ export const FEATURE = {
   STATISTICS: 'statistics',
   /** Controle operacional dos clubinhos. */
   CLUB_CONTROL: 'club_control',
+  /**
+   * Resumo semanal dos clubinhos.
+   *
+   * É a tela que o e-mail de segunda-feira abre; o envio do e-mail tem flag
+   * própria, no back. Desligar aqui fecha a rota e some com o item do menu.
+   */
+  CLUB_WEEKLY_SUMMARY: 'club_weekly_summary',
   /** Gestão das pagelas no painel. */
   PAGELAS: 'pagelas',
 

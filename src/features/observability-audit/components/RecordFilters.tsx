@@ -69,7 +69,9 @@ export function ObservabilityRecordFilters({ filters, onChange }: ObservabilityR
           placeholder="Ex.: INT_9001"
           fullWidth
           size="small"
-          slotProps={{ htmlInput: { 'aria-label': 'Código do erro', spellCheck: false } }}
+          slotProps={{
+            htmlInput: { 'aria-label': 'Código do erro', spellCheck: false },
+          }}
           sx={TOOLBAR_FIELD_SX}
         />
       </Grid2>
@@ -104,7 +106,9 @@ export function AuditRecordFilters({ filters, onChange }: AuditRecordFiltersProp
           placeholder="UUID do usuário"
           fullWidth
           size="small"
-          slotProps={{ htmlInput: { 'aria-label': 'ID do ator', spellCheck: false } }}
+          slotProps={{
+            htmlInput: { 'aria-label': 'ID do ator', spellCheck: false },
+          }}
           sx={TOOLBAR_FIELD_SX}
         />
       </Grid2>
@@ -135,7 +139,9 @@ export function AuditRecordFilters({ filters, onChange }: AuditRecordFiltersProp
           placeholder="Ex.: ClubsModule.ClubsController.create"
           fullWidth
           size="small"
-          slotProps={{ htmlInput: { 'aria-label': 'Ação', spellCheck: false } }}
+          slotProps={{
+            htmlInput: { 'aria-label': 'Ação', spellCheck: false },
+          }}
           sx={TOOLBAR_FIELD_SX}
         />
       </Grid2>

@@ -50,7 +50,6 @@ type Props = {
   coordinatorOptions: CoordinatorOption[];
   teacherOptions: TeacherOption[];
   /** Clubinhos que quem está editando alcança; limita de onde trazer professor. */
-  reachableClubIds?: Set<string>;
   /** O clubinho sendo editado; nulo na criação. */
   clubId?: string | null;
   /** Coordenador que o clubinho tinha ao abrir o formulário. */
@@ -68,7 +67,6 @@ export default function ClubFormDialog({
   loading,
   coordinatorOptions,
   teacherOptions,
-  reachableClubIds,
   clubId = null,
   initialCoordinatorProfileId = null,
 }: Props) {
@@ -241,7 +239,6 @@ export default function ClubFormDialog({
               key={teachersKey}
               value={value.teacherProfileIds}
               options={teacherOptions}
-              reachableClubIds={reachableClubIds}
               currentClubId={clubId}
               onChange={(teacherProfileIds) => patch({ teacherProfileIds })}
             />

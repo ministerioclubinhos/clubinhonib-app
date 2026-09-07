@@ -412,7 +412,8 @@ test.describe('Observabilidade e auditoria', () => {
     await expect(page.getByTestId('record-details-field-request-id')).toContainText('req-o1');
     await expect(page.getByTestId('record-details-field-source-location')).toContainText('src/x.ts:1');
     await expect(dialog.getByText(/stack|metadata/i)).toHaveCount(0);
-    await expect(dialog.getByRole('button', { name: /excluir|editar/i })).toHaveCount(0);
+    // Registro não se edita: o modal é leitura. Excluir existe e tem cenário próprio.
+    await expect(dialog.getByRole('button', { name: /editar/i })).toHaveCount(0);
 
     await page.getByTestId('record-details-close').click();
     await expect(dialog).toBeHidden();

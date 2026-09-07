@@ -34,23 +34,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { setEvents } from "@/store/slices/events/eventsSlice";
 import { UserRole } from "@/types/shared";
+import { displayDate, type AppEvent } from "@/features/events";
 
 import EventDetailsModal from "./EventDetailsModal";
 import EventFormModal from "./EventFormModal";
 import EventsCardsView from "./EventsCardsView";
 import EventsCalendarView from "./EventsCalendarView";
-
-export type AppEvent = {
-  id: string;
-  title: string;
-  location: string;
-  date: string;
-  description: string;
-  media?: { url: string; originalName?: string; size?: number; createdAt?: string };
-  createdAt?: string;
-  updatedAt?: string;
-  audience?: string;
-};
 
 type ViewMode = "cards" | "calendar";
 type AddEditMode = "add" | "edit";
@@ -63,14 +52,22 @@ type AddEditMode = "add" | "edit";
  */
 type RawEvent = Omit<AppEvent, 'date'> & { date?: string | null };
 
-const mapEventsWithFallbackDate = (raw: RawEvent[]): AppEvent[] =>
+/**
+ * Prepara os eventos para a tela.
+ *
+ * Além do recuo de data, um encontro de clubinho passa a mostrar a **próxima**
+ * ocorrência: a API manda todas as datas da série — já limitadas ao período
+ * letivo e sem os dias de exceção — e a primeira delas pode ser de meses atrás.
+ */
+const mapEventsForDisplay = (raw: RawEvent[]): AppEvent[] =>
   (raw || []).map((evento) => {
     const temData = Boolean(evento.date && String(evento.date).trim());
     const recuo = evento.media?.createdAt ?? evento.createdAt ?? '';
+    const base = temData ? String(evento.date) : recuo;
 
     return {
       ...evento,
-      date: temData ? String(evento.date) : recuo,
+      date: displayDate({ date: base, occurrences: evento.occurrences }),
     };
   });
 
@@ -102,7 +99,7 @@ export default function EventosPage() {
     setLoading(true);
     try {
       const res = await api.get("/events");
-      const mapped = mapEventsWithFallbackDate(res.data || []);
+      const mapped = mapEventsForDisplay(res.data || []);
       dispatch(setEvents(mapped));
       setEventosState(mapped);
       setError("");
@@ -197,7 +194,15 @@ export default function EventosPage() {
     <Fragment>
       <Box data-testid="event-eventos-page" sx={{ minHeight: "100vh", background: gradients.subtle.greenWhiteSoft }}>
 
-        <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 2.5, md: 4 }, px: { xs: 1.5, sm: 2, md: 3 } }}>
+        <Container
+          maxWidth={false}
+          sx={{
+            width: { xs: "98%", md: "95%" },
+            mx: "auto",
+            py: { xs: 2, sm: 2.5, md: 4 },
+            px: { xs: 1.5, sm: 2, md: 3 },
+          }}
+        >
           {error ? (
             <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
               {error}
@@ -290,7 +295,7 @@ export default function EventosPage() {
 
         <Box
           sx={{
-            width: "95%",
+            width: { xs: "98%", md: "95%" },
             mx: "auto",
             pb: { xs: 4, md: 6 },
             px: { xs: 0.5, md: 1 },

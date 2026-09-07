@@ -16,6 +16,14 @@ export type ClubLinkPermissions = {
   canManageTeacherLinks: boolean;
   /** Vincular, desvincular e transferir clubinhos de um coordenador. */
   canManageCoordinatorLinks: boolean;
+  /**
+   * Excluir o clubinho.
+   *
+   * A única operação de clubinho fechada para a coordenação, por ser a única
+   * irreversível: a linha some e as crianças são desvinculadas. Desativar
+   * continua disponível — tira o clubinho do calendário e tem volta.
+   */
+  canDeleteClub: boolean;
 };
 
 /** Motivo exibido quando a ação existe mas o perfil não a alcança. */
@@ -31,5 +39,6 @@ export function clubLinkPermissionsOf(
     canManageTeacherLinks:
       normalized === UserRole.ADMIN || normalized === UserRole.COORDINATOR,
     canManageCoordinatorLinks: normalized === UserRole.ADMIN,
+    canDeleteClub: normalized === UserRole.ADMIN,
   };
 }

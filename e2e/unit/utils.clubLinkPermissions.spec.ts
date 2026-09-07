@@ -13,6 +13,7 @@ test.describe("clubLinkPermissionsOf", () => {
     expect(clubLinkPermissionsOf(UserRole.ADMIN)).toEqual({
       canManageTeacherLinks: true,
       canManageCoordinatorLinks: true,
+      canDeleteClub: true,
     });
   });
 
@@ -20,13 +21,24 @@ test.describe("clubLinkPermissionsOf", () => {
     expect(clubLinkPermissionsOf(UserRole.COORDINATOR)).toEqual({
       canManageTeacherLinks: true,
       canManageCoordinatorLinks: false,
+      canDeleteClub: false,
     });
+  });
+
+  test("o coordenador não exclui clubinho: é a única ação sem volta", () => {
+    // Ele muda dia, horário, endereço e equipe, e pode **desativar** — que tira
+    // o clubinho do calendário e preserva o histórico. Excluir apaga a linha e
+    // desvincula as crianças, e ficou só com o administrador.
+    expect(clubLinkPermissionsOf(UserRole.COORDINATOR).canDeleteClub).toBe(
+      false,
+    );
   });
 
   test("o professor não mexe em nenhum", () => {
     expect(clubLinkPermissionsOf(UserRole.TEACHER)).toEqual({
       canManageTeacherLinks: false,
       canManageCoordinatorLinks: false,
+      canDeleteClub: false,
     });
   });
 
@@ -34,10 +46,12 @@ test.describe("clubLinkPermissionsOf", () => {
     expect(clubLinkPermissionsOf(null)).toEqual({
       canManageTeacherLinks: false,
       canManageCoordinatorLinks: false,
+      canDeleteClub: false,
     });
     expect(clubLinkPermissionsOf("outro")).toEqual({
       canManageTeacherLinks: false,
       canManageCoordinatorLinks: false,
+      canDeleteClub: false,
     });
   });
 });

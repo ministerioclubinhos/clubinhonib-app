@@ -16,10 +16,15 @@ import { useChildMutations } from "../children/hooks";
 import ChildFormDialog from "../children/components/ChildFormDialog";
 import { apiFetchChild } from "../children/api";
 import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
+import { ToggleActiveSubject } from "@/components/common/modal/types";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import { useAuthRole } from "@/utils/useAuthRole";
 import { extractErrorMessage } from "@/utils/apiError";
 
 export default function ChildrenBrowserPage() {
+  // Professor e coordenador não excluem criança: desativar é a operação deles.
+  const { isAdmin } = useAuthRole();
+
   const nav = useNavigate();
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
@@ -314,7 +319,7 @@ export default function ChildrenBrowserPage() {
                   child={child}
                   onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
                   onEdit={(c) => openEdit(c.id)}
-                  onDelete={(c) => setConfirmDelete(c)}
+                  onDelete={isAdmin ? (c) => setConfirmDelete(c) : undefined}
                   onRefresh={refetch}
                   onToggleActive={(c) => {
                     setConfirmToggleActive(c);
@@ -380,6 +385,7 @@ export default function ChildrenBrowserPage() {
       />
 
       <ToggleActiveConfirmDialog
+            subject={ToggleActiveSubject.Child}
         open={!!confirmToggleActive}
         title={confirmToggleActive?.name || ""}
         isActive={confirmToggleActive?.isActive ?? false}

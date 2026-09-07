@@ -22,6 +22,7 @@ import { useSelector } from "react-redux";
 
 import { SimpleDatePicker, SimplePhoneInput } from "@/components/common/inputs";
 import ClubAutocomplete from "@/features/clubs/components/form/ClubAutocomplete";
+import { UserRole } from "@/types/shared";
 import type { RootState } from "@/store/slices";
 
 import { GENDER_OPTIONS, Gender, STATE_LENGTH } from "../constants";
@@ -63,6 +64,17 @@ export default function ChildFormDialog({
   const teacherClubId = useSelector(
     (state: RootState) => state.auth.user?.teacherProfile?.club?.id ?? null,
   );
+  const role = useSelector((state: RootState) => state.auth.user?.role);
+
+  /**
+   * O professor cuida da turma dele: edita a criança, mas não a move nem a
+   * desvincula. O campo fica visível — saber em que clubinho a criança está é
+   * parte da ficha — e travado. A API recusa a mudança de qualquer forma.
+   *
+   * O coordenador continua escolhendo: a rota de opções já devolve a ele
+   * apenas os clubinhos que coordena.
+   */
+  const clubLocked = role === UserRole.TEACHER;
 
   const isCreate = mode === "create";
 
@@ -208,6 +220,12 @@ export default function ChildFormDialog({
               value={value.clubId}
               onChange={(clubId) => setField("clubId", clubId)}
               label="Clubinho"
+              disabled={clubLocked}
+              helperText={
+                clubLocked
+                  ? "Para transferir a criança, fale com a coordenação."
+                  : undefined
+              }
               fetchOnMount
             />
           </Grid2>

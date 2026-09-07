@@ -13,6 +13,7 @@ const COORDINATOR_ROUTES: ReadonlyArray<{ path: string; flag?: FeatureKey }> = [
   { path: "/adm/professores" },
   { path: "/adm/clubinhos" },
   { path: "/adm/pagelas" },
+  { path: "/adm/resumo-semanal", flag: FEATURE.CLUB_WEEKLY_SUMMARY },
   { path: "/adm/perfis" },
 ];
 

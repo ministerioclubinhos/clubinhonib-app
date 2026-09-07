@@ -64,7 +64,7 @@ export const ExceptionManagement: React.FC = () => {
     exceptionDate: '',
     reason: '',
     type: 'holiday' as 'holiday' | 'event' | 'maintenance' | 'vacation' | 'other',
-    isRecurrent: true,
+    isRecurrent: false,
     notes: '',
   });
   const [deleteDialog, setDeleteDialog] = React.useState<{
@@ -112,7 +112,7 @@ export const ExceptionManagement: React.FC = () => {
         exceptionDate: '',
         reason: '',
         type: 'holiday',
-        isRecurrent: true,
+        isRecurrent: false,
         notes: '',
       });
 
@@ -321,7 +321,8 @@ export const ExceptionManagement: React.FC = () => {
                           Exceção Recorrente
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Repetir esta data todo ano (ex: feriados nacionais)
+                          Repetir esta data todo ano (ex: feriados nacionais).
+                          Deixe desmarcado para uma data única
                         </Typography>
                       </Box>
                     }

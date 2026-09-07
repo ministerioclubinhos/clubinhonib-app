@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Grid2,
   Chip,
   Box,
   Typography,
@@ -15,22 +14,33 @@ import {
   useMediaQuery,
   useTheme,
   Avatar,
+  Divider,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import {
   CalendarToday,
-  NumbersOutlined,
   PersonOutline,
   SchoolOutlined,
   PlaceOutlined,
-  Update as UpdateIcon,
-  AccessTime as AccessTimeIcon,
+  MapOutlined,
 } from "@mui/icons-material";
 import { fmtDate } from "@/utils/dates";
 import { CopyButton, initials } from "@/utils/components";
+import { formatPhone } from "@/utils/phone";
 
-import { EMPTY_VALUE } from "../constants";
-import { formatUserLabel, formatWeekday } from "../utils";
-import type { ClubResponse } from "../types";
+import {
+  CLUB_VIEW_TEACHERS_BEFORE_SCROLL,
+  CLUB_VIEW_TEACHERS_MAX_HEIGHT,
+  EMPTY_VALUE,
+} from "../constants";
+import {
+  formatClubAddress,
+  formatClubTime,
+  formatUserLabel,
+  formatWeekday,
+} from "../utils";
+import type { ClubAddress, ClubResponse, ClubUserMini } from "../types";
 
 type Props = {
   open: boolean;
@@ -39,298 +49,353 @@ type Props = {
   onClose: () => void;
 };
 
-function LineCard({
+/**
+ * Uma seção do modal.
+ *
+ * Empilha em qualquer largura: o modal é lido no celular, em pé, por quem está
+ * a caminho do clubinho. Duas colunas espremiam o endereço e os telefones em
+ * linhas de três palavras.
+ */
+function Section({
   icon,
   title,
+  action,
   children,
 }: {
   icon: React.ReactNode;
   title: string;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <Paper data-testid="clubs-club-view-dialog-line-card" variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
-      <Stack spacing={0.5}>
+    <Paper
+      data-testid="clubs-club-view-dialog-section"
+      variant="outlined"
+      sx={{ p: 1.75, borderRadius: 2 }}
+    >
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 1 }}
+      >
         <Stack direction="row" spacing={0.75} alignItems="center">
-          {icon}
-          <Typography variant="caption" color="text.secondary">
+          <Box sx={{ display: "flex", color: "text.secondary" }}>{icon}</Box>
+          <Typography
+            variant="overline"
+            color="text.secondary"
+            sx={{ lineHeight: 1.4, letterSpacing: 0.6 }}
+          >
             {title}
           </Typography>
         </Stack>
-        {children}
+        {action}
       </Stack>
+      {children}
     </Paper>
   );
+}
+
+/**
+ * Uma pessoa ligada ao clubinho, com o contato à mão.
+ *
+ * Coordenação e professores mostravam blocos diferentes para a mesma coisa —
+ * nome, telefone, botão de copiar — em `Stack` com `flexWrap`, que no celular
+ * quebrava o telefone para a linha de baixo e deixava o botão órfão. Aqui é uma
+ * linha só: avatar de largura fixa, texto que encolhe, ação na ponta.
+ */
+function ContactRow({
+  user,
+  fallbackLabel,
+}: {
+  user?: ClubUserMini | null;
+  fallbackLabel: string;
+}) {
+  const name = formatUserLabel(user);
+  const phone = user?.phone?.trim();
+
+  return (
+    <Stack
+      data-testid="clubs-club-view-dialog-contact"
+      direction="row"
+      spacing={1.25}
+      alignItems="center"
+    >
+      <Avatar sx={{ width: 36, height: 36, fontSize: "0.8rem" }}>
+        {initials(name === EMPTY_VALUE ? fallbackLabel : name)}
+      </Avatar>
+
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Typography fontWeight={600} noWrap title={name}>
+          {name}
+        </Typography>
+        {phone ? (
+          <Link
+            href={`tel:${phone}`}
+            underline="hover"
+            variant="body2"
+            sx={{ display: "inline-block" }}
+          >
+            {formatPhone(phone)}
+          </Link>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            Sem telefone
+          </Typography>
+        )}
+      </Box>
+
+      {phone && <CopyButton value={phone} title="Copiar telefone" />}
+    </Stack>
+  );
+}
+
+/** Link do endereço no mapa, para quem está indo até o clubinho. */
+function mapsLink(address: ClubAddress): string {
+  const query = encodeURIComponent(formatClubAddress(address));
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
 }
 
 export default function ClubViewDialog({ open, loading, club, onClose }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  
-  const weekdayLabel = club ? formatWeekday(club.weekday) : undefined;
 
   const address = club?.address;
   const teachers = club?.teachers ?? [];
+  const hasAddress =
+    !!address && formatClubAddress(address) !== EMPTY_VALUE;
 
   return (
-    <Dialog data-testid="clubs-club-view-dialog"
+    <Dialog
+      data-testid="clubs-club-view-dialog"
       open={open}
       onClose={onClose}
       fullWidth
-      maxWidth="lg"
+      maxWidth="sm"
       fullScreen={isXs}
+      aria-labelledby="club-view-title"
       PaperProps={{
         sx: {
-          width: { xs: "100%", sm: "44rem" },
-          m: 0,
+          m: { xs: 0, sm: 2 },
           borderRadius: { xs: 0, sm: 3 },
           overflow: "hidden",
         },
       }}
     >
+      {/*
+        O cabeçalho carrega a identidade do clubinho e nada mais. Antes ele
+        repetia dia, horário e número em chips, e o corpo repetia os mesmos
+        quatro dados logo abaixo em cartões — a pessoa lia tudo duas vezes antes
+        de chegar ao endereço.
+      */}
       <Box
         sx={{
           px: { xs: 2, sm: 3 },
-          pt: { xs: 2, sm: 3 },
-          pb: { xs: 1.25, sm: 1.5 },
+          py: { xs: 2, sm: 2.5 },
           background:
-            "linear-gradient(135deg, rgba(76,175,80,.08) 0%, rgba(2,136,209,.08) 100%)",
+            "linear-gradient(135deg, rgba(76,175,80,.10) 0%, rgba(2,136,209,.10) 100%)",
           borderBottom: 1,
           borderColor: "divider",
         }}
       >
         {!club ? (
-          <Typography variant="h6">Detalhes do Clubinho</Typography>
+          <Typography id="club-view-title" variant="h6" fontWeight={800}>
+            Detalhes do Clubinho
+          </Typography>
         ) : (
-          <Stack spacing={1.25}>
-            <Stack direction="row" spacing={1.25} alignItems="center">
-              <Avatar
-                sx={{
-                  width: 48,
-                  height: 48,
-                  bgcolor: "success.main",
-                  color: "success.contrastText",
-                  fontWeight: 700,
-                }}
-                aria-label="avatar do clubinho"
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Avatar
+              sx={{
+                width: 48,
+                height: 48,
+                bgcolor: "success.main",
+                color: "success.contrastText",
+                fontWeight: 700,
+              }}
+              aria-label="avatar do clubinho"
+            >
+              {club.number}
+            </Avatar>
+
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography
+                id="club-view-title"
+                variant="h6"
+                fontWeight={800}
+                noWrap
+                title={`Clubinho ${club.number}`}
               >
-                {initials(`Clubinho ${club.number}`)}
-              </Avatar>
-              <Box sx={{ minWidth: 0 }}>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  flexWrap="wrap"
-                >
-                  <Typography
-                    variant="h6"
-                    fontWeight={800}
-                    noWrap={!isXs}
-                    title={`Clubinho #${club.number}`}
-                  >
-                    Clubinho #{club.number}
-                  </Typography>
-                  {weekdayLabel && (
-                    <Chip
-                      size="small"
-                      label={weekdayLabel}
-                      color="primary"
-                      variant="outlined"
-                      icon={<CalendarToday sx={{ fontSize: 16 }} />}
-                    />
-                  )}
-                  {club?.time && (
-                    <Chip
-                      size="small"
-                      label={club.time}
-                      color="info"
-                      variant="outlined"
-                      icon={<AccessTimeIcon sx={{ fontSize: 16 }} />}
-                    />
-                  )}
-                  <Chip
-                    size="small"
-                    label={club.isActive ? "Ativo" : "Inativo"}
-                    color={club.isActive ? "success" : "default"}
-                    variant={club.isActive ? "filled" : "outlined"}
-                  />
-                </Stack>
-              </Box>
-            </Stack>
+                Clubinho {club.number}
+              </Typography>
+              <Chip
+                size="small"
+                sx={{ mt: 0.5 }}
+                label={club.isActive ? "Ativo" : "Inativo"}
+                color={club.isActive ? "success" : "default"}
+                variant={club.isActive ? "filled" : "outlined"}
+              />
+            </Box>
           </Stack>
         )}
       </Box>
 
-      <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
+      <DialogContent dividers sx={{ p: { xs: 1.5, sm: 2.5 } }}>
         {loading && !club && (
-          <Box textAlign="center" my={2}>
-            <Skeleton height={28} width="60%" sx={{ mx: "auto", mb: 2 }} />
-            <Skeleton height={20} />
-            <Skeleton height={20} />
-            <Skeleton height={120} sx={{ mt: 2 }} />
-          </Box>
+          <Stack spacing={1.5}>
+            <Skeleton variant="rounded" height={84} />
+            <Skeleton variant="rounded" height={110} />
+            <Skeleton variant="rounded" height={96} />
+          </Stack>
         )}
 
-        {!club ? (
+        {!loading && !club && (
           <Typography variant="body1" color="text.secondary">
             Nenhum clubinho selecionado.
           </Typography>
-        ) : (
-          <Stack spacing={2}>
-            <Grid2 container spacing={1.25}>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <LineCard icon={<NumbersOutlined fontSize="small" />} title="Número">
-                  <Typography variant="body1" fontWeight={600}>
-                    #{club.number}
-                  </Typography>
-                </LineCard>
-              </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <LineCard icon={<CalendarToday fontSize="small" />} title="Dia da semana">
-                  <Typography variant="body1">
-                    {weekdayLabel || "—"}
-                  </Typography>
-                </LineCard>
-              </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <LineCard icon={<AccessTimeIcon fontSize="small" />} title="Horário">
-                  <Typography variant="body1">
-                    {club.time || "—"}
-                  </Typography>
-                </LineCard>
-              </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <LineCard icon={<UpdateIcon fontSize="small" />} title="Atualizado em">
-                  <Typography variant="body1">
-                    {fmtDate(club.updatedAt)}
-                  </Typography>
-                </LineCard>
-              </Grid2>
-            </Grid2>
+        )}
 
-            <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
-              <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={1}>
-                <Chip
-                  size="small"
-                  label={`Professores: ${teachers.length}`}
-                  color={teachers.length > 0 ? "info" : "default"}
-                  variant={teachers.length > 0 ? "filled" : "outlined"}
+        {club && (
+          <Stack spacing={1.5}>
+            {/* Quando e onde vêm primeiro: é o que se abre o modal para ver. */}
+            <Section icon={<CalendarToday fontSize="small" />} title="Quando">
+              <Typography fontWeight={700} sx={{ fontSize: "1.05rem" }}>
+                {formatWeekday(club.weekday)}
+                <Box component="span" sx={{ color: "text.secondary", mx: 0.75 }}>
+                  ·
+                </Box>
+                {formatClubTime(club.time)}
+              </Typography>
+            </Section>
+
+            <Section
+              icon={<PlaceOutlined fontSize="small" />}
+              title="Onde"
+              action={
+                hasAddress && (
+                  <Stack direction="row" spacing={0.25} alignItems="center">
+                    <CopyButton
+                      value={formatClubAddress(address)}
+                      title="Copiar endereço"
+                    />
+                    <Tooltip title="Abrir no mapa">
+                      <IconButton
+                        component="a"
+                        href={mapsLink(address)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="small"
+                        aria-label="Abrir endereço no mapa"
+                      >
+                        <MapOutlined fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                )
+              }
+            >
+              {hasAddress ? (
+                <Box>
+                  <Typography fontWeight={600}>
+                    {[address.street, address.number]
+                      .filter(Boolean)
+                      .join(", ") || EMPTY_VALUE}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {[
+                      address.district,
+                      [address.city, address.state].filter(Boolean).join(" - "),
+                      address.postalCode && `CEP ${address.postalCode}`,
+                    ]
+                      .filter(Boolean)
+                      .join(" • ")}
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Endereço não informado
+                </Typography>
+              )}
+            </Section>
+
+            <Section icon={<PersonOutline fontSize="small" />} title="Coordenação">
+              {club.coordinator ? (
+                <ContactRow
+                  user={club.coordinator.user}
+                  fallbackLabel="Coordenação"
                 />
-                <Chip
-                  size="small"
-                  label={`Coordenador: ${club.coordinator ? "Vinculado" : "Não vinculado"}`}
-                  color={club.coordinator ? "success" : "default"}
-                  variant={club.coordinator ? "filled" : "outlined"}
-                />
-              </Stack>
-            </Paper>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Nenhum coordenador vinculado
+                </Typography>
+              )}
+            </Section>
 
-            {address && (
-              <Grid2 container spacing={1.25}>
-                <Grid2 size={12}>
-                  <LineCard icon={<PlaceOutlined fontSize="small" />} title="Endereço">
-                    <Stack spacing={0.5}>
-                      {/* Campo do endereço pode vir nulo; só entra na linha o
-                          que existe, para não sobrar separador solto. */}
-                      <Typography variant="body1" fontWeight={600}>
-                        {[address.street, address.number]
-                          .filter(Boolean)
-                          .join(", ") || EMPTY_VALUE}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {[
-                          address.district,
-                          [address.city, address.state].filter(Boolean).join(" - "),
-                        ]
-                          .filter(Boolean)
-                          .join(" • ") || EMPTY_VALUE}
-                      </Typography>
-                      {address.postalCode && (
-                        <Typography variant="body2" color="text.secondary">
-                          CEP: {address.postalCode}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </LineCard>
-                </Grid2>
-              </Grid2>
-            )}
-
-            <Grid2 container spacing={1.25}>
-              <Grid2 size={12}>
-                <LineCard icon={<PersonOutline fontSize="small" />} title="Coordenador">
-                  {club.coordinator ? (
-                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                      <Typography variant="body1" fontWeight={600}>
-                        {formatUserLabel(club.coordinator.user)}
-                      </Typography>
-                      {club.coordinator.user?.phone && (
-                        <>
-                          <Link href={`tel:${club.coordinator.user.phone}`} underline="hover">
-                            {club.coordinator.user.phone}
-                          </Link>
-                          <CopyButton value={club.coordinator.user.phone} title="Copiar telefone" />
-                        </>
-                      )}
-                    </Stack>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      Nenhum coordenador vinculado
-                    </Typography>
-                  )}
-                </LineCard>
-              </Grid2>
-            </Grid2>
-
-            <Grid2 container spacing={1.25}>
-              <Grid2 size={12}>
-                <LineCard icon={<SchoolOutlined fontSize="small" />} title="Professores">
-                  {teachers.length > 0 ? (
-                    <Stack spacing={1}>
-                      {teachers.map((teacher) => (
-                        <Box key={teacher.id}>
-                          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                            <Typography variant="body1" fontWeight={600}>
-                              {teacher.user?.name || teacher.user?.email || teacher.id}
-                            </Typography>
-                            {teacher.user?.phone && (
-                              <>
-                                <Link href={`tel:${teacher.user.phone}`} underline="hover">
-                                  {teacher.user.phone}
-                                </Link>
-                                <CopyButton value={teacher.user.phone} title="Copiar telefone" />
-                              </>
-                            )}
-                          </Stack>
-                        </Box>
-                      ))}
-                    </Stack>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      Nenhum professor vinculado
-                    </Typography>
-                  )}
-                </LineCard>
-              </Grid2>
-            </Grid2>
+            <Section
+              icon={<SchoolOutlined fontSize="small" />}
+              title={`Professores (${teachers.length})`}
+            >
+              {teachers.length > 0 ? (
+                <Stack
+                  divider={<Divider flexItem sx={{ my: 0.25 }} />}
+                  spacing={1.25}
+                  sx={
+                    // A quarta linha aparece cortada de propósito: é o que
+                    // mostra que a lista continua.
+                    teachers.length > CLUB_VIEW_TEACHERS_BEFORE_SCROLL
+                      ? {
+                          maxHeight: CLUB_VIEW_TEACHERS_MAX_HEIGHT,
+                          overflowY: "auto",
+                          pr: 0.5,
+                          overscrollBehavior: "contain",
+                        }
+                      : undefined
+                  }
+                >
+                  {teachers.map((teacher) => (
+                    <ContactRow
+                      key={teacher.id}
+                      user={teacher.user}
+                      fallbackLabel="Professor"
+                    />
+                  ))}
+                </Stack>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Nenhum professor vinculado
+                </Typography>
+              )}
+            </Section>
           </Stack>
         )}
       </DialogContent>
 
+      {/*
+        No celular o botão ocupa a largura toda e fica no alcance do polegar; a
+        data de atualização é metadado e vai discreta, sem disputar espaço com
+        as seções.
+      */}
       <DialogActions
         sx={{
           p: { xs: 1.5, sm: 2 },
           gap: 1,
-          flexWrap: "wrap",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "stretch", sm: "center" },
           justifyContent: "space-between",
         }}
       >
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ textAlign: { xs: "center", sm: "left" } }}
+        >
+          {club ? `Atualizado em ${fmtDate(club.updatedAt)}` : ""}
+        </Typography>
         <Button
           fullWidth={isXs}
           size={isXs ? "large" : "medium"}
           onClick={onClose}
-          variant="outlined"
+          variant="contained"
         >
           Fechar
         </Button>

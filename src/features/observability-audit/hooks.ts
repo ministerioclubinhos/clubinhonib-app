@@ -72,6 +72,8 @@ export function usePagedRecords<TQuery extends object, TItem>({
   const [items, setItems] = useState<TItem[]>([]);
   const [total, setTotal] = useState(0);
   const [pageCount, setPageCount] = useState(0);
+  /** Limite que a API aplicou de fato; o resumo conta por ele, não pelo pedido. */
+  const [appliedLimit, setAppliedLimit] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadedOnce, setLoadedOnce] = useState(false);
   const [error, setError] = useState('');
@@ -100,6 +102,7 @@ export function usePagedRecords<TQuery extends object, TItem>({
         setItems(Array.isArray(result?.data) ? result.data : []);
         setTotal(Number(result?.total ?? 0));
         setPageCount(Number(result?.pageCount ?? 0));
+        setAppliedLimit(Number(result?.limit ?? 0));
         setUnavailable(false);
         setLoadedOnce(true);
       } catch (err: unknown) {
@@ -110,6 +113,7 @@ export function usePagedRecords<TQuery extends object, TItem>({
           setItems([]);
           setTotal(0);
           setPageCount(0);
+          setAppliedLimit(0);
           setLoadedOnce(true);
           return;
         }
@@ -119,6 +123,7 @@ export function usePagedRecords<TQuery extends object, TItem>({
           setItems([]);
           setTotal(0);
           setPageCount(0);
+          setAppliedLimit(0);
         }
         setLoadedOnce(true);
       } finally {
@@ -136,6 +141,7 @@ export function usePagedRecords<TQuery extends object, TItem>({
     items,
     total,
     pageCount,
+    appliedLimit,
     page,
     setPage,
     loading,

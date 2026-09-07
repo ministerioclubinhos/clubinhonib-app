@@ -21,7 +21,10 @@ interface RecordsPaginationProps {
   page: number;
   pageCount: number;
   total: number;
+  /** Itens por página escolhidos no seletor. */
   limit: number;
+  /** Limite aplicado pela API na resposta atual; o resumo conta por ele. */
+  appliedLimit: number;
   loading: boolean;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
@@ -41,6 +44,7 @@ export default function RecordsPagination({
   pageCount,
   total,
   limit,
+  appliedLimit,
   loading,
   onPageChange,
   onLimitChange,
@@ -60,7 +64,7 @@ export default function RecordsPagination({
       sx={{ mt: 2 }}
     >
       <Typography variant="body2" color="text.secondary" aria-live="polite" sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
-        {paginationSummary(page, limit, total)}
+        {paginationSummary(page, appliedLimit > 0 ? appliedLimit : limit, total)}
         {pageCount > 0 ? ` · Página ${page} de ${pageCount}` : ''}
       </Typography>
 

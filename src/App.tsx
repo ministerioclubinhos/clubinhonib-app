@@ -77,6 +77,7 @@ import { ImagePageForm } from './features/image-pages';
 import { VideoPageForm } from './features/video-pages';
 import StatisticsPage from './features/statistics/StatisticsPage';
 import ClubControlPage from './features/club-control/ClubControlPage';
+import ClubWeeklySummaryPage from './features/club-weekly-summary/ClubWeeklySummaryPage';
 import {
   FEATURE,
   FeatureFlagsManager,
@@ -272,6 +273,17 @@ function App() {
                       <Route path="clubinhos" element={<ClubsManager />} />
                       <Route element={<FeatureRoute flag={FEATURE.PAGELAS} redirectTo="/adm" />}>
                         <Route path="pagelas" element={<PagelaClubsManager />} />
+                      </Route>
+                      {/*
+                        O resumo semanal é do coordenador tanto quanto do
+                        administrador: é a tela que o e-mail de segunda-feira
+                        abre. Por isso fica fora do bloco exclusivo do
+                        administrador, logo abaixo — quem enxerga o quê é
+                        decidido pelos perfis alvo da flag e pelo recorte que a
+                        API aplica.
+                      */}
+                      <Route element={<FeatureRoute flag={FEATURE.CLUB_WEEKLY_SUMMARY} redirectTo="/adm" />}>
+                        <Route path="resumo-semanal" element={<ClubWeeklySummaryPage />} />
                       </Route>
                       <Route element={<ProtectedRoute requiredRole={[UserRole.ADMIN]} />}>
                         <Route element={<FeatureRoute flag={FEATURE.STATISTICS} redirectTo="/adm" />}>

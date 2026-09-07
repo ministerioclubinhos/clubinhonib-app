@@ -89,3 +89,16 @@ export const EMPTY_CLUB_FORM: ClubFormValues = {
   coordinatorProfileId: null,
   teacherProfileIds: [],
 };
+
+/**
+ * A partir de quantos professores a lista do modal de detalhes rola.
+ *
+ * Com a lista inteira aberta, um clubinho de oito professores empurrava o
+ * rodapé para fora da tela do celular e o modal virava uma página. Três linhas
+ * cabem sem esconder as seções de cima, e a quarta aparece cortada — é o que
+ * indica que há mais para rolar.
+ */
+export const CLUB_VIEW_TEACHERS_BEFORE_SCROLL = 3;
+
+/** Altura da lista quando ela rola: três linhas inteiras e um pedaço da quarta. */
+export const CLUB_VIEW_TEACHERS_MAX_HEIGHT = 196;

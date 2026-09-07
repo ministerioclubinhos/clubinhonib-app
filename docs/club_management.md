@@ -7,6 +7,7 @@ The Club Management module provides tools for administrators and coordinators to
 - **Features**:
   - `src/features/clubs/`: Management of club entities (Club 1, Club 2, etc.).
   - `src/features/club-control/`: Operational control logic.
+  - `src/features/club-weekly-summary/`: The coordinator's period view (`/adm/resumo-semanal`).
   - `src/features/coordinators/`: Management of club coordinators.
   - `src/features/teachers/`: Management of teachers and their assignments.
   - `src/features/users/`: General user administration.
@@ -144,3 +145,71 @@ coordinators only — the listings carry the e-mail and phone of every colleague
 Assigning or clearing a teacher's club is allowed for an admin, and for a
 coordinator only within the clubs they coordinate. Every write on
 `/coordinator-profiles` is admin-only.
+
+
+## 📅 `src/features/club-weekly-summary/` — Resumo dos clubinhos
+
+The screen the Monday coordinator e-mail links to (`/adm/resumo-semanal`,
+behind the `club_weekly_summary` flag, allowed for `admin` and `coordinator`).
+Before it existed, that e-mail pointed at `/adm/controle-clubinhos` — an
+admin-only route — so a coordinator clicking it was redirected to the dashboard
+with nothing about the summary they had just read.
+
+### One period at a time
+
+The screen reads **one range at a time**, never a list of every week:
+
+| Piece | Responsibility |
+| --- | --- |
+| `RangeNavigator` | The four views (semana / mês / trimestre / ano), the arrows that step one range back or forward, and the shortcut back to the current one. |
+| `RangeStats` | Five numbers for the chosen range: cobertura, pagelas faltando, presença, encontros, semanas com pendência. |
+| `ClubBreakdownList` | One row per club inside the range. With a single week it shows the exact status; with a month or a quarter it shows totals, because thirteen weeks have no single status. |
+| `CoverageTimelineChart` | The whole year as one line, with the chosen range highlighted. One measure, one axis. |
+| `WeeksHeatStrip` | The year as a band of squares, each painted by the **worst** status among its clubs. Doubles as a jump-to-week control. |
+
+`utils.ts` owns every rule that decides what is drawn — `buildRanges`,
+`currentRangeIndex`, `rangeTotals`, `aggregateByClub`, `weekOverallStatus` —
+so each one is checked by `e2e/unit/club-weekly-summary.utils.spec.ts` without
+mounting a screen.
+
+### Mobile first
+
+The phone is the base, and the desktop is what gets added on top:
+
+- The page is `98%` wide on `xs` and `95%` from `md` up — the same rule as
+  `IdeasPageView`, `PageVideoView` and `WeekMaterialsPageView` (`PAGE_WIDTH`).
+- The two filter selects share the first row (`xs: 5` / `xs: 7`); stacked, they
+  alone filled half the screen before a single number appeared.
+- The four view buttons split the width equally on `xs` and shrink to their own
+  text from `md` up. The "back to current" shortcut drops to its own full-width
+  row on the phone — squeezed between the arrows, the period label had no room.
+- Heat-strip squares are **larger on the phone than on the desktop** (44 px vs
+  30 px): there they are a touch target, and 44 px is the floor for a thumb.
+- The chart gives back axis width on `xs` (34 px instead of 48, three ticks
+  instead of five) so the line keeps the room.
+- Nothing scrolls the page sideways; the `flows` spec asserts it.
+
+### Contract rules
+
+- The response types mirror `src/modules/club-control/dto/club-weekly-summary.dto.ts`
+  field by field. The scope is the API's: a coordinator receives their own
+  clubs, and `clubId` only narrows the set the session already sees.
+- Months and quarters group **whole weeks**, by the Monday each week starts on.
+  Slicing by calendar day would cut an academic week in half, and there is no
+  half week in pagela control.
+- Deactivated clubs are hidden by default. They never change status, and in a
+  base with ten of them every range became a list of "Desativado"; the filter
+  brings them back for whoever needs the history.
+- Future weeks are hidden by default, and the API's `highlights` already
+  excludes them: they start with no pagela, and counting them would make March
+  look like a year behind.
+- `sumCounts` recomputes the percentage over the total, never averages the
+  parts: 1 of 1 plus 0 of 9 is 10%, not 50%.
+
+### Seed for local demo
+
+`npm run seed:weekly-summary` (in `clubinhonib-api`) fills weeks 1 through the
+current one with every scenario — em dia, parcial, sem pagela, dia sem
+Clubinho, and two deliberately blank weeks. It **deletes** pagelas to open the
+empty cells, so it refuses any target that is not the local API unless
+`ALLOW_REMOTE_SEED=1`; `DRY_RUN=1` reports what it would do.

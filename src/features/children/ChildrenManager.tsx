@@ -8,7 +8,9 @@ import {
   type ListingFilter,
 } from "@/components/common/listing";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import { useAuthRole } from "@/utils/useAuthRole";
 import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
+import { ToggleActiveSubject } from "@/components/common/modal/types";
 
 import ChildCard from "./components/ChildCard";
 import ChildFormDialog from "./components/ChildFormDialog";
@@ -20,6 +22,9 @@ import { childToForm, emptyChildForm } from "./utils";
 import type { ChildFormValues, ChildResponse } from "./types";
 
 export default function ChildrenManager() {
+  // Excluir criança é só do administrador; a API recusa os outros papéis.
+  const { isAdmin } = useAuthRole();
+
   const {
     items,
     total,
@@ -206,6 +211,7 @@ export default function ChildrenManager() {
           />
 
           <ToggleActiveConfirmDialog
+            subject={ToggleActiveSubject.Child}
             open={!!confirmToggle}
             title={confirmToggle?.name ?? ""}
             isActive={confirmToggle?.isActive ?? false}
@@ -224,7 +230,7 @@ export default function ChildrenManager() {
             onView={() => setViewing(child)}
             onEdit={() => setForm(childToForm(child))}
             onToggleActive={() => setConfirmToggle(child)}
-            onDelete={() => setConfirmDelete(child)}
+            onDelete={isAdmin ? () => setConfirmDelete(child) : undefined}
           />
         </Grid2>
       ))}

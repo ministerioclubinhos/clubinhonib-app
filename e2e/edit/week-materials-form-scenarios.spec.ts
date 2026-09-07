@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { ApiClient, PNG_1X1, uniqueSuffix } from '../support/api';
-import { expectSuccessToast, replaceText, searchListing, selectMuiOption } from '../support/ui';
+import { replaceText, searchListing, selectMuiOption } from '../support/ui';
 
 type MediaItemResponse = {
   id?: string;

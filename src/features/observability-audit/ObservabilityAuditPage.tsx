@@ -167,6 +167,7 @@ export default function ObservabilityAuditPage() {
               pageCount={observability.pageCount}
               total={observability.total}
               limit={observability.base.limit}
+              appliedLimit={observability.appliedLimit}
               loading={observability.loading}
               onPageChange={observability.setPage}
               onLimitChange={observability.setLimit}
@@ -234,6 +235,7 @@ export default function ObservabilityAuditPage() {
               pageCount={audit.pageCount}
               total={audit.total}
               limit={audit.base.limit}
+              appliedLimit={audit.appliedLimit}
               loading={audit.loading}
               onPageChange={audit.setPage}
               onLimitChange={audit.setLimit}

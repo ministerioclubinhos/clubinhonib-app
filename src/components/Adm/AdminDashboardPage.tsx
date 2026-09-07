@@ -39,6 +39,7 @@ import {
   ArrowUpward,
   ChevronRight,
   BarChart,
+  CalendarMonth,
   Checklist,
 } from "@mui/icons-material";
 
@@ -79,6 +80,7 @@ const cardData: CardData[] = [
 
   { title: "Clubinhos", description: "Gerencie clubinhos.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/clubinhos", section: "clubinhos" },
   { title: "Pagelas", description: "Gerencie pagelas.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/pagelas", section: "clubinhos", flag: FEATURE.PAGELAS },
+  { title: "Resumo Semanal", description: "O desenho de todas as semanas letivas dos seus clubinhos.", icon: <CalendarMonth fontSize="large" color="primary" />, path: "/adm/resumo-semanal", section: "clubinhos", flag: FEATURE.CLUB_WEEKLY_SUMMARY },
 
   { title: "Galerias de Fotos", description: "Organize e edite galerias de imagens do site.", icon: <PhotoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-fotos", section: "midias" },
   { title: "Fotos dos Clubinhos", description: "Organize e edite galerias de fotos dos Clubinhos.", icon: <Collections fontSize="large" color="primary" />, path: "/adm/fotos-clubinhos", section: "midias", flag: FEATURE.PHOTO_MODERATION },

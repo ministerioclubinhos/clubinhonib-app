@@ -1,4 +1,5 @@
-import { EventAudience, EventType, Weekday } from './types';
+import { EventAudience, EventCardStatus, EventType, Weekday } from './types';
+import type { ChipProps } from '@mui/material';
 
 /** Caminho base dos endpoints de evento. */
 export const EVENTS_ENDPOINT = '/events';
@@ -57,3 +58,30 @@ export const WEEKDAY_LABELS: Record<Weekday, string> = {
 
 /** Texto exibido quando o encontro não tem horário cadastrado. */
 export const EVENT_TIME_FALLBACK = 'Horário a definir';
+
+/** Até quantos dias um evento recebe o destaque "Em breve". */
+export const EVENT_CARD_SOON_THRESHOLD_DAYS = 7;
+
+/** Rótulos temporais curtos do modo de cards. */
+export const EVENT_CARD_STATUS_LABELS: Record<EventCardStatus, string> = {
+  [EventCardStatus.TODAY]: 'Hoje',
+  [EventCardStatus.TOMORROW]: 'Amanhã',
+  [EventCardStatus.SOON]: 'Em breve',
+  [EventCardStatus.LATER]: 'Programado',
+  [EventCardStatus.PAST]: 'Realizado',
+};
+
+/** Cores semânticas dos selos, todas vindas da paleta Material UI. */
+export const EVENT_CARD_STATUS_COLORS: Record<EventCardStatus, NonNullable<ChipProps['color']>> = {
+  [EventCardStatus.TODAY]: 'error',
+  [EventCardStatus.TOMORROW]: 'warning',
+  [EventCardStatus.SOON]: 'success',
+  [EventCardStatus.LATER]: 'info',
+  [EventCardStatus.PAST]: 'default',
+};
+
+/** Imagem institucional usada quando um evento não possui mídia própria. */
+export const EVENT_FALLBACK_IMAGE_URL =
+  import.meta.env?.VITE_CLUBINHO_FALLBACK_IMAGE_URL ??
+  import.meta.env?.VITE_SHELTER_FALLBACK_IMAGE_URL ??
+  '';

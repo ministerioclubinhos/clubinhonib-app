@@ -34,6 +34,8 @@ type Props = {
   onDelete: () => void;
   /** Só administração vincula coordenador; ver `utils/clubLinkPermissions`. */
   canManageCoordinator: boolean;
+  /** Sem isto o botão de excluir não aparece: a API recusaria. */
+  canDelete: boolean;
   onManageTeachers: () => void;
   onManageCoordinator: () => void;
   disabled?: boolean;
@@ -49,6 +51,7 @@ export default function ClubCard({
   onToggleActive,
   onDelete,
   canManageCoordinator,
+  canDelete,
   onManageTeachers,
   onManageCoordinator,
   disabled,
@@ -151,14 +154,16 @@ export default function ClubCard({
             )}
           </CardActionButton>
 
-          <CardActionButton
-            label="Excluir"
-            color="error"
-            disabled={disabled}
-            onClick={onDelete}
-          >
-            <DeleteIcon fontSize="small" />
-          </CardActionButton>
+          {canDelete && (
+            <CardActionButton
+              label="Excluir"
+              color="error"
+              disabled={disabled}
+              onClick={onDelete}
+            >
+              <DeleteIcon fontSize="small" />
+            </CardActionButton>
+          )}
         </>
       }
     />

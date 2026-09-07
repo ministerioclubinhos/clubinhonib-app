@@ -10,6 +10,7 @@ import {
 } from "@/components/common/listing";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
+import { ToggleActiveSubject } from "@/components/common/modal/types";
 import type { RootState } from "@/store/slices";
 import { clubLinkPermissionsOf } from "@/utils/clubLinkPermissions";
 
@@ -67,7 +68,7 @@ export default function ClubsManager() {
     loading: viewingLoading,
     fetchClub,
   } = useClubDetails();
-  const { coordinators, teachers, reachableClubIds, reloadOptions } =
+  const { coordinators, teachers, reloadOptions } =
     useClubFormOptions();
 
   const refresh = useCallback(async () => {
@@ -301,7 +302,6 @@ export default function ClubsManager() {
             loading={dialogLoading}
             coordinatorOptions={coordinators}
             teacherOptions={teachers}
-            reachableClubIds={reachableClubIds}
           />
 
           <ClubFormDialog
@@ -320,7 +320,6 @@ export default function ClubsManager() {
             loading={dialogLoading}
             coordinatorOptions={coordinators}
             teacherOptions={teachers}
-            reachableClubIds={reachableClubIds}
             clubId={editing?.id ?? null}
             initialCoordinatorProfileId={
               editing?.initialCoordinatorProfileId ?? null
@@ -368,6 +367,7 @@ export default function ClubsManager() {
           />
 
           <ToggleActiveConfirmDialog
+            subject={ToggleActiveSubject.Club}
             open={!!confirmToggleActive}
             title={
               confirmToggleActive ? `Clubinho ${confirmToggleActive.number}` : ""
@@ -386,6 +386,7 @@ export default function ClubsManager() {
             club={club}
             disabled={dialogLoading}
             canManageCoordinator={permissoes.canManageCoordinatorLinks}
+            canDelete={permissoes.canDeleteClub}
             onView={() => {
               setViewing(club);
               void fetchClub(club.id);

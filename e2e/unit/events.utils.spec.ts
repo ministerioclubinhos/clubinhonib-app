@@ -1,15 +1,29 @@
 import { expect, test } from '@playwright/test';
 
 import { EVENT_PAYLOAD_FIELD } from '@/features/events/constants';
-import { EventAudience, EventResponse, EventType, Weekday } from '@/features/events/types';
+import {
+  AppEvent,
+  EventAudience,
+  EventCardStatus,
+  EventResponse,
+  EventType,
+  Weekday,
+} from '@/features/events/types';
 import {
   buildEventFormData,
   describeRecurrence,
+  displayDate,
+  eventTimeLabel,
+  isClubMeeting,
   expandAllOccurrences,
   expandOccurrences,
+  formatEventCardDate,
+  formatEventCount,
   formatEventTime,
   buildEventPayload,
   formatEventDate,
+  getEventCardStatus,
+  groupEventsForCards,
   isUpcoming,
   sortByDate,
   toDateInputValue,
@@ -31,6 +45,7 @@ const baseFields = {
   public: true,
   isRecurring: false,
   weekday: null,
+  occurrences: [] as string[],
   time: null,
   clubId: null,
 };
@@ -60,6 +75,14 @@ const storedEvent = {
 const event = (id: string, date: string): EventResponse =>
   ({ ...storedEvent, id, date }) as EventResponse;
 
+const cardEvent = (id: string, date: string): AppEvent => ({
+  id,
+  date,
+  title: `Evento ${id}`,
+  description: 'Descrição',
+  location: 'Salão',
+});
+
 test.describe('utils de eventos', () => {
   test.describe('toEventDay', () => {
     test('lê a data pelos componentes, sem passar por UTC', () => {
@@ -78,6 +101,62 @@ test.describe('utils de eventos', () => {
 
   test('formata a data no padrão do Brasil', () => {
     expect(formatEventDate('2026-04-12')).toBe('12/04/2026');
+  });
+
+  test('monta as partes curtas da data para o card', () => {
+    expect(formatEventCardDate('2026-04-12T23:30:00.000Z')).toEqual({
+      day: '12',
+      month: 'ABR',
+      complement: 'domingo, 2026',
+      full: 'domingo, 12 de abril de 2026',
+    });
+  });
+
+  test.describe('modo de cards', () => {
+    const referenceDate = new Date(2026, 3, 12);
+
+    test('classifica hoje, amanhã, breve, distante e passado', () => {
+      expect(getEventCardStatus('2026-04-11', referenceDate)).toBe(
+        EventCardStatus.PAST,
+      );
+      expect(getEventCardStatus('2026-04-12', referenceDate)).toBe(
+        EventCardStatus.TODAY,
+      );
+      expect(getEventCardStatus('2026-04-13', referenceDate)).toBe(
+        EventCardStatus.TOMORROW,
+      );
+      expect(getEventCardStatus('2026-04-19', referenceDate)).toBe(
+        EventCardStatus.SOON,
+      );
+      expect(getEventCardStatus('2026-04-20', referenceDate)).toBe(
+        EventCardStatus.LATER,
+      );
+    });
+
+    test('separa e ordena próximos e anteriores sem alterar a entrada', () => {
+      const input = [
+        cardEvent('futuro', '2026-04-20'),
+        cardEvent('antigo', '2026-04-01'),
+        cardEvent('hoje', '2026-04-12'),
+        cardEvent('recente', '2026-04-11'),
+      ];
+
+      const groups = groupEventsForCards(input, referenceDate);
+
+      expect(groups.upcoming.map((item) => item.id)).toEqual(['hoje', 'futuro']);
+      expect(groups.past.map((item) => item.id)).toEqual(['recente', 'antigo']);
+      expect(input.map((item) => item.id)).toEqual([
+        'futuro',
+        'antigo',
+        'hoje',
+        'recente',
+      ]);
+    });
+
+    test('formata a contagem no singular e no plural', () => {
+      expect(formatEventCount(1)).toBe('1 evento');
+      expect(formatEventCount(3)).toBe('3 eventos');
+    });
   });
 
   test('devolve o valor aceito por um input de data', () => {
@@ -215,7 +294,13 @@ test.describe('utils de eventos', () => {
   });
 });
 
-test.describe('encontros recorrentes', () => {
+test.describe('encontros de clubinho', () => {
+  /**
+   * As datas vêm prontas da API, que cruza o dia da semana do clubinho com o
+   * período letivo e as exceções. O front não recalcula nada: manter a conta
+   * nos dois lados significaria duas versões da mesma regra, e a do front não
+   * tem como saber que a semana do feriado não conta.
+   */
   const clubMeeting = {
     ...storedEvent,
     id: 'club-event',
@@ -226,10 +311,11 @@ test.describe('encontros recorrentes', () => {
     weekday: Weekday.WEDNESDAY,
     time: '15:00',
     clubId: 'club-1',
+    // Quartas de abril de 2026, sem o dia 15: ali há uma exceção cadastrada.
+    occurrences: ['2026-04-01', '2026-04-08', '2026-04-22', '2026-04-29'],
   } as EventResponse;
 
-  test('repete o encontro toda semana dentro do intervalo', () => {
-    // Abril de 2026: quartas em 1, 8, 15, 22 e 29.
+  test('desenha as datas que a API mandou, sem inventar semana', () => {
     const occurrences = expandOccurrences(
       clubMeeting,
       new Date(2026, 3, 1),
@@ -237,14 +323,24 @@ test.describe('encontros recorrentes', () => {
     );
 
     expect(occurrences.map((item) => item.date.getDate())).toEqual([
-      1, 8, 15, 22, 29,
+      1, 8, 22, 29,
     ]);
   });
 
-  test('não aparece antes da data em que o encontro passou a existir', () => {
+  test('não repõe o dia de exceção que a API tirou', () => {
     const occurrences = expandOccurrences(
       clubMeeting,
-      new Date(2026, 2, 1),
+      new Date(2026, 3, 1),
+      new Date(2026, 3, 30),
+    );
+
+    expect(occurrences.map((item) => item.date.getDate())).not.toContain(15);
+  });
+
+  test('mostra só o que cai no intervalo pedido', () => {
+    const occurrences = expandOccurrences(
+      clubMeeting,
+      new Date(2026, 3, 1),
       new Date(2026, 3, 8),
     );
 
@@ -262,8 +358,22 @@ test.describe('encontros recorrentes', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
+  test('não aparece quando a API não mandou data nenhuma', () => {
+    // É o caso de não haver período letivo cadastrado para o ano: o encontro
+    // existe como cadastro, mas não acontece em dia nenhum.
+    const semPeriodo = { ...clubMeeting, occurrences: [] } as EventResponse;
+
+    expect(
+      expandOccurrences(semPeriodo, new Date(2026, 3, 1), new Date(2026, 3, 30)),
+    ).toHaveLength(0);
+  });
+
   test('evento comum aparece uma vez, e só se cair no intervalo', () => {
-    const single = { ...storedEvent, date: '2026-04-12' } as EventResponse;
+    const single = {
+      ...storedEvent,
+      date: '2026-04-12',
+      occurrences: ['2026-04-12'],
+    } as EventResponse;
 
     expect(
       expandOccurrences(single, new Date(2026, 3, 1), new Date(2026, 3, 30)),
@@ -273,11 +383,21 @@ test.describe('encontros recorrentes', () => {
     ).toHaveLength(0);
   });
 
+  test('evento antigo, sem o campo, cai para a própria data', () => {
+    const legado = { ...storedEvent, date: '2026-04-12' } as EventResponse;
+    delete (legado as { occurrences?: string[] }).occurrences;
+
+    expect(
+      expandOccurrences(legado, new Date(2026, 3, 1), new Date(2026, 3, 30)),
+    ).toHaveLength(1);
+  });
+
   test('junta tudo em ordem de data', () => {
     const single = {
       ...storedEvent,
       id: 'unico',
       date: '2026-04-10',
+      occurrences: ['2026-04-10'],
     } as EventResponse;
 
     const all = expandAllOccurrences(
@@ -286,7 +406,46 @@ test.describe('encontros recorrentes', () => {
       new Date(2026, 3, 16),
     );
 
-    expect(all.map((item) => item.date.getDate())).toEqual([1, 8, 10, 15]);
+    expect(all.map((item) => item.date.getDate())).toEqual([1, 8, 10]);
+  });
+
+  test.describe('displayDate', () => {
+    test('mostra a próxima ocorrência, não a primeira da série', () => {
+      // Um clubinho que se reúne desde abril precisa aparecer como "quarta que
+      // vem", não com a data em que a série nasceu.
+      expect(displayDate(clubMeeting, new Date(2026, 3, 9))).toBe('2026-04-22');
+    });
+
+    test('inclui o dia de hoje', () => {
+      expect(displayDate(clubMeeting, new Date(2026, 3, 8))).toBe('2026-04-08');
+    });
+
+    test('cai para a última quando todas já passaram', () => {
+      expect(displayDate(clubMeeting, new Date(2026, 5, 1))).toBe('2026-04-29');
+    });
+
+    test('não descarta o recuo de data de um registro antigo', () => {
+      // Evento sem data no cadastro: a agenda recua para a data da mídia ou a
+      // de criação. Uma ocorrência em branco não pode atropelar esse recuo.
+      const recuado = { date: '2026-04-12', occurrences: [''] };
+
+      expect(displayDate(recuado, new Date(2026, 3, 1))).toBe('2026-04-12');
+    });
+
+    test('respeita o evento que a API disse não ter dia nenhum', () => {
+      // Lista vazia é a API afirmando que não há dia — diferente de campo
+      // ausente, que é resposta antiga.
+      const semDia = { date: '2026-04-12', occurrences: [] };
+
+      expect(displayDate(semDia, new Date(2026, 3, 1))).toBe('2026-04-12');
+      expect(
+        expandOccurrences(
+          { ...semDia, id: 'x' },
+          new Date(2026, 3, 1),
+          new Date(2026, 3, 30),
+        ),
+      ).toHaveLength(0);
+    });
   });
 
   test('descreve quando o encontro acontece', () => {
@@ -298,5 +457,47 @@ test.describe('encontros recorrentes', () => {
     expect(
       describeRecurrence({ ...clubMeeting, time: null } as EventResponse),
     ).toBe('Quarta-feira · Horário a definir');
+  });
+});
+
+test.describe('isClubMeeting', () => {
+  test('reconhece o encontro semanal de um clubinho', () => {
+    expect(isClubMeeting({ clubId: 'club-1' })).toBe(true);
+  });
+
+  test('evento comum da agenda não é encontro de clubinho', () => {
+    expect(isClubMeeting({ clubId: null })).toBe(false);
+    expect(isClubMeeting({})).toBe(false);
+  });
+});
+
+test.describe('eventTimeLabel', () => {
+  test('usa o horário do encontro de clubinho', () => {
+    // A data do encontro é só o dia. Tirar a hora dali dava sempre 00:00, e a
+    // tela mostrava "Horário não informado" com o clubinho tendo horário.
+    expect(eventTimeLabel({ date: '2026-04-01', time: '18:00' })).toBe('18:00');
+  });
+
+  test('corta os segundos que a API manda na coluna de hora', () => {
+    expect(eventTimeLabel({ date: '2026-04-01', time: '18:00:00' })).toBe(
+      '18:00',
+    );
+  });
+
+  test('cai para a hora da própria data quando não há horário', () => {
+    expect(eventTimeLabel({ date: '2026-04-01T15:30:00' })).toBe('15:30');
+  });
+
+  test('meia-noite da data não conta como horário', () => {
+    expect(eventTimeLabel({ date: '2026-04-01' })).toBe('Horário a definir');
+    expect(eventTimeLabel({ date: '2026-04-01T00:00:00' })).toBe(
+      'Horário a definir',
+    );
+  });
+
+  test('horário em branco cai para o texto de reserva', () => {
+    expect(eventTimeLabel({ date: '2026-04-01', time: '  ' })).toBe(
+      'Horário a definir',
+    );
   });
 });
