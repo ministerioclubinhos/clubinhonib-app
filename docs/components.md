@@ -64,6 +64,25 @@ Rules the shell already enforces, so a screen does not restate them:
 - Touch targets in card actions are at least 44 × 44 px on mobile.
 - Pagination is server-side; the screen never filters a full list in the browser.
 
+### Form dialogs: never reset while someone is typing
+
+A management screen's form dialog fills its fields from the record in an effect
+that runs when the dialog opens. That effect MUST NOT depend on the identity of
+a callback the manager recreates on every render.
+
+`InformativeFormDialog`, `DocumentFormDialog` and `FeatureFlagFormDialog` all had
+`onDismissError` in the dependency list, and their managers passed an inline
+arrow. Any re-render of the manager with the dialog open — the debounced search
+settling, the listing reloading — re-ran the effect and wrote the server's values
+back over what had already been typed. The person then saved without the field
+they had just written, and nothing on screen said so. The e2e specs for
+informatives and documents caught it: description and visibility were saved, the
+title reverted.
+
+The fix is to keep the callback in a ref, so the effect depends only on the
+dialog opening and on the record being edited. A new form dialog MUST follow the
+same shape.
+
 The people screens (`/adm/perfis`, `/adm/usuarios`, `/adm/professores`,
 `/adm/coordenadores`, `/adm/criancas`) use this shell, except `/adm/perfis`,
 which is a directory rather than a CRUD listing and keeps its own photo cards and

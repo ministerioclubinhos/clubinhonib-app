@@ -13,6 +13,7 @@
     "test": "playwright test",
     "test:unit": "playwright test --project=unit",
     "test:e2e": "playwright test --project=chromium",
+    "test:e2e:headed": "playwright test --project=chromium --headed",
     "test:report": "playwright show-report e2e/report",
     "lint": "npm run check:test-ids && eslint .",
     "lint:fix": "eslint . --fix",

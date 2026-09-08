@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import {
@@ -55,12 +55,26 @@ export default function InformativeFormDialog({
 
   const isEditing = Boolean(informative?.id);
 
+  /**
+   * O callback de erro chega recriado a cada render do gerenciador, e estava
+   * entre as dependências do efeito abaixo. Com isso, qualquer re-render com o
+   * diálogo aberto — a busca assentando, a listagem recarregando — repunha os
+   * valores do servidor por cima do que já havia sido digitado, e a pessoa
+   * salvava sem o campo que acabara de escrever. A ref tira a identidade do
+   * callback da conta: o efeito volta a depender só da abertura e do registro
+   * em edição.
+   */
+  const dismissError = useRef(onDismissError);
+  useEffect(() => {
+    dismissError.current = onDismissError;
+  });
+
   useEffect(() => {
     if (!open) return;
     setValues(toFormValues(informative));
     setErrors(NO_ERRORS);
-    onDismissError();
-  }, [open, informative, onDismissError]);
+    dismissError.current();
+  }, [open, informative]);
 
   const setValue = <K extends keyof InformativeFormValues>(
     key: K,

@@ -255,7 +255,7 @@ function AdminLayout() {
   };
 
   const drawerContent = (
-    <>
+    <Box data-testid="adm-admin-sidebar">
       <Toolbar />
       <Box sx={{ pb: 1, pt: 1, px: 2, display: 'flex', alignItems: 'center', justifyContent: sidebarCollapsed ? 'center' : 'space-between' }}>
         {!sidebarCollapsed && (
@@ -413,7 +413,7 @@ function AdminLayout() {
           <Divider />
         </Accordion>
       ))}
-    </>
+    </Box>
   );
 
   return (
@@ -442,6 +442,11 @@ function AdminLayout() {
         </AppBar>
       )}
 
+      {/*
+        A barra lateral ganha um seletor próprio: os rótulos do menu se repetem
+        nos cards do painel (`AdminDashboardPage`), e um teste que buscasse o
+        nome dentro do layout inteiro achava os dois.
+      */}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         open={isMobile ? mobileOpen : true}

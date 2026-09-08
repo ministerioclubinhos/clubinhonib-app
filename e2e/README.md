@@ -11,10 +11,14 @@ Todos os testes do app rodam no Playwright. Configuração em `../playwright.con
 
 ```bash
 npm run test:unit       # só as regras puras (segundos)
-npm run test:e2e        # setup + edit + flows contra localhost:5173 / localhost:3000
+npm run test:e2e        # setup + edit + flows contra localhost:5173 / localhost:3000 (sem janela)
+npm run test:e2e:headed # o mesmo, com o navegador visível
 npm test                # tudo
 npm run test:report     # relatório HTML da última rodada
 ```
+
+A rodada padrão é *headless*: o Chromium abre em segundo plano e nada aparece na tela. Use `test:e2e:headed`
+para vê-lo, `npm run test:e2e -- --ui` para o modo interativo com time-travel, ou `-- --debug` para o Inspector.
 
 ## Envios de e-mail ficam desligados durante a rodada
 

@@ -4,7 +4,11 @@ import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
 
 export default tseslint.config(
-  { ignores: ["dist", "node_modules", "build"] },
+  // `e2e/report` e `e2e/test-results` são saída do Playwright: o relatório HTML
+  // traz o bundle minificado do visualizador de traces, e lintá-lo derrubava o
+  // gate com milhares de erros logo depois de qualquer rodada que retivesse um
+  // trace. Os dois já são ignorados pelo git.
+  { ignores: ["dist", "node_modules", "build", "e2e/report", "e2e/test-results"] },
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

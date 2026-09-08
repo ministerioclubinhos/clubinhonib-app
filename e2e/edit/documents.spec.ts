@@ -37,6 +37,12 @@ test.describe('Documentos: edição', () => {
     await expect(dialog).toBeVisible();
     await replaceText(dialog.getByLabel('Nome do documento'), `E2E Documento Editado ${suffix}`);
     await replaceText(dialog.getByLabel('Descrição'), 'Descrição editada pelo Playwright');
+    // Regressão: um re-render do gerenciador com o diálogo aberto repunha os
+    // valores do servidor por cima do que já havia sido digitado. Conferir
+    // antes de salvar faz a falha apontar o campo, não o registro salvo.
+    await expect(dialog.getByLabel('Nome do documento')).toHaveValue(
+      `E2E Documento Editado ${suffix}`,
+    );
     await dialog.getByRole('button', { name: 'Salvar alterações' }).click();
     await expect(dialog).toBeHidden();
 

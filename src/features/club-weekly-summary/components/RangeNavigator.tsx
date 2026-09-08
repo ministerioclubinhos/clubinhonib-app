@@ -112,7 +112,12 @@ export function RangeNavigator({
           </IconButton>
 
           <Box sx={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-            <Typography variant="subtitle1" fontWeight={700} noWrap>
+            <Typography
+              data-testid="club-weekly-summary-range-label"
+              variant="subtitle1"
+              fontWeight={700}
+              noWrap
+            >
               {range?.label ?? '—'}
             </Typography>
             <Typography

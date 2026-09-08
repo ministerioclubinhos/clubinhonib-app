@@ -37,6 +37,12 @@ test.describe('Informativos: edição', () => {
     await replaceText(dialog.getByLabel('Título'), `E2E Aviso Editado ${suffix}`);
     await replaceText(dialog.getByLabel('Descrição'), 'Descrição editada pelo Playwright');
     await dialog.getByRole('checkbox').check();
+    // Regressão: o efeito que preenche o diálogo dependia da identidade de
+    // `onDismissError`, recriado a cada render do gerenciador. Uma listagem
+    // recarregando com o diálogo aberto repunha os valores do servidor e o
+    // título voltava ao original — o registro era salvo sem o que se digitou.
+    // Conferir aqui faz a falha apontar o campo, não o registro salvo.
+    await expect(dialog.getByLabel('Título')).toHaveValue(`E2E Aviso Editado ${suffix}`);
     await dialog.getByRole('button', { name: 'Salvar alterações' }).click();
     await expect(dialog).toBeHidden();
 

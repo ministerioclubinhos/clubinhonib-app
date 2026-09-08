@@ -150,10 +150,20 @@ coordinator only within the clubs they coordinate. Every write on
 ## 📅 `src/features/club-weekly-summary/` — Resumo dos clubinhos
 
 The screen the Monday coordinator e-mail links to (`/adm/resumo-semanal`,
-behind the `club_weekly_summary` flag, allowed for `admin` and `coordinator`).
-Before it existed, that e-mail pointed at `/adm/controle-clubinhos` — an
-admin-only route — so a coordinator clicking it was redirected to the dashboard
-with nothing about the summary they had just read.
+behind the `club_weekly_summary` flag). Before it existed, that e-mail pointed
+at `/adm/controle-clubinhos` — an admin-only route — so a coordinator clicking
+it was redirected to the dashboard with nothing about the summary they had just
+read.
+
+**It belongs to the coordinator.** The flag targets `coordinator` only: the
+admin has `/adm/estatisticas`, which covers the whole base in far more detail,
+and a second, club-shaped reading of the same numbers would just be another door
+to the same room. The flag drives all three doors at once — the route guard, the
+sidebar item and the dashboard card — and the API refuses anyone outside its
+audience with `403 PERM_3003`, so an admin call is refused today. Widening it is
+a `targetRoles` change in the flags panel, not a code change. The e2e spec
+therefore drives a **coordinator** session (`loginAs`), and asserts that the
+admin session is redirected away.
 
 ### One period at a time
 
