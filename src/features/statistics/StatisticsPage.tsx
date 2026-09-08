@@ -212,16 +212,23 @@ const StatisticsContent: React.FC = memo(() => {
           }
         />
 
-        {/* KPI Dashboard - Always visible */}
+        {/*
+          O recorte vem antes de qualquer número. Ele é o que rege a tela
+          inteira — os KPIs, os gráficos e as onze abas respondem a ele —, e
+          ficava embaixo dos KPIs: a leitura natural era de cima para baixo, o
+          que fazia os números parecerem absolutos e o filtro, um detalhe de
+          uma seção. Primeiro se declara o período; depois se lê o que ele
+          produziu.
+        */}
+        <Box sx={{ mb: 3 }}>
+          <SmartFilters />
+        </Box>
+
+        {/* Os números do recorte escolhido acima. */}
         <Box sx={{ mb: 3 }}>
           <Suspense fallback={<Skeleton variant="rounded" height={200} sx={{ borderRadius: 3 }} />}>
             <KPIDashboard />
           </Suspense>
-        </Box>
-
-        {/* Smart Filters */}
-        <Box sx={{ mb: 3 }}>
-          <SmartFilters />
         </Box>
 
         {/* Navigation Tabs */}

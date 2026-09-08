@@ -117,3 +117,69 @@ test.describe('Estatísticas', () => {
     expect(overflows).toBe(false);
   });
 });
+
+/**
+ * Os controles da barra de filtros.
+ *
+ * A barra é a mesma nas onze abas, mas os endpoints aceitam conjuntos
+ * diferentes. Antes isso virava `400`; depois de o payload passar a ser
+ * filtrado por endpoint, virava silêncio — o campo continuava editável e não
+ * fazia nada. Estes testes travam o comportamento novo: o que a aba não usa
+ * aparece desabilitado, com o motivo escrito.
+ */
+test.describe('Estatísticas: filtros', () => {
+  test('a barra de período abre a tela, acima dos números', async ({ page }) => {
+    await page.goto('/adm/estatisticas');
+
+    const filtros = page.getByTestId('statistics-ui-smart-filters');
+    const kpis = page.getByTestId('statistics-ui-kpidashboard');
+    await expect(filtros).toBeVisible();
+
+    if (await kpis.count()) {
+      // O recorte rege a tela inteira: vem antes do que ele produziu.
+      const yFiltros = (await filtros.boundingBox())?.y ?? 0;
+      const yKpis = (await kpis.boundingBox())?.y ?? 0;
+      expect(yFiltros).toBeLessThan(yKpis);
+    }
+  });
+
+  test('na aba Clubinhos, busca, gênero e idade aparecem desabilitados', async ({ page }) => {
+    await page.goto('/adm/estatisticas');
+    await page
+      .getByTestId('statistics-dashboard-navigation-tabs')
+      .getByRole('tab', { name: 'Clubinhos' })
+      .click();
+    await abrirFiltrosNaPagina(page);
+
+    await expect(page.getByLabel('Buscar')).toBeDisabled();
+    await expect(page.getByLabel('Gênero')).toBeDisabled();
+    await expect(page.getByLabel('Idade mín.')).toBeDisabled();
+    // E o motivo fica escrito, em vez de o campo simplesmente não reagir.
+    await expect(page.getByText('Esta aba não usa este filtro').first()).toBeVisible();
+  });
+
+  test('na aba Crianças, busca, gênero e idade ficam habilitados', async ({ page }) => {
+    await page.goto('/adm/estatisticas');
+    await page
+      .getByTestId('statistics-dashboard-navigation-tabs')
+      .getByRole('tab', { name: 'Crianças' })
+      .click();
+    await abrirFiltrosNaPagina(page);
+
+    await expect(page.getByLabel('Buscar')).toBeEnabled();
+    await expect(page.getByLabel('Gênero')).toBeEnabled();
+    await expect(page.getByLabel('Idade mín.')).toBeEnabled();
+    // `groupBy` não existe numa listagem: continua desabilitado.
+    await expect(page.getByLabel('Agrupar por')).toBeDisabled();
+  });
+
+  /** Abre o painel de filtros avançados. */
+  async function abrirFiltrosNaPagina(page: import('@playwright/test').Page) {
+    const alternador = page.getByTestId('statistics-advanced-filters-toggle');
+    await expect(alternador).toBeVisible();
+    if ((await alternador.getAttribute('aria-expanded')) !== 'true') {
+      await alternador.click();
+    }
+    await expect(page.getByLabel('Cidade')).toBeVisible();
+  }
+});

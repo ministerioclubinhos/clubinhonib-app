@@ -48,6 +48,11 @@ import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/pt-br';
 import { motion } from 'framer-motion';
 import { useStatistics } from '../../context';
+import {
+  FILTER_NOT_APPLIED_HINT,
+  StatisticsFilterField,
+  TAB_FILTER_FIELDS,
+} from '../../constants';
 import { PeriodShortcut } from '../../types';
 import {
   PERIOD_SHORTCUT_LABELS,
@@ -100,6 +105,20 @@ export const SmartFilters: React.FC = memo(() => {
   const [expanded, setExpanded] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [savedFiltersAnchor, setSavedFiltersAnchor] = useState<null | HTMLElement>(null);
+
+  /**
+   * Os filtros que a aba aberta de fato usa.
+   *
+   * Os endpoints por trás das onze abas aceitam conjuntos diferentes. Um campo
+   * que a aba ignora fica desabilitado e explica o motivo — antes ele
+   * continuava editável e simplesmente não fazia nada, o que é pior do que o
+   * erro que existia antes: pelo menos o erro aparecia.
+   */
+  const camposDaAba = TAB_FILTER_FIELDS[state.activeTab] ?? [];
+  const aplica = useCallback(
+    (campo: StatisticsFilterField) => camposDaAba.includes(campo),
+    [camposDaAba],
+  );
 
 
   React.useEffect(() => {
@@ -163,16 +182,32 @@ export const SmartFilters: React.FC = memo(() => {
   const activePeriodData = quickPeriods.find(p => p.id === activePeriod);
 
   return (
-    <LocalizationProvider data-testid="statistics-ui-smart-filters" dateAdapter={AdapterDayjs} adapterLocale="pt-br">
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 3,
-          overflow: 'hidden',
-          border: `1px solid ${theme.palette.divider}`,
-          background: `linear-gradient(180deg, ${alpha(activePeriodData?.color || theme.palette.primary.main, 0.02)} 0%, ${theme.palette.background.paper} 100%)`,
-        }}
-      >
+    /*
+      A barra abre a tela, acima dos números. A borda e a faixa superior na cor
+      do período em uso são o que a fazem ler como painel de controle, e não
+      como mais um cartão de conteúdo: tudo abaixo responde ao que se escolhe
+      aqui.
+
+      O `Paper` é a raiz e o `LocalizationProvider` fica dentro. Invertido —
+      como estava —, o seletor ia parar num provedor de contexto, que não
+      renderiza nó nenhum: o atributo se perdia e nenhum teste alcançava a
+      barra.
+    */
+    <Paper
+      data-testid="statistics-ui-smart-filters"
+      elevation={0}
+      sx={{
+        borderRadius: 3,
+        overflow: 'hidden',
+        border: `1px solid ${alpha(
+          activePeriodData?.color || theme.palette.primary.main,
+          0.35,
+        )}`,
+        borderTop: `3px solid ${activePeriodData?.color || theme.palette.primary.main}`,
+        background: `linear-gradient(180deg, ${alpha(activePeriodData?.color || theme.palette.primary.main, 0.06)} 0%, ${theme.palette.background.paper} 100%)`,
+      }}
+    >
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
         {/* Header */}
         <Box
           sx={{
@@ -231,15 +266,24 @@ export const SmartFilters: React.FC = memo(() => {
                 <Refresh />
               </IconButton>
             </Tooltip>
+            {/*
+              No celular o rótulo somia e sobrava um botão só de ícone, sem
+              nome nenhum para leitor de tela. O `aria-label` fica sempre, e o
+              alvo respeita os 44 px.
+            */}
             <Button
+              type="button"
               variant={expanded ? 'contained' : 'outlined'}
               size="small"
               startIcon={<TuneOutlined />}
               endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
               onClick={() => setExpanded(!expanded)}
-              sx={{ textTransform: 'none' }}
+              aria-label="Filtros avançados"
+              aria-expanded={expanded}
+              data-testid="statistics-advanced-filters-toggle"
+              sx={{ textTransform: 'none', minHeight: 44, minWidth: 44 }}
             >
-              {isMobile ? '' : 'Avancados'}
+              {isMobile ? '' : 'Avançados'}
             </Button>
           </Box>
         </Box>
@@ -324,9 +368,13 @@ export const SmartFilters: React.FC = memo(() => {
                   fullWidth
                   size="small"
                   label="Buscar"
-                  placeholder="Nome, cidade, clubinho..."
+                  placeholder="Nome da criança ou do professor"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
+                  disabled={!aplica(StatisticsFilterField.Search)}
+                  helperText={
+                    aplica(StatisticsFilterField.Search) ? ' ' : FILTER_NOT_APPLIED_HINT
+                  }
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -350,9 +398,13 @@ export const SmartFilters: React.FC = memo(() => {
                   fullWidth
                   select
                   size="small"
-                  label="Genero"
+                  label="Gênero"
                   value={state.filters.gender || ''}
                   onChange={(e) => setFilters({ gender: e.target.value as 'M' | 'F' || undefined })}
+                  disabled={!aplica(StatisticsFilterField.Gender)}
+                  helperText={
+                    aplica(StatisticsFilterField.Gender) ? ' ' : FILTER_NOT_APPLIED_HINT
+                  }
                 >
                   <MenuItem value="">Todos</MenuItem>
                   <MenuItem value="M">Masculino</MenuItem>
@@ -365,10 +417,12 @@ export const SmartFilters: React.FC = memo(() => {
                   fullWidth
                   size="small"
                   type="number"
-                  label="Idade Min"
+                  label="Idade mín."
                   value={state.filters.minAge || ''}
                   onChange={(e) => setFilters({ minAge: e.target.value ? Number(e.target.value) : undefined })}
                   inputProps={{ min: 0, max: 100 }}
+                  disabled={!aplica(StatisticsFilterField.Age)}
+                  helperText={aplica(StatisticsFilterField.Age) ? ' ' : FILTER_NOT_APPLIED_HINT}
                 />
               </Grid2>
 
@@ -377,10 +431,12 @@ export const SmartFilters: React.FC = memo(() => {
                   fullWidth
                   size="small"
                   type="number"
-                  label="Idade Max"
+                  label="Idade máx."
                   value={state.filters.maxAge || ''}
                   onChange={(e) => setFilters({ maxAge: e.target.value ? Number(e.target.value) : undefined })}
                   inputProps={{ min: 0, max: 100 }}
+                  disabled={!aplica(StatisticsFilterField.Age)}
+                  helperText={aplica(StatisticsFilterField.Age) ? ' ' : FILTER_NOT_APPLIED_HINT}
                 />
               </Grid2>
 
@@ -389,13 +445,17 @@ export const SmartFilters: React.FC = memo(() => {
                   fullWidth
                   select
                   size="small"
-                  label="Agrupar Por"
+                  label="Agrupar por"
                   value={state.filters.groupBy || 'week'}
                   onChange={(e) => setFilters({ groupBy: e.target.value as 'day' | 'week' | 'month' | 'year' })}
+                  disabled={!aplica(StatisticsFilterField.GroupBy)}
+                  helperText={
+                    aplica(StatisticsFilterField.GroupBy) ? ' ' : FILTER_NOT_APPLIED_HINT
+                  }
                 >
                   <MenuItem value="day">Dia</MenuItem>
                   <MenuItem value="week">Semana</MenuItem>
-                  <MenuItem value="month">Mes</MenuItem>
+                  <MenuItem value="month">Mês</MenuItem>
                   <MenuItem value="year">Ano</MenuItem>
                 </TextField>
               </Grid2>
@@ -533,8 +593,8 @@ export const SmartFilters: React.FC = memo(() => {
             )}
           </Box>
         </Popover>
-      </Paper>
-    </LocalizationProvider>
+      </LocalizationProvider>
+    </Paper>
   );
 });
 

@@ -72,6 +72,29 @@ Os "Filtros Salvos" guardam os **valores**, não só um rótulo: a lista era de
 `string`, então mesmo que algo a preenchesse, clicar num item não teria o que
 reaplicar — e nada a preenchia, porque `ADD_FAVORITE` nunca era despachado.
 
+## 🎛️ A barra de filtros rege a tela
+
+O recorte vem **antes dos números**. Ele ficava abaixo dos KPIs, e a leitura de
+cima para baixo fazia os números parecerem absolutos e o filtro, um detalhe de
+uma seção. Primeiro se declara o período; depois se lê o que ele produziu.
+
+Os endpoints por trás das onze abas aceitam conjuntos diferentes de filtro, e a
+barra é uma só. `TAB_FILTER_FIELDS` diz o que cada aba usa, e o que ela ignora
+aparece **desabilitado com o motivo escrito**. Antes disso o campo ou derrubava
+a requisição (`400`) ou — depois do payload por endpoint — simplesmente não
+fazia nada, que é pior: pelo menos o erro aparecia.
+
+| Filtro | Onde funciona |
+| --- | --- |
+| Período (datas) | todas as abas — recorta as pagelas, não o cadastro: o total de linhas das listagens não muda, as métricas de cada linha sim |
+| Buscar | Crianças, Professores |
+| Gênero, Idade | Visão geral, Crianças, Demográfico, Geográfico, Decisões, Retenção, Atividades, Rankings |
+| Agrupar por | só as séries temporais (Visão geral, Decisões, Atividades) |
+| Cidade, Estado, Bairro | todas (Bairro não existe no contrato de Professores) |
+
+Conferido chamada a chamada contra a API: cada filtro muda de fato o número que
+promete mudar.
+
 ## ⚠️ Débito conhecido
 
 - ~67 cores hexadecimais escritas à mão em dez arquivos. Trocar todas por

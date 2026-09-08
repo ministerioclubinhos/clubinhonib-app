@@ -115,3 +115,98 @@ export const WEEKDAY_NAMES: Record<string, string> = {
   saturday: 'Sábado',
   sunday: 'Domingo',
 };
+
+/** Um campo da barra de filtros, para dizer quais abas o respeitam. */
+export enum StatisticsFilterField {
+  Period = 'period',
+  Search = 'search',
+  Gender = 'gender',
+  Age = 'age',
+  GroupBy = 'groupBy',
+  Location = 'location',
+}
+
+/**
+ * Quais filtros cada aba de fato usa.
+ *
+ * A barra é a mesma para as onze abas, mas os endpoints por trás aceitam
+ * conjuntos diferentes: `groupBy` só existe nas séries temporais, `search` só
+ * nas listagens de criança e professor, e gênero/idade não recortam clubinho
+ * nem professor.
+ *
+ * Antes isso aparecia como erro — a requisição saía com a chave a mais e a API
+ * respondia `400`. Com o payload filtrado por endpoint o erro sumiu, e o
+ * silêncio tomou o lugar dele: o campo continuava editável e simplesmente não
+ * fazia nada. Este mapa é o que permite desabilitar o que não se aplica e
+ * dizer por quê, em vez de deixar a pessoa mexendo num controle morto.
+ */
+export const TAB_FILTER_FIELDS: Record<StatisticsTab, StatisticsFilterField[]> = {
+  [StatisticsTab.Overview]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Gender,
+    StatisticsFilterField.Age,
+    StatisticsFilterField.GroupBy,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Frequency]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Children]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Search,
+    StatisticsFilterField.Gender,
+    StatisticsFilterField.Age,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Clubs]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Teachers]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Search,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Demographic]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Gender,
+    StatisticsFilterField.Age,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Geographic]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Gender,
+    StatisticsFilterField.Age,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Decisions]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Gender,
+    StatisticsFilterField.Age,
+    StatisticsFilterField.GroupBy,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Retention]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Gender,
+    StatisticsFilterField.Age,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Activities]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Gender,
+    StatisticsFilterField.Age,
+    StatisticsFilterField.GroupBy,
+    StatisticsFilterField.Location,
+  ],
+  [StatisticsTab.Rankings]: [
+    StatisticsFilterField.Period,
+    StatisticsFilterField.Gender,
+    StatisticsFilterField.Age,
+    StatisticsFilterField.Location,
+  ],
+};
+
+/** O aviso que explica por que o campo está desabilitado. */
+export const FILTER_NOT_APPLIED_HINT = 'Esta aba não usa este filtro';
