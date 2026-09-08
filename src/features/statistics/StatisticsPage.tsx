@@ -1,7 +1,6 @@
 import React, { Suspense, memo } from 'react';
 import {
   Box,
-  Container,
   Skeleton,
   useTheme,
   alpha,
@@ -14,6 +13,8 @@ import { KeyboardArrowUp } from '@mui/icons-material';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatisticsProvider, useStatistics } from './context';
+import { PAGE_WIDTH, STATISTICS_QUERY_KEY, StatisticsTab } from './constants';
+import { useStatisticsLastUpdated } from './hooks';
 import { DashboardHeader, NavigationTabs } from './components/dashboard';
 import { KPIDashboard, SmartFilters } from './components/ui';
 import dayjs from 'dayjs';
@@ -39,7 +40,15 @@ const RankingsTab = React.lazy(() => import('./tabs/RankingsTab'));
 const TabSkeleton: React.FC = () => (
   <Box data-testid="statistics-statistics-page-tab-skeleton" sx={{ display: 'grid', gap: 2 }}>
     <Skeleton variant="rounded" height={80} />
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+    {/* Duas colunas no celular, quatro a partir do tablet: quatro esqueletos
+        lado a lado num aparelho de 390px viram quatro tiras ilegíveis. */}
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+        gap: 2,
+      }}
+    >
       {[1, 2, 3, 4].map((i) => (
         <Skeleton key={i} variant="rounded" height={100} />
       ))}
@@ -56,7 +65,7 @@ const ScrollToTop: React.FC = memo(() => {
     const handleScroll = () => {
       setVisible(window.scrollY > 300);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -93,27 +102,27 @@ const TabContent: React.FC = memo(() => {
 
   const renderTab = () => {
     switch (state.activeTab) {
-      case 0:
+      case StatisticsTab.Overview:
         return <OverviewTab />;
-      case 1:
+      case StatisticsTab.Frequency:
         return <FrequencyTab />;
-      case 2:
+      case StatisticsTab.Children:
         return <ChildrenTab />;
-      case 3:
+      case StatisticsTab.Clubs:
         return <ClubsTab />;
-      case 4:
+      case StatisticsTab.Teachers:
         return <TeachersTab />;
-      case 5:
+      case StatisticsTab.Demographic:
         return <DemographicTab filters={state.filters} />;
-      case 6:
+      case StatisticsTab.Geographic:
         return <GeographicTab filters={state.filters} />;
-      case 7:
+      case StatisticsTab.Decisions:
         return <DecisionsTab filters={state.filters} />;
-      case 8:
+      case StatisticsTab.Retention:
         return <RetentionTab filters={state.filters} />;
-      case 9:
+      case StatisticsTab.Activities:
         return <ActivitiesTab filters={state.filters} />;
-      case 10:
+      case StatisticsTab.Rankings:
         return <RankingsTab filters={state.filters} />;
       default:
         return <OverviewTab />;
@@ -150,6 +159,28 @@ const TabContent: React.FC = memo(() => {
 
 TabContent.displayName = 'TabContent';
 
+/**
+ * Quando os números da tela foram buscados de fato.
+ *
+ * Antes o rodapé imprimia `dayjs()` — a hora do render. Com cache de minutos,
+ * a tela afirmava que o dado era deste segundo enquanto mostrava um número de
+ * dez minutos atrás. Agora a hora vem do próprio cache, e some quando ainda
+ * não há resposta nenhuma.
+ */
+const LastUpdatedLabel: React.FC = memo(() => {
+  const updatedAt = useStatisticsLastUpdated();
+
+  return (
+    <Typography data-testid="statistics-last-updated" variant="body2" color="text.secondary">
+      {updatedAt
+        ? `Dados de ${dayjs(updatedAt).format('DD/MM/YYYY HH:mm')}`
+        : 'Carregando os dados…'}
+    </Typography>
+  );
+});
+
+LastUpdatedLabel.displayName = 'LastUpdatedLabel';
+
 // Main content component
 const StatisticsContent: React.FC = memo(() => {
   const theme = useTheme();
@@ -162,15 +193,24 @@ const StatisticsContent: React.FC = memo(() => {
         pb: 4,
       }}
     >
-      <Container
-        maxWidth="xl"
+      <Box
         sx={{
+          width: PAGE_WIDTH,
+          mx: 'auto',
           py: { xs: 2, md: 4 },
-          px: { xs: 2, md: 3 },
         }}
       >
         {/* Header */}
-        <DashboardHeader onRefresh={() => queryClient.invalidateQueries()} />
+        {/*
+          Só as chaves das estatísticas. O `queryClient` é o compartilhado do
+          app: sem o prefixo, "Atualizar" derrubava também o controle de
+          clubinhos, as pagelas e o resumo semanal.
+        */}
+        <DashboardHeader
+          onRefresh={() =>
+            void queryClient.invalidateQueries({ queryKey: [STATISTICS_QUERY_KEY] })
+          }
+        />
 
         {/* KPI Dashboard - Always visible */}
         <Box sx={{ mb: 3 }}>
@@ -192,14 +232,12 @@ const StatisticsContent: React.FC = memo(() => {
 
         {/* Footer */}
         <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Typography variant="body2" color="text.secondary">
-            Ultima atualizacao: {dayjs().format('DD/MM/YYYY HH:mm')}
-          </Typography>
+          <LastUpdatedLabel />
           <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.7 }}>
-            Use os filtros para personalizar suas analises
+            Use os filtros para personalizar suas análises
           </Typography>
         </Box>
-      </Container>
+      </Box>
 
       {/* Scroll to top button */}
       <ScrollToTop />

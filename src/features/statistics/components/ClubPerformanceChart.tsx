@@ -25,6 +25,7 @@ import {
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 /** Clubinho exibido no tooltip. */
 interface ClubTooltipPayload {
@@ -41,7 +42,7 @@ interface ClubPerformanceChartProps {
 export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
 
   const topClubs = React.useMemo(() => {
     if (!data?.byClub || data.byClub.length === 0) return [];
@@ -74,7 +75,11 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
   if (!data) {
     return (
       <Paper data-testid="statistics-club-performance-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
-        <Typography color="error">Erro ao carregar dados dos clubinhos</Typography>
+        <ChartError
+          subject="os dados dos clubinhos"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import { usePagelasChartData } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface PagelasTimeSeriesChartProps {
   filters?: PagelasStatsQueryDto;
@@ -27,7 +28,7 @@ interface PagelasTimeSeriesChartProps {
 
 export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ filters }) => {
   const theme = useTheme();
-  const { data, isLoading, error } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
   const [selectedSeries, setSelectedSeries] = React.useState<string[]>(['total', 'presence']);
 
   if (isLoading) {
@@ -43,7 +44,11 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
   if (error || !data || !data.timeSeries) {
     return (
       <Paper data-testid="statistics-pagelas-time-series-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        <Typography color="error">Erro ao carregar dados de pagelas</Typography>
+        <ChartError
+          subject="os dados de pagelas"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

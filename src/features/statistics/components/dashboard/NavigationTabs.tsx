@@ -14,19 +14,26 @@ import {
   ShowChart,
 } from '@mui/icons-material';
 import { useStatistics } from '../../context';
+import { StatisticsTab } from '../../constants';
 
+/**
+ * As abas, na ordem em que aparecem.
+ *
+ * O `id` é o enum, não um número solto: o `switch` que monta o conteúdo lê o
+ * mesmo enum, então reordenar aqui não troca a aba de lugar lá.
+ */
 const tabs = [
-  { id: 0, label: 'Visão geral', icon: <Dashboard />, color: '#6366f1' },
-  { id: 1, label: 'Frequência', icon: <DateRange />, color: '#10b981' },
-  { id: 2, label: 'Crianças', icon: <ChildCare />, color: '#f59e0b' },
-  { id: 3, label: 'Clubinhos', icon: <Groups />, color: '#8b5cf6' },
-  { id: 4, label: 'Professores', icon: <School />, color: '#ec4899' },
-  { id: 5, label: 'Demográfico', icon: <PieChart />, color: '#14b8a6' },
-  { id: 6, label: 'Geográfico', icon: <Map />, color: '#f43f5e' },
-  { id: 7, label: 'Decisões', icon: <Favorite />, color: '#ef4444' },
-  { id: 8, label: 'Retenção', icon: <ShowChart />, color: '#84cc16' },
-  { id: 9, label: 'Atividades', icon: <CompareArrows />, color: '#06b6d4' },
-  { id: 10, label: 'Rankings', icon: <EmojiEvents />, color: '#a855f7' },
+  { id: StatisticsTab.Overview, label: 'Visão geral', icon: <Dashboard />, color: '#6366f1' },
+  { id: StatisticsTab.Frequency, label: 'Frequência', icon: <DateRange />, color: '#10b981' },
+  { id: StatisticsTab.Children, label: 'Crianças', icon: <ChildCare />, color: '#f59e0b' },
+  { id: StatisticsTab.Clubs, label: 'Clubinhos', icon: <Groups />, color: '#8b5cf6' },
+  { id: StatisticsTab.Teachers, label: 'Professores', icon: <School />, color: '#ec4899' },
+  { id: StatisticsTab.Demographic, label: 'Demográfico', icon: <PieChart />, color: '#14b8a6' },
+  { id: StatisticsTab.Geographic, label: 'Geográfico', icon: <Map />, color: '#f43f5e' },
+  { id: StatisticsTab.Decisions, label: 'Decisões', icon: <Favorite />, color: '#ef4444' },
+  { id: StatisticsTab.Retention, label: 'Retenção', icon: <ShowChart />, color: '#84cc16' },
+  { id: StatisticsTab.Activities, label: 'Atividades', icon: <CompareArrows />, color: '#06b6d4' },
+  { id: StatisticsTab.Rankings, label: 'Rankings', icon: <EmojiEvents />, color: '#a855f7' },
 ] as const;
 
 export const NavigationTabs: React.FC = memo(() => {

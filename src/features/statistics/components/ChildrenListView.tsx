@@ -28,6 +28,7 @@ import { PeriodFilter } from './PeriodFilter';
 import { getPeriodDates } from '../utils/periodHelpers';
 import ChildrenListDesktop from './ChildrenListDesktop';
 import ChildrenListMobile from './ChildrenListMobile';
+import { ChartError } from './ui';
 
 export const ChildrenListView: React.FC = () => {
   const theme = useTheme();
@@ -47,7 +48,7 @@ export const ChildrenListView: React.FC = () => {
   }, [isMobile]);
   const [filtersExpanded, setFiltersExpanded] = React.useState(false);
 
-  const { data, isLoading } = useChildren(filters);
+  const { data, isLoading, error, refetch } = useChildren(filters);
 
   const handleFilterChange = <K extends keyof ChildrenStatsQueryDto>(
     field: K,
@@ -71,7 +72,11 @@ export const ChildrenListView: React.FC = () => {
   if (!data && !isLoading) {
     return (
       <Paper data-testid="statistics-children-list-view" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
-        <Typography color="error">Erro ao carregar crianças</Typography>
+        <ChartError
+          subject="as crianças"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

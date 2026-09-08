@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { useAcceptedChristsChartData } from '../hooks';
 import type { AcceptedChristsStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface AcceptedChristsChartProps {
   filters?: AcceptedChristsStatsQueryDto;
@@ -20,7 +21,7 @@ interface AcceptedChristsChartProps {
 export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { data, isLoading, error } = useAcceptedChristsChartData(filters);
+  const { data, isLoading, error, refetch } = useAcceptedChristsChartData(filters);
 
   if (isLoading) {
     return (
@@ -35,7 +36,11 @@ export const AcceptedChristsChart: React.FC<AcceptedChristsChartProps> = ({ filt
   if (error || !data) {
     return (
       <Paper data-testid="statistics-accepted-christs-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        <Typography color="error">Erro ao carregar dados de decisões</Typography>
+        <ChartError
+          subject="os dados de decisões"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

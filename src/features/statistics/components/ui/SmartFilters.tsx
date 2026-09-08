@@ -17,6 +17,7 @@ import {
   Badge,
   Popover,
   List,
+  ListItem,
   ListItemIcon,
   ListItemText,
   ListItemButton,
@@ -35,6 +36,7 @@ import {
   History,
   BookmarkBorder,
   Bookmark,
+  DeleteOutline,
   Clear,
   Search,
   TuneOutlined,
@@ -90,11 +92,15 @@ export const SmartFilters: React.FC = memo(() => {
     resetFilters,
     formattedPeriod,
     hasActiveFilters,
+    saveCurrentFilters,
+    applySavedFilter,
+    removeSavedFilter,
   } = useStatistics();
 
   const [expanded, setExpanded] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [savedFiltersAnchor, setSavedFiltersAnchor] = useState<null | HTMLElement>(null);
+
 
   React.useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -119,6 +125,17 @@ export const SmartFilters: React.FC = memo(() => {
     if (f.search) count++;
     return count;
   }, [state.filters]);
+  /**
+   * Guarda o recorte atual sob o nome do período e dos filtros ativos.
+   *
+   * Sem pedir um nome: o rótulo que a barra já mostra é o que a pessoa
+   * reconhece, e uma caixa de texto a mais entre o clique e o resultado é
+   * atrito sem ganho.
+   */
+  const handleSaveCurrentFilters = useCallback(() => {
+    const extras = activeFiltersCount > 0 ? ` · ${activeFiltersCount} filtro(s)` : '';
+    saveCurrentFilters(`${formattedPeriod}${extras}`);
+  }, [activeFiltersCount, formattedPeriod, saveCurrentFilters]);
 
   const handlePeriodSelect = useCallback((period: PeriodShortcut) => {
     setPeriod(period);
@@ -204,7 +221,7 @@ export const SmartFilters: React.FC = memo(() => {
                 size="small"
                 onClick={(e) => setSavedFiltersAnchor(e.currentTarget)}
                aria-label="Filtros salvos">
-                <Badge badgeContent={state.favorites.length} color="primary">
+                <Badge badgeContent={state.savedFilters.length} color="primary">
                   <BookmarkBorder />
                 </Badge>
               </IconButton>
@@ -459,23 +476,58 @@ export const SmartFilters: React.FC = memo(() => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <Box sx={{ width: 280, p: 2 }}>
+          <Box sx={{ width: 300, p: 2 }}>
             <Typography variant="subtitle2" fontWeight={700} gutterBottom>
-              Filtros Salvos
+              Filtros salvos
             </Typography>
-            {state.favorites.length === 0 ? (
+
+            <Button
+              type="button"
+              fullWidth
+              size="small"
+              variant="outlined"
+              startIcon={<BookmarkBorder />}
+              onClick={handleSaveCurrentFilters}
+              data-testid="statistics-save-current-filters"
+              sx={{ mb: 1, minHeight: 44 }}
+            >
+              Salvar o recorte atual
+            </Button>
+
+            {state.savedFilters.length === 0 ? (
               <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
                 Nenhum filtro salvo ainda
               </Typography>
             ) : (
-              <List dense>
-                {state.favorites.map((fav, index) => (
-                  <ListItemButton key={index} sx={{ borderRadius: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Bookmark color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary={fav} />
-                  </ListItemButton>
+              <List dense data-testid="statistics-saved-filters-list">
+                {state.savedFilters.map((saved) => (
+                  <ListItem
+                    key={saved.id}
+                    disablePadding
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        size="small"
+                        aria-label={`Remover ${saved.label}`}
+                        onClick={() => removeSavedFilter(saved.id)}
+                      >
+                        <DeleteOutline fontSize="small" />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemButton
+                      sx={{ borderRadius: 1, minHeight: 44 }}
+                      onClick={() => {
+                        applySavedFilter(saved.id);
+                        setSavedFiltersAnchor(null);
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <Bookmark color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary={saved.label} />
+                    </ListItemButton>
+                  </ListItem>
                 ))}
               </List>
             )}

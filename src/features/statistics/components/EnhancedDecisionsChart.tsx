@@ -20,6 +20,7 @@ import {
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { useAcceptedChristsChartData } from '../hooks';
 import type { AcceptedChristsStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 
 interface EnhancedDecisionsChartProps {
@@ -29,7 +30,7 @@ interface EnhancedDecisionsChartProps {
 export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading } = useAcceptedChristsChartData(filters);
+  const { data, isLoading, error, refetch } = useAcceptedChristsChartData(filters);
 
   if (isLoading) {
     return (
@@ -44,7 +45,11 @@ export const EnhancedDecisionsChart: React.FC<EnhancedDecisionsChartProps> = ({ 
   if (!data) {
     return (
       <Paper data-testid="statistics-enhanced-decisions-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
-        <Typography color="error">Erro ao carregar dados de decisões</Typography>
+        <ChartError
+          subject="os dados de decisões"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

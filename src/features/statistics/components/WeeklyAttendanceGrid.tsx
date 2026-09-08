@@ -33,13 +33,18 @@ import {
   NavigateNext,
   CalendarToday,
 } from '@mui/icons-material';
-import { useWeeklyAttendance, useCurrentWeek } from '../hooks';
+import { useWeeklyAttendance, useCurrentWeek, useAcademicYears } from '../hooks';
 import dayjs from 'dayjs';
+import { ChartError } from './ui';
 
 export const WeeklyAttendanceGrid: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data: currentWeekInfo } = useCurrentWeek();
+  // Os anos que têm período letivo cadastrado, e não os três últimos anos de
+  // calendário: escolher um ano sem período devolvia um painel vazio sem dizer
+  // por quê, e um período mais antigo era inalcançável.
+  const { data: academicYears = [] } = useAcademicYears();
 
   const [academicYear, setAcademicYear] = React.useState<number | null>(
     currentWeekInfo?.academicYear || null
@@ -61,7 +66,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
     }
   }, [isMobile, limit]);
 
-  const { data, isLoading } = useWeeklyAttendance({
+  const { data, isLoading, error, refetch } = useWeeklyAttendance({
     year: academicYear || new Date().getFullYear(),
     week: academicWeek || 1,
     page,
@@ -168,7 +173,11 @@ export const WeeklyAttendanceGrid: React.FC = () => {
   if (!data) {
     return (
       <Paper data-testid="statistics-weekly-attendance-grid" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-        <Typography color="error">Erro ao carregar dados semanais</Typography>
+        <ChartError
+          subject="os dados semanais"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }
@@ -224,7 +233,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
               sx={{ width: { xs: '100%', sm: 100 }, flex: { xs: 1, sm: 'none' } }}
               label="Ano"
             >
-              {[new Date().getFullYear(), new Date().getFullYear() - 1, new Date().getFullYear() - 2].map((y) => (
+              {academicYears.map((y) => (
                 <MenuItem key={y} value={y}>
                   {y}
                 </MenuItem>

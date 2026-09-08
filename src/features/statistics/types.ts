@@ -197,6 +197,8 @@ export interface TeachersStatsQueryDto {
 
 export interface AcceptedChristsStatsQueryDto {
   period?: PeriodShortcut;
+  /** O back declara `year` neste DTO; faltava aqui. */
+  year?: number;
   startDate?: string;
   endDate?: string;
   clubId?: string;

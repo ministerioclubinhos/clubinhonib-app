@@ -3,6 +3,7 @@ import { Box, Paper, Typography, CircularProgress, Grid2, useTheme } from '@mui/
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { usePagelasChartData } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface DemographicChartsProps {
   filters?: PagelasStatsQueryDto;
@@ -10,7 +11,7 @@ interface DemographicChartsProps {
 
 export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters }) => {
   const theme = useTheme();
-  const { data, isLoading, error } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
 
   if (isLoading) {
     return (
@@ -23,7 +24,11 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
   if (error || !data || !data.byGender || !data.byAgeGroup || !data.byParticipationTime) {
     return (
       <Box data-testid="statistics-demographic-charts" sx={{ py: 4, textAlign: 'center' }}>
-        <Typography color="error">Erro ao carregar dados demográficos</Typography>
+        <ChartError
+          subject="os dados demográficos"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Box>
     );
   }

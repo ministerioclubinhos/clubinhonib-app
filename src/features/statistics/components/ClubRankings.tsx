@@ -22,6 +22,7 @@ import {
 import { EmojiEvents, TrendingUp } from '@mui/icons-material';
 import { useInsights } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface ClubRankingsProps {
   filters?: PagelasStatsQueryDto;
@@ -30,7 +31,7 @@ interface ClubRankingsProps {
 export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading, error } = useInsights(filters);
+  const { data, isLoading, error, refetch } = useInsights(filters);
 
   if (isLoading) {
     return (
@@ -45,7 +46,11 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
   if (error || !data) {
     return (
       <Paper data-testid="statistics-club-rankings" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
-        <Typography color="error">Erro ao carregar rankings</Typography>
+        <ChartError
+          subject="os rankings"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

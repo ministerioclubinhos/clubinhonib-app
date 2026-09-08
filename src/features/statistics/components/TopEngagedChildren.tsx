@@ -24,6 +24,7 @@ import {
 import { Star, EmojiEvents, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useInsights } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface TopEngagedChildrenProps {
   filters?: PagelasStatsQueryDto;
@@ -32,7 +33,7 @@ interface TopEngagedChildrenProps {
 export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading, error } = useInsights(filters);
+  const { data, isLoading, error, refetch } = useInsights(filters);
   const [showAllMobile, setShowAllMobile] = React.useState(false);
 
   if (isLoading) {
@@ -48,7 +49,11 @@ export const TopEngagedChildren: React.FC<TopEngagedChildrenProps> = ({ filters 
   if (error || !data) {
     return (
       <Paper data-testid="statistics-top-engaged-children" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
-        <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Erro ao carregar crianças mais engajadas</Typography>
+        <ChartError
+          subject="as crianças mais engajadas"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

@@ -5,6 +5,7 @@ import { Box, Paper, Typography, CircularProgress, useTheme, Grid2 } from '@mui/
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, ResponsiveContainer, Tooltip } from 'recharts';
 import { usePagelasChartData } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 /** Ponto do radar exibido no tooltip. */
 interface RadarTooltipPayload {
@@ -17,7 +18,7 @@ interface RadarComparisonChartProps {
 
 export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filters }) => {
   const theme = useTheme();
-  const { data, isLoading } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
 
   if (isLoading) {
     return (
@@ -32,7 +33,11 @@ export const RadarComparisonChart: React.FC<RadarComparisonChartProps> = ({ filt
   if (!data || !data.byGender || !data.byAgeGroup) {
     return (
       <Paper data-testid="statistics-radar-comparison-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-        <Typography color="error">Erro ao carregar dados</Typography>
+        <ChartError
+          subject="a comparação por perfil"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

@@ -1,6 +1,50 @@
 import { PeriodShortcut } from './types';
 
 /**
+ * As seções do painel.
+ *
+ * O `switch` que escolhe a aba comparava `case 0` a `case 10` contra a lista
+ * de `NavigationTabs` — duas listas paralelas de números. Reordenar uma delas
+ * trocava as abas em silêncio. Com o enum, o compilador cobra as duas pontas.
+ */
+export enum StatisticsTab {
+  Overview = 0,
+  Frequency = 1,
+  Children = 2,
+  Clubs = 3,
+  Teachers = 4,
+  Demographic = 5,
+  Geographic = 6,
+  Decisions = 7,
+  Retention = 8,
+  Activities = 9,
+  Rankings = 10,
+}
+
+/** Largura da página, igual à das demais telas de conteúdo. */
+export const PAGE_WIDTH = { xs: '98%', md: '95%' } as const;
+
+/** Prefixo de toda chave de cache das estatísticas. */
+export const STATISTICS_QUERY_KEY = 'statistics';
+
+/**
+ * Validade dos agregados do painel.
+ *
+ * Estes números mudam quando alguém lança uma pagela, o que acontece ao longo
+ * da semana — não a cada segundo. Antes seis consultas usavam `staleTime: 0`
+ * com o comentário "força refetch ao trocar de filtro", o que não é o que
+ * `staleTime` faz: o filtro já está na chave, então trocar de filtro já busca
+ * outra chave. O efeito real era refazer a agregação a cada montagem — e as
+ * abas são `React.lazy` dentro de um `AnimatePresence`, ou seja, remontam a
+ * cada troca. Ir e voltar entre duas abas repetia o trabalho inteiro do banco.
+ */
+export const STATISTICS_STALE_TIME_MS = 5 * 60 * 1000;
+
+/** Listagens paginadas mudam mais: meio tempo do agregado. */
+export const STATISTICS_LIST_STALE_TIME_MS = 2 * 60 * 1000;
+
+
+/**
  * Rótulo de cada atalho de período.
  *
  * Estava escrito à mão dentro de `SmartFilters`, junto do ícone e da cor. O

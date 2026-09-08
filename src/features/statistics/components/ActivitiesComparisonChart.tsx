@@ -29,6 +29,7 @@ import {
 import { CompareArrows } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 /** Barra de atividade exibida no tooltip. */
 interface ActivitiesTooltipPayload {
@@ -43,7 +44,7 @@ type ViewMode = 'radar' | 'bar';
 
 export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps> = ({ filters }) => {
   const theme = useTheme();
-  const { data, isLoading } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
   const [viewMode, setViewMode] = React.useState<ViewMode>('radar');
 
   if (isLoading) {
@@ -59,7 +60,11 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
   if (!data || !data.byGender || !data.byAgeGroup || !data.byParticipationTime) {
     return (
       <Paper data-testid="statistics-activities-comparison-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-        <Typography color="error">Erro ao carregar dados</Typography>
+        <ChartError
+          subject="a comparação de atividades"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

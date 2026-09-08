@@ -21,6 +21,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { usePagelasChartData } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface GeographicChartProps {
   filters?: PagelasStatsQueryDto;
@@ -29,7 +30,7 @@ interface GeographicChartProps {
 export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading, error } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
 
   if (isLoading) {
     return (
@@ -44,7 +45,11 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
   if (error || !data || !data.byCity) {
     return (
       <Paper data-testid="statistics-geographic-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
-        <Typography color="error">Erro ao carregar dados geográficos</Typography>
+        <ChartError
+          subject="os dados geográficos"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }

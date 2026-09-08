@@ -27,6 +27,7 @@ import {
 import { ShowChart, BarChart as BarChartIcon, Timeline } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface AdvancedPagelasChartProps {
   filters?: PagelasStatsQueryDto;
@@ -37,7 +38,7 @@ type ChartType = 'line' | 'bar' | 'area' | 'composed';
 export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
   const [chartType, setChartType] = React.useState<ChartType>('composed');
   const [selectedMetrics, setSelectedMetrics] = React.useState<string[]>(['total', 'presence']);
 
@@ -54,7 +55,11 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
   if (!data) {
     return (
       <Paper data-testid="statistics-advanced-pagelas-chart" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
-        <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Erro ao carregar dados</Typography>
+        <ChartError
+          subject="os dados de pagelas"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }
