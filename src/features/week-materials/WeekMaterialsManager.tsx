@@ -45,7 +45,7 @@ export default function WeekMaterialsManager() {
     refresh,
   } = useWeekMaterials();
 
-  const { actionError, setActionError, remove, markAsCurrent } =
+  const { actionLoading, actionError, setActionError, remove, markAsCurrent } =
     useWeekMaterialMutations(refresh);
 
   const [detailsId, setDetailsId] = useState<string | null>(null);
@@ -137,7 +137,10 @@ export default function WeekMaterialsManager() {
         <>
           <WeekMaterialDetailsModal
             material={details}
-            open={Boolean(detailsId) && !loadingDetails}
+            // O diálogo abre no clique e mostra esqueleto enquanto carrega:
+            // esperar a resposta para abrir fazia o card parecer sem resposta.
+            open={Boolean(detailsId)}
+            loading={loadingDetails}
             onClose={() => setDetailsId(null)}
           />
 
@@ -153,6 +156,10 @@ export default function WeekMaterialsManager() {
             title={toDelete?.title}
             onClose={() => setToDelete(null)}
             onConfirm={handleDelete}
+            // A exclusão apaga os arquivos no S3 antes de responder e leva segundos:
+            // sem travar o botão, o segundo clique dispara um DELETE que responde
+            // 404 e mostra erro de uma operação que deu certo.
+            loading={actionLoading}
           />
         </>
       }

@@ -310,9 +310,13 @@ export function useImagePageForm({
         severity: 'success',
       });
       navigate(`/${saved.route.path}`);
-    } catch {
+    } catch (saveError: unknown) {
+      // A API diz o que recusou — arquivo ausente, sessão expirada, payload
+      // grande demais, validação. Trocar isso por um texto fixo deixava o
+      // administrador sem a única informação capaz de guiar a próxima
+      // tentativa.
       setFeedback({
-        message: GENERIC_ERROR_MESSAGES.SAVE_ERROR,
+        message: extractErrorMessage(saveError, GENERIC_ERROR_MESSAGES.SAVE_ERROR),
         severity: 'error',
       });
     } finally {

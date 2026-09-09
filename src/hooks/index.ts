@@ -6,6 +6,9 @@ export type { UseFeatureFlagsReturn } from './useFeatureFlags';
 
 export { useUnsavedChangesGuard } from './useUnsavedChangesGuard';
 
+export { useGuardedExit } from './useGuardedExit';
+export type { GuardedExit } from './useGuardedExit';
+
 export {
   useAbortController,
   useDebouncedValue,

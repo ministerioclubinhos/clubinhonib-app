@@ -72,6 +72,8 @@ export interface VideoPageSeed {
 export interface IdeasPageSeed {
   id: string;
   title: string;
+  /** Endereço público da página, usado pelos testes da tela do site. */
+  route: { path: string };
   sections: { id: string; title: string; medias: SeedMediaItem[] }[];
 }
 

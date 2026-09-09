@@ -6,6 +6,7 @@ export const GENERIC_ERROR_MESSAGES = {
     TIMEOUT: 'A requisição demorou muito. Tente novamente.',
     TRY_AGAIN: 'Erro ao processar sua solicitação. Tente novamente mais tarde.',
     SAVE_ERROR: 'Erro ao salvar as alterações.',
+    PAYLOAD_TOO_LARGE: 'Os arquivos enviados são grandes demais. Envie arquivos menores.',
 } as const;
 
 export const AUTH_ERROR_MESSAGES = {

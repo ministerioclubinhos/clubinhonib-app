@@ -18,6 +18,12 @@ interface Props {
   onClose: () => void;
   onConfirm: () => Promise<void>;
   loading?: boolean;
+  /**
+   * Seletor do diálogo. O padrão serve às listagens; uma tela que abre este
+   * diálogo por dentro de outra informa o seu, para os dois não responderem
+   * pelo mesmo `data-testid`.
+   */
+  "data-testid"?: string;
 }
 
 export default function DeleteConfirmDialog({
@@ -26,6 +32,7 @@ export default function DeleteConfirmDialog({
   onClose,
   onConfirm,
   loading = false,
+  "data-testid": dataTestId = "modal-delete-confirm-dialog",
 }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -39,7 +46,7 @@ export default function DeleteConfirmDialog({
   } as const;
 
   return (
-    <Dialog data-testid="modal-delete-confirm-dialog"
+    <Dialog data-testid={dataTestId}
       open={open}
       onClose={loading ? undefined : onClose}
       maxWidth="xs"

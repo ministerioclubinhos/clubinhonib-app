@@ -29,6 +29,12 @@ export type ConfirmDialogProps = {
   titleSx?: SxProps<Theme>;
   contentSx?: SxProps<Theme>;
   actionsSx?: SxProps<Theme>;
+  /**
+   * Seletor do diálogo. O padrão serve às confirmações comuns; quem reusa este
+   * componente para um caso com texto próprio informa o seu, para o teste
+   * distinguir um diálogo do outro na tela.
+   */
+  "data-testid"?: string;
 };
 
 export default function ConfirmDialog({
@@ -54,6 +60,7 @@ export default function ConfirmDialog({
   titleSx,
   contentSx,
   actionsSx,
+  "data-testid": dataTestId = "modal-confirm-dialog",
 }: ConfirmDialogProps) {
   const [internalLoading, setInternalLoading] = React.useState(false);
 
@@ -91,7 +98,7 @@ export default function ConfirmDialog({
   };
 
   return (
-    <Dialog data-testid="modal-confirm-dialog"
+    <Dialog data-testid={dataTestId}
       open={open}
       onClose={handleClose}
       fullWidth={fullWidth}

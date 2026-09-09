@@ -56,6 +56,8 @@ import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from "@/hooks";
 import { FEATURE } from "@/features/feature-flags";
 import { coordinatorAllowedRoutes } from "@/constants/adminAccess";
+import UnsavedChangesDialog from "@/components/common/modal/UnsavedChangesDialog";
+import { hasUnsavedChanges } from "@/utils/unsavedChanges";
 import type { FeatureKey } from "@/features/feature-flags";
 
 const drawerWidth = 240;
@@ -223,6 +225,8 @@ function AdminLayout() {
   const [expanded, setExpanded] = useState<SectionId | null>(sectionOfPath(location.pathname));
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  /** Destino escolhido no menu enquanto havia edição pendente. */
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
 
   useEffect(() => {
     const target = sectionOfPath(location.pathname);
@@ -235,9 +239,26 @@ function AdminLayout() {
       setExpanded((prev) => (isExpanding ? panel : prev === panel ? null : prev));
     };
 
+  const goTo = useCallback(
+    (to: string) => {
+      navigate(to);
+      if (isMobile) setMobileOpen(false);
+    },
+    [navigate, isMobile],
+  );
+
+  /**
+   * Trocar de tela pelo menu descarta o formulário aberto sem passar pelo
+   * navegador, então o `beforeunload` não vê nada. O registro de alterações
+   * pendentes é consultado aqui, no único ponto por onde toda a navegação do
+   * painel passa.
+   */
   const handleNavigate = (to: string) => {
-    navigate(to);
-    if (isMobile) setMobileOpen(false);
+    if (hasUnsavedChanges()) {
+      setPendingPath(to);
+      return;
+    }
+    goTo(to);
   };
 
   const visibleSections =
@@ -497,6 +518,16 @@ function AdminLayout() {
         {isMobile && <Toolbar sx={{ minHeight: 0, p: 0 }} />}
         <Outlet />
       </Box>
+
+      <UnsavedChangesDialog
+        open={pendingPath !== null}
+        onStay={() => setPendingPath(null)}
+        onLeave={() => {
+          const destino = pendingPath;
+          setPendingPath(null);
+          if (destino) goTo(destino);
+        }}
+      />
     </Box>
   );
 }

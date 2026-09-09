@@ -8,16 +8,20 @@ import {
   Grid2,
   Paper,
   Snackbar,
+  Stack,
   TextField,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { SimpleDatePicker } from '@/components/common/inputs';
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import UnsavedChangesDialog from '@/components/common/modal/UnsavedChangesDialog';
+import { useGuardedExit } from '@/hooks';
 
 import MeditationDaysEditor from './components/MeditationDaysEditor';
 import MeditationMediaField from './components/MeditationMediaField';
@@ -73,6 +77,8 @@ export default function MeditationPageForm({
   });
 
   useUnsavedChangesGuard(isDirty || hasDayDraft);
+  // Sair pelo botão da própria tela passa pela mesma confirmação do menu.
+  const exit = useGuardedExit(isDirty || hasDayDraft, MEDITATION_ROUTES.MANAGE);
 
   const startDateInvalid = Boolean(values.startDate) && !isMonday(values.startDate);
   const endDateInvalid = Boolean(values.endDate) && !isFriday(values.endDate);
@@ -238,21 +244,48 @@ export default function MeditationPageForm({
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          type="button"
-          onClick={save}
-          disabled={saving}
-          fullWidth={isMobile}
-          startIcon={
-            saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />
-          }
-          sx={{ minHeight: 44, textTransform: 'none', px: 3 }}
+        <Stack
+          direction={{ xs: 'column-reverse', sm: 'row' }}
+          spacing={1.25}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
-          {saving ? 'Salvando...' : 'Salvar Meditação'}
-        </Button>
+          {!fromTemplatePage && (
+            <Button
+              variant="outlined"
+              size="large"
+              type="button"
+              onClick={exit.requestExit}
+              disabled={saving}
+              fullWidth={isMobile}
+              startIcon={<ArrowBackIcon />}
+              sx={{ minHeight: 44, textTransform: 'none', px: 3 }}
+            >
+              Voltar para a lista
+            </Button>
+          )}
+
+          <Button
+            variant="contained"
+            size="large"
+            type="button"
+            onClick={save}
+            disabled={saving}
+            fullWidth={isMobile}
+            startIcon={
+              saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />
+            }
+            sx={{ minHeight: 44, textTransform: 'none', px: 3 }}
+          >
+            {saving ? 'Salvando...' : 'Salvar Meditação'}
+          </Button>
+        </Stack>
       </Paper>
+
+      <UnsavedChangesDialog
+        open={exit.confirming}
+        onStay={exit.cancelExit}
+        onLeave={exit.confirmExit}
+      />
 
       <Snackbar
         open={Boolean(feedback)}

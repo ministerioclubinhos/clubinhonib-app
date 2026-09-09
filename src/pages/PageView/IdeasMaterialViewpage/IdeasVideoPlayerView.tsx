@@ -268,20 +268,16 @@ export default function IdeasVideoPlayerView({ video }: Props) {
                 variant="subtitle1"
                 fontWeight="bold"
                 color={theme.palette.error.main}
-                sx={{
-                  fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-                  lineHeight: 1.3,
-                }}
+                sx={{ lineHeight: 1.3 }}
               >
                 {video.title}
               </Typography>
             </Box>
             <Tooltip title="Expandir vídeo">
               <IconButton
-                size="small"
                 onClick={() => setOpenModal(true)}
-                sx={{ color: theme.palette.text.secondary }}
-               aria-label="Expandir vídeo">
+                sx={{ color: theme.palette.text.secondary, width: 44, height: 44 }}
+               aria-label={`Expandir ${video.title || 'vídeo'}`}>
                 <FullscreenIcon />
               </IconButton>
             </Tooltip>
@@ -296,10 +292,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
               variant="body2"
               color="text.secondary"
               mb={{ xs: 1.5, sm: 2 }}
-              sx={{
-                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
-                lineHeight: 1.4,
-              }}
+              sx={{ lineHeight: 1.5 }}
             >
               {video.description}
             </Typography>

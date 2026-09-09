@@ -38,3 +38,17 @@ export const TOGGLE_ACTIVE_COPY: Record<
     fallbackName: 'este clubinho',
   },
 };
+
+/**
+ * Texto da confirmação de saída com edição pendente.
+ *
+ * O botão que descarta diz o que descarta: "Sair" sozinho não avisa que o
+ * trabalho da última meia hora vai embora com o clique.
+ */
+export const UNSAVED_CHANGES_COPY = {
+  title: 'Sair sem salvar?',
+  content:
+    'Esta página tem alterações que ainda não foram salvas. Se sair agora, elas serão perdidas.',
+  confirm: 'Sair sem salvar',
+  cancel: 'Continuar editando',
+} as const;

@@ -17,10 +17,13 @@ import {
   useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import UnsavedChangesDialog from '@/components/common/modal/UnsavedChangesDialog';
+import { useGuardedExit } from '@/hooks';
 import { MediaItem } from '@/store/slices/types';
 
 import AddImagesDialog from './components/AddImagesDialog';
@@ -81,6 +84,8 @@ export default function ImagePageForm({
   } = useImagePageForm({ isCreation: fromTemplatePage, page: loadedPage });
 
   useUnsavedChangesGuard(isDirty);
+  // Sair pelo botão da própria tela passa pela mesma confirmação do menu.
+  const exit = useGuardedExit(isDirty, IMAGE_PAGE_ROUTES.MANAGE);
 
   const totalImages = countMedia(sections);
 
@@ -293,26 +298,53 @@ export default function ImagePageForm({
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          type="button"
-          onClick={save}
-          disabled={saving}
-          fullWidth={isMobile}
-          startIcon={
-            saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />
-          }
-          sx={{ minHeight: 44, textTransform: 'none', px: 3 }}
+        <Stack
+          direction={{ xs: 'column-reverse', sm: 'row' }}
+          spacing={1.25}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
-          {saving ? 'Salvando...' : 'Salvar Galeria'}
-        </Button>
+          {!fromTemplatePage && (
+            <Button
+              variant="outlined"
+              size="large"
+              type="button"
+              onClick={exit.requestExit}
+              disabled={saving}
+              fullWidth={isMobile}
+              startIcon={<ArrowBackIcon />}
+              sx={{ minHeight: 44, textTransform: 'none', px: 3 }}
+            >
+              Voltar para a lista
+            </Button>
+          )}
+
+          <Button
+            variant="contained"
+            size="large"
+            type="button"
+            onClick={save}
+            disabled={saving}
+            fullWidth={isMobile}
+            startIcon={
+              saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />
+            }
+            sx={{ minHeight: 44, textTransform: 'none', px: 3 }}
+          >
+            {saving ? 'Salvando...' : 'Salvar Galeria'}
+          </Button>
+        </Stack>
       </Paper>
 
       <AddImagesDialog
         open={sectionForImages !== null}
         onClose={() => setSectionForImages(null)}
         onConfirm={addImagesToSection}
+      />
+
+      <UnsavedChangesDialog
+        open={exit.confirming}
+        onStay={exit.cancelExit}
+        onLeave={exit.confirmExit}
       />
 
       <Snackbar

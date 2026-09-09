@@ -67,10 +67,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
               variant="subtitle1"
               fontWeight="bold"
               color={theme.palette.warning.main}
-              sx={{
-                fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-                lineHeight: 1.3,
-              }}
+              sx={{ lineHeight: 1.3 }}
             >
               {image.title}
             </Typography>
@@ -109,18 +106,16 @@ export default function IdeasImageGalleryView({ image }: Props) {
                   onError={() => setImageError(true)}
                 />
                 <Box
+                  // A dica de ampliar aparecia só no hover, que não existe no
+                  // toque: no celular nada indicava que a foto abria.
                   sx={{
                     position: 'absolute',
                     top: 8,
                     right: 8,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    backgroundColor: 'rgba(0,0,0,0.55)',
                     borderRadius: '50%',
-                    p: 0.5,
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
-                    '&:hover': {
-                      opacity: 1,
-                    },
+                    p: 0.75,
+                    display: 'flex',
                   }}
                 >
                   <ZoomInIcon sx={{ color: 'white', fontSize: '1.2rem' }} />
@@ -149,10 +144,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
               variant="body2"
               color="text.secondary"
               mb={{ xs: 1.5, sm: 2 }}
-              sx={{
-                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
-                lineHeight: 1.4,
-              }}
+              sx={{ lineHeight: 1.5 }}
             >
               {image.description}
             </Typography>

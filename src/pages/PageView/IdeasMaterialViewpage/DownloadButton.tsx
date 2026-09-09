@@ -74,16 +74,13 @@ export default function DownloadButton({
       size={size}
       fullWidth={fullWidth}
       sx={{
-        borderRadius: { xs: 1.5, sm: 2 },
+        borderRadius: 2,
         textTransform: 'none',
-        fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
-        py: { xs: 0.4, sm: 0.5, md: 0.75 },
-        minHeight: { xs: 28, sm: 32, md: 36 },
-        '&:hover': {
-          bgcolor: 'primary.dark',
-          transform: 'translateY(-1px)',
-        },
-        transition: 'all 0.2s ease',
+        // 44 px é o alvo mínimo de toque das telas do site; o botão vinha com
+        // 28 px de altura e letra de 0,7 rem no celular.
+        minHeight: 44,
+        px: 2,
+        '&:hover': { bgcolor: 'primary.dark' },
       }}
     >
       {loading ? 'Baixando...' : 'Baixar'}

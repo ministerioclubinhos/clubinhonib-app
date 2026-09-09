@@ -13,7 +13,11 @@ import {
 import {
   buildFileFieldName,
   buildWeekMaterialFormData,
+  countMediaOf,
   formatDate,
+  formatMediaSize,
+  mediaGroupsOf,
+  mediaSourceLabel,
   parseSortOption,
   selectMediaByType,
   toMediaRequest,
@@ -400,6 +404,71 @@ test.describe('contrato do resumo de /week-material-pages', () => {
     expect(parseSortOption('qualquer')).toEqual({
       sort: 'createdAt',
       order: 'DESC',
+    });
+  });
+});
+
+
+/**
+ * O que os detalhes da página mostram sobre cada mídia.
+ *
+ * A tela exibia a URL crua: para um arquivo enviado isso é o endereço do
+ * objeto no S3, ilegível e inútil para quem administra.
+ */
+test.describe('detalhes da página: mídias', () => {
+  test.describe('formatMediaSize', () => {
+    test('mostra KB abaixo de um mega e MB acima', () => {
+      expect(formatMediaSize(200 * 1024)).toBe('200 KB');
+      expect(formatMediaSize(2.5 * 1024 * 1024)).toBe('2,5 MB');
+    });
+
+    test('não inventa tamanho quando a API não mandou', () => {
+      expect(formatMediaSize(undefined)).toBe('');
+      expect(formatMediaSize(0)).toBe('');
+    });
+  });
+
+  test.describe('mediaSourceLabel', () => {
+    test('descreve o arquivo enviado com o peso', () => {
+      const item = {
+        ...storedUpload,
+        size: 1024 * 1024,
+      } as WeekMaterialResponse['documents'][number];
+
+      expect(mediaSourceLabel(item)).toBe('Arquivo enviado · 1,0 MB');
+    });
+
+    test('descreve o arquivo enviado sem peso quando ele não veio', () => {
+      const item = { ...storedUpload, size: undefined } as WeekMaterialResponse['documents'][number];
+
+      expect(mediaSourceLabel(item)).toBe('Arquivo enviado');
+    });
+
+    test('descreve o link pela plataforma', () => {
+      const item = linkedVideo as WeekMaterialResponse['videos'][number];
+
+      expect(mediaSourceLabel(item)).toBe('Link · YouTube');
+    });
+  });
+
+  test.describe('mediaGroupsOf', () => {
+    test('agrupa na ordem das abas e descarta os tipos vazios', () => {
+      const page = material({
+        videos: [{ ...linkedVideo, id: 'v1' }] as WeekMaterialResponse['videos'],
+        documents: [{ ...storedUpload, id: 'd1' }] as WeekMaterialResponse['documents'],
+      });
+
+      expect(mediaGroupsOf(page).map((group) => group.label)).toEqual([
+        'Vídeos',
+        'Documentos',
+      ]);
+      expect(countMediaOf(page)).toBe(2);
+    });
+
+    test('página sem mídia nenhuma não gera aba', () => {
+      expect(mediaGroupsOf(material())).toEqual([]);
+      expect(countMediaOf(material())).toBe(0);
+      expect(countMediaOf(null)).toBe(0);
     });
   });
 });

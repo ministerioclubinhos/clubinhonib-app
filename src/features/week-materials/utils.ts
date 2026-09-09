@@ -1,12 +1,16 @@
 import { MediaItem, MediaType, MediaUploadType } from '@/store/slices/types';
+import { MEDIA_PLATFORM_LABELS } from '@/components/common/media/constants';
 import {
   WEEK_MATERIAL_CARD_DESCRIPTION_MAX_CHARS,
+  WEEK_MATERIAL_MEDIA_TABS,
   WEEK_MATERIAL_FALLBACK_FILE_EXTENSION,
   WEEK_MATERIAL_FILE_PREFIX,
   WEEK_MATERIAL_PAYLOAD_FIELD,
 } from './constants';
 import {
   WeekMaterialFormValues,
+  WeekMaterialMediaGroup,
+  WeekMaterialMediaResponse,
   WeekMaterialMediaDraft,
   WeekMaterialMediaRequest,
   WeekMaterialPageRequest,
@@ -175,4 +179,68 @@ export function totalMediaCount(summary: {
     summary.imageCount +
     summary.audioCount
   );
+}
+
+
+/**
+ * Tamanho de um arquivo enviado, em KB ou MB.
+ *
+ * Só entra na tela quando a API mandou o tamanho: um "0 KB" ao lado do nome do
+ * arquivo diz menos do que não dizer nada.
+ */
+export function formatMediaSize(size?: number): string {
+  if (!size || size <= 0) return '';
+
+  const kilobytes = size / 1024;
+  if (kilobytes < 1024) return `${Math.round(kilobytes)} KB`;
+
+  return `${(kilobytes / 1024).toFixed(1).replace('.', ',')} MB`;
+}
+
+/**
+ * De onde a mídia vem, em uma linha.
+ *
+ * Os detalhes mostravam a URL crua: para um upload isso é o endereço do objeto
+ * no S3, longo e sem sentido para quem administra. O que ajuda é saber se o
+ * material é arquivo ou link — e, no arquivo, quanto ele pesa.
+ */
+export function mediaSourceLabel(item: WeekMaterialMediaResponse): string {
+  const isUpload =
+    item.uploadType === MediaUploadType.UPLOAD || item.isLocalFile === true;
+
+  if (isUpload) {
+    const size = formatMediaSize(item.size);
+    return size ? `Arquivo enviado · ${size}` : 'Arquivo enviado';
+  }
+
+  const platform = item.platformType
+    ? MEDIA_PLATFORM_LABELS[item.platformType]
+    : undefined;
+
+  return platform ? `Link · ${platform}` : 'Link';
+}
+
+/**
+ * As mídias da página agrupadas por tipo, na ordem das abas, **sem os tipos
+ * vazios**.
+ *
+ * Uma aba que não tem nada a mostrar só ocupa espaço na tela de detalhes; e
+ * uma página sem mídia nenhuma devolve lista vazia, para a tela dizer isso uma
+ * vez em vez de repetir quatro vazios.
+ */
+export function mediaGroupsOf(
+  material: WeekMaterialResponse | null,
+): WeekMaterialMediaGroup[] {
+  if (!material) return [];
+
+  return WEEK_MATERIAL_MEDIA_TABS.map((tab) => ({
+    mediaType: tab.mediaType,
+    label: tab.label,
+    items: selectMediaByType(material, tab.mediaType),
+  })).filter((group) => group.items.length > 0);
+}
+
+/** Quantas mídias a página tem, somando os quatro tipos. */
+export function countMediaOf(material: WeekMaterialResponse | null): number {
+  return mediaGroupsOf(material).reduce((total, group) => total + group.items.length, 0);
 }

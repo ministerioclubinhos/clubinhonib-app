@@ -45,10 +45,7 @@ export default function IdeasDocumentViewer({ document }: Props) {
             variant="subtitle1"
             fontWeight="bold"
             color={theme.palette.error.main}
-            sx={{
-              fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-              lineHeight: 1.3,
-            }}
+            sx={{ lineHeight: 1.3 }}
           >
             {document.title}
           </Typography>
@@ -59,11 +56,7 @@ export default function IdeasDocumentViewer({ document }: Props) {
             variant="body2"
             color="text.secondary"
             mb={{ xs: 1.5, sm: 2 }}
-            sx={{
-              fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
-              lineHeight: 1.4,
-              flex: 1,
-            }}
+            sx={{ lineHeight: 1.5, flex: 1 }}
           >
             {document.description}
           </Typography>
@@ -84,12 +77,7 @@ export default function IdeasDocumentViewer({ document }: Props) {
               size="small"
               startIcon={<VisibilityIcon />}
               onClick={() => setOpen(true)}
-              sx={{
-                borderRadius: { xs: 1.5, sm: 2 },
-                fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
-                py: { xs: 0.4, sm: 0.5, md: 0.75 },
-                minHeight: { xs: 28, sm: 32, md: 36 },
-              }}
+              sx={{ borderRadius: 2, textTransform: 'none', minHeight: 44, px: 2 }}
             >
               Visualizar
             </Button>
@@ -101,12 +89,7 @@ export default function IdeasDocumentViewer({ document }: Props) {
                 size="small"
                 startIcon={<VisibilityIcon />}
                 disabled
-                sx={{
-                  borderRadius: 2,
-                  fontSize: { xs: '0.75rem', md: '0.8rem' },
-                  py: { xs: 0.5, md: 0.75 },
-                  minHeight: { xs: 32, md: 36 },
-                }}
+                sx={{ borderRadius: 2, textTransform: 'none', minHeight: 44, px: 2 }}
               >
                 Visualizar
               </Button>

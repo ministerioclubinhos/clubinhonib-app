@@ -15,10 +15,13 @@ import {
   useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import UnsavedChangesDialog from '@/components/common/modal/UnsavedChangesDialog';
+import { useGuardedExit } from '@/hooks';
 
 import IdeasSectionEditor from './components/IdeasSectionEditor';
 import { IDEAS_PAGE_ROUTES } from './constants';
@@ -81,6 +84,8 @@ export default function IdeasPageForm({
 
   const hasMediaDraft = Object.values(sectionDrafts).some(Boolean);
   useUnsavedChangesGuard(isDirty || hasMediaDraft);
+  // Sair pelo botão da própria tela passa pela mesma confirmação do menu.
+  const exit = useGuardedExit(isDirty || hasMediaDraft, IDEAS_PAGE_ROUTES.MANAGE);
 
   const totalMedia = countMedia(sections);
 
@@ -284,25 +289,52 @@ export default function IdeasPageForm({
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          type="button"
-          onClick={save}
-          disabled={saving}
-          fullWidth={isMobile}
-          startIcon={
-            saving ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <SaveIcon />
-            )
-          }
-          sx={{ minHeight: 44, textTransform: 'none', px: 3 }}
+        <Stack
+          direction={{ xs: 'column-reverse', sm: 'row' }}
+          spacing={1.25}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
-          {saving ? 'Salvando...' : 'Salvar Página'}
-        </Button>
+          {!fromTemplatePage && (
+            <Button
+              variant="outlined"
+              size="large"
+              type="button"
+              onClick={exit.requestExit}
+              disabled={saving}
+              fullWidth={isMobile}
+              startIcon={<ArrowBackIcon />}
+              sx={{ minHeight: 44, textTransform: 'none', px: 3 }}
+            >
+              Voltar para a lista
+            </Button>
+          )}
+
+          <Button
+            variant="contained"
+            size="large"
+            type="button"
+            onClick={save}
+            disabled={saving}
+            fullWidth={isMobile}
+            startIcon={
+              saving ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <SaveIcon />
+              )
+            }
+            sx={{ minHeight: 44, textTransform: 'none', px: 3 }}
+          >
+            {saving ? 'Salvando...' : 'Salvar Página'}
+          </Button>
+        </Stack>
       </Paper>
+
+      <UnsavedChangesDialog
+        open={exit.confirming}
+        onStay={exit.cancelExit}
+        onLeave={exit.confirmExit}
+      />
 
       <Snackbar
         open={Boolean(feedback)}

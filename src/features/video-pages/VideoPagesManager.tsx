@@ -39,7 +39,7 @@ export default function VideoPagesManager() {
     refresh,
   } = useVideoPages();
 
-  const { actionError, setActionError, remove } =
+  const { saving, actionError, setActionError, remove } =
     useVideoPageMutations(refresh);
 
   const [toDelete, setToDelete] = useState<VideoPageSummary | null>(null);
@@ -120,6 +120,10 @@ export default function VideoPagesManager() {
           title={toDelete?.title}
           onClose={() => setToDelete(null)}
           onConfirm={handleDelete}
+          // A exclusão apaga os arquivos no S3 antes de responder e leva segundos:
+          // sem travar o botão, o segundo clique dispara um DELETE que responde
+          // 404 e mostra erro de uma operação que deu certo.
+          loading={saving}
         />
       }
     >

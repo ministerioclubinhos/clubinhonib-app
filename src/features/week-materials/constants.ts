@@ -16,6 +16,9 @@ export const MULTIPART_HEADERS = {
   'Content-Type': 'multipart/form-data',
 } as const;
 
+/** Traço exibido no lugar de um dado que a página não tem. */
+export const EMPTY_VALUE = '—';
+
 /** Maximum characters of the description rendered in a card. */
 export const WEEK_MATERIAL_CARD_DESCRIPTION_MAX_CHARS = 100;
 

@@ -72,6 +72,9 @@ export const getErrorMessage = (
     }
 
     if (axios.isAxiosError(error)) {
+        // O 413 vem da camada de transporte, sem o envelope da API: sem este
+        // caso o aviso global mostrava "Request failed with status code 413".
+        if (error.response?.status === 413) return GENERIC_ERROR_MESSAGES.PAYLOAD_TOO_LARGE;
         if (error.response?.status === 500) return GENERIC_ERROR_MESSAGES.INTERNAL_SERVER;
         if (error.response?.status === 503) return GENERIC_ERROR_MESSAGES.SERVICE_UNAVAILABLE;
         if (error.code === 'ERR_NETWORK') return GENERIC_ERROR_MESSAGES.NETWORK_ERROR;
@@ -299,6 +302,11 @@ export const extractErrorMessage = (error: unknown, defaultMessage: string): str
 
         if (error.code === 'ERR_NETWORK') return GENERIC_ERROR_MESSAGES.NETWORK_ERROR;
         if (error.code === 'ECONNABORTED') return GENERIC_ERROR_MESSAGES.TIMEOUT;
+        // 413 não passa pelo envelope de erro da API: quem recusa é a camada de
+        // transporte. Sem este caso, um upload grande demais chegava ao
+        // administrador como "erro ao salvar", sem dizer que o problema era o
+        // tamanho do arquivo.
+        if (error.response?.status === 413) return GENERIC_ERROR_MESSAGES.PAYLOAD_TOO_LARGE;
         if (error.response?.status === 500) return GENERIC_ERROR_MESSAGES.INTERNAL_SERVER;
         if (error.response?.status === 503) return GENERIC_ERROR_MESSAGES.SERVICE_UNAVAILABLE;
         if (error.response?.status === 404) return 'Recurso não encontrado.';

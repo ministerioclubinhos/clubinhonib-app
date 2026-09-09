@@ -92,6 +92,33 @@ src/features/ideas-pages/
   a section is a decision of the shared-ideas screens, not a side effect of
   saving the page.
 
+### Public ideas page
+
+`src/pages/PageView/IdeasMaterialViewpage/` renders the page a teacher opens
+from a shared link (`/galeria_ideias_...`), mounted by `PageRenderer`:
+
+```text
+IdeasMaterialViewpage/
+├── IdeasPageView.tsx        # header, sections and the state of the open gallery
+├── MediaSection.tsx         # one section: title, description, one row per media type
+├── IdeasGalleryDialog.tsx   # the gallery of a media type, mounted once by the page
+├── IdeasVideoPlayerView.tsx # players and previews of a single item
+├── IdeasImageGalleryView.tsx
+├── IdeasDocumentViewer.tsx
+├── DownloadButton.tsx
+├── constants.tsx            # label, icon and colour of each media type
+└── utils.ts                 # grouping by type and the "N seções · N materiais" summary
+```
+
+- Mobile first: the header states what the page holds, sections are a single
+  column up to `md`, and the gallery is full screen on the phone.
+- The media type is the `MediaType` enum, never the strings `'videos'`,
+  `'documents'` or `'images'` compared by hand.
+- One gallery dialog for the whole page. It used to be one dialog per media type
+  per section, all `keepMounted` — nine live dialogs on a three-section page.
+- Admin actions (edit, delete) live in the header, not in floating buttons over
+  the content, and editing carries the page id in the route.
+
 ## 📚 Features
 
 - **Weekly Material Distribution**:

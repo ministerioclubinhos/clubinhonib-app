@@ -52,6 +52,15 @@ export interface WeekMaterialResponse {
 }
 
 /**
+ * Mídias de um tipo, do jeito que os detalhes as apresentam: um grupo por aba.
+ */
+export interface WeekMaterialMediaGroup {
+  mediaType: MediaType;
+  label: string;
+  items: WeekMaterialMediaResponse[];
+}
+
+/**
  * Resumo da página na listagem do painel.
  *
  * A listagem não traz as mídias: só quantas há de cada tipo, que é o que o

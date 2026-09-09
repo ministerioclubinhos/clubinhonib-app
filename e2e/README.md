@@ -67,6 +67,22 @@ Nem as seções nem as mídias vêm ordenadas pela API, e os botões de remover 
 numerados pela posição na tela. Os testes por isso releem a página antes de clicar e calculam a posição do
 alvo (`positionOf`): um número fixo removeria outro item quando o banco devolvesse a lista em outra ordem.
 
+## Proteções da tela de edição
+
+`edit/pages-edit-safety.spec.ts` cobre o que protege o administrador enquanto ele edita: a mensagem que a
+API recusou chega inteira ao formulário (o teste força um 422 com `page.route`), sair pelo menu ou pelo
+botão "Voltar para a lista" com rascunho pendente pede confirmação — e "Continuar editando" preserva o que
+estava digitado —, e o botão de excluir fica travado enquanto a exclusão acontece (o teste atrasa o
+`DELETE` para reproduzir a janela em que o clique duplo cabia).
+
+## Página pública de ideias
+
+`flows/ideas-page-view.spec.ts` cobre a tela que o professor abre pelo link compartilhado: o cabeçalho
+resume o que a página tem, cada seção vira um cartão com uma linha por tipo de mídia, a galeria abre só o
+tipo daquela seção, e no celular a página não rola para o lado e a galeria ocupa a tela inteira. O último
+cenário guarda a edição pelo cabeçalho, que antes ia para `/adm/editar-pagina-ideias` sem o id — uma rota
+que não existe.
+
 ## Convenções
 
 - Cada teste cria seus dados pela API (`support/api.ts`) com `uniqueSuffix()` e os remove em `afterAll`.
