@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { gradients } from "@/theme";
 import { extractErrorMessage } from "@/utils/apiError";
 import {
@@ -10,6 +10,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  LinearProgress,
   Paper,
   ToggleButton,
   ToggleButtonGroup,
@@ -21,7 +22,6 @@ import EventIcon from "@mui/icons-material/Event";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
 
 import { motion } from "framer-motion";
 
@@ -34,14 +34,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { setEvents } from "@/store/slices/events/eventsSlice";
 import { UserRole } from "@/types/shared";
-import { displayDate, type AppEvent } from "@/features/events";
+import {
+  apiListEvents,
+  buildEventCalendarQuery,
+  buildEventCardsQuery,
+  displayDate,
+  EventCardsPeriod,
+  EventsViewMode,
+  type AppEvent,
+} from "@/features/events";
 
 import EventDetailsModal from "./EventDetailsModal";
 import EventFormModal from "./EventFormModal";
 import EventsCardsView from "./EventsCardsView";
 import EventsCalendarView from "./EventsCalendarView";
 
-type ViewMode = "cards" | "calendar";
 type AddEditMode = "add" | "edit";
 
 /**
@@ -50,7 +57,10 @@ type AddEditMode = "add" | "edit";
  * `date` pode vir vazio em registros antigos; a tela ordena por data, então
  * cai para a data da mídia ou a de criação em vez de mostrar um vazio.
  */
-type RawEvent = Omit<AppEvent, 'date'> & { date?: string | null };
+type RawEvent = Omit<AppEvent, 'date' | 'media'> & {
+  date?: string | null;
+  media?: AppEvent['media'] | null;
+};
 
 /**
  * Prepara os eventos para a tela.
@@ -68,6 +78,7 @@ const mapEventsForDisplay = (raw: RawEvent[]): AppEvent[] =>
     return {
       ...evento,
       date: displayDate({ date: base, occurrences: evento.occurrences }),
+      media: evento.media ?? undefined,
     };
   });
 
@@ -80,10 +91,14 @@ export default function EventosPage() {
 
   const isAdmin = Boolean(isAuthenticated && user?.role === UserRole.ADMIN);
 
-  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  const [viewMode, setViewMode] = useState(EventsViewMode.CALENDAR);
+  const [cardsPeriod, setCardsPeriod] = useState(EventCardsPeriod.WEEK);
+  const [calendarMonth, setCalendarMonth] = useState(dayjs().format("YYYY-MM-DD"));
 
   const [eventos, setEventosState] = useState<AppEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const latestRequestId = useRef(0);
 
   const [eventoSelecionado, setEventoSelecionado] = useState<AppEvent | null>(null);
 
@@ -95,33 +110,49 @@ export default function EventosPage() {
   const [deleteTargetEvent, setDeleteTargetEvent] = useState<AppEvent | null>(null);
   const [error, setError] = useState("");
 
+  const eventQuery = useMemo(
+    () =>
+      viewMode === EventsViewMode.CARDS
+        ? buildEventCardsQuery(cardsPeriod)
+        : buildEventCalendarQuery(calendarMonth),
+    [calendarMonth, cardsPeriod, viewMode],
+  );
+
   const fetchEventos = useCallback(async () => {
+    const requestId = latestRequestId.current + 1;
+    latestRequestId.current = requestId;
     setLoading(true);
     try {
-      const res = await api.get("/events");
-      const mapped = mapEventsForDisplay(res.data || []);
+      const mapped = mapEventsForDisplay(await apiListEvents(eventQuery));
+      if (requestId !== latestRequestId.current) return;
       dispatch(setEvents(mapped));
       setEventosState(mapped);
       setError("");
     } catch (err: unknown) {
+      if (requestId !== latestRequestId.current) return;
       // Sem isto a falha virava uma agenda vazia, indistinguível de não haver
       // evento nenhum.
       setError(extractErrorMessage(err, "Erro ao carregar a agenda"));
       setEventosState([]);
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestId.current) {
+        setLoading(false);
+        setHasLoaded(true);
+      }
     }
-  }, [dispatch]);
+  }, [dispatch, eventQuery]);
 
   useEffect(() => {
-    fetchEventos();
+    void fetchEventos();
+
+    return () => {
+      latestRequestId.current += 1;
+    };
   }, [fetchEventos]);
 
   const eventosOrdenados = useMemo(() => {
     return [...eventos].sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
   }, [eventos]);
-
-  const naoTemEventos = eventosOrdenados.length === 0;
 
   const openAddModal = () => {
     setDialogAddEditMode("add");
@@ -157,7 +188,7 @@ export default function EventosPage() {
     }
   };
 
-  if (loading) {
+  if (loading && !hasLoaded) {
     return (
       <Box data-testid="event-eventos-page"
         sx={{
@@ -260,15 +291,22 @@ export default function EventosPage() {
                 }}
               >
                 <ToggleButtonGroup
+                  data-testid="event-view-options"
                   value={viewMode}
                   exclusive
-                  onChange={(_, val) => val && setViewMode(val)}
+                  disabled={loading}
+                  onChange={(_, nextMode: EventsViewMode | null) => {
+                    if (nextMode) setViewMode(nextMode);
+                  }}
                   sx={{
+                    width: { xs: "100%", sm: "auto" },
                     bgcolor: "rgba(255,255,255,0.75)",
                     borderRadius: 2.5,
                     p: 0.5,
                     backdropFilter: "blur(10px)",
                     "& .MuiToggleButton-root": {
+                      minHeight: 44,
+                      flex: { xs: 1, sm: "initial" },
                       border: 0,
                       borderRadius: 1.75,
                       px: { xs: 1.2, sm: 2 },
@@ -279,11 +317,19 @@ export default function EventosPage() {
                     },
                   }}
                 >
-                  <ToggleButton value="cards">
+                  <ToggleButton
+                    data-testid="event-view-cards"
+                    type="button"
+                    value={EventsViewMode.CARDS}
+                  >
                     <ViewModuleIcon fontSize="small" style={{ marginRight: 4 }} />
                     Cards
                   </ToggleButton>
-                  <ToggleButton value="calendar">
+                  <ToggleButton
+                    data-testid="event-view-calendar"
+                    type="button"
+                    value={EventsViewMode.CALENDAR}
+                  >
                     <CalendarMonthIcon fontSize="small" style={{ marginRight: 4 }} />
                     Calendário
                   </ToggleButton>
@@ -301,70 +347,50 @@ export default function EventosPage() {
             px: { xs: 0.5, md: 1 },
           }}
         >
-          {viewMode === "calendar" ? (
-            <EventsCalendarView
-              eventos={eventosOrdenados}
-              isAdmin={isAdmin}
-              onOpenDetails={(e) => setEventoSelecionado(e)}
-              onAdd={openAddModal}
-              onEdit={openEditModal}
-              onDelete={openDeleteModal}
+          {loading ? (
+            <LinearProgress
+              data-testid="event-events-refreshing"
+              color="success"
+              aria-label="Atualizando eventos"
+              sx={{ mb: 1.5, borderRadius: 999 }}
             />
-          ) : naoTemEventos ? (
-            <Paper
-              elevation={0}
-              sx={{
-                p: 6,
-                textAlign: "center",
-                borderRadius: 4,
-                background: "rgba(255, 255, 255, 0.8)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
-              }}
-            >
-              <EventIcon sx={{ fontSize: 80, color: "text.secondary", mb: 3, opacity: 0.6 }} />
+          ) : null}
 
-              <Typography variant="h4" fontWeight={700} color="text.secondary" gutterBottom sx={{ mb: 2 }}>
-                Nenhum evento encontrado
-              </Typography>
-
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 4, opacity: 0.8 }}>
-                Não há eventos cadastrados no momento. Volte em breve!
-              </Typography>
-
-              {isAdmin && (
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={openAddModal}
-                  size="large"
-                  sx={{
-                    borderRadius: 3,
-                    py: { xs: 1, md: 1.5 },
-                    px: { xs: 2, md: 4 },
-                    fontWeight: 700,
-                    textTransform: "none",
-                    fontSize: { xs: "0.85rem", md: "1.1rem" },
-                    backgroundColor: "#009933",
-                    color: "#FFFFFF",
-                    "&:hover": { backgroundColor: "#007a29", transform: "translateY(-2px)" },
-                    transition: "all 0.25s ease",
-                  }}
-                >
-                  Adicionar Primeiro Evento
-                </Button>
-              )}
-            </Paper>
-          ) : (
-            <EventsCardsView
-              eventos={eventosOrdenados}
-              isAdmin={isAdmin}
-              onOpenDetails={(e) => setEventoSelecionado(e)}
-              onEdit={openEditModal}
-              onDelete={openDeleteModal}
-              onAdd={openAddModal}
-            />
-          )}
+          <Box
+            data-testid="event-events-results"
+            aria-busy={loading}
+            sx={{
+              opacity: loading ? 0.55 : 1,
+              pointerEvents: loading ? "none" : "auto",
+              transition: "opacity 160ms ease",
+            }}
+          >
+            {viewMode === EventsViewMode.CALENDAR ? (
+              <EventsCalendarView
+                eventos={eventosOrdenados}
+                isAdmin={isAdmin}
+                isLoading={loading}
+                calendarMonth={calendarMonth}
+                onCalendarMonthChange={setCalendarMonth}
+                onOpenDetails={(e) => setEventoSelecionado(e)}
+                onAdd={openAddModal}
+                onEdit={openEditModal}
+                onDelete={openDeleteModal}
+              />
+            ) : (
+              <EventsCardsView
+                eventos={eventosOrdenados}
+                isAdmin={isAdmin}
+                isLoading={loading}
+                period={cardsPeriod}
+                onPeriodChange={setCardsPeriod}
+                onOpenDetails={(e) => setEventoSelecionado(e)}
+                onEdit={openEditModal}
+                onDelete={openDeleteModal}
+                onAdd={openAddModal}
+              />
+            )}
+          </Box>
         </Box>
 
         {eventoSelecionado && (

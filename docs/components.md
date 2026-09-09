@@ -94,6 +94,11 @@ O modo de cards de `/eventos` pertence à feature `src/features/events/` e segue
 uma hierarquia temporal única:
 
 - eventos de hoje e futuros ficam visíveis em ordem cronológica;
+- a grade abre em `Esta semana` e pode ser ampliada para `Este mês` ou `Todos`,
+  fazendo uma nova consulta à API a cada troca; semana e mês enviam `from/to`,
+  enquanto `Todos` pede a agenda completa;
+- o calendário consulta somente o mês visível e pede outro recorte ao servidor
+  sempre que a pessoa avança ou volta um mês;
 - eventos realizados ficam em uma seção secundária, recolhida inicialmente;
 - os selos `Hoje`, `Amanhã`, `Em breve`, `Programado` e `Realizado` usam cores
   semânticas da paleta Material UI;

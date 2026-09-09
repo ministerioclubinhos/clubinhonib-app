@@ -1,4 +1,10 @@
-import { EventAudience, EventCardStatus, EventType, Weekday } from './types';
+import {
+  EventAudience,
+  EventCardStatus,
+  EventCardsPeriod,
+  EventType,
+  Weekday,
+} from './types';
 import type { ChipProps } from '@mui/material';
 
 /** Caminho base dos endpoints de evento. */
@@ -69,6 +75,20 @@ export const EVENT_CARD_STATUS_LABELS: Record<EventCardStatus, string> = {
   [EventCardStatus.SOON]: 'Em breve',
   [EventCardStatus.LATER]: 'Programado',
   [EventCardStatus.PAST]: 'Realizado',
+};
+
+/** Opções do recorte temporal mostrado na grade de cards. */
+export const EVENT_CARDS_PERIOD_LABELS: Record<EventCardsPeriod, string> = {
+  [EventCardsPeriod.WEEK]: 'Esta semana',
+  [EventCardsPeriod.MONTH]: 'Este mês',
+  [EventCardsPeriod.ALL]: 'Todos',
+};
+
+/** Explicação curta do recorte selecionado. */
+export const EVENT_CARDS_PERIOD_DESCRIPTIONS: Record<EventCardsPeriod, string> = {
+  [EventCardsPeriod.WEEK]: 'De hoje até domingo.',
+  [EventCardsPeriod.MONTH]: 'De hoje até o fim do mês.',
+  [EventCardsPeriod.ALL]: 'Agenda completa, incluindo eventos anteriores.',
 };
 
 /** Cores semânticas dos selos, todas vindas da paleta Material UI. */

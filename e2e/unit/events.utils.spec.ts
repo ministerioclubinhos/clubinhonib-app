@@ -5,12 +5,15 @@ import {
   AppEvent,
   EventAudience,
   EventCardStatus,
+  EventCardsPeriod,
   EventResponse,
   EventType,
   Weekday,
 } from '@/features/events/types';
 import {
   buildEventFormData,
+  buildEventCalendarQuery,
+  buildEventCardsQuery,
   describeRecurrence,
   displayDate,
   eventTimeLabel,
@@ -156,6 +159,28 @@ test.describe('utils de eventos', () => {
     test('formata a contagem no singular e no plural', () => {
       expect(formatEventCount(1)).toBe('1 evento');
       expect(formatEventCount(3)).toBe('3 eventos');
+    });
+
+    test('envia o restante da semana para a API', () => {
+      expect(buildEventCardsQuery(EventCardsPeriod.WEEK, referenceDate)).toEqual({
+        from: '2026-04-12',
+        to: '2026-04-12',
+      });
+    });
+
+    test('envia o restante do mês ou nenhum recorte em todos', () => {
+      expect(buildEventCardsQuery(EventCardsPeriod.MONTH, referenceDate)).toEqual({
+        from: '2026-04-12',
+        to: '2026-04-30',
+      });
+      expect(buildEventCardsQuery(EventCardsPeriod.ALL, referenceDate)).toEqual({});
+    });
+
+    test('envia somente o mês visível do calendário para a API', () => {
+      expect(buildEventCalendarQuery('2026-09-08')).toEqual({
+        from: '2026-09-01',
+        to: '2026-09-30',
+      });
     });
   });
 

@@ -1,10 +1,10 @@
 import api from '@/config/axiosConfig';
 import { EVENTS_ENDPOINT, MULTIPART_HEADERS } from './constants';
-import { EventResponse } from './types';
+import { EventListQuery, EventResponse } from './types';
 
-/** Lista todos os eventos, do mais antigo para o mais novo. */
-export async function apiListEvents(): Promise<EventResponse[]> {
-  const { data } = await api.get<EventResponse[]>(EVENTS_ENDPOINT);
+/** Lista os eventos do recorte pedido, do mais antigo para o mais novo. */
+export async function apiListEvents(query: EventListQuery = {}): Promise<EventResponse[]> {
+  const { data } = await api.get<EventResponse[]>(EVENTS_ENDPOINT, { params: query });
   return data ?? [];
 }
 

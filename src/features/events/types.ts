@@ -21,6 +21,19 @@ export enum EventCardStatus {
   PAST = 'past',
 }
 
+/** Recorte temporal disponível na visualização em cards. */
+export enum EventCardsPeriod {
+  WEEK = 'week',
+  MONTH = 'month',
+  ALL = 'all',
+}
+
+/** Visualizações disponíveis na agenda pública. */
+export enum EventsViewMode {
+  CARDS = 'cards',
+  CALENDAR = 'calendar',
+}
+
 /**
  * Modelo consumido pela tela legada de agenda.
  *
@@ -86,6 +99,22 @@ export interface EventCardDateParts {
 export interface EventsCardsViewProps {
   eventos: AppEvent[];
   isAdmin: boolean;
+  isLoading: boolean;
+  period: EventCardsPeriod;
+  onPeriodChange: (period: EventCardsPeriod) => void;
+  onOpenDetails: (event: AppEvent) => void;
+  onAdd: () => void;
+  onEdit: (event: AppEvent) => void;
+  onDelete: (event: AppEvent) => void;
+}
+
+/** Contrato do calendário mensal controlado pela página. */
+export interface EventsCalendarViewProps {
+  eventos: AppEvent[];
+  isAdmin: boolean;
+  isLoading: boolean;
+  calendarMonth: string;
+  onCalendarMonthChange: (month: string) => void;
   onOpenDetails: (event: AppEvent) => void;
   onAdd: () => void;
   onEdit: (event: AppEvent) => void;
@@ -156,6 +185,14 @@ export interface EventResponse {
   media: EventMediaResponse | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Parâmetros aceitos por `GET /events`. */
+export interface EventListQuery {
+  /** Primeiro dia incluído, em `YYYY-MM-DD`. */
+  from?: string;
+  /** Último dia incluído, em `YYYY-MM-DD`. */
+  to?: string;
 }
 
 /**

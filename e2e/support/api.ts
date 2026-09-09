@@ -36,6 +36,18 @@ export class ApiClient {
     return (text ? JSON.parse(text) : null) as T;
   }
 
+  /**
+   * Status de um GET, sem exigir sucesso.
+   *
+   * `get` reprova qualquer resposta que não seja 2xx, então não serve para
+   * provar que algo deixou de existir — que é justamente o que os testes de
+   * exclusão precisam afirmar.
+   */
+  async statusOf(path: string): Promise<number> {
+    const res = await this.ctx.get(path, { headers: this.headers() });
+    return res.status();
+  }
+
   async post<T>(path: string, data?: unknown): Promise<T> {
     const res = await this.ctx.post(path, { headers: this.headers(), data });
     expect(res.ok(), `POST ${path} -> ${res.status()} ${await res.text()}`).toBeTruthy();

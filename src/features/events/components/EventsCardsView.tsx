@@ -7,6 +7,8 @@ import {
   Fab,
   Paper,
   Stack,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
   alpha,
   useTheme,
@@ -18,15 +20,26 @@ import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import { motion } from 'framer-motion';
 
-import { EventCardStatus } from '../types';
+import {
+  EVENT_CARDS_PERIOD_DESCRIPTIONS,
+  EVENT_CARDS_PERIOD_LABELS,
+} from '../constants';
+import { EventCardStatus, EventCardsPeriod } from '../types';
 import type { EventsCardsViewProps } from '../types';
-import { formatEventCount, getEventCardStatus, groupEventsForCards } from '../utils';
+import {
+  formatEventCount,
+  getEventCardStatus,
+  groupEventsForCards,
+} from '../utils';
 import EventCard from './EventCard';
 
 /** Visualização da agenda em cards, organizada por relevância temporal. */
 export default function EventsCardsView({
   eventos,
   isAdmin,
+  isLoading,
+  period,
+  onPeriodChange,
   onOpenDetails,
   onAdd,
   onEdit,
@@ -94,8 +107,76 @@ export default function EventsCardsView({
             />
           </Stack>
 
+          <Paper
+            data-testid="event-cards-period-filter"
+            variant="outlined"
+            sx={{
+              mb: 2,
+              p: { xs: 1.25, sm: 1.5 },
+              borderRadius: 3,
+              bgcolor: alpha(theme.palette.background.paper, 0.76),
+            }}
+          >
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              alignItems={{ xs: 'stretch', sm: 'center' }}
+              justifyContent="space-between"
+              spacing={1.25}
+            >
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                  Mostrar eventos
+                </Typography>
+                <Typography
+                  data-testid="event-cards-period-description"
+                  variant="caption"
+                  color="text.secondary"
+                >
+                  {EVENT_CARDS_PERIOD_DESCRIPTIONS[period]}
+                </Typography>
+              </Box>
+
+              <ToggleButtonGroup
+                data-testid="event-cards-period-options"
+                value={period}
+                exclusive
+                color="success"
+                disabled={isLoading}
+                aria-label="Período dos eventos"
+                onChange={(_, nextPeriod: EventCardsPeriod | null) => {
+                  if (nextPeriod) onPeriodChange(nextPeriod);
+                }}
+                sx={{
+                  alignSelf: { xs: 'stretch', sm: 'center' },
+                  '& .MuiToggleButton-root': {
+                    minHeight: 44,
+                    flex: { xs: 1, sm: 'initial' },
+                    px: { xs: 1, sm: 2 },
+                    borderColor: 'divider',
+                    textTransform: 'none',
+                    fontWeight: 800,
+                    whiteSpace: 'nowrap',
+                  },
+                }}
+              >
+                {Object.values(EventCardsPeriod).map((option) => (
+                  <ToggleButton
+                    key={option}
+                    data-testid={`event-cards-period-${option}`}
+                    type="button"
+                    value={option}
+                    aria-label={EVENT_CARDS_PERIOD_LABELS[option]}
+                  >
+                    {EVENT_CARDS_PERIOD_LABELS[option]}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </Stack>
+          </Paper>
+
           {groups.upcoming.length > 0 ? (
             <Box
+              data-testid="event-upcoming-events-grid"
               sx={{
                 display: 'grid',
                 gridTemplateColumns: {
@@ -134,10 +215,12 @@ export default function EventsCardsView({
             >
               <EventBusyOutlinedIcon sx={{ color: 'text.disabled', fontSize: 44, mb: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                Nenhum próximo evento
+                Nenhum evento neste período
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Os novos encontros aparecerão aqui assim que forem publicados.
+                {period === EventCardsPeriod.ALL
+                  ? 'Os novos eventos aparecerão aqui quando forem cadastrados.'
+                  : 'Escolha outro período para explorar o restante da agenda.'}
               </Typography>
             </Paper>
           )}

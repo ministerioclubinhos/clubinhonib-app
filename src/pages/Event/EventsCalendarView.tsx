@@ -36,17 +36,9 @@ import {
   expandAllOccurrences,
   isClubMeeting,
   type AppEvent,
+  type EventsCalendarViewProps,
 } from "@/features/events";
 import "./EventsCalendarView.css";
-
-type Props = {
-  eventos: AppEvent[];
-  isAdmin: boolean;
-  onOpenDetails: (e: AppEvent) => void;
-  onAdd: () => void;
-  onEdit: (e: AppEvent) => void;
-  onDelete: (e: AppEvent) => void;
-};
 
 type DayKey = string;
 const toDayKey = (d: Dayjs) => d.format("YYYY-MM-DD");
@@ -67,12 +59,15 @@ function getStatusColor(dateISO: string) {
 export default function EventsCalendarView({
   eventos,
   isAdmin,
+  isLoading,
+  calendarMonth,
+  onCalendarMonthChange,
   onOpenDetails,
   onAdd,
   onEdit,
   onDelete,
-}: Props) {
-  const [currentMonth, setCurrentMonth] = useState<Dayjs>(dayjs());
+}: EventsCalendarViewProps) {
+  const currentMonth = useMemo(() => dayjs(calendarMonth), [calendarMonth]);
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogEvents, setDialogEvents] = useState<AppEvent[]>([]);
@@ -150,11 +145,17 @@ export default function EventsCalendarView({
   };
 
   const handlePrevMonth = () => {
-    setCurrentMonth(currentMonth.subtract(1, "month"));
+    const previousMonth = currentMonth.subtract(1, "month");
+    setSelectedDate(previousMonth.startOf("month"));
+    setDialogOpen(false);
+    onCalendarMonthChange(previousMonth.format("YYYY-MM-DD"));
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(currentMonth.add(1, "month"));
+    const nextMonth = currentMonth.add(1, "month");
+    setSelectedDate(nextMonth.startOf("month"));
+    setDialogOpen(false);
+    onCalendarMonthChange(nextMonth.format("YYYY-MM-DD"));
   };
 
   const weekDayLabels = ["D", "S", "T", "Q", "Q", "S", "S"];
@@ -165,7 +166,7 @@ export default function EventsCalendarView({
   return (
     <>
       <motion.div data-testid="event-events-calendar-view" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}>
-        <Paper elevation={0} className="events-paper-root">
+        <Paper elevation={0} className="events-paper-root" aria-busy={isLoading}>
           <Box className="events-header-box">
             {isMobile ? (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 1 }}>
@@ -178,11 +179,13 @@ export default function EventsCalendarView({
                 {isAdmin && (
                   <Button
                     onClick={onAdd}
+                    disabled={isLoading}
                     startIcon={<AddIcon sx={{ width: 16, height: 16 }} />}
                     variant="contained"
                     size="small"
                     sx={{
                       minWidth: 'auto',
+                      minHeight: 44,
                       px: 1.5,
                       py: 0.5,
                       borderRadius: 2,
@@ -214,7 +217,13 @@ export default function EventsCalendarView({
                   </Box>
 
                   {isAdmin && (
-                    <Button onClick={onAdd} startIcon={<AddIcon />} variant="contained" className="events-add-button">
+                    <Button
+                      onClick={onAdd}
+                      disabled={isLoading}
+                      startIcon={<AddIcon />}
+                      variant="contained"
+                      className="events-add-button"
+                    >
                       Novo
                     </Button>
                   )}
@@ -227,11 +236,27 @@ export default function EventsCalendarView({
 
           <Box className="events-calendar-box">
             <Box className="custom-calendar-header">
-              <IconButton onClick={handlePrevMonth} className="month-nav-button" aria-label="Mês anterior">
+              <IconButton
+                data-testid="event-calendar-previous-month"
+                type="button"
+                onClick={handlePrevMonth}
+                disabled={isLoading}
+                className="month-nav-button"
+                aria-label="Mês anterior"
+                sx={{ width: 44, height: 44 }}
+              >
                 <ChevronLeftIcon />
               </IconButton>
               <Typography className="month-label">{monthLabel}</Typography>
-              <IconButton onClick={handleNextMonth} className="month-nav-button" aria-label="Próximo mês">
+              <IconButton
+                data-testid="event-calendar-next-month"
+                type="button"
+                onClick={handleNextMonth}
+                disabled={isLoading}
+                className="month-nav-button"
+                aria-label="Próximo mês"
+                sx={{ width: 44, height: 44 }}
+              >
                 <ChevronRightIcon />
               </IconButton>
             </Box>
@@ -335,7 +360,7 @@ export default function EventsCalendarView({
         </Paper>
       </motion.div>
 
-      <Dialog data-testid="event-events-calendar-view"
+      <Dialog data-testid="event-calendar-day-dialog"
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         fullWidth

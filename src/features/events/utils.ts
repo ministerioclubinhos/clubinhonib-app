@@ -4,7 +4,9 @@ import {
   EventCardDateParts,
   EventCardGroups,
   EventCardStatus,
+  EventCardsPeriod,
   EventFormValues,
+  EventListQuery,
   EventMediaRequest,
   EventRequest,
   EventResponse,
@@ -113,6 +115,49 @@ export const groupEventsForCards = (
   past.sort((left, right) => eventTimestamp(right) - eventTimestamp(left));
 
   return { upcoming, past };
+};
+
+/**
+ * Monta o recorte que a grade de cards envia à API.
+ *
+ * "Esta semana" considera o restante da semana atual, até domingo; "Este
+ * mês", o restante do mês. "Todos" não envia limites.
+ */
+export const buildEventCardsQuery = (
+  period: EventCardsPeriod,
+  referenceDate = new Date(),
+): EventListQuery => {
+  if (period === EventCardsPeriod.ALL) return {};
+
+  const start = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    referenceDate.getDate(),
+  );
+
+  let end: Date;
+  if (period === EventCardsPeriod.WEEK) {
+    const daysUntilSunday = (7 - start.getDay()) % 7;
+    end = new Date(
+      start.getFullYear(),
+      start.getMonth(),
+      start.getDate() + daysUntilSunday,
+    );
+  } else {
+    end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+  }
+
+  return { from: toDayKey(start), to: toDayKey(end) };
+};
+
+/** Recorte enviado à API quando o calendário exibe um mês. */
+export const buildEventCalendarQuery = (calendarMonth: string): EventListQuery => {
+  const parsedMonth = toEventDay(calendarMonth);
+  const targetMonth = Number.isNaN(parsedMonth.getTime()) ? new Date() : parsedMonth;
+  const start = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1);
+  const end = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0);
+
+  return { from: toDayKey(start), to: toDayKey(end) };
 };
 
 /** Contagem curta e com plural correto para os títulos das seções. */
