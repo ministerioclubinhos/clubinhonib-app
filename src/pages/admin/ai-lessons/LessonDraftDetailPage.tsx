@@ -8,6 +8,10 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   FormControl,
   FormControlLabel,
@@ -30,6 +34,7 @@ import {
   AutoAwesome,
   Check,
   Download,
+  PictureAsPdf,
   RateReview,
   EditNote,
   AutoStories,
@@ -146,6 +151,11 @@ export const LessonDraftDetailPage: React.FC = () => {
   const [visualType, setVisualType] = useState<LessonVisualType | ''>('');
   const [visualOrientation, setVisualOrientation] = useState<LessonVisualOrientation | ''>('');
   const [visualQuantity, setVisualQuantity] = useState<number | ''>('');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
 
   const stage = useMemo(() => lesson?.stages.find((item) => item.type === selectedType), [lesson, selectedType]);
   const version = stage?.versions.find((item) => item.id === stage.currentVersionId);
@@ -215,6 +225,17 @@ export const LessonDraftDetailPage: React.FC = () => {
   };
 
   const action = (mutation: typeof complete, target: LessonStage) => mutation.mutate({ id, stage: target.type });
+
+  const openStagePreview = async () => {
+    if (!stage || edited) return;
+    setPreviewLoading(true); setPreviewError(null);
+    try {
+      const blob = await aiLessonsService.previewStagePdf(id, stage.type);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(URL.createObjectURL(blob));
+    } catch { setPreviewError('Não foi possível gerar o preview. Verifique se o LibreOffice está instalado no servidor.'); }
+    finally { setPreviewLoading(false); }
+  };
 
   return (
     <Box
@@ -733,11 +754,22 @@ export const LessonDraftDetailPage: React.FC = () => {
                           structuredDataJson: version?.structuredDataJson,
                           changeSummary: 'Revisão manual',
                         },
-                      })
+                      }, { onSuccess: () => setEdited(null) })
                     }
                     sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 600 }}
                   >
                     Salvar edição
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={previewLoading ? <CircularProgress size={18} /> : <PictureAsPdf />}
+                    disabled={!stage.currentVersionId || Boolean(edited) || previewLoading}
+                    onClick={() => void openStagePreview()}
+                    sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 600 }}
+                  >
+                    {edited ? 'Salve para visualizar' : 'Visualizar PDF do item'}
                   </Button>
 
                   <Button
@@ -875,6 +907,13 @@ export const LessonDraftDetailPage: React.FC = () => {
           )}
         </Box>
       </Box>
+      <Dialog open={Boolean(previewUrl) || Boolean(previewError)} onClose={() => { if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); setPreviewError(null); }} fullWidth maxWidth="lg" fullScreen={false} PaperProps={{ sx: { height: { xs: '92dvh', md: '90vh' }, m: { xs: 1, md: 4 } } }}>
+        <DialogTitle sx={{ fontWeight: 800 }}>Preview final — {stage ? LABELS[stage.type] : 'Item'}</DialogTitle>
+        <DialogContent dividers sx={{ p: { xs: 0.5, md: 1.5 }, display: 'flex', flexDirection: 'column' }}>
+          {previewError ? <Alert severity="error">{previewError}</Alert> : previewUrl ? <Box component="iframe" title="Preview do PDF do item" src={previewUrl} sx={{ border: 0, width: '100%', flex: 1, minHeight: { xs: 520, md: 650 }, bgcolor: 'grey.100' }} /> : null}
+        </DialogContent>
+        <DialogActions><Button onClick={() => { if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); setPreviewError(null); }}>Fechar</Button>{previewUrl && <Button component="a" href={previewUrl} download={`preview-${stage?.type.toLowerCase() ?? 'item'}.pdf`} startIcon={<Download />}>Baixar preview</Button>}</DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -44,6 +44,7 @@ export const aiLessonsService = {
   async approveStage(id: string, stage: LessonStageType): Promise<Lesson> { return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/approve`, { stage })).data; },
   async requestChanges(id: string, stage: LessonStageType): Promise<Lesson> { return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/request-changes`, { stage })).data; },
   async exportPdf(id: string): Promise<Blob> { return (await apiAxios.post(`${endpoint}/${id}/export/pdf`, {}, { responseType: 'blob' })).data; },
+  async previewStagePdf(id: string, stage: LessonStageType): Promise<Blob> { return (await apiAxios.get(`${endpoint}/${id}/stages/${stage}/preview.pdf`, { responseType: 'blob' })).data; },
   async publishToWeekMaterial(id: string): Promise<{ weekMaterialId: string }> { return (await apiAxios.post(`${endpoint}/${id}/publish-week-material`)).data; },
   async getPromptPreferences(): Promise<AdminPromptPreference[]> { return (await apiAxios.get(`${endpoint}/prompt-preferences/me`)).data; },
   async savePromptPreference(stage: LessonStageType, prompt: string, lockVersion: number | null): Promise<AdminPromptPreference> { return (await apiAxios.patch(`${endpoint}/prompt-preferences/me`, { stage, prompt, lockVersion: lockVersion ?? undefined })).data; },
