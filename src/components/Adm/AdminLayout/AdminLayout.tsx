@@ -48,6 +48,9 @@ import {
   CalendarMonth,
   ChevronLeft,
   ChevronRight,
+  SmartToy,
+  AutoAwesome,
+  Tune,
 } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
@@ -73,7 +76,7 @@ type NavItem = {
   icon: ReactNode;
   flag?: FeatureKey;
 };
-type SectionId = "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "interacoes" | "operacional";
+type SectionId = "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "inteligencia_artificial" | "interacoes" | "operacional";
 type Section = { id: SectionId; title: string; items: NavItem[] };
 type MobileTab = "tudo" | SectionId;
 
@@ -149,6 +152,15 @@ function AdminLayout() {
           { label: "Materiais semanais", to: "/adm/paginas-materiais-semanais", icon: <EventNote /> },
           { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
           { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <TipsAndUpdates />, flag: FEATURE.IDEA_MODERATION },
+        ],
+      },
+      {
+        id: "inteligencia_artificial",
+        title: "Estúdio Clubinho",
+        items: [
+          { label: "Visão geral", to: "/adm/estudio", icon: <SmartToy /> },
+          { label: "Produção de lições", to: "/adm/estudio/licoes", icon: <AutoAwesome /> },
+          { label: "Orientações de criação", to: "/adm/estudio/orientacoes", icon: <Tune /> },
         ],
       },
       {
@@ -271,6 +283,7 @@ function AdminLayout() {
     conteudos: "conteúdo",
     midias: "mídias",
     materiais: "materiais",
+    inteligencia_artificial: "estúdio clubinho",
     interacoes: "interações",
     operacional: "operacional",
   };

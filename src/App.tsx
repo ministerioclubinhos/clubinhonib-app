@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, CircularProgress, Toolbar, Button, Typography } from '@mui/material';
 
@@ -88,6 +88,10 @@ import { ProfilesManager, ProfilePage } from './features/profile';
 import { ObservabilityAuditPage } from './features/observability-audit';
 import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
 import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
+import { AiLessonsListPage } from './pages/admin/ai-lessons/AiLessonsListPage';
+import { LessonDraftDetailPage } from './pages/admin/ai-lessons/LessonDraftDetailPage';
+import { AiLessonsHubPage } from './pages/admin/ai-lessons/AiLessonsHubPage';
+import { AdminPromptSettingsPage } from './pages/admin/ai-lessons/AdminPromptSettingsPage';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
@@ -305,6 +309,15 @@ function App() {
                           API exige o papel de administrador de qualquer jeito.
                         */}
                         <Route path="observabilidade-auditoria" element={<ObservabilityAuditPage />} />
+                        <Route path="estudio" element={<AiLessonsHubPage />} />
+                        <Route path="estudio/licoes" element={<AiLessonsListPage />} />
+                        <Route path="estudio/licoes/:id" element={<LessonDraftDetailPage />} />
+                        <Route path="estudio/orientacoes" element={<AdminPromptSettingsPage />} />
+                        <Route path="ia" element={<Navigate to="/adm/estudio" replace />} />
+                        <Route path="ia/licoes" element={<Navigate to="/adm/estudio/licoes" replace />} />
+                        <Route path="ia/prompts" element={<Navigate to="/adm/estudio/orientacoes" replace />} />
+                        <Route path="licoes-ia" element={<Navigate to="/adm/estudio/licoes" replace />} />
+                        <Route path="licoes-ia/:id" element={<Navigate to="/adm/estudio/licoes" replace />} />
                       </Route>
 
                       <Route path="editar-meditacao/:id" element={<MeditationPageForm fromTemplatePage={false} />} />

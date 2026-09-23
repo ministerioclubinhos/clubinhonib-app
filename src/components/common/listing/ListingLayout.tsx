@@ -69,8 +69,13 @@ export default function ListingLayout({
       sx={{
         px: { xs: 2, md: 0 },
         pb: 4,
-        minHeight: "100vh",
-        "@supports (min-height: 100dvh)": { minHeight: "100dvh" },
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1,
+        minHeight: "calc(100vh - var(--app-header-h, 64px) - var(--app-footer-h, 88px) - 80px)",
+        "@supports (min-height: 100dvh)": {
+          minHeight: "calc(100dvh - var(--app-header-h, 64px) - var(--app-footer-h, 88px) - 80px)",
+        },
         bgcolor: "#f9fafb",
       }}
     >
@@ -146,7 +151,7 @@ export default function ListingLayout({
       {pagination.total > 0 ? (
         <Paper
           elevation={0}
-          sx={{ mt: 2, borderRadius: 3, border: 1, borderColor: "divider" }}
+          sx={{ mt: "auto", pt: 1, borderRadius: 3, border: 1, borderColor: "divider" }}
         >
           <TablePagination
             component="div"
