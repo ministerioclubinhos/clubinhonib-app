@@ -807,8 +807,8 @@ export const LessonDraftDetailPage: React.FC = () => {
 
                 <Divider sx={{ mb: 3 }} />
 
-                {/* Editor Container */}
-                <Box sx={{ mb: 3 }}>
+                {/* Editor Container: materiais puramente visuais não recebem folha/cabeçalho textual. */}
+                {![LessonStageType.LESSON_VISUALS, LessonStageType.VERSE_VISUALS, LessonStageType.MANUAL_WORK].includes(stage.type) && <Box sx={{ mb: 3 }}>
                   <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1.5 }}>
                     Conteúdo da Minuta (Edição Rich Text)
                   </Typography>
@@ -832,12 +832,25 @@ export const LessonDraftDetailPage: React.FC = () => {
                       </Typography>
                     </Paper>
                   )}
-                </Box>
+                </Box>}
+
+                {stage.type === LessonStageType.MANUAL_WORK && assets[0]?.url && (
+                  <Paper variant="outlined" sx={{ bgcolor: 'white', color: 'black', maxWidth: 794, mx: 'auto', p: { xs: 1.5, sm: 2.5 }, mb: 3 }}>
+                    <Stack direction="row" alignItems="center" justifyContent="center" spacing={2} sx={{ mb: 1 }}>
+                      <Box component="img" src="/header_direito.png" alt="Clubinho Bíblico" sx={{ width: { xs: 90, sm: 120 }, maxHeight: 58, objectFit: 'contain' }} />
+                      <Typography sx={{ bgcolor: '#111', color: '#fff', px: 2, py: 0.5, borderRadius: 1, fontWeight: 900 }}>TRABALHO MANUAL</Typography>
+                    </Stack>
+                    <Typography align="center" sx={{ fontSize: { xs: 12, sm: 14 }, lineHeight: 1.2, mb: 1.5 }}>
+                      “{String(version?.structuredDataJson.verseText ?? '')}” ({String(version?.structuredDataJson.verseReference ?? '')} - NVI)
+                    </Typography>
+                    <Box component="img" src={assets[0].url} alt="Desenho do trabalho manual" sx={{ display: 'block', width: '100%', maxHeight: 520, objectFit: 'contain', border: '2px solid #111' }} />
+                  </Paper>
+                )}
 
                 {/* Generated Visual Assets Preview */}
-                {assets.length > 0 && (
+                {assets.length > 0 && stage.type !== LessonStageType.MANUAL_WORK && (
                   <Box sx={{ mt: 4 }}>
-                    <Typography variant="h6" fontWeight={800} gutterBottom>
+                    {![LessonStageType.LESSON_VISUALS, LessonStageType.VERSE_VISUALS].includes(stage.type) && <Typography variant="h6" fontWeight={800} gutterBottom>
                       {stage.type === LessonStageType.VERSE_VISUALS
                         ? 'Visuais para memorizar o versículo'
                         : stage.type === LessonStageType.VERSE_FIXATION
@@ -849,7 +862,7 @@ export const LessonDraftDetailPage: React.FC = () => {
                         : stage.type === LessonStageType.MANUAL_WORK
                         ? 'Desenho para colorir'
                         : 'Ilustrações das atividades'}
-                    </Typography>
+                    </Typography>}
 
                     <Box
                       sx={{
@@ -882,7 +895,7 @@ export const LessonDraftDetailPage: React.FC = () => {
                               bgcolor: 'grey.50',
                             }}
                           />
-                          <CardContent sx={{ p: 2 }}>
+                          {![LessonStageType.LESSON_VISUALS, LessonStageType.VERSE_VISUALS].includes(stage.type) && <CardContent sx={{ p: 2 }}>
                             <Typography fontWeight={700}>
                               {asset.purpose ?? `Visual ${index + 1}`}
                             </Typography>
@@ -896,7 +909,7 @@ export const LessonDraftDetailPage: React.FC = () => {
                                 {asset.altText}
                               </Typography>
                             )}
-                          </CardContent>
+                          </CardContent>}
                         </Card>
                       ))}
                     </Box>
