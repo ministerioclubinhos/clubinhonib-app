@@ -36,6 +36,7 @@ export const aiLessonsService = {
     return (await apiAxios.get(endpoint, { params: queryParams })).data;
   },
   async getDraftById(id: string): Promise<Lesson> { return (await apiAxios.get<Lesson>(`${endpoint}/${id}`)).data; },
+  async deleteDraft(id: string): Promise<{ success: boolean; message: string }> { return (await apiAxios.delete(`${endpoint}/${id}`)).data; },
   async getDashboard(): Promise<LessonDashboard> { return (await apiAxios.get<LessonDashboard>(`${endpoint}/dashboard`)).data; },
   async generateStage(id: string, payload: RegenerateSectionPayload): Promise<Lesson> { return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/generate`, payload)).data; },
   async updateContent(id: string, payload: SaveTiptapPayload): Promise<Lesson> { return (await apiAxios.patch<Lesson>(`${endpoint}/${id}/stages/content`, payload)).data; },

@@ -11,6 +11,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   Divider,
   FormControl,
@@ -33,6 +34,7 @@ import {
   ArrowBack,
   AutoAwesome,
   Check,
+  DeleteOutline as DeleteIcon,
   Download,
   PictureAsPdf,
   RateReview,
@@ -41,6 +43,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+  useDeleteLessonDraft,
   useGenerateStage,
   useLessonDraft,
   useStageAction,
@@ -143,7 +146,9 @@ export const LessonDraftDetailPage: React.FC = () => {
   const approve = useStageAction('approve');
   const changes = useStageAction('changes');
   const submitPackage = useSubmitLessonPackage();
+  const deleteMutation = useDeleteLessonDraft();
 
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<LessonStageType>(LessonStageType.LESSON);
   const initialGenerationStarted = useRef(false);
   const [edited, setEdited] = useState<TiptapDocument | null>(null);
@@ -373,6 +378,16 @@ export const LessonDraftDetailPage: React.FC = () => {
               sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 700 }}
             >
               Enviar ao material da semana
+            </Button>
+
+            <Button
+              startIcon={<DeleteIcon />}
+              variant="outlined"
+              color="error"
+              onClick={() => setDeleteConfirmOpen(true)}
+              sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 600 }}
+            >
+              Excluir lição
             </Button>
           </Stack>
         </Stack>
@@ -859,8 +874,6 @@ export const LessonDraftDetailPage: React.FC = () => {
                         ? 'Cenas visuais da história'
                         : stage.type === LessonStageType.STANDARD_GAME
                         ? 'Visuais de apoio da brincadeira'
-                        : stage.type === LessonStageType.MANUAL_WORK
-                        ? 'Desenho para colorir'
                         : 'Ilustrações das atividades'}
                     </Typography>}
 
@@ -926,6 +939,46 @@ export const LessonDraftDetailPage: React.FC = () => {
           {previewError ? <Alert severity="error">{previewError}</Alert> : previewUrl ? <Box component="iframe" title="Preview do PDF do item" src={previewUrl} sx={{ border: 0, width: '100%', flex: 1, minHeight: { xs: 520, md: 650 }, bgcolor: 'grey.100' }} /> : null}
         </DialogContent>
         <DialogActions><Button onClick={() => { if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); setPreviewError(null); }}>Fechar</Button>{previewUrl && <Button component="a" href={previewUrl} download={`preview-${stage?.type.toLowerCase() ?? 'item'}.pdf`} startIcon={<Download />}>Baixar preview</Button>}</DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => !deleteMutation.isPending && setDeleteConfirmOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>Excluir Lição?</DialogTitle>
+        <DialogContent>
+          <DialogContentText color="text.secondary">
+            Tem certeza que deseja excluir a lição <strong>{lesson.theme}</strong> (Semana {lesson.weekNumber})?
+          </DialogContentText>
+          <DialogContentText color="error.main" sx={{ mt: 1.5, fontWeight: 600, fontSize: '0.875rem' }}>
+            ⚠️ Esta ação é irreversível. Todas as 8 etapas, versões geradas, comentários e arquivos de imagem associados serão permanentemente removidos.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setDeleteConfirmOpen(false)}
+            disabled={deleteMutation.isPending}
+            sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={async () => {
+              await deleteMutation.mutateAsync(id);
+              navigate('/adm/estudio/licoes');
+            }}
+            variant="contained"
+            color="error"
+            disabled={deleteMutation.isPending}
+            startIcon={deleteMutation.isPending ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon />}
+            sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+          >
+            {deleteMutation.isPending ? 'Excluindo...' : 'Excluir tudo'}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

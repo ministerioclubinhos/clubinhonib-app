@@ -2,6 +2,12 @@ import React, { useCallback, useMemo, useState } from 'react';
 import {
   Box,
   Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid2,
   IconButton,
   LinearProgress,
@@ -14,6 +20,7 @@ import {
 import {
   Add as AddIcon,
   AutoAwesome as AiIcon,
+  DeleteOutline as DeleteIcon,
   EditOutlined as EditIcon,
   PictureAsPdfOutlined as PdfIcon,
   Settings as SettingsIcon,
@@ -24,7 +31,7 @@ import { useNavigate } from 'react-router-dom';
 import { ListingCard, ListingLayout, ListingToolbar } from '@/components/common/listing';
 import type { ListingBadge, ListingFilter, ListingMeta } from '@/components/common/listing';
 import { useDebouncedValue } from '@/hooks/useListingQuery';
-import { useLessonDrafts } from '@/hooks/api/useAiLessons';
+import { useDeleteLessonDraft, useLessonDrafts } from '@/hooks/api/useAiLessons';
 import { LessonAiGenerateModal } from '@/components/ai-lessons/LessonAiGenerateModal';
 import { aiLessonsService, GetLessonDraftsParams, Lesson } from '@/services/aiLessonsService';
 
@@ -70,6 +77,7 @@ export const AiLessonsListPage: React.FC = () => {
   const theme = useTheme();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Lesson | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [search, setSearch] = useState('');
@@ -92,6 +100,7 @@ export const AiLessonsListPage: React.FC = () => {
   }, [status, debouncedSearch, page, pageSize, sortOption]);
 
   const { data, isLoading, isError, refetch } = useLessonDrafts(queryParams);
+  const deleteMutation = useDeleteLessonDraft();
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -110,6 +119,18 @@ export const AiLessonsListPage: React.FC = () => {
     } catch (e) {
       console.error('Erro ao baixar PDF:', e);
       setErrorMsg('Não foi possível exportar o PDF desta lição.');
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      setDeleteTarget(null);
+      refetch();
+    } catch (e) {
+      console.error('Erro ao excluir lição:', e);
+      setErrorMsg('Não foi possível excluir a lição.');
     }
   };
 
@@ -219,14 +240,53 @@ export const AiLessonsListPage: React.FC = () => {
         }}
         pageSizeOptions={PAGE_SIZE_OPTIONS}
         overlays={
-          <LessonAiGenerateModal
-            open={modalOpen}
-            onClose={() => setModalOpen(false)}
-            onSuccess={(id) => {
-              refetch();
-              navigate(`/adm/estudio/licoes/${id}`);
-            }}
-          />
+          <>
+            <LessonAiGenerateModal
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              onSuccess={(id) => {
+                refetch();
+                navigate(`/adm/estudio/licoes/${id}`);
+              }}
+            />
+
+            <Dialog
+              open={Boolean(deleteTarget)}
+              onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
+              maxWidth="xs"
+              fullWidth
+              PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+            >
+              <DialogTitle sx={{ fontWeight: 800 }}>Excluir Lição?</DialogTitle>
+              <DialogContent>
+                <DialogContentText color="text.secondary">
+                  Tem certeza que deseja excluir a lição <strong>{deleteTarget?.theme}</strong> (Semana {deleteTarget?.weekNumber})?
+                </DialogContentText>
+                <DialogContentText color="error.main" sx={{ mt: 1.5, fontWeight: 600, fontSize: '0.875rem' }}>
+                  ⚠️ Esta ação é irreversível. Todas as 8 etapas, versões geradas, comentários e arquivos de imagem associados serão permanentemente removidos.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions sx={{ px: 3, pb: 2 }}>
+                <Button
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleteMutation.isPending}
+                  sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleDeleteConfirm}
+                  variant="contained"
+                  color="error"
+                  disabled={deleteMutation.isPending}
+                  startIcon={deleteMutation.isPending ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon />}
+                  sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+                >
+                  {deleteMutation.isPending ? 'Excluindo...' : 'Excluir tudo'}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
         }
       >
         {items.map((item: Lesson) => {
@@ -312,6 +372,20 @@ export const AiLessonsListPage: React.FC = () => {
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
+
+                    <Tooltip title="Excluir Lição">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        aria-label={`Excluir lição ${item.theme}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setDeleteTarget(item);
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </>
                 }
               />
@@ -322,3 +396,4 @@ export const AiLessonsListPage: React.FC = () => {
     </Box>
   );
 };
+
