@@ -27,6 +27,7 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
 }) => {
   const [lessonTheme, setLessonTheme] = useState('');
   const [biblicalReference, setBiblicalReference] = useState('');
+  const [weekNumber, setWeekNumber] = useState<number | ''>('');
 
   const generateMutation = useGenerateLessonDraft();
 
@@ -37,6 +38,7 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
       const result = await generateMutation.mutateAsync({
         theme: lessonTheme.trim(),
         biblicalReference: biblicalReference.trim(),
+        weekNumber: Number(weekNumber),
       });
 
       onSuccess(result.id);
@@ -49,6 +51,7 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
   const handleCloseModal = () => {
     setLessonTheme('');
     setBiblicalReference('');
+    setWeekNumber('');
     onClose();
   };
 
@@ -67,7 +70,10 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
 
       <DialogContent dividers>
         <Alert severity="info" sx={{ mb: 2.5, borderRadius: 2 }}>
-          Informe o <strong>Tema/Título</strong> e as <strong>Referências Bíblicas</strong> (suporta múltiplas referências separadas por <code>/</code>, <code>;</code> ou vírgula).
+          Cada pacote produzirá oito itens separados seguindo o padrão histórico do Clubinho: lição,
+          visuais, brincadeira, materiais do versículo, meditações e trabalho manual. Informe o{' '}
+          <strong>Tema/Título</strong>, a <strong>semana</strong> e todas as{' '}
+          <strong>Referências Bíblicas</strong>.
         </Alert>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
@@ -78,6 +84,22 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
             value={lessonTheme}
             onChange={(e) => setLessonTheme(e.target.value)}
             disabled={generateMutation.isPending}
+            InputProps={{ sx: { borderRadius: 2.5 } }}
+          />
+
+          <TextField
+            data-testid="ai-lessons-week-number-input"
+            label="Número da semana"
+            type="number"
+            fullWidth
+            value={weekNumber}
+            onChange={(event) => {
+              const value = event.target.value;
+              setWeekNumber(value === '' ? '' : Math.max(1, Number(value)));
+            }}
+            disabled={generateMutation.isPending}
+            inputProps={{ min: 1, max: 999 }}
+            helperText="Use o número editorial que aparecerá no PDF e no material semanal."
             InputProps={{ sx: { borderRadius: 2.5 } }}
           />
 
@@ -96,7 +118,16 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
           />
 
           {generateMutation.isPending && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                p: 2,
+                bgcolor: 'action.hover',
+                borderRadius: 2,
+              }}
+            >
               <CircularProgress size={24} />
               <Typography variant="body2" color="text.secondary" fontWeight={500}>
                 Criando o pacote de trabalho em rascunho...
@@ -113,14 +144,23 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleCloseModal} disabled={generateMutation.isPending} sx={{ borderRadius: 2, textTransform: 'none' }}>
+        <Button
+          onClick={handleCloseModal}
+          disabled={generateMutation.isPending}
+          sx={{ borderRadius: 2, textTransform: 'none' }}
+        >
           Cancelar
         </Button>
         <Button
           variant="contained"
           startIcon={<AiIcon />}
           onClick={handleGenerate}
-          disabled={!lessonTheme.trim() || !biblicalReference.trim() || generateMutation.isPending}
+          disabled={
+            !lessonTheme.trim() ||
+            !biblicalReference.trim() ||
+            weekNumber === '' ||
+            generateMutation.isPending
+          }
           sx={{ borderRadius: 2.5, px: 3, fontWeight: 700, textTransform: 'none' }}
         >
           {generateMutation.isPending ? 'Criando...' : 'Criar pacote da lição'}
