@@ -7,7 +7,7 @@ export enum LessonVisualOrientation { LANDSCAPE = 'LANDSCAPE', PORTRAIT = 'PORTR
 export type TiptapDocument = { type: 'doc'; content?: Array<Record<string, unknown>> };
 export type LessonVersion = { id: string; versionNumber: number; tiptapAstJson: TiptapDocument; structuredDataJson: Record<string, unknown>; changeSummary: string; createdAt: string };
 export type LessonStage = { id: string; type: LessonStageType; status: LessonStageStatus; currentVersionId: string | null; lockVersion: number; failureMessage: string | null; versions: LessonVersion[] };
-export type Lesson = { id: string; theme: string; biblicalReference: string; weekNumber: number; status: string; createdAt: string; updatedAt: string; stages: LessonStage[] };
+export type Lesson = { id: string; theme: string; biblicalReference: string; weekNumber: number; status: string; weekMaterialId: string | null; createdAt: string; updatedAt: string; stages: LessonStage[] };
 export type LessonDashboard = { total: number; byStatus: Record<string, number>; recent: Lesson[] };
 export type GenerateLessonPayload = { theme: string; biblicalReference: string; weekNumber?: number };
 export type SaveTiptapPayload = { stage: LessonStageType; lockVersion: number; tiptapAstJson: TiptapDocument; structuredDataJson?: Record<string, unknown>; changeSummary?: string };
@@ -46,7 +46,7 @@ export const aiLessonsService = {
   async requestChanges(id: string, stage: LessonStageType): Promise<Lesson> { return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/request-changes`, { stage })).data; },
   async exportPdf(id: string): Promise<Blob> { return (await apiAxios.post(`${endpoint}/${id}/export/pdf`, {}, { responseType: 'blob' })).data; },
   async previewStagePdf(id: string, stage: LessonStageType): Promise<Blob> { return (await apiAxios.get(`${endpoint}/${id}/stages/${stage}/preview.pdf`, { responseType: 'blob' })).data; },
-  async publishToWeekMaterial(id: string): Promise<{ weekMaterialId: string }> { return (await apiAxios.post(`${endpoint}/${id}/publish-week-material`)).data; },
+  async publishToWeekMaterial(id: string): Promise<{ lesson: Lesson; weekMaterialId: string }> { return (await apiAxios.post(`${endpoint}/${id}/publish-week-material`)).data; },
   async getPromptPreferences(): Promise<AdminPromptPreference[]> { return (await apiAxios.get(`${endpoint}/prompt-preferences/me`)).data; },
   async savePromptPreference(stage: LessonStageType, prompt: string, lockVersion: number | null): Promise<AdminPromptPreference> { return (await apiAxios.patch(`${endpoint}/prompt-preferences/me`, { stage, prompt, lockVersion: lockVersion ?? undefined })).data; },
   async resetPromptPreference(stage: LessonStageType): Promise<AdminPromptPreference> { return (await apiAxios.post(`${endpoint}/prompt-preferences/me/reset`, { stage })).data; },

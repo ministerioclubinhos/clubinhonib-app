@@ -2,6 +2,12 @@
 
 This module manages the educational and spiritual resources distributed to clubs and teachers.
 
+## Estúdio Clubinho
+
+As rotas `/adm/estudio` permitem ao administrador criar, gerar, editar, revisar e publicar pacotes de lições. A listagem envia busca, status, paginação e ordenação ao backend. O detalhe é carregado sem efeitos colaterais no servidor.
+
+A publicação usa uma mutation única: enquanto a requisição está ativa o botão fica bloqueado, sucesso e falha aparecem na própria tela e o cache do detalhe/listagem é atualizado. O backend persiste `weekMaterialId`; repetir a publicação de uma lição já publicada devolve o mesmo material em vez de criar outro.
+
 ## 📁 Key Files
 
 - **Features**:

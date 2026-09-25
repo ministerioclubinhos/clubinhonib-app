@@ -48,6 +48,7 @@ import {
   useLessonDraft,
   useStageAction,
   useSubmitLessonPackage,
+  usePublishLesson,
   useUpdateDraftContent,
 } from '@/hooks/api/useAiLessons';
 import {
@@ -147,6 +148,7 @@ export const LessonDraftDetailPage: React.FC = () => {
   const changes = useStageAction('changes');
   const submitPackage = useSubmitLessonPackage();
   const deleteMutation = useDeleteLessonDraft();
+  const publishMutation = usePublishLesson();
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<LessonStageType>(LessonStageType.LESSON);
@@ -159,6 +161,7 @@ export const LessonDraftDetailPage: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [publicationMessage, setPublicationMessage] = useState<string | null>(null);
 
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
 
@@ -217,7 +220,7 @@ export const LessonDraftDetailPage: React.FC = () => {
   const isFinalReview = lesson.status === 'IN_REVIEW' || lesson.status === 'READY_FOR_PUBLICATION' || lesson.status === 'PUBLISHED';
   const progressCount = isFinalReview ? approvedCount : packageCompletedCount;
   const progress = lesson.stages.length ? (progressCount / lesson.stages.length) * 100 : 0;
-  const lessonStatusLabel: Record<string, string> = { DRAFT: 'Novo pacote', IN_PROGRESS: 'Montando pacote', PACKAGE_READY: 'Pacote completo', IN_REVIEW: 'Em aprovação final', CHANGES_REQUESTED: 'Ajustes solicitados', READY_FOR_PUBLICATION: 'Aprovação concluída', PUBLISHED: 'Publicado', ARCHIVED: 'Arquivado' };
+  const lessonStatusLabel: Record<string, string> = { DRAFT: 'Novo pacote', IN_PROGRESS: 'Montando pacote', PACKAGE_READY: 'Pacote completo', IN_REVIEW: 'Em aprovação final', CHANGES_REQUESTED: 'Ajustes solicitados', READY_FOR_PUBLICATION: 'Aprovação concluída', PUBLISHING: 'Publicando', PUBLISHED: 'Publicado', ARCHIVED: 'Arquivado' };
 
   const download = async () => {
     const blob = await aiLessonsService.exportPdf(id);
@@ -259,6 +262,8 @@ export const LessonDraftDetailPage: React.FC = () => {
       >
         Voltar para Produção de Lições
       </Button>
+
+      {publicationMessage && <Alert data-testid="ai-lesson-publication-feedback" severity={publishMutation.isError ? 'error' : 'success'} onClose={() => setPublicationMessage(null)} sx={{ mb: 2 }}>{publicationMessage}</Alert>}
 
       {/* Hero Card Header */}
       <Paper
@@ -373,11 +378,18 @@ export const LessonDraftDetailPage: React.FC = () => {
 
             <Button
               variant="contained"
-              disabled={lesson.status !== 'READY_FOR_PUBLICATION'}
-              onClick={() => aiLessonsService.publishToWeekMaterial(id)}
+              disabled={lesson.status !== 'READY_FOR_PUBLICATION' || publishMutation.isPending}
+              onClick={() => {
+                setPublicationMessage(null);
+                publishMutation.mutate(id, {
+                  onSuccess: (result) => setPublicationMessage(`Material publicado com sucesso (${result.weekMaterialId}).`),
+                  onError: () => setPublicationMessage('Não foi possível publicar o material. Tente novamente.'),
+                });
+              }}
+              data-testid="ai-lesson-publish-button"
               sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 700 }}
             >
-              Enviar ao material da semana
+              {publishMutation.isPending ? 'Publicando…' : 'Enviar ao material da semana'}
             </Button>
 
             <Button
