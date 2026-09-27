@@ -1,14 +1,131 @@
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { aiLessonsService, GenerateLessonPayload, GetLessonDraftsParams, LessonStageType, RegenerateSectionPayload, SaveTiptapPayload } from '@/services/aiLessonsService';
+import {
+  aiLessonsService,
+  GenerateLessonPayload,
+  GetLessonDraftsParams,
+  LessonStageType,
+  RegenerateSectionPayload,
+  SaveTiptapPayload,
+} from '@/services/aiLessonsService';
+import { AI_LESSON_EVENTS_RECONNECT_DELAY_MS } from '@/features/ai-lessons/constants';
 
-export const useAiLessonsKeys = { all: ['ai-lessons'] as const, drafts: (params?: GetLessonDraftsParams | string, page?: number) => ['ai-lessons', 'drafts', params, page] as const, detail: (id: string) => ['ai-lessons', id] as const };
-export function useGenerateLessonDraft() { const client = useQueryClient(); return useMutation({ mutationFn: (payload: GenerateLessonPayload) => aiLessonsService.generateDraft(payload), onSuccess: () => client.invalidateQueries({ queryKey: useAiLessonsKeys.all }) }); }
-export function useLessonDrafts(params?: GetLessonDraftsParams | string, page = 1) { return useQuery({ queryKey: useAiLessonsKeys.drafts(params, page), queryFn: () => aiLessonsService.getDrafts(params, page) }); }
-export function useLessonDraft(id: string) { return useQuery({ queryKey: useAiLessonsKeys.detail(id), queryFn: () => aiLessonsService.getDraftById(id), enabled: Boolean(id) }); }
-export function useLessonDashboard() { return useQuery({ queryKey: [...useAiLessonsKeys.all, 'dashboard'], queryFn: aiLessonsService.getDashboard }); }
-export function useUpdateDraftContent() { const client = useQueryClient(); return useMutation({ mutationFn: ({ id, payload }: { id: string; payload: SaveTiptapPayload }) => aiLessonsService.updateContent(id, payload), onSuccess: (_, value) => client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) }) }); }
-export function useGenerateStage() { const client = useQueryClient(); return useMutation({ mutationFn: ({ id, payload }: { id: string; payload: RegenerateSectionPayload }) => aiLessonsService.generateStage(id, payload), onSuccess: (_, value) => client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) }) }); }
-export function useStageAction(action: 'complete' | 'approve' | 'changes') { const client = useQueryClient(); return useMutation({ mutationFn: ({ id, stage }: { id: string; stage: LessonStageType }) => action === 'complete' ? aiLessonsService.completeProductionStage(id, stage) : action === 'approve' ? aiLessonsService.approveStage(id, stage) : aiLessonsService.requestChanges(id, stage), onSuccess: (_, value) => { client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) }); client.invalidateQueries({ queryKey: useAiLessonsKeys.all }); } }); }
-export function useSubmitLessonPackage() { const client = useQueryClient(); return useMutation({ mutationFn: (id: string) => aiLessonsService.submitPackageReview(id), onSuccess: (_, id) => { client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(id) }); client.invalidateQueries({ queryKey: useAiLessonsKeys.all }); } }); }
-export function useDeleteLessonDraft() { const client = useQueryClient(); return useMutation({ mutationFn: (id: string) => aiLessonsService.deleteDraft(id), onSuccess: () => { client.invalidateQueries({ queryKey: useAiLessonsKeys.all }); } }); }
-export function usePublishLesson() { const client = useQueryClient(); return useMutation({ mutationFn: (id: string) => aiLessonsService.publishToWeekMaterial(id), onSuccess: (result, id) => { client.setQueryData(useAiLessonsKeys.detail(id), result.lesson); client.invalidateQueries({ queryKey: useAiLessonsKeys.all }); } }); }
+export const useAiLessonsKeys = {
+  all: ['ai-lessons'] as const,
+  drafts: (params?: GetLessonDraftsParams | string, page?: number) =>
+    ['ai-lessons', 'drafts', params, page] as const,
+  detail: (id: string) => ['ai-lessons', id] as const,
+};
+export function useGenerateLessonDraft() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: GenerateLessonPayload) => aiLessonsService.generateDraft(payload),
+    onSuccess: () => client.invalidateQueries({ queryKey: useAiLessonsKeys.all }),
+  });
+}
+export function useLessonDrafts(params?: GetLessonDraftsParams | string, page = 1) {
+  return useQuery({
+    queryKey: useAiLessonsKeys.drafts(params, page),
+    queryFn: () => aiLessonsService.getDrafts(params, page),
+  });
+}
+export function useLessonDraft(id: string) {
+  return useQuery({
+    queryKey: useAiLessonsKeys.detail(id),
+    queryFn: () => aiLessonsService.getDraftById(id),
+    enabled: Boolean(id),
+  });
+}
+export function useLessonDraftEvents(id: string) {
+  const client = useQueryClient();
+  useEffect(() => {
+    if (!id) return;
+    let disposed = false;
+    let unsubscribe: (() => void) | undefined;
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    const connect = () => {
+      unsubscribe = aiLessonsService.subscribeToLessonEvents(
+        id,
+        (lesson) => client.setQueryData(useAiLessonsKeys.detail(id), lesson),
+        () => {
+          if (!disposed) reconnectTimer = setTimeout(connect, AI_LESSON_EVENTS_RECONNECT_DELAY_MS);
+        }
+      );
+    };
+    connect();
+    return () => {
+      disposed = true;
+      unsubscribe?.();
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+    };
+  }, [client, id]);
+}
+export function useLessonDashboard() {
+  return useQuery({
+    queryKey: [...useAiLessonsKeys.all, 'dashboard'],
+    queryFn: aiLessonsService.getDashboard,
+  });
+}
+export function useUpdateDraftContent() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: SaveTiptapPayload }) =>
+      aiLessonsService.updateContent(id, payload),
+    onSuccess: (_, value) =>
+      client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) }),
+  });
+}
+export function useGenerateStage() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: RegenerateSectionPayload }) =>
+      aiLessonsService.generateStage(id, payload),
+    onSuccess: (lesson, value) => client.setQueryData(useAiLessonsKeys.detail(value.id), lesson),
+    onSettled: (_, __, value) =>
+      client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) }),
+  });
+}
+export function useStageAction(action: 'complete' | 'approve' | 'changes') {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, stage }: { id: string; stage: LessonStageType }) =>
+      action === 'complete'
+        ? aiLessonsService.completeProductionStage(id, stage)
+        : action === 'approve'
+          ? aiLessonsService.approveStage(id, stage)
+          : aiLessonsService.requestChanges(id, stage),
+    onSuccess: (_, value) => {
+      client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) });
+      client.invalidateQueries({ queryKey: useAiLessonsKeys.all });
+    },
+  });
+}
+export function useSubmitLessonPackage() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => aiLessonsService.submitPackageReview(id),
+    onSuccess: (_, id) => {
+      client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(id) });
+      client.invalidateQueries({ queryKey: useAiLessonsKeys.all });
+    },
+  });
+}
+export function useDeleteLessonDraft() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => aiLessonsService.deleteDraft(id),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: useAiLessonsKeys.all });
+    },
+  });
+}
+export function usePublishLesson() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => aiLessonsService.publishToWeekMaterial(id),
+    onSuccess: (result, id) => {
+      client.setQueryData(useAiLessonsKeys.detail(id), result.lesson);
+      client.invalidateQueries({ queryKey: useAiLessonsKeys.all });
+    },
+  });
+}

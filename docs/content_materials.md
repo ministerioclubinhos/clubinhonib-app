@@ -10,6 +10,10 @@ A criação exige número da semana, tema e todas as referências bíblicas. O p
 
 A publicação usa uma mutation única: enquanto a requisição está ativa o botão fica bloqueado, sucesso e falha aparecem na própria tela e o cache do detalhe/listagem é atualizado. O backend persiste `weekMaterialId`; repetir a publicação de uma lição já publicada devolve o mesmo material em vez de criar outro.
 
+Durante uma geração, o detalhe mantém um stream SSE autenticado com a API. O stream atualiza o cache da tela e reconecta automaticamente quando o frontend ou a API reinicia. A solicitação de geração é persistida no MySQL antes da resposta HTTP; ao iniciar, a API retoma jobs que ainda estejam em `GENERATING`, evitando etapas órfãs.
+
+Os visuais da história são gerados exclusivamente a partir do texto completo do tópico `LIÇÃO BÍBLICA` da versão atual da lição e da cena aprovada correspondente. A revisão desses visuais usa um carrossel responsivo, com navegação anterior/próxima, indicadores e identificação da cena.
+
 ## 📁 Key Files
 
 - **Features**:

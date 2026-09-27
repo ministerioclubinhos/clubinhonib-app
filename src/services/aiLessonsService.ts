@@ -1,36 +1,19 @@
 import apiAxios from '@/config/axiosConfig';
+import {
+  LessonStageStatus,
+  LessonStageType,
+  LessonVisualOrientation,
+  LessonVisualType,
+} from '@/features/ai-lessons/types';
+import { parseSseChunk } from '@/features/ai-lessons/utils';
+import { AI_LESSON_EVENTS_STALE_TIMEOUT_MS } from '@/features/ai-lessons/constants';
 
-export enum LessonStageType {
-  LESSON = 'LESSON',
-  LESSON_VISUALS = 'LESSON_VISUALS',
-  STANDARD_GAME = 'STANDARD_GAME',
-  VERSE_VISUALS = 'VERSE_VISUALS',
-  VERSE_FIXATION = 'VERSE_FIXATION',
-  MEDITATION_YOUNGER = 'MEDITATION_YOUNGER',
-  MEDITATION_OLDER = 'MEDITATION_OLDER',
-  MANUAL_WORK = 'MANUAL_WORK',
-}
-export enum LessonStageStatus {
-  NOT_STARTED = 'NOT_STARTED',
-  GENERATING = 'GENERATING',
-  DRAFT = 'DRAFT',
-  PRODUCER_APPROVED = 'PRODUCER_APPROVED',
-  IN_REVIEW = 'IN_REVIEW',
-  CHANGES_REQUESTED = 'CHANGES_REQUESTED',
-  APPROVED = 'APPROVED',
-  FAILED = 'FAILED',
-  STALE = 'STALE',
-}
-export enum LessonVisualType {
-  STORY_SEQUENCE = 'STORY_SEQUENCE',
-  CHARACTER_AND_EMOTION = 'CHARACTER_AND_EMOTION',
-  VISUAL_ANCHORS = 'VISUAL_ANCHORS',
-  INTERACTIVE_COLORING = 'INTERACTIVE_COLORING',
-}
-export enum LessonVisualOrientation {
-  LANDSCAPE = 'LANDSCAPE',
-  PORTRAIT = 'PORTRAIT',
-}
+export {
+  LessonStageStatus,
+  LessonStageType,
+  LessonVisualOrientation,
+  LessonVisualType,
+} from '@/features/ai-lessons/types';
 export type TiptapDocument = { type: 'doc'; content?: Array<Record<string, unknown>> };
 export type LessonVersion = {
   id: string;
@@ -117,6 +100,56 @@ export const aiLessonsService = {
   },
   async getDraftById(id: string): Promise<Lesson> {
     return (await apiAxios.get<Lesson>(`${endpoint}/${id}`)).data;
+  },
+  subscribeToLessonEvents(
+    id: string,
+    onLesson: (lesson: Lesson) => void,
+    onDisconnect: () => void
+  ): () => void {
+    const controller = new AbortController();
+    let consumedLength = 0;
+    let pending = '';
+    let closed = false;
+    let staleTimer: ReturnType<typeof setTimeout>;
+    const notifyDisconnect = () => {
+      if (closed) return;
+      closed = true;
+      controller.abort();
+      onDisconnect();
+    };
+    const resetWatchdog = () => {
+      clearTimeout(staleTimer);
+      staleTimer = setTimeout(notifyDisconnect, AI_LESSON_EVENTS_STALE_TIMEOUT_MS);
+    };
+    resetWatchdog();
+    void apiAxios
+      .get<string>(`${endpoint}/${id}/events`, {
+        signal: controller.signal,
+        responseType: 'text',
+        skipGlobalError: true,
+        onDownloadProgress: ({ event }) => {
+          resetWatchdog();
+          const request = event.target as XMLHttpRequest | null;
+          const responseText = request?.responseText ?? '';
+          pending += responseText.slice(consumedLength);
+          consumedLength = responseText.length;
+          const parsed = parseSseChunk(pending);
+          pending = parsed.remainder;
+          try {
+            for (const data of parsed.messages) onLesson(JSON.parse(data) as Lesson);
+          } catch {
+            notifyDisconnect();
+          }
+        },
+      })
+      .catch(() => {
+        notifyDisconnect();
+      });
+    return () => {
+      closed = true;
+      clearTimeout(staleTimer);
+      controller.abort();
+    };
   },
   async deleteDraft(id: string): Promise<{ success: boolean; message: string }> {
     return (await apiAxios.delete(`${endpoint}/${id}`)).data;

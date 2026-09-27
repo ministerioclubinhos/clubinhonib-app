@@ -3,7 +3,8 @@ import apiAxios from '@/config/axiosConfig';
 
 import type { MyProfile } from '@/features/profile/types';
 import { authService } from './auth.service';
-import { getErrorMessage } from '@/utils/apiError';
+import { analyzeError, getErrorMessage } from '@/utils/apiError';
+import type { FetchCurrentUserFailure } from './types';
 
 /**
  * O usuário logado.
@@ -55,29 +56,36 @@ const initialState: AuthState = {
   emailVerificationAlert: null,
 };
 
-
 const clean = (s: string) => s.replace(/^"|"$/g, '');
 
-export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: string }>(
-  'auth/fetchCurrentUser',
-  async (_, { getState, rejectWithValue }) => {
-    const state = getState() as { auth: AuthState };
-    const token = state.auth.accessToken;
+export const fetchCurrentUser = createAsyncThunk<
+  User,
+  void,
+  { rejectValue: FetchCurrentUserFailure }
+>('auth/fetchCurrentUser', async (_, { getState, rejectWithValue }) => {
+  const state = getState() as { auth: AuthState };
+  const token = state.auth.accessToken;
 
-    if (!token || typeof token !== 'string' || token.trim() === '') {
-      return rejectWithValue('No valid access token found');
-    }
-
-    try {
-      const response = await apiAxios.get<User>('/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
-    } catch (error: unknown) {
-      return rejectWithValue(getErrorMessage(error, 'Erro ao buscar usuário'));
-    }
+  if (!token || typeof token !== 'string' || token.trim() === '') {
+    return rejectWithValue({
+      message: 'No valid access token found',
+      shouldLogout: true,
+    });
   }
-);
+
+  try {
+    const response = await apiAxios.get<User>('/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error: unknown) {
+    const analyzed = analyzeError(error);
+    return rejectWithValue({
+      message: getErrorMessage(error, 'Erro ao buscar usuário'),
+      shouldLogout: analyzed.requiresLogout,
+    });
+  }
+});
 
 export const linkTeacherClub = createAsyncThunk<User, number, { rejectValue: string }>(
   'auth/linkTeacherClub',
@@ -87,9 +95,7 @@ export const linkTeacherClub = createAsyncThunk<User, number, { rejectValue: str
       const user = await authService.getCurrentUser();
       return user;
     } catch (error: unknown) {
-      return rejectWithValue(
-        getErrorMessage(error, 'Erro ao vincular clubinho'),
-      );
+      return rejectWithValue(getErrorMessage(error, 'Erro ao vincular clubinho'));
     }
   }
 );
@@ -108,9 +114,9 @@ export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
 
         try {
           await dispatch(fetchCurrentUser()).unwrap();
-        } catch (e) {
-          console.error('[initAuth] Error validating token, forcing logout', e);
-          dispatch(logout());
+        } catch (error: unknown) {
+          const failure = error as FetchCurrentUserFailure;
+          if (failure.shouldLogout) dispatch(logout());
         }
       } else {
         dispatch(logout());
@@ -205,16 +211,18 @@ const authSlice = createSlice({
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         console.warn('[Auth:reducer] fetchCurrentUser.rejected', action.payload);
         state.loadingUser = false;
-        state.user = null;
-        state.isAuthenticated = false;
-        state.accessToken = null;
-        state.refreshToken = null;
-        state.error = (action.payload as string) || 'Erro desconhecido';
-        try {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-        } catch {
-          // Nada gravado para remover; o estado em memória já foi limpo.
+        state.error = action.payload?.message || 'Erro desconhecido';
+        if (action.payload?.shouldLogout) {
+          state.user = null;
+          state.isAuthenticated = false;
+          state.accessToken = null;
+          state.refreshToken = null;
+          try {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+          } catch {
+            // Nada gravado para remover; o estado em memória já foi limpo.
+          }
         }
       })
       .addCase(linkTeacherClub.fulfilled, (state, action) => {
