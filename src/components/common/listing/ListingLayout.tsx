@@ -148,7 +148,7 @@ export default function ListingLayout({
 
       {overlays}
 
-      {pagination.total > 0 ? (
+      {pagination && pagination.total > 0 ? (
         <Paper
           elevation={0}
           sx={{ mt: "auto", pt: 1, borderRadius: 3, border: 1, borderColor: "divider" }}

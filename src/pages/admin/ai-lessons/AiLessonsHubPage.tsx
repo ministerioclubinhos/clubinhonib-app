@@ -27,6 +27,7 @@ import {
   ArrowForward,
   TaskAlt,
   MenuBook,
+  FactCheck,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useLessonDashboard } from '@/hooks/api/useAiLessons';
@@ -226,6 +227,29 @@ export const AiLessonsHubPage: React.FC = () => {
               }}
             >
               Produzir lição
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="large"
+              startIcon={<FactCheck />}
+              onClick={() => navigate('/adm/estudio/revisao')}
+              sx={{
+                color: '#ffffff',
+                borderColor: 'rgba(255, 255, 255, 0.5)',
+                fontWeight: 600,
+                px: 2.5,
+                py: 1.4,
+                borderRadius: 3,
+                minHeight: 48,
+                backdropFilter: 'blur(4px)',
+                '&:hover': {
+                  borderColor: '#ffffff',
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
+            >
+              Revisão & Aprovação
             </Button>
             <Button
               fullWidth

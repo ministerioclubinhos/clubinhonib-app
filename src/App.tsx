@@ -93,6 +93,8 @@ import { AiLessonsListPage } from './pages/admin/ai-lessons/AiLessonsListPage';
 import { LessonDraftDetailPage } from './pages/admin/ai-lessons/LessonDraftDetailPage';
 import { AiLessonsHubPage } from './pages/admin/ai-lessons/AiLessonsHubPage';
 import { AdminPromptSettingsPage } from './pages/admin/ai-lessons/AdminPromptSettingsPage';
+import { AiLessonsReviewListPage } from './pages/admin/ai-lessons/AiLessonsReviewListPage';
+import { LessonReviewDetailPage } from './pages/admin/ai-lessons/LessonReviewDetailPage';
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
@@ -320,6 +322,8 @@ function App() {
                         <Route path="estudio" element={<AiLessonsHubPage />} />
                         <Route path="estudio/licoes" element={<AiLessonsListPage />} />
                         <Route path="estudio/licoes/:id" element={<LessonDraftDetailPage />} />
+                        <Route path="estudio/revisao" element={<AiLessonsReviewListPage />} />
+                        <Route path="estudio/revisao/:id" element={<LessonReviewDetailPage />} />
                         <Route path="estudio/orientacoes" element={<AdminPromptSettingsPage />} />
                         <Route path="ia" element={<Navigate to="/adm/estudio" replace />} />
                         <Route path="ia/licoes" element={<Navigate to="/adm/estudio/licoes" replace />} />

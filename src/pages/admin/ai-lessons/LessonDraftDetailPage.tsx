@@ -101,6 +101,98 @@ const DESCRIPTIONS: Record<LessonStageType, string> = {
 
 const ORDER = Object.values(LessonStageType);
 
+const LEGACY_DOCUMENT_LABELS: Record<string, string> = {
+  'FUN MECHANICS': 'MECÂNICAS DIVERTIDAS',
+  AGES5TO7: 'CRIANÇAS DE 5 A 7 ANOS',
+  AGES8TO11: 'CRIANÇAS DE 8 A 11 ANOS',
+};
+
+const localizeLegacyDocumentLabels = (document: TiptapDocument): TiptapDocument => {
+  const visit = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(visit);
+    if (!value || typeof value !== 'object') return value;
+    const entry = value as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.entries(entry).map(([key, child]) => [
+        key,
+        key === 'text' && typeof child === 'string'
+          ? (LEGACY_DOCUMENT_LABELS[child] ?? child)
+          : visit(child),
+      ])
+    );
+  };
+  const localized = visit(document) as TiptapDocument;
+  const content = localized.content ?? [];
+  const nodeText = (value: unknown): string => {
+    if (Array.isArray(value)) return value.map(nodeText).join('');
+    if (!value || typeof value !== 'object') return '';
+    const entry = value as Record<string, unknown>;
+    return `${typeof entry.text === 'string' ? entry.text : ''}${nodeText(entry.content)}`;
+  };
+  const legacyHeadings = ['TEXTO DO VERSÍCULO', 'REFERÊNCIA DO VERSÍCULO', 'VERSÃO BÍBLICA'];
+  const sectionIndexes = content
+    .map((node, index) =>
+      node.type === 'heading' && legacyHeadings.includes(nodeText(node).trim()) ? index : -1
+    )
+    .filter((index) => index >= 0);
+  if (!sectionIndexes.length) return localized;
+
+  const sectionValue = (heading: string): string => {
+    const start = content.findIndex(
+      (node) => node.type === 'heading' && nodeText(node).trim() === heading
+    );
+    if (start < 0) return '';
+    const values: string[] = [];
+    for (let index = start + 1; index < content.length; index += 1) {
+      if (content[index].type === 'heading') break;
+      const text = nodeText(content[index]).trim();
+      if (text) values.push(text);
+    }
+    return values.join(' ');
+  };
+  const verseText = sectionValue('TEXTO DO VERSÍCULO').replace(/^[“"']|[”"']$/g, '');
+  const verseReference = sectionValue('REFERÊNCIA DO VERSÍCULO');
+  const verseVersion = sectionValue('VERSÃO BÍBLICA');
+  const removed = new Set<number>();
+  sectionIndexes.forEach((start) => {
+    for (let index = start; index < content.length; index += 1) {
+      if (index > start && content[index].type === 'heading') break;
+      removed.add(index);
+    }
+  });
+  const firstIndex = Math.min(...sectionIndexes);
+  const replacement: Array<Record<string, unknown>> = [
+    {
+      type: 'heading',
+      attrs: { level: 2 },
+      content: [{ type: 'text', text: 'VERSÍCULO PARA MEMORIZAR' }],
+    },
+    ...(verseText
+      ? [{ type: 'paragraph', content: [{ type: 'text', text: `“${verseText}”` }] }]
+      : []),
+    ...(verseReference || verseVersion
+      ? [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: [verseReference, verseVersion].filter(Boolean).join(' — '),
+              },
+            ],
+          },
+        ]
+      : []),
+  ];
+  return {
+    ...localized,
+    content: content.flatMap((node, index) => {
+      if (index === firstIndex) return replacement;
+      return removed.has(index) ? [] : [node];
+    }),
+  };
+};
+
 const STATUS_LABELS: Record<string, string> = {
   NOT_STARTED: 'Não iniciada',
   GENERATING: 'Gerando',
@@ -169,7 +261,13 @@ export const LessonDraftDetailPage: React.FC = () => {
     [lesson, selectedType]
   );
   const version = stage?.versions.find((item) => item.id === stage.currentVersionId);
-  const document = edited ?? version?.tiptapAstJson ?? { type: 'doc', content: [] };
+  const document = useMemo(
+    () =>
+      localizeLegacyDocumentLabels(
+        edited ?? version?.tiptapAstJson ?? { type: 'doc', content: [] }
+      ),
+    [edited, version?.tiptapAstJson]
+  );
   const assets = stage ? visualAssets(version?.structuredDataJson, stage.type) : [];
   const approvedLessonStage = lesson?.stages.find((item) => item.type === LessonStageType.LESSON);
   const approvedLessonVersion = approvedLessonStage?.versions.find(
@@ -478,53 +576,13 @@ export const LessonDraftDetailPage: React.FC = () => {
 
           {/* Action Buttons Top Bar */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ flexShrink: 0 }}>
-            {lesson.status === 'PACKAGE_READY' || lesson.status === 'CHANGES_REQUESTED' ? (
-              <Button
-                startIcon={<RateReview />}
-                variant="contained"
-                disabled={
-                  submitPackage.isPending ||
-                  !lesson.stages.every(
-                    (item) =>
-                      item.status === LessonStageStatus.PRODUCER_APPROVED ||
-                      item.status === LessonStageStatus.APPROVED
-                  )
-                }
-                onClick={() => submitPackage.mutate(id)}
-                sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 700 }}
-              >
-                {submitPackage.isPending ? 'Submetendo…' : 'Submeter para aprovação'}
-              </Button>
-            ) : null}
-
             <Button
-              startIcon={<Download />}
-              variant="outlined"
-              disabled={lesson.status !== 'READY_FOR_PUBLICATION'}
-              onClick={download}
-              sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 600 }}
-            >
-              Salvar PDF aprovado
-            </Button>
-
-            <Button
+              startIcon={<RateReview />}
               variant="contained"
-              disabled={lesson.status !== 'READY_FOR_PUBLICATION' || publishMutation.isPending}
-              onClick={() => {
-                setPublicationMessage(null);
-                publishMutation.mutate(id, {
-                  onSuccess: (result) =>
-                    setPublicationMessage(
-                      `Material publicado com sucesso (${result.weekMaterialId}).`
-                    ),
-                  onError: () =>
-                    setPublicationMessage('Não foi possível publicar o material. Tente novamente.'),
-                });
-              }}
-              data-testid="ai-lesson-publish-button"
+              onClick={() => navigate(`/adm/estudio/revisao/${id}`)}
               sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 700 }}
             >
-              {publishMutation.isPending ? 'Publicando…' : 'Enviar ao material da semana'}
+              Ir para Revisão e Aprovação
             </Button>
 
             <Button
@@ -873,7 +931,7 @@ export const LessonDraftDetailPage: React.FC = () => {
                   <Button
                     startIcon={<Check />}
                     color="primary"
-                    variant="outlined"
+                    variant="contained"
                     disabled={
                       !stage.currentVersionId ||
                       ![
@@ -885,34 +943,9 @@ export const LessonDraftDetailPage: React.FC = () => {
                       ].includes(stage.status)
                     }
                     onClick={() => action(complete, stage)}
-                    sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 600 }}
-                  >
-                    Concluir item para o pacote
-                  </Button>
-
-                  <Button
-                    startIcon={<Check />}
-                    color="success"
-                    variant="contained"
-                    disabled={
-                      lesson.status !== 'IN_REVIEW' || stage.status !== LessonStageStatus.IN_REVIEW
-                    }
-                    onClick={() => action(approve, stage)}
                     sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700 }}
                   >
-                    Aprovar item
-                  </Button>
-
-                  <Button
-                    color="warning"
-                    variant="outlined"
-                    disabled={
-                      lesson.status !== 'IN_REVIEW' || stage.status !== LessonStageStatus.IN_REVIEW
-                    }
-                    onClick={() => action(changes, stage)}
-                    sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 600 }}
-                  >
-                    Solicitar ajustes
+                    Concluir item para o pacote
                   </Button>
                 </Stack>
 
@@ -1018,14 +1051,28 @@ export const LessonDraftDetailPage: React.FC = () => {
                   <StoryVisualCarousel assets={assets} orientation={visualOrientation} />
                 )}
 
-                {stage.type === LessonStageType.STANDARD_GAME && (
+                {[LessonStageType.STANDARD_GAME, LessonStageType.VERSE_FIXATION].includes(
+                  stage.type
+                ) && (
                   <Box data-testid="ai-game-instruction-preview-area">
                     <StoryVisualCarousel
                       assets={assets}
                       orientation={LessonVisualOrientation.LANDSCAPE}
-                      title="Como brincar — passo a passo visual"
-                      ariaLabel="Instruções visuais da brincadeira"
-                      testIdPrefix="ai-game-instruction"
+                      title={
+                        stage.type === LessonStageType.VERSE_FIXATION
+                          ? 'Como fixar o versículo — passo a passo visual'
+                          : 'Como brincar — passo a passo visual'
+                      }
+                      ariaLabel={
+                        stage.type === LessonStageType.VERSE_FIXATION
+                          ? 'Instruções visuais da fixação do versículo'
+                          : 'Instruções visuais da brincadeira'
+                      }
+                      testIdPrefix={
+                        stage.type === LessonStageType.VERSE_FIXATION
+                          ? 'ai-verse-fixation-instruction'
+                          : 'ai-game-instruction'
+                      }
                     />
                     <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
                       <Button
@@ -1045,7 +1092,9 @@ export const LessonDraftDetailPage: React.FC = () => {
                       >
                         {edited
                           ? 'Salve para visualizar'
-                          : 'Visualizar preview do PDF da brincadeira'}
+                          : stage.type === LessonStageType.VERSE_FIXATION
+                            ? 'Visualizar preview do PDF da fixação'
+                            : 'Visualizar preview do PDF da brincadeira'}
                       </Button>
                     </Stack>
                   </Box>
@@ -1066,12 +1115,11 @@ export const LessonDraftDetailPage: React.FC = () => {
                   stage.type !== LessonStageType.MANUAL_WORK &&
                   stage.type !== LessonStageType.LESSON_VISUALS &&
                   stage.type !== LessonStageType.STANDARD_GAME &&
+                  stage.type !== LessonStageType.VERSE_FIXATION &&
                   stage.type !== LessonStageType.VERSE_VISUALS && (
                     <Box sx={{ mt: 4 }}>
                       <Typography variant="h6" fontWeight={800} gutterBottom>
-                        {stage.type === LessonStageType.VERSE_FIXATION
-                          ? 'Peças da dinâmica de fixação'
-                          : 'Ilustrações das atividades'}
+                        Ilustrações das atividades
                       </Typography>
 
                       <Box

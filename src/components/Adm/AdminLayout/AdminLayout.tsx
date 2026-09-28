@@ -51,6 +51,7 @@ import {
   SmartToy,
   AutoAwesome,
   Tune,
+  FactCheck,
 } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
@@ -160,6 +161,7 @@ function AdminLayout() {
         items: [
           { label: "Visão geral", to: "/adm/estudio", icon: <SmartToy /> },
           { label: "Produção de lições", to: "/adm/estudio/licoes", icon: <AutoAwesome /> },
+          { label: "Revisão e aprovação", to: "/adm/estudio/revisao", icon: <FactCheck /> },
           { label: "Orientações de criação", to: "/adm/estudio/orientacoes", icon: <Tune /> },
         ],
       },

@@ -29,7 +29,6 @@ export const visualAssets = (
 ): VisualAsset[] => {
   const key = [
     LessonStageType.VERSE_VISUALS,
-    LessonStageType.VERSE_FIXATION,
     LessonStageType.MEDITATION_YOUNGER,
     LessonStageType.MEDITATION_OLDER,
     LessonStageType.MANUAL_WORK,

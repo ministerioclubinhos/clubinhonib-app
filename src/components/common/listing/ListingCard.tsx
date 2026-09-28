@@ -46,7 +46,7 @@ export default function ListingCard({
   avatar,
   title,
   subtitle,
-  accent,
+  accent = "primary",
   badges = [],
   meta = [],
   excerpt,
@@ -55,9 +55,9 @@ export default function ListingCard({
   onClick,
 }: Props) {
   const theme = useTheme();
-  const accentColor = theme.palette[accent === "default" ? "grey" : accent];
-  const accentMain =
-    accent === "default" ? theme.palette.grey[500] : (accentColor as { main: string }).main;
+  const colorKey = accent && theme.palette[accent === "default" ? "grey" : accent] ? (accent === "default" ? "grey" : accent) : "primary";
+  const accentColor = theme.palette[colorKey];
+  const accentMain = colorKey === "grey" ? theme.palette.grey[500] : (accentColor as { main: string })?.main || theme.palette.primary.main;
 
   return (
     <Card data-testid={testId}
