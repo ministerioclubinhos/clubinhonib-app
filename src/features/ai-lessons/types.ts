@@ -35,12 +35,22 @@ export enum LessonVisualOrientation {
 
 export interface VisualAsset {
   id?: string;
+  stepNumber?: number;
+  instruction?: string;
   purpose?: string;
   sourceExcerpt?: string;
   altText?: string;
   displayText?: string;
   url?: string;
   identityReference?: boolean;
+}
+
+export interface VisualCarouselProps {
+  assets: VisualAsset[];
+  orientation: LessonVisualOrientation | '';
+  title?: string;
+  ariaLabel?: string;
+  testIdPrefix?: string;
 }
 
 export interface StoryVisualConfigurationProps {

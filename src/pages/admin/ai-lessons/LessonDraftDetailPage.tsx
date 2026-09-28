@@ -1008,18 +1008,50 @@ export const LessonDraftDetailPage: React.FC = () => {
                   <StoryVisualCarousel assets={assets} orientation={visualOrientation} />
                 )}
 
+                {stage.type === LessonStageType.STANDARD_GAME && (
+                  <Box data-testid="ai-game-instruction-preview-area">
+                    <StoryVisualCarousel
+                      assets={assets}
+                      orientation={LessonVisualOrientation.LANDSCAPE}
+                      title="Como brincar — passo a passo visual"
+                      ariaLabel="Instruções visuais da brincadeira"
+                      testIdPrefix="ai-game-instruction"
+                    />
+                    <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
+                      <Button
+                        data-testid="ai-game-instruction-pdf-preview"
+                        variant="contained"
+                        color="secondary"
+                        startIcon={
+                          previewLoading ? (
+                            <CircularProgress size={18} color="inherit" />
+                          ) : (
+                            <PictureAsPdf />
+                          )
+                        }
+                        disabled={!stage.currentVersionId || Boolean(edited) || previewLoading}
+                        onClick={() => void openStagePreview()}
+                        sx={{ minHeight: 44, borderRadius: 2.5, width: { xs: '100%', sm: 'auto' } }}
+                      >
+                        {edited
+                          ? 'Salve para visualizar'
+                          : 'Visualizar preview do PDF da brincadeira'}
+                      </Button>
+                    </Stack>
+                  </Box>
+                )}
+
                 {/* Generated Visual Assets Preview */}
                 {assets.length > 0 &&
                   stage.type !== LessonStageType.MANUAL_WORK &&
-                  stage.type !== LessonStageType.LESSON_VISUALS && (
+                  stage.type !== LessonStageType.LESSON_VISUALS &&
+                  stage.type !== LessonStageType.STANDARD_GAME && (
                     <Box sx={{ mt: 4 }}>
                       {stage.type !== LessonStageType.VERSE_VISUALS && (
                         <Typography variant="h6" fontWeight={800} gutterBottom>
                           {stage.type === LessonStageType.VERSE_FIXATION
                             ? 'Peças da dinâmica de fixação'
-                            : stage.type === LessonStageType.STANDARD_GAME
-                              ? 'Visuais de apoio da brincadeira'
-                              : 'Ilustrações das atividades'}
+                            : 'Ilustrações das atividades'}
                         </Typography>
                       )}
 

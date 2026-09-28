@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react';
 import { ArrowBackIosNew, ArrowForwardIos } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, IconButton, Stack, Typography } from '@mui/material';
 
-import { LessonVisualOrientation, VisualAsset } from '../types';
+import { LessonVisualOrientation, VisualCarouselProps } from '../types';
 
-interface StoryVisualCarouselProps {
-  assets: VisualAsset[];
-  orientation: LessonVisualOrientation | '';
-}
-
-export const StoryVisualCarousel = ({ assets, orientation }: StoryVisualCarouselProps) => {
+export const StoryVisualCarousel = ({
+  assets,
+  orientation,
+  title = 'Cenas visuais da história',
+  ariaLabel = 'Visuais da história',
+  testIdPrefix = 'ai-story-visual',
+}: VisualCarouselProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -25,15 +26,15 @@ export const StoryVisualCarousel = ({ assets, orientation }: StoryVisualCarousel
 
   return (
     <Box
-      data-testid="ai-story-visual-carousel"
+      data-testid={`${testIdPrefix}-carousel`}
       role="region"
       aria-roledescription="carrossel"
-      aria-label="Visuais da história"
+      aria-label={ariaLabel}
       sx={{ mt: 4 }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
         <Typography variant="h6" fontWeight={800}>
-          Cenas visuais da história
+          {title}
         </Typography>
         <Typography aria-live="polite" variant="body2" color="text.secondary" fontWeight={700}>
           {activeIndex + 1} de {assets.length}
@@ -42,7 +43,7 @@ export const StoryVisualCarousel = ({ assets, orientation }: StoryVisualCarousel
 
       <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1.5 }}>
         <IconButton
-          data-testid="ai-story-visual-carousel-previous"
+          data-testid={`${testIdPrefix}-carousel-previous`}
           aria-label="Visual anterior"
           onClick={previous}
           disabled={assets.length < 2}
@@ -52,7 +53,7 @@ export const StoryVisualCarousel = ({ assets, orientation }: StoryVisualCarousel
         </IconButton>
 
         <Card
-          data-testid={`ai-story-visual-slide-${asset.id ?? 'current'}`}
+          data-testid={`${testIdPrefix}-slide-${asset.id ?? 'current'}`}
           elevation={0}
           sx={{
             flex: 1,
@@ -65,7 +66,7 @@ export const StoryVisualCarousel = ({ assets, orientation }: StoryVisualCarousel
           <Box
             component="img"
             src={asset.url}
-            alt={asset.altText ?? asset.purpose ?? `Cena visual ${activeIndex + 1}`}
+            alt={asset.altText ?? asset.purpose ?? `Visual ${activeIndex + 1}`}
             sx={{
               display: 'block',
               width: '100%',
@@ -90,6 +91,14 @@ export const StoryVisualCarousel = ({ assets, orientation }: StoryVisualCarousel
               )}
             </Stack>
             {asset.purpose && <Typography fontWeight={700}>{asset.purpose}</Typography>}
+            {asset.instruction && (
+              <Typography
+                data-testid={`${testIdPrefix}-instruction-${asset.stepNumber ?? activeIndex + 1}`}
+                sx={{ mt: 1, p: 1.5, borderRadius: 2, bgcolor: 'primary.50' }}
+              >
+                <strong>Como fazer:</strong> {asset.instruction}
+              </Typography>
+            )}
             {asset.sourceExcerpt && (
               <Typography
                 variant="body2"
@@ -107,7 +116,7 @@ export const StoryVisualCarousel = ({ assets, orientation }: StoryVisualCarousel
         </Card>
 
         <IconButton
-          data-testid="ai-story-visual-carousel-next"
+          data-testid={`${testIdPrefix}-carousel-next`}
           aria-label="Próximo visual"
           onClick={next}
           disabled={assets.length < 2}
@@ -122,7 +131,7 @@ export const StoryVisualCarousel = ({ assets, orientation }: StoryVisualCarousel
           {assets.map((item, index) => (
             <IconButton
               key={item.id ?? index}
-              data-testid={`ai-story-visual-carousel-dot-${item.id ?? index}`}
+              data-testid={`${testIdPrefix}-carousel-dot-${item.id ?? index}`}
               aria-label={`Mostrar visual ${index + 1}`}
               aria-current={index === activeIndex ? 'true' : undefined}
               onClick={() => setActiveIndex(index)}
