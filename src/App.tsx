@@ -86,6 +86,7 @@ import {
 } from './features/feature-flags';
 import { ProfilesManager, ProfilePage } from './features/profile';
 import { ObservabilityAuditPage } from './features/observability-audit';
+import { AiProvidersConfigPage } from './features/ai-providers';
 import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
 import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
 import { AiLessonsListPage } from './pages/admin/ai-lessons/AiLessonsListPage';
@@ -309,6 +310,13 @@ function App() {
                           API exige o papel de administrador de qualquer jeito.
                         */}
                         <Route path="observabilidade-auditoria" element={<ObservabilityAuditPage />} />
+                        {/*
+                          Painel escondido de configuração de Provedores e Modelos de IA (OpenAI / Gemini).
+                          Assim como Feature Flags e Observabilidade, é acessado pelo atalho no rodapé.
+                        */}
+                        <Route path="config-provedores-ia" element={<AiProvidersConfigPage />} />
+                        <Route path="provedores-ia" element={<Navigate to="/adm/config-provedores-ia" replace />} />
+                        <Route path="estudio/config" element={<Navigate to="/adm/config-provedores-ia" replace />} />
                         <Route path="estudio" element={<AiLessonsHubPage />} />
                         <Route path="estudio/licoes" element={<AiLessonsListPage />} />
                         <Route path="estudio/licoes/:id" element={<LessonDraftDetailPage />} />

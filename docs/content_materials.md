@@ -12,7 +12,9 @@ A publicação usa uma mutation única: enquanto a requisição está ativa o bo
 
 Durante uma geração, o detalhe mantém um stream SSE autenticado com a API. O stream atualiza o cache da tela e reconecta automaticamente quando o frontend ou a API reinicia. A solicitação de geração é persistida no MySQL antes da resposta HTTP; ao iniciar, a API retoma jobs que ainda estejam em `GENERATING`, evitando etapas órfãs.
 
-Os visuais da história são gerados exclusivamente a partir do texto completo do tópico `LIÇÃO BÍBLICA` da versão atual da lição e da cena aprovada correspondente. A revisão desses visuais usa um carrossel responsivo, com navegação anterior/próxima, indicadores e identificação da cena.
+Os visuais da história são gerados exclusivamente a partir do texto completo do tópico `LIÇÃO BÍBLICA` da versão atual. O administrador informa em um campo numérico uma quantidade inteira de 4 a 10 imagens, e a LLM decide a quebra integral da narrativa nessa quantidade, sem omitir, repetir ou reescrever trechos. A revisão usa um carrossel responsivo, com navegação anterior/próxima, indicadores, identificação da cena e o trecho de origem. A tela ocupa 98% da largura no mobile e 95% a partir do desktop.
+
+A primeira cena funciona como referência-mãe de identidade visual. Todas as cenas posteriores recebem a mesma referência para preservar personagens, roupas, estilo, paleta, iluminação e ambientes; o carrossel identifica qual imagem ancora a sequência.
 
 ## 📁 Key Files
 

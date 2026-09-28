@@ -13,6 +13,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import FlagIcon from "@mui/icons-material/Flag";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
+import SettingsInputCompositeIcon from "@mui/icons-material/SettingsInputComposite";
 
 import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
@@ -129,6 +130,23 @@ const Footer: React.FC = () => {
               >
                 <MonitorHeartIcon sx={{ fontSize: "0.85rem" }} />
                 <span>Observabilidade e auditoria</span>
+              </Link>
+              <Link
+                component={RouterLink}
+                to="/adm/config-provedores-ia"
+                color="inherit"
+                underline="hover"
+                sx={{
+                  fontSize: "0.75rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  minHeight: 44,
+                  color: "rgba(255, 255, 255, 0.9)",
+                }}
+              >
+                <SettingsInputCompositeIcon sx={{ fontSize: "0.85rem" }} />
+                <span>Provedores e Modelos IA</span>
               </Link>
             </Stack>
           )}

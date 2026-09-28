@@ -14,15 +14,8 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
   LinearProgress,
-  MenuItem,
   Paper,
-  Radio,
-  RadioGroup,
-  Select,
   Stack,
   Tab,
   Tabs,
@@ -63,6 +56,7 @@ import {
 } from '@/services/aiLessonsService';
 import { LibreOfficeDocEditor } from '@/components/ai-lessons/LibreOfficeDocEditor';
 import { StoryVisualCarousel } from '@/features/ai-lessons/components/StoryVisualCarousel';
+import { StoryVisualConfiguration } from '@/features/ai-lessons/components/StoryVisualConfiguration';
 import { objectValue, visualAssets } from '@/features/ai-lessons/utils';
 
 const LABELS: Record<LessonStageType, string> = {
@@ -133,32 +127,6 @@ const STATUS_COLORS: Record<
   FAILED: 'error',
   STALE: 'warning',
 };
-
-const VISUAL_TYPES: Array<{ value: LessonVisualType; title: string; description: string }> = [
-  {
-    value: LessonVisualType.STORY_SEQUENCE,
-    title: 'Sequência da história',
-    description:
-      'Cenas cronológicas para a criança reconstruir começo, desenvolvimento e conclusão.',
-  },
-  {
-    value: LessonVisualType.CHARACTER_AND_EMOTION,
-    title: 'Personagens e emoções',
-    description:
-      'Destaca personagens, ações e emoções observáveis para compreender escolhas e consequências.',
-  },
-  {
-    value: LessonVisualType.VISUAL_ANCHORS,
-    title: 'Imagens-âncora',
-    description:
-      'Uma ideia visual simples por imagem: objeto, lugar ou momento que facilita a recordação.',
-  },
-  {
-    value: LessonVisualType.INTERACTIVE_COLORING,
-    title: 'Cenas para colorir',
-    description: 'Line art em preto e branco para recontar a lição enquanto as crianças pintam.',
-  },
-];
 
 export const LessonDraftDetailPage: React.FC = () => {
   const { id = '' } = useParams();
@@ -331,6 +299,24 @@ export const LessonDraftDetailPage: React.FC = () => {
 
   const action = (mutation: typeof complete, target: LessonStage) =>
     mutation.mutate({ id, stage: target.type });
+
+  const generateSelectedStage = () => {
+    if (!stage) return;
+    generate.mutate({
+      id,
+      payload: {
+        stage: stage.type,
+        revisionInstructions: instructions || undefined,
+        ...(stage.type === LessonStageType.LESSON_VISUALS
+          ? {
+              visualType: visualType as LessonVisualType,
+              visualOrientation: visualOrientation as LessonVisualOrientation,
+              visualQuantity: Number(visualQuantity),
+            }
+          : {}),
+      },
+    });
+  };
 
   const openStagePreview = async () => {
     if (!stage || edited) return;
@@ -772,133 +758,42 @@ export const LessonDraftDetailPage: React.FC = () => {
                 )}
 
                 {/* AI Instructions Input */}
-                <Box sx={{ mb: 3 }}>
-                  <TextField
-                    fullWidth
-                    multiline
-                    minRows={2}
-                    label="Orientações e instruções para a IA (geração ou ajuste)"
-                    placeholder="Ex: Enfatize o amor de Deus, mantenha linguagem acessível para crianças de 6 anos..."
-                    value={instructions}
-                    onChange={(event) => setInstructions(event.target.value)}
-                    inputProps={{ maxLength: 1000 }}
-                    helperText={`${instructions.length}/1000 caracteres`}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { borderRadius: 2.5 },
-                    }}
-                  />
-                </Box>
+                {stage.type !== LessonStageType.LESSON_VISUALS && (
+                  <Box sx={{ mb: 3 }}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      label="Orientações e instruções para a IA (geração ou ajuste)"
+                      placeholder="Ex: Enfatize o amor de Deus, mantenha linguagem acessível para crianças de 6 anos..."
+                      value={instructions}
+                      onChange={(event) => setInstructions(event.target.value)}
+                      inputProps={{ maxLength: 1000 }}
+                      helperText={`${instructions.length}/1000 caracteres`}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { borderRadius: 2.5 },
+                      }}
+                    />
+                  </Box>
+                )}
 
-                {/* Config for LESSON_VISUALS */}
                 {stage.type === LessonStageType.LESSON_VISUALS && (
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: { xs: 2, sm: 2.5 },
-                      mb: 3,
-                      borderRadius: 3,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      bgcolor: alpha(theme.palette.primary.main, 0.02),
-                    }}
-                  >
-                    <Typography variant="subtitle1" fontWeight={800} gutterBottom>
-                      Como os visuais devem ensinar a lição?
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      A história aprovada é a fonte fechada. A geração de imagens preservará a
-                      narrativa bíblica original.
-                    </Typography>
-
-                    <RadioGroup
-                      value={visualType}
-                      onChange={(event) => setVisualType(event.target.value as LessonVisualType)}
-                    >
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-                          gap: 1.5,
-                        }}
-                      >
-                        {VISUAL_TYPES.map((option) => (
-                          <Paper
-                            key={option.value}
-                            elevation={0}
-                            sx={{
-                              p: 1.5,
-                              borderRadius: 2.5,
-                              border: '1px solid',
-                              borderColor: visualType === option.value ? 'primary.main' : 'divider',
-                              bgcolor:
-                                visualType === option.value
-                                  ? alpha(theme.palette.primary.main, 0.05)
-                                  : 'background.paper',
-                            }}
-                          >
-                            <FormControlLabel
-                              value={option.value}
-                              control={<Radio />}
-                              sx={{ m: 0, width: '100%', alignItems: 'flex-start' }}
-                              label={
-                                <Box sx={{ ml: 0.5 }}>
-                                  <Typography fontWeight={700} variant="body2">
-                                    {option.title}
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block', mt: 0.25 }}
-                                  >
-                                    {option.description}
-                                  </Typography>
-                                </Box>
-                              }
-                            />
-                          </Paper>
-                        ))}
-                      </Box>
-                    </RadioGroup>
-
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2.5 }}>
-                      <FormControl fullWidth size="small">
-                        <InputLabel id="visual-orientation-label">Orientação</InputLabel>
-                        <Select
-                          labelId="visual-orientation-label"
-                          label="Orientação"
-                          value={visualOrientation}
-                          onChange={(event) =>
-                            setVisualOrientation(event.target.value as LessonVisualOrientation)
-                          }
-                          sx={{ borderRadius: 2 }}
-                        >
-                          <MenuItem value={LessonVisualOrientation.LANDSCAPE}>
-                            Horizontal — Paisagem (A4)
-                          </MenuItem>
-                          <MenuItem value={LessonVisualOrientation.PORTRAIT}>
-                            Vertical — Retrato (A4)
-                          </MenuItem>
-                        </Select>
-                      </FormControl>
-
-                      <FormControl fullWidth size="small">
-                        <InputLabel id="visual-quantity-label">Quantidade</InputLabel>
-                        <Select
-                          labelId="visual-quantity-label"
-                          label="Quantidade"
-                          value={visualQuantity}
-                          onChange={(event) => setVisualQuantity(Number(event.target.value))}
-                          sx={{ borderRadius: 2 }}
-                        >
-                          {Array.from({ length: 10 }, (_, index) => index + 1).map((quantity) => (
-                            <MenuItem key={quantity} value={quantity}>
-                              {quantity} {quantity === 1 ? 'imagem' : 'imagens'}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Stack>
-                  </Paper>
+                  <StoryVisualConfiguration
+                    visualType={visualType}
+                    visualOrientation={visualOrientation}
+                    visualQuantity={visualQuantity}
+                    instructions={instructions}
+                    hasVersion={Boolean(stage.currentVersionId)}
+                    isGenerating={
+                      generate.isPending || stage.status === LessonStageStatus.GENERATING
+                    }
+                    canGenerate={canGenerate}
+                    onVisualTypeChange={setVisualType}
+                    onVisualOrientationChange={setVisualOrientation}
+                    onVisualQuantityChange={setVisualQuantity}
+                    onInstructionsChange={setInstructions}
+                    onGenerate={generateSelectedStage}
+                  />
                 )}
 
                 {/* Stage Action Controls */}
@@ -909,41 +804,26 @@ export const LessonDraftDetailPage: React.FC = () => {
                   useFlexGap
                   sx={{ mb: 3 }}
                 >
-                  <Button
-                    data-testid="ai-lesson-generate-stage-button"
-                    startIcon={<AutoAwesome />}
-                    variant="contained"
-                    disabled={
-                      !canGenerate ||
-                      generate.isPending ||
-                      stage.status === LessonStageStatus.GENERATING ||
-                      (stage.type === LessonStageType.LESSON_VISUALS &&
-                        (!visualType || !visualOrientation || !visualQuantity))
-                    }
-                    onClick={() =>
-                      generate.mutate({
-                        id,
-                        payload: {
-                          stage: stage.type,
-                          revisionInstructions: instructions || undefined,
-                          ...(stage.type === LessonStageType.LESSON_VISUALS
-                            ? {
-                                visualType: visualType as LessonVisualType,
-                                visualOrientation: visualOrientation as LessonVisualOrientation,
-                                visualQuantity: Number(visualQuantity),
-                              }
-                            : {}),
-                        },
-                      })
-                    }
-                    sx={{ borderRadius: 2.5, px: 2.5, minHeight: 44, fontWeight: 700 }}
-                  >
-                    {generate.isPending || stage.status === LessonStageStatus.GENERATING
-                      ? 'Gerando com IA…'
-                      : stage.currentVersionId
-                        ? 'Regenerar com IA'
-                        : 'Gerar com IA'}
-                  </Button>
+                  {stage.type !== LessonStageType.LESSON_VISUALS && (
+                    <Button
+                      data-testid="ai-lesson-generate-stage-button"
+                      startIcon={<AutoAwesome />}
+                      variant="contained"
+                      disabled={
+                        !canGenerate ||
+                        generate.isPending ||
+                        stage.status === LessonStageStatus.GENERATING
+                      }
+                      onClick={generateSelectedStage}
+                      sx={{ borderRadius: 2.5, px: 2.5, minHeight: 44, fontWeight: 700 }}
+                    >
+                      {generate.isPending || stage.status === LessonStageStatus.GENERATING
+                        ? 'Gerando com IA…'
+                        : stage.currentVersionId
+                          ? 'Regenerar com IA'
+                          : 'Gerar com IA'}
+                    </Button>
+                  )}
 
                   <Button
                     variant="outlined"

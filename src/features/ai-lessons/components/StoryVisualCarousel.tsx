@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowBackIosNew, ArrowForwardIos } from '@mui/icons-material';
-import { Box, Card, CardContent, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Chip, IconButton, Stack, Typography } from '@mui/material';
 
 import { LessonVisualOrientation, VisualAsset } from '../types';
 
@@ -76,10 +76,28 @@ export const StoryVisualCarousel = ({ assets, orientation }: StoryVisualCarousel
             }}
           />
           <CardContent>
-            <Typography variant="overline" color="primary.main" fontWeight={800}>
-              {asset.id ?? `Cena ${activeIndex + 1}`}
-            </Typography>
+            <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap>
+              <Typography variant="overline" color="primary.main" fontWeight={800}>
+                Visual {activeIndex + 1}
+              </Typography>
+              {asset.identityReference && (
+                <Chip
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  label="Referência visual da sequência"
+                />
+              )}
+            </Stack>
             {asset.purpose && <Typography fontWeight={700}>{asset.purpose}</Typography>}
+            {asset.sourceExcerpt && (
+              <Typography
+                variant="body2"
+                sx={{ mt: 1, p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}
+              >
+                <strong>Trecho da lição:</strong> {asset.sourceExcerpt}
+              </Typography>
+            )}
             {asset.altText && (
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                 {asset.altText}

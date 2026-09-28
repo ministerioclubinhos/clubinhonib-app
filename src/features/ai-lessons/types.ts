@@ -36,7 +36,24 @@ export enum LessonVisualOrientation {
 export interface VisualAsset {
   id?: string;
   purpose?: string;
+  sourceExcerpt?: string;
   altText?: string;
   displayText?: string;
   url?: string;
+  identityReference?: boolean;
+}
+
+export interface StoryVisualConfigurationProps {
+  visualType: LessonVisualType | '';
+  visualOrientation: LessonVisualOrientation | '';
+  visualQuantity: number | '';
+  instructions: string;
+  hasVersion: boolean;
+  isGenerating: boolean;
+  canGenerate: boolean;
+  onVisualTypeChange: (value: LessonVisualType) => void;
+  onVisualOrientationChange: (value: LessonVisualOrientation) => void;
+  onVisualQuantityChange: (value: number | '') => void;
+  onInstructionsChange: (value: string) => void;
+  onGenerate: () => void;
 }
