@@ -176,6 +176,9 @@ export const LessonDraftDetailPage: React.FC = () => {
     (item) => item.id === approvedLessonStage.currentVersionId
   );
   const mainVerse = objectValue(approvedLessonVersion?.structuredDataJson.memoryVerse);
+  const generationLocked =
+    generate.isPending ||
+    Boolean(lesson?.stages.some((item) => item.status === LessonStageStatus.GENERATING));
 
   useEffect(() => {
     if (selectedType !== LessonStageType.LESSON_VISUALS) return;
@@ -337,11 +340,18 @@ export const LessonDraftDetailPage: React.FC = () => {
 
   return (
     <Box
+      component="fieldset"
       data-testid="ai-lessons-detail"
+      disabled={generationLocked}
+      aria-busy={generationLocked}
       sx={{
         width: { xs: '98%', md: '95%' },
+        m: 0,
         mx: 'auto',
         py: { xs: 1.5, sm: 2.5, md: 3.5 },
+        px: 0,
+        border: 0,
+        minInlineSize: 0,
       }}
     >
       {/* Top Bar with Back Button */}
@@ -1124,6 +1134,7 @@ export const LessonDraftDetailPage: React.FC = () => {
       <Dialog
         open={Boolean(previewUrl) || Boolean(previewError)}
         onClose={() => {
+          if (generationLocked) return;
           if (previewUrl) URL.revokeObjectURL(previewUrl);
           setPreviewUrl(null);
           setPreviewError(null);
@@ -1159,6 +1170,7 @@ export const LessonDraftDetailPage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button
+            disabled={generationLocked}
             onClick={() => {
               if (previewUrl) URL.revokeObjectURL(previewUrl);
               setPreviewUrl(null);
@@ -1170,6 +1182,7 @@ export const LessonDraftDetailPage: React.FC = () => {
           {previewUrl && (
             <Button
               component="a"
+              disabled={generationLocked}
               href={previewUrl}
               download={`preview-${stage?.type.toLowerCase() ?? 'item'}.pdf`}
               startIcon={<Download />}
@@ -1182,7 +1195,9 @@ export const LessonDraftDetailPage: React.FC = () => {
 
       <Dialog
         open={deleteConfirmOpen}
-        onClose={() => !deleteMutation.isPending && setDeleteConfirmOpen(false)}
+        onClose={() =>
+          !generationLocked && !deleteMutation.isPending && setDeleteConfirmOpen(false)
+        }
         maxWidth="xs"
         fullWidth
         PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
@@ -1204,7 +1219,7 @@ export const LessonDraftDetailPage: React.FC = () => {
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
             onClick={() => setDeleteConfirmOpen(false)}
-            disabled={deleteMutation.isPending}
+            disabled={generationLocked || deleteMutation.isPending}
             sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
           >
             Cancelar
@@ -1216,7 +1231,7 @@ export const LessonDraftDetailPage: React.FC = () => {
             }}
             variant="contained"
             color="error"
-            disabled={deleteMutation.isPending}
+            disabled={generationLocked || deleteMutation.isPending}
             startIcon={
               deleteMutation.isPending ? (
                 <CircularProgress size={16} color="inherit" />

@@ -18,6 +18,8 @@ A primeira cena funciona como referência-mãe de identidade visual. Todas as ce
 
 Na etapa `3. Brincadeira`, cada passo da atividade gera exatamente um visual instrucional correspondente. A imagem deve demonstrar como executar aquele passo, usando o contexto completo da brincadeira, e a instrução literal aparece abaixo da arte no carrossel `Como brincar — passo a passo visual`. A primeira imagem também ancora a identidade visual das seguintes. Uma ação junto ao carrossel abre o preview responsivo do PDF em um diálogo e permite baixá-lo; cada página visual do PDF identifica o passo e imprime sua instrução acima da imagem.
 
+Enquanto qualquer etapa estiver com geração de IA em andamento, a tela de detalhes entra em estado ocupado e todos os botões e controles de formulário ficam temporariamente desabilitados. A consulta automática continua ativa e libera os controles assim que a geração termina ou falha, evitando gerações, salvamentos, aprovações ou exclusões concorrentes.
+
 ## 📁 Key Files
 
 - **Features**:
