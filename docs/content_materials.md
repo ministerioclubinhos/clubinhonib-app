@@ -20,6 +20,8 @@ Na etapa `3. Brincadeira`, cada passo da atividade gera exatamente um visual ins
 
 Enquanto qualquer etapa estiver com geração de IA em andamento, a tela de detalhes entra em estado ocupado e todos os botões e controles de formulário ficam temporariamente desabilitados. A consulta automática continua ativa e libera os controles assim que a geração termina ou falha, evitando gerações, salvamentos, aprovações ou exclusões concorrentes.
 
+Na etapa `4. Visuais do versículo`, cada imagem já é gerada pronta seguindo a referência visual de `lições/Semana 7/versciculo`: o trecho aparece dentro da própria arte em tipografia infantil extragrande, arredondada, multicolorida, com contorno branco e sombra, ocupando aproximadamente 95% da composição. Não existe texto HTML nem composição posterior sobre a imagem. Não entram personagens, animais, cenas ou objetos reconhecíveis; os detalhes ficam pequenos e restritos às extremidades. A revisão usa um carrossel responsivo com contador, setas, indicadores e a imagem final da referência como último slide.
+
 ## 📁 Key Files
 
 - **Features**:

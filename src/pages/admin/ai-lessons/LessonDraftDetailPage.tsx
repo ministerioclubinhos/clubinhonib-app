@@ -1051,19 +1051,28 @@ export const LessonDraftDetailPage: React.FC = () => {
                   </Box>
                 )}
 
+                {stage.type === LessonStageType.VERSE_VISUALS && (
+                  <StoryVisualCarousel
+                    assets={assets}
+                    orientation={LessonVisualOrientation.LANDSCAPE}
+                    title="Versículo — sequência visual"
+                    ariaLabel="Visuais do versículo"
+                    testIdPrefix="ai-verse-visual"
+                  />
+                )}
+
                 {/* Generated Visual Assets Preview */}
                 {assets.length > 0 &&
                   stage.type !== LessonStageType.MANUAL_WORK &&
                   stage.type !== LessonStageType.LESSON_VISUALS &&
-                  stage.type !== LessonStageType.STANDARD_GAME && (
+                  stage.type !== LessonStageType.STANDARD_GAME &&
+                  stage.type !== LessonStageType.VERSE_VISUALS && (
                     <Box sx={{ mt: 4 }}>
-                      {stage.type !== LessonStageType.VERSE_VISUALS && (
-                        <Typography variant="h6" fontWeight={800} gutterBottom>
-                          {stage.type === LessonStageType.VERSE_FIXATION
-                            ? 'Peças da dinâmica de fixação'
-                            : 'Ilustrações das atividades'}
-                        </Typography>
-                      )}
+                      <Typography variant="h6" fontWeight={800} gutterBottom>
+                        {stage.type === LessonStageType.VERSE_FIXATION
+                          ? 'Peças da dinâmica de fixação'
+                          : 'Ilustrações das atividades'}
+                      </Typography>
 
                       <Box
                         sx={{
@@ -1096,31 +1105,25 @@ export const LessonDraftDetailPage: React.FC = () => {
                                 bgcolor: 'grey.50',
                               }}
                             />
-                            {stage.type !== LessonStageType.VERSE_VISUALS && (
-                              <CardContent sx={{ p: 2 }}>
-                                <Typography fontWeight={700}>
-                                  {asset.purpose ?? `Visual ${index + 1}`}
+                            <CardContent sx={{ p: 2 }}>
+                              <Typography fontWeight={700}>
+                                {asset.purpose ?? `Visual ${index + 1}`}
+                              </Typography>
+                              {asset.displayText && (
+                                <Typography
+                                  sx={{ mt: 0.75, fontWeight: 600 }}
+                                  color="primary.main"
+                                  variant="body2"
+                                >
+                                  {asset.displayText}
                                 </Typography>
-                                {asset.displayText && (
-                                  <Typography
-                                    sx={{ mt: 0.75, fontWeight: 600 }}
-                                    color="primary.main"
-                                    variant="body2"
-                                  >
-                                    {asset.displayText}
-                                  </Typography>
-                                )}
-                                {asset.altText && (
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{ mt: 0.5 }}
-                                  >
-                                    {asset.altText}
-                                  </Typography>
-                                )}
-                              </CardContent>
-                            )}
+                              )}
+                              {asset.altText && (
+                                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                  {asset.altText}
+                                </Typography>
+                              )}
+                            </CardContent>
                           </Card>
                         ))}
                       </Box>
