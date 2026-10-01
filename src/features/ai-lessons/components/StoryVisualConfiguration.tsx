@@ -187,11 +187,13 @@ export const StoryVisualConfiguration = ({
                 ? 'Informe um número de 4 a 10.'
                 : 'A IA dividirá toda a lição em 4 a 10 partes, conforme o número informado.'
             }
-            inputProps={{
-              min: STORY_VISUAL_MIN_QUANTITY,
-              max: STORY_VISUAL_MAX_QUANTITY,
-              step: 1,
-              inputMode: 'numeric',
+            slotProps={{
+              htmlInput: {
+                min: STORY_VISUAL_MIN_QUANTITY,
+                max: STORY_VISUAL_MAX_QUANTITY,
+                step: 1,
+                inputMode: 'numeric',
+              },
             }}
             onChange={(event) =>
               onVisualQuantityChange(event.target.value === '' ? '' : Number(event.target.value))
@@ -256,7 +258,7 @@ export const StoryVisualConfiguration = ({
               placeholder="Ex.: use cores mais suaves ou destaque um personagem."
               value={instructions}
               onChange={(event) => onInstructionsChange(event.target.value)}
-              inputProps={{ maxLength: 1000 }}
+              slotProps={{ htmlInput: { maxLength: 1000 } }}
               helperText={`${instructions.length}/1000 caracteres`}
               sx={{ mt: 2 }}
             />

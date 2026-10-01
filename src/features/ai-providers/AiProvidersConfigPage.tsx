@@ -79,7 +79,10 @@ export const AiProvidersConfigPage: React.FC = () => {
     refetch: refetchGeminiModels,
   } = useGeminiModels(true);
 
-  const [feedback, setFeedback] = useState<{ severity: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    severity: 'success' | 'error' | 'info';
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     if (settings) {
@@ -154,21 +157,45 @@ export const AiProvidersConfigPage: React.FC = () => {
       await saveMutation.mutateAsync(DEFAULT_AI_PROVIDER_SETTINGS);
       setFeedback({
         severity: 'success',
-        message: 'Configurações restauradas e salvas com sucesso para os padrões do sistema (OpenAI / Gemini)!',
+        message:
+          'Configurações restauradas e salvas com sucesso para os padrões do sistema (OpenAI / Gemini)!',
       });
     } catch (err) {
       setFeedback({
         severity: 'info',
-        message: 'Valores restaurados para os padrões recomendados do sistema. Clique em salvar para confirmar.',
+        message:
+          'Valores restaurados para os padrões recomendados do sistema. Clique em salvar para confirmar.',
       });
     }
   };
 
-  const openAiGeneralModels = openaiModelsData?.models.general ?? ['gpt-6-luna', 'gpt-5.6-luna', 'gpt-5.6', 'gpt-4o', 'gpt-4o-mini', 'o3-mini', 'o1'];
-  const openAiImageModels = openaiModelsData?.models.image ?? ['gpt-image-2', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst', 'gpt-image-1-mini', 'dall-e-3'];
+  const openAiGeneralModels = openaiModelsData?.models.general ?? [
+    'gpt-6-luna',
+    'gpt-5.6-luna',
+    'gpt-5.6',
+    'gpt-4o',
+    'gpt-4o-mini',
+    'o3-mini',
+    'o1',
+  ];
+  const openAiImageModels = openaiModelsData?.models.image ?? [
+    'gpt-image-2',
+    'gpt-image-2.5-flare',
+    'gpt-image-2.5-sunburst',
+    'gpt-image-1-mini',
+    'dall-e-3',
+  ];
 
-  const geminiGeneralModels = geminiModelsData?.models.general ?? ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-  const geminiImageModels = geminiModelsData?.models.image ?? ['gemini-3.1-flash-image', 'imagen-3.0-generate-002'];
+  const geminiGeneralModels = geminiModelsData?.models.general ?? [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro',
+  ];
+  const geminiImageModels = geminiModelsData?.models.image ?? [
+    'gemini-3.1-flash-image',
+    'imagen-3.0-generate-002',
+  ];
 
   if (isLoading) {
     return (
@@ -261,7 +288,8 @@ export const AiProvidersConfigPage: React.FC = () => {
               color="text.secondary"
               sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' }, lineHeight: 1.5 }}
             >
-              Gerenciamento dinâmico dos modelos e chaves de API sem nomes chumbados no código nem em arquivos <code>.env</code>.
+              Gerenciamento dinâmico dos modelos e chaves de API sem nomes chumbados no código nem
+              em arquivos <code>.env</code>.
             </Typography>
           </Box>
 
@@ -302,7 +330,9 @@ export const AiProvidersConfigPage: React.FC = () => {
             '& .MuiAlert-message': { width: '100%', overflowWrap: 'anywhere' },
           }}
         >
-          <strong>Arquitetura Dinâmica:</strong> O backend consulta a lista viva da OpenAI (<code>GET /api/openai/models</code>) e persiste as escolhas (<code>PUT /api/openai/settings</code>) na tabela do banco de dados.
+          <strong>Arquitetura Dinâmica:</strong> O backend consulta a lista viva da OpenAI (
+          <code>GET /api/openai/models</code>) e persiste as escolhas (
+          <code>PUT /api/openai/settings</code>) na tabela do banco de dados.
         </Alert>
       </Paper>
 
@@ -328,11 +358,21 @@ export const AiProvidersConfigPage: React.FC = () => {
           bgcolor: alpha(theme.palette.primary.main, 0.02),
         }}
       >
-        <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.25rem' } }} gutterBottom>
+        <Typography
+          variant="h6"
+          fontWeight={800}
+          sx={{ fontSize: { xs: '1.05rem', sm: '1.25rem' } }}
+          gutterBottom
+        >
           Provedor Ativo (`LLM_PROVIDER`)
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: { xs: '0.825rem', sm: '0.875rem' } }}>
-          Escolha qual serviço de Inteligência Artificial responderá às chamadas prioritárias do Estúdio Clubinho.
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mb: 2, fontSize: { xs: '0.825rem', sm: '0.875rem' } }}
+        >
+          Escolha qual serviço de Inteligência Artificial responderá às chamadas prioritárias do
+          Estúdio Clubinho.
         </Typography>
 
         <RadioGroup
@@ -349,7 +389,10 @@ export const AiProvidersConfigPage: React.FC = () => {
                   borderRadius: 3,
                   border: '2px solid',
                   borderColor: form.llmProvider === 'openai' ? 'primary.main' : 'divider',
-                  bgcolor: form.llmProvider === 'openai' ? alpha(theme.palette.primary.main, 0.05) : 'background.paper',
+                  bgcolor:
+                    form.llmProvider === 'openai'
+                      ? alpha(theme.palette.primary.main, 0.05)
+                      : 'background.paper',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   minHeight: 48,
@@ -363,11 +406,19 @@ export const AiProvidersConfigPage: React.FC = () => {
                     <Box sx={{ ml: 0.5, minWidth: 0 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <AutoAwesome color="primary" fontSize="small" />
-                        <Typography fontWeight={800} variant="subtitle1" sx={{ fontSize: { xs: '0.95rem', sm: '1rem' } }}>
+                        <Typography
+                          fontWeight={800}
+                          variant="subtitle1"
+                          sx={{ fontSize: { xs: '0.95rem', sm: '1rem' } }}
+                        >
                           OpenAI (GPT-4o / GPT-6 Luna)
                         </Typography>
                       </Stack>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25, lineHeight: 1.3 }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mt: 0.25, lineHeight: 1.3 }}
+                      >
                         Precisão teológica com suporte a raciocínio avançado e artes `gpt-image-2`.
                       </Typography>
                     </Box>
@@ -386,7 +437,10 @@ export const AiProvidersConfigPage: React.FC = () => {
                   borderRadius: 3,
                   border: '2px solid',
                   borderColor: form.llmProvider === 'gemini' ? 'secondary.main' : 'divider',
-                  bgcolor: form.llmProvider === 'gemini' ? alpha(theme.palette.secondary.main, 0.05) : 'background.paper',
+                  bgcolor:
+                    form.llmProvider === 'gemini'
+                      ? alpha(theme.palette.secondary.main, 0.05)
+                      : 'background.paper',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   minHeight: 48,
@@ -400,11 +454,19 @@ export const AiProvidersConfigPage: React.FC = () => {
                     <Box sx={{ ml: 0.5, minWidth: 0 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Psychology color="secondary" fontSize="small" />
-                        <Typography fontWeight={800} variant="subtitle1" sx={{ fontSize: { xs: '0.95rem', sm: '1rem' } }}>
+                        <Typography
+                          fontWeight={800}
+                          variant="subtitle1"
+                          sx={{ fontSize: { xs: '0.95rem', sm: '1rem' } }}
+                        >
                           Google Gemini (Gemini 2.5 / 3.1)
                         </Typography>
                       </Stack>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25, lineHeight: 1.3 }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mt: 0.25, lineHeight: 1.3 }}
+                      >
                         Modelos rápidos com fallback automático e alta velocidade multimodal.
                       </Typography>
                     </Box>
@@ -424,7 +486,13 @@ export const AiProvidersConfigPage: React.FC = () => {
           fullWidth
           variant="contained"
           color="info"
-          startIcon={loadingOpenAiModels || loadingGeminiModels ? <CircularProgress size={18} color="inherit" /> : <Refresh />}
+          startIcon={
+            loadingOpenAiModels || loadingGeminiModels ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              <Refresh />
+            )
+          }
           disabled={loadingOpenAiModels || loadingGeminiModels}
           onClick={handleFetchLiveModels}
           sx={{
@@ -458,15 +526,30 @@ export const AiProvidersConfigPage: React.FC = () => {
             }}
           >
             <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+              <Stack
+                direction="row"
+                spacing={1.5}
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mb: 2 }}
+              >
                 <Stack direction="row" spacing={1.25} alignItems="center">
                   <AutoAwesome color="primary" />
-                  <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.25rem' } }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={800}
+                    sx={{ fontSize: { xs: '1.05rem', sm: '1.25rem' } }}
+                  >
                     OpenAI Settings
                   </Typography>
                 </Stack>
                 {form.llmProvider === 'openai' && (
-                  <Chip size="small" label="Ativo" color="primary" sx={{ fontWeight: 800, borderRadius: 1.5 }} />
+                  <Chip
+                    size="small"
+                    label="Ativo"
+                    color="primary"
+                    sx={{ fontWeight: 800, borderRadius: 1.5 }}
+                  />
                 )}
               </Stack>
               <Divider sx={{ mb: 2 }} />
@@ -504,7 +587,9 @@ export const AiProvidersConfigPage: React.FC = () => {
 
                 {/* generalModel */}
                 <FormControl fullWidth>
-                  <InputLabel id="openai-general-model-label">Modelo padrão (generalModel)</InputLabel>
+                  <InputLabel id="openai-general-model-label">
+                    Modelo padrão (generalModel)
+                  </InputLabel>
                   <Select
                     labelId="openai-general-model-label"
                     label="Modelo padrão (generalModel)"
@@ -518,12 +603,16 @@ export const AiProvidersConfigPage: React.FC = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>Modelos de texto consultados via GET /api/openai/models.</FormHelperText>
+                  <FormHelperText>
+                    Modelos de texto consultados via GET /api/openai/models.
+                  </FormHelperText>
                 </FormControl>
 
                 {/* imageModel */}
                 <FormControl fullWidth>
-                  <InputLabel id="openai-image-model-label">Modelo de imagem (imageModel)</InputLabel>
+                  <InputLabel id="openai-image-model-label">
+                    Modelo de imagem (imageModel)
+                  </InputLabel>
                   <Select
                     labelId="openai-image-model-label"
                     label="Modelo de imagem (imageModel)"
@@ -537,17 +626,23 @@ export const AiProvidersConfigPage: React.FC = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>Filtrado dinamicamente por prefixo (ex: gpt-image-*).</FormHelperText>
+                  <FormHelperText>
+                    Filtrado dinamicamente por prefixo (ex: gpt-image-*).
+                  </FormHelperText>
                 </FormControl>
 
                 {/* reasoningEffort */}
                 <FormControl fullWidth>
-                  <InputLabel id="openai-reasoning-effort-label">Nível de Raciocínio (reasoningEffort)</InputLabel>
+                  <InputLabel id="openai-reasoning-effort-label">
+                    Nível de Raciocínio (reasoningEffort)
+                  </InputLabel>
                   <Select
                     labelId="openai-reasoning-effort-label"
                     label="Nível de Raciocínio (reasoningEffort)"
                     value={form.openai.reasoningEffort}
-                    onChange={(e) => handleOpenAiChange('reasoningEffort', e.target.value as OpenAIReasoningEffort)}
+                    onChange={(e) =>
+                      handleOpenAiChange('reasoningEffort', e.target.value as OpenAIReasoningEffort)
+                    }
                     sx={{ borderRadius: 2.5, minHeight: 48 }}
                   >
                     <MenuItem value="none">none (Resposta Direta / Sem Delay)</MenuItem>
@@ -559,12 +654,16 @@ export const AiProvidersConfigPage: React.FC = () => {
 
                 {/* imageQuality */}
                 <FormControl fullWidth>
-                  <InputLabel id="openai-image-quality-label">Qualidade de Imagem (imageQuality)</InputLabel>
+                  <InputLabel id="openai-image-quality-label">
+                    Qualidade de Imagem (imageQuality)
+                  </InputLabel>
                   <Select
                     labelId="openai-image-quality-label"
                     label="Qualidade de Imagem (imageQuality)"
                     value={form.openai.imageQuality}
-                    onChange={(e) => handleOpenAiChange('imageQuality', e.target.value as OpenAIImageQuality)}
+                    onChange={(e) =>
+                      handleOpenAiChange('imageQuality', e.target.value as OpenAIImageQuality)
+                    }
                     sx={{ borderRadius: 2.5, minHeight: 48 }}
                   >
                     <MenuItem value="low">low (Desempenho)</MenuItem>
@@ -590,15 +689,30 @@ export const AiProvidersConfigPage: React.FC = () => {
             }}
           >
             <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+              <Stack
+                direction="row"
+                spacing={1.5}
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mb: 2 }}
+              >
                 <Stack direction="row" spacing={1.25} alignItems="center">
                   <Psychology color="secondary" />
-                  <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.25rem' } }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={800}
+                    sx={{ fontSize: { xs: '1.05rem', sm: '1.25rem' } }}
+                  >
                     Google Gemini Settings
                   </Typography>
                 </Stack>
                 {form.llmProvider === 'gemini' && (
-                  <Chip size="small" label="Ativo" color="secondary" sx={{ fontWeight: 800, borderRadius: 1.5 }} />
+                  <Chip
+                    size="small"
+                    label="Ativo"
+                    color="secondary"
+                    sx={{ fontWeight: 800, borderRadius: 1.5 }}
+                  />
                 )}
               </Stack>
               <Divider sx={{ mb: 2 }} />
@@ -635,7 +749,9 @@ export const AiProvidersConfigPage: React.FC = () => {
 
                 {/* generalModel */}
                 <FormControl fullWidth>
-                  <InputLabel id="gemini-general-model-label">Modelo padrão (generalModel)</InputLabel>
+                  <InputLabel id="gemini-general-model-label">
+                    Modelo padrão (generalModel)
+                  </InputLabel>
                   <Select
                     labelId="gemini-general-model-label"
                     label="Modelo padrão (generalModel)"
@@ -653,7 +769,9 @@ export const AiProvidersConfigPage: React.FC = () => {
 
                 {/* fallbackModel */}
                 <FormControl fullWidth>
-                  <InputLabel id="gemini-fallback-model-label">Modelo de Fallback (fallbackModel)</InputLabel>
+                  <InputLabel id="gemini-fallback-model-label">
+                    Modelo de Fallback (fallbackModel)
+                  </InputLabel>
                   <Select
                     labelId="gemini-fallback-model-label"
                     label="Modelo de Fallback (fallbackModel)"
@@ -671,7 +789,9 @@ export const AiProvidersConfigPage: React.FC = () => {
 
                 {/* imageModel */}
                 <FormControl fullWidth>
-                  <InputLabel id="gemini-image-model-label">Modelo de Imagem (imageModel)</InputLabel>
+                  <InputLabel id="gemini-image-model-label">
+                    Modelo de Imagem (imageModel)
+                  </InputLabel>
                   <Select
                     labelId="gemini-image-model-label"
                     label="Modelo de Imagem (imageModel)"
@@ -689,7 +809,9 @@ export const AiProvidersConfigPage: React.FC = () => {
 
                 {/* imageSize */}
                 <FormControl fullWidth>
-                  <InputLabel id="gemini-image-size-label">Tamanho de Imagem (imageSize)</InputLabel>
+                  <InputLabel id="gemini-image-size-label">
+                    Tamanho de Imagem (imageSize)
+                  </InputLabel>
                   <Select
                     labelId="gemini-image-size-label"
                     label="Tamanho de Imagem (imageSize)"
@@ -711,7 +833,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                     type="number"
                     value={form.gemini.maxRetries}
                     onChange={(e) => handleGeminiChange('maxRetries', Number(e.target.value))}
-                    inputProps={{ min: 1, max: 10 }}
+                    slotProps={{ htmlInput: { min: 1, max: 10 } }}
                     InputProps={{ sx: { borderRadius: 2.5, minHeight: 48 } }}
                   />
 
@@ -721,7 +843,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                     type="number"
                     value={form.gemini.retryBaseDelayMs}
                     onChange={(e) => handleGeminiChange('retryBaseDelayMs', Number(e.target.value))}
-                    inputProps={{ min: 100, max: 10000, step: 100 }}
+                    slotProps={{ htmlInput: { min: 100, max: 10000, step: 100 } }}
                     InputProps={{ sx: { borderRadius: 2.5, minHeight: 48 } }}
                   />
                 </Stack>
@@ -800,7 +922,9 @@ export const AiProvidersConfigPage: React.FC = () => {
             data-testid="ai-providers-save-button"
             variant="contained"
             color="primary"
-            startIcon={saveMutation.isPending ? <CircularProgress size={18} color="inherit" /> : <Save />}
+            startIcon={
+              saveMutation.isPending ? <CircularProgress size={18} color="inherit" /> : <Save />
+            }
             disabled={!isDirty || saveMutation.isPending}
             onClick={handleSave}
             sx={{

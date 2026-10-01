@@ -204,7 +204,8 @@ export const AdminPromptSettingsPage: React.FC = () => {
   });
 
   const leave = () => {
-    if (dirtyCount && !window.confirm('Existem alterações não salvas. Deseja realmente sair?')) return;
+    if (dirtyCount && !window.confirm('Existem alterações não salvas. Deseja realmente sair?'))
+      return;
     navigate('/adm/estudio');
   };
 
@@ -249,7 +250,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 2.5, sm: 3, md: 3.5 },
+          p: { xs: 2, sm: 3, md: 3.5 },
           mb: 3,
           borderRadius: 4,
           border: '1px solid',
@@ -287,7 +288,8 @@ export const AdminPromptSettingsPage: React.FC = () => {
               </Typography>
             </Stack>
             <Typography variant="body1" color="text.secondary">
-              Personalize, por etapa da lição, as instruções editoriais para a inteligência artificial.
+              Personalize, por etapa da lição, as instruções editoriais para a inteligência
+              artificial.
             </Typography>
           </Box>
 
@@ -302,8 +304,8 @@ export const AdminPromptSettingsPage: React.FC = () => {
         </Stack>
 
         <Alert severity="info" icon={<InfoOutlined />} sx={{ mt: 2.5, borderRadius: 2.5 }}>
-          As suas orientações complementam o contrato oficial. Estrutura de schema, regras de segurança,
-          NVI e campos obrigatórios continuam validados e protegidos pelo servidor.
+          As suas orientações complementam o contrato oficial. Estrutura de schema, regras de
+          segurança, NVI e campos obrigatórios continuam validados e protegidos pelo servidor.
         </Alert>
       </Paper>
 
@@ -365,7 +367,8 @@ export const AdminPromptSettingsPage: React.FC = () => {
               >
                 {ORDER.map((item) => {
                   const pref = query.data?.find((p) => p.stage === item);
-                  const isDirty = (drafts[item] ?? pref?.effectivePrompt ?? '').trim() !== pref?.effectivePrompt;
+                  const isDirty =
+                    (drafts[item] ?? pref?.effectivePrompt ?? '').trim() !== pref?.effectivePrompt;
                   const isCustom = Boolean(pref?.customPrompt);
 
                   return (
@@ -424,7 +427,11 @@ export const AdminPromptSettingsPage: React.FC = () => {
                   >
                     <Box>
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography variant="h5" fontWeight={800} sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                        <Typography
+                          variant="h5"
+                          fontWeight={800}
+                          sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+                        >
                           {currentStageInfo.icon} {currentStageInfo.label}
                         </Typography>
                         <Chip
@@ -480,7 +487,11 @@ export const AdminPromptSettingsPage: React.FC = () => {
                             onClick={handleCopyBasePrompt}
                             sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
                           >
-                            {copied ? <CheckCircle color="success" fontSize="small" /> : <ContentCopy fontSize="small" />}
+                            {copied ? (
+                              <CheckCircle color="success" fontSize="small" />
+                            ) : (
+                              <ContentCopy fontSize="small" />
+                            )}
                           </IconButton>
                         </Tooltip>
                         <TextField
@@ -547,7 +558,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       minRows={10}
                       fullWidth
                       error={value.trim().length > 0 && value.trim().length < 10}
-                      inputProps={{ maxLength: 12000 }}
+                      slotProps={{ htmlInput: { maxLength: 12000 } }}
                       InputProps={{
                         sx: {
                           fontFamily: 'monospace',
@@ -580,7 +591,12 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       startIcon={<RestartAlt />}
                       disabled={!preference.customPrompt || reset.isPending}
                       onClick={() => setResetOpen(true)}
-                      sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 600, textTransform: 'none' }}
+                      sx={{
+                        borderRadius: 2.5,
+                        minHeight: 44,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                      }}
                     >
                       Restaurar padrão
                     </Button>
@@ -590,7 +606,13 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       startIcon={<Save />}
                       disabled={!dirty || value.trim().length < 10 || save.isPending}
                       onClick={() => save.mutate({ item: preference, prompt: value.trim() })}
-                      sx={{ borderRadius: 2.5, minHeight: 44, px: 3, fontWeight: 700, textTransform: 'none' }}
+                      sx={{
+                        borderRadius: 2.5,
+                        minHeight: 44,
+                        px: 3,
+                        fontWeight: 700,
+                        textTransform: 'none',
+                      }}
                     >
                       {save.isPending ? 'Salvando…' : 'Salvar personalização'}
                     </Button>
@@ -618,12 +640,12 @@ export const AdminPromptSettingsPage: React.FC = () => {
             borderTop: '1px solid',
             borderColor: 'divider',
             zIndex: 1100,
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            flexDirection: 'column',
+            alignItems: 'stretch',
             gap: 1,
           }}
         >
-          <Typography variant="caption" fontWeight={700} color="warning.main">
+          <Typography variant="caption" fontWeight={700} color="warning.main" textAlign="center">
             Alterações pendentes
           </Typography>
           <Button
@@ -632,6 +654,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
             startIcon={<Save />}
             disabled={value.trim().length < 10 || save.isPending}
             onClick={() => save.mutate({ item: preference, prompt: value.trim() })}
+            fullWidth
             sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
           >
             {save.isPending ? 'Salvando…' : 'Salvar'}
@@ -646,15 +669,33 @@ export const AdminPromptSettingsPage: React.FC = () => {
         onClose={() => setResetOpen(false)}
         maxWidth="xs"
         fullWidth
-        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: { xs: 2, sm: 3 },
+              p: { xs: 0, sm: 1 },
+              m: { xs: 1.5, sm: 4 },
+              width: { xs: 'calc(100% - 24px)', sm: '100%' },
+            },
+          },
+        }}
       >
         <DialogTitle sx={{ fontWeight: 800 }}>Restaurar prompt oficial?</DialogTitle>
         <DialogContent>
           <DialogContentText color="text.secondary">
-            A sua personalização para a etapa <strong>{currentStageInfo.label}</strong> será removida. O sistema voltará a utilizar o prompt-base padrão.
+            A sua personalização para a etapa <strong>{currentStageInfo.label}</strong> será
+            removida. O sistema voltará a utilizar o prompt-base padrão.
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: 2,
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+            '& > :not(style) ~ :not(style)': { ml: { xs: 0, sm: 1 }, mt: { xs: 1, sm: 0 } },
+            '& .MuiButton-root': { width: { xs: '100%', sm: 'auto' } },
+          }}
+        >
           <Button
             onClick={() => setResetOpen(false)}
             sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}

@@ -62,7 +62,16 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
       onClose={handleCloseModal}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: { xs: 2, sm: 3 },
+            p: { xs: 0, sm: 1 },
+            m: { xs: 1.5, sm: 4 },
+            width: { xs: 'calc(100% - 24px)', sm: '100%' },
+          },
+        },
+      }}
     >
       <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
         <AiIcon color="primary" /> Criar Pacote de Nova Lição
@@ -98,7 +107,7 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
               setWeekNumber(value === '' ? '' : Math.max(1, Number(value)));
             }}
             disabled={generateMutation.isPending}
-            inputProps={{ min: 1, max: 999 }}
+            slotProps={{ htmlInput: { min: 1, max: 999 } }}
             helperText="Use o número editorial que aparecerá no PDF e no material semanal."
             InputProps={{ sx: { borderRadius: 2.5 } }}
           />
@@ -143,7 +152,15 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions
+        sx={{
+          px: { xs: 2, sm: 3 },
+          pb: 2,
+          flexDirection: { xs: 'column-reverse', sm: 'row' },
+          '& > :not(style) ~ :not(style)': { ml: { xs: 0, sm: 1 }, mt: { xs: 1, sm: 0 } },
+          '& .MuiButton-root': { width: { xs: '100%', sm: 'auto' } },
+        }}
+      >
         <Button
           onClick={handleCloseModal}
           disabled={generateMutation.isPending}

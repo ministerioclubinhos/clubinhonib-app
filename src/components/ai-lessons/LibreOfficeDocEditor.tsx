@@ -50,10 +50,11 @@ import { TiptapDocument } from '@/services/aiLessonsService';
 
 type Props = {
   initialJson: TiptapDocument;
-  onChange: (json: TiptapDocument) => void;
+  onChange?: (json: TiptapDocument) => void;
+  editable?: boolean;
 };
 
-export const LibreOfficeDocEditor = ({ initialJson, onChange }: Props) => {
+export const LibreOfficeDocEditor = ({ initialJson, onChange, editable = true }: Props) => {
   const theme = useTheme();
   const compact = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -79,7 +80,8 @@ export const LibreOfficeDocEditor = ({ initialJson, onChange }: Props) => {
       TableCell,
     ],
     content: initialJson,
-    onUpdate: ({ editor: value }) => onChange(value.getJSON() as TiptapDocument),
+    editable,
+    onUpdate: ({ editor: value }) => onChange?.(value.getJSON() as TiptapDocument),
   });
 
   useEffect(() => {
@@ -87,6 +89,10 @@ export const LibreOfficeDocEditor = ({ initialJson, onChange }: Props) => {
       editor.commands.setContent(initialJson);
     }
   }, [editor, initialJson]);
+
+  useEffect(() => {
+    editor?.setEditable(editable);
+  }, [editable, editor]);
 
   if (!editor) return null;
 
@@ -96,7 +102,7 @@ export const LibreOfficeDocEditor = ({ initialJson, onChange }: Props) => {
       sx={{ bgcolor: 'grey.100', p: { xs: 1, md: 3 }, overflowX: 'auto' }}
     >
       {/* Toolbar Word-like Rich Text */}
-      <Paper variant="outlined" sx={{ p: 1, mb: 2, mx: 'auto', maxWidth: 840 }}>
+      {editable && <Paper variant="outlined" sx={{ p: 1, mb: 2, mx: 'auto', maxWidth: 840 }}>
         <Stack direction="row" spacing={0.5} flexWrap="wrap" alignItems="center">
           {/* Histórico */}
           <Tooltip title="Desfazer (Ctrl+Z)">
@@ -418,7 +424,7 @@ export const LibreOfficeDocEditor = ({ initialJson, onChange }: Props) => {
             </IconButton>
           </Tooltip>
         </Stack>
-      </Paper>
+      </Paper>}
 
       {/* Folha A4 LibreOffice / Word Document Paper */}
       <Paper

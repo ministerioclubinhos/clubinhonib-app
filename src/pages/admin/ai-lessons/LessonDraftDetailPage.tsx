@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   alpha,
@@ -8,17 +8,10 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Divider,
   LinearProgress,
   Paper,
   Stack,
-  Tab,
-  Tabs,
   TextField,
   Typography,
   useTheme,
@@ -28,7 +21,6 @@ import {
   AutoAwesome,
   Check,
   DeleteOutline as DeleteIcon,
-  Download,
   PictureAsPdf,
   RateReview,
   EditNote,
@@ -58,167 +50,16 @@ import { LibreOfficeDocEditor } from '@/components/ai-lessons/LibreOfficeDocEdit
 import { StoryVisualCarousel } from '@/features/ai-lessons/components/StoryVisualCarousel';
 import { StoryVisualConfiguration } from '@/features/ai-lessons/components/StoryVisualConfiguration';
 import { objectValue, visualAssets } from '@/features/ai-lessons/utils';
-
-const LABELS: Record<LessonStageType, string> = {
-  LESSON: '1. Lição completa',
-  LESSON_VISUALS: '2. Visuais da história',
-  STANDARD_GAME: '3. Brincadeira',
-  VERSE_VISUALS: '4. Visuais do versículo',
-  VERSE_FIXATION: '5. Fixação divertida do versículo',
-  MEDITATION_YOUNGER: '6. Meditação dos menores',
-  MEDITATION_OLDER: '7. Meditação dos maiores',
-  MANUAL_WORK: '8. Trabalho manual',
-};
-
-const SHORT_LABELS: Record<LessonStageType, string> = {
-  LESSON: '1. Lição',
-  LESSON_VISUALS: '2. Visuais',
-  STANDARD_GAME: '3. Brincadeira',
-  VERSE_VISUALS: '4. Vis. Versículo',
-  VERSE_FIXATION: '5. Fixação',
-  MEDITATION_YOUNGER: '6. Med. Menores',
-  MEDITATION_OLDER: '7. Med. Maiores',
-  MANUAL_WORK: '8. Trab. Manual',
-};
-
-const DESCRIPTIONS: Record<LessonStageType, string> = {
-  LESSON: 'Conteúdo-base da aula e escolha de um único versículo principal NVI para memorização.',
-  LESSON_VISUALS:
-    'Personagens, ambientes e cenas, em ordem narrativa, para auxiliar o professor a contar a história.',
-  STANDARD_GAME:
-    'Brincadeira prática da aula e seus visuais de apoio, separada da atividade de memorização.',
-  VERSE_VISUALS:
-    'Sequência de imagens mnemônicas baseada na melhor quebra do versículo; a última imagem mostra somente a referência.',
-  VERSE_FIXATION:
-    'Dinâmica ou brincadeira divertida para praticar e memorizar o versículo, separada dos visuais mnemônicos.',
-  MEDITATION_YOUNGER:
-    'Folha A4 com duas cópias de atividades visuais simples para crianças de 5 a 7 anos.',
-  MEDITATION_OLDER:
-    'Folha A4 com três desafios de compreensão e aplicação para crianças de 8 a 11 anos, acompanhados de gabarito.',
-  MANUAL_WORK:
-    'Desenho bíblico em preto e branco para colorir, com o versículo principal, duplicado na folha para impressão e recorte.',
-};
-
-const ORDER = Object.values(LessonStageType);
-
-const LEGACY_DOCUMENT_LABELS: Record<string, string> = {
-  'FUN MECHANICS': 'MECÂNICAS DIVERTIDAS',
-  AGES5TO7: 'CRIANÇAS DE 5 A 7 ANOS',
-  AGES8TO11: 'CRIANÇAS DE 8 A 11 ANOS',
-};
-
-const localizeLegacyDocumentLabels = (document: TiptapDocument): TiptapDocument => {
-  const visit = (value: unknown): unknown => {
-    if (Array.isArray(value)) return value.map(visit);
-    if (!value || typeof value !== 'object') return value;
-    const entry = value as Record<string, unknown>;
-    return Object.fromEntries(
-      Object.entries(entry).map(([key, child]) => [
-        key,
-        key === 'text' && typeof child === 'string'
-          ? (LEGACY_DOCUMENT_LABELS[child] ?? child)
-          : visit(child),
-      ])
-    );
-  };
-  const localized = visit(document) as TiptapDocument;
-  const content = localized.content ?? [];
-  const nodeText = (value: unknown): string => {
-    if (Array.isArray(value)) return value.map(nodeText).join('');
-    if (!value || typeof value !== 'object') return '';
-    const entry = value as Record<string, unknown>;
-    return `${typeof entry.text === 'string' ? entry.text : ''}${nodeText(entry.content)}`;
-  };
-  const legacyHeadings = ['TEXTO DO VERSÍCULO', 'REFERÊNCIA DO VERSÍCULO', 'VERSÃO BÍBLICA'];
-  const sectionIndexes = content
-    .map((node, index) =>
-      node.type === 'heading' && legacyHeadings.includes(nodeText(node).trim()) ? index : -1
-    )
-    .filter((index) => index >= 0);
-  if (!sectionIndexes.length) return localized;
-
-  const sectionValue = (heading: string): string => {
-    const start = content.findIndex(
-      (node) => node.type === 'heading' && nodeText(node).trim() === heading
-    );
-    if (start < 0) return '';
-    const values: string[] = [];
-    for (let index = start + 1; index < content.length; index += 1) {
-      if (content[index].type === 'heading') break;
-      const text = nodeText(content[index]).trim();
-      if (text) values.push(text);
-    }
-    return values.join(' ');
-  };
-  const verseText = sectionValue('TEXTO DO VERSÍCULO').replace(/^[“"']|[”"']$/g, '');
-  const verseReference = sectionValue('REFERÊNCIA DO VERSÍCULO');
-  const verseVersion = sectionValue('VERSÃO BÍBLICA');
-  const removed = new Set<number>();
-  sectionIndexes.forEach((start) => {
-    for (let index = start; index < content.length; index += 1) {
-      if (index > start && content[index].type === 'heading') break;
-      removed.add(index);
-    }
-  });
-  const firstIndex = Math.min(...sectionIndexes);
-  const replacement: Array<Record<string, unknown>> = [
-    {
-      type: 'heading',
-      attrs: { level: 2 },
-      content: [{ type: 'text', text: 'VERSÍCULO PARA MEMORIZAR' }],
-    },
-    ...(verseText
-      ? [{ type: 'paragraph', content: [{ type: 'text', text: `“${verseText}”` }] }]
-      : []),
-    ...(verseReference || verseVersion
-      ? [
-          {
-            type: 'paragraph',
-            content: [
-              {
-                type: 'text',
-                text: [verseReference, verseVersion].filter(Boolean).join(' — '),
-              },
-            ],
-          },
-        ]
-      : []),
-  ];
-  return {
-    ...localized,
-    content: content.flatMap((node, index) => {
-      if (index === firstIndex) return replacement;
-      return removed.has(index) ? [] : [node];
-    }),
-  };
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  NOT_STARTED: 'Não iniciada',
-  GENERATING: 'Gerando',
-  DRAFT: 'Em produção',
-  PRODUCER_APPROVED: 'Concluída pelo produtor',
-  IN_REVIEW: 'Em aprovação final',
-  CHANGES_REQUESTED: 'Ajustes solicitados',
-  APPROVED: 'Aprovada na revisão final',
-  FAILED: 'Falhou',
-  STALE: 'Desatualizada',
-};
-
-const STATUS_COLORS: Record<
-  string,
-  'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
-> = {
-  NOT_STARTED: 'default',
-  GENERATING: 'info',
-  DRAFT: 'primary',
-  PRODUCER_APPROVED: 'info',
-  IN_REVIEW: 'warning',
-  CHANGES_REQUESTED: 'error',
-  APPROVED: 'success',
-  FAILED: 'error',
-  STALE: 'warning',
-};
+import {
+  LESSON_STAGE_DESCRIPTIONS as DESCRIPTIONS,
+  LESSON_STAGE_LABELS as LABELS,
+  LESSON_STAGE_ORDER as ORDER,
+  LESSON_STAGE_STATUS_COLORS as STATUS_COLORS,
+  LESSON_STAGE_STATUS_LABELS as STATUS_LABELS,
+  localizeLegacyDocumentLabels,
+} from './lessonDraftDetail.constants';
+import { LessonDraftDialogs } from './components/LessonDraftDialogs';
+import { LessonStageNavigation } from './components/LessonStageNavigation';
 
 export const LessonDraftDetailPage: React.FC = () => {
   const { id = '' } = useParams();
@@ -238,7 +79,6 @@ export const LessonDraftDetailPage: React.FC = () => {
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<LessonStageType>(LessonStageType.LESSON);
-  const initialGenerationStarted = useRef(false);
   const [edited, setEdited] = useState<TiptapDocument | null>(null);
   const [instructions, setInstructions] = useState('');
   const [visualType, setVisualType] = useState<LessonVisualType | ''>('');
@@ -247,6 +87,7 @@ export const LessonDraftDetailPage: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [llmErrorOpen, setLlmErrorOpen] = useState(false);
   const [publicationMessage, setPublicationMessage] = useState<string | null>(null);
 
   useEffect(
@@ -279,6 +120,10 @@ export const LessonDraftDetailPage: React.FC = () => {
     Boolean(lesson?.stages.some((item) => item.status === LessonStageStatus.GENERATING));
 
   useEffect(() => {
+    if (stage?.failureMessage) setLlmErrorOpen(true);
+  }, [stage?.failureMessage]);
+
+  useEffect(() => {
     if (selectedType !== LessonStageType.LESSON_VISUALS) return;
     const config = objectValue(version?.structuredDataJson.visualConfig);
     setVisualType(
@@ -297,19 +142,6 @@ export const LessonDraftDetailPage: React.FC = () => {
         : ''
     );
   }, [selectedType, version?.id]);
-
-  useEffect(() => {
-    const first = lesson?.stages.find((item) => item.type === LessonStageType.LESSON);
-    if (
-      !lesson ||
-      !first ||
-      first.status !== LessonStageStatus.NOT_STARTED ||
-      initialGenerationStarted.current
-    )
-      return;
-    initialGenerationStarted.current = true;
-    generate.mutate({ id: lesson.id, payload: { stage: LessonStageType.LESSON } });
-  }, [generate, lesson]);
 
   if (isLoading) {
     return (
@@ -476,7 +308,7 @@ export const LessonDraftDetailPage: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 2.5, sm: 3, md: 3.5 },
+          p: { xs: 2, sm: 3, md: 3.5 },
           mb: 3,
           borderRadius: 4,
           border: '1px solid',
@@ -598,56 +430,15 @@ export const LessonDraftDetailPage: React.FC = () => {
         </Stack>
       </Paper>
 
-      {/* Mobile Horizontal Stage Tabs (visible on < lg) */}
-      <Paper
-        elevation={0}
-        sx={{
-          display: { xs: 'block', lg: 'none' },
-          mb: 3,
-          borderRadius: 3,
-          border: '1px solid',
-          borderColor: 'divider',
-          bgcolor: 'background.paper',
+      <LessonStageNavigation
+        stages={lesson.stages}
+        selectedType={selectedType}
+        mode="mobile"
+        onSelect={(type) => {
+          setSelectedType(type);
+          setEdited(null);
         }}
-      >
-        <Tabs
-          value={selectedType}
-          onChange={(_, next) => {
-            setSelectedType(next);
-            setEdited(null);
-          }}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{
-            px: 1,
-            py: 0.5,
-            '& .MuiTab-root': {
-              minHeight: 48,
-              textTransform: 'none',
-              fontWeight: 700,
-            },
-          }}
-        >
-          {lesson.stages.map((item) => (
-            <Tab
-              key={item.id}
-              data-testid={`ai-stage-tab-${item.type}`}
-              value={item.type}
-              label={
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <span>{SHORT_LABELS[item.type]}</span>
-                  <Chip
-                    size="small"
-                    label={STATUS_LABELS[item.status] ?? item.status}
-                    color={STATUS_COLORS[item.status] ?? 'default'}
-                    sx={{ height: 20, fontSize: '0.675rem', fontWeight: 700, borderRadius: 1 }}
-                  />
-                </Stack>
-              }
-            />
-          ))}
-        </Tabs>
-      </Paper>
+      />
 
       {/* Main Grid: Sidebar (Desktop) + Stage Content */}
       <Box
@@ -658,85 +449,15 @@ export const LessonDraftDetailPage: React.FC = () => {
           alignItems: 'start',
         }}
       >
-        {/* Sidebar Sticky Menu (Desktop >= lg) */}
-        <Paper
-          elevation={0}
-          sx={{
-            display: { xs: 'none', lg: 'block' },
-            position: 'sticky',
-            top: 88,
-            p: 2.5,
-            borderRadius: 4,
-            border: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
+        <LessonStageNavigation
+          stages={lesson.stages}
+          selectedType={selectedType}
+          mode="desktop"
+          onSelect={(type) => {
+            setSelectedType(type);
+            setEdited(null);
           }}
-        >
-          <Typography variant="h6" fontWeight={800} gutterBottom>
-            Fluxo da produção
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Selecione a etapa para ver, editar e aprovar os materiais.
-          </Typography>
-
-          <Stack spacing={1}>
-            {lesson.stages.map((item) => {
-              const selected = selectedType === item.type;
-              const color = STATUS_COLORS[item.status] ?? 'default';
-
-              return (
-                <Button
-                  key={item.id}
-                  data-testid={`ai-stage-tab-${item.type}`}
-                  fullWidth
-                  variant={selected ? 'contained' : 'outlined'}
-                  color={selected ? 'primary' : 'inherit'}
-                  onClick={() => {
-                    setSelectedType(item.type);
-                    setEdited(null);
-                  }}
-                  sx={{
-                    justifyContent: 'space-between',
-                    textAlign: 'left',
-                    py: 1.25,
-                    px: 2,
-                    borderRadius: 2.5,
-                    border: '1px solid',
-                    borderColor: selected ? 'primary.main' : 'divider',
-                    bgcolor: selected ? undefined : 'background.paper',
-                    textTransform: 'none',
-                    '&:hover': {
-                      borderColor: 'primary.main',
-                    },
-                  }}
-                >
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography
-                      variant="body2"
-                      fontWeight={700}
-                      sx={{ color: selected ? '#ffffff' : 'text.primary', lineHeight: 1.3 }}
-                    >
-                      {LABELS[item.type]}
-                    </Typography>
-                    <Chip
-                      size="small"
-                      label={STATUS_LABELS[item.status] ?? item.status}
-                      color={selected ? 'default' : color}
-                      sx={{
-                        mt: 0.5,
-                        height: 20,
-                        fontSize: '0.675rem',
-                        fontWeight: 700,
-                        bgcolor: selected ? 'rgba(255,255,255,0.25)' : undefined,
-                        color: selected ? '#ffffff' : undefined,
-                      }}
-                    />
-                  </Box>
-                </Button>
-              );
-            })}
-          </Stack>
-        </Paper>
+        />
 
         {/* Stage Main Details Card */}
         <Box>
@@ -801,13 +522,6 @@ export const LessonDraftDetailPage: React.FC = () => {
                   </Alert>
                 ) : null}
 
-                {/* Warning Messages */}
-                {stage.failureMessage && (
-                  <Alert severity="error" sx={{ mb: 2, borderRadius: 2.5 }}>
-                    {stage.failureMessage}
-                  </Alert>
-                )}
-
                 {(generate.isPending || stage.status === LessonStageStatus.GENERATING) && (
                   <Alert
                     data-testid="ai-lesson-stage-generating"
@@ -836,7 +550,7 @@ export const LessonDraftDetailPage: React.FC = () => {
                       placeholder="Ex: Enfatize o amor de Deus, mantenha linguagem acessível para crianças de 6 anos..."
                       value={instructions}
                       onChange={(event) => setInstructions(event.target.value)}
-                      inputProps={{ maxLength: 1000 }}
+                      slotProps={{ htmlInput: { maxLength: 1000 } }}
                       helperText={`${instructions.length}/1000 caracteres`}
                       sx={{
                         '& .MuiOutlinedInput-root': { borderRadius: 2.5 },
@@ -1182,120 +896,32 @@ export const LessonDraftDetailPage: React.FC = () => {
           )}
         </Box>
       </Box>
-      <Dialog
-        open={Boolean(previewUrl) || Boolean(previewError)}
-        onClose={() => {
-          if (generationLocked) return;
+      <LessonDraftDialogs
+        lesson={lesson}
+        stage={stage}
+        canGenerate={canGenerate}
+        generationLocked={generationLocked}
+        llmErrorOpen={llmErrorOpen}
+        previewUrl={previewUrl}
+        previewError={previewError}
+        deleteConfirmOpen={deleteConfirmOpen}
+        deletePending={deleteMutation.isPending}
+        onCloseLlmError={() => setLlmErrorOpen(false)}
+        onRetryGeneration={() => {
+          setLlmErrorOpen(false);
+          generateSelectedStage();
+        }}
+        onClosePreview={() => {
           if (previewUrl) URL.revokeObjectURL(previewUrl);
           setPreviewUrl(null);
           setPreviewError(null);
         }}
-        fullWidth
-        maxWidth="lg"
-        fullScreen={false}
-        PaperProps={{ sx: { height: { xs: '92dvh', md: '90vh' }, m: { xs: 1, md: 4 } } }}
-      >
-        <DialogTitle sx={{ fontWeight: 800 }}>
-          Preview final — {stage ? LABELS[stage.type] : 'Item'}
-        </DialogTitle>
-        <DialogContent
-          dividers
-          sx={{ p: { xs: 0.5, md: 1.5 }, display: 'flex', flexDirection: 'column' }}
-        >
-          {previewError ? (
-            <Alert severity="error">{previewError}</Alert>
-          ) : previewUrl ? (
-            <Box
-              component="iframe"
-              title="Preview do PDF do item"
-              src={previewUrl}
-              sx={{
-                border: 0,
-                width: '100%',
-                flex: 1,
-                minHeight: { xs: 520, md: 650 },
-                bgcolor: 'grey.100',
-              }}
-            />
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            disabled={generationLocked}
-            onClick={() => {
-              if (previewUrl) URL.revokeObjectURL(previewUrl);
-              setPreviewUrl(null);
-              setPreviewError(null);
-            }}
-          >
-            Fechar
-          </Button>
-          {previewUrl && (
-            <Button
-              component="a"
-              disabled={generationLocked}
-              href={previewUrl}
-              download={`preview-${stage?.type.toLowerCase() ?? 'item'}.pdf`}
-              startIcon={<Download />}
-            >
-              Baixar preview
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={deleteConfirmOpen}
-        onClose={() =>
-          !generationLocked && !deleteMutation.isPending && setDeleteConfirmOpen(false)
-        }
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
-      >
-        <DialogTitle sx={{ fontWeight: 800 }}>Excluir Lição?</DialogTitle>
-        <DialogContent>
-          <DialogContentText color="text.secondary">
-            Tem certeza que deseja excluir a lição <strong>{lesson.theme}</strong> (Semana{' '}
-            {lesson.weekNumber})?
-          </DialogContentText>
-          <DialogContentText
-            color="error.main"
-            sx={{ mt: 1.5, fontWeight: 600, fontSize: '0.875rem' }}
-          >
-            ⚠️ Esta ação é irreversível. Todas as 8 etapas, versões geradas, comentários e arquivos
-            de imagem associados serão permanentemente removidos.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => setDeleteConfirmOpen(false)}
-            disabled={generationLocked || deleteMutation.isPending}
-            sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={async () => {
-              await deleteMutation.mutateAsync(id);
-              navigate('/adm/estudio/licoes');
-            }}
-            variant="contained"
-            color="error"
-            disabled={generationLocked || deleteMutation.isPending}
-            startIcon={
-              deleteMutation.isPending ? (
-                <CircularProgress size={16} color="inherit" />
-              ) : (
-                <DeleteIcon />
-              )
-            }
-            sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
-          >
-            {deleteMutation.isPending ? 'Excluindo...' : 'Excluir tudo'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onCloseDelete={() => setDeleteConfirmOpen(false)}
+        onConfirmDelete={async () => {
+          await deleteMutation.mutateAsync(id);
+          navigate('/adm/estudio/licoes');
+        }}
+      />
     </Box>
   );
 };

@@ -27,12 +27,7 @@ import {
   VisibilityOutlined as PreviewIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  useLessonDraft,
-  usePublishLesson,
-  useStageAction,
-  useUpdateDraftContent,
-} from '@/hooks/api/useAiLessons';
+import { useLessonDraft, usePublishLesson, useStageAction } from '@/hooks/api/useAiLessons';
 import {
   aiLessonsService,
   LessonStage,
@@ -75,7 +70,6 @@ export const LessonReviewDetailPage: React.FC = () => {
   const { data: lesson, isLoading, error } = useLessonDraft(id);
   const approve = useStageAction('approve');
   const changes = useStageAction('changes');
-  const saveContent = useUpdateDraftContent();
   const publishMutation = usePublishLesson();
 
   const [selectedType, setSelectedType] = useState<LessonStageType>(LessonStageType.LESSON);
@@ -92,9 +86,13 @@ export const LessonReviewDetailPage: React.FC = () => {
 
   if (error || !lesson) {
     return (
-      <Box sx={{ width: '95%', mx: 'auto', py: 4 }}>
+      <Box sx={{ width: { xs: '98%', md: '95%' }, mx: 'auto', py: 4 }}>
         <Alert severity="error">Não foi possível carregar a lição para revisão.</Alert>
-        <Button startIcon={<ArrowBack />} onClick={() => navigate('/adm/estudio/revisao')} sx={{ mt: 2 }}>
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={() => navigate('/adm/estudio/revisao')}
+          sx={{ mt: 2 }}
+        >
           Voltar para Revisão
         </Button>
       </Box>
@@ -102,7 +100,8 @@ export const LessonReviewDetailPage: React.FC = () => {
   }
 
   const stage = lesson.stages.find((s) => s.type === selectedType);
-  const currentVersion = stage?.versions && stage.versions.length > 0 ? stage.versions[stage.versions.length - 1] : null;
+  const currentVersion =
+    stage?.versions.find((version) => version.id === stage.currentVersionId) ?? null;
 
   const approvedCount = lesson.stages.filter((s) => s.status === LessonStageStatus.APPROVED).length;
   const totalStages = lesson.stages.length || 8;
@@ -110,6 +109,8 @@ export const LessonReviewDetailPage: React.FC = () => {
   const progress = (approvedCount / totalStages) * 100;
 
   const currentFeedback = feedbackMap[selectedType] || '';
+  const stageComments =
+    lesson.comments?.filter((comment) => comment.sectionKey === selectedType) ?? [];
 
   const handleFeedbackChange = (text: string) => {
     setFeedbackMap((prev) => ({ ...prev, [selectedType]: text }));
@@ -129,17 +130,22 @@ export const LessonReviewDetailPage: React.FC = () => {
 
   const handleRequestChanges = () => {
     if (!stage) return;
+    if (!currentFeedback.trim()) {
+      setPublicationMessage('Descreva os ajustes necessários antes de devolver o item.');
+      return;
+    }
     changes.mutate(
-      { id, stage: stage.type },
+      { id, stage: stage.type, note: currentFeedback.trim() },
       {
         onSuccess: () => {
           setPublicationMessage('Ajustes solicitados salvos para esta etapa.');
+          handleFeedbackChange('');
         },
       }
     );
   };
 
-  const handleApproveAllAndPublish = () => {
+  const handlePublish = () => {
     setPublicationMessage(null);
     publishMutation.mutate(id, {
       onSuccess: (result) => {
@@ -196,7 +202,7 @@ export const LessonReviewDetailPage: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 2.5, sm: 3 },
+          p: { xs: 2, sm: 3 },
           mb: 3,
           borderRadius: 4,
           border: '1px solid',
@@ -211,14 +217,24 @@ export const LessonReviewDetailPage: React.FC = () => {
           spacing={2}
         >
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" sx={{ gap: 1, mb: 1 }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              flexWrap="wrap"
+              sx={{ gap: 1, mb: 1 }}
+            >
               <Chip
                 label={`Semana ${lesson.weekNumber}`}
                 color="primary"
                 size="small"
                 sx={{ fontWeight: 800, borderRadius: 1.5 }}
               />
-              <Typography variant="h4" fontWeight={800} sx={{ fontSize: { xs: '1.3rem', md: '1.8rem' } }}>
+              <Typography
+                variant="h4"
+                fontWeight={800}
+                sx={{ fontSize: { xs: '1.3rem', md: '1.8rem' } }}
+              >
                 {lesson.theme}
               </Typography>
               <Chip
@@ -240,7 +256,12 @@ export const LessonReviewDetailPage: React.FC = () => {
 
             {/* Progresso de Aprovação */}
             <Box sx={{ maxWidth: 600 }}>
-              <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                justifyContent="space-between"
+                spacing={0.25}
+                sx={{ mb: 0.5 }}
+              >
                 <Typography variant="caption" fontWeight={700} color="text.secondary">
                   Progresso de Revisão & Aprovação
                 </Typography>
@@ -265,21 +286,22 @@ export const LessonReviewDetailPage: React.FC = () => {
           </Box>
 
           {/* Botão de Ação Principal: Publicação Direta */}
-          <Box sx={{ flexShrink: 0 }}>
+          <Box sx={{ flexShrink: 0, width: { xs: '100%', md: 'auto' } }}>
             <Button
               variant="contained"
               color={allApproved ? 'success' : 'primary'}
               size="large"
               startIcon={<PublishIcon />}
-              disabled={publishMutation.isPending}
-              onClick={handleApproveAllAndPublish}
+              disabled={
+                publishMutation.isPending ||
+                !allApproved ||
+                lesson.status !== 'READY_FOR_PUBLICATION'
+              }
+              onClick={handlePublish}
+              fullWidth
               sx={{ borderRadius: 3, py: 1.5, px: 3, fontWeight: 800, fontSize: '0.95rem' }}
             >
-              {publishMutation.isPending
-                ? 'Publicando…'
-                : allApproved
-                  ? 'Enviar ao Materiais Semanais'
-                  : 'Aprovar Todos os Itens e Publicar'}
+              {publishMutation.isPending ? 'Publicando…' : 'Enviar ao Materiais Semanais'}
             </Button>
           </Box>
         </Stack>
@@ -342,7 +364,7 @@ export const LessonReviewDetailPage: React.FC = () => {
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 360px' },
-          gap: 3,
+          gap: { xs: 2, md: 3 },
           alignItems: 'start',
         }}
       >
@@ -350,14 +372,20 @@ export const LessonReviewDetailPage: React.FC = () => {
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, sm: 3 },
+            p: { xs: 1.5, sm: 3 },
             borderRadius: 4,
             border: '1px solid',
             borderColor: 'divider',
             bgcolor: 'background.paper',
           }}
         >
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1}
+            justifyContent="space-between"
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
+            sx={{ mb: 2 }}
+          >
             <Typography variant="h6" fontWeight={800}>
               {LABELS[selectedType]}
             </Typography>
@@ -380,7 +408,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                 Cenas Visuais da História
               </Typography>
               <StoryVisualCarousel
-                assets={visualAssets(currentVersion?.structuredDataJson)}
+                assets={visualAssets(currentVersion?.structuredDataJson, selectedType)}
                 orientation=""
                 title="Visuais da Lição"
               />
@@ -389,19 +417,8 @@ export const LessonReviewDetailPage: React.FC = () => {
 
           {/* Editor/Visualizador LibreOffice / Tiptap */}
           <LibreOfficeDocEditor
-            value={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
-            onChange={(nextContent) => {
-              if (stage) {
-                saveContent.mutate({
-                  id,
-                  payload: {
-                    stage: stage.type,
-                    lockVersion: stage.lockVersion,
-                    tiptapAstJson: nextContent,
-                  },
-                });
-              }
-            }}
+            initialJson={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
+            editable={false}
           />
         </Paper>
 
@@ -435,6 +452,16 @@ export const LessonReviewDetailPage: React.FC = () => {
                 sx={{ mb: 2 }}
               />
 
+              {stageComments.length > 0 && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  {stageComments.map((comment) => (
+                    <Typography key={comment.id} variant="body2" sx={{ mb: 0.5 }}>
+                      {comment.commentText}
+                    </Typography>
+                  ))}
+                </Alert>
+              )}
+
               <Stack spacing={1.5}>
                 <Button
                   fullWidth
@@ -442,7 +469,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                   color="success"
                   size="large"
                   startIcon={<ApproveIcon />}
-                  disabled={approve.isPending || stage?.status === LessonStageStatus.APPROVED}
+                  disabled={approve.isPending || stage?.status !== LessonStageStatus.IN_REVIEW}
                   onClick={handleApproveStage}
                   sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.2 }}
                 >
@@ -458,7 +485,11 @@ export const LessonReviewDetailPage: React.FC = () => {
                   variant="outlined"
                   color="error"
                   startIcon={<ChangesIcon />}
-                  disabled={changes.isPending}
+                  disabled={
+                    changes.isPending ||
+                    !currentFeedback.trim() ||
+                    stage?.status !== LessonStageStatus.IN_REVIEW
+                  }
                   onClick={handleRequestChanges}
                   sx={{ borderRadius: 2.5, fontWeight: 700 }}
                 >
@@ -478,7 +509,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                   color="inherit"
                   size="small"
                   startIcon={<PublishIcon />}
-                  onClick={handleApproveAllAndPublish}
+                  onClick={handlePublish}
                   sx={{ fontWeight: 800 }}
                 >
                   Publicar Agora

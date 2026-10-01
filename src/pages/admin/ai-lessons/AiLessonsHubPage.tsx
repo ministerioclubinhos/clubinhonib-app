@@ -44,7 +44,10 @@ const statusLabel: Record<string, string> = {
   ARCHIVED: 'Arquivado',
 };
 
-const statusColor: Record<string, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
+const statusColor: Record<
+  string,
+  'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
+> = {
   DRAFT: 'warning',
   IN_PROGRESS: 'info',
   PACKAGE_READY: 'info',
@@ -71,7 +74,10 @@ export const AiLessonsHubPage: React.FC = () => {
     },
     {
       label: 'Em produção',
-      value: (data?.byStatus.DRAFT ?? 0) + (data?.byStatus.IN_PROGRESS ?? 0) + (data?.byStatus.CHANGES_REQUESTED ?? 0),
+      value:
+        (data?.byStatus.DRAFT ?? 0) +
+        (data?.byStatus.IN_PROGRESS ?? 0) +
+        (data?.byStatus.CHANGES_REQUESTED ?? 0),
       icon: <EditNote />,
       color: theme.palette.warning.main,
       bg: alpha(theme.palette.warning.main, 0.1),
@@ -96,7 +102,11 @@ export const AiLessonsHubPage: React.FC = () => {
     { step: 1, name: 'Lição completa', desc: 'Estrutura teológica e roteiro' },
     { step: 2, name: 'Visuais da história', desc: 'Artes narrativas (A4 Paisagem)' },
     { step: 3, name: 'Brincadeira', desc: 'Atividade dinâmica interativa' },
-    { step: 4, name: 'Visuais do versículo', desc: 'Imagens pela quebra semântica + referência final' },
+    {
+      step: 4,
+      name: 'Visuais do versículo',
+      desc: 'Imagens pela quebra semântica + referência final',
+    },
     { step: 5, name: 'Fixação divertida', desc: 'Dinâmica para memorizar o versículo' },
     { step: 6, name: 'Meditação menores', desc: 'Para crianças de 5 a 7 anos' },
     { step: 7, name: 'Meditação maiores', desc: 'Para crianças de 8 a 11 anos' },
@@ -117,7 +127,7 @@ export const AiLessonsHubPage: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 2.5, sm: 3.5, md: 4 },
+          p: { xs: 2, sm: 3.5, md: 4 },
           mb: 3,
           borderRadius: 4,
           background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 60%, ${theme.palette.primary.light} 100%)`,
@@ -195,7 +205,8 @@ export const AiLessonsHubPage: React.FC = () => {
                 lineHeight: 1.5,
               }}
             >
-              Central inteligente para criação, revisão e produção das lições e materiais bíblicos semanais.
+              Central inteligente para criação, revisão e produção das lições e materiais bíblicos
+              semanais.
             </Typography>
           </Box>
 
@@ -304,7 +315,7 @@ export const AiLessonsHubPage: React.FC = () => {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
               gap: { xs: 1.5, sm: 2, md: 2.5 },
               mb: 3.5,
             }}
@@ -326,7 +337,12 @@ export const AiLessonsHubPage: React.FC = () => {
                   },
                 }}
               >
-                <Stack direction="row" alignItems="center" spacing={1.5} justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1.5}
+                  justifyContent="space-between"
+                >
                   <Box
                     sx={{
                       width: { xs: 40, sm: 48 },
@@ -391,7 +407,11 @@ export const AiLessonsHubPage: React.FC = () => {
                 sx={{ mb: 2.5 }}
               >
                 <Box>
-                  <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={800}
+                    sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
+                  >
                     Produções recentes
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
@@ -439,7 +459,11 @@ export const AiLessonsHubPage: React.FC = () => {
                   <Typography fontWeight={700} variant="subtitle1" gutterBottom>
                     Nenhuma lição iniciada
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, maxWidth: 360, margin: '0 auto 20px' }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2.5, maxWidth: 360, margin: '0 auto 20px' }}
+                  >
                     Comece produzindo o primeiro pacote editorial de lições para o Clubinho.
                   </Typography>
                   <Button
@@ -533,7 +557,11 @@ export const AiLessonsHubPage: React.FC = () => {
                                 alignItems="center"
                                 sx={{ mb: 0.75 }}
                               >
-                                <Typography variant="caption" fontWeight={600} color="text.secondary">
+                                <Typography
+                                  variant="caption"
+                                  fontWeight={600}
+                                  color="text.secondary"
+                                >
                                   Progresso de aprovação
                                 </Typography>
                                 <Typography variant="caption" fontWeight={700} color="primary.main">
@@ -549,7 +577,8 @@ export const AiLessonsHubPage: React.FC = () => {
                                   bgcolor: alpha(theme.palette.primary.main, 0.1),
                                   '& .MuiLinearProgress-bar': {
                                     borderRadius: 4,
-                                    bgcolor: progressPercent === 100 ? 'success.main' : 'primary.main',
+                                    bgcolor:
+                                      progressPercent === 100 ? 'success.main' : 'primary.main',
                                   },
                                 }}
                               />
@@ -583,7 +612,8 @@ export const AiLessonsHubPage: React.FC = () => {
                   </Typography>
                 </Stack>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  O pacote contém 8 itens encadeados e, após a aprovação, é compilado no material semanal:
+                  O pacote contém 8 itens encadeados e, após a aprovação, é compilado no material
+                  semanal:
                 </Typography>
 
                 <Stack spacing={1}>
@@ -620,7 +650,12 @@ export const AiLessonsHubPage: React.FC = () => {
                         <Typography variant="body2" fontWeight={700} sx={{ lineHeight: 1.2 }}>
                           {item.name}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                          sx={{ display: 'block' }}
+                        >
                           {item.desc}
                         </Typography>
                       </Box>
@@ -647,7 +682,8 @@ export const AiLessonsHubPage: React.FC = () => {
                   </Typography>
                 </Stack>
                 <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 2 }}>
-                  Conteúdo estruturado para crianças de 5 a 11 anos, fundamentado na Bíblia NVI, com artes narrativas em A4 paisagem e atividades manuais em A4 retrato.
+                  Conteúdo estruturado para crianças de 5 a 11 anos, fundamentado na Bíblia NVI, com
+                  artes narrativas em A4 paisagem e atividades manuais em A4 retrato.
                 </Typography>
                 <Stack direction="row" flexWrap="wrap" gap={1}>
                   <Chip size="small" label="5 a 11 anos" variant="outlined" color="primary" />

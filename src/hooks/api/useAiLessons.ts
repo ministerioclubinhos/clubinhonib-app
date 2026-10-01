@@ -88,12 +88,12 @@ export function useGenerateStage() {
 export function useStageAction(action: 'complete' | 'approve' | 'changes') {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, stage }: { id: string; stage: LessonStageType }) =>
+    mutationFn: ({ id, stage, note }: { id: string; stage: LessonStageType; note?: string }) =>
       action === 'complete'
         ? aiLessonsService.completeProductionStage(id, stage)
         : action === 'approve'
           ? aiLessonsService.approveStage(id, stage)
-          : aiLessonsService.requestChanges(id, stage),
+          : aiLessonsService.requestChanges(id, stage, note ?? ''),
     onSuccess: (_, value) => {
       client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) });
       client.invalidateQueries({ queryKey: useAiLessonsKeys.all });

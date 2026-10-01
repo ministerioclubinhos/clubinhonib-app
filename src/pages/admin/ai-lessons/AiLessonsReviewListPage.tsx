@@ -18,7 +18,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { ListingCard, ListingLayout, ListingToolbar } from '@/components/common/listing';
-import type { ListingBadge, ListingFilter } from '@/components/common/listing';
+import type { ListingBadge, ListingFilter, ListingMeta } from '@/components/common/listing';
 import { useDebouncedValue } from '@/hooks/useListingQuery';
 import { useLessonDrafts } from '@/hooks/api/useAiLessons';
 import type { Lesson } from '@/services/aiLessonsService';
@@ -54,7 +54,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
 
   const debouncedSearch = useDebouncedValue(search, 400);
 
-  const { data, isLoading } = useLessonDrafts({
+  const { data, isLoading, refetch } = useLessonDrafts({
     status: status || undefined,
     search: debouncedSearch.trim() || undefined,
     page,
@@ -99,7 +99,13 @@ export const AiLessonsReviewListPage: React.FC = () => {
   const totalCount = data?.total ?? filteredItems.length;
 
   return (
-    <Box sx={{ width: { xs: '98%', md: '95%' }, mx: 'auto', py: { xs: 2, md: 3 } }}>
+    <Box
+      sx={{
+        width: { xs: '98%', md: '95%' },
+        mx: 'auto',
+        py: { xs: 1.5, md: 3 },
+      }}
+    >
       <ListingLayout
         title="Revisão e Aprovação de Lições"
         summary="Área exclusiva para revisão criteriosa de cada item gerado e aprovação final. Ao aprovar todos os itens, a lição é enviada aos Materiais Semanais."
@@ -112,6 +118,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
               setPage(1);
             }}
             filters={listingFilters}
+            onRefresh={() => void refetch()}
             action={
               <Button
                 variant="outlined"
@@ -138,6 +145,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
             setPage(1);
           },
         }}
+        pageSizeOptions={[6, 12, 24, 48]}
       >
         {filteredItems.map((item: Lesson) => {
           const approvedCount = item.stages?.filter((s) => s.status === 'APPROVED').length ?? 0;
@@ -147,6 +155,10 @@ export const AiLessonsReviewListPage: React.FC = () => {
             label: item.status,
             color: 'default' as const,
           };
+
+          const meta: ListingMeta[] = [
+            { label: `${approvedCount}/${totalStages} itens aprovados (${Math.round(progress)}%)` },
+          ];
 
           return (
             <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -161,35 +173,31 @@ export const AiLessonsReviewListPage: React.FC = () => {
                     color: statusInfo.color,
                   },
                 ]}
-                meta={
-                  <Stack spacing={1} sx={{ mt: 1 }}>
-                    <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                      {item.biblicalReference}
-                    </Typography>
-                    <Box sx={{ mt: 1 }}>
-                      <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
-                        <Typography variant="caption" fontWeight={700} color="text.secondary">
-                          Aprovação de itens
-                        </Typography>
-                        <Typography variant="caption" fontWeight={800} color="primary.main">
-                          {approvedCount}/{totalStages} aprovados ({Math.round(progress)}%)
-                        </Typography>
-                      </Stack>
-                      <LinearProgress
-                        variant="determinate"
-                        value={progress}
-                        sx={{
-                          height: 7,
+                meta={meta}
+                footer={
+                  <Box sx={{ mt: 1 }}>
+                    <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                      <Typography variant="caption" fontWeight={700} color="text.secondary">
+                        Aprovação de itens
+                      </Typography>
+                      <Typography variant="caption" fontWeight={800} color="primary.main">
+                        {approvedCount}/{totalStages} aprovados ({Math.round(progress)}%)
+                      </Typography>
+                    </Stack>
+                    <LinearProgress
+                      variant="determinate"
+                      value={progress}
+                      sx={{
+                        height: 7,
+                        borderRadius: 3.5,
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        '& .MuiLinearProgress-bar': {
                           borderRadius: 3.5,
-                          bgcolor: alpha(theme.palette.primary.main, 0.1),
-                          '& .MuiLinearProgress-bar': {
-                            borderRadius: 3.5,
-                            bgcolor: progress === 100 ? 'success.main' : 'primary.main',
-                          },
-                        }}
-                      />
-                    </Box>
-                  </Stack>
+                          bgcolor: progress === 100 ? 'success.main' : 'primary.main',
+                        },
+                      }}
+                    />
+                  </Box>
                 }
                 actions={
                   <Button

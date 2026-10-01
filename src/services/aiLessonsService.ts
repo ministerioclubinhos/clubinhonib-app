@@ -42,6 +42,15 @@ export type Lesson = {
   createdAt: string;
   updatedAt: string;
   stages: LessonStage[];
+  comments: LessonComment[];
+};
+export type LessonComment = {
+  id: string;
+  sectionKey: string;
+  commentText: string;
+  isResolved: boolean;
+  authorId: string;
+  createdAt: string;
 };
 export type LessonDashboard = { total: number; byStatus: Record<string, number>; recent: Lesson[] };
 export type GenerateLessonPayload = {
@@ -173,8 +182,8 @@ export const aiLessonsService = {
   async approveStage(id: string, stage: LessonStageType): Promise<Lesson> {
     return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/approve`, { stage })).data;
   },
-  async requestChanges(id: string, stage: LessonStageType): Promise<Lesson> {
-    return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/request-changes`, { stage }))
+  async requestChanges(id: string, stage: LessonStageType, note: string): Promise<Lesson> {
+    return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/request-changes`, { stage, note }))
       .data;
   },
   async exportPdf(id: string): Promise<Blob> {

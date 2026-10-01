@@ -255,15 +255,20 @@ export const AiLessonsListPage: React.FC = () => {
               onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
               maxWidth="xs"
               fullWidth
-              PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+              slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
             >
               <DialogTitle sx={{ fontWeight: 800 }}>Excluir Lição?</DialogTitle>
               <DialogContent>
                 <DialogContentText color="text.secondary">
-                  Tem certeza que deseja excluir a lição <strong>{deleteTarget?.theme}</strong> (Semana {deleteTarget?.weekNumber})?
+                  Tem certeza que deseja excluir a lição <strong>{deleteTarget?.theme}</strong>{' '}
+                  (Semana {deleteTarget?.weekNumber})?
                 </DialogContentText>
-                <DialogContentText color="error.main" sx={{ mt: 1.5, fontWeight: 600, fontSize: '0.875rem' }}>
-                  ⚠️ Esta ação é irreversível. Todas as 8 etapas, versões geradas, comentários e arquivos de imagem associados serão permanentemente removidos.
+                <DialogContentText
+                  color="error.main"
+                  sx={{ mt: 1.5, fontWeight: 600, fontSize: '0.875rem' }}
+                >
+                  ⚠️ Esta ação é irreversível. Todas as 8 etapas, versões geradas, comentários e
+                  arquivos de imagem associados serão permanentemente removidos.
                 </DialogContentText>
               </DialogContent>
               <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -279,7 +284,13 @@ export const AiLessonsListPage: React.FC = () => {
                   variant="contained"
                   color="error"
                   disabled={deleteMutation.isPending}
-                  startIcon={deleteMutation.isPending ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon />}
+                  startIcon={
+                    deleteMutation.isPending ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <DeleteIcon />
+                    )
+                  }
                   sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
                 >
                   {deleteMutation.isPending ? 'Excluindo...' : 'Excluir tudo'}
@@ -297,9 +308,7 @@ export const AiLessonsListPage: React.FC = () => {
           const progressPercent = Math.round((completed / totalStages) * 100);
           const presentation = statusPresentation[item.status] ?? statusPresentation.DRAFT;
 
-          const badges: ListingBadge[] = [
-            { label: presentation.label, color: presentation.color },
-          ];
+          const badges: ListingBadge[] = [{ label: presentation.label, color: presentation.color }];
 
           const meta: ListingMeta[] = [
             {
@@ -321,7 +330,12 @@ export const AiLessonsListPage: React.FC = () => {
                 onClick={() => navigate(`/adm/estudio/licoes/${item.id}`)}
                 footer={
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      sx={{ mb: 0.5 }}
+                    >
                       <Typography variant="caption" color="text.secondary" noWrap>
                         Atualizada em {new Date(item.updatedAt).toLocaleDateString('pt-BR')}
                       </Typography>
@@ -396,4 +410,3 @@ export const AiLessonsListPage: React.FC = () => {
     </Box>
   );
 };
-
