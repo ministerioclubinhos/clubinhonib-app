@@ -32,6 +32,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useLessonDashboard } from '@/hooks/api/useAiLessons';
 import { LessonStageStatus } from '@/services/aiLessonsService';
+import { AI_LESSON_HUB_RECENT_LIMIT } from '@/features/ai-lessons/constants';
 
 const statusLabel: Record<string, string> = {
   DRAFT: 'Novo Rascunho',
@@ -120,15 +121,15 @@ export const AiLessonsHubPage: React.FC = () => {
       sx={{
         width: { xs: '98%', md: '95%' },
         mx: 'auto',
-        py: { xs: 1.5, sm: 2.5, md: 3.5 },
+        py: { xs: 1.5, md: 2 },
       }}
     >
       {/* Hero Header Section */}
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 2, sm: 3.5, md: 4 },
-          mb: 3,
+          p: { xs: 2, md: 2.5 },
+          mb: 2,
           borderRadius: 4,
           background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 60%, ${theme.palette.primary.light} 100%)`,
           color: '#ffffff',
@@ -154,7 +155,7 @@ export const AiLessonsHubPage: React.FC = () => {
           direction={{ xs: 'column', md: 'row' }}
           justifyContent="space-between"
           alignItems={{ xs: 'stretch', md: 'center' }}
-          spacing={3}
+          spacing={2}
           sx={{ position: 'relative', zIndex: 1 }}
         >
           <Box>
@@ -188,7 +189,7 @@ export const AiLessonsHubPage: React.FC = () => {
               variant="h4"
               fontWeight={800}
               sx={{
-                fontSize: { xs: '1.6rem', sm: '2rem', md: '2.25rem' },
+                fontSize: { xs: '1.4rem', md: '1.75rem' },
                 letterSpacing: '-0.5px',
                 color: '#ffffff',
                 mb: 0.75,
@@ -218,7 +219,7 @@ export const AiLessonsHubPage: React.FC = () => {
             <Button
               fullWidth
               variant="contained"
-              size="large"
+              size="medium"
               startIcon={<AutoStories />}
               onClick={() => navigate('/adm/estudio/licoes')}
               sx={{
@@ -226,10 +227,10 @@ export const AiLessonsHubPage: React.FC = () => {
                 color: theme.palette.primary.main,
                 fontWeight: 700,
                 px: 3,
-                py: 1.4,
+                py: 1,
                 borderRadius: 3,
                 boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
-                minHeight: 48,
+                minHeight: 44,
                 '&:hover': {
                   bgcolor: 'rgba(255, 255, 255, 0.9)',
                   transform: 'translateY(-1px)',
@@ -242,7 +243,7 @@ export const AiLessonsHubPage: React.FC = () => {
             <Button
               fullWidth
               variant="outlined"
-              size="large"
+              size="medium"
               startIcon={<FactCheck />}
               onClick={() => navigate('/adm/estudio/revisao')}
               sx={{
@@ -250,9 +251,9 @@ export const AiLessonsHubPage: React.FC = () => {
                 borderColor: 'rgba(255, 255, 255, 0.5)',
                 fontWeight: 600,
                 px: 2.5,
-                py: 1.4,
+                py: 1,
                 borderRadius: 3,
-                minHeight: 48,
+                minHeight: 44,
                 backdropFilter: 'blur(4px)',
                 '&:hover': {
                   borderColor: '#ffffff',
@@ -265,7 +266,7 @@ export const AiLessonsHubPage: React.FC = () => {
             <Button
               fullWidth
               variant="outlined"
-              size="large"
+              size="medium"
               startIcon={<Settings />}
               onClick={() => navigate('/adm/estudio/orientacoes')}
               sx={{
@@ -273,9 +274,9 @@ export const AiLessonsHubPage: React.FC = () => {
                 borderColor: 'rgba(255, 255, 255, 0.5)',
                 fontWeight: 600,
                 px: 2.5,
-                py: 1.4,
+                py: 1,
                 borderRadius: 3,
-                minHeight: 48,
+                minHeight: 44,
                 backdropFilter: 'blur(4px)',
                 '&:hover': {
                   borderColor: '#ffffff',
@@ -315,9 +316,12 @@ export const AiLessonsHubPage: React.FC = () => {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-              gap: { xs: 1.5, sm: 2, md: 2.5 },
-              mb: 3.5,
+              gridTemplateColumns: {
+                xs: 'repeat(2, minmax(0, 1fr))',
+                md: 'repeat(4, minmax(0, 1fr))',
+              },
+              gap: 1.25,
+              mb: 2,
             }}
           >
             {metrics.map((metric) => (
@@ -325,7 +329,7 @@ export const AiLessonsHubPage: React.FC = () => {
                 key={metric.label}
                 elevation={0}
                 sx={{
-                  p: { xs: 1.75, sm: 2.5 },
+                  p: 1.5,
                   borderRadius: 3.5,
                   border: '1px solid',
                   borderColor: 'divider',
@@ -345,8 +349,8 @@ export const AiLessonsHubPage: React.FC = () => {
                 >
                   <Box
                     sx={{
-                      width: { xs: 40, sm: 48 },
-                      height: { xs: 40, sm: 48 },
+                      width: 32,
+                      height: 32,
                       borderRadius: 3,
                       bgcolor: metric.bg,
                       color: metric.color,
@@ -363,7 +367,7 @@ export const AiLessonsHubPage: React.FC = () => {
                     fontWeight={800}
                     sx={{
                       color: metric.color,
-                      fontSize: { xs: '1.5rem', sm: '2rem' },
+                      fontSize: { xs: '1.4rem', sm: '1.6rem' },
                     }}
                   >
                     {metric.value}
@@ -373,7 +377,7 @@ export const AiLessonsHubPage: React.FC = () => {
                   variant="body2"
                   color="text.secondary"
                   fontWeight={600}
-                  sx={{ mt: 1.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                  sx={{ mt: 0.75, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
                 >
                   {metric.label}
                 </Typography>
@@ -385,15 +389,20 @@ export const AiLessonsHubPage: React.FC = () => {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.8fr) minmax(320px, 1fr)' },
-              gap: { xs: 2.5, md: 3 },
+              gridTemplateColumns: {
+                xs: 'minmax(0, 1fr)',
+                lg: 'minmax(0, 1.8fr) minmax(320px, 1fr)',
+              },
+              gap: 2,
             }}
           >
             {/* Recent Productions */}
             <Paper
+              data-testid="ai-lessons-hub-recent-productions"
               elevation={0}
               sx={{
-                p: { xs: 2, sm: 2.5, md: 3 },
+                p: 2,
+                minWidth: 0,
                 borderRadius: 4,
                 border: '1px solid',
                 borderColor: 'divider',
@@ -401,10 +410,11 @@ export const AiLessonsHubPage: React.FC = () => {
               }}
             >
               <Stack
-                direction="row"
+                direction={{ xs: 'column', sm: 'row' }}
                 justifyContent="space-between"
-                alignItems="center"
-                sx={{ mb: 2.5 }}
+                alignItems={{ xs: 'flex-start', sm: 'center' }}
+                gap={1}
+                sx={{ mb: 1.5 }}
               >
                 <Box>
                   <Typography
@@ -423,7 +433,7 @@ export const AiLessonsHubPage: React.FC = () => {
                   startIcon={<ViewList />}
                   endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
                   onClick={() => navigate('/adm/estudio/licoes')}
-                  sx={{ fontWeight: 700, borderRadius: 2 }}
+                  sx={{ fontWeight: 700, borderRadius: 2, minHeight: 44, flexShrink: 0 }}
                 >
                   Ver todas
                 </Button>
@@ -476,8 +486,8 @@ export const AiLessonsHubPage: React.FC = () => {
                   </Button>
                 </Paper>
               ) : (
-                <Stack spacing={1.75}>
-                  {lessons.slice(0, 5).map((lesson) => {
+                <Stack spacing={1}>
+                  {lessons.slice(0, AI_LESSON_HUB_RECENT_LIMIT).map((lesson) => {
                     const approved = lesson.stages.filter(
                       (stage) => stage.status === LessonStageStatus.APPROVED
                     ).length;
@@ -486,6 +496,7 @@ export const AiLessonsHubPage: React.FC = () => {
 
                     return (
                       <Card
+                        data-testid={`ai-lessons-hub-recent-lesson-${lesson.id}`}
                         key={lesson.id}
                         elevation={0}
                         sx={{
@@ -501,22 +512,26 @@ export const AiLessonsHubPage: React.FC = () => {
                       >
                         <CardActionArea
                           onClick={() => navigate(`/adm/estudio/licoes/${lesson.id}`)}
-                          sx={{ p: { xs: 1.75, sm: 2 } }}
+                          sx={{ p: 1.25 }}
                         >
-                          <Stack spacing={1.5}>
+                          <Stack spacing={0.75}>
                             <Stack
-                              direction="row"
+                              direction={{ xs: 'column', sm: 'row' }}
                               justifyContent="space-between"
                               alignItems="flex-start"
                               gap={1}
                             >
-                              <Box sx={{ minWidth: 0, flex: 1 }}>
+                              <Box sx={{ minWidth: 0, flex: 1, width: { xs: '100%', sm: 'auto' } }}>
                                 <Typography
                                   fontWeight={700}
                                   sx={{
                                     fontSize: { xs: '0.95rem', sm: '1.05rem' },
                                     color: 'text.primary',
                                     overflowWrap: 'anywhere',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
                                     lineHeight: 1.3,
                                   }}
                                 >
@@ -528,7 +543,9 @@ export const AiLessonsHubPage: React.FC = () => {
                                   sx={{
                                     mt: 0.25,
                                     fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                                    overflowWrap: 'anywhere',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
                                   }}
                                 >
                                   {lesson.biblicalReference}
@@ -555,6 +572,8 @@ export const AiLessonsHubPage: React.FC = () => {
                                 direction="row"
                                 justifyContent="space-between"
                                 alignItems="center"
+                                flexWrap="wrap"
+                                gap={0.5}
                                 sx={{ mb: 0.75 }}
                               >
                                 <Typography
@@ -572,7 +591,7 @@ export const AiLessonsHubPage: React.FC = () => {
                                 variant="determinate"
                                 value={progressPercent}
                                 sx={{
-                                  height: 8,
+                                  height: 4,
                                   borderRadius: 4,
                                   bgcolor: alpha(theme.palette.primary.main, 0.1),
                                   '& .MuiLinearProgress-bar': {
@@ -593,12 +612,15 @@ export const AiLessonsHubPage: React.FC = () => {
             </Paper>
 
             {/* Right Column: Editorial Flow & Standards */}
-            <Stack spacing={2.5}>
+            <Stack spacing={2} sx={{ minWidth: 0 }}>
               {/* Fluxo Editorial Card */}
               <Paper
+                data-testid="ai-lessons-hub-editorial-flow"
                 elevation={0}
                 sx={{
-                  p: { xs: 2, sm: 2.5 },
+                  p: 2,
+                  minWidth: 0,
+                  overflowWrap: 'anywhere',
                   borderRadius: 4,
                   border: '1px solid',
                   borderColor: 'divider',
@@ -622,15 +644,15 @@ export const AiLessonsHubPage: React.FC = () => {
                       key={item.step}
                       elevation={0}
                       sx={{
-                        p: 1.25,
-                        px: 1.5,
+                        p: 1,
+                        px: 1.25,
                         borderRadius: 2.5,
                         bgcolor: alpha(theme.palette.primary.main, 0.03),
                         border: '1px solid',
                         borderColor: alpha(theme.palette.primary.main, 0.08),
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 1.5,
+                        gap: 1,
                       }}
                     >
                       <Chip
@@ -640,6 +662,7 @@ export const AiLessonsHubPage: React.FC = () => {
                         sx={{
                           fontWeight: 800,
                           minWidth: 26,
+                          flexShrink: 0,
                           height: 26,
                           borderRadius: '50%',
                           fontSize: '0.75rem',
@@ -653,8 +676,7 @@ export const AiLessonsHubPage: React.FC = () => {
                         <Typography
                           variant="caption"
                           color="text.secondary"
-                          noWrap
-                          sx={{ display: 'block' }}
+                          sx={{ display: 'block', overflowWrap: 'anywhere' }}
                         >
                           {item.desc}
                         </Typography>
@@ -666,9 +688,12 @@ export const AiLessonsHubPage: React.FC = () => {
 
               {/* Padrão do Estúdio Card */}
               <Paper
+                data-testid="ai-lessons-hub-studio-standards"
                 elevation={0}
                 sx={{
-                  p: { xs: 2, sm: 2.5 },
+                  p: 2,
+                  minWidth: 0,
+                  overflowWrap: 'anywhere',
                   borderRadius: 4,
                   border: '1px solid',
                   borderColor: 'divider',

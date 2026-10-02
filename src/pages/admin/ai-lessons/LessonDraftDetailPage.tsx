@@ -444,7 +444,7 @@ export const LessonDraftDetailPage: React.FC = () => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: '320px minmax(0, 1fr)' },
+          gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: '320px minmax(0, 1fr)' },
           gap: { xs: 2.5, lg: 3 },
           alignItems: 'start',
         }}
@@ -470,6 +470,7 @@ export const LessonDraftDetailPage: React.FC = () => {
               data-testid={`ai-stage-${stage.type}`}
               elevation={0}
               sx={{
+                minWidth: 0,
                 borderRadius: 4,
                 border: '1px solid',
                 borderColor: 'divider',

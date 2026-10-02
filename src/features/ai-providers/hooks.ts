@@ -12,7 +12,7 @@ import type { AiProviderSettings, GeminiSettings, OpenAiSettings } from './types
 export const useAiProvidersKeys = {
   all: ['ai-providers'] as const,
   settings: () => ['ai-providers', 'settings'] as const,
-  openaiModels: (apiKey?: string) => ['ai-providers', 'openai-models', apiKey] as const,
+  openaiModels: () => ['ai-providers', 'openai-models'] as const,
   geminiModels: () => ['ai-providers', 'gemini-models'] as const,
 };
 
@@ -51,10 +51,10 @@ export function useSaveGeminiSettings() {
   });
 }
 
-export function useOpenAiModels(apiKey?: string, enabled = true) {
+export function useOpenAiModels(enabled = true) {
   return useQuery({
-    queryKey: useAiProvidersKeys.openaiModels(apiKey),
-    queryFn: () => apiGetOpenAiModels(apiKey),
+    queryKey: useAiProvidersKeys.openaiModels(),
+    queryFn: apiGetOpenAiModels,
     enabled,
     staleTime: 300000,
   });

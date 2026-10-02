@@ -47,10 +47,12 @@ import {
   useSaveAiProviderSettings,
 } from './hooks';
 import { DEFAULT_AI_PROVIDER_SETTINGS } from './constants';
+import { LlmProviderType } from './types';
+import { getErrorMessage } from '@/utils/apiError';
 import type {
   AiProviderSettings,
   GeminiSettings,
-  LlmProviderType,
+  AiProviderFeedback,
   OpenAiSettings,
   OpenAIImageQuality,
   OpenAIReasoningEffort,
@@ -71,18 +73,15 @@ export const AiProvidersConfigPage: React.FC = () => {
     data: openaiModelsData,
     isLoading: loadingOpenAiModels,
     refetch: refetchOpenAiModels,
-  } = useOpenAiModels(form.openai.apiKey, true);
+  } = useOpenAiModels(form.llmProvider === LlmProviderType.OPENAI);
 
   const {
     data: geminiModelsData,
     isLoading: loadingGeminiModels,
     refetch: refetchGeminiModels,
-  } = useGeminiModels(true);
+  } = useGeminiModels(form.llmProvider === LlmProviderType.GEMINI);
 
-  const [feedback, setFeedback] = useState<{
-    severity: 'success' | 'error' | 'info';
-    message: string;
-  } | null>(null);
+  const [feedback, setFeedback] = useState<AiProviderFeedback | null>(null);
 
   useEffect(() => {
     if (settings) {
@@ -115,13 +114,13 @@ export const AiProvidersConfigPage: React.FC = () => {
 
   const handleFetchLiveModels = async () => {
     setFeedback(null);
-    if (form.llmProvider === 'openai') {
+    if (form.llmProvider === LlmProviderType.OPENAI) {
       const res = await refetchOpenAiModels();
       const countGen = res.data?.models.general.length ?? 0;
       const countImg = res.data?.models.image.length ?? 0;
       setFeedback({
         severity: 'success',
-        message: `Modelos da OpenAI consultados em tempo real (via GET /api/openai/models): ${countGen} de texto, ${countImg} de imagem.`,
+        message: `Modelos da OpenAI disponíveis: ${countGen} de texto, ${countImg} de imagem.`,
       });
     } else {
       const res = await refetchGeminiModels();
@@ -129,7 +128,7 @@ export const AiProvidersConfigPage: React.FC = () => {
       const countImg = res.data?.models.image.length ?? 0;
       setFeedback({
         severity: 'success',
-        message: `Modelos do Gemini consultados em tempo real (via GET /api/gemini/models): ${countGen} de texto, ${countImg} de imagem.`,
+        message: `Modelos do Gemini disponíveis: ${countGen} de texto, ${countImg} de imagem.`,
       });
     }
   };
@@ -137,7 +136,8 @@ export const AiProvidersConfigPage: React.FC = () => {
   const handleSave = async () => {
     setFeedback(null);
     try {
-      await saveMutation.mutateAsync(form);
+      const saved = await saveMutation.mutateAsync(form);
+      setForm(saved);
       setFeedback({
         severity: 'success',
         message: 'Configurações salvas e aplicadas com sucesso no banco de dados!',
@@ -145,7 +145,7 @@ export const AiProvidersConfigPage: React.FC = () => {
     } catch (err) {
       setFeedback({
         severity: 'error',
-        message: 'Ocorreu um erro ao salvar as configurações.',
+        message: getErrorMessage(err),
       });
     }
   };
@@ -160,7 +160,7 @@ export const AiProvidersConfigPage: React.FC = () => {
         message:
           'Configurações restauradas e salvas com sucesso para os padrões do sistema (OpenAI / Gemini)!',
       });
-    } catch (err) {
+    } catch {
       setFeedback({
         severity: 'info',
         message:
@@ -199,12 +199,27 @@ export const AiProvidersConfigPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'grid', placeItems: 'center', py: 12 }}>
+      <Box
+        data-testid="ai-providers-config-loading"
+        sx={{ display: 'grid', placeItems: 'center', py: 12 }}
+      >
         <CircularProgress size={44} thickness={4} />
         <Typography color="text.secondary" sx={{ mt: 2, fontWeight: 500 }}>
           Carregando configurações de IA...
         </Typography>
       </Box>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Alert
+        data-testid="ai-providers-config-error"
+        severity="error"
+        action={<Button onClick={() => refetch()}>Tentar novamente</Button>}
+      >
+        Não foi possível carregar as configurações de IA.
+      </Alert>
     );
   }
 
@@ -288,8 +303,7 @@ export const AiProvidersConfigPage: React.FC = () => {
               color="text.secondary"
               sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' }, lineHeight: 1.5 }}
             >
-              Gerenciamento dinâmico dos modelos e chaves de API sem nomes chumbados no código nem
-              em arquivos <code>.env</code>.
+              Configure o provedor, os modelos e as chaves usados na produção das lições.
             </Typography>
           </Box>
 
@@ -330,14 +344,14 @@ export const AiProvidersConfigPage: React.FC = () => {
             '& .MuiAlert-message': { width: '100%', overflowWrap: 'anywhere' },
           }}
         >
-          <strong>Arquitetura Dinâmica:</strong> O backend consulta a lista viva da OpenAI (
-          <code>GET /api/openai/models</code>) e persiste as escolhas (
-          <code>PUT /api/openai/settings</code>) na tabela do banco de dados.
+          As configurações salvas nesta página são usadas nas próximas gerações, sem precisar
+          reiniciar o servidor.
         </Alert>
       </Paper>
 
       {feedback && (
         <Alert
+          data-testid="ai-providers-config-feedback"
           severity={feedback.severity}
           onClose={() => setFeedback(null)}
           sx={{ mb: 2.5, borderRadius: 2.5, '& .MuiAlert-message': { overflowWrap: 'anywhere' } }}
@@ -354,7 +368,8 @@ export const AiProvidersConfigPage: React.FC = () => {
           mb: 2.5,
           borderRadius: 4,
           border: '1px solid',
-          borderColor: form.llmProvider === 'openai' ? 'primary.main' : 'secondary.main',
+          borderColor:
+            form.llmProvider === LlmProviderType.OPENAI ? 'primary.main' : 'secondary.main',
           bgcolor: alpha(theme.palette.primary.main, 0.02),
         }}
       >
@@ -364,15 +379,15 @@ export const AiProvidersConfigPage: React.FC = () => {
           sx={{ fontSize: { xs: '1.05rem', sm: '1.25rem' } }}
           gutterBottom
         >
-          Provedor Ativo (`LLM_PROVIDER`)
+          Provedor ativo
         </Typography>
         <Typography
           variant="body2"
           color="text.secondary"
           sx={{ mb: 2, fontSize: { xs: '0.825rem', sm: '0.875rem' } }}
         >
-          Escolha qual serviço de Inteligência Artificial responderá às chamadas prioritárias do
-          Estúdio Clubinho.
+          Escolha o provedor usado nas próximas gerações de texto e imagem. Clique em Salvar
+          Alterações para aplicar.
         </Typography>
 
         <RadioGroup
@@ -388,16 +403,17 @@ export const AiProvidersConfigPage: React.FC = () => {
                   p: { xs: 1.5, sm: 2 },
                   borderRadius: 3,
                   border: '2px solid',
-                  borderColor: form.llmProvider === 'openai' ? 'primary.main' : 'divider',
+                  borderColor:
+                    form.llmProvider === LlmProviderType.OPENAI ? 'primary.main' : 'divider',
                   bgcolor:
-                    form.llmProvider === 'openai'
+                    form.llmProvider === LlmProviderType.OPENAI
                       ? alpha(theme.palette.primary.main, 0.05)
                       : 'background.paper',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   minHeight: 48,
                 }}
-                onClick={() => handleProviderChange('openai')}
+                onClick={() => handleProviderChange(LlmProviderType.OPENAI)}
               >
                 <FormControlLabel
                   value="openai"
@@ -436,16 +452,17 @@ export const AiProvidersConfigPage: React.FC = () => {
                   p: { xs: 1.5, sm: 2 },
                   borderRadius: 3,
                   border: '2px solid',
-                  borderColor: form.llmProvider === 'gemini' ? 'secondary.main' : 'divider',
+                  borderColor:
+                    form.llmProvider === LlmProviderType.GEMINI ? 'secondary.main' : 'divider',
                   bgcolor:
-                    form.llmProvider === 'gemini'
+                    form.llmProvider === LlmProviderType.GEMINI
                       ? alpha(theme.palette.secondary.main, 0.05)
                       : 'background.paper',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   minHeight: 48,
                 }}
-                onClick={() => handleProviderChange('gemini')}
+                onClick={() => handleProviderChange(LlmProviderType.GEMINI)}
               >
                 <FormControlLabel
                   value="gemini"
@@ -520,7 +537,7 @@ export const AiProvidersConfigPage: React.FC = () => {
             sx={{
               borderRadius: 4,
               border: '1px solid',
-              borderColor: form.llmProvider === 'openai' ? 'primary.main' : 'divider',
+              borderColor: form.llmProvider === LlmProviderType.OPENAI ? 'primary.main' : 'divider',
               bgcolor: 'background.paper',
               height: '100%',
             }}
@@ -543,7 +560,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                     OpenAI Settings
                   </Typography>
                 </Stack>
-                {form.llmProvider === 'openai' && (
+                {form.llmProvider === LlmProviderType.OPENAI && (
                   <Chip
                     size="small"
                     label="Ativo"
@@ -683,7 +700,8 @@ export const AiProvidersConfigPage: React.FC = () => {
             sx={{
               borderRadius: 4,
               border: '1px solid',
-              borderColor: form.llmProvider === 'gemini' ? 'secondary.main' : 'divider',
+              borderColor:
+                form.llmProvider === LlmProviderType.GEMINI ? 'secondary.main' : 'divider',
               bgcolor: 'background.paper',
               height: '100%',
             }}
@@ -706,7 +724,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                     Google Gemini Settings
                   </Typography>
                 </Stack>
-                {form.llmProvider === 'gemini' && (
+                {form.llmProvider === LlmProviderType.GEMINI && (
                   <Chip
                     size="small"
                     label="Ativo"
@@ -725,7 +743,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                   type={showGeminiKey ? 'text' : 'password'}
                   value={form.gemini.apiKey ?? ''}
                   onChange={(e) => handleGeminiChange('apiKey', e.target.value)}
-                  placeholder="AQ.Ab8RN6..."
+                  placeholder="Informe sua chave Gemini"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -833,7 +851,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                     type="number"
                     value={form.gemini.maxRetries}
                     onChange={(e) => handleGeminiChange('maxRetries', Number(e.target.value))}
-                    slotProps={{ htmlInput: { min: 1, max: 10 } }}
+                    slotProps={{ htmlInput: { min: 0, max: 10 } }}
                     InputProps={{ sx: { borderRadius: 2.5, minHeight: 48 } }}
                   />
 
@@ -843,7 +861,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                     type="number"
                     value={form.gemini.retryBaseDelayMs}
                     onChange={(e) => handleGeminiChange('retryBaseDelayMs', Number(e.target.value))}
-                    slotProps={{ htmlInput: { min: 100, max: 10000, step: 100 } }}
+                    slotProps={{ htmlInput: { min: 0, max: 10000, step: 100 } }}
                     InputProps={{ sx: { borderRadius: 2.5, minHeight: 48 } }}
                   />
                 </Stack>
@@ -906,6 +924,7 @@ export const AiProvidersConfigPage: React.FC = () => {
             variant="outlined"
             color="warning"
             startIcon={<Restore />}
+            disabled={saveMutation.isPending}
             onClick={handleResetToDefault}
             sx={{
               flex: { xs: 1, sm: 'initial' },

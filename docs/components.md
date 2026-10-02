@@ -111,3 +111,36 @@ uma hierarquia temporal única:
 - **Material UI**: Core component library.
 - **Framer Motion**: Used for complex animations and page transitions.
 - **React Icons**: For iconography throughout the app.
+
+## Estúdio de lições
+
+O `LibreOfficeDocEditor` limita a caixa a 65% da altura da tela no celular
+e 70% no desktop,
+com rolagem interna. A barra de ferramentas permanece no topo da caixa
+enquanto o texto rola. O comportamento é compartilhado por todas as etapas
+textuais editáveis e pela revisão, no desktop e no celular.
+A barra do celular exibe desfazer, negrito, itálico e uma seta para abrir
+`Mais ferramentas` (apontando para cima enquanto o menu está aberto),
+sem rolagem horizontal. As ferramentas completas ficam em uma grade no
+menu, com botões de toque de pelo menos 44 × 44 px. No desktop os controles
+continuam visíveis na barra, que ocupa 95% da largura disponível.
+A folha mantém a proporção A4 e respeita a largura da caixa.
+
+O painel `/adm/estudio` usa métricas compactas em duas colunas no celular e
+quatro no desktop. Produções recentes apresenta até três lições, com título
+limitado a duas linhas e referência resumida; `Ver todas` abre a listagem
+completa. As caixas de produções, fluxo editorial e padrão do estúdio respeitam
+a largura da tela; descrições do fluxo quebram linha para permanecer legíveis.
+
+O editor oferece fonte, tamanho em pontos, espaçamento entre linhas, links,
+localizar/substituir, mesclar/dividir células e tela cheia. A contagem de palavras
+e caracteres acompanha as alterações. `LessonEditorAdvancedTools` concentra
+os diálogos; regras de busca e links ficam em `features/ai-lessons/editor.utils.ts`.
+A tela cheia mantém o mesmo documento e histórico de edição.
+
+Fonte/tamanho e espaçamento entre linhas possuem ícones separados, sem texto
+visível na barra do desktop e no menu do celular. Tooltips e nomes acessíveis
+identificam as opções.
+
+Cor da fonte e destaque oferecem 25 cores prontas, seletor de cor personalizada
+e código hexadecimal. A cor é salva no documento e preservada na exportação PDF.

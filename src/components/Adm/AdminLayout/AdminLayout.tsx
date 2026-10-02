@@ -521,6 +521,7 @@ function AdminLayout() {
         component="main"
         sx={{
           flexGrow: 1,
+          minWidth: 0,
           width: "100%",
           px: { xs: 0, md: 4 },
           py: { xs: 0, md: 6 },

@@ -70,3 +70,20 @@ The application uses different environment configurations located in `env/`:
 
 - `VITE_API_URL`: The endpoint for the backend API.
 - `VITE_GOOGLE_ADS_CLIENT_ID`: Google Client ID for authentication.
+
+## Configurações de IA
+
+A página /adm/config-provedores-ia usa GET/PUT
+/api/v1/lessons/providers/settings para ler e salvar provedor ativo, modelos,
+chaves e parâmetros em uma única operação. O servidor é a fonte de verdade: a
+seleção não fica em localStorage e erros de salvamento são exibidos na tela.
+A geração usa somente os parâmetros salvos, sem fallback para env.
+
+## Edição e exportação do Estúdio
+
+`PATCH /lessons/:id/stages/content` salva o documento Tiptap completo, incluindo
+marcas de fonte/tamanho/cor/link, espaçamento do parágrafo e células mescladas.
+É necessário salvar a edição antes da prévia ou exportação. O backend usa essa
+versão para montar o DOCX e converter em PDF, também nas meditações editadas.
+Localizar/substituir altera o mesmo documento; contadores e tela cheia são
+apenas controles do editor.
