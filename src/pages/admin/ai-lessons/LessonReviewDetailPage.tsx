@@ -1,3 +1,5 @@
+import { OlderMeditationEditor } from '@/features/ai-lessons/older-meditation-editor';
+import { YoungerMeditationEditor } from '@/features/ai-lessons/younger-meditation-editor';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -78,7 +80,10 @@ export const LessonReviewDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+      <Box
+        data-testid="ai-lesson-review-loading"
+        sx={{ display: 'flex', justifyContent: 'center', py: 10 }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -86,7 +91,10 @@ export const LessonReviewDetailPage: React.FC = () => {
 
   if (error || !lesson) {
     return (
-      <Box sx={{ width: { xs: '98%', md: '95%' }, mx: 'auto', py: 4 }}>
+      <Box
+        data-testid="ai-lesson-review-error"
+        sx={{ width: { xs: '98%', md: '95%' }, mx: 'auto', py: 4 }}
+      >
         <Alert severity="error">Não foi possível carregar a lição para revisão.</Alert>
         <Button
           startIcon={<ArrowBack />}
@@ -161,6 +169,7 @@ export const LessonReviewDetailPage: React.FC = () => {
 
   return (
     <Box
+      data-testid="ai-lesson-review-detail"
       sx={{
         width: { xs: '98%', md: '95%' },
         mx: 'auto',
@@ -416,10 +425,24 @@ export const LessonReviewDetailPage: React.FC = () => {
           ) : null}
 
           {/* Editor/Visualizador LibreOffice / Tiptap */}
-          <LibreOfficeDocEditor
-            initialJson={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
-            editable={false}
-          />
+          {selectedType === LessonStageType.MEDITATION_YOUNGER ? (
+            <YoungerMeditationEditor
+              initialJson={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
+              structuredData={currentVersion?.structuredDataJson ?? {}}
+              editable={false}
+            />
+          ) : selectedType === LessonStageType.MEDITATION_OLDER ? (
+            <OlderMeditationEditor
+              initialJson={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
+              structuredData={currentVersion?.structuredDataJson ?? {}}
+              editable={false}
+            />
+          ) : (
+            <LibreOfficeDocEditor
+              initialJson={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
+              editable={false}
+            />
+          )}
         </Paper>
 
         {/* Painel de Controle do Revisor (Direita) */}

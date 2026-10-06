@@ -147,3 +147,31 @@ IdeasMaterialViewpage/
 - **Devotionals**: Daily or weekly meditation content for spiritual growth.
 - **Document Repository**: Centralized access to administrative forms, rulebooks, and training guides.
 - **Announcements**: System-wide informatives to keep all volunteers aligned.
+
+## Estúdio: editor da meditação dos menores
+
+The isolated core `src/features/ai-lessons/younger-meditation-editor/` owns
+its component, props, layout constants and AST adapters. It has no dependency
+on `LibreOfficeDocEditor` or its extensions/styles. Only `MEDITATION_YOUNGER`
+uses `YoungerMeditationEditor`: one A4 sheet with
+two synchronized copies, the meditation logo on the left, two activity columns
+and a prayer footer. Title, verse, reference, instructions and prayer are edited
+in place. Both copies share one canonical Tiptap AST for the existing save and
+PDF endpoint; saved image URLs and the internal answers remain in structured data.
+Legacy ASTs missing instructions recover them from that structured data.
+The review screen uses the same sheet in read-only mode. On narrow screens,
+the paper scrolls inside its container. `MEDITATION_OLDER` uses its isolated `older-meditation-editor/` core with one
+full A4 page and three challenges. Both cores share only meditation AST helpers,
+and both omit the separate activity illustrations gallery. Other stages continue
+using `LibreOfficeDocEditor`.
+
+The PDF reserves a fixed half-page height per copy and fits text and drawings
+to that space, preventing the second copy from moving to a second page.
+
+Meditation prompts target ages 4–7 and 8–11. Activities follow the approved
+lesson theme and form a narrative, comprehension and application sequence.
+Younger worksheets combine visual recognition, counting, sequencing, tracing
+and simple puzzles; older worksheets use crossword clues, codes, word searches,
+choices and brief writing. Free coloring is exceptional; selecting a correct
+answer by painting remains a recognition task. Images contain complete puzzles
+and may include necessary labels, without revealing internal teacher answers.

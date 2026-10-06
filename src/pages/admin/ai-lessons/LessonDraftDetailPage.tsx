@@ -1,3 +1,5 @@
+import { OlderMeditationEditor } from '@/features/ai-lessons/older-meditation-editor';
+import { YoungerMeditationEditor } from '@/features/ai-lessons/younger-meditation-editor';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -678,10 +680,21 @@ export const LessonDraftDetailPage: React.FC = () => {
                     </Typography>
 
                     {version ? (
-                      <LibreOfficeDocEditor
-                        initialJson={document}
-                        onChange={(value) => setEdited(value)}
-                      />
+                      stage.type === LessonStageType.MEDITATION_YOUNGER ? (
+                        <YoungerMeditationEditor
+                          initialJson={document}
+                          structuredData={version.structuredDataJson}
+                          onChange={setEdited}
+                        />
+                      ) : stage.type === LessonStageType.MEDITATION_OLDER ? (
+                        <OlderMeditationEditor
+                          initialJson={document}
+                          structuredData={version.structuredDataJson}
+                          onChange={setEdited}
+                        />
+                      ) : (
+                        <LibreOfficeDocEditor initialJson={document} onChange={setEdited} />
+                      )
                     ) : (
                       <Paper
                         elevation={0}
@@ -831,7 +844,9 @@ export const LessonDraftDetailPage: React.FC = () => {
                   stage.type !== LessonStageType.LESSON_VISUALS &&
                   stage.type !== LessonStageType.STANDARD_GAME &&
                   stage.type !== LessonStageType.VERSE_FIXATION &&
-                  stage.type !== LessonStageType.VERSE_VISUALS && (
+                  stage.type !== LessonStageType.VERSE_VISUALS &&
+                  stage.type !== LessonStageType.MEDITATION_YOUNGER &&
+                  stage.type !== LessonStageType.MEDITATION_OLDER && (
                     <Box sx={{ mt: 4 }}>
                       <Typography variant="h6" fontWeight={800} gutterBottom>
                         Ilustrações das atividades
