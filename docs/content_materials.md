@@ -175,3 +175,21 @@ and simple puzzles; older worksheets use crossword clues, codes, word searches,
 choices and brief writing. Free coloring is exceptional; selecting a correct
 answer by painting remains a recognition task. Images contain complete puzzles
 and may include necessary labels, without revealing internal teacher answers.
+
+The two meditation cores expose a shared, meditation-only formatting toolbar
+above the paper. Selecting a field activates its rich text editor: undo/redo,
+the same controls and appearance as stages 1–5, including font and size,
+bold/italic/underline/strike, subscript/superscript, color/highlight, headings,
+alignment, lists, quotes, separators, tables, links, spacing, find/replace and
+fullscreen. Mobile screens expose the complete toolbar through “Mais ferramentas”.
+Inline marks, tables and paragraph attributes are saved in the canonical AST
+and mirrored between the younger copies. Reviewing hides the toolbar and
+disables editing. The native meditation export preserves these saved styles.
+
+Older activity panels place substantial instructions beside functional artwork
+when present. Images can reach 230px high; row proportions follow instruction
+length and visual requirements rather than reserving three equal empty bands.
+
+Both meditation sheets are centered horizontally inside their paper container
+when space is available. Narrow viewports retain horizontal scrolling with the
+left edge reachable; toolbar positioning and printed page geometry are unchanged.

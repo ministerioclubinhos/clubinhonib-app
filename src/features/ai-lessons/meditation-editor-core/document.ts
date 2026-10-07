@@ -12,18 +12,25 @@ export function text(value: unknown): string {
   return typeof node.text === 'string'
     ? node.text
     : Array.isArray(node.content)
-      ? node.content.map(text).join('')
+      ? node.content
+          .map(text)
+          .join(['bulletList', 'orderedList', 'listItem'].includes(String(node.type)) ? '\n' : '')
       : '';
 }
 export const string = (value: unknown): string => (typeof value === 'string' ? value : '');
 export function section(document: TiptapDocument, heading: string): string[] {
   const nodes = document.content ?? [];
   const index = nodes.findIndex(
-    (node) => node.type === 'heading' && text(node).toUpperCase() === heading
+    (node) =>
+      node.type === 'heading' &&
+      !object(node.attrs).meditationField &&
+      text(node).toUpperCase() === heading
   );
   if (index < 0) return [];
   const rest = nodes.slice(index + 1);
-  const end = rest.findIndex((node) => node.type === 'heading');
+  const end = rest.findIndex(
+    (node) => node.type === 'heading' && !object(node.attrs).meditationField
+  );
   return (end < 0 ? rest : rest.slice(0, end)).map(text).filter(Boolean);
 }
 

@@ -30,9 +30,16 @@ export function readYoungerMeditation(
     (node) => node.type === 'heading' && text(node).trim().toUpperCase() === 'FALANDO COM DEUS'
   );
   const instructions = nodes.flatMap((node, index) => {
-    if (node.type !== 'heading' || text(node).trim().toUpperCase() !== 'INSTRUÇÃO') return [];
+    if (
+      node.type !== 'heading' ||
+      object(node.attrs).meditationField ||
+      text(node).trim().toUpperCase() !== 'INSTRUÇÃO'
+    )
+      return [];
     const remaining = nodes.slice(index + 1);
-    const end = remaining.findIndex((item) => item.type === 'heading');
+    const end = remaining.findIndex(
+      (item) => item.type === 'heading' && !object(item.attrs).meditationField
+    );
     return [(end < 0 ? remaining : remaining.slice(0, end)).map(text).join('\n').trim()];
   });
   const activities = Array.isArray(data.activities) ? data.activities : [];
