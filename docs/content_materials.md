@@ -193,3 +193,23 @@ length and visual requirements rather than reserving three equal empty bands.
 Both meditation sheets are centered horizontally inside their paper container
 when space is available. Narrow viewports retain horizontal scrolling with the
 left edge reachable; toolbar positioning and printed page geometry are unchanged.
+
+## Meditação dos maiores: edição e PDF
+
+A etapa 7 mantém três desafios com mecânicas variadas e progressão de narrativa,
+compreensão e aplicação. Novas gerações têm elementos estruturados e revisão de
+conteúdo e das imagens reais. Questões textuais não recebem imagens que repitam
+seus enunciados. Não há mínimo de palavras para preencher espaço.
+
+O editor e o PDF usam os campos salvos, incluindo formatação manual. O editor
+mantém fonte legível, blocos com altura natural e grades textuais editáveis com
+fonte monoespaçada. Um aviso aparece quando o conteúdo ultrapassa a folha. A
+exportação rejeita conteúdo que não caiba legivelmente em vez de cortá-lo.
+Revisão humana permanece necessária; documentos antigos continuam disponíveis
+sem alteração automática de seus textos ou imagens.
+
+A Meditação dos maiores gera sempre três imagens, uma por questão, como anexo ou apoio visual. O editor mantém o vínculo por ID 1/2/3 durante alterações textuais; a exportação imprime a imagem correspondente ao lado de cada bloco. Questões textuais também recebem apoio visual.
+
+Na revisão final, pacotes PACKAGE_READY exibem “Iniciar revisão”. A ação chama o endpoint existente de submissão, que valida o pacote e muda os itens para IN_REVIEW; a atualização dos dados habilita aprovação e solicitação de ajustes. A tela apresenta erros dessas ações junto aos controles. Abrir a página não aprova nem altera a lição automaticamente.
+
+The manual-work producer and reviewer use the same `ManualWorkPreview`, sourced from the current version's `printableAssets`, verse text and verse reference. Both display two vertically stacked copies, each with a black outer frame, matching the PDF composition; missing artwork produces an explicit empty state. Previewing never regenerates or recolors the approved artwork.

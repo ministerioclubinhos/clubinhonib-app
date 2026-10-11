@@ -1,21 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
-import { Box } from '@mui/material';
+import { Alert, Box } from '@mui/material';
 import { MeditationToolbar } from '../meditation-editor-core/MeditationToolbar';
 import { MeditationRichField } from '../meditation-editor-core/MeditationRichField';
 import { buildMeditationDocument } from '../meditation-editor-core/document';
 import {
-  meditationFieldDocument,
   preserveMeditationFormatting,
   replaceMeditationField,
 } from '../meditation-editor-core/rich-document';
 import { OlderMeditationField as Field, type OlderMeditationEditorProps } from './types';
 import {
+  OLDER_MEDITATION_DISPLAY as D,
   OLDER_MEDITATION_FIELD_IDS,
   OLDER_MEDITATION_FIELD_LABELS,
   OLDER_MEDITATION_PAGE as P,
 } from './constants';
-import { readOlderMeditation, olderMeditationDisplayFit } from './utils';
+import {
+  readOlderMeditation,
+  olderMeditationDisplayFit,
+  olderMeditationFieldDocument,
+} from './utils';
 
 export function OlderMeditationEditor({
   initialJson,
@@ -26,6 +30,31 @@ export function OlderMeditationEditor({
   const content = readOlderMeditation(initialJson, structuredData);
   const fit = olderMeditationDisplayFit(content);
   const [fullscreen, setFullscreen] = useState(false);
+  const paperRef = useRef<HTMLDivElement>(null);
+  const [overflow, setOverflow] = useState(false);
+  useEffect(() => {
+    const paper = paperRef.current;
+    if (!paper) return;
+    const measure = () =>
+      setOverflow(paper.scrollHeight > paper.clientHeight + D.overflowTolerance);
+    const resize = new ResizeObserver(measure);
+    resize.observe(paper);
+    paper
+      .querySelectorAll('[data-testid$="-field"], img')
+      .forEach((element) => resize.observe(element));
+    const mutations = new MutationObserver(measure);
+    mutations.observe(paper, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      characterData: true,
+    });
+    measure();
+    return () => {
+      resize.disconnect();
+      mutations.disconnect();
+    };
+  }, [initialJson, structuredData]);
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
   const canonical = preserveMeditationFormatting(
     buildMeditationDocument({
@@ -36,7 +65,7 @@ export function OlderMeditationEditor({
   );
   const input = (field: Field, centered = false) => (
     <MeditationRichField
-      document={meditationFieldDocument(canonical, field, content[field])}
+      document={olderMeditationFieldDocument(canonical, field, content[field])}
       field={field}
       autoActivate={field === Field.TITLE}
       testId={`older-meditation-${OLDER_MEDITATION_FIELD_IDS[field]}`}
@@ -71,8 +100,14 @@ export function OlderMeditationEditor({
           onToggleFullscreen={() => setFullscreen((value) => !value)}
         />
       )}
+      {overflow && (
+        <Alert data-testid="older-meditation-overflow" severity="warning" sx={{ mb: 1 }}>
+          O conteúdo ultrapassa a folha. Reduza o texto, as artes ou a formatação antes de exportar.
+        </Alert>
+      )}
       <Box data-testid="older-meditation-paper-scroll" sx={{ overflowX: 'auto', maxWidth: '100%' }}>
         <Box
+          ref={paperRef}
           data-testid="older-meditation-a4-page"
           sx={{
             width: P.width,
@@ -175,10 +210,11 @@ export function OlderMeditationEditor({
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateRows: fit.activityWeights.map((weight) => `${weight}fr`).join(' '),
+                gridTemplateRows: fit.activityWeights.map(() => 'auto').join(' '),
+                alignContent: 'start',
                 flex: 1,
                 minHeight: 0,
-                gap: '12px',
+                gap: `${D.rowGap}px`,
               }}
             >
               {[Field.FIRST_ACTIVITY, Field.SECOND_ACTIVITY, Field.THIRD_ACTIVITY].map(
@@ -200,12 +236,6 @@ export function OlderMeditationEditor({
                         <span>{index + 1}.</span>
                         {input(field)}
                       </Box>
-                      {!content.images[index] && (
-                        <Box aria-hidden="true" sx={{ display: 'grid', gap: '20px', mt: '15px' }}>
-                          <Box sx={{ borderBottom: '1px solid #777' }} />
-                          <Box sx={{ borderBottom: '1px solid #777' }} />
-                        </Box>
-                      )}
                     </Box>
                     {content.images[index] && (
                       <Box
@@ -227,7 +257,14 @@ export function OlderMeditationEditor({
                 )
               )}
             </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '26% 74%', bgcolor: P.colors.gray }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '26% 74%',
+                bgcolor: P.colors.gray,
+                mt: 'auto',
+              }}
+            >
               <Box
                 sx={{
                   bgcolor: P.colors.prayer,

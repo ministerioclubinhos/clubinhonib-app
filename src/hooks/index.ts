@@ -14,3 +14,5 @@ export {
   useDebouncedValue,
   LISTING_SEARCH_DEBOUNCE_MS,
 } from './useListingQuery';
+
+export { useDocumentTitle } from './useDocumentTitle';

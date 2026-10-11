@@ -20,3 +20,6 @@ export const PAGELA_STATUS_LABELS = {
   partial: "Parcial",
   absent: "Ausente",
 } as const;
+
+/** Título da página de seleção de crianças na aba do navegador. */
+export const CHILDREN_BROWSER_PAGE_TITLE = "Lançar Pagela • Selecionar Criança";

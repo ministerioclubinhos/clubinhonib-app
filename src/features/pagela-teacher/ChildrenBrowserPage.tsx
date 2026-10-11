@@ -20,6 +20,8 @@ import { ToggleActiveSubject } from "@/components/common/modal/types";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 import { useAuthRole } from "@/utils/useAuthRole";
 import { extractErrorMessage } from "@/utils/apiError";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { CHILDREN_BROWSER_PAGE_TITLE } from "./constants";
 
 export default function ChildrenBrowserPage() {
   // Professor e coordenador não excluem criança: desativar é a operação deles.
@@ -116,9 +118,7 @@ export default function ChildrenBrowserPage() {
     }
   };
 
-  React.useEffect(() => {
-    document.title = "Lançar Pagela • Selecionar Criança";
-  }, []);
+  useDocumentTitle(CHILDREN_BROWSER_PAGE_TITLE);
 
   return (
     <Box data-testid="pagela-teacher-children-browser-page"

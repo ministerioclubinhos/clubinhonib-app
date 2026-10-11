@@ -49,6 +49,7 @@ export function LessonDraftDialogs({
   return (
     <>
       <Dialog
+        data-testid="ai-lesson-generation-error-dialog"
         open={llmErrorOpen && Boolean(stage?.failureMessage)}
         onClose={onCloseLlmError}
         fullWidth
@@ -101,6 +102,7 @@ export function LessonDraftDialogs({
       </Dialog>
 
       <Dialog
+        data-testid="ai-lesson-pdf-preview-dialog"
         open={Boolean(previewUrl) || Boolean(previewError)}
         onClose={() => !generationLocked && onClosePreview()}
         fullWidth
@@ -160,6 +162,7 @@ export function LessonDraftDialogs({
       </Dialog>
 
       <Dialog
+        data-testid="ai-lesson-delete-confirm-dialog"
         open={deleteConfirmOpen}
         onClose={() => !generationLocked && !deletePending && onCloseDelete()}
         maxWidth="xs"

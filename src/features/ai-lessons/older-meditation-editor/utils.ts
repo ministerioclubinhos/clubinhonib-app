@@ -1,3 +1,5 @@
+import { OLDER_MEDITATION_DISPLAY as D } from './constants';
+import { meditationFieldDocument } from '../meditation-editor-core/rich-document';
 import type { TiptapDocument } from '@/services/aiLessonsService';
 import { OlderMeditationField, type OlderMeditationContent } from './types';
 
@@ -88,17 +90,68 @@ export function olderMeditationDisplayFit(content: OlderMeditationContent) {
     content.thirdActivity.length;
   const imageCount = content.images.filter(Boolean).length;
   return {
-    fontSize:
-      length > 4500 ? 12 : length > 3000 || (imageCount >= 2 && length > 2300) ? 13.33 : 14.67,
-    imageHeight: length > 4500 ? 180 : 230,
+    fontSize: length > 3000 || (imageCount >= 2 && length > 2300) ? D.minimumFontSize : D.fontSize,
+    imageHeight: D.imageHeight,
     activityWeights: [content.firstActivity, content.secondActivity, content.thirdActivity].map(
       (instruction, index) => {
         const columns = content.images[index] ? 58 : 100;
         const lines = instruction
           .split(/\r?\n/)
           .reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / columns)), 0);
-        return Math.max(lines * 18 + 45, content.images[index] ? 230 : 140);
+        return Math.max(lines * 18 + 24, content.images[index] ? D.imageHeight : 80);
       }
     ),
+  };
+}
+
+/** Native text stays editable; puzzle rows use a monospaced font rather than a bitmap. */
+export function olderMeditationFieldDocument(
+  document: TiptapDocument,
+  field: OlderMeditationField,
+  fallback: string
+): TiptapDocument {
+  const value = meditationFieldDocument(document, field, fallback);
+  if (!/caça[ -]palavras|cruzadinha/i.test(fallback)) return value;
+  return {
+    ...value,
+    content: value.content?.flatMap((node) => {
+      if (
+        node.type !== 'paragraph' ||
+        !Array.isArray(node.content) ||
+        !node.content.every((child) => object(child).type === 'text')
+      )
+        return [node];
+      const lines: Array<Array<Record<string, unknown>>> = [[]];
+      node.content.forEach((raw) => {
+        const child = object(raw);
+        string(child.text)
+          .split(/\r?\n/)
+          .forEach((part, index) => {
+            if (index) lines.push([]);
+            if (part) lines[lines.length - 1].push({ ...child, text: part });
+          });
+      });
+      return lines.map((line) => {
+        const isGrid = /^[A-ZÀ-Ü0-9#._\s]{4,}$/.test(line.map(text).join('').trim());
+        return {
+          ...node,
+          content: line.map((child) => {
+            if (!isGrid) return child;
+            const marks = Array.isArray(child.marks) ? child.marks.map(object) : [];
+            const style = marks.find((mark) => mark.type === 'textStyle');
+            return {
+              ...child,
+              marks: [
+                ...marks.filter((mark) => mark.type !== 'textStyle'),
+                {
+                  type: 'textStyle',
+                  attrs: { fontFamily: 'Courier New', ...object(style?.attrs) },
+                },
+              ],
+            };
+          }),
+        };
+      });
+    }),
   };
 }

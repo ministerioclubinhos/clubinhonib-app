@@ -32,3 +32,12 @@ export const OLDER_MEDITATION_FIELD_IDS: Record<OlderMeditationField, string> = 
   biblicalText: 'biblical-text',
   introduction: 'introduction',
 };
+
+export const OLDER_MEDITATION_DISPLAY = {
+  fontSize: 14.67,
+  minimumFontSize: 13.33,
+  imageHeight: 230,
+  rowGap: 16,
+  maximumRowExpansion: 1.18,
+  overflowTolerance: 2,
+} as const;

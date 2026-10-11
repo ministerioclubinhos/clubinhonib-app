@@ -41,3 +41,6 @@ export const IDEAS_SECTION_SORT_OPTIONS = [
   { value: "title:ASC", label: "Título (A–Z)" },
   { value: "title:DESC", label: "Título (Z–A)" },
 ] as const;
+
+/** Título da página de compartilhamento público de ideias na aba do navegador. */
+export const IDEAS_SECTION_PAGE_TITLE = "Compartilhar Ideia Incrível";

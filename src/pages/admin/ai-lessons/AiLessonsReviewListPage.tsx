@@ -100,6 +100,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
 
   return (
     <Box
+      data-testid="ai-lessons-review-list"
       sx={{
         width: { xs: '98%', md: '95%' },
         mx: 'auto',

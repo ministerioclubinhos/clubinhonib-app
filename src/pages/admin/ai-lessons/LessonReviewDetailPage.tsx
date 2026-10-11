@@ -1,3 +1,6 @@
+import { ManualWorkPreview } from '@/features/ai-lessons/manual-work-preview/ManualWorkPreview';
+import { lessonReviewActions } from '@/features/ai-lessons/review-actions';
+import { getErrorMessage } from '@/utils/apiError';
 import { OlderMeditationEditor } from '@/features/ai-lessons/older-meditation-editor';
 import { YoungerMeditationEditor } from '@/features/ai-lessons/younger-meditation-editor';
 import React, { useState } from 'react';
@@ -26,16 +29,15 @@ import {
   RateReview as ChangesIcon,
   EventNoteOutlined as WeekIcon,
   Send as PublishIcon,
-  VisibilityOutlined as PreviewIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useLessonDraft, usePublishLesson, useStageAction } from '@/hooks/api/useAiLessons';
 import {
-  aiLessonsService,
-  LessonStage,
-  LessonStageStatus,
-  LessonStageType,
-} from '@/services/aiLessonsService';
+  useLessonDraft,
+  usePublishLesson,
+  useStageAction,
+  useSubmitLessonPackage,
+} from '@/hooks/api/useAiLessons';
+import { LessonStageStatus, LessonStageType } from '@/services/aiLessonsService';
 import { LibreOfficeDocEditor } from '@/components/ai-lessons/LibreOfficeDocEditor';
 import { StoryVisualCarousel } from '@/features/ai-lessons/components/StoryVisualCarousel';
 import { visualAssets } from '@/features/ai-lessons/utils';
@@ -73,6 +75,7 @@ export const LessonReviewDetailPage: React.FC = () => {
   const approve = useStageAction('approve');
   const changes = useStageAction('changes');
   const publishMutation = usePublishLesson();
+  const submitReview = useSubmitLessonPackage();
 
   const [selectedType, setSelectedType] = useState<LessonStageType>(LessonStageType.LESSON);
   const [feedbackMap, setFeedbackMap] = useState<Record<string, string>>({});
@@ -116,6 +119,11 @@ export const LessonReviewDetailPage: React.FC = () => {
   const allApproved = approvedCount === totalStages;
   const progress = (approvedCount / totalStages) * 100;
 
+  const reviewActions = lessonReviewActions(
+    lesson.status,
+    stage?.status,
+    Boolean(stage?.currentVersionId)
+  );
   const currentFeedback = feedbackMap[selectedType] || '';
   const stageComments =
     lesson.comments?.filter((comment) => comment.sectionKey === selectedType) ?? [];
@@ -185,6 +193,41 @@ export const LessonReviewDetailPage: React.FC = () => {
         Voltar para a lista de Revisão
       </Button>
 
+      {reviewActions.canStartReview && (
+        <Alert
+          data-testid="ai-lesson-review-start-notice"
+          severity="info"
+          sx={{ mb: 2, '& .MuiAlert-message': { width: '100%' } }}
+        >
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+          >
+            <Typography variant="body2" sx={{ flex: 1 }}>
+              Os oito itens estão concluídos. Inicie a revisão para habilitar a aprovação de cada
+              item.
+            </Typography>
+            <Button
+              data-testid="ai-lesson-review-start"
+              color="inherit"
+              disabled={submitReview.isPending}
+              onClick={() => submitReview.mutate(id)}
+              sx={{ minHeight: 44, whiteSpace: 'nowrap' }}
+            >
+              {submitReview.isPending ? 'Iniciando revisão…' : 'Iniciar revisão'}
+            </Button>
+          </Stack>
+        </Alert>
+      )}
+      {(submitReview.isError || approve.isError || changes.isError) && (
+        <Alert data-testid="ai-lesson-review-action-error" severity="error" sx={{ mb: 2 }}>
+          {getErrorMessage(
+            submitReview.error ?? approve.error ?? changes.error,
+            'Não foi possível concluir a ação de revisão.'
+          )}
+        </Alert>
+      )}
       {publicationMessage && (
         <Alert
           severity={publishMutation.isError ? 'error' : 'success'}
@@ -425,7 +468,9 @@ export const LessonReviewDetailPage: React.FC = () => {
           ) : null}
 
           {/* Editor/Visualizador LibreOffice / Tiptap */}
-          {selectedType === LessonStageType.MEDITATION_YOUNGER ? (
+          {selectedType === LessonStageType.MANUAL_WORK ? (
+            <ManualWorkPreview structuredData={currentVersion?.structuredDataJson ?? {}} />
+          ) : selectedType === LessonStageType.MEDITATION_YOUNGER ? (
             <YoungerMeditationEditor
               initialJson={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
               structuredData={currentVersion?.structuredDataJson ?? {}}
@@ -492,7 +537,10 @@ export const LessonReviewDetailPage: React.FC = () => {
                   color="success"
                   size="large"
                   startIcon={<ApproveIcon />}
-                  disabled={approve.isPending || stage?.status !== LessonStageStatus.IN_REVIEW}
+                  data-testid="ai-lesson-review-approve"
+                  disabled={
+                    approve.isPending || submitReview.isPending || !reviewActions.canReviewItem
+                  }
                   onClick={handleApproveStage}
                   sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.2 }}
                 >
@@ -509,10 +557,9 @@ export const LessonReviewDetailPage: React.FC = () => {
                   color="error"
                   startIcon={<ChangesIcon />}
                   disabled={
-                    changes.isPending ||
-                    !currentFeedback.trim() ||
-                    stage?.status !== LessonStageStatus.IN_REVIEW
+                    changes.isPending || !currentFeedback.trim() || !reviewActions.canReviewItem
                   }
+                  data-testid="ai-lesson-review-request-changes"
                   onClick={handleRequestChanges}
                   sx={{ borderRadius: 2.5, fontWeight: 700 }}
                 >

@@ -18,6 +18,7 @@ export function LessonStageNavigation({ stages, selectedType, mode, onSelect }: 
   if (mode === 'mobile') {
     return (
       <Paper
+        data-testid="ai-lesson-stage-navigation-mobile"
         elevation={0}
         sx={{
           display: { xs: 'block', lg: 'none' },
@@ -64,6 +65,7 @@ export function LessonStageNavigation({ stages, selectedType, mode, onSelect }: 
 
   return (
     <Paper
+      data-testid="ai-lesson-stage-navigation-desktop"
       elevation={0}
       sx={{
         display: { xs: 'none', lg: 'block' },
