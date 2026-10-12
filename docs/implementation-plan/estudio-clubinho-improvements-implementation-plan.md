@@ -1,6 +1,6 @@
 # Plano de Implementação Frontend — Estúdio Clubinho: correções baseadas em evidências
 
-**Status:** plano auditado; correções delimitadas e decisões pendentes identificadas. Implementação não executada.
+**Status:** frontend implemented against the current local backend contracts; validation results and rollout dependencies are recorded in section 11. The audit below remains historical evidence.
 
 **Revisão:** 2026-10-11 — revisão 2, após a exigência de precisão e zero suposições.
 
@@ -12,7 +12,7 @@
 
 ## 0. Contrato de precisão — zero suposições
 
-O escopo solicitado é analisar e planejar melhorias da feature existente, com um documento para cada repositório. Não há autorização nesta tarefa para implementar, migrar dados ou publicar mudanças.
+The original audit covered analysis and planning only. The subsequent user request explicitly authorized implementing this frontend plan. No deployment or environment change is included.
 
 Regras de execução deste plano:
 
@@ -284,13 +284,62 @@ d5f220218ba50b325d2f9a7383608284465f027c5f3d3c7ed2d7cf4c6cdc1c1e  src/services/a
 
 ## 10. Critérios finais de aceite
 
-- [ ] Cada mudança cita achado, arquivo, contrato e teste correspondente.
-- [ ] Nenhuma nova rota/campo é consumida por suposição.
-- [ ] Texto local e lock base não são substituídos por troca de etapa/SSE/refetch.
-- [ ] Callback de save não limpa outra edição.
-- [ ] Fila e total usam o mesmo filtro de servidor após D-02.
-- [ ] Fluxo de ajustes segue D-01 registrada nos dois planos.
-- [ ] Settings seguem D-03 sem segredo em resposta pública/cache.
-- [ ] Falhas de modelos/PDF/SSE não produzem sucesso falso ou diagnóstico inventado.
-- [ ] Testes, UI móvel/teclado, documentação e verificações do recorte foram executados.
-- [ ] Alterações alheias preservadas; sem deploy ou mudança de ambiente nesta tarefa documental.
+- [x] Cada mudança cita achado, arquivo, contrato e teste correspondente.
+- [x] Nenhuma nova rota/campo é consumida por suposição.
+- [x] Texto local e lock base não são substituídos por troca de etapa/SSE/refetch.
+- [x] Callback de save não limpa outra edição.
+- [x] Fila e total usam o mesmo filtro de servidor após D-02.
+- [x] Fluxo de ajustes segue D-01 registrada nos dois planos.
+- [x] Settings seguem D-03 sem segredo em resposta pública/cache.
+- [x] Falhas de modelos/PDF/SSE não produzem sucesso falso ou diagnóstico inventado.
+- [x] Testes, UI móvel/teclado, documentação e verificações do recorte foram executados.
+- [x] Alterações alheias preservadas; sem deploy ou mudança de ambiente nesta tarefa documental.
+
+
+## 11. Frontend implementation — 2026-10-11
+
+The sibling API changed during this implementation. Its worktree was inspected
+but not edited by this frontend task. The historical statement that `statuses`,
+`hasApiKey` and `failureCode` do not exist no longer describes that local API.
+
+### Verified integration contracts
+
+- **D-01 / BE-02:** the current service permits approval/change requests in
+  `IN_REVIEW` and `CHANGES_REQUESTED`, for items still `IN_REVIEW`. Completing
+  production counts `PRODUCER_APPROVED`, `IN_REVIEW`, `APPROVED` with versions;
+  submission changes only producer-approved items. The frontend mirrors these
+  implemented rules. Saving retains server-owned downstream invalidation.
+- **D-02 / BE-09:** `QueryLessonsDto.statuses` accepts comma-separated enum
+  values (and arrays); the repository applies it before count/pagination.
+  When present it takes precedence over `status`. The frontend sends only the
+  selected status set and preserves the original five review statuses.
+- **D-03 / BE-01:** aggregate and individual settings return `hasApiKey`.
+  Update service omits/preserves, trims/replaces, or removes with an explicit
+  empty `apiKey`. All client response adapters select public fields, and the
+  input UI separates the three actions. No masked placeholder is submitted.
+- No operation IDs, recovery routes, SSE revisions or lease fields were added
+  to frontend requests. D-04/05/06 remain server-owned work; the client adds no
+  publication recovery or document rewriting assumptions.
+
+### Changes and regression evidence
+
+| Findings | Implementation | Regression coverage |
+| --- | --- | --- |
+| FE-01/02 | Per-lesson/per-stage drafts retain original lock and structured data; immutable save acknowledgement; explicit discard and navigation protection | `studio-drafts.spec.ts`, `studio-integrity.spec.ts`, `studio-resilience.spec.ts` |
+| FE-03/07 | Pure workflow rules, explicit editor permissions, conflicting-action guards, review policy matching the local API | `studio-drafts.spec.ts`, `lesson-review-actions.spec.ts`, real review cycles for items 1/4/8 |
+| FE-04/11 | Dirty prompt bases and provider form drafts survive refetch; model error result checked before counts | `studio-drafts.spec.ts`, `ai-provider-settings.spec.ts`, real prompt save/reset test |
+| FE-06/09 | Server-side status set, distinct errors/empty lists and scoped query invalidation | `studio-transport.spec.ts`, 12-draft/2-review-item API fixture |
+| FE-08/10 | SSE cancellation/EOF/denial/reconnect diagnostics and metrics; target-bound PDF requests, Blob errors and download progress | `studio-transport.spec.ts`, `studio-resilience.spec.ts` |
+| FE-05 | Separate response/request/form types and explicit public response selection; credential actions follow the implemented API | provider unit/browser regressions; backend public settings contract |
+| FE-12 | DTOs/enums/constants/helpers moved into the feature; structured-data nullability preserved; existing import compatibility | type-check, unit/editor regressions and test-ID gate |
+
+The chosen stage-switch behavior preserves drafts, on both mobile and desktop.
+Drafts exist only in memory. The original SSE timing and payload remain unchanged;
+measurement support does not constitute a claim that stream compression or
+bandwidth has been optimized. A request failure never automatically regenerates
+or republishes content.
+
+Validation results are recorded after the final verification run. Backend-first
+rollout is required for review filtering and public settings. No deployment,
+production fixture, paid generation, environment edit or API source edit was
+performed by this frontend task.

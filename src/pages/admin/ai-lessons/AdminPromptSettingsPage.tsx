@@ -1,4 +1,16 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { ORDER, STAGE_CONFIG, PROMPT_PRESETS } from '@/features/ai-lessons/promptConstants';
+import { PROMPT_STALE_TIME_MS, PROMPT_COPY_FEEDBACK_MS } from '@/features/ai-lessons/constants';
+import { aiLessonsKeys } from '@/features/ai-lessons/queryKeys';
+import { acknowledgePromptDraft, editPromptDraft } from '@/features/ai-lessons/drafts';
+import {
+  StudioFeedbackSeverity,
+  type PromptLocalDrafts,
+  type SavePromptVariables,
+  type StudioFeedback,
+} from '@/features/ai-lessons/types';
+import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
+import { getHttpStatus } from '@/utils/apiError';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Accordion,
@@ -49,163 +61,85 @@ import {
   LessonStageType,
 } from '@/services/aiLessonsService';
 
-const ORDER = Object.values(LessonStageType);
-
-const STAGE_CONFIG: Record<
-  LessonStageType,
-  { label: string; shortLabel: string; description: string; icon: string }
-> = {
-  LESSON: {
-    label: '1. Lição Completa',
-    shortLabel: '1. Lição',
-    description: 'Orientação geral para a narrativa da lição, teologia e escolha do versículo NVI.',
-    icon: '📖',
-  },
-  LESSON_VISUALS: {
-    label: '2. Visuais da História',
-    shortLabel: '2. Visuais',
-    description: 'Diretrizes para ilustrações e cenas cronológicas da história bíblica.',
-    icon: '🎨',
-  },
-  STANDARD_GAME: {
-    label: '3. Brincadeira Prática',
-    shortLabel: '3. Brincadeira',
-    description: 'Instruções para a dinâmica prática e brincadeira em grupo.',
-    icon: '🏃',
-  },
-  VERSE_VISUALS: {
-    label: '4. Visuais do Versículo',
-    shortLabel: '4. Vis. Versículo',
-    description: 'Regras para a sequência de imagens mnemônicas de memorização.',
-    icon: '🧩',
-  },
-  VERSE_FIXATION: {
-    label: '5. Fixação Divertida',
-    shortLabel: '5. Fixação',
-    description: 'Orientações para o jogo ou atividade interativa de memorização.',
-    icon: '🎯',
-  },
-  MEDITATION_YOUNGER: {
-    label: '6. Meditação dos Menores',
-    shortLabel: '6. Med. Menores',
-    description: 'Diretrizes pedagógicas para crianças de 5 a 7 anos (2 atividades).',
-    icon: '✏️',
-  },
-  MEDITATION_OLDER: {
-    label: '7. Meditação dos Maiores',
-    shortLabel: '7. Med. Maiores',
-    description: 'Diretrizes de reflexão e gabarito para crianças de 8 a 11 anos (3 atividades).',
-    icon: '🧠',
-  },
-  MANUAL_WORK: {
-    label: '8. Trabalho Manual',
-    shortLabel: '8. Trab. Manual',
-    description: 'Instruções para o desenho em preto e branco para recortar e colorir.',
-    icon: '✂️',
-  },
-};
-
-const PROMPT_PRESETS = [
-  {
-    label: 'Linguagem Simples',
-    text: '\n• Use vocabulário simples, direto e adaptado para a compreensão infantil.',
-  },
-  {
-    label: 'Aplicação Prática',
-    text: '\n• Conecte cada ensinamento com situações reais da rotina das crianças em casa e na escola.',
-  },
-  {
-    label: 'Foco em Oração',
-    text: '\n• Enfatize atitudes de gratidão e momentos curtos de oração espontânea.',
-  },
-  {
-    label: 'Perguntas Interativas',
-    text: '\n• Inclua perguntas abertas que estimulem a reflexão e resposta ativa das crianças.',
-  },
-];
-
-const queryKey = ['ai-lessons', 'prompt-preferences'] as const;
-
 export const AdminPromptSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const client = useQueryClient();
 
   const [stage, setStage] = useState<LessonStageType>(LessonStageType.LESSON);
-  const [drafts, setDrafts] = useState<Partial<Record<LessonStageType, string>>>({});
+  const [drafts, setDrafts] = useState<PromptLocalDrafts>({});
   const [resetOpen, setResetOpen] = useState(false);
   const [basePromptExpanded, setBasePromptExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [feedback, setFeedback] = useState<{ severity: 'success' | 'error'; text: string } | null>(
-    null
-  );
+  const [feedback, setFeedback] = useState<StudioFeedback | null>(null);
 
   const query = useQuery({
-    queryKey,
+    queryKey: aiLessonsKeys.preferences,
     queryFn: aiLessonsService.getPromptPreferences,
-    staleTime: 30000,
+    staleTime: PROMPT_STALE_TIME_MS,
   });
 
-  useEffect(() => {
-    if (query.data) {
-      setDrafts(Object.fromEntries(query.data.map((item) => [item.stage, item.effectivePrompt])));
-    }
-  }, [query.data]);
-
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(copyTimer.current), []);
   const preference = query.data?.find((item) => item.stage === stage);
-  const value = drafts[stage] ?? preference?.effectivePrompt ?? '';
-  const dirty = Boolean(preference && value.trim() !== preference.effectivePrompt);
-
-  const dirtyCount = useMemo(
-    () =>
-      query.data?.filter(
-        (item) => (drafts[item.stage] ?? item.effectivePrompt).trim() !== item.effectivePrompt
-      ).length ?? 0,
-    [drafts, query.data]
-  );
-
+  const value = drafts[stage]?.value ?? preference?.effectivePrompt ?? '';
+  const dirty = Boolean(drafts[stage]);
+  const dirtyCount = Object.keys(drafts).length;
+  const confirmLeave = useStudioUnsavedChanges(dirtyCount > 0);
+  const changePrompt = (text: string) => {
+    if (!preference) return;
+    setDrafts((current) => ({
+      ...current,
+      [stage]: editPromptDraft(current[stage], preference, text),
+    }));
+    setFeedback(null);
+  };
   const save = useMutation({
-    mutationFn: ({ item, prompt }: { item: AdminPromptPreference; prompt: string }) =>
-      aiLessonsService.savePromptPreference(item.stage, prompt, item.lockVersion),
-    onSuccess: (saved) => {
-      client.setQueryData<AdminPromptPreference[]>(queryKey, (items = []) =>
+    mutationFn: ({ item, draft }: SavePromptVariables) =>
+      aiLessonsService.savePromptPreference(item.stage, draft.value.trim(), draft.base.lockVersion),
+    onSuccess: (saved, sent) => {
+      client.setQueryData<AdminPromptPreference[]>(aiLessonsKeys.preferences, (items = []) =>
         items.map((item) => (item.stage === saved.stage ? saved : item))
       );
+      setDrafts((current) => acknowledgePromptDraft(current, sent.draft, saved));
       setFeedback({
-        severity: 'success',
+        severity: StudioFeedbackSeverity.SUCCESS,
         text: 'Prompt salvo com sucesso! Suas orientações serão aplicadas nas próximas gerações.',
       });
     },
-    onError: () =>
+    onError: (error) =>
       setFeedback({
-        severity: 'error',
-        text: 'Conflito ao salvar as orientações. Recarregue a página antes de tentar novamente.',
+        severity: StudioFeedbackSeverity.ERROR,
+        text:
+          getHttpStatus(error) === 409
+            ? 'As orientações foram alteradas em outra sessão. Sua edição foi preservada. Copie o texto antes de recarregar.'
+            : 'Não foi possível salvar. Suas orientações locais foram preservadas.',
       }),
   });
 
   const reset = useMutation({
-    mutationFn: aiLessonsService.resetPromptPreference,
-    onSuccess: (saved) => {
-      client.setQueryData<AdminPromptPreference[]>(queryKey, (items = []) =>
+    mutationFn: ({ item }: SavePromptVariables) =>
+      aiLessonsService.resetPromptPreference(item.stage),
+    onSuccess: (saved, sent) => {
+      client.setQueryData<AdminPromptPreference[]>(aiLessonsKeys.preferences, (items = []) =>
         items.map((item) => (item.stage === saved.stage ? saved : item))
       );
-      setDrafts((current) => ({ ...current, [saved.stage]: saved.basePrompt }));
+      setDrafts((current) => acknowledgePromptDraft(current, sent.draft, saved));
       setResetOpen(false);
       setFeedback({
-        severity: 'success',
+        severity: StudioFeedbackSeverity.SUCCESS,
         text: 'Prompt oficial restaurado com sucesso.',
       });
     },
     onError: () =>
       setFeedback({
-        severity: 'error',
+        severity: StudioFeedbackSeverity.ERROR,
         text: 'Não foi possível restaurar o prompt oficial.',
       }),
   });
 
   const leave = () => {
-    if (dirtyCount && !window.confirm('Existem alterações não salvas. Deseja realmente sair?'))
-      return;
+    if (!confirmLeave()) return;
     navigate('/adm/estudio');
   };
 
@@ -213,18 +147,16 @@ export const AdminPromptSettingsPage: React.FC = () => {
     if (preference?.basePrompt) {
       navigator.clipboard.writeText(preference.basePrompt);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(false), PROMPT_COPY_FEEDBACK_MS);
     }
   };
 
-  const handleInsertPreset = (presetText: string) => {
-    setDrafts((current) => {
-      const existing = current[stage] ?? preference?.effectivePrompt ?? '';
-      return { ...current, [stage]: existing + presetText };
-    });
-    setFeedback(null);
+  const handleInsertPreset = (presetText: string) => changePrompt(value + presetText);
+  const saveCurrentPrompt = () => {
+    const draft = drafts[stage];
+    if (preference && draft) save.mutate({ item: preference, draft });
   };
-
   const currentStageInfo = STAGE_CONFIG[stage];
 
   return (
@@ -311,7 +243,10 @@ export const AdminPromptSettingsPage: React.FC = () => {
 
       {/* Main Content Layout */}
       {query.isLoading ? (
-        <Box sx={{ display: 'grid', placeItems: 'center', py: 12 }}>
+        <Box
+          data-testid="admin-prompts-loading"
+          sx={{ display: 'grid', placeItems: 'center', py: 12 }}
+        >
           <CircularProgress size={44} thickness={4} />
           <Typography color="text.secondary" sx={{ mt: 2, fontWeight: 500 }}>
             Carregando orientações...
@@ -319,6 +254,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
         </Box>
       ) : query.isError ? (
         <Alert
+          data-testid="admin-prompts-error"
           severity="error"
           sx={{ borderRadius: 3 }}
           action={
@@ -344,6 +280,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
               }}
             >
               <Tabs
+                data-testid="admin-prompts-stage-tabs"
                 value={stage}
                 onChange={(_, next: LessonStageType) => {
                   setStage(next);
@@ -367,13 +304,13 @@ export const AdminPromptSettingsPage: React.FC = () => {
               >
                 {ORDER.map((item) => {
                   const pref = query.data?.find((p) => p.stage === item);
-                  const isDirty =
-                    (drafts[item] ?? pref?.effectivePrompt ?? '').trim() !== pref?.effectivePrompt;
+                  const isDirty = Boolean(drafts[item]);
                   const isCustom = Boolean(pref?.customPrompt);
 
                   return (
                     <Tab
                       key={item}
+                      data-testid={`admin-prompts-tab-${item.toLowerCase().replaceAll('_', '-')}`}
                       value={item}
                       label={
                         <Stack direction="row" spacing={1} alignItems="center">
@@ -483,9 +420,18 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       <Box sx={{ position: 'relative' }}>
                         <Tooltip title={copied ? 'Copiado!' : 'Copiar prompt-base'}>
                           <IconButton
+                            data-testid="admin-prompts-copy-base"
+                            aria-label="Copiar prompt-base"
                             size="small"
                             onClick={handleCopyBasePrompt}
-                            sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
+                            sx={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              zIndex: 1,
+                              minWidth: 44,
+                              minHeight: 44,
+                            }}
                           >
                             {copied ? (
                               <CheckCircle color="success" fontSize="small" />
@@ -549,10 +495,10 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       data-testid={`admin-prompt-page-input-${stage}`}
                       label="Suas orientações personalizadas"
                       placeholder="Escreva aqui as diretrizes pedagógicas, estilo de linguagem ou instruções adicionais..."
+                      disabled={reset.isPending}
                       value={value}
                       onChange={(event) => {
-                        setDrafts((current) => ({ ...current, [stage]: event.target.value }));
-                        setFeedback(null);
+                        changePrompt(event.target.value);
                       }}
                       multiline
                       minRows={10}
@@ -573,7 +519,11 @@ export const AdminPromptSettingsPage: React.FC = () => {
 
                   {/* Alerta de Feedback */}
                   {feedback && (
-                    <Alert severity={feedback.severity} sx={{ mb: 2, borderRadius: 2.5 }}>
+                    <Alert
+                      data-testid="admin-prompts-feedback"
+                      severity={feedback.severity}
+                      sx={{ mb: 2, borderRadius: 2.5 }}
+                    >
                       {feedback.text}
                     </Alert>
                   )}
@@ -589,7 +539,12 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       color="warning"
                       variant="outlined"
                       startIcon={<RestartAlt />}
-                      disabled={!preference.customPrompt || reset.isPending}
+                      disabled={
+                        !preference.customPrompt ||
+                        reset.isPending ||
+                        save.isPending ||
+                        reset.isPending
+                      }
                       onClick={() => setResetOpen(true)}
                       sx={{
                         borderRadius: 2.5,
@@ -604,8 +559,10 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       variant="contained"
                       color="primary"
                       startIcon={<Save />}
-                      disabled={!dirty || value.trim().length < 10 || save.isPending}
-                      onClick={() => save.mutate({ item: preference, prompt: value.trim() })}
+                      disabled={
+                        !dirty || value.trim().length < 10 || save.isPending || reset.isPending
+                      }
+                      onClick={saveCurrentPrompt}
                       sx={{
                         borderRadius: 2.5,
                         minHeight: 44,
@@ -632,6 +589,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
             display: { xs: 'flex', sm: 'none' },
             position: 'fixed',
             bottom: 0,
+            paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
             left: 0,
             right: 0,
             p: 1.5,
@@ -652,8 +610,8 @@ export const AdminPromptSettingsPage: React.FC = () => {
             variant="contained"
             size="medium"
             startIcon={<Save />}
-            disabled={value.trim().length < 10 || save.isPending}
-            onClick={() => save.mutate({ item: preference, prompt: value.trim() })}
+            disabled={value.trim().length < 10 || save.isPending || reset.isPending}
+            onClick={saveCurrentPrompt}
             fullWidth
             sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
           >
@@ -665,8 +623,11 @@ export const AdminPromptSettingsPage: React.FC = () => {
       {/* Modal de Confirmação para Restaurar Prompt Oficial */}
       <Dialog
         data-testid="admin-prompt-page-reset-dialog"
+        aria-labelledby="admin-prompts-reset-title"
         open={resetOpen}
-        onClose={() => setResetOpen(false)}
+        onClose={() => {
+          if (!reset.isPending) setResetOpen(false);
+        }}
         maxWidth="xs"
         fullWidth
         slotProps={{
@@ -680,7 +641,9 @@ export const AdminPromptSettingsPage: React.FC = () => {
           },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 800 }}>Restaurar prompt oficial?</DialogTitle>
+        <DialogTitle id="admin-prompts-reset-title" sx={{ fontWeight: 800 }}>
+          Restaurar prompt oficial?
+        </DialogTitle>
         <DialogContent>
           <DialogContentText color="text.secondary">
             A sua personalização para a etapa <strong>{currentStageInfo.label}</strong> será
@@ -697,6 +660,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
           }}
         >
           <Button
+            disabled={reset.isPending}
             onClick={() => setResetOpen(false)}
             sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
           >
@@ -705,7 +669,13 @@ export const AdminPromptSettingsPage: React.FC = () => {
           <Button
             color="warning"
             variant="contained"
-            onClick={() => reset.mutate(stage)}
+            onClick={() => {
+              if (preference)
+                reset.mutate({
+                  item: preference,
+                  draft: drafts[stage] ?? { base: preference, value },
+                });
+            }}
             disabled={reset.isPending}
             sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
           >

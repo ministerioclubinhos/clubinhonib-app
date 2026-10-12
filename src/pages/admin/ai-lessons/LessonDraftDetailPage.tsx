@@ -1,3 +1,17 @@
+import {
+  LessonConnectionState,
+  LessonStageAction,
+  LessonStatus,
+} from '@/features/ai-lessons/types';
+import {
+  LESSON_STATUS_LABELS,
+  PRODUCTION_COMPLETED_STATUSES,
+} from '@/features/ai-lessons/constants';
+import { lessonProductionActions } from '@/features/ai-lessons/workflow';
+import { useLessonLocalDrafts } from '@/features/ai-lessons/useLessonLocalDrafts';
+import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
+import { useLessonPdfPreview } from '@/features/ai-lessons/useLessonPdfPreview';
+import { getHttpStatus } from '@/utils/apiError';
 import { ManualWorkPreview } from '@/features/ai-lessons/manual-work-preview/ManualWorkPreview';
 import { OlderMeditationEditor } from '@/features/ai-lessons/older-meditation-editor';
 import { YoungerMeditationEditor } from '@/features/ai-lessons/younger-meditation-editor';
@@ -36,18 +50,14 @@ import {
   useLessonDraft,
   useLessonDraftEvents,
   useStageAction,
-  useSubmitLessonPackage,
-  usePublishLesson,
   useUpdateDraftContent,
 } from '@/hooks/api/useAiLessons';
 import {
-  aiLessonsService,
   LessonStage,
   LessonStageStatus,
   LessonStageType,
   LessonVisualOrientation,
   LessonVisualType,
-  TiptapDocument,
 } from '@/services/aiLessonsService';
 import { LibreOfficeDocEditor } from '@/components/ai-lessons/LibreOfficeDocEditor';
 import { StoryVisualCarousel } from '@/features/ai-lessons/components/StoryVisualCarousel';
@@ -56,7 +66,6 @@ import { objectValue, visualAssets } from '@/features/ai-lessons/utils';
 import {
   LESSON_STAGE_DESCRIPTIONS as DESCRIPTIONS,
   LESSON_STAGE_LABELS as LABELS,
-  LESSON_STAGE_ORDER as ORDER,
   LESSON_STAGE_STATUS_COLORS as STATUS_COLORS,
   LESSON_STAGE_STATUS_LABELS as STATUS_LABELS,
   localizeLegacyDocumentLabels,
@@ -70,41 +79,29 @@ export const LessonDraftDetailPage: React.FC = () => {
   const theme = useTheme();
 
   const { data: lesson, isLoading, error } = useLessonDraft(id);
-  useLessonDraftEvents(id);
+  const connection = useLessonDraftEvents(id);
   const generate = useGenerateStage();
   const save = useUpdateDraftContent();
-  const complete = useStageAction('complete');
-  const approve = useStageAction('approve');
-  const changes = useStageAction('changes');
-  const submitPackage = useSubmitLessonPackage();
+  const complete = useStageAction(LessonStageAction.COMPLETE);
   const deleteMutation = useDeleteLessonDraft();
-  const publishMutation = usePublishLesson();
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<LessonStageType>(LessonStageType.LESSON);
-  const [edited, setEdited] = useState<TiptapDocument | null>(null);
   const [instructions, setInstructions] = useState('');
   const [visualType, setVisualType] = useState<LessonVisualType | ''>('');
   const [visualOrientation, setVisualOrientation] = useState<LessonVisualOrientation | ''>('');
   const [visualQuantity, setVisualQuantity] = useState<number | ''>('');
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewError, setPreviewError] = useState<string | null>(null);
   const [llmErrorOpen, setLlmErrorOpen] = useState(false);
-  const [publicationMessage, setPublicationMessage] = useState<string | null>(null);
-
-  useEffect(
-    () => () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    },
-    [previewUrl]
-  );
-
+  const preview = useLessonPdfPreview(id, selectedType);
+  const { url: previewUrl, error: previewError, loading: previewLoading } = preview;
   const stage = useMemo(
     () => lesson?.stages.find((item) => item.type === selectedType),
     [lesson, selectedType]
   );
   const version = stage?.versions.find((item) => item.id === stage.currentVersionId);
+  const local = useLessonLocalDrafts(id, stage, version);
+  const edited = local.draft?.document;
+  const confirmLeave = useStudioUnsavedChanges(local.hasDrafts || save.isPending);
   const document = useMemo(
     () =>
       localizeLegacyDocumentLabels(
@@ -117,7 +114,7 @@ export const LessonDraftDetailPage: React.FC = () => {
   const approvedLessonVersion = approvedLessonStage?.versions.find(
     (item) => item.id === approvedLessonStage.currentVersionId
   );
-  const mainVerse = objectValue(approvedLessonVersion?.structuredDataJson.memoryVerse);
+  const mainVerse = objectValue(approvedLessonVersion?.structuredDataJson?.memoryVerse);
   const generationLocked =
     generate.isPending ||
     Boolean(lesson?.stages.some((item) => item.status === LessonStageStatus.GENERATING));
@@ -128,7 +125,7 @@ export const LessonDraftDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedType !== LessonStageType.LESSON_VISUALS) return;
-    const config = objectValue(version?.structuredDataJson.visualConfig);
+    const config = objectValue(version?.structuredDataJson?.visualConfig);
     setVisualType(
       Object.values(LessonVisualType).includes(config.type as LessonVisualType)
         ? (config.type as LessonVisualType)
@@ -171,7 +168,9 @@ export const LessonDraftDetailPage: React.FC = () => {
         </Alert>
         <Button
           startIcon={<ArrowBack />}
-          onClick={() => navigate('/adm/estudio/licoes')}
+          onClick={() => {
+            if (confirmLeave()) navigate('/adm/estudio/licoes');
+          }}
           sx={{ mt: 2 }}
         >
           Voltar para lições
@@ -180,64 +179,37 @@ export const LessonDraftDetailPage: React.FC = () => {
     );
   }
 
-  const currentIndex = ORDER.indexOf(selectedType);
-  const previous =
-    currentIndex > 0
-      ? lesson.stages.find((item) => item.type === ORDER[currentIndex - 1])
-      : undefined;
-  const canGenerate =
-    currentIndex === 0 ||
-    Boolean(
-      previous &&
-      [
-        LessonStageStatus.PRODUCER_APPROVED,
-        LessonStageStatus.IN_REVIEW,
-        LessonStageStatus.APPROVED,
-      ].includes(previous.status)
-    );
+  const actions = lessonProductionActions(
+    lesson,
+    stage,
+    local.hasDrafts,
+    save.isPending || complete.isPending || generate.isPending || deleteMutation.isPending
+  );
+  // Typing may continue during save; later edits keep their own draft revision.
+  const editorEditable = lessonProductionActions(
+    lesson,
+    stage,
+    false,
+    complete.isPending || generate.isPending || deleteMutation.isPending
+  ).canEdit;
+  const canGenerate = actions.canGenerate;
   const approvedCount = lesson.stages.filter(
     (item) => item.status === LessonStageStatus.APPROVED
   ).length;
   const packageCompletedCount = lesson.stages.filter((item) =>
-    [
-      LessonStageStatus.PRODUCER_APPROVED,
-      LessonStageStatus.IN_REVIEW,
-      LessonStageStatus.APPROVED,
-    ].includes(item.status)
+    PRODUCTION_COMPLETED_STATUSES.includes(item.status)
   ).length;
   const isFinalReview =
-    lesson.status === 'IN_REVIEW' ||
-    lesson.status === 'READY_FOR_PUBLICATION' ||
-    lesson.status === 'PUBLISHED';
+    lesson.status === LessonStatus.IN_REVIEW ||
+    lesson.status === LessonStatus.READY_FOR_PUBLICATION ||
+    lesson.status === LessonStatus.PUBLISHED;
   const progressCount = isFinalReview ? approvedCount : packageCompletedCount;
   const progress = lesson.stages.length ? (progressCount / lesson.stages.length) * 100 : 0;
-  const lessonStatusLabel: Record<string, string> = {
-    DRAFT: 'Novo pacote',
-    IN_PROGRESS: 'Montando pacote',
-    PACKAGE_READY: 'Pacote completo',
-    IN_REVIEW: 'Em aprovação final',
-    CHANGES_REQUESTED: 'Ajustes solicitados',
-    READY_FOR_PUBLICATION: 'Aprovação concluída',
-    PUBLISHING: 'Publicando',
-    PUBLISHED: 'Publicado',
-    ARCHIVED: 'Arquivado',
-  };
-
-  const download = async () => {
-    const blob = await aiLessonsService.exportPdf(id);
-    const url = URL.createObjectURL(blob);
-    const anchor = window.document.createElement('a');
-    anchor.href = url;
-    anchor.download = `licao-semana-${lesson.weekNumber}.pdf`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-  };
-
   const action = (mutation: typeof complete, target: LessonStage) =>
     mutation.mutate({ id, stage: target.type });
 
   const generateSelectedStage = () => {
-    if (!stage) return;
+    if (!stage || !canGenerate) return;
     generate.mutate({
       id,
       payload: {
@@ -256,19 +228,29 @@ export const LessonDraftDetailPage: React.FC = () => {
 
   const openStagePreview = async () => {
     if (!stage || edited) return;
-    setPreviewLoading(true);
-    setPreviewError(null);
-    try {
-      const blob = await aiLessonsService.previewStagePdf(id, stage.type);
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(URL.createObjectURL(blob));
-    } catch {
-      setPreviewError(
-        'Não foi possível gerar o preview. Verifique se o LibreOffice está instalado no servidor.'
-      );
-    } finally {
-      setPreviewLoading(false);
-    }
+    await preview.open();
+  };
+  const saveSelectedStage = () => {
+    const sent = local.draft;
+    if (!sent || !actions.canSave) return;
+    save.mutate(
+      {
+        id: sent.lessonId,
+        payload: {
+          stage: sent.stage,
+          lockVersion: sent.lockVersion,
+          tiptapAstJson: sent.document,
+          structuredDataJson: sent.structuredData ?? undefined,
+          changeSummary: 'Revisão manual',
+        },
+      },
+      {
+        onSuccess: (saved) => {
+          const savedStage = saved.stages.find((item) => item.type === sent.stage);
+          if (savedStage) local.acknowledge(sent, savedStage);
+        },
+      }
+    );
   };
 
   return (
@@ -290,23 +272,40 @@ export const LessonDraftDetailPage: React.FC = () => {
       {/* Top Bar with Back Button */}
       <Button
         startIcon={<ArrowBack />}
-        onClick={() => navigate('/adm/estudio/licoes')}
+        onClick={() => {
+          if (confirmLeave()) navigate('/adm/estudio/licoes');
+        }}
         sx={{ mb: 2, fontWeight: 700, textTransform: 'none', borderRadius: 2 }}
       >
         Voltar para Produção de Lições
       </Button>
 
-      {publicationMessage && (
+      {connection.state !== LessonConnectionState.CONNECTED && (
         <Alert
-          data-testid="ai-lesson-publication-feedback"
-          severity={publishMutation.isError ? 'error' : 'success'}
-          onClose={() => setPublicationMessage(null)}
+          data-testid="ai-lesson-connection-status"
+          severity={connection.state === LessonConnectionState.DENIED ? 'error' : 'info'}
           sx={{ mb: 2 }}
         >
-          {publicationMessage}
+          {connection.state === LessonConnectionState.DENIED
+            ? 'Sem acesso às atualizações desta lição. Verifique sua sessão e permissão.'
+            : connection.state === LessonConnectionState.RECONNECTING
+              ? 'Conexão interrompida. Reconectando; suas edições locais estão preservadas.'
+              : 'Conectando às atualizações da lição…'}
         </Alert>
       )}
-
+      {local.hasDrafts && (
+        <Alert data-testid="ai-lesson-unsaved-notice" severity="warning" sx={{ mb: 2 }}>
+          Há edições não salvas. Você pode alternar as etapas; salve ou descarte as edições antes de
+          concluir ou gerar conteúdo.
+        </Alert>
+      )}
+      {save.isError && (
+        <Alert data-testid="ai-lesson-save-error" severity="error" sx={{ mb: 2 }}>
+          {getHttpStatus(save.error) === 409
+            ? 'Esta etapa foi alterada em outra sessão. Sua edição foi preservada. Copie seu texto antes de descartar a edição e carregar a versão atual.'
+            : 'Não foi possível salvar. Sua edição foi preservada; tente novamente.'}
+        </Alert>
+      )}
       {/* Hero Card Header */}
       <Paper
         elevation={0}
@@ -352,11 +351,12 @@ export const LessonDraftDetailPage: React.FC = () => {
                 {lesson.theme}
               </Typography>
               <Chip
-                label={lessonStatusLabel[lesson.status] ?? lesson.status}
+                label={LESSON_STATUS_LABELS[lesson.status] ?? lesson.status}
                 color={
-                  lesson.status === 'READY_FOR_PUBLICATION' || lesson.status === 'PUBLISHED'
+                  lesson.status === LessonStatus.READY_FOR_PUBLICATION ||
+                  lesson.status === LessonStatus.PUBLISHED
                     ? 'success'
-                    : lesson.status === 'CHANGES_REQUESTED'
+                    : lesson.status === LessonStatus.CHANGES_REQUESTED
                       ? 'warning'
                       : 'primary'
                 }
@@ -414,7 +414,9 @@ export const LessonDraftDetailPage: React.FC = () => {
             <Button
               startIcon={<RateReview />}
               variant="contained"
-              onClick={() => navigate(`/adm/estudio/revisao/${id}`)}
+              onClick={() => {
+                if (confirmLeave()) navigate(`/adm/estudio/revisao/${id}`);
+              }}
               sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 700 }}
             >
               Ir para Revisão e Aprovação
@@ -424,6 +426,7 @@ export const LessonDraftDetailPage: React.FC = () => {
               startIcon={<DeleteIcon />}
               variant="outlined"
               color="error"
+              disabled={local.hasDrafts || save.isPending || complete.isPending}
               onClick={() => setDeleteConfirmOpen(true)}
               sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 600 }}
             >
@@ -439,7 +442,6 @@ export const LessonDraftDetailPage: React.FC = () => {
         mode="mobile"
         onSelect={(type) => {
           setSelectedType(type);
-          setEdited(null);
         }}
       />
 
@@ -458,7 +460,6 @@ export const LessonDraftDetailPage: React.FC = () => {
           mode="desktop"
           onSelect={(type) => {
             setSelectedType(type);
-            setEdited(null);
           }}
         />
 
@@ -537,7 +538,7 @@ export const LessonDraftDetailPage: React.FC = () => {
                   </Alert>
                 )}
 
-                {!canGenerate && (
+                {!actions.dependencyReady && (
                   <Alert severity="warning" sx={{ mb: 2, borderRadius: 2.5 }}>
                     Aprove a etapa anterior no fluxo antes de gerar esta.
                   </Alert>
@@ -614,25 +615,12 @@ export const LessonDraftDetailPage: React.FC = () => {
                   <Button
                     variant="outlined"
                     startIcon={<EditNote />}
-                    disabled={!edited || save.isPending}
-                    onClick={() =>
-                      save.mutate(
-                        {
-                          id,
-                          payload: {
-                            stage: stage.type,
-                            lockVersion: stage.lockVersion,
-                            tiptapAstJson: document,
-                            structuredDataJson: version?.structuredDataJson,
-                            changeSummary: 'Revisão manual',
-                          },
-                        },
-                        { onSuccess: () => setEdited(null) }
-                      )
-                    }
+                    data-testid="ai-lesson-save-edit"
+                    disabled={!edited || !actions.canSave}
+                    onClick={saveSelectedStage}
                     sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 600 }}
                   >
-                    Salvar edição
+                    {save.isPending ? 'Salvando…' : 'Salvar edição'}
                   </Button>
 
                   <Button
@@ -650,23 +638,34 @@ export const LessonDraftDetailPage: React.FC = () => {
                     startIcon={<Check />}
                     color="primary"
                     variant="contained"
-                    disabled={
-                      !stage.currentVersionId ||
-                      ![
-                        LessonStageStatus.DRAFT,
-                        LessonStageStatus.PRODUCER_APPROVED,
-                        LessonStageStatus.CHANGES_REQUESTED,
-                        LessonStageStatus.STALE,
-                        LessonStageStatus.FAILED,
-                      ].includes(stage.status)
-                    }
+                    data-testid="ai-lesson-complete-stage"
+                    disabled={!actions.canComplete}
                     onClick={() => action(complete, stage)}
                     sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700 }}
                   >
-                    Concluir item para o pacote
+                    {complete.isPending ? 'Concluindo…' : 'Concluir item para o pacote'}
                   </Button>
                 </Stack>
 
+                {edited && (
+                  <Button
+                    data-testid="ai-lesson-discard-edit"
+                    disabled={save.isPending}
+                    sx={{ minHeight: 44, mb: 2 }}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          'Descartar a edição local desta etapa e carregar a versão atual?'
+                        )
+                      ) {
+                        local.discard();
+                        save.reset();
+                      }
+                    }}
+                  >
+                    Descartar edição desta etapa
+                  </Button>
+                )}
                 <Divider sx={{ mb: 3 }} />
 
                 {/* Editor Container: materiais puramente visuais não recebem folha/cabeçalho textual. */}
@@ -684,17 +683,27 @@ export const LessonDraftDetailPage: React.FC = () => {
                       stage.type === LessonStageType.MEDITATION_YOUNGER ? (
                         <YoungerMeditationEditor
                           initialJson={document}
-                          structuredData={version.structuredDataJson}
-                          onChange={setEdited}
+                          structuredData={
+                            local.draft?.structuredData ?? version.structuredDataJson ?? {}
+                          }
+                          editable={editorEditable}
+                          onChange={local.edit}
                         />
                       ) : stage.type === LessonStageType.MEDITATION_OLDER ? (
                         <OlderMeditationEditor
                           initialJson={document}
-                          structuredData={version.structuredDataJson}
-                          onChange={setEdited}
+                          structuredData={
+                            local.draft?.structuredData ?? version.structuredDataJson ?? {}
+                          }
+                          editable={editorEditable}
+                          onChange={local.edit}
                         />
                       ) : (
-                        <LibreOfficeDocEditor initialJson={document} onChange={setEdited} />
+                        <LibreOfficeDocEditor
+                          initialJson={document}
+                          editable={editorEditable}
+                          onChange={local.edit}
+                        />
                       )
                     ) : (
                       <Paper
@@ -717,7 +726,9 @@ export const LessonDraftDetailPage: React.FC = () => {
                 )}
 
                 {stage.type === LessonStageType.MANUAL_WORK && version && (
-                  <ManualWorkPreview structuredData={version.structuredDataJson} />
+                  <ManualWorkPreview
+                    structuredData={local.draft?.structuredData ?? version.structuredDataJson ?? {}}
+                  />
                 )}
 
                 {stage.type === LessonStageType.LESSON_VISUALS && (
@@ -865,6 +876,7 @@ export const LessonDraftDetailPage: React.FC = () => {
         llmErrorOpen={llmErrorOpen}
         previewUrl={previewUrl}
         previewError={previewError}
+        previewLoading={previewLoading}
         deleteConfirmOpen={deleteConfirmOpen}
         deletePending={deleteMutation.isPending}
         onCloseLlmError={() => setLlmErrorOpen(false)}
@@ -872,11 +884,7 @@ export const LessonDraftDetailPage: React.FC = () => {
           setLlmErrorOpen(false);
           generateSelectedStage();
         }}
-        onClosePreview={() => {
-          if (previewUrl) URL.revokeObjectURL(previewUrl);
-          setPreviewUrl(null);
-          setPreviewError(null);
-        }}
+        onClosePreview={preview.close}
         onCloseDelete={() => setDeleteConfirmOpen(false)}
         onConfirmDelete={async () => {
           await deleteMutation.mutateAsync(id);

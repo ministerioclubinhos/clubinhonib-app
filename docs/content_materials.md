@@ -213,3 +213,80 @@ A Meditação dos maiores gera sempre três imagens, uma por questão, como anex
 Na revisão final, pacotes PACKAGE_READY exibem “Iniciar revisão”. A ação chama o endpoint existente de submissão, que valida o pacote e muda os itens para IN_REVIEW; a atualização dos dados habilita aprovação e solicitação de ajustes. A tela apresenta erros dessas ações junto aos controles. Abrir a página não aprova nem altera a lição automaticamente.
 
 The manual-work producer and reviewer use the same `ManualWorkPreview`, sourced from the current version's `printableAssets`, verse text and verse reference. Both display two vertically stacked copies, each with a black outer frame, matching the PDF composition; missing artwork produces an explicit empty state. Previewing never regenerates or recolors the approved artwork.
+
+## Studio editing, review and transport integrity
+
+Production keeps one in-memory draft per lesson and stage. Switching the mobile
+tabs or desktop navigation preserves every draft. A draft captures the original
+`lockVersion` and structured data on its first edit; SSE and query refetches only
+update the remote version. Save uses that captured lock. A 409 preserves the draft
+and explains the conflict; the producer can copy the text and explicitly discard
+the local draft to load the remote version. There is no automatic conflict retry.
+Typing during a save remains possible: only the submitted draft is cleared, and
+later typing advances its base to the successful save's lock. Drafts are not
+persisted across closing the tab. Pending edits are guarded on page buttons,
+admin navigation, browser back/forward and refresh.
+
+The three document editors receive explicit edit permissions matching
+`LessonDraftService.saveContent`. Mounting an editor, loading saved content and
+changing edit permissions do not emit content changes or create local drafts.
+In particular, completing an item must leave the next item available without a
+false unsaved-edits warning; real edits still require saving or discarding.
+Production completion and generation are
+blocked while any local stage draft is unresolved or a conflicting mutation is
+pending. The existing whole-page generation lock remains in place. Review and
+publication use the API's states; the browser never fabricates a workflow
+transition. The current API allows review of remaining `IN_REVIEW` items when the
+lesson is `CHANGES_REQUESTED`, and resubmission of a completed package containing
+producer-approved, in-review and approved items. Saving still invalidates
+downstream stages according to the server's rules. Publication is explicit and
+creating the weekly material does not set the current week.
+
+The review list sends `statuses` as a comma-separated query parameter, choosing
+the existing review set (PACKAGE_READY, IN_REVIEW, CHANGES_REQUESTED,
+READY_FOR_PUBLICATION, PUBLISHED), or only the selected status. Search, count and
+pagination are applied by the server. It does not filter an already paginated
+response. List, detail, dashboard and prompt-preference query keys have separate
+prefixes. Lesson mutations refresh summaries without invalidating unrelated
+prompt preferences.
+
+Prompt edits capture their original preference and lock. Saving or resetting one
+stage updates only that target; other dirty prompts and subsequent typing remain
+intact. Unedited entries follow query data directly. Provider settings likewise
+keep an explicit local draft, so refetch cannot overwrite unsaved values. Failed
+model requests show failure even when a previous model list remains cached.
+
+Provider settings responses expose `hasApiKey`, never a saved `apiKey`. API
+adapters explicitly select public fields on aggregate and individual endpoints,
+so legacy secret fields cannot enter the query cache. Credential controls offer
+preserve (omit `apiKey`), replace (trimmed newly typed key) and remove (explicit
+empty `apiKey`). Blank typing preserves the key; removal requires the separate
+control and Save. Restoring recommended defaults prepares an editable draft and
+preserves credentials. Newly typed keys are transient; completed mutation state
+is reset, mutation cache has zero retention, and no form or credential is logged.
+This client requires the coordinated public settings and `statuses` backend
+contracts; deploy that backend before this frontend.
+
+SSE continues through the shared authenticated Axios client with the existing
+2-second reconnect delay and 10-second inactivity watchdog. The screen exposes
+connecting, reconnecting and denied states. Normal EOF and transient failures
+reconnect; 401 after the shared refresh flow, 403 and 404 stop reconnection.
+Intentional cancellation performs cleanup without reconnecting. Late callbacks
+cannot write another lesson's cache. Transport counters measure bytes, received
+snapshots and duration per connection without retaining content or credentials;
+no snapshot compaction or timer tuning was introduced.
+
+PDF preview requests are tied to their lesson, stage and request identity.
+Closing the dialog, changing the stage or unmounting invalidates late responses;
+object URLs are revoked on replacement/close/unmount. Preview and list downloads
+show loading and errors. Client-error JSON delivered as a Blob is decoded and a
+safe public message is shown; network, timeout and server failures receive
+appropriate fallback messages without claiming a specific LibreOffice cause.
+
+Regression coverage lives in `e2e/unit/studio-*.spec.ts`,
+`e2e/flows/studio-integrity.spec.ts`, `e2e/flows/studio-resilience.spec.ts` and the
+provider/editor tests. Integration fixtures are created through the local API;
+`e2e/support/studioFixture.mjs` only prepares statuses for those uniquely named
+fixtures in the local MySQL database, allowing manual-content tests without AI
+provider calls. Tests save and reread content through HTTP and delete their
+fixtures. The helper rejects remote databases and unowned lesson IDs.

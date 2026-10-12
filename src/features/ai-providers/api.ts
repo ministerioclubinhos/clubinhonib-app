@@ -9,54 +9,77 @@ import {
 import type {
   AiProviderSettings,
   GeminiModelsResponse,
-  GeminiSettings,
+  GeminiSettingsResponse,
+  SaveGeminiSettingsRequest,
+  SaveAiProviderSettingsRequest,
   OpenAiModelsResponse,
-  OpenAiSettings,
+  OpenAiSettingsResponse,
+  SaveOpenAiSettingsRequest,
 } from './types';
-import { buildAiProviderSettingsPayload } from './utils';
+import { publicAiProviderSettings, publicOpenAiSettings, publicGeminiSettings } from './utils';
 
 export async function apiGetOpenAiModels(): Promise<OpenAiModelsResponse> {
   return (await apiAxios.get<OpenAiModelsResponse>(OPENAI_MODELS_ENDPOINT)).data;
 }
 
-export async function apiGetOpenAiSettings(): Promise<OpenAiSettings> {
-  return (await apiAxios.get<OpenAiSettings>(OPENAI_SETTINGS_ENDPOINT)).data;
+export async function apiGetOpenAiSettings(): Promise<OpenAiSettingsResponse> {
+  return publicOpenAiSettings(
+    (await apiAxios.get<OpenAiSettingsResponse>(OPENAI_SETTINGS_ENDPOINT)).data
+  );
 }
 
-export async function apiSaveOpenAiSettings(payload: OpenAiSettings): Promise<OpenAiSettings> {
-  return (
-    await apiAxios.put<OpenAiSettings>(OPENAI_SETTINGS_ENDPOINT, payload, { skipGlobalError: true })
-  ).data;
+export async function apiSaveOpenAiSettings(
+  payload: SaveOpenAiSettingsRequest
+): Promise<OpenAiSettingsResponse> {
+  return publicOpenAiSettings(
+    (
+      await apiAxios.put<OpenAiSettingsResponse>(OPENAI_SETTINGS_ENDPOINT, payload, {
+        skipGlobalError: true,
+      })
+    ).data
+  );
 }
 
 export async function apiGetGeminiModels(): Promise<GeminiModelsResponse> {
   return (await apiAxios.get<GeminiModelsResponse>(GEMINI_MODELS_ENDPOINT)).data;
 }
 
-export async function apiGetGeminiSettings(): Promise<GeminiSettings> {
-  return (await apiAxios.get<GeminiSettings>(GEMINI_SETTINGS_ENDPOINT)).data;
+export async function apiGetGeminiSettings(): Promise<GeminiSettingsResponse> {
+  return publicGeminiSettings(
+    (await apiAxios.get<GeminiSettingsResponse>(GEMINI_SETTINGS_ENDPOINT)).data
+  );
 }
 
-export async function apiSaveGeminiSettings(payload: GeminiSettings): Promise<GeminiSettings> {
-  return (
-    await apiAxios.put<GeminiSettings>(GEMINI_SETTINGS_ENDPOINT, payload, { skipGlobalError: true })
-  ).data;
+export async function apiSaveGeminiSettings(
+  payload: SaveGeminiSettingsRequest
+): Promise<GeminiSettingsResponse> {
+  return publicGeminiSettings(
+    (
+      await apiAxios.put<GeminiSettingsResponse>(GEMINI_SETTINGS_ENDPOINT, payload, {
+        skipGlobalError: true,
+      })
+    ).data
+  );
 }
 
 export async function apiGetAiProviderSettings(): Promise<AiProviderSettings> {
-  return (
-    await apiAxios.get<AiProviderSettings>(AI_PROVIDER_SETTINGS_ENDPOINT, { skipGlobalError: true })
-  ).data;
+  return publicAiProviderSettings(
+    (
+      await apiAxios.get<AiProviderSettings>(AI_PROVIDER_SETTINGS_ENDPOINT, {
+        skipGlobalError: true,
+      })
+    ).data
+  );
 }
 
 export async function apiSaveAiProviderSettings(
-  settings: AiProviderSettings
+  settings: SaveAiProviderSettingsRequest
 ): Promise<AiProviderSettings> {
-  return (
-    await apiAxios.put<AiProviderSettings>(
-      AI_PROVIDER_SETTINGS_ENDPOINT,
-      buildAiProviderSettingsPayload(settings),
-      { skipGlobalError: true }
-    )
-  ).data;
+  return publicAiProviderSettings(
+    (
+      await apiAxios.put<AiProviderSettings>(AI_PROVIDER_SETTINGS_ENDPOINT, settings, {
+        skipGlobalError: true,
+      })
+    ).data
+  );
 }

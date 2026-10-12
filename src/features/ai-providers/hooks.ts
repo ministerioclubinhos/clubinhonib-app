@@ -7,7 +7,11 @@ import {
   apiSaveGeminiSettings,
   apiSaveOpenAiSettings,
 } from './api';
-import type { AiProviderSettings, GeminiSettings, OpenAiSettings } from './types';
+import type {
+  SaveAiProviderSettingsRequest,
+  SaveGeminiSettingsRequest,
+  SaveOpenAiSettingsRequest,
+} from './types';
 
 export const useAiProvidersKeys = {
   all: ['ai-providers'] as const,
@@ -27,7 +31,8 @@ export function useAiProviderSettings() {
 export function useSaveAiProviderSettings() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (settings: AiProviderSettings) => apiSaveAiProviderSettings(settings),
+    gcTime: 0,
+    mutationFn: (settings: SaveAiProviderSettingsRequest) => apiSaveAiProviderSettings(settings),
     onSuccess: (data) => {
       queryClient.setQueryData(useAiProvidersKeys.settings(), data);
       queryClient.invalidateQueries({ queryKey: useAiProvidersKeys.all });
@@ -38,7 +43,8 @@ export function useSaveAiProviderSettings() {
 export function useSaveOpenAiSettings() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (settings: OpenAiSettings) => apiSaveOpenAiSettings(settings),
+    gcTime: 0,
+    mutationFn: (settings: SaveOpenAiSettingsRequest) => apiSaveOpenAiSettings(settings),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: useAiProvidersKeys.all }),
   });
 }
@@ -46,7 +52,8 @@ export function useSaveOpenAiSettings() {
 export function useSaveGeminiSettings() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (settings: GeminiSettings) => apiSaveGeminiSettings(settings),
+    gcTime: 0,
+    mutationFn: (settings: SaveGeminiSettingsRequest) => apiSaveGeminiSettings(settings),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: useAiProvidersKeys.all }),
   });
 }

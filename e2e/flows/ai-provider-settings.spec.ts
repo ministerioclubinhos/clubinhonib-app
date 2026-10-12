@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { DEFAULT_AI_PROVIDER_SETTINGS } from '@/features/ai-providers/constants';
-import { AiProviderSettings, LlmProviderType } from '@/features/ai-providers/types';
+import {
+  AiProviderSettings,
+  LlmProviderType,
+  type SaveAiProviderSettingsRequest,
+} from '@/features/ai-providers/types';
 
 test('salva Gemini no servidor, recarrega a escolha e não anuncia sucesso em erro', async ({
   page,
@@ -32,7 +36,12 @@ test('salva Gemini no servidor, recarrega a escolha e não anuncia sucesso em er
         });
         return;
       }
-      saved = request.postDataJSON() as AiProviderSettings;
+      const payload = request.postDataJSON() as SaveAiProviderSettingsRequest;
+      saved = {
+        llmProvider: payload.llmProvider,
+        openai: { ...payload.openai, hasApiKey: false },
+        gemini: { ...payload.gemini, hasApiKey: false },
+      };
     }
     await route.fulfill({ json: saved });
   });
@@ -53,4 +62,44 @@ test('salva Gemini no servidor, recarrega a escolha e não anuncia sucesso em er
     'Parâmetros inválidos'
   );
   expect(saved.gemini.maxRetries).toBe(0);
+});
+
+test('refetch preserva edição local; modelos com erro não anunciam sucesso; chave salva fica ausente', async ({
+  page,
+}) => {
+  const settings = structuredClone(DEFAULT_AI_PROVIDER_SETTINGS);
+  settings.openai.hasApiKey = true;
+  let failModels = false;
+  await page.route('**/api/v1/lessons/providers/**', (route) => {
+    if (route.request().url().endsWith('/models')) {
+      return route.fulfill(
+        failModels
+          ? { status: 503, json: { message: 'Temporariamente indisponível' } }
+          : {
+              json: {
+                models: {
+                  general: [settings.openai.generalModel],
+                  image: [settings.openai.imageModel],
+                },
+              },
+            }
+      );
+    }
+    return route.fulfill({
+      json: { ...settings, openai: { ...settings.openai, apiKey: 'synthetic-persisted-secret' } },
+    });
+  });
+  await page.goto('/adm/config-provedores-ia');
+  await expect(page.getByLabel('OPENAI_API_KEY', { exact: true })).toHaveValue('');
+  await page.getByLabel('maxRetries', { exact: true }).fill('7');
+  settings.gemini.maxRetries = 2;
+  await page.getByRole('button', { name: /Recarregar|Atualizar configurações/ }).click();
+  await expect(page.getByLabel('maxRetries', { exact: true })).toHaveValue('7');
+  expect(await page.content()).not.toContain('synthetic-persisted-secret');
+  failModels = true;
+  await page.getByRole('button', { name: /Consultar Modelos|Buscar modelos/ }).click();
+  await expect(page.getByTestId('ai-providers-config-feedback')).toContainText(
+    'Não foi possível consultar'
+  );
+  await expect(page.getByTestId('ai-providers-config-feedback')).not.toContainText('disponíveis:');
 });

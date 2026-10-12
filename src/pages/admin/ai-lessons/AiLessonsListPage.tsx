@@ -1,3 +1,18 @@
+import { downloadLessonPdf, lessonPdfError } from '@/features/ai-lessons/pdf';
+import { LessonStatus } from '@/features/ai-lessons/types';
+import {
+  LESSON_LIST_PAGE_SIZE,
+  LESSON_SEARCH_DEBOUNCE_MS,
+  PRODUCTION_COMPLETED_STATUSES,
+  STUDIO_STAGE_ORDER,
+} from '@/features/ai-lessons/constants';
+import { parseLessonSortOption, parseLessonStatus } from '@/features/ai-lessons/utils';
+import {
+  PRODUCTION_STATUS_OPTIONS as STATUS_OPTIONS,
+  PRODUCTION_SORT_OPTIONS as SORT_OPTIONS,
+  PRODUCTION_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS,
+  PRODUCTION_STATUSPRESENTATION as statusPresentation,
+} from '@/features/ai-lessons/listConstants';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Box,
@@ -35,43 +50,6 @@ import { useDeleteLessonDraft, useLessonDrafts } from '@/hooks/api/useAiLessons'
 import { LessonAiGenerateModal } from '@/components/ai-lessons/LessonAiGenerateModal';
 import { aiLessonsService, GetLessonDraftsParams, Lesson } from '@/services/aiLessonsService';
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'Todos os status' },
-  { value: 'DRAFT', label: 'Rascunho' },
-  { value: 'IN_PROGRESS', label: 'Em produção' },
-  { value: 'PACKAGE_READY', label: 'Pacote completo' },
-  { value: 'IN_REVIEW', label: 'Em aprovação' },
-  { value: 'CHANGES_REQUESTED', label: 'Ajustes solicitados' },
-  { value: 'READY_FOR_PUBLICATION', label: 'Pronto p/ publicar' },
-  { value: 'PUBLISHED', label: 'Publicado' },
-  { value: 'ARCHIVED', label: 'Arquivado' },
-];
-
-const SORT_OPTIONS = [
-  { value: 'updatedAt:DESC', label: 'Mais recentes primeiro' },
-  { value: 'updatedAt:ASC', label: 'Mais antigas primeiro' },
-  { value: 'weekNumber:ASC', label: 'Número da semana (1-52)' },
-  { value: 'theme:ASC', label: 'Tema (A-Z)' },
-];
-
-const PAGE_SIZE_OPTIONS = [6, 12, 24, 48];
-
-const statusPresentation: Record<string, { label: string; color: ListingBadge['color'] }> = {
-  DRAFT: { label: 'RASCUNHO', color: 'warning' },
-  IN_PROGRESS: { label: 'EM PRODUÇÃO', color: 'info' },
-  PACKAGE_READY: { label: 'PACOTE COMPLETO', color: 'info' },
-  IN_REVIEW: { label: 'EM APROVAÇÃO', color: 'warning' },
-  CHANGES_REQUESTED: { label: 'AJUSTES SOLICITADOS', color: 'error' },
-  READY_FOR_PUBLICATION: { label: 'PRONTO PARA PUBLICAR', color: 'success' },
-  PUBLISHED: { label: 'PUBLICADO', color: 'success' },
-  ARCHIVED: { label: 'ARQUIVADO', color: 'default' },
-};
-
-function parseSortOption(value: string) {
-  const [sort, order] = value.split(':');
-  return { sort: sort || 'updatedAt', order: order || 'DESC' };
-}
-
 export const AiLessonsListPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -79,16 +57,17 @@ export const AiLessonsListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Lesson | null>(null);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(LESSON_LIST_PAGE_SIZE);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<LessonStatus | ''>('');
   const [sortOption, setSortOption] = useState('updatedAt:DESC');
   const [errorMsg, setErrorMsg] = useState('');
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const debouncedSearch = useDebouncedValue(search, 400);
+  const debouncedSearch = useDebouncedValue(search, LESSON_SEARCH_DEBOUNCE_MS);
 
   const queryParams = useMemo<GetLessonDraftsParams>(() => {
-    const { sort, order } = parseSortOption(sortOption);
+    const { sort, order } = parseLessonSortOption(sortOption);
     return {
       status: status || undefined,
       search: debouncedSearch.trim() || undefined,
@@ -106,19 +85,16 @@ export const AiLessonsListPage: React.FC = () => {
   const total = data?.total ?? 0;
 
   const handleExportPdf = async (id: string, themeName: string) => {
+    if (downloadingId) return;
+    setDownloadingId(id);
+    setErrorMsg('');
     try {
       const blob = await aiLessonsService.exportPdf(id);
-      const url = window.URL.createObjectURL(new Blob([blob]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Licao_${themeName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error('Erro ao baixar PDF:', e);
-      setErrorMsg('Não foi possível exportar o PDF desta lição.');
+      downloadLessonPdf(blob, `Licao_${themeName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+    } catch (error) {
+      setErrorMsg(await lessonPdfError(error));
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -128,8 +104,7 @@ export const AiLessonsListPage: React.FC = () => {
       await deleteMutation.mutateAsync(deleteTarget.id);
       setDeleteTarget(null);
       refetch();
-    } catch (e) {
-      console.error('Erro ao excluir lição:', e);
+    } catch {
       setErrorMsg('Não foi possível excluir a lição.');
     }
   };
@@ -140,7 +115,7 @@ export const AiLessonsListPage: React.FC = () => {
   };
 
   const handleStatusChange = (value: string) => {
-    setStatus(value);
+    setStatus(parseLessonStatus(value));
     setPage(1);
   };
 
@@ -251,6 +226,7 @@ export const AiLessonsListPage: React.FC = () => {
             />
 
             <Dialog
+              data-testid="ai-lessons-delete-dialog"
               open={Boolean(deleteTarget)}
               onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
               maxWidth="xs"
@@ -302,9 +278,9 @@ export const AiLessonsListPage: React.FC = () => {
       >
         {items.map((item: Lesson) => {
           const completed = item.stages.filter((stage) =>
-            ['PRODUCER_APPROVED', 'IN_REVIEW', 'APPROVED'].includes(stage.status)
+            PRODUCTION_COMPLETED_STATUSES.includes(stage.status)
           ).length;
-          const totalStages = item.stages.length || 7;
+          const totalStages = item.stages.length || STUDIO_STAGE_ORDER.length;
           const progressPercent = Math.round((completed / totalStages) * 100);
           const presentation = statusPresentation[item.status] ?? statusPresentation.DRAFT;
 
@@ -362,13 +338,26 @@ export const AiLessonsListPage: React.FC = () => {
                         <IconButton
                           size="small"
                           color="error"
+                          data-testid={`ai-lesson-download-${item.id}`}
+                          disabled={Boolean(downloadingId)}
+                          sx={{ minWidth: 44, minHeight: 44 }}
                           aria-label={`Baixar PDF de ${item.theme}`}
                           onClick={(event) => {
                             event.stopPropagation();
                             void handleExportPdf(item.id, item.theme);
                           }}
                         >
-                          <PdfIcon fontSize="small" />
+                          <>
+                            {downloadingId === item.id ? (
+                              <CircularProgress
+                                data-testid="ai-lesson-download-loading"
+                                size={20}
+                                aria-label="Baixando PDF"
+                              />
+                            ) : (
+                              <PdfIcon fontSize="small" />
+                            )}
+                          </>
                         </IconButton>
                       </span>
                     </Tooltip>

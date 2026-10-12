@@ -1,4 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { FALLBACK_GEMINI_IMAGE_MODELS } from './constants';
+import { FALLBACK_GEMINI_GENERAL_MODELS } from './constants';
+import { FALLBACK_OPEN_AI_IMAGE_MODELS } from './constants';
+import { FALLBACK_OPEN_AI_GENERAL_MODELS } from './constants';
+import React, { useState } from 'react';
 import {
   Alert,
   alpha,
@@ -47,15 +51,21 @@ import {
   useSaveAiProviderSettings,
 } from './hooks';
 import { DEFAULT_AI_PROVIDER_SETTINGS } from './constants';
-import { LlmProviderType } from './types';
-import { getErrorMessage } from '@/utils/apiError';
-import type {
-  AiProviderSettings,
-  GeminiSettings,
-  AiProviderFeedback,
-  OpenAiSettings,
+import {
+  LlmProviderType,
+  ApiKeyAction,
+  AiProviderFeedbackSeverity,
   OpenAIImageQuality,
   OpenAIReasoningEffort,
+} from './types';
+import { buildAiProviderSettingsPayload, providerSettingsForm, liveModelsFeedback } from './utils';
+import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
+import { getErrorMessage } from '@/utils/apiError';
+import type {
+  AiProviderForm,
+  GeminiSettingsForm,
+  AiProviderFeedback,
+  OpenAiSettingsForm,
 } from './types';
 
 export const AiProvidersConfigPage: React.FC = () => {
@@ -65,137 +75,110 @@ export const AiProvidersConfigPage: React.FC = () => {
   const { data: settings, isLoading, isError, refetch } = useAiProviderSettings();
   const saveMutation = useSaveAiProviderSettings();
 
-  const [form, setForm] = useState<AiProviderSettings>(DEFAULT_AI_PROVIDER_SETTINGS);
+  const [draft, setDraft] = useState<AiProviderForm | null>(null);
+  const form = draft ?? providerSettingsForm(settings ?? DEFAULT_AI_PROVIDER_SETTINGS);
+  const isDirty = draft !== null;
+  const confirmLeave = useStudioUnsavedChanges(isDirty);
+  const setForm = (change: (previous: AiProviderForm) => AiProviderForm) =>
+    setDraft((current) =>
+      change(current ?? providerSettingsForm(settings ?? DEFAULT_AI_PROVIDER_SETTINGS))
+    );
   const [showOpenAiKey, setShowOpenAiKey] = useState(false);
   const [showGeminiKey, setShowGeminiKey] = useState(false);
 
   const {
     data: openaiModelsData,
-    isLoading: loadingOpenAiModels,
+    isFetching: loadingOpenAiModels,
     refetch: refetchOpenAiModels,
   } = useOpenAiModels(form.llmProvider === LlmProviderType.OPENAI);
 
   const {
     data: geminiModelsData,
-    isLoading: loadingGeminiModels,
+    isFetching: loadingGeminiModels,
     refetch: refetchGeminiModels,
   } = useGeminiModels(form.llmProvider === LlmProviderType.GEMINI);
 
   const [feedback, setFeedback] = useState<AiProviderFeedback | null>(null);
-
-  useEffect(() => {
-    if (settings) {
-      setForm(settings);
-    }
-  }, [settings]);
-
-  const isDirty = JSON.stringify(form) !== JSON.stringify(settings ?? DEFAULT_AI_PROVIDER_SETTINGS);
 
   const handleProviderChange = (provider: LlmProviderType) => {
     setForm((prev) => ({ ...prev, llmProvider: provider }));
     setFeedback(null);
   };
 
-  const handleOpenAiChange = <K extends keyof OpenAiSettings>(key: K, value: OpenAiSettings[K]) => {
+  const handleOpenAiChange = <K extends keyof OpenAiSettingsForm>(
+    key: K,
+    value: OpenAiSettingsForm[K]
+  ) => {
     setForm((prev) => ({
       ...prev,
-      openai: { ...prev.openai, [key]: value },
+      openai: {
+        ...prev.openai,
+        [key]: value,
+        ...(key === 'apiKey'
+          ? { keyAction: value ? ApiKeyAction.REPLACE : ApiKeyAction.PRESERVE }
+          : {}),
+      },
     }));
     setFeedback(null);
   };
 
-  const handleGeminiChange = <K extends keyof GeminiSettings>(key: K, value: GeminiSettings[K]) => {
+  const handleGeminiChange = <K extends keyof GeminiSettingsForm>(
+    key: K,
+    value: GeminiSettingsForm[K]
+  ) => {
     setForm((prev) => ({
       ...prev,
-      gemini: { ...prev.gemini, [key]: value },
+      gemini: {
+        ...prev.gemini,
+        [key]: value,
+        ...(key === 'apiKey'
+          ? { keyAction: value ? ApiKeyAction.REPLACE : ApiKeyAction.PRESERVE }
+          : {}),
+      },
     }));
     setFeedback(null);
   };
 
   const handleFetchLiveModels = async () => {
     setFeedback(null);
-    if (form.llmProvider === LlmProviderType.OPENAI) {
-      const res = await refetchOpenAiModels();
-      const countGen = res.data?.models.general.length ?? 0;
-      const countImg = res.data?.models.image.length ?? 0;
-      setFeedback({
-        severity: 'success',
-        message: `Modelos da OpenAI disponíveis: ${countGen} de texto, ${countImg} de imagem.`,
-      });
-    } else {
-      const res = await refetchGeminiModels();
-      const countGen = res.data?.models.general.length ?? 0;
-      const countImg = res.data?.models.image.length ?? 0;
-      setFeedback({
-        severity: 'success',
-        message: `Modelos do Gemini disponíveis: ${countGen} de texto, ${countImg} de imagem.`,
-      });
-    }
+    const provider = form.llmProvider;
+    const result = await (provider === LlmProviderType.OPENAI
+      ? refetchOpenAiModels()
+      : refetchGeminiModels());
+    setFeedback(liveModelsFeedback(result.isError, result.data, provider));
   };
 
   const handleSave = async () => {
     setFeedback(null);
     try {
-      const saved = await saveMutation.mutateAsync(form);
-      setForm(saved);
+      await saveMutation.mutateAsync(buildAiProviderSettingsPayload(form));
+      setDraft(null);
       setFeedback({
-        severity: 'success',
-        message: 'Configurações salvas e aplicadas com sucesso no banco de dados!',
+        severity: AiProviderFeedbackSeverity.SUCCESS,
+        message: 'Configurações salvas com sucesso.',
       });
     } catch (err) {
-      setFeedback({
-        severity: 'error',
-        message: getErrorMessage(err),
-      });
+      setFeedback({ severity: AiProviderFeedbackSeverity.ERROR, message: getErrorMessage(err) });
+    } finally {
+      // Release mutation variables containing a newly entered credential.
+      saveMutation.reset();
     }
   };
 
-  const handleResetToDefault = async () => {
-    setFeedback(null);
-    setForm(DEFAULT_AI_PROVIDER_SETTINGS);
-    try {
-      await saveMutation.mutateAsync(DEFAULT_AI_PROVIDER_SETTINGS);
-      setFeedback({
-        severity: 'success',
-        message:
-          'Configurações restauradas e salvas com sucesso para os padrões do sistema (OpenAI / Gemini)!',
-      });
-    } catch {
-      setFeedback({
-        severity: 'info',
-        message:
-          'Valores restaurados para os padrões recomendados do sistema. Clique em salvar para confirmar.',
-      });
-    }
+  const handleResetToDefault = () => {
+    setDraft(providerSettingsForm(DEFAULT_AI_PROVIDER_SETTINGS));
+    setFeedback({
+      severity: AiProviderFeedbackSeverity.INFO,
+      message:
+        'Padrões preparados. As chaves salvas serão preservadas. Clique em salvar para confirmar.',
+    });
   };
 
-  const openAiGeneralModels = openaiModelsData?.models.general ?? [
-    'gpt-6-luna',
-    'gpt-5.6-luna',
-    'gpt-5.6',
-    'gpt-4o',
-    'gpt-4o-mini',
-    'o3-mini',
-    'o1',
-  ];
-  const openAiImageModels = openaiModelsData?.models.image ?? [
-    'gpt-image-2',
-    'gpt-image-2.5-flare',
-    'gpt-image-2.5-sunburst',
-    'gpt-image-1-mini',
-    'dall-e-3',
-  ];
+  const openAiGeneralModels = openaiModelsData?.models.general ?? FALLBACK_OPEN_AI_GENERAL_MODELS;
+  const openAiImageModels = openaiModelsData?.models.image ?? FALLBACK_OPEN_AI_IMAGE_MODELS;
 
-  const geminiGeneralModels = geminiModelsData?.models.general ?? [
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
-  ];
-  const geminiImageModels = geminiModelsData?.models.image ?? [
-    'gemini-3.1-flash-image',
-    'imagen-3.0-generate-002',
-  ];
+  const geminiGeneralModels = geminiModelsData?.models.general ?? FALLBACK_GEMINI_GENERAL_MODELS;
+  const geminiImageModels = geminiModelsData?.models.image ?? FALLBACK_GEMINI_IMAGE_MODELS;
 
   if (isLoading) {
     return (
@@ -226,19 +209,25 @@ export const AiProvidersConfigPage: React.FC = () => {
   return (
     <Box
       data-testid="ai-providers-config-page"
+      component="fieldset"
+      disabled={saveMutation.isPending}
       sx={{
         width: { xs: '98%', md: '95%' },
         mx: 'auto',
         py: { xs: 1.5, sm: 2.5, md: 3.5 },
         pb: { xs: 12, sm: 6 },
         boxSizing: 'border-box',
+        border: 0,
+        minInlineSize: 0,
         overflowX: 'hidden',
       }}
     >
       {/* Botão de Voltar */}
       <Button
         startIcon={<ArrowBack />}
-        onClick={() => navigate('/adm/estudio')}
+        onClick={() => {
+          if (confirmLeave()) navigate('/adm/estudio');
+        }}
         sx={{
           mb: 2,
           fontWeight: 700,
@@ -589,6 +578,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
+                          sx={{ minWidth: 44, minHeight: 44 }}
                           size="small"
                           aria-label="Alternar visibilidade da chave OpenAI"
                           onClick={() => setShowOpenAiKey(!showOpenAiKey)}
@@ -599,8 +589,37 @@ export const AiProvidersConfigPage: React.FC = () => {
                     ),
                     sx: { borderRadius: 2.5, minHeight: 48 },
                   }}
-                  helperText="Utilizada para autenticar a chamada GET /v1/models."
+                  helperText={
+                    settings?.openai.hasApiKey
+                      ? 'Chave salva no servidor. Digite para substituir; deixe vazio para preservar.'
+                      : 'Nenhuma chave salva. Digite uma chave para configurar.'
+                  }
                 />
+
+                {settings?.openai.hasApiKey && (
+                  <Button
+                    data-testid="ai-provider-openai-remove-key"
+                    color="warning"
+                    sx={{ minHeight: 44 }}
+                    onClick={() =>
+                      handleOpenAiChange(
+                        'keyAction',
+                        form.openai.keyAction === ApiKeyAction.REMOVE
+                          ? ApiKeyAction.PRESERVE
+                          : ApiKeyAction.REMOVE
+                      )
+                    }
+                  >
+                    {form.openai.keyAction === ApiKeyAction.REMOVE
+                      ? 'Cancelar remoção da chave'
+                      : 'Remover chave salva'}
+                  </Button>
+                )}
+                {form.openai.keyAction === ApiKeyAction.REMOVE && (
+                  <Alert data-testid="ai-provider-openai-key-removal-notice" severity="warning">
+                    A chave será removida ao salvar.
+                  </Alert>
+                )}
 
                 {/* generalModel */}
                 <FormControl fullWidth>
@@ -739,6 +758,11 @@ export const AiProvidersConfigPage: React.FC = () => {
                 {/* GEMINI_API_KEY */}
                 <TextField
                   fullWidth
+                  helperText={
+                    settings?.gemini.hasApiKey
+                      ? 'Chave salva no servidor. Digite para substituir; deixe vazio para preservar.'
+                      : 'Nenhuma chave salva. Digite uma chave para configurar.'
+                  }
                   label="GEMINI_API_KEY"
                   type={showGeminiKey ? 'text' : 'password'}
                   value={form.gemini.apiKey ?? ''}
@@ -753,6 +777,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
+                          sx={{ minWidth: 44, minHeight: 44 }}
                           size="small"
                           aria-label="Alternar visibilidade da chave Gemini"
                           onClick={() => setShowGeminiKey(!showGeminiKey)}
@@ -764,6 +789,31 @@ export const AiProvidersConfigPage: React.FC = () => {
                     sx: { borderRadius: 2.5, minHeight: 48 },
                   }}
                 />
+
+                {settings?.gemini.hasApiKey && (
+                  <Button
+                    data-testid="ai-provider-gemini-remove-key"
+                    color="warning"
+                    sx={{ minHeight: 44 }}
+                    onClick={() =>
+                      handleGeminiChange(
+                        'keyAction',
+                        form.gemini.keyAction === ApiKeyAction.REMOVE
+                          ? ApiKeyAction.PRESERVE
+                          : ApiKeyAction.REMOVE
+                      )
+                    }
+                  >
+                    {form.gemini.keyAction === ApiKeyAction.REMOVE
+                      ? 'Cancelar remoção da chave'
+                      : 'Remover chave salva'}
+                  </Button>
+                )}
+                {form.gemini.keyAction === ApiKeyAction.REMOVE && (
+                  <Alert data-testid="ai-provider-gemini-key-removal-notice" severity="warning">
+                    A chave será removida ao salvar.
+                  </Alert>
+                )}
 
                 {/* generalModel */}
                 <FormControl fullWidth>
@@ -944,7 +994,12 @@ export const AiProvidersConfigPage: React.FC = () => {
             startIcon={
               saveMutation.isPending ? <CircularProgress size={18} color="inherit" /> : <Save />
             }
-            disabled={!isDirty || saveMutation.isPending}
+            disabled={
+              !isDirty ||
+              saveMutation.isPending ||
+              (form.openai.keyAction === ApiKeyAction.REPLACE && !form.openai.apiKey.trim()) ||
+              (form.gemini.keyAction === ApiKeyAction.REPLACE && !form.gemini.apiKey.trim())
+            }
             onClick={handleSave}
             sx={{
               flex: { xs: 1.5, sm: 'initial' },

@@ -1,25 +1,53 @@
 import { expect, test } from '@playwright/test';
-import { buildAiProviderSettingsPayload } from '@/features/ai-providers/utils';
+import {
+  buildAiProviderSettingsPayload,
+  providerSettingsForm,
+  publicAiProviderSettings,
+  liveModelsFeedback,
+} from '@/features/ai-providers/utils';
 import { DEFAULT_AI_PROVIDER_SETTINGS } from '@/features/ai-providers/constants';
-import { LlmProviderType } from '@/features/ai-providers/types';
+import {
+  ApiKeyAction,
+  LlmProviderType,
+  AiProviderFeedbackSeverity,
+} from '@/features/ai-providers/types';
 
-test('envia o provedor ativo e números reais, sem metadados locais', () => {
-  const settings = {
+test('preservar omite chave; substituir envia nova chave; remover envia vazio sem metadados', () => {
+  const form = providerSettingsForm(DEFAULT_AI_PROVIDER_SETTINGS);
+  form.llmProvider = LlmProviderType.GEMINI;
+  form.gemini.maxRetries = 0;
+  expect(buildAiProviderSettingsPayload(form).gemini.maxRetries).toBe(0);
+  expect(buildAiProviderSettingsPayload(form).openai).not.toHaveProperty('apiKey');
+  expect(buildAiProviderSettingsPayload(form).openai).not.toHaveProperty('hasApiKey');
+  form.openai.keyAction = ApiKeyAction.REPLACE;
+  form.openai.apiKey = ' synthetic-new-key ';
+  expect(buildAiProviderSettingsPayload(form).openai.apiKey).toBe('synthetic-new-key');
+  form.openai.keyAction = ApiKeyAction.REMOVE;
+  expect(buildAiProviderSettingsPayload(form).openai.apiKey).toBe('');
+});
+
+test('segredo de resposta legada não entra no cache nem no formulário', () => {
+  const legacy = {
     ...DEFAULT_AI_PROVIDER_SETTINGS,
-    llmProvider: LlmProviderType.GEMINI,
-    updatedAt: 'local-only',
-    updatedBy: 'local-only',
-    gemini: {
-      ...DEFAULT_AI_PROVIDER_SETTINGS.gemini,
-      maxRetries: '0' as unknown as number,
-      retryBaseDelayMs: '1000' as unknown as number,
+    openai: {
+      ...DEFAULT_AI_PROVIDER_SETTINGS.openai,
+      hasApiKey: true,
+      apiKey: 'synthetic-persisted-secret',
     },
+    gemini: { ...DEFAULT_AI_PROVIDER_SETTINGS.gemini, apiKey: 'synthetic-other-secret' },
   };
-  expect(buildAiProviderSettingsPayload(settings)).toEqual({
-    llmProvider: LlmProviderType.GEMINI,
-    openai: DEFAULT_AI_PROVIDER_SETTINGS.openai,
-    gemini: { ...DEFAULT_AI_PROVIDER_SETTINGS.gemini, maxRetries: 0, retryBaseDelayMs: 1000 },
-  });
-  expect(DEFAULT_AI_PROVIDER_SETTINGS.openai.apiKey).toBe('');
-  expect(DEFAULT_AI_PROVIDER_SETTINGS.gemini.apiKey).toBe('');
+  expect(JSON.stringify(publicAiProviderSettings(legacy))).not.toContain('secret');
+  expect(providerSettingsForm(legacy).openai.apiKey).toBe('');
+  expect(providerSettingsForm(legacy).gemini.keyAction).toBe(ApiKeyAction.PRESERVE);
+});
+
+test('refetch com erro e dados antigos não anuncia sucesso', () => {
+  for (const data of [undefined, { models: { general: ['cached'], image: [] } }]) {
+    expect(liveModelsFeedback(true, data, 'OpenAI').severity).toBe(
+      AiProviderFeedbackSeverity.ERROR
+    );
+  }
+  expect(liveModelsFeedback(false, { models: { general: [], image: [] } }, 'Gemini').severity).toBe(
+    AiProviderFeedbackSeverity.SUCCESS
+  );
 });

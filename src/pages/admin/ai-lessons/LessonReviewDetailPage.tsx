@@ -1,3 +1,10 @@
+import {
+  LESSON_STAGE_LABELS as LABELS,
+  LESSON_STAGE_SHORT_LABELS as SHORT_LABELS,
+} from './lessonDraftDetail.constants';
+import { STUDIO_STAGE_ORDER as STAGE_ORDER } from '@/features/ai-lessons/constants';
+import { LessonStageAction, LessonStatus } from '@/features/ai-lessons/types';
+import { canPublishLesson } from '@/features/ai-lessons/workflow';
 import { ManualWorkPreview } from '@/features/ai-lessons/manual-work-preview/ManualWorkPreview';
 import { lessonReviewActions } from '@/features/ai-lessons/review-actions';
 import { getErrorMessage } from '@/utils/apiError';
@@ -42,38 +49,14 @@ import { LibreOfficeDocEditor } from '@/components/ai-lessons/LibreOfficeDocEdit
 import { StoryVisualCarousel } from '@/features/ai-lessons/components/StoryVisualCarousel';
 import { visualAssets } from '@/features/ai-lessons/utils';
 
-const LABELS: Record<LessonStageType, string> = {
-  LESSON: '1. Lição completa',
-  LESSON_VISUALS: '2. Visuais da história',
-  STANDARD_GAME: '3. Brincadeira',
-  VERSE_VISUALS: '4. Visuais do versículo',
-  VERSE_FIXATION: '5. Fixação divertida do versículo',
-  MEDITATION_YOUNGER: '6. Meditação dos menores',
-  MEDITATION_OLDER: '7. Meditação dos maiores',
-  MANUAL_WORK: '8. Trabalho manual',
-};
-
-const SHORT_LABELS: Record<LessonStageType, string> = {
-  LESSON: '1. Lição',
-  LESSON_VISUALS: '2. Visuais',
-  STANDARD_GAME: '3. Brincadeira',
-  VERSE_VISUALS: '4. Vis. Versículo',
-  VERSE_FIXATION: '5. Fixação',
-  MEDITATION_YOUNGER: '6. Med. Menores',
-  MEDITATION_OLDER: '7. Med. Maiores',
-  MANUAL_WORK: '8. Trab. Manual',
-};
-
-const STAGE_ORDER = Object.values(LessonStageType);
-
 export const LessonReviewDetailPage: React.FC = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
 
   const { data: lesson, isLoading, error } = useLessonDraft(id);
-  const approve = useStageAction('approve');
-  const changes = useStageAction('changes');
+  const approve = useStageAction(LessonStageAction.APPROVE);
+  const changes = useStageAction(LessonStageAction.CHANGES);
   const publishMutation = usePublishLesson();
   const submitReview = useSubmitLessonPackage();
 
@@ -124,6 +107,8 @@ export const LessonReviewDetailPage: React.FC = () => {
     stage?.status,
     Boolean(stage?.currentVersionId)
   );
+  const actionsPending =
+    approve.isPending || changes.isPending || submitReview.isPending || publishMutation.isPending;
   const currentFeedback = feedbackMap[selectedType] || '';
   const stageComments =
     lesson.comments?.filter((comment) => comment.sectionKey === selectedType) ?? [];
@@ -133,7 +118,15 @@ export const LessonReviewDetailPage: React.FC = () => {
   };
 
   const handleApproveStage = () => {
-    if (!stage) return;
+    if (
+      !stage ||
+      !reviewActions.canReviewItem ||
+      approve.isPending ||
+      changes.isPending ||
+      submitReview.isPending ||
+      publishMutation.isPending
+    )
+      return;
     approve.mutate(
       { id, stage: stage.type },
       {
@@ -145,7 +138,15 @@ export const LessonReviewDetailPage: React.FC = () => {
   };
 
   const handleRequestChanges = () => {
-    if (!stage) return;
+    if (
+      !stage ||
+      !reviewActions.canReviewItem ||
+      approve.isPending ||
+      changes.isPending ||
+      submitReview.isPending ||
+      publishMutation.isPending
+    )
+      return;
     if (!currentFeedback.trim()) {
       setPublicationMessage('Descreva os ajustes necessários antes de devolver o item.');
       return;
@@ -155,13 +156,16 @@ export const LessonReviewDetailPage: React.FC = () => {
       {
         onSuccess: () => {
           setPublicationMessage('Ajustes solicitados salvos para esta etapa.');
-          handleFeedbackChange('');
+          setFeedbackMap((current) =>
+            current[stage.type] === currentFeedback ? { ...current, [stage.type]: '' } : current
+          );
         },
       }
     );
   };
 
   const handlePublish = () => {
+    if (!canPublishLesson(lesson) || actionsPending) return;
     setPublicationMessage(null);
     publishMutation.mutate(id, {
       onSuccess: (result) => {
@@ -211,7 +215,12 @@ export const LessonReviewDetailPage: React.FC = () => {
             <Button
               data-testid="ai-lesson-review-start"
               color="inherit"
-              disabled={submitReview.isPending}
+              disabled={
+                submitReview.isPending ||
+                approve.isPending ||
+                changes.isPending ||
+                publishMutation.isPending
+              }
               onClick={() => submitReview.mutate(id)}
               sx={{ minHeight: 44, whiteSpace: 'nowrap' }}
             >
@@ -234,7 +243,7 @@ export const LessonReviewDetailPage: React.FC = () => {
           onClose={() => setPublicationMessage(null)}
           sx={{ mb: 2, borderRadius: 2 }}
           action={
-            lesson.status === 'PUBLISHED' ? (
+            lesson.status === LessonStatus.PUBLISHED ? (
               <Button
                 color="inherit"
                 size="small"
@@ -291,13 +300,15 @@ export const LessonReviewDetailPage: React.FC = () => {
               </Typography>
               <Chip
                 label={
-                  lesson.status === 'PUBLISHED'
+                  lesson.status === LessonStatus.PUBLISHED
                     ? 'PUBLICADO NO MATERIAIS SEMANAIS'
                     : allApproved
                       ? 'TODOS OS ITENS APROVADOS'
                       : `${approvedCount}/${totalStages} ITENS APROVADOS`
                 }
-                color={lesson.status === 'PUBLISHED' || allApproved ? 'success' : 'warning'}
+                color={
+                  lesson.status === LessonStatus.PUBLISHED || allApproved ? 'success' : 'warning'
+                }
                 sx={{ fontWeight: 800, borderRadius: 1.5 }}
               />
             </Stack>
@@ -345,8 +356,8 @@ export const LessonReviewDetailPage: React.FC = () => {
               size="large"
               startIcon={<PublishIcon />}
               disabled={
-                publishMutation.isPending ||
-                !allApproved ||
+                actionsPending ||
+                !canPublishLesson(lesson) ||
                 lesson.status !== 'READY_FOR_PUBLICATION'
               }
               onClick={handlePublish}
@@ -392,6 +403,7 @@ export const LessonReviewDetailPage: React.FC = () => {
 
             return (
               <Tab
+                data-testid={`ai-lesson-review-tab-${stageType.toLowerCase().replaceAll('_', '-')}`}
                 key={stageType}
                 value={stageType}
                 label={
@@ -538,9 +550,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                   size="large"
                   startIcon={<ApproveIcon />}
                   data-testid="ai-lesson-review-approve"
-                  disabled={
-                    approve.isPending || submitReview.isPending || !reviewActions.canReviewItem
-                  }
+                  disabled={actionsPending || !reviewActions.canReviewItem}
                   onClick={handleApproveStage}
                   sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.2 }}
                 >
@@ -557,11 +567,11 @@ export const LessonReviewDetailPage: React.FC = () => {
                   color="error"
                   startIcon={<ChangesIcon />}
                   disabled={
-                    changes.isPending || !currentFeedback.trim() || !reviewActions.canReviewItem
+                    actionsPending || !currentFeedback.trim() || !reviewActions.canReviewItem
                   }
                   data-testid="ai-lesson-review-request-changes"
                   onClick={handleRequestChanges}
-                  sx={{ borderRadius: 2.5, fontWeight: 700 }}
+                  sx={{ borderRadius: 2.5, fontWeight: 700, minHeight: 44 }}
                 >
                   {changes.isPending ? 'Solicitando…' : 'Solicitar Ajustes neste Item'}
                 </Button>
@@ -569,7 +579,7 @@ export const LessonReviewDetailPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {allApproved && (
+          {(canPublishLesson(lesson) || publishMutation.isPending) && (
             <Alert
               severity="success"
               variant="filled"
@@ -580,7 +590,9 @@ export const LessonReviewDetailPage: React.FC = () => {
                   size="small"
                   startIcon={<PublishIcon />}
                   onClick={handlePublish}
-                  sx={{ fontWeight: 800 }}
+                  data-testid="ai-lesson-review-publish-now"
+                  disabled={actionsPending || !canPublishLesson(lesson)}
+                  sx={{ fontWeight: 800, minHeight: 44 }}
                 >
                   Publicar Agora
                 </Button>

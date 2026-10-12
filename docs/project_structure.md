@@ -38,3 +38,15 @@ setembro de 2026 encontrou fora do padrão descrito aqui — features sem
 `types`/`utils`/`constants`, arquivos longos demais, telas ainda fora do
 `ListingLayout` — em ordem de prioridade e com caixas para marcar conforme for
 resolvido.
+
+## Studio state and transport helpers
+
+`src/features/ai-lessons/` owns transport DTOs/enums (`types.ts`), query key
+factories (`queryKeys.ts`), immutable draft reconciliation (`drafts.ts`), workflow
+availability (`workflow.ts`), the SSE lifecycle (`stream.ts`) and PDF helpers
+(`pdf.ts`, `useLessonPdfPreview.ts`). `useLessonLocalDrafts` owns local document
+edits; `useStudioUnsavedChanges` extends the shared dirty-form guard for studio
+browser-history navigation. Existing service and hook imports remain compatible;
+`src/services/aiLessonsService.ts` re-exports feature types while keeping HTTP
+operations on the shared Axios instance. Routed pages remain under
+`src/pages/admin/ai-lessons/`.

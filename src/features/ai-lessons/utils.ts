@@ -1,8 +1,4 @@
-export interface ParsedSseChunk {
-  messages: string[];
-  remainder: string;
-}
-
+import { LessonSortField, LessonSortOrder, LessonStatus } from './types';
 export const parseSseChunk = (text: string): ParsedSseChunk => {
   const events = text.replace(/\r\n/g, '\n').split('\n\n');
   const remainder = events.pop() ?? '';
@@ -24,7 +20,7 @@ export const objectValue = (value: unknown): Record<string, unknown> =>
     : {};
 
 export const visualAssets = (
-  value: Record<string, unknown> | undefined,
+  value: Record<string, unknown> | null | undefined,
   stage: LessonStageType
 ): VisualAsset[] => {
   const key = [
@@ -39,4 +35,25 @@ export const visualAssets = (
     ? value[key].map((item) => objectValue(item) as VisualAsset)
     : [];
 };
-import { LessonStageType, VisualAsset } from './types';
+import {
+  LessonStageType,
+  type VisualAsset,
+  type ParsedSseChunk,
+  type GetLessonDraftsParams,
+} from './types';
+
+export function buildLessonListParams(params: GetLessonDraftsParams) {
+  return { ...params, statuses: params.statuses?.join(',') };
+}
+
+export function parseLessonSortOption(value: string) {
+  const [sort, order] = value.split(':');
+  return {
+    sort:
+      Object.values(LessonSortField).find((item) => item === sort) ?? LessonSortField.UPDATED_AT,
+    order: Object.values(LessonSortOrder).find((item) => item === order) ?? LessonSortOrder.DESC,
+  };
+}
+export function parseLessonStatus(value: string): LessonStatus | '' {
+  return Object.values(LessonStatus).find((item) => item === value) ?? '';
+}

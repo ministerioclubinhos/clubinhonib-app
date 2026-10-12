@@ -1,3 +1,4 @@
+import { LessonStatus } from '@/features/ai-lessons/types';
 import { expect, test } from '@playwright/test';
 import { LessonStageStatus, LessonStageType } from '@/features/ai-lessons/types';
 import type { Lesson } from '@/services/aiLessonsService';
@@ -19,7 +20,7 @@ for (const width of [320, 375, 768, 1440]) {
       theme: 'O Semeador',
       biblicalReference: 'Mateus 13',
       weekNumber: 20,
-      status: 'IN_PROGRESS',
+      status: LessonStatus.IN_PROGRESS,
       weekMaterialId: null,
       createdAt: '',
       updatedAt: '',

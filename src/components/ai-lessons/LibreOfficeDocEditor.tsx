@@ -104,7 +104,8 @@ export const LibreOfficeDocEditor = ({
   }, [editor, initialJson]);
 
   useEffect(() => {
-    editor?.setEditable(editable);
+    // Permission changes must not create an unsaved content draft.
+    editor?.setEditable(editable, false);
   }, [editable, editor]);
 
   if (!editor) return null;

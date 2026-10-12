@@ -18,3 +18,12 @@ test('não habilita aprovação de rascunhos, itens sem versão, aprovados ou pu
   expect(lessonReviewActions(Lesson.IN_REVIEW, Stage.IN_REVIEW, false).canReviewItem).toBe(false);
   expect(lessonReviewActions(Lesson.PUBLISHED, Stage.IN_REVIEW, true).canReviewItem).toBe(false);
 });
+
+test('itens ainda em revisão continuam revisáveis durante solicitação de ajustes conforme API', () => {
+  expect(lessonReviewActions(Lesson.CHANGES_REQUESTED, Stage.IN_REVIEW, true).canReviewItem).toBe(
+    true
+  );
+  expect(
+    lessonReviewActions(Lesson.CHANGES_REQUESTED, Stage.CHANGES_REQUESTED, true).canReviewItem
+  ).toBe(false);
+});

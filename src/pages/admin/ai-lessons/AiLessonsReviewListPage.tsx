@@ -1,3 +1,21 @@
+import {
+  LessonStatus,
+  LessonSortField,
+  LessonSortOrder,
+  LessonStageStatus,
+} from '@/features/ai-lessons/types';
+import {
+  LESSON_LIST_PAGE_SIZE,
+  LESSON_SEARCH_DEBOUNCE_MS,
+  LESSON_PAGE_SIZE_OPTIONS,
+  REVIEW_LESSON_STATUSES,
+  STUDIO_STAGE_ORDER,
+} from '@/features/ai-lessons/constants';
+import { parseLessonStatus } from '@/features/ai-lessons/utils';
+import {
+  REVIEW_STATUS_OPTIONS as STATUS_OPTIONS,
+  REVIEW_STATUSPRESENTATION as statusPresentation,
+} from '@/features/ai-lessons/listConstants';
 import React, { useMemo, useState } from 'react';
 import {
   Box,
@@ -18,67 +36,32 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { ListingCard, ListingLayout, ListingToolbar } from '@/components/common/listing';
-import type { ListingBadge, ListingFilter, ListingMeta } from '@/components/common/listing';
+import type { ListingFilter, ListingMeta } from '@/components/common/listing';
 import { useDebouncedValue } from '@/hooks/useListingQuery';
 import { useLessonDrafts } from '@/hooks/api/useAiLessons';
 import type { Lesson } from '@/services/aiLessonsService';
-
-const STATUS_OPTIONS = [
-  { value: '', label: 'Todos os status de revisão' },
-  { value: 'PACKAGE_READY', label: 'Pacote completo' },
-  { value: 'IN_REVIEW', label: 'Em aprovação' },
-  { value: 'CHANGES_REQUESTED', label: 'Ajustes solicitados' },
-  { value: 'READY_FOR_PUBLICATION', label: 'Pronto p/ publicar' },
-  { value: 'PUBLISHED', label: 'Publicado' },
-];
-
-const statusPresentation: Record<string, { label: string; color: ListingBadge['color'] }> = {
-  DRAFT: { label: 'EM PRODUÇÃO', color: 'info' },
-  IN_PROGRESS: { label: 'EM PRODUÇÃO', color: 'info' },
-  PACKAGE_READY: { label: 'AGUARDANDO REVISÃO', color: 'warning' },
-  IN_REVIEW: { label: 'EM REVISÃO', color: 'warning' },
-  CHANGES_REQUESTED: { label: 'AJUSTES SOLICITADOS', color: 'error' },
-  READY_FOR_PUBLICATION: { label: 'APROVADO', color: 'success' },
-  PUBLISHED: { label: 'PUBLICADO', color: 'success' },
-  ARCHIVED: { label: 'ARQUIVADO', color: 'default' },
-};
 
 export const AiLessonsReviewListPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(LESSON_LIST_PAGE_SIZE);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<LessonStatus | ''>('');
 
-  const debouncedSearch = useDebouncedValue(search, 400);
+  const debouncedSearch = useDebouncedValue(search, LESSON_SEARCH_DEBOUNCE_MS);
 
-  const { data, isLoading, refetch } = useLessonDrafts({
-    status: status || undefined,
+  const { data, isLoading, isError, refetch } = useLessonDrafts({
+    statuses: status ? [status] : REVIEW_LESSON_STATUSES,
     search: debouncedSearch.trim() || undefined,
     page,
     limit: pageSize,
-    sort: 'updatedAt',
-    order: 'DESC',
+    sort: LessonSortField.UPDATED_AT,
+    order: LessonSortOrder.DESC,
   });
 
-  // Filtra apenas lições prontas para revisão (exclui lições em produção/rascunho)
-  const filteredItems = useMemo(() => {
-    if (!data?.items) return [];
-    return data.items.filter((lesson: Lesson) => {
-      if (lesson.status === 'DRAFT' || lesson.status === 'IN_PROGRESS') {
-        return false;
-      }
-      return [
-        'PACKAGE_READY',
-        'IN_REVIEW',
-        'CHANGES_REQUESTED',
-        'READY_FOR_PUBLICATION',
-        'PUBLISHED',
-      ].includes(lesson.status);
-    });
-  }, [data]);
+  const filteredItems = data?.items ?? [];
 
   const listingFilters = useMemo<ListingFilter[]>(
     () => [
@@ -88,7 +71,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
         value: status,
         options: STATUS_OPTIONS,
         onChange: (val) => {
-          setStatus(val as string);
+          setStatus(parseLessonStatus(String(val)));
           setPage(1);
         },
       },
@@ -109,7 +92,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
     >
       <ListingLayout
         title="Revisão e Aprovação de Lições"
-        summary="Área exclusiva para revisão criteriosa de cada item gerado e aprovação final. Ao aprovar todos os itens, a lição é enviada aos Materiais Semanais."
+        summary="Área exclusiva para revisão criteriosa de cada item gerado e aprovação final. Após aprovar todos os itens, publique o pacote para criar o material semanal. A semana atual é definida separadamente."
         toolbar={
           <ListingToolbar
             searchValue={search}
@@ -133,6 +116,9 @@ export const AiLessonsReviewListPage: React.FC = () => {
           />
         }
         loading={isLoading}
+        error={
+          isError ? 'Não foi possível carregar a fila de revisão. Tente novamente.' : undefined
+        }
         itemCount={filteredItems.length}
         emptyTitle="Nenhuma lição pronta para revisão"
         emptySubtitle="As lições geradas na área de Produção de Lições aparecerão aqui assim que seus itens forem concluídos."
@@ -146,11 +132,12 @@ export const AiLessonsReviewListPage: React.FC = () => {
             setPage(1);
           },
         }}
-        pageSizeOptions={[6, 12, 24, 48]}
+        pageSizeOptions={LESSON_PAGE_SIZE_OPTIONS}
       >
         {filteredItems.map((item: Lesson) => {
-          const approvedCount = item.stages?.filter((s) => s.status === 'APPROVED').length ?? 0;
-          const totalStages = item.stages?.length ?? 8;
+          const approvedCount =
+            item.stages?.filter((s) => s.status === LessonStageStatus.APPROVED).length ?? 0;
+          const totalStages = item.stages?.length ?? STUDIO_STAGE_ORDER.length;
           const progress = totalStages > 0 ? (approvedCount / totalStages) * 100 : 0;
           const statusInfo = statusPresentation[item.status] ?? {
             label: item.status,
@@ -164,6 +151,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
           return (
             <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
               <ListingCard
+                data-testid={`ai-lesson-review-card-${item.id}`}
                 avatar={<ReviewIcon fontSize="small" />}
                 title={`Semana ${item.weekNumber}: ${item.theme}`}
                 subtitle={item.biblicalReference}
@@ -204,18 +192,23 @@ export const AiLessonsReviewListPage: React.FC = () => {
                   <Button
                     fullWidth
                     variant={
-                      item.status === 'READY_FOR_PUBLICATION' || item.status === 'PUBLISHED'
+                      item.status === LessonStatus.READY_FOR_PUBLICATION ||
+                      item.status === LessonStatus.PUBLISHED
                         ? 'outlined'
                         : 'contained'
                     }
-                    color={item.status === 'READY_FOR_PUBLICATION' ? 'success' : 'primary'}
-                    endIcon={item.status === 'PUBLISHED' ? <ApprovedIcon /> : <ArrowIcon />}
+                    color={
+                      item.status === LessonStatus.READY_FOR_PUBLICATION ? 'success' : 'primary'
+                    }
+                    endIcon={
+                      item.status === LessonStatus.PUBLISHED ? <ApprovedIcon /> : <ArrowIcon />
+                    }
                     onClick={() => navigate(`/adm/estudio/revisao/${item.id}`)}
                     sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
                   >
-                    {item.status === 'PUBLISHED'
+                    {item.status === LessonStatus.PUBLISHED
                       ? 'Ver Lição Publicada'
-                      : item.status === 'READY_FOR_PUBLICATION'
+                      : item.status === LessonStatus.READY_FOR_PUBLICATION
                         ? 'Aprovada — Publicar'
                         : 'Revisar & Aprovar Itens'}
                   </Button>

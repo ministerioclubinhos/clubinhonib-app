@@ -82,7 +82,8 @@ export function MeditationRichField({
       editor.commands.setContent(document, { emitUpdate: false });
   }, [document, editor]);
   useEffect(() => {
-    editor?.setEditable(editable);
+    // Permission changes must not create an unsaved content draft.
+    editor?.setEditable(editable, false);
   }, [editable, editor]);
   return (
     <Box

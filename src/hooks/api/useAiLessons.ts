@@ -1,131 +1,159 @@
-import { useEffect } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  aiLessonsService,
-  GenerateLessonPayload,
-  GetLessonDraftsParams,
-  LessonStageType,
-  RegenerateSectionPayload,
-  SaveTiptapPayload,
-} from '@/services/aiLessonsService';
+import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { aiLessonsService } from '@/services/aiLessonsService';
 import { AI_LESSON_EVENTS_RECONNECT_DELAY_MS } from '@/features/ai-lessons/constants';
+import { aiLessonsKeys } from '@/features/ai-lessons/queryKeys';
+import {
+  LessonConnectionState,
+  LessonStageAction,
+  LessonStreamEnd,
+  type GenerateLessonPayload,
+  type GenerateStageVariables,
+  type GetLessonDraftsParams,
+  type Lesson,
+  type SaveLessonVariables,
+  type StageActionVariables,
+  type LessonStreamMetrics,
+} from '@/features/ai-lessons/types';
 
-export const useAiLessonsKeys = {
-  all: ['ai-lessons'] as const,
-  drafts: (params?: GetLessonDraftsParams | string, page?: number) =>
-    ['ai-lessons', 'drafts', params, page] as const,
-  detail: (id: string) => ['ai-lessons', id] as const,
-};
+export const useAiLessonsKeys = aiLessonsKeys;
+
+function invalidateSummaries(client: QueryClient) {
+  return Promise.all([
+    client.invalidateQueries({ queryKey: aiLessonsKeys.lists }),
+    client.invalidateQueries({ queryKey: aiLessonsKeys.dashboard }),
+  ]);
+}
+function updateLesson(client: QueryClient, lesson: Lesson) {
+  client.setQueryData(aiLessonsKeys.detail(lesson.id), lesson);
+  return invalidateSummaries(client);
+}
 export function useGenerateLessonDraft() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (payload: GenerateLessonPayload) => aiLessonsService.generateDraft(payload),
-    onSuccess: () => client.invalidateQueries({ queryKey: useAiLessonsKeys.all }),
+    onSuccess: (lesson) => updateLesson(client, lesson),
   });
 }
-export function useLessonDrafts(params?: GetLessonDraftsParams | string, page = 1) {
+export function useLessonDrafts(params: GetLessonDraftsParams = {}) {
   return useQuery({
-    queryKey: useAiLessonsKeys.drafts(params, page),
-    queryFn: () => aiLessonsService.getDrafts(params, page),
+    queryKey: aiLessonsKeys.drafts(params),
+    queryFn: () => aiLessonsService.getDrafts(params),
   });
 }
 export function useLessonDraft(id: string) {
   return useQuery({
-    queryKey: useAiLessonsKeys.detail(id),
+    queryKey: aiLessonsKeys.detail(id),
     queryFn: () => aiLessonsService.getDraftById(id),
     enabled: Boolean(id),
   });
 }
 export function useLessonDraftEvents(id: string) {
   const client = useQueryClient();
+  const [state, setState] = useState(LessonConnectionState.CONNECTING);
+  const [metrics, setMetrics] = useState<LessonStreamMetrics | null>(null);
   useEffect(() => {
     if (!id) return;
     let disposed = false;
     let unsubscribe: (() => void) | undefined;
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    setState(LessonConnectionState.CONNECTING);
+    setMetrics(null);
     const connect = () => {
-      unsubscribe = aiLessonsService.subscribeToLessonEvents(
-        id,
-        (lesson) => client.setQueryData(useAiLessonsKeys.detail(id), lesson),
-        () => {
-          if (!disposed) reconnectTimer = setTimeout(connect, AI_LESSON_EVENTS_RECONNECT_DELAY_MS);
-        }
-      );
+      if (disposed) return;
+      unsubscribe = aiLessonsService.subscribeToLessonEvents(id, {
+        onLesson: (lesson) => {
+          if (disposed || lesson.id !== id) return;
+          setState(LessonConnectionState.CONNECTED);
+          const previous = client.getQueryData<Lesson>(aiLessonsKeys.detail(id));
+          client.setQueryData(aiLessonsKeys.detail(id), lesson);
+          if (
+            previous &&
+            (previous.status !== lesson.status ||
+              previous.stages.some(
+                (stage) =>
+                  lesson.stages.find((item) => item.id === stage.id)?.status !== stage.status
+              ))
+          )
+            void invalidateSummaries(client);
+        },
+        onDisconnect: (reason) => {
+          if (disposed || reason === LessonStreamEnd.CANCELLED) return;
+          if (reason === LessonStreamEnd.DENIED) {
+            setState(LessonConnectionState.DENIED);
+            return;
+          }
+          setState(LessonConnectionState.RECONNECTING);
+          reconnectTimer = setTimeout(connect, AI_LESSON_EVENTS_RECONNECT_DELAY_MS);
+        },
+        onMetrics: (value) => {
+          if (!disposed) setMetrics(value);
+        },
+      });
     };
     connect();
     return () => {
       disposed = true;
       unsubscribe?.();
-      if (reconnectTimer) clearTimeout(reconnectTimer);
+      clearTimeout(reconnectTimer);
     };
   }, [client, id]);
+  return { state, metrics };
 }
 export function useLessonDashboard() {
-  return useQuery({
-    queryKey: [...useAiLessonsKeys.all, 'dashboard'],
-    queryFn: aiLessonsService.getDashboard,
-  });
+  return useQuery({ queryKey: aiLessonsKeys.dashboard, queryFn: aiLessonsService.getDashboard });
 }
 export function useUpdateDraftContent() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: SaveTiptapPayload }) =>
+    mutationFn: ({ id, payload }: SaveLessonVariables) =>
       aiLessonsService.updateContent(id, payload),
-    onSuccess: (_, value) =>
-      client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) }),
+    onSuccess: (lesson) => updateLesson(client, lesson),
   });
 }
 export function useGenerateStage() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: RegenerateSectionPayload }) =>
+    mutationFn: ({ id, payload }: GenerateStageVariables) =>
       aiLessonsService.generateStage(id, payload),
-    onSuccess: (lesson, value) => client.setQueryData(useAiLessonsKeys.detail(value.id), lesson),
+    onSuccess: (lesson) => updateLesson(client, lesson),
     onSettled: (_, __, value) =>
-      client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) }),
+      client.invalidateQueries({ queryKey: aiLessonsKeys.detail(value.id) }),
   });
 }
-export function useStageAction(action: 'complete' | 'approve' | 'changes') {
+export function useStageAction(action: LessonStageAction) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, stage, note }: { id: string; stage: LessonStageType; note?: string }) =>
-      action === 'complete'
+    mutationFn: ({ id, stage, note }: StageActionVariables) =>
+      action === LessonStageAction.COMPLETE
         ? aiLessonsService.completeProductionStage(id, stage)
-        : action === 'approve'
+        : action === LessonStageAction.APPROVE
           ? aiLessonsService.approveStage(id, stage)
           : aiLessonsService.requestChanges(id, stage, note ?? ''),
-    onSuccess: (_, value) => {
-      client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(value.id) });
-      client.invalidateQueries({ queryKey: useAiLessonsKeys.all });
-    },
+    onSuccess: (lesson) => updateLesson(client, lesson),
   });
 }
 export function useSubmitLessonPackage() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => aiLessonsService.submitPackageReview(id),
-    onSuccess: (_, id) => {
-      client.invalidateQueries({ queryKey: useAiLessonsKeys.detail(id) });
-      client.invalidateQueries({ queryKey: useAiLessonsKeys.all });
-    },
+    mutationFn: aiLessonsService.submitPackageReview,
+    onSuccess: (lesson) => updateLesson(client, lesson),
   });
 }
 export function useDeleteLessonDraft() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => aiLessonsService.deleteDraft(id),
-    onSuccess: () => {
-      client.invalidateQueries({ queryKey: useAiLessonsKeys.all });
+    mutationFn: aiLessonsService.deleteDraft,
+    onSuccess: (_, id) => {
+      client.removeQueries({ queryKey: aiLessonsKeys.detail(id) });
+      return invalidateSummaries(client);
     },
   });
 }
 export function usePublishLesson() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => aiLessonsService.publishToWeekMaterial(id),
-    onSuccess: (result, id) => {
-      client.setQueryData(useAiLessonsKeys.detail(id), result.lesson);
-      client.invalidateQueries({ queryKey: useAiLessonsKeys.all });
-    },
+    mutationFn: aiLessonsService.publishToWeekMaterial,
+    onSuccess: (result) => updateLesson(client, result.lesson),
   });
 }

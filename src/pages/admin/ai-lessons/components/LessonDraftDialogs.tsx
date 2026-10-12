@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Dialog,
+  CircularProgress,
   DialogActions,
   DialogContent,
   DialogContentText,
@@ -10,25 +11,8 @@ import {
   Typography,
 } from '@mui/material';
 import { AutoAwesome, Download } from '@mui/icons-material';
-import type { Lesson, LessonStage } from '@/services/aiLessonsService';
+import type { LessonDraftDialogsProps } from '@/features/ai-lessons/types';
 import { LESSON_STAGE_LABELS, displayAiFailure } from '../lessonDraftDetail.constants';
-
-type Props = {
-  lesson: Lesson;
-  stage?: LessonStage;
-  canGenerate: boolean;
-  generationLocked: boolean;
-  llmErrorOpen: boolean;
-  previewUrl: string | null;
-  previewError: string | null;
-  deleteConfirmOpen: boolean;
-  deletePending: boolean;
-  onCloseLlmError: () => void;
-  onRetryGeneration: () => void;
-  onClosePreview: () => void;
-  onCloseDelete: () => void;
-  onConfirmDelete: () => Promise<void>;
-};
 
 export function LessonDraftDialogs({
   lesson,
@@ -38,6 +22,7 @@ export function LessonDraftDialogs({
   llmErrorOpen,
   previewUrl,
   previewError,
+  previewLoading,
   deleteConfirmOpen,
   deletePending,
   onCloseLlmError,
@@ -45,7 +30,7 @@ export function LessonDraftDialogs({
   onClosePreview,
   onCloseDelete,
   onConfirmDelete,
-}: Props) {
+}: LessonDraftDialogsProps) {
   return (
     <>
       <Dialog
@@ -103,7 +88,7 @@ export function LessonDraftDialogs({
 
       <Dialog
         data-testid="ai-lesson-pdf-preview-dialog"
-        open={Boolean(previewUrl) || Boolean(previewError)}
+        open={previewLoading || Boolean(previewUrl) || Boolean(previewError)}
         onClose={() => !generationLocked && onClosePreview()}
         fullWidth
         maxWidth="lg"
@@ -124,8 +109,14 @@ export function LessonDraftDialogs({
           dividers
           sx={{ p: { xs: 0.5, md: 1.5 }, display: 'flex', flexDirection: 'column' }}
         >
-          {previewError ? (
-            <Alert severity="error">{previewError}</Alert>
+          {previewLoading ? (
+            <Box data-testid="ai-lesson-pdf-loading" role="status" sx={{ p: 3 }}>
+              <CircularProgress aria-label="Gerando PDF" />
+            </Box>
+          ) : previewError ? (
+            <Alert data-testid="ai-lesson-pdf-error" severity="error">
+              {previewError}
+            </Alert>
           ) : previewUrl ? (
             <Box
               component="iframe"
@@ -142,7 +133,10 @@ export function LessonDraftDialogs({
           ) : null}
         </DialogContent>
         <DialogActions
-          sx={{ px: { xs: 1.5, sm: 3 }, '& .MuiButton-root': { flex: { xs: 1, sm: 'initial' } } }}
+          sx={{
+            px: { xs: 1.5, sm: 3 },
+            '& .MuiButton-root': { minHeight: 44, flex: { xs: 1, sm: 'initial' } },
+          }}
         >
           <Button disabled={generationLocked} onClick={onClosePreview}>
             Fechar
