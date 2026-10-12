@@ -6,7 +6,7 @@
 
 **Escopo do repositório:** `clubinhonib-app`
 
-**Dependência principal:** [`clubinhonib-api/doc/implementaion-plan/media-streaming-implementation-plan.md`](../../../clubinhonib-api/doc/implementaion-plan/media-streaming-implementation-plan.md)
+**Dependência principal:** [`clubinhonib-api/docs/implementation-plan/media-streaming-implementation-plan.md`](../../../clubinhonib-api/docs/implementation-plan/media-streaming-implementation-plan.md)
 
 ---
 
@@ -34,7 +34,7 @@ Nenhum item marcado como **DECISÃO PENDENTE** pode ser transformado em código,
 - **Visualização Exclusiva por Streaming da API:** Elementos de mídia (`<video>`, `<audio>`, `<img>`, `<iframe>`) e modais de visualização de documentos reproduzem conteúdos consumindo diretamente as rotas proxy de streaming da API (`GET /media-items/:id/stream`).
 - **Download Seguro via API:** Funcionalidades de download utilizam a rota dedicada do backend (`GET /media-items/:id/download`) ou tratamento seguro via Blob local, sem abrir janelas/abas `_blank` apontando para links do S3.
 - **Autenticação Transparente para Players HTML5:** Uso do mecanismo de tickets temporários (`POST /media-items/:id/ticket`) para permitir que tags nativas do navegador reproduzam streamings autenticados sem expor senhas ou tokens de longa duração na URL.
-- **Padrão Zero Suposições:** O plano de implementação segue o padrão rigoroso de trava de decisões dos documentos da pasta `doc/implementaion-plan/`.
+- **Padrão Zero Suposições:** O plano de implementação segue o padrão rigoroso de trava de decisões dos documentos da pasta `docs/implementation-plan/`.
 
 ---
 

@@ -21,7 +21,7 @@ registra a escolha por API administrativa somente leitura.
 **Escopo do repositório:** `clubinhonib-app`
 
 **Dependência principal:**
-[`clubinhonib-api/doc/implementaion-plan/observability-audit-implementation-plan.md`](../../../clubinhonib-api/doc/implementaion-plan/observability-audit-implementation-plan.md)
+[`clubinhonib-api/docs/implementation-plan/observability-audit-implementation-plan.md`](../../../clubinhonib-api/docs/implementation-plan/observability-audit-implementation-plan.md)
 
 ## 1. Objetivo
 
