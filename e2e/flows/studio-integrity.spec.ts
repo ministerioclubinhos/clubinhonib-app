@@ -253,6 +253,7 @@ for (const target of [
       )) {
         await api.post(`/api/v1/lessons/${lesson.id}/stages/complete-production`, {
           stage: item.type,
+          lockVersion: item.lockVersion,
         });
       }
       await page.reload();

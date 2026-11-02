@@ -250,11 +250,13 @@ response. List, detail, dashboard and prompt-preference query keys have separate
 prefixes. Lesson mutations refresh summaries without invalidating unrelated
 prompt preferences.
 
-Prompt edits capture their original preference and lock. Saving or resetting one
-stage updates only that target; other dirty prompts and subsequent typing remain
-intact. Unedited entries follow query data directly. Provider settings likewise
-keep an explicit local draft, so refetch cannot overwrite unsaved values. Failed
-model requests show failure even when a previous model list remains cached.
+Prompt edits initialize solely from `customPrompt` (complementary guidance), never
+`effectivePrompt`, while displaying the read-only `basePrompt` and live effective
+preview (`basePrompt` + complementary header + `customPrompt`). Legacy duplicated
+base prompts are detected and can be stripped in one click. Both `PATCH` and
+`POST /prompt-preferences/me/reset` send `lockVersion`. Provider settings likewise
+keep an explicit local draft, so refetch cannot overwrite unsaved values, and
+model catalog lookups distinguish `LIVE`, `FALLBACK` and `STATIC` sources.
 
 Provider settings responses expose `hasApiKey`, never a saved `apiKey`. API
 adapters explicitly select public fields on aggregate and individual endpoints,
@@ -264,24 +266,25 @@ empty `apiKey`). Blank typing preserves the key; removal requires the separate
 control and Save. Restoring recommended defaults prepares an editable draft and
 preserves credentials. Newly typed keys are transient; completed mutation state
 is reset, mutation cache has zero retention, and no form or credential is logged.
-This client requires the coordinated public settings and `statuses` backend
-contracts; deploy that backend before this frontend.
+Session changes and logout cancel and remove `['ai-lessons']` and `['ai-providers']`
+query caches, and prompt preferences are keyed by authenticated user ID.
 
 SSE continues through the shared authenticated Axios client with the existing
-2-second reconnect delay and 10-second inactivity watchdog. The screen exposes
-connecting, reconnecting and denied states. Normal EOF and transient failures
-reconnect; 401 after the shared refresh flow, 403 and 404 stop reconnection.
-Intentional cancellation performs cleanup without reconnecting. Late callbacks
-cannot write another lesson's cache. Transport counters measure bytes, received
-snapshots and duration per connection without retaining content or credentials;
-no snapshot compaction or timer tuning was introduced.
+2-second reconnect delay and 10-second inactivity watchdog, recognizing
+`: heartbeat` and `event: heartbeat` frames, deduplicating unchanged snapshots,
+ignoring stale `lockVersion` regressions, and rotating long-lived XHR streams
+(`AI_LESSON_EVENTS_MAX_DURATION_MS` / `AI_LESSON_EVENTS_MAX_BYTES`) cleanly via
+`LessonStreamEnd.ROTATED` without flashing a reconnection warning. Both production
+and review detail screens subscribe to live updates and share
+`LessonStageContentViewer` for consistent rendering of all 8 stages.
 
-PDF preview requests are tied to their lesson, stage and request identity.
-Closing the dialog, changing the stage or unmounting invalidates late responses;
-object URLs are revoked on replacement/close/unmount. Preview and list downloads
-show loading and errors. Client-error JSON delivered as a Blob is decoded and a
-safe public message is shown; network, timeout and server failures receive
-appropriate fallback messages without claiming a specific LibreOffice cause.
+PDF preview requests are tied to their lesson, stage, `lockVersion`, `versionId`
+and request identity. Closing the dialog, changing the stage, receiving a newer
+remote stage version or unmounting invalidates late responses; object URLs are
+revoked on replacement/close/unmount. Review exposes PDF preview across all 8
+stages, sends `lockVersion` on `complete-production`, `approve` and
+`request-changes`, blocks approval when required stage artwork is missing, and
+invalidates `['week-material-pages']` and `['week-materials']` upon publication.
 
 Regression coverage lives in `e2e/unit/studio-*.spec.ts`,
 `e2e/flows/studio-integrity.spec.ts`, `e2e/flows/studio-resilience.spec.ts` and the

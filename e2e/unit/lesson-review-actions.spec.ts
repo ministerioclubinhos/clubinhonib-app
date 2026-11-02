@@ -17,6 +17,7 @@ test('não habilita aprovação de rascunhos, itens sem versão, aprovados ou pu
     expect(lessonReviewActions(Lesson.IN_REVIEW, state, true).canReviewItem).toBe(false);
   expect(lessonReviewActions(Lesson.IN_REVIEW, Stage.IN_REVIEW, false).canReviewItem).toBe(false);
   expect(lessonReviewActions(Lesson.PUBLISHED, Stage.IN_REVIEW, true).canReviewItem).toBe(false);
+  expect(lessonReviewActions(Lesson.PUBLISHING, Stage.IN_REVIEW, true).canReviewItem).toBe(false);
 });
 
 test('itens ainda em revisão continuam revisáveis durante solicitação de ajustes conforme API', () => {
@@ -25,5 +26,19 @@ test('itens ainda em revisão continuam revisáveis durante solicitação de aju
   );
   expect(
     lessonReviewActions(Lesson.CHANGES_REQUESTED, Stage.CHANGES_REQUESTED, true).canReviewItem
+  ).toBe(false);
+});
+
+test('opções busy e assetsComplete bloqueiam ações de revisão quando aplicável', () => {
+  expect(
+    lessonReviewActions(Lesson.IN_REVIEW, Stage.IN_REVIEW, true, { busy: true }).canReviewItem
+  ).toBe(false);
+  expect(
+    lessonReviewActions(Lesson.PACKAGE_READY, Stage.PRODUCER_APPROVED, true, { busy: true })
+      .canStartReview
+  ).toBe(false);
+  expect(
+    lessonReviewActions(Lesson.IN_REVIEW, Stage.IN_REVIEW, true, { assetsComplete: false })
+      .canReviewItem
   ).toBe(false);
 });

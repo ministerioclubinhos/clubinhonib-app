@@ -4,6 +4,10 @@ import { aiLessonsService } from '@/services/aiLessonsService';
 import { AI_LESSON_EVENTS_RECONNECT_DELAY_MS } from '@/features/ai-lessons/constants';
 import { aiLessonsKeys } from '@/features/ai-lessons/queryKeys';
 import {
+  computeLessonSnapshotSignature,
+  isLessonSnapshotNewerOrEqual,
+} from '@/features/ai-lessons/utils';
+import {
   LessonConnectionState,
   LessonStageAction,
   LessonStreamEnd,
@@ -38,13 +42,13 @@ export function useGenerateLessonDraft() {
 export function useLessonDrafts(params: GetLessonDraftsParams = {}) {
   return useQuery({
     queryKey: aiLessonsKeys.drafts(params),
-    queryFn: () => aiLessonsService.getDrafts(params),
+    queryFn: ({ signal }) => aiLessonsService.getDrafts(params, signal),
   });
 }
 export function useLessonDraft(id: string) {
   return useQuery({
     queryKey: aiLessonsKeys.detail(id),
-    queryFn: () => aiLessonsService.getDraftById(id),
+    queryFn: ({ signal }) => aiLessonsService.getDraftById(id, signal),
     enabled: Boolean(id),
   });
 }
@@ -66,6 +70,13 @@ export function useLessonDraftEvents(id: string) {
           if (disposed || lesson.id !== id) return;
           setState(LessonConnectionState.CONNECTED);
           const previous = client.getQueryData<Lesson>(aiLessonsKeys.detail(id));
+          if (!isLessonSnapshotNewerOrEqual(previous, lesson)) return;
+          if (
+            previous &&
+            computeLessonSnapshotSignature(previous) === computeLessonSnapshotSignature(lesson)
+          ) {
+            return;
+          }
           client.setQueryData(aiLessonsKeys.detail(id), lesson);
           if (
             previous &&
@@ -81,6 +92,10 @@ export function useLessonDraftEvents(id: string) {
           if (disposed || reason === LessonStreamEnd.CANCELLED) return;
           if (reason === LessonStreamEnd.DENIED) {
             setState(LessonConnectionState.DENIED);
+            return;
+          }
+          if (reason === LessonStreamEnd.ROTATED) {
+            connect();
             return;
           }
           setState(LessonConnectionState.RECONNECTING);
@@ -101,7 +116,10 @@ export function useLessonDraftEvents(id: string) {
   return { state, metrics };
 }
 export function useLessonDashboard() {
-  return useQuery({ queryKey: aiLessonsKeys.dashboard, queryFn: aiLessonsService.getDashboard });
+  return useQuery({
+    queryKey: aiLessonsKeys.dashboard,
+    queryFn: ({ signal }) => aiLessonsService.getDashboard(signal),
+  });
 }
 export function useUpdateDraftContent() {
   const client = useQueryClient();
@@ -124,12 +142,12 @@ export function useGenerateStage() {
 export function useStageAction(action: LessonStageAction) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, stage, note }: StageActionVariables) =>
+    mutationFn: ({ id, stage, lockVersion, note }: StageActionVariables) =>
       action === LessonStageAction.COMPLETE
-        ? aiLessonsService.completeProductionStage(id, stage)
+        ? aiLessonsService.completeProductionStage(id, stage, lockVersion)
         : action === LessonStageAction.APPROVE
-          ? aiLessonsService.approveStage(id, stage)
-          : aiLessonsService.requestChanges(id, stage, note ?? ''),
+          ? aiLessonsService.approveStage(id, stage, lockVersion)
+          : aiLessonsService.requestChanges(id, stage, note ?? '', lockVersion),
     onSuccess: (lesson) => updateLesson(client, lesson),
   });
 }
@@ -154,6 +172,12 @@ export function usePublishLesson() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: aiLessonsService.publishToWeekMaterial,
-    onSuccess: (result) => updateLesson(client, result.lesson),
+    onSuccess: async (result) => {
+      await updateLesson(client, result.lesson);
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['week-material-pages'] }),
+        client.invalidateQueries({ queryKey: ['week-materials'] }),
+      ]);
+    },
   });
 }

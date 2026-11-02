@@ -1,13 +1,19 @@
 import { downloadLessonPdf, lessonPdfError } from '@/features/ai-lessons/pdf';
-import { LessonStatus } from '@/features/ai-lessons/types';
+import { LessonCategory, LessonStatus } from '@/features/ai-lessons/types';
 import {
   LESSON_LIST_PAGE_SIZE,
   LESSON_SEARCH_DEBOUNCE_MS,
   PRODUCTION_COMPLETED_STATUSES,
-  STUDIO_STAGE_ORDER,
+  getStudioStageOrder,
 } from '@/features/ai-lessons/constants';
-import { parseLessonSortOption, parseLessonStatus } from '@/features/ai-lessons/utils';
 import {
+  formatLessonBadgeLabel,
+  parseLessonCategory,
+  parseLessonSortOption,
+  parseLessonStatus,
+} from '@/features/ai-lessons/utils';
+import {
+  LESSON_CATEGORY_FILTER_OPTIONS,
   PRODUCTION_STATUS_OPTIONS as STATUS_OPTIONS,
   PRODUCTION_SORT_OPTIONS as SORT_OPTIONS,
   PRODUCTION_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS,
@@ -60,6 +66,7 @@ export const AiLessonsListPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(LESSON_LIST_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<LessonStatus | ''>('');
+  const [category, setCategory] = useState<LessonCategory | ''>('');
   const [sortOption, setSortOption] = useState('updatedAt:DESC');
   const [errorMsg, setErrorMsg] = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -70,13 +77,14 @@ export const AiLessonsListPage: React.FC = () => {
     const { sort, order } = parseLessonSortOption(sortOption);
     return {
       status: status || undefined,
+      category: category || undefined,
       search: debouncedSearch.trim() || undefined,
       page,
       limit: pageSize,
       sort,
       order,
     };
-  }, [status, debouncedSearch, page, pageSize, sortOption]);
+  }, [status, category, debouncedSearch, page, pageSize, sortOption]);
 
   const { data, isLoading, isError, refetch } = useLessonDrafts(queryParams);
   const deleteMutation = useDeleteLessonDraft();
@@ -127,6 +135,7 @@ export const AiLessonsListPage: React.FC = () => {
   const handleClearFilters = useCallback(() => {
     setSearch('');
     setStatus('');
+    setCategory('');
     setSortOption('updatedAt:DESC');
     setPage(1);
   }, []);
@@ -138,6 +147,16 @@ export const AiLessonsListPage: React.FC = () => {
       value: status,
       options: STATUS_OPTIONS,
       onChange: handleStatusChange,
+    },
+    {
+      id: 'category',
+      label: 'Tipo de material',
+      value: category,
+      options: LESSON_CATEGORY_FILTER_OPTIONS,
+      onChange: (value) => {
+        setCategory(parseLessonCategory(String(value)));
+        setPage(1);
+      },
     },
     {
       id: 'sort',
@@ -237,7 +256,7 @@ export const AiLessonsListPage: React.FC = () => {
               <DialogContent>
                 <DialogContentText color="text.secondary">
                   Tem certeza que deseja excluir a lição <strong>{deleteTarget?.theme}</strong>{' '}
-                  (Semana {deleteTarget?.weekNumber})?
+                  ({deleteTarget ? formatLessonBadgeLabel(deleteTarget) : ''})?
                 </DialogContentText>
                 <DialogContentText
                   color="error.main"
@@ -280,16 +299,19 @@ export const AiLessonsListPage: React.FC = () => {
           const completed = item.stages.filter((stage) =>
             PRODUCTION_COMPLETED_STATUSES.includes(stage.status)
           ).length;
-          const totalStages = item.stages.length || STUDIO_STAGE_ORDER.length;
+          const totalStages = item.stages.length || getStudioStageOrder(item.category).length;
           const progressPercent = Math.round((completed / totalStages) * 100);
           const presentation = statusPresentation[item.status] ?? statusPresentation.DRAFT;
 
           const badges: ListingBadge[] = [{ label: presentation.label, color: presentation.color }];
+          if (item.category === LessonCategory.SPECIAL) {
+            badges.push({ label: 'Material Especial', color: 'secondary' });
+          }
 
           const meta: ListingMeta[] = [
             {
               icon: <WeekIcon sx={{ fontSize: 16 }} />,
-              label: `Semana ${item.weekNumber || 1}`,
+              label: formatLessonBadgeLabel(item),
             },
           ];
 

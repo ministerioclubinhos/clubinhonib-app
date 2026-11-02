@@ -9,6 +9,7 @@ export const PRODUCTION_STATUS_OPTIONS = [
   { value: LessonStatus.IN_REVIEW, label: 'Em aprovação' },
   { value: LessonStatus.CHANGES_REQUESTED, label: 'Ajustes solicitados' },
   { value: LessonStatus.READY_FOR_PUBLICATION, label: 'Pronto p/ publicar' },
+  { value: LessonStatus.PUBLISHING, label: 'Publicando' },
   { value: LessonStatus.PUBLISHED, label: 'Publicado' },
   { value: LessonStatus.ARCHIVED, label: 'Arquivado' },
 ];
@@ -32,6 +33,7 @@ export const PRODUCTION_STATUSPRESENTATION: Record<
   IN_REVIEW: { label: 'EM APROVAÇÃO', color: 'warning' },
   CHANGES_REQUESTED: { label: 'AJUSTES SOLICITADOS', color: 'error' },
   READY_FOR_PUBLICATION: { label: 'PRONTO PARA PUBLICAR', color: 'success' },
+  PUBLISHING: { label: 'PUBLICANDO', color: 'info' },
   PUBLISHED: { label: 'PUBLICADO', color: 'success' },
   ARCHIVED: { label: 'ARQUIVADO', color: 'default' },
 };
@@ -42,6 +44,7 @@ export const REVIEW_STATUS_OPTIONS = [
   { value: LessonStatus.IN_REVIEW, label: 'Em aprovação' },
   { value: LessonStatus.CHANGES_REQUESTED, label: 'Ajustes solicitados' },
   { value: LessonStatus.READY_FOR_PUBLICATION, label: 'Pronto p/ publicar' },
+  { value: LessonStatus.PUBLISHING, label: 'Publicando' },
   { value: LessonStatus.PUBLISHED, label: 'Publicado' },
 ];
 
@@ -55,6 +58,13 @@ export const REVIEW_STATUSPRESENTATION: Record<
   IN_REVIEW: { label: 'EM REVISÃO', color: 'warning' },
   CHANGES_REQUESTED: { label: 'AJUSTES SOLICITADOS', color: 'error' },
   READY_FOR_PUBLICATION: { label: 'APROVADO', color: 'success' },
+  PUBLISHING: { label: 'PUBLICANDO', color: 'info' },
   PUBLISHED: { label: 'PUBLICADO', color: 'success' },
   ARCHIVED: { label: 'ARQUIVADO', color: 'default' },
 };
+
+export const LESSON_CATEGORY_FILTER_OPTIONS = [
+  { value: '', label: 'Todos os materiais' },
+  { value: 'REGULAR', label: 'Material Semanal' },
+  { value: 'SPECIAL', label: 'Material Especial' },
+];

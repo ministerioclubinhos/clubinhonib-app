@@ -13,7 +13,7 @@ import { ListingCard } from '@/components/common/listing';
 import type { ListingBadge, ListingMeta } from '@/components/common/listing';
 
 import type { WeekMaterialSummary } from '../types';
-import { formatDate, totalMediaCount } from '../utils';
+import { formatDate, isSpecialMaterialDescription, stripSpecialMaterialTag, totalMediaCount } from '../utils';
 
 interface Props {
   material: WeekMaterialSummary;
@@ -32,6 +32,10 @@ export default function WeekMaterialListCard({
   onDelete,
 }: Props) {
   const badges: ListingBadge[] = [];
+
+  if (isSpecialMaterialDescription(material.description)) {
+    badges.push({ label: 'Material Especial', color: 'secondary' });
+  }
 
   if (material.currentWeek) {
     badges.push({ label: 'Material da semana', color: 'success' });
@@ -73,7 +77,7 @@ export default function WeekMaterialListCard({
       accent={material.currentWeek ? 'success' : 'primary'}
       badges={badges}
       meta={meta}
-      excerpt={material.description}
+      excerpt={stripSpecialMaterialTag(material.description)}
       onClick={() => onOpenDetails(material)}
       footer={
         <Typography variant="caption" color="text.secondary" noWrap>

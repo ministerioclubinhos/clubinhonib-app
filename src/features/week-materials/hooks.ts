@@ -18,6 +18,7 @@ import { WEEK_MATERIALS_DEFAULT_LIMIT } from './constants';
 import {
   WeekMaterialFormErrors,
   WeekMaterialFormValues,
+  WeekMaterialType,
   WeekMaterialMediaDraft,
   WeekMaterialResponse,
   WeekMaterialSortField,
@@ -288,6 +289,7 @@ interface UseWeekMaterialFormResult {
 
 const EMPTY_VALUES: WeekMaterialFormValues = {
   pageTitle: '',
+  materialType: WeekMaterialType.WEEKLY,
   pageSubtitle: '',
   pageDescription: '',
   currentWeek: false,
@@ -359,9 +361,9 @@ export function useWeekMaterialForm({
 
   const save = useCallback(async () => {
     const nextErrors: WeekMaterialFormErrors = {
-      title: !values.pageTitle,
-      subtitle: !values.pageSubtitle,
-      description: !values.pageDescription,
+      title: !values.pageTitle.trim(),
+      subtitle: !values.pageSubtitle.trim(),
+      description: !values.pageDescription.trim(),
     };
     setErrors(nextErrors);
 

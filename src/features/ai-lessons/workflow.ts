@@ -3,7 +3,7 @@ import {
   EDITABLE_STAGE_STATUSES,
   GENERATION_BLOCKED_LESSON_STATUSES,
   PRODUCTION_COMPLETED_STATUSES,
-  STUDIO_STAGE_ORDER,
+  getStudioStageOrder,
 } from './constants';
 
 export function lessonProductionActions(
@@ -13,9 +13,12 @@ export function lessonProductionActions(
   pending: boolean
 ) {
   const busy =
-    pending || lesson.stages.some((item) => item.status === LessonStageStatus.GENERATING);
-  const index = stage ? STUDIO_STAGE_ORDER.indexOf(stage.type) : -1;
-  const previous = lesson.stages.find((item) => item.type === STUDIO_STAGE_ORDER[index - 1]);
+    pending ||
+    lesson.status === LessonStatus.PUBLISHING ||
+    lesson.stages.some((item) => item.status === LessonStageStatus.GENERATING);
+  const stageOrder = getStudioStageOrder(lesson.category);
+  const index = stage ? stageOrder.indexOf(stage.type) : -1;
+  const previous = lesson.stages.find((item) => item.type === stageOrder[index - 1]);
   const dependencyReady =
     index === 0 || Boolean(previous && PRODUCTION_COMPLETED_STATUSES.includes(previous.status));
   const editable = Boolean(stage && EDITABLE_STAGE_STATUSES.includes(stage.status));
@@ -36,7 +39,7 @@ export function lessonProductionActions(
 export function canPublishLesson(lesson: Lesson): boolean {
   return (
     lesson.status === LessonStatus.READY_FOR_PUBLICATION &&
-    lesson.stages.length === STUDIO_STAGE_ORDER.length &&
+    lesson.stages.length === getStudioStageOrder(lesson.category).length &&
     lesson.stages.every(
       (stage) => stage.status === LessonStageStatus.APPROVED && Boolean(stage.currentVersionId)
     )

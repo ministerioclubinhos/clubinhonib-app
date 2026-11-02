@@ -1,16 +1,35 @@
-import { ORDER, STAGE_CONFIG, PROMPT_PRESETS } from '@/features/ai-lessons/promptConstants';
-import { PROMPT_STALE_TIME_MS, PROMPT_COPY_FEEDBACK_MS } from '@/features/ai-lessons/constants';
-import { aiLessonsKeys } from '@/features/ai-lessons/queryKeys';
-import { acknowledgePromptDraft, editPromptDraft } from '@/features/ai-lessons/drafts';
+import { lessonStageLabel } from './lessonStagePresentation.utils';
+import { STAGE_CONFIG, PROMPT_PRESETS } from '@/features/ai-lessons/promptConstants';
 import {
+  getStudioStageOrder,
+  PROMPT_STALE_TIME_MS,
+  PROMPT_COPY_FEEDBACK_MS,
+  PROMPT_MAX_LENGTH,
+  PROMPT_MIN_LENGTH,
+} from '@/features/ai-lessons/constants';
+import { aiLessonsKeys } from '@/features/ai-lessons/queryKeys';
+import {
+  acknowledgePromptDraft,
+  composeEffectivePromptPreview,
+  editPromptDraft,
+  hasDuplicatedBasePrompt,
+  isValidComplementaryPrompt,
+  resolvePromptDraftValue,
+  stripDuplicatedBasePrompt,
+} from '@/features/ai-lessons/drafts';
+import {
+  LessonCategory,
   StudioFeedbackSeverity,
+  type PromptCategoryDrafts,
   type PromptLocalDrafts,
   type SavePromptVariables,
   type StudioFeedback,
 } from '@/features/ai-lessons/types';
 import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
 import { getHttpStatus } from '@/utils/apiError';
+import type { RootState } from '@/store/slices';
 import React, { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Accordion,
@@ -38,6 +57,8 @@ import {
   Tabs,
   TextField,
   Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
   useTheme,
 } from '@mui/material';
@@ -65,26 +86,46 @@ export const AdminPromptSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const client = useQueryClient();
+  const userId = useSelector((state: RootState) => state.auth.user?.id ?? null);
+  const [category, setCategory] = useState(LessonCategory.REGULAR);
+  const preferencesKey = aiLessonsKeys.preferencesByUser(userId, category);
 
   const [stage, setStage] = useState<LessonStageType>(LessonStageType.LESSON);
-  const [drafts, setDrafts] = useState<PromptLocalDrafts>({});
+  const [categoryDrafts, setCategoryDrafts] = useState<PromptCategoryDrafts>({});
+  const drafts = categoryDrafts[category] ?? {};
+  const setDrafts = (update: (current: PromptLocalDrafts) => PromptLocalDrafts) => {
+    setCategoryDrafts((all) => ({ ...all, [category]: update(all[category] ?? {}) }));
+  };
   const [resetOpen, setResetOpen] = useState(false);
   const [basePromptExpanded, setBasePromptExpanded] = useState(false);
+  const [effectivePreviewExpanded, setEffectivePreviewExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<StudioFeedback | null>(null);
 
+  useEffect(() => {
+    setCategoryDrafts({});
+    setFeedback(null);
+  }, [userId]);
+
   const query = useQuery({
-    queryKey: aiLessonsKeys.preferences,
-    queryFn: aiLessonsService.getPromptPreferences,
+    queryKey: preferencesKey,
+    queryFn: ({ signal }) => aiLessonsService.getPromptPreferences(signal, category),
     staleTime: PROMPT_STALE_TIME_MS,
   });
 
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(copyTimer.current), []);
   const preference = query.data?.find((item) => item.stage === stage);
-  const value = drafts[stage]?.value ?? preference?.effectivePrompt ?? '';
+  const value = resolvePromptDraftValue(drafts[stage], preference);
+  const effectivePreview = preference
+    ? composeEffectivePromptPreview(preference.basePrompt, value)
+    : '';
+  const hasBaseDuplication = preference
+    ? hasDuplicatedBasePrompt(value, preference.basePrompt)
+    : false;
+  const isPromptValid = isValidComplementaryPrompt(value);
   const dirty = Boolean(drafts[stage]);
-  const dirtyCount = Object.keys(drafts).length;
+  const dirtyCount = Object.values(categoryDrafts).reduce((total, items) => total + Object.keys(items).length, 0);
   const confirmLeave = useStudioUnsavedChanges(dirtyCount > 0);
   const changePrompt = (text: string) => {
     if (!preference) return;
@@ -96,9 +137,9 @@ export const AdminPromptSettingsPage: React.FC = () => {
   };
   const save = useMutation({
     mutationFn: ({ item, draft }: SavePromptVariables) =>
-      aiLessonsService.savePromptPreference(item.stage, draft.value.trim(), draft.base.lockVersion),
+      aiLessonsService.savePromptPreference(item.stage, draft.value.trim(), draft.base.lockVersion, category),
     onSuccess: (saved, sent) => {
-      client.setQueryData<AdminPromptPreference[]>(aiLessonsKeys.preferences, (items = []) =>
+      client.setQueryData<AdminPromptPreference[]>(preferencesKey, (items = []) =>
         items.map((item) => (item.stage === saved.stage ? saved : item))
       );
       setDrafts((current) => acknowledgePromptDraft(current, sent.draft, saved));
@@ -107,21 +148,25 @@ export const AdminPromptSettingsPage: React.FC = () => {
         text: 'Prompt salvo com sucesso! Suas orientações serão aplicadas nas próximas gerações.',
       });
     },
-    onError: (error) =>
+    onError: (error) => {
+      if (getHttpStatus(error) === 409) {
+        void client.invalidateQueries({ queryKey: preferencesKey });
+      }
       setFeedback({
         severity: StudioFeedbackSeverity.ERROR,
         text:
           getHttpStatus(error) === 409
             ? 'As orientações foram alteradas em outra sessão. Sua edição foi preservada. Copie o texto antes de recarregar.'
             : 'Não foi possível salvar. Suas orientações locais foram preservadas.',
-      }),
+      });
+    },
   });
 
   const reset = useMutation({
-    mutationFn: ({ item }: SavePromptVariables) =>
-      aiLessonsService.resetPromptPreference(item.stage),
+    mutationFn: ({ item, draft }: SavePromptVariables) =>
+      aiLessonsService.resetPromptPreference(item.stage, draft.base.lockVersion, category),
     onSuccess: (saved, sent) => {
-      client.setQueryData<AdminPromptPreference[]>(aiLessonsKeys.preferences, (items = []) =>
+      client.setQueryData<AdminPromptPreference[]>(preferencesKey, (items = []) =>
         items.map((item) => (item.stage === saved.stage ? saved : item))
       );
       setDrafts((current) => acknowledgePromptDraft(current, sent.draft, saved));
@@ -131,11 +176,19 @@ export const AdminPromptSettingsPage: React.FC = () => {
         text: 'Prompt oficial restaurado com sucesso.',
       });
     },
-    onError: () =>
+    onError: (error) => {
+      setResetOpen(false);
+      if (getHttpStatus(error) === 409) {
+        void client.invalidateQueries({ queryKey: preferencesKey });
+      }
       setFeedback({
         severity: StudioFeedbackSeverity.ERROR,
-        text: 'Não foi possível restaurar o prompt oficial.',
-      }),
+        text:
+          getHttpStatus(error) === 409
+            ? 'As orientações foram alteradas em outra sessão antes da restauração. Suas edições locais foram preservadas.'
+            : 'Não foi possível restaurar o prompt oficial.',
+      });
+    },
   });
 
   const leave = () => {
@@ -145,17 +198,22 @@ export const AdminPromptSettingsPage: React.FC = () => {
 
   const handleCopyBasePrompt = () => {
     if (preference?.basePrompt) {
-      navigator.clipboard.writeText(preference.basePrompt);
+      void navigator.clipboard.writeText(preference.basePrompt);
       setCopied(true);
       clearTimeout(copyTimer.current);
       copyTimer.current = setTimeout(() => setCopied(false), PROMPT_COPY_FEEDBACK_MS);
     }
   };
 
-  const handleInsertPreset = (presetText: string) => changePrompt(value + presetText);
+  const handleInsertPreset = (presetText: string) => {
+    const separator = value && !value.endsWith('\n') && !presetText.startsWith('\n') ? '\n' : '';
+    changePrompt(`${value}${separator}${presetText}`);
+  };
   const saveCurrentPrompt = () => {
     const draft = drafts[stage];
-    if (preference && draft) save.mutate({ item: preference, draft });
+    if (preference && draft && isValidComplementaryPrompt(draft.value)) {
+      save.mutate({ item: preference, draft });
+    }
   };
   const currentStageInfo = STAGE_CONFIG[stage];
 
@@ -220,8 +278,8 @@ export const AdminPromptSettingsPage: React.FC = () => {
               </Typography>
             </Stack>
             <Typography variant="body1" color="text.secondary">
-              Personalize, por etapa da lição, as instruções editoriais para a inteligência
-              artificial.
+              Personalize, por etapa da lição, as instruções editoriais complementares para a
+              inteligência artificial.
             </Typography>
           </Box>
 
@@ -241,6 +299,27 @@ export const AdminPromptSettingsPage: React.FC = () => {
         </Alert>
       </Paper>
 
+      <ToggleButtonGroup
+        data-testid="admin-prompts-category-selector"
+        aria-label="Tipo de material das orientações"
+        exclusive
+        value={category}
+        disabled={save.isPending || reset.isPending}
+        onChange={(_, next: LessonCategory | null) => {
+          if (!next) return;
+          setCategory(next);
+          setStage(LessonStageType.LESSON);
+          setFeedback(null);
+          setResetOpen(false);
+          setBasePromptExpanded(false);
+          setEffectivePreviewExpanded(false);
+        }}
+        sx={{ mb: 2, flexWrap: 'wrap' }}
+      >
+        <ToggleButton value={LessonCategory.REGULAR} sx={{ minHeight: 44 }}>Material Semanal</ToggleButton>
+        <ToggleButton value={LessonCategory.SPECIAL} sx={{ minHeight: 44 }}>Material Especial</ToggleButton>
+      </ToggleButtonGroup>
+
       {/* Main Content Layout */}
       {query.isLoading ? (
         <Box
@@ -258,7 +337,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
           severity="error"
           sx={{ borderRadius: 3 }}
           action={
-            <Button color="inherit" size="small" onClick={() => query.refetch()}>
+            <Button color="inherit" size="small" onClick={() => void query.refetch()}>
               Tentar novamente
             </Button>
           }
@@ -302,7 +381,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
                   },
                 }}
               >
-                {ORDER.map((item) => {
+                {getStudioStageOrder(category).map((item) => {
                   const pref = query.data?.find((p) => p.stage === item);
                   const isDirty = Boolean(drafts[item]);
                   const isCustom = Boolean(pref?.customPrompt);
@@ -314,7 +393,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       value={item}
                       label={
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <span>{STAGE_CONFIG[item].shortLabel}</span>
+                          <span>{lessonStageLabel(item, category, true)}</span>
                           {isDirty ? (
                             <Box
                               sx={{
@@ -369,7 +448,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
                           fontWeight={800}
                           sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
                         >
-                          {currentStageInfo.icon} {currentStageInfo.label}
+                          {currentStageInfo.icon} {lessonStageLabel(stage, category)}
                         </Typography>
                         <Chip
                           color={preference.customPrompt ? 'primary' : 'default'}
@@ -403,7 +482,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       border: '1px solid',
                       borderColor: 'divider',
                       borderRadius: '12px !important',
-                      mb: 3,
+                      mb: 2,
                       bgcolor: alpha(theme.palette.primary.main, 0.02),
                       '&:before': { display: 'none' },
                     }}
@@ -461,12 +540,82 @@ export const AdminPromptSettingsPage: React.FC = () => {
                     </AccordionDetails>
                   </Accordion>
 
+                  {/* Accordion de Prévia do Prompt Efetivo Composto (Somente Leitura) */}
+                  <Accordion
+                    expanded={effectivePreviewExpanded}
+                    onChange={(_, expanded) => setEffectivePreviewExpanded(expanded)}
+                    elevation={0}
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: '12px !important',
+                      mb: 3,
+                      bgcolor: alpha(theme.palette.secondary.main, 0.02),
+                      '&:before': { display: 'none' },
+                    }}
+                  >
+                    <AccordionSummary expandIcon={<ExpandMore />}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <InfoOutlined color="secondary" fontSize="small" />
+                        <Typography fontWeight={700} variant="subtitle2" color="secondary.main">
+                          Ver Prévia do Prompt Efetivo Composto (Somente Leitura)
+                        </Typography>
+                      </Stack>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <TextField
+                        data-testid="admin-prompts-effective-preview"
+                        value={effectivePreview}
+                        multiline
+                        minRows={4}
+                        maxRows={10}
+                        fullWidth
+                        InputProps={{
+                          readOnly: true,
+                          sx: {
+                            fontFamily: 'monospace',
+                            fontSize: '0.825rem',
+                            bgcolor: 'background.paper',
+                            borderRadius: 2,
+                          },
+                        }}
+                        helperText="Prévia de como o prompt-base oficial e sua orientação complementar são combinados no envio à IA."
+                      />
+                    </AccordionDetails>
+                  </Accordion>
+
+                  {hasBaseDuplication && (
+                    <Alert
+                      data-testid="admin-prompts-duplication-warning"
+                      severity="warning"
+                      sx={{ mb: 2.5, borderRadius: 2.5 }}
+                      action={
+                        <Button
+                          data-testid="admin-prompts-strip-duplicated-base"
+                          color="inherit"
+                          size="small"
+                          onClick={() =>
+                            changePrompt(stripDuplicatedBasePrompt(value, preference.basePrompt))
+                          }
+                          sx={{ fontWeight: 700, minHeight: 44 }}
+                        >
+                          Remover base oficial duplicada
+                        </Button>
+                      }
+                    >
+                      Detectamos trechos do prompt-base oficial dentro do campo de orientação
+                      complementar. Para evitar duplicação e estouro de limite, mantenha apenas suas
+                      instruções complementares.
+                    </Alert>
+                  )}
+
                   {/* Sugestões de Presets Rápidos */}
                   <Box sx={{ mb: 2.5 }}>
                     <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                       <LightbulbOutlined fontSize="small" color="primary" />
                       <Typography variant="caption" fontWeight={700} color="text.secondary">
-                        Sugestões rápidas de diretrizes (clique para adicionar ao seu prompt):
+                        Sugestões rápidas de diretrizes (clique para adicionar à sua orientação
+                        complementar):
                       </Typography>
                     </Stack>
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
@@ -489,12 +638,12 @@ export const AdminPromptSettingsPage: React.FC = () => {
                     </Stack>
                   </Box>
 
-                  {/* Editor Principal do Prompt Efetivo */}
+                  {/* Editor Principal da Orientação Complementar */}
                   <Box sx={{ mb: 2 }}>
                     <TextField
                       data-testid={`admin-prompt-page-input-${stage}`}
-                      label="Suas orientações personalizadas"
-                      placeholder="Escreva aqui as diretrizes pedagógicas, estilo de linguagem ou instruções adicionais..."
+                      label="Suas orientações personalizadas (complementares)"
+                      placeholder="Escreva aqui apenas as diretrizes pedagógicas, estilo de linguagem ou instruções adicionais..."
                       disabled={reset.isPending}
                       value={value}
                       onChange={(event) => {
@@ -503,8 +652,8 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       multiline
                       minRows={10}
                       fullWidth
-                      error={value.trim().length > 0 && value.trim().length < 10}
-                      slotProps={{ htmlInput: { maxLength: 12000 } }}
+                      error={value.trim().length > 0 && !isPromptValid}
+                      slotProps={{ htmlInput: { maxLength: PROMPT_MAX_LENGTH } }}
                       InputProps={{
                         sx: {
                           fontFamily: 'monospace',
@@ -513,7 +662,11 @@ export const AdminPromptSettingsPage: React.FC = () => {
                           lineHeight: 1.5,
                         },
                       }}
-                      helperText={`${value.length}/12000 caracteres · mínimo de 10`}
+                      helperText={
+                        value.length > PROMPT_MAX_LENGTH
+                          ? `O texto excede o limite máximo de ${PROMPT_MAX_LENGTH} caracteres (${value.length}/${PROMPT_MAX_LENGTH}).`
+                          : `${value.length}/${PROMPT_MAX_LENGTH} caracteres · mínimo de ${PROMPT_MIN_LENGTH} caracteres (para voltar ao padrão oficial sem personalização, use "Restaurar padrão")`
+                      }
                     />
                   </Box>
 
@@ -539,12 +692,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       color="warning"
                       variant="outlined"
                       startIcon={<RestartAlt />}
-                      disabled={
-                        !preference.customPrompt ||
-                        reset.isPending ||
-                        save.isPending ||
-                        reset.isPending
-                      }
+                      disabled={!preference.customPrompt || reset.isPending || save.isPending}
                       onClick={() => setResetOpen(true)}
                       sx={{
                         borderRadius: 2.5,
@@ -559,9 +707,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       variant="contained"
                       color="primary"
                       startIcon={<Save />}
-                      disabled={
-                        !dirty || value.trim().length < 10 || save.isPending || reset.isPending
-                      }
+                      disabled={!dirty || !isPromptValid || save.isPending || reset.isPending}
                       onClick={saveCurrentPrompt}
                       sx={{
                         borderRadius: 2.5,
@@ -610,7 +756,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
             variant="contained"
             size="medium"
             startIcon={<Save />}
-            disabled={value.trim().length < 10 || save.isPending || reset.isPending}
+            disabled={!isPromptValid || save.isPending || reset.isPending}
             onClick={saveCurrentPrompt}
             fullWidth
             sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
@@ -646,7 +792,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText color="text.secondary">
-            A sua personalização para a etapa <strong>{currentStageInfo.label}</strong> será
+            A sua personalização para a etapa <strong>{lessonStageLabel(stage, category)}</strong> será
             removida. O sistema voltará a utilizar o prompt-base padrão.
           </DialogContentText>
         </DialogContent>

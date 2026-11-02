@@ -1,5 +1,6 @@
 import {
   ApiKeyAction,
+  AiModelCatalogSource,
   AiProviderFeedbackSeverity,
   type AiProviderSettings,
   type SaveAiProviderSettingsRequest,
@@ -7,6 +8,7 @@ import {
   type OpenAiSettingsResponse,
   type GeminiSettingsResponse,
   type OpenAiModelsResponse,
+  type GeminiModelsResponse,
   type AiProviderFeedback,
 } from './types';
 
@@ -93,7 +95,7 @@ export function buildAiProviderSettingsPayload(
 }
 export function liveModelsFeedback(
   isError: boolean,
-  data: OpenAiModelsResponse | undefined,
+  data: OpenAiModelsResponse | GeminiModelsResponse | undefined,
   provider: string
 ): AiProviderFeedback {
   if (isError || !data)
@@ -101,6 +103,22 @@ export function liveModelsFeedback(
       severity: AiProviderFeedbackSeverity.ERROR,
       message: `Não foi possível consultar os modelos de ${provider}. Tente novamente.`,
     };
+  if (data.source === AiModelCatalogSource.FALLBACK) {
+    return {
+      severity: AiProviderFeedbackSeverity.INFO,
+      message:
+        data.warning ||
+        `Catálogo local de contingência de ${provider} exibido (${data.models.general.length} de texto, ${data.models.image.length} de imagem).`,
+    };
+  }
+  if (data.source === AiModelCatalogSource.STATIC) {
+    return {
+      severity: AiProviderFeedbackSeverity.INFO,
+      message:
+        data.warning ||
+        `Catálogo estático oficial de ${provider} carregado (${data.models.general.length} de texto, ${data.models.image.length} de imagem).`,
+    };
+  }
   return {
     severity: AiProviderFeedbackSeverity.SUCCESS,
     message: `Modelos de ${provider} disponíveis: ${data.models.general.length} de texto, ${data.models.image.length} de imagem.`,

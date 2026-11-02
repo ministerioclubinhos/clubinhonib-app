@@ -40,7 +40,7 @@ import { anchorProps } from '@/utils/textUtils';
 
 import { EMPTY_VALUE, weekMaterialEditPath } from '../constants';
 import type { WeekMaterialMediaResponse, WeekMaterialResponse } from '../types';
-import { countMediaOf, formatDate, mediaGroupsOf, mediaSourceLabel } from '../utils';
+import { countMediaOf, formatDate, mediaGroupsOf, mediaSourceLabel, stripSpecialMaterialTag } from '../utils';
 
 interface WeekMaterialDetailsModalProps {
   material: WeekMaterialResponse | null;
@@ -318,7 +318,7 @@ export default function WeekMaterialDetailsModal({
                   <Typography variant="caption" color="text.secondary">
                     Descrição
                   </Typography>
-                  <Typography sx={{ whiteSpace: 'pre-wrap' }}>{material.description}</Typography>
+                  <Typography sx={{ whiteSpace: 'pre-wrap' }}>{stripSpecialMaterialTag(material.description)}</Typography>
                 </Paper>
               )}
 

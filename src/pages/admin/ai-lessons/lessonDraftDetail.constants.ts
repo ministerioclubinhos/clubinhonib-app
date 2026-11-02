@@ -41,6 +41,27 @@ export const LESSON_STAGE_DESCRIPTIONS: Record<LessonStageType, string> = {
     'Desenho bíblico em preto e branco para colorir, com o versículo principal, duplicado na folha para impressão e recorte.',
 };
 
+export const SPECIAL_STAGE_LABELS: Partial<Record<LessonStageType, string>> = {
+  LESSON: '1. Lição Especial + Versículo',
+  LESSON_VISUALS: '2. Visual da Lição',
+  VERSE_VISUALS: '3. Visual do Versículo',
+};
+
+export const SPECIAL_STAGE_SHORT_LABELS: Partial<Record<LessonStageType, string>> = {
+  LESSON: '1. Lição Especial',
+  LESSON_VISUALS: '2. Visual da Lição',
+  VERSE_VISUALS: '3. Vis. Versículo',
+};
+
+export const SPECIAL_STAGE_DESCRIPTIONS: Partial<Record<LessonStageType, string>> = {
+  LESSON:
+    'Lição Especial com um jeito legal e criativo de contar uma história para os dias de hoje, conectada às referências bíblicas, e o versículo principal NVI para memorização.',
+  LESSON_VISUALS:
+    'Cartazes e cenas para contar a Lição Especial, com orientações criativas de como apresentar cada visual às crianças.',
+  VERSE_VISUALS:
+    'Sequência de imagens mnemônicas baseada na melhor quebra do versículo; a última imagem mostra somente a referência.',
+};
+
 export const LESSON_STAGE_ORDER = Object.values(LessonStageType);
 
 export const LESSON_STAGE_STATUS_LABELS: Record<string, string> = {

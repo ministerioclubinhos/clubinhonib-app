@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useQueryClient } from '@tanstack/react-query';
 import { Box, CircularProgress, Toolbar, Button, Typography } from '@mui/material';
 
 import './App.css';
@@ -86,22 +87,64 @@ import {
 } from './features/feature-flags';
 import { ProfilesManager, ProfilePage } from './features/profile';
 import { ObservabilityAuditPage } from './features/observability-audit';
-import { AiProvidersConfigPage } from './features/ai-providers';
 import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
 import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
-import { AiLessonsListPage } from './pages/admin/ai-lessons/AiLessonsListPage';
-import { LessonDraftDetailPage } from './pages/admin/ai-lessons/LessonDraftDetailPage';
-import { AiLessonsHubPage } from './pages/admin/ai-lessons/AiLessonsHubPage';
-import { AdminPromptSettingsPage } from './pages/admin/ai-lessons/AdminPromptSettingsPage';
-import { AiLessonsReviewListPage } from './pages/admin/ai-lessons/AiLessonsReviewListPage';
-import { LessonReviewDetailPage } from './pages/admin/ai-lessons/LessonReviewDetailPage';
+
+const AiProvidersConfigPage = lazy(() =>
+  import('./features/ai-providers/AiProvidersConfigPage').then((module) => ({
+    default: module.AiProvidersConfigPage,
+  }))
+);
+const AiLessonsListPage = lazy(() =>
+  import('./pages/admin/ai-lessons/AiLessonsListPage').then((module) => ({
+    default: module.AiLessonsListPage,
+  }))
+);
+const LessonDraftDetailPage = lazy(() =>
+  import('./pages/admin/ai-lessons/LessonDraftDetailPage').then((module) => ({
+    default: module.LessonDraftDetailPage,
+  }))
+);
+const AiLessonsHubPage = lazy(() =>
+  import('./pages/admin/ai-lessons/AiLessonsHubPage').then((module) => ({
+    default: module.AiLessonsHubPage,
+  }))
+);
+const AdminPromptSettingsPage = lazy(() =>
+  import('./pages/admin/ai-lessons/AdminPromptSettingsPage').then((module) => ({
+    default: module.AdminPromptSettingsPage,
+  }))
+);
+const AiLessonsReviewListPage = lazy(() =>
+  import('./pages/admin/ai-lessons/AiLessonsReviewListPage').then((module) => ({
+    default: module.AiLessonsReviewListPage,
+  }))
+);
+const LessonReviewDetailPage = lazy(() =>
+  import('./pages/admin/ai-lessons/LessonReviewDetailPage').then((module) => ({
+    default: module.LessonReviewDetailPage,
+  }))
+);
 
 function App() {
   const dispatch = useDispatch<AppDispatchType>();
+  const queryClient = useQueryClient();
   // Uma página cujo recurso está desligado não chega a virar rota.
   const dynamicRoutes = useVisibleRoutes();
-  const { initialized, loadingUser } = useSelector((state: RootStateType) => state.auth);
+  const { initialized, loadingUser, user } = useSelector((state: RootStateType) => state.auth);
   const [forceReady, setForceReady] = useState(false);
+  const previousUserIdRef = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    const currentUserId = user?.id ?? null;
+    if (previousUserIdRef.current !== undefined && previousUserIdRef.current !== currentUserId) {
+      void queryClient.cancelQueries({ queryKey: ['ai-lessons'] });
+      void queryClient.cancelQueries({ queryKey: ['ai-providers'] });
+      queryClient.removeQueries({ queryKey: ['ai-lessons'] });
+      queryClient.removeQueries({ queryKey: ['ai-providers'] });
+    }
+    previousUserIdRef.current = currentUserId;
+  }, [queryClient, user?.id]);
 
   useEffect(() => {
     dispatch(fetchRoutes());
@@ -115,6 +158,10 @@ function App() {
   }, [dispatch]);
 
   const handleLogout = () => {
+    void queryClient.cancelQueries({ queryKey: ['ai-lessons'] });
+    void queryClient.cancelQueries({ queryKey: ['ai-providers'] });
+    queryClient.removeQueries({ queryKey: ['ai-lessons'] });
+    queryClient.removeQueries({ queryKey: ['ai-providers'] });
     dispatch(logout());
     setForceReady(true);
     window.location.href = '/login';
@@ -172,7 +219,14 @@ function App() {
             <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <Toolbar />
               <Box className="mainContainer" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <Routes>
+                <Suspense
+                  fallback={
+                    <Box sx={{ display: 'grid', placeItems: 'center', py: 12 }}>
+                      <CircularProgress size={44} thickness={4} />
+                    </Box>
+                  }
+                >
+                  <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/sobre" element={<About />} />
                   <Route element={<FeatureRoute flag={FEATURE.CONTACT_FORM} />}>
@@ -356,7 +410,8 @@ function App() {
                       element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
                     />
                   ))}
-                </Routes>
+                  </Routes>
+                </Suspense>
               </Box>
             </Box>
             <Footer />

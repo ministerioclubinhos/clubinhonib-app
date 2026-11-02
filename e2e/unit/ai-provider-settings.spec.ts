@@ -8,6 +8,7 @@ import {
 import { DEFAULT_AI_PROVIDER_SETTINGS } from '@/features/ai-providers/constants';
 import {
   ApiKeyAction,
+  AiModelCatalogSource,
   LlmProviderType,
   AiProviderFeedbackSeverity,
 } from '@/features/ai-providers/types';
@@ -41,12 +42,38 @@ test('segredo de resposta legada não entra no cache nem no formulário', () => 
   expect(providerSettingsForm(legacy).gemini.keyAction).toBe(ApiKeyAction.PRESERVE);
 });
 
-test('refetch com erro e dados antigos não anuncia sucesso', () => {
+test('refetch com erro, fallback ou catálogo estático não anuncia consulta em tempo real bem-sucedida', () => {
   for (const data of [undefined, { models: { general: ['cached'], image: [] } }]) {
     expect(liveModelsFeedback(true, data, 'OpenAI').severity).toBe(
       AiProviderFeedbackSeverity.ERROR
     );
   }
+  expect(
+    liveModelsFeedback(
+      false,
+      {
+        models: { general: ['gpt-6-luna'], image: ['gpt-image-2'] },
+        source: AiModelCatalogSource.FALLBACK,
+        isLive: false,
+        warning: 'Catálogo de contingência em uso.',
+      },
+      'OpenAI'
+    )
+  ).toEqual({
+    severity: AiProviderFeedbackSeverity.INFO,
+    message: 'Catálogo de contingência em uso.',
+  });
+  expect(
+    liveModelsFeedback(
+      false,
+      {
+        models: { general: ['gemini-3.1-pro'], image: ['imagen-3'] },
+        source: AiModelCatalogSource.STATIC,
+        isLive: false,
+      },
+      'Gemini'
+    ).severity
+  ).toBe(AiProviderFeedbackSeverity.INFO);
   expect(liveModelsFeedback(false, { models: { general: [], image: [] } }, 'Gemini').severity).toBe(
     AiProviderFeedbackSeverity.SUCCESS
   );

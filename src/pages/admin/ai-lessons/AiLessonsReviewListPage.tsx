@@ -1,4 +1,5 @@
 import {
+  LessonCategory,
   LessonStatus,
   LessonSortField,
   LessonSortOrder,
@@ -9,10 +10,15 @@ import {
   LESSON_SEARCH_DEBOUNCE_MS,
   LESSON_PAGE_SIZE_OPTIONS,
   REVIEW_LESSON_STATUSES,
-  STUDIO_STAGE_ORDER,
+  getStudioStageOrder,
 } from '@/features/ai-lessons/constants';
-import { parseLessonStatus } from '@/features/ai-lessons/utils';
 import {
+  formatLessonBadgeLabel,
+  parseLessonCategory,
+  parseLessonStatus,
+} from '@/features/ai-lessons/utils';
+import {
+  LESSON_CATEGORY_FILTER_OPTIONS,
   REVIEW_STATUS_OPTIONS as STATUS_OPTIONS,
   REVIEW_STATUSPRESENTATION as statusPresentation,
 } from '@/features/ai-lessons/listConstants';
@@ -49,11 +55,13 @@ export const AiLessonsReviewListPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(LESSON_LIST_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<LessonStatus | ''>('');
+  const [category, setCategory] = useState<LessonCategory | ''>('');
 
   const debouncedSearch = useDebouncedValue(search, LESSON_SEARCH_DEBOUNCE_MS);
 
   const { data, isLoading, isError, refetch } = useLessonDrafts({
     statuses: status ? [status] : REVIEW_LESSON_STATUSES,
+    category: category || undefined,
     search: debouncedSearch.trim() || undefined,
     page,
     limit: pageSize,
@@ -75,8 +83,18 @@ export const AiLessonsReviewListPage: React.FC = () => {
           setPage(1);
         },
       },
+      {
+        id: 'category',
+        label: 'Tipo de material',
+        value: category,
+        options: LESSON_CATEGORY_FILTER_OPTIONS,
+        onChange: (val) => {
+          setCategory(parseLessonCategory(String(val)));
+          setPage(1);
+        },
+      },
     ],
-    [status]
+    [status, category]
   );
 
   const totalCount = data?.total ?? filteredItems.length;
@@ -137,7 +155,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
         {filteredItems.map((item: Lesson) => {
           const approvedCount =
             item.stages?.filter((s) => s.status === LessonStageStatus.APPROVED).length ?? 0;
-          const totalStages = item.stages?.length ?? STUDIO_STAGE_ORDER.length;
+          const totalStages = item.stages?.length ?? getStudioStageOrder(item.category).length;
           const progress = totalStages > 0 ? (approvedCount / totalStages) * 100 : 0;
           const statusInfo = statusPresentation[item.status] ?? {
             label: item.status,
@@ -153,7 +171,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
               <ListingCard
                 data-testid={`ai-lesson-review-card-${item.id}`}
                 avatar={<ReviewIcon fontSize="small" />}
-                title={`Semana ${item.weekNumber}: ${item.theme}`}
+                title={`${formatLessonBadgeLabel(item)}: ${item.theme}`}
                 subtitle={item.biblicalReference}
                 accent={statusInfo.color}
                 badges={[

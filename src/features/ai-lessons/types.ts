@@ -10,6 +10,11 @@ export enum LessonStatus {
   ARCHIVED = 'ARCHIVED',
 }
 
+export enum LessonCategory {
+  REGULAR = 'REGULAR', // Material Semanal (8 etapas)
+  SPECIAL = 'SPECIAL', // Material Especial (3 etapas: LESSON, LESSON_VISUALS, VERSE_VISUALS)
+}
+
 export enum LessonStageStatus {
   NOT_STARTED = 'NOT_STARTED',
   GENERATING = 'GENERATING',
@@ -34,10 +39,30 @@ export enum LessonStageType {
 }
 
 export enum LessonVisualType {
+  CUTOUT_KIT = 'CUTOUT_KIT',
   STORY_SEQUENCE = 'STORY_SEQUENCE',
   CHARACTER_AND_EMOTION = 'CHARACTER_AND_EMOTION',
   VISUAL_ANCHORS = 'VISUAL_ANCHORS',
   INTERACTIVE_COLORING = 'INTERACTIVE_COLORING',
+}
+
+export enum CutoutCategory {
+  CHARACTERS = 'CHARACTERS',
+  ANIMALS = 'ANIMALS',
+  BUILDINGS = 'BUILDINGS',
+  SCENERY = 'SCENERY',
+  SKY_AND_NATURE = 'SKY_AND_NATURE',
+  OBJECTS = 'OBJECTS',
+}
+
+export interface CutoutKitItem {
+  label: string;
+  description?: string;
+  category?: CutoutCategory;
+  storyEvidence?: string;
+  variantOf?: string | null;
+  extra?: boolean;
+  size?: 'LARGE' | 'MEDIUM' | 'SMALL';
 }
 
 export enum LessonVisualOrientation {
@@ -51,6 +76,10 @@ export interface VisualAsset {
   instruction?: string;
   purpose?: string;
   sourceExcerpt?: string;
+  category?: CutoutCategory;
+  title?: string;
+  items?: CutoutKitItem[];
+  layoutPlan?: string;
   altText?: string;
   displayText?: string;
   url?: string;
@@ -67,6 +96,7 @@ export interface VisualCarouselProps {
 
 export interface StoryVisualConfigurationProps {
   visualType: LessonVisualType | '';
+  isSpecial?: boolean;
   visualOrientation: LessonVisualOrientation | '';
   visualQuantity: number | '';
   instructions: string;
@@ -105,9 +135,13 @@ export interface Lesson {
   id: string;
   theme: string;
   biblicalReference: string;
-  weekNumber: number;
+  weekNumber: number | null;
+  category?: LessonCategory;
+  specialContext?: string | null;
   status: LessonStatus;
   weekMaterialId: string | null;
+  publicationFailureMessage?: string | null;
+  publicationState?: string;
   createdAt: string;
   updatedAt: string;
   stages: LessonStage[];
@@ -129,7 +163,9 @@ export interface LessonDashboard {
 export interface GenerateLessonPayload {
   theme: string;
   biblicalReference: string;
-  weekNumber: number;
+  weekNumber?: number | null;
+  category?: LessonCategory;
+  specialContext?: string | null;
 }
 export interface SaveTiptapPayload {
   stage: LessonStageType;
@@ -154,6 +190,7 @@ export interface AdminPromptPreference {
 }
 export interface GetLessonDraftsParams {
   status?: LessonStatus;
+  category?: LessonCategory;
   statuses?: LessonStatus[];
   search?: string;
   page?: number;
@@ -187,6 +224,7 @@ export enum LessonStreamEnd {
   CANCELLED = 'cancelled',
   TRANSIENT = 'transient',
   DENIED = 'denied',
+  ROTATED = 'rotated',
 }
 export interface LessonStreamMetrics {
   bytes: number;
@@ -224,6 +262,7 @@ export interface GenerateStageVariables {
 export interface StageActionVariables {
   id: string;
   stage: LessonStageType;
+  lockVersion: number;
   note?: string;
 }
 export interface LessonLocalDraft {
@@ -254,10 +293,26 @@ export interface StudioFeedback {
 export interface ParsedSseChunk {
   messages: string[];
   remainder: string;
+  heartbeats: number;
+  hasActivity: boolean;
 }
 
 export interface LessonStreamTransport {
   (config: import('axios').AxiosRequestConfig): Promise<unknown>;
+}
+
+export interface LessonStageContentViewerProps {
+  stage: LessonStage;
+  version: LessonVersion | null | undefined;
+  document: TiptapDocument;
+  structuredData: Record<string, unknown>;
+  visualOrientation?: LessonVisualOrientation | '';
+  editable?: boolean;
+  onChangeDocument?: (document: TiptapDocument) => void;
+  onOpenPdfPreview?: () => void;
+  pdfPreviewLoading?: boolean;
+  pdfPreviewDisabled?: boolean;
+  pdfPreviewLabel?: string;
 }
 
 export interface LessonDraftDialogsProps {
@@ -277,3 +332,5 @@ export interface LessonDraftDialogsProps {
   onCloseDelete: () => void;
   onConfirmDelete: () => Promise<void>;
 }
+
+export type PromptCategoryDrafts = Partial<Record<LessonCategory, PromptLocalDrafts>>;

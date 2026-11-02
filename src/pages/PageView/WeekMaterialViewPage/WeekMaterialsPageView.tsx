@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   WEEK_MATERIAL_MEDIA_TABS,
   selectMediaByType,
+  stripSpecialMaterialTag,
   useWeekMaterialPage,
 } from '@/features/week-materials';
 import { MediaItem, MediaType } from '@/store/slices/types';
@@ -189,7 +190,7 @@ export default function WeekMaterialsPageView({
                   textShadow: '0 1px 2px rgba(0,0,0,0.3)',
                 }}
               >
-                {material.description}
+                {stripSpecialMaterialTag(material.description)}
               </Typography>
             )}
           </Box>

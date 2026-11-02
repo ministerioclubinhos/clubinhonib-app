@@ -1,20 +1,21 @@
+import { LessonCategory } from '@/features/ai-lessons/types';
+import { lessonStageLabel } from '../lessonStagePresentation.utils';
 import { Box, Button, Chip, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import type { LessonStage, LessonStageType } from '@/services/aiLessonsService';
 import {
-  LESSON_STAGE_LABELS,
-  LESSON_STAGE_SHORT_LABELS,
   LESSON_STAGE_STATUS_COLORS,
   LESSON_STAGE_STATUS_LABELS,
 } from '../lessonDraftDetail.constants';
 
 type Props = {
   stages: LessonStage[];
+  category?: LessonCategory;
   selectedType: LessonStageType;
   mode: 'mobile' | 'desktop';
   onSelect: (type: LessonStageType) => void;
 };
 
-export function LessonStageNavigation({ stages, selectedType, mode, onSelect }: Props) {
+export function LessonStageNavigation({ stages, category, selectedType, mode, onSelect }: Props) {
   if (mode === 'mobile') {
     return (
       <Paper
@@ -47,7 +48,7 @@ export function LessonStageNavigation({ stages, selectedType, mode, onSelect }: 
               value={stage.type}
               label={
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <span>{LESSON_STAGE_SHORT_LABELS[stage.type]}</span>
+                  <span>{lessonStageLabel(stage.type, category, true)}</span>
                   <Chip
                     size="small"
                     label={LESSON_STAGE_STATUS_LABELS[stage.status] ?? stage.status}
@@ -114,7 +115,7 @@ export function LessonStageNavigation({ stages, selectedType, mode, onSelect }: 
                   fontWeight={700}
                   sx={{ color: selected ? '#ffffff' : 'text.primary', lineHeight: 1.3 }}
                 >
-                  {LESSON_STAGE_LABELS[stage.type]}
+                  {lessonStageLabel(stage.type, category)}
                 </Typography>
                 <Chip
                   size="small"

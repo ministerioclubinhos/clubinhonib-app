@@ -43,10 +43,13 @@ resolvido.
 
 `src/features/ai-lessons/` owns transport DTOs/enums (`types.ts`), query key
 factories (`queryKeys.ts`), immutable draft reconciliation (`drafts.ts`), workflow
-availability (`workflow.ts`), the SSE lifecycle (`stream.ts`) and PDF helpers
-(`pdf.ts`, `useLessonPdfPreview.ts`). `useLessonLocalDrafts` owns local document
-edits; `useStudioUnsavedChanges` extends the shared dirty-form guard for studio
-browser-history navigation. Existing service and hook imports remain compatible;
+availability (`workflow.ts`, `review-actions.ts`), the SSE lifecycle (`stream.ts`),
+PDF helpers (`pdf.ts`, `useLessonPdfPreview.ts`) and shared stage rendering
+(`components/LessonStageContentViewer.tsx`, `components/StoryVisualCarousel.tsx`).
+`useLessonLocalDrafts` owns local document edits; `useStudioUnsavedChanges`
+extends the shared dirty-form guard for studio browser-history navigation.
+Existing service and hook imports remain compatible;
 `src/services/aiLessonsService.ts` re-exports feature types while keeping HTTP
-operations on the shared Axios instance. Routed pages remain under
-`src/pages/admin/ai-lessons/`.
+operations on the shared Axios instance. Routed Studio pages live under
+`src/pages/admin/ai-lessons/` and are lazy-loaded via `React.lazy` and `Suspense`
+in `src/App.tsx`.

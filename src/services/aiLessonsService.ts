@@ -13,7 +13,7 @@ import type {
   LessonStreamCallbacks,
 } from '@/features/ai-lessons/types';
 import apiAxios from '@/config/axiosConfig';
-import { LessonStageType } from '@/features/ai-lessons/types';
+import { LessonCategory, LessonStageType } from '@/features/ai-lessons/types';
 import { buildLessonListParams } from '@/features/ai-lessons/utils';
 import { AI_LESSONS_ENDPOINT } from '@/features/ai-lessons/constants';
 
@@ -41,15 +41,19 @@ export const aiLessonsService = {
   async generateDraft(payload: GenerateLessonPayload): Promise<Lesson> {
     return (await apiAxios.post<Lesson>(endpoint, payload)).data;
   },
-  async getDrafts(params: GetLessonDraftsParams = {}): Promise<LessonListResponse> {
+  async getDrafts(
+    params: GetLessonDraftsParams = {},
+    signal?: AbortSignal
+  ): Promise<LessonListResponse> {
     return (
       await apiAxios.get<LessonListResponse>(endpoint, {
         params: buildLessonListParams(params),
+        signal,
       })
     ).data;
   },
-  async getDraftById(id: string): Promise<Lesson> {
-    return (await apiAxios.get<Lesson>(`${endpoint}/${id}`)).data;
+  async getDraftById(id: string, signal?: AbortSignal): Promise<Lesson> {
+    return (await apiAxios.get<Lesson>(`${endpoint}/${id}`, { signal })).data;
   },
   subscribeToLessonEvents(id: string, callbacks: LessonStreamCallbacks): () => void {
     return subscribeLessonStream(
@@ -61,8 +65,8 @@ export const aiLessonsService = {
   async deleteDraft(id: string): Promise<LessonDeleteResponse> {
     return (await apiAxios.delete<LessonDeleteResponse>(`${endpoint}/${id}`)).data;
   },
-  async getDashboard(): Promise<LessonDashboard> {
-    return (await apiAxios.get<LessonDashboard>(`${endpoint}/dashboard`)).data;
+  async getDashboard(signal?: AbortSignal): Promise<LessonDashboard> {
+    return (await apiAxios.get<LessonDashboard>(`${endpoint}/dashboard`, { signal })).data;
   },
   async generateStage(id: string, payload: RegenerateSectionPayload): Promise<Lesson> {
     return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/generate`, payload)).data;
@@ -74,19 +78,41 @@ export const aiLessonsService = {
       })
     ).data;
   },
-  async completeProductionStage(id: string, stage: LessonStageType): Promise<Lesson> {
-    return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/complete-production`, { stage }))
-      .data;
+  async completeProductionStage(
+    id: string,
+    stage: LessonStageType,
+    lockVersion?: number
+  ): Promise<Lesson> {
+    return (
+      await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/complete-production`, {
+        stage,
+        lockVersion,
+      })
+    ).data;
   },
   async submitPackageReview(id: string): Promise<Lesson> {
     return (await apiAxios.post<Lesson>(`${endpoint}/${id}/package/submit-review`)).data;
   },
-  async approveStage(id: string, stage: LessonStageType): Promise<Lesson> {
-    return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/approve`, { stage })).data;
-  },
-  async requestChanges(id: string, stage: LessonStageType, note: string): Promise<Lesson> {
+  async approveStage(id: string, stage: LessonStageType, lockVersion?: number): Promise<Lesson> {
     return (
-      await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/request-changes`, { stage, note })
+      await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/approve`, {
+        stage,
+        lockVersion,
+      })
+    ).data;
+  },
+  async requestChanges(
+    id: string,
+    stage: LessonStageType,
+    note: string,
+    lockVersion?: number
+  ): Promise<Lesson> {
+    return (
+      await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/request-changes`, {
+        stage,
+        note,
+        lockVersion,
+      })
     ).data;
   },
   async exportPdf(id: string): Promise<Blob> {
@@ -98,9 +124,18 @@ export const aiLessonsService = {
       )
     ).data;
   },
-  async previewStagePdf(id: string, stage: LessonStageType): Promise<Blob> {
+  async previewStagePdf(
+    id: string,
+    stage: LessonStageType,
+    lockVersion?: number,
+    versionId?: string
+  ): Promise<Blob> {
     return (
       await apiAxios.get<Blob>(`${endpoint}/${id}/stages/${stage}/preview.pdf`, {
+        params: {
+          ...(lockVersion !== undefined ? { lockVersion } : {}),
+          ...(versionId ? { versionId } : {}),
+        },
         responseType: 'blob',
         skipGlobalError: true,
       })
@@ -111,13 +146,16 @@ export const aiLessonsService = {
       await apiAxios.post<LessonPublicationResponse>(`${endpoint}/${id}/publish-week-material`)
     ).data;
   },
-  async getPromptPreferences(): Promise<AdminPromptPreference[]> {
-    return (await apiAxios.get<AdminPromptPreference[]>(`${endpoint}/prompt-preferences/me`)).data;
+  async getPromptPreferences(signal?: AbortSignal, category: LessonCategory = LessonCategory.REGULAR): Promise<AdminPromptPreference[]> {
+    return (
+      await apiAxios.get<AdminPromptPreference[]>(`${endpoint}/prompt-preferences/me`, { signal, params: { category } })
+    ).data;
   },
   async savePromptPreference(
     stage: LessonStageType,
     prompt: string,
-    lockVersion: number | null
+    lockVersion: number | null,
+    category: LessonCategory = LessonCategory.REGULAR
   ): Promise<AdminPromptPreference> {
     return (
       await apiAxios.patch<AdminPromptPreference>(
@@ -126,16 +164,25 @@ export const aiLessonsService = {
           stage,
           prompt,
           lockVersion: lockVersion ?? undefined,
+          category,
         },
         { skipGlobalError: true }
       )
     ).data;
   },
-  async resetPromptPreference(stage: LessonStageType): Promise<AdminPromptPreference> {
+  async resetPromptPreference(
+    stage: LessonStageType,
+    lockVersion?: number | null,
+    category: LessonCategory = LessonCategory.REGULAR
+  ): Promise<AdminPromptPreference> {
     return (
       await apiAxios.post<AdminPromptPreference>(
         `${endpoint}/prompt-preferences/me/reset`,
-        { stage },
+        {
+          stage,
+          lockVersion: lockVersion ?? undefined,
+          category,
+        },
         { skipGlobalError: true }
       )
     ).data;

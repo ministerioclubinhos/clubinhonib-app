@@ -9,6 +9,7 @@ import {
 } from './constants';
 import {
   WeekMaterialFormValues,
+  WeekMaterialType,
   WeekMaterialMediaGroup,
   WeekMaterialMediaResponse,
   WeekMaterialMediaDraft,
@@ -97,7 +98,12 @@ export const buildWeekMaterialPayload = (
   ...(pageId ? { id: pageId } : {}),
   pageTitle: values.pageTitle,
   pageSubtitle: values.pageSubtitle,
-  pageDescription: values.pageDescription,
+  pageDescription: withSpecialMaterialTag(
+    values.pageDescription,
+    values.materialType === undefined
+      ? isSpecialMaterialDescription(values.pageDescription)
+      : values.materialType === WeekMaterialType.SPECIAL,
+  ),
   currentWeek: values.currentWeek,
   videos: media.videos.map((item, index) =>
     toMediaRequest(item, index, MediaType.VIDEO, formData),
@@ -244,3 +250,19 @@ export function mediaGroupsOf(
 export function countMediaOf(material: WeekMaterialResponse | null): number {
   return mediaGroupsOf(material).reduce((total, group) => total + group.items.length, 0);
 }
+
+/** Marca gravada na descrição das páginas de Material Especial. */
+export const SPECIAL_MATERIAL_TAG = '[tipo:especial]';
+
+export const isSpecialMaterialDescription = (description?: string | null): boolean =>
+  Boolean(description?.includes(SPECIAL_MATERIAL_TAG));
+
+export const stripSpecialMaterialTag = (description?: string | null): string =>
+  (description ?? '').replace(/ ?\[tipo:especial\]/g, '');
+
+/** Garante (ou remove) a marca de Material Especial; texto vazio permanece vazio. */
+export const withSpecialMaterialTag = (description: string, special: boolean): string => {
+  const clean = stripSpecialMaterialTag(description);
+  if (!clean.trim()) return '';
+  return special ? `${clean} ${SPECIAL_MATERIAL_TAG}` : clean;
+};

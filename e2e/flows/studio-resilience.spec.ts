@@ -51,7 +51,7 @@ test('SSE 403 para de reconectar; PDF 422 exibe mensagem segura e prévia tardia
     connections += 1;
     return route.fulfill({ status: 403, json: { message: 'Acesso negado' } });
   });
-  await page.route('**/api/v1/lessons/studio-resilience/stages/LESSON/preview.pdf', (route) =>
+  await page.route('**/api/v1/lessons/studio-resilience/stages/LESSON/preview.pdf*', (route) =>
     route.fulfill({
       status: 422,
       json: { success: false, error: { message: 'O conteúdo não cabe na folha.' } },
@@ -67,13 +67,13 @@ test('SSE 403 para de reconectar; PDF 422 exibe mensagem segura e prévia tardia
     .getByTestId('ai-lesson-pdf-preview-dialog')
     .getByRole('button', { name: 'Fechar' })
     .click();
-  await page.unroute('**/api/v1/lessons/studio-resilience/stages/LESSON/preview.pdf');
+  await page.unroute('**/api/v1/lessons/studio-resilience/stages/LESSON/preview.pdf*');
   let release: (() => void) | undefined;
   const pending = new Promise<void>((resolve) => {
     release = resolve;
   });
   await page.route(
-    '**/api/v1/lessons/studio-resilience/stages/LESSON/preview.pdf',
+    '**/api/v1/lessons/studio-resilience/stages/LESSON/preview.pdf*',
     async (route) => {
       await pending;
       await route.fulfill({ contentType: 'application/pdf', body: '%PDF-1.4\n%%EOF' });

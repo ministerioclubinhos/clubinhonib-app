@@ -28,10 +28,17 @@ import {
   STORY_VISUAL_MAX_QUANTITY,
   STORY_VISUAL_MIN_QUANTITY,
   STORY_VISUAL_SETUP_STEPS,
+  cutoutKitSummary,
 } from '../constants';
 import { LessonVisualOrientation, LessonVisualType, StoryVisualConfigurationProps } from '../types';
 
 const VISUAL_TYPE_OPTIONS = [
+  {
+    value: LessonVisualType.CUTOUT_KIT,
+    title: 'Kit de recortes',
+    description:
+      'Pranchas com personagens, animais, casas, cenário e objetos para recortar e montar.',
+  },
   {
     value: LessonVisualType.STORY_SEQUENCE,
     title: 'Contar a história em sequência',
@@ -59,6 +66,7 @@ const visualTypeLabel = (value: LessonVisualType | ''): string =>
 
 export const StoryVisualConfiguration = ({
   visualType,
+  isSpecial = false,
   visualOrientation,
   visualQuantity,
   instructions,
@@ -103,7 +111,8 @@ export const StoryVisualConfiguration = ({
       >
         <Typography fontWeight={800}>Configuração dos visuais</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          {visualQuantity || '—'} imagens · {visualTypeLabel(visualType)} ·{' '}
+          {visualQuantity || '—'} {isSpecial ? 'imagens' : 'pranchas'} ·{' '}
+          {visualTypeLabel(visualType)} ·{' '}
           {visualOrientation === LessonVisualOrientation.PORTRAIT ? 'Vertical' : 'Horizontal'}
         </Typography>
         <Button
@@ -162,7 +171,9 @@ export const StoryVisualConfiguration = ({
         Preparar os visuais da história
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2.5 }}>
-        Você escolhe como quer as imagens. A IA lê toda a lição e decide onde dividir a história.
+        {isSpecial
+          ? 'Você escolhe como quer as imagens. A IA lê toda a lição e decide onde dividir a história.'
+          : 'A IA lê toda a lição, lista todos os elementos (personagens, animais, casas, cenário, céu e objetos) e monta pranchas para o professor recortar.'}
       </Typography>
 
       <Stepper activeStep={step} alternativeLabel sx={{ mb: 3 }}>
@@ -179,13 +190,15 @@ export const StoryVisualConfiguration = ({
             data-testid="ai-story-visual-quantity"
             fullWidth
             type="number"
-            label="Quantidade de imagens"
+            label={isSpecial ? 'Quantidade de imagens' : 'Número de pranchas'}
             value={visualQuantity}
             error={visualQuantity !== '' && !validQuantity}
             helperText={
               visualQuantity !== '' && !validQuantity
                 ? 'Informe um número de 4 a 10.'
-                : 'A IA dividirá toda a lição em 4 a 10 partes, conforme o número informado.'
+                : isSpecial
+                  ? 'A IA dividirá toda a lição em 4 a 10 partes, conforme o número informado.'
+                  : `Kit de recortes com 4 a 10 pranchas. ${cutoutKitSummary(Number(visualQuantity))}`
             }
             slotProps={{
               htmlInput: {
@@ -207,7 +220,11 @@ export const StoryVisualConfiguration = ({
             onChange={(event) => onVisualTypeChange(event.target.value as LessonVisualType)}
           >
             <Stack spacing={1}>
-              {VISUAL_TYPE_OPTIONS.map((option) => (
+              {VISUAL_TYPE_OPTIONS.filter((option) =>
+                isSpecial
+                  ? option.value !== LessonVisualType.CUTOUT_KIT
+                  : option.value === LessonVisualType.CUTOUT_KIT
+              ).map((option) => (
                 <Paper key={option.value} variant="outlined" sx={{ px: 1.5, py: 1 }}>
                   <FormControlLabel
                     value={option.value}

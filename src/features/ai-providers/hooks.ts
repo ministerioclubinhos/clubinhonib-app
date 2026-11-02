@@ -23,7 +23,7 @@ export const useAiProvidersKeys = {
 export function useAiProviderSettings() {
   return useQuery({
     queryKey: useAiProvidersKeys.settings(),
-    queryFn: apiGetAiProviderSettings,
+    queryFn: ({ signal }) => apiGetAiProviderSettings(signal),
     staleTime: 60000,
   });
 }
@@ -61,7 +61,7 @@ export function useSaveGeminiSettings() {
 export function useOpenAiModels(enabled = true) {
   return useQuery({
     queryKey: useAiProvidersKeys.openaiModels(),
-    queryFn: apiGetOpenAiModels,
+    queryFn: ({ signal }) => apiGetOpenAiModels(signal),
     enabled,
     staleTime: 300000,
   });
@@ -70,7 +70,7 @@ export function useOpenAiModels(enabled = true) {
 export function useGeminiModels(enabled = true) {
   return useQuery({
     queryKey: useAiProvidersKeys.geminiModels(),
-    queryFn: apiGetGeminiModels,
+    queryFn: ({ signal }) => apiGetGeminiModels(signal),
     enabled,
     staleTime: 300000,
   });

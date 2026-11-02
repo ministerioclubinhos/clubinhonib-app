@@ -1,5 +1,9 @@
 import { isAxiosError, isCancel } from 'axios';
-import { AI_LESSON_EVENTS_STALE_TIMEOUT_MS } from './constants';
+import {
+  AI_LESSON_EVENTS_MAX_BYTES,
+  AI_LESSON_EVENTS_MAX_DURATION_MS,
+  AI_LESSON_EVENTS_STALE_TIMEOUT_MS,
+} from './constants';
 import {
   LessonStreamEnd,
   type Lesson,
@@ -15,12 +19,20 @@ export function classifyStreamError(error: unknown): LessonStreamEnd {
   return LessonStreamEnd.TRANSIENT;
 }
 
+export interface SubscribeLessonStreamOptions {
+  maxDurationMs?: number;
+  maxBytes?: number;
+}
+
 export function subscribeLessonStream(
   lessonId: string,
   request: LessonStreamTransport,
-  callbacks: LessonStreamCallbacks
+  callbacks: LessonStreamCallbacks,
+  options?: SubscribeLessonStreamOptions
 ): () => void {
   const controller = new AbortController();
+  const maxDurationMs = options?.maxDurationMs ?? AI_LESSON_EVENTS_MAX_DURATION_MS;
+  const maxBytes = options?.maxBytes ?? AI_LESSON_EVENTS_MAX_BYTES;
   let consumedLength = 0;
   let pending = '';
   let closed = false;
@@ -28,11 +40,13 @@ export function subscribeLessonStream(
   let snapshots = 0;
   const startedAt = performance.now();
   let staleTimer: ReturnType<typeof setTimeout>;
+  const rotationTimer = setTimeout(() => finish(LessonStreamEnd.ROTATED), maxDurationMs);
   let activeRequest: XMLHttpRequest | null = null;
   const finish = (reason: LessonStreamEnd) => {
     if (closed) return;
     closed = true;
     clearTimeout(staleTimer);
+    clearTimeout(rotationTimer);
     controller.abort();
     callbacks.onMetrics?.({ bytes, snapshots, durationMs: performance.now() - startedAt });
     callbacks.onDisconnect(reason);
@@ -77,6 +91,10 @@ export function subscribeLessonStream(
         }
       } catch {
         finish(LessonStreamEnd.TRANSIENT);
+        return;
+      }
+      if (bytes >= maxBytes) {
+        finish(LessonStreamEnd.ROTATED);
       }
     },
   })

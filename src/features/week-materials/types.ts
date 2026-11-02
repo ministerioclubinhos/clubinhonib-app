@@ -136,7 +136,13 @@ export interface WeekMaterialPageRequest {
 }
 
 /** Page fields edited in the admin form. */
+export enum WeekMaterialType {
+  WEEKLY = 'WEEKLY',
+  SPECIAL = 'SPECIAL',
+}
+
 export interface WeekMaterialFormValues {
+  materialType?: WeekMaterialType;
   pageTitle: string;
   pageSubtitle: string;
   pageDescription: string;

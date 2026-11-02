@@ -3,7 +3,12 @@ import { aiLessonsService } from '@/services/aiLessonsService';
 import type { LessonStageType } from './types';
 import { lessonPdfError } from './pdf';
 
-export function useLessonPdfPreview(lessonId: string, stage: LessonStageType) {
+export function useLessonPdfPreview(
+  lessonId: string,
+  stage: LessonStageType,
+  lockVersion?: number,
+  versionId?: string | null
+) {
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -16,7 +21,7 @@ export function useLessonPdfPreview(lessonId: string, stage: LessonStageType) {
     return () => {
       requestId.current += 1;
     };
-  }, [lessonId, stage]);
+  }, [lessonId, stage, lockVersion, versionId]);
   useEffect(
     () => () => {
       if (url) URL.revokeObjectURL(url);
@@ -39,7 +44,12 @@ export function useLessonPdfPreview(lessonId: string, stage: LessonStageType) {
       setError(null);
       setUrl(null);
       try {
-        const blob = await aiLessonsService.previewStagePdf(lessonId, stage);
+        const blob = await aiLessonsService.previewStagePdf(
+          lessonId,
+          stage,
+          lockVersion,
+          versionId ?? undefined
+        );
         if (current === requestId.current) setUrl(URL.createObjectURL(blob));
       } catch (failure) {
         const message = await lessonPdfError(failure);

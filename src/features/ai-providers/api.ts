@@ -18,13 +18,13 @@ import type {
 } from './types';
 import { publicAiProviderSettings, publicOpenAiSettings, publicGeminiSettings } from './utils';
 
-export async function apiGetOpenAiModels(): Promise<OpenAiModelsResponse> {
-  return (await apiAxios.get<OpenAiModelsResponse>(OPENAI_MODELS_ENDPOINT)).data;
+export async function apiGetOpenAiModels(signal?: AbortSignal): Promise<OpenAiModelsResponse> {
+  return (await apiAxios.get<OpenAiModelsResponse>(OPENAI_MODELS_ENDPOINT, { signal })).data;
 }
 
-export async function apiGetOpenAiSettings(): Promise<OpenAiSettingsResponse> {
+export async function apiGetOpenAiSettings(signal?: AbortSignal): Promise<OpenAiSettingsResponse> {
   return publicOpenAiSettings(
-    (await apiAxios.get<OpenAiSettingsResponse>(OPENAI_SETTINGS_ENDPOINT)).data
+    (await apiAxios.get<OpenAiSettingsResponse>(OPENAI_SETTINGS_ENDPOINT, { signal })).data
   );
 }
 
@@ -40,13 +40,13 @@ export async function apiSaveOpenAiSettings(
   );
 }
 
-export async function apiGetGeminiModels(): Promise<GeminiModelsResponse> {
-  return (await apiAxios.get<GeminiModelsResponse>(GEMINI_MODELS_ENDPOINT)).data;
+export async function apiGetGeminiModels(signal?: AbortSignal): Promise<GeminiModelsResponse> {
+  return (await apiAxios.get<GeminiModelsResponse>(GEMINI_MODELS_ENDPOINT, { signal })).data;
 }
 
-export async function apiGetGeminiSettings(): Promise<GeminiSettingsResponse> {
+export async function apiGetGeminiSettings(signal?: AbortSignal): Promise<GeminiSettingsResponse> {
   return publicGeminiSettings(
-    (await apiAxios.get<GeminiSettingsResponse>(GEMINI_SETTINGS_ENDPOINT)).data
+    (await apiAxios.get<GeminiSettingsResponse>(GEMINI_SETTINGS_ENDPOINT, { signal })).data
   );
 }
 
@@ -62,11 +62,12 @@ export async function apiSaveGeminiSettings(
   );
 }
 
-export async function apiGetAiProviderSettings(): Promise<AiProviderSettings> {
+export async function apiGetAiProviderSettings(signal?: AbortSignal): Promise<AiProviderSettings> {
   return publicAiProviderSettings(
     (
       await apiAxios.get<AiProviderSettings>(AI_PROVIDER_SETTINGS_ENDPOINT, {
         skipGlobalError: true,
+        signal,
       })
     ).data
   );

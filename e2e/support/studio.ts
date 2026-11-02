@@ -81,6 +81,7 @@ export async function createStudioReviewPackage(api: ApiClient): Promise<Lesson>
   for (const stage of updated.stages)
     await api.post(`/api/v1/lessons/${lesson.id}/stages/complete-production`, {
       stage: stage.type,
+      lockVersion: stage.lockVersion,
     });
   return api.post(`/api/v1/lessons/${lesson.id}/package/submit-review`);
 }

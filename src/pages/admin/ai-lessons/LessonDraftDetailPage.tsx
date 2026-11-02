@@ -1,4 +1,5 @@
 import {
+  LessonCategory,
   LessonConnectionState,
   LessonStageAction,
   LessonStatus,
@@ -12,9 +13,7 @@ import { useLessonLocalDrafts } from '@/features/ai-lessons/useLessonLocalDrafts
 import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
 import { useLessonPdfPreview } from '@/features/ai-lessons/useLessonPdfPreview';
 import { getHttpStatus } from '@/utils/apiError';
-import { ManualWorkPreview } from '@/features/ai-lessons/manual-work-preview/ManualWorkPreview';
-import { OlderMeditationEditor } from '@/features/ai-lessons/older-meditation-editor';
-import { YoungerMeditationEditor } from '@/features/ai-lessons/younger-meditation-editor';
+import { LessonStageContentViewer } from '@/features/ai-lessons/components/LessonStageContentViewer';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -59,12 +58,12 @@ import {
   LessonVisualOrientation,
   LessonVisualType,
 } from '@/services/aiLessonsService';
-import { LibreOfficeDocEditor } from '@/components/ai-lessons/LibreOfficeDocEditor';
-import { StoryVisualCarousel } from '@/features/ai-lessons/components/StoryVisualCarousel';
 import { StoryVisualConfiguration } from '@/features/ai-lessons/components/StoryVisualConfiguration';
-import { objectValue, visualAssets } from '@/features/ai-lessons/utils';
+import { formatLessonBadgeLabel, objectValue } from '@/features/ai-lessons/utils';
 import {
   LESSON_STAGE_DESCRIPTIONS as DESCRIPTIONS,
+  SPECIAL_STAGE_DESCRIPTIONS as SPECIAL_DESCRIPTIONS,
+  SPECIAL_STAGE_LABELS as SPECIAL_LABELS,
   LESSON_STAGE_LABELS as LABELS,
   LESSON_STAGE_STATUS_COLORS as STATUS_COLORS,
   LESSON_STAGE_STATUS_LABELS as STATUS_LABELS,
@@ -78,7 +77,7 @@ export const LessonDraftDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
 
-  const { data: lesson, isLoading, error } = useLessonDraft(id);
+  const { data: lesson, isLoading, error, refetch } = useLessonDraft(id);
   const connection = useLessonDraftEvents(id);
   const generate = useGenerateStage();
   const save = useUpdateDraftContent();
@@ -87,17 +86,24 @@ export const LessonDraftDetailPage: React.FC = () => {
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<LessonStageType>(LessonStageType.LESSON);
-  const [instructions, setInstructions] = useState('');
+  const [instructionsByStage, setInstructionsByStage] = useState<
+    Partial<Record<LessonStageType, string>>
+  >({});
   const [visualType, setVisualType] = useState<LessonVisualType | ''>('');
   const [visualOrientation, setVisualOrientation] = useState<LessonVisualOrientation | ''>('');
   const [visualQuantity, setVisualQuantity] = useState<number | ''>('');
   const [llmErrorOpen, setLlmErrorOpen] = useState(false);
-  const preview = useLessonPdfPreview(id, selectedType);
-  const { url: previewUrl, error: previewError, loading: previewLoading } = preview;
   const stage = useMemo(
     () => lesson?.stages.find((item) => item.type === selectedType),
     [lesson, selectedType]
   );
+  const preview = useLessonPdfPreview(
+    id,
+    selectedType,
+    stage?.lockVersion,
+    stage?.currentVersionId
+  );
+  const { url: previewUrl, error: previewError, loading: previewLoading } = preview;
   const version = stage?.versions.find((item) => item.id === stage.currentVersionId);
   const local = useLessonLocalDrafts(id, stage, version);
   const edited = local.draft?.document;
@@ -109,7 +115,17 @@ export const LessonDraftDetailPage: React.FC = () => {
       ),
     [edited, version?.tiptapAstJson]
   );
-  const assets = stage ? visualAssets(version?.structuredDataJson, stage.type) : [];
+  const instructions = instructionsByStage[selectedType] ?? '';
+  const setInstructions = (value: string) => {
+    setInstructionsByStage((prev) => ({
+      ...prev,
+      [selectedType]: value,
+    }));
+  };
+  const stageComments = useMemo(
+    () => (lesson?.comments ?? []).filter((comment) => comment.sectionKey === selectedType),
+    [lesson?.comments, selectedType]
+  );
   const approvedLessonStage = lesson?.stages.find((item) => item.type === LessonStageType.LESSON);
   const approvedLessonVersion = approvedLessonStage?.versions.find(
     (item) => item.id === approvedLessonStage.currentVersionId
@@ -120,16 +136,24 @@ export const LessonDraftDetailPage: React.FC = () => {
     Boolean(lesson?.stages.some((item) => item.status === LessonStageStatus.GENERATING));
 
   useEffect(() => {
+    setInstructionsByStage({});
+  }, [id]);
+
+  useEffect(() => {
     if (stage?.failureMessage) setLlmErrorOpen(true);
   }, [stage?.failureMessage]);
 
   useEffect(() => {
     if (selectedType !== LessonStageType.LESSON_VISUALS) return;
     const config = objectValue(version?.structuredDataJson?.visualConfig);
+    const isSpecialLesson = lesson?.category === LessonCategory.SPECIAL;
     setVisualType(
-      Object.values(LessonVisualType).includes(config.type as LessonVisualType)
-        ? (config.type as LessonVisualType)
-        : ''
+      !isSpecialLesson
+        ? LessonVisualType.CUTOUT_KIT
+        : Object.values(LessonVisualType).includes(config.type as LessonVisualType) &&
+            config.type !== LessonVisualType.CUTOUT_KIT
+          ? (config.type as LessonVisualType)
+          : ''
     );
     setVisualOrientation(
       Object.values(LessonVisualOrientation).includes(config.orientation as LessonVisualOrientation)
@@ -141,7 +165,7 @@ export const LessonDraftDetailPage: React.FC = () => {
         ? config.quantity
         : ''
     );
-  }, [selectedType, version?.id]);
+  }, [selectedType, version?.id, lesson?.category]);
 
   if (isLoading) {
     return (
@@ -202,11 +226,21 @@ export const LessonDraftDetailPage: React.FC = () => {
   const isFinalReview =
     lesson.status === LessonStatus.IN_REVIEW ||
     lesson.status === LessonStatus.READY_FOR_PUBLICATION ||
+    lesson.status === LessonStatus.PUBLISHING ||
     lesson.status === LessonStatus.PUBLISHED;
   const progressCount = isFinalReview ? approvedCount : packageCompletedCount;
   const progress = lesson.stages.length ? (progressCount / lesson.stages.length) * 100 : 0;
   const action = (mutation: typeof complete, target: LessonStage) =>
-    mutation.mutate({ id, stage: target.type });
+    mutation.mutate(
+      { id, stage: target.type, lockVersion: target.lockVersion },
+      {
+        onError: (err) => {
+          if (getHttpStatus(err) === 409) {
+            void refetch();
+          }
+        },
+      }
+    );
 
   const generateSelectedStage = () => {
     if (!stage || !canGenerate) return;
@@ -306,6 +340,13 @@ export const LessonDraftDetailPage: React.FC = () => {
             : 'Não foi possível salvar. Sua edição foi preservada; tente novamente.'}
         </Alert>
       )}
+      {complete.isError && (
+        <Alert data-testid="ai-lesson-complete-error" severity="error" sx={{ mb: 2 }}>
+          {getHttpStatus(complete.error) === 409
+            ? 'Esta etapa foi atualizada em outra sessão. A versão mais recente foi recarregada; revise o conteúdo antes de concluir o item.'
+            : 'Não foi possível concluir o item para o pacote. Verifique se o conteúdo e as ilustrações estão prontos e tente novamente.'}
+        </Alert>
+      )}
       {/* Hero Card Header */}
       <Paper
         elevation={0}
@@ -334,9 +375,9 @@ export const LessonDraftDetailPage: React.FC = () => {
               sx={{ gap: 1, mb: 1 }}
             >
               <Chip
-                label={`Semana ${lesson.weekNumber}`}
+                label={formatLessonBadgeLabel(lesson)}
                 size="small"
-                color="primary"
+                color={lesson.category === LessonCategory.SPECIAL ? 'secondary' : 'primary'}
                 sx={{ fontWeight: 800, borderRadius: 1.5 }}
               />
               <Typography
@@ -372,6 +413,17 @@ export const LessonDraftDetailPage: React.FC = () => {
             >
               {lesson.biblicalReference}
             </Typography>
+
+            {lesson.category === LessonCategory.SPECIAL && lesson.specialContext && (
+              <Typography
+                data-testid="ai-lesson-special-context"
+                variant="body2"
+                color="text.secondary"
+                sx={{ overflowWrap: 'anywhere', mb: 1, fontStyle: 'italic' }}
+              >
+                Ideia da história: {lesson.specialContext}
+              </Typography>
+            )}
 
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
               Criada em {new Date(lesson.createdAt).toLocaleString('pt-BR')} · Atualizada em{' '}
@@ -437,10 +489,12 @@ export const LessonDraftDetailPage: React.FC = () => {
       </Paper>
 
       <LessonStageNavigation
+        category={lesson.category}
         stages={lesson.stages}
         selectedType={selectedType}
         mode="mobile"
         onSelect={(type) => {
+          complete.reset();
           setSelectedType(type);
         }}
       />
@@ -455,10 +509,12 @@ export const LessonDraftDetailPage: React.FC = () => {
         }}
       >
         <LessonStageNavigation
+        category={lesson.category}
           stages={lesson.stages}
           selectedType={selectedType}
           mode="desktop"
           onSelect={(type) => {
+            complete.reset();
             setSelectedType(type);
           }}
         />
@@ -496,10 +552,14 @@ export const LessonDraftDetailPage: React.FC = () => {
                       fontWeight={800}
                       sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
                     >
-                      {LABELS[stage.type]}
+                      {lesson.category === LessonCategory.SPECIAL
+                        ? (SPECIAL_LABELS[stage.type] ?? LABELS[stage.type])
+                        : LABELS[stage.type]}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-                      {DESCRIPTIONS[stage.type]}
+                      {lesson.category === LessonCategory.SPECIAL
+                        ? (SPECIAL_DESCRIPTIONS[stage.type] ?? DESCRIPTIONS[stage.type])
+                        : DESCRIPTIONS[stage.type]}
                     </Typography>
                   </Box>
 
@@ -526,6 +586,51 @@ export const LessonDraftDetailPage: React.FC = () => {
                     <strong>{String(mainVerse.reference)} — NVI:</strong> “{String(mainVerse.text)}”
                   </Alert>
                 ) : null}
+
+                {(stage.status === LessonStageStatus.CHANGES_REQUESTED ||
+                  stage.status === LessonStageStatus.STALE) && (
+                  <Alert
+                    data-testid="ai-lesson-stage-correction-guidance"
+                    severity="warning"
+                    sx={{ mb: 2, borderRadius: 2.5 }}
+                  >
+                    {stage.status === LessonStageStatus.CHANGES_REQUESTED
+                      ? 'Esta etapa recebeu solicitação de ajustes na revisão. Revise as observações abaixo, edite ou regenere o conteúdo e conclua o item novamente.'
+                      : 'Esta etapa ficou desatualizada após alterações na Lição Bíblica base. Regenere ou revise o conteúdo e conclua o item novamente.'}
+                  </Alert>
+                )}
+
+                {stageComments.length > 0 && (
+                  <Paper
+                    data-testid="ai-lesson-stage-comments"
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      mb: 2.5,
+                      borderRadius: 2.5,
+                      bgcolor: alpha(theme.palette.warning.main, 0.04),
+                      borderColor: alpha(theme.palette.warning.main, 0.3),
+                    }}
+                  >
+                    <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
+                      Observações da Revisão ({stageComments.length})
+                    </Typography>
+                    <Stack spacing={1.25}>
+                      {stageComments.map((comment) => (
+                        <Box key={comment.id}>
+                          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                            {comment.commentText}
+                          </Typography>
+                          {comment.createdAt && (
+                            <Typography variant="caption" color="text.secondary">
+                              Registrado em {new Date(comment.createdAt).toLocaleString('pt-BR')}
+                            </Typography>
+                          )}
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Paper>
+                )}
 
                 {(generate.isPending || stage.status === LessonStageStatus.GENERATING) && (
                   <Alert
@@ -567,6 +672,7 @@ export const LessonDraftDetailPage: React.FC = () => {
                 {stage.type === LessonStageType.LESSON_VISUALS && (
                   <StoryVisualConfiguration
                     visualType={visualType}
+                    isSpecial={lesson.category === LessonCategory.SPECIAL}
                     visualOrientation={visualOrientation}
                     visualQuantity={visualQuantity}
                     instructions={instructions}
@@ -668,201 +774,19 @@ export const LessonDraftDetailPage: React.FC = () => {
                 )}
                 <Divider sx={{ mb: 3 }} />
 
-                {/* Editor Container: materiais puramente visuais não recebem folha/cabeçalho textual. */}
-                {![
-                  LessonStageType.LESSON_VISUALS,
-                  LessonStageType.VERSE_VISUALS,
-                  LessonStageType.MANUAL_WORK,
-                ].includes(stage.type) && (
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1.5 }}>
-                      Editor de Conteúdo da Lição
-                    </Typography>
-
-                    {version ? (
-                      stage.type === LessonStageType.MEDITATION_YOUNGER ? (
-                        <YoungerMeditationEditor
-                          initialJson={document}
-                          structuredData={
-                            local.draft?.structuredData ?? version.structuredDataJson ?? {}
-                          }
-                          editable={editorEditable}
-                          onChange={local.edit}
-                        />
-                      ) : stage.type === LessonStageType.MEDITATION_OLDER ? (
-                        <OlderMeditationEditor
-                          initialJson={document}
-                          structuredData={
-                            local.draft?.structuredData ?? version.structuredDataJson ?? {}
-                          }
-                          editable={editorEditable}
-                          onChange={local.edit}
-                        />
-                      ) : (
-                        <LibreOfficeDocEditor
-                          initialJson={document}
-                          editable={editorEditable}
-                          onChange={local.edit}
-                        />
-                      )
-                    ) : (
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          p: 4,
-                          textAlign: 'center',
-                          borderRadius: 3,
-                          border: '1px dashed',
-                          borderColor: 'divider',
-                          bgcolor: alpha(theme.palette.primary.main, 0.02),
-                        }}
-                      >
-                        <Typography color="text.secondary" fontWeight={500}>
-                          Gere esta etapa para iniciar a revisão e visualização do conteúdo.
-                        </Typography>
-                      </Paper>
-                    )}
-                  </Box>
-                )}
-
-                {stage.type === LessonStageType.MANUAL_WORK && version && (
-                  <ManualWorkPreview
-                    structuredData={local.draft?.structuredData ?? version.structuredDataJson ?? {}}
-                  />
-                )}
-
-                {stage.type === LessonStageType.LESSON_VISUALS && (
-                  <StoryVisualCarousel assets={assets} orientation={visualOrientation} />
-                )}
-
-                {[LessonStageType.STANDARD_GAME, LessonStageType.VERSE_FIXATION].includes(
-                  stage.type
-                ) && (
-                  <Box data-testid="ai-game-instruction-preview-area">
-                    <StoryVisualCarousel
-                      assets={assets}
-                      orientation={LessonVisualOrientation.LANDSCAPE}
-                      title={
-                        stage.type === LessonStageType.VERSE_FIXATION
-                          ? 'Como fixar o versículo — passo a passo visual'
-                          : 'Como brincar — passo a passo visual'
-                      }
-                      ariaLabel={
-                        stage.type === LessonStageType.VERSE_FIXATION
-                          ? 'Instruções visuais da fixação do versículo'
-                          : 'Instruções visuais da brincadeira'
-                      }
-                      testIdPrefix={
-                        stage.type === LessonStageType.VERSE_FIXATION
-                          ? 'ai-verse-fixation-instruction'
-                          : 'ai-game-instruction'
-                      }
-                    />
-                    <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
-                      <Button
-                        data-testid="ai-game-instruction-pdf-preview"
-                        variant="contained"
-                        color="secondary"
-                        startIcon={
-                          previewLoading ? (
-                            <CircularProgress size={18} color="inherit" />
-                          ) : (
-                            <PictureAsPdf />
-                          )
-                        }
-                        disabled={!stage.currentVersionId || Boolean(edited) || previewLoading}
-                        onClick={() => void openStagePreview()}
-                        sx={{ minHeight: 44, borderRadius: 2.5, width: { xs: '100%', sm: 'auto' } }}
-                      >
-                        {edited
-                          ? 'Salve para visualizar'
-                          : stage.type === LessonStageType.VERSE_FIXATION
-                            ? 'Visualizar preview do PDF da fixação'
-                            : 'Visualizar preview do PDF da brincadeira'}
-                      </Button>
-                    </Stack>
-                  </Box>
-                )}
-
-                {stage.type === LessonStageType.VERSE_VISUALS && (
-                  <StoryVisualCarousel
-                    assets={assets}
-                    orientation={LessonVisualOrientation.LANDSCAPE}
-                    title="Versículo — sequência visual"
-                    ariaLabel="Visuais do versículo"
-                    testIdPrefix="ai-verse-visual"
-                  />
-                )}
-
-                {/* Generated Visual Assets Preview */}
-                {assets.length > 0 &&
-                  stage.type !== LessonStageType.MANUAL_WORK &&
-                  stage.type !== LessonStageType.LESSON_VISUALS &&
-                  stage.type !== LessonStageType.STANDARD_GAME &&
-                  stage.type !== LessonStageType.VERSE_FIXATION &&
-                  stage.type !== LessonStageType.VERSE_VISUALS &&
-                  stage.type !== LessonStageType.MEDITATION_YOUNGER &&
-                  stage.type !== LessonStageType.MEDITATION_OLDER && (
-                    <Box sx={{ mt: 4 }}>
-                      <Typography variant="h6" fontWeight={800} gutterBottom>
-                        Ilustrações das atividades
-                      </Typography>
-
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-                          gap: 2.5,
-                          mt: 2,
-                        }}
-                      >
-                        {assets.map((asset, index) => (
-                          <Card
-                            key={asset.id ?? index}
-                            elevation={0}
-                            sx={{
-                              borderRadius: 3,
-                              border: '1px solid',
-                              borderColor: 'divider',
-                              overflow: 'hidden',
-                            }}
-                          >
-                            <Box
-                              component="img"
-                              src={asset.url}
-                              alt={asset.altText ?? asset.purpose ?? `Visual ${index + 1}`}
-                              sx={{
-                                display: 'block',
-                                width: '100%',
-                                aspectRatio: '3 / 2',
-                                objectFit: 'contain',
-                                bgcolor: 'grey.50',
-                              }}
-                            />
-                            <CardContent sx={{ p: 2 }}>
-                              <Typography fontWeight={700}>
-                                {asset.purpose ?? `Visual ${index + 1}`}
-                              </Typography>
-                              {asset.displayText && (
-                                <Typography
-                                  sx={{ mt: 0.75, fontWeight: 600 }}
-                                  color="primary.main"
-                                  variant="body2"
-                                >
-                                  {asset.displayText}
-                                </Typography>
-                              )}
-                              {asset.altText && (
-                                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                  {asset.altText}
-                                </Typography>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </Box>
-                    </Box>
-                  )}
+                <LessonStageContentViewer
+                  stage={stage}
+                  version={version}
+                  document={document}
+                  structuredData={local.draft?.structuredData ?? version?.structuredDataJson ?? {}}
+                  visualOrientation={visualOrientation}
+                  editable={editorEditable}
+                  onChangeDocument={local.edit}
+                  onOpenPdfPreview={() => void openStagePreview()}
+                  pdfPreviewLoading={previewLoading}
+                  pdfPreviewDisabled={!stage.currentVersionId || Boolean(edited)}
+                  pdfPreviewLabel={edited ? 'Salve para visualizar' : undefined}
+                />
               </CardContent>
             </Card>
           )}

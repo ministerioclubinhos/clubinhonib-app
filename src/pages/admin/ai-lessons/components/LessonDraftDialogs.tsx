@@ -1,3 +1,4 @@
+import { lessonStageLabel } from '../lessonStagePresentation.utils';
 import {
   Alert,
   Box,
@@ -11,8 +12,9 @@ import {
   Typography,
 } from '@mui/material';
 import { AutoAwesome, Download } from '@mui/icons-material';
+import { formatLessonBadgeLabel } from '@/features/ai-lessons/utils';
 import type { LessonDraftDialogsProps } from '@/features/ai-lessons/types';
-import { LESSON_STAGE_LABELS, displayAiFailure } from '../lessonDraftDetail.constants';
+import { displayAiFailure } from '../lessonDraftDetail.constants';
 
 export function LessonDraftDialogs({
   lesson,
@@ -54,7 +56,7 @@ export function LessonDraftDialogs({
         </DialogTitle>
         <DialogContent>
           <Typography fontWeight={800} sx={{ mb: 1 }}>
-            {stage ? LESSON_STAGE_LABELS[stage.type] : 'Item da lição'}
+            {stage ? lessonStageLabel(stage.type, lesson.category) : 'Item da lição'}
           </Typography>
           <Alert severity="error" sx={{ borderRadius: 2.5 }}>
             {stage?.failureMessage
@@ -103,7 +105,7 @@ export function LessonDraftDialogs({
         }}
       >
         <DialogTitle sx={{ fontWeight: 800 }}>
-          Preview final — {stage ? LESSON_STAGE_LABELS[stage.type] : 'Item'}
+          Preview final — {stage ? lessonStageLabel(stage.type, lesson.category) : 'Item'}
         </DialogTitle>
         <DialogContent
           dividers
@@ -175,8 +177,7 @@ export function LessonDraftDialogs({
         <DialogTitle sx={{ fontWeight: 800 }}>Excluir Lição?</DialogTitle>
         <DialogContent>
           <DialogContentText color="text.secondary">
-            Tem certeza que deseja excluir a lição <strong>{lesson.theme}</strong> (Semana{' '}
-            {lesson.weekNumber})?
+            Tem certeza que deseja excluir a lição <strong>{lesson.theme}</strong> ({formatLessonBadgeLabel(lesson)})?
           </DialogContentText>
           <DialogContentText
             color="error.main"

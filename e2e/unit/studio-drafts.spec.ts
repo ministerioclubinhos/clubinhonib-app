@@ -2,9 +2,14 @@ import { expect, test } from '@playwright/test';
 import {
   acknowledgeLessonDraft,
   acknowledgePromptDraft,
+  composeEffectivePromptPreview,
   editLessonDraft,
   editPromptDraft,
+  hasDuplicatedBasePrompt,
+  isValidComplementaryPrompt,
   lessonDraftKey,
+  resolvePromptDraftValue,
+  stripDuplicatedBasePrompt,
 } from '@/features/ai-lessons/drafts';
 import { lessonProductionActions, canPublishLesson } from '@/features/ai-lessons/workflow';
 import {
@@ -20,6 +25,8 @@ import {
 import {
   EDITABLE_STAGE_STATUSES,
   GENERATION_BLOCKED_LESSON_STATUSES,
+  PROMPT_COMPLEMENTARY_HEADER,
+  PROMPT_OFFICIAL_QUALITY_MARKER,
   STUDIO_STAGE_ORDER,
 } from '@/features/ai-lessons/constants';
 
@@ -111,6 +118,25 @@ test('dois prompts dirty preservam base e texto ao salvar/resetar um alvo', () =
   });
 });
 
+test('prompt complementar inicializa apenas customPrompt e limpa duplicação legada do basePrompt', () => {
+  expect(resolvePromptDraftValue(undefined, preference)).toBe('');
+  expect(
+    resolvePromptDraftValue(undefined, { ...preference, customPrompt: 'Foco em crianças de 6 anos' })
+  ).toBe('Foco em crianças de 6 anos');
+  expect(composeEffectivePromptPreview('Base oficial', '')).toBe('Base oficial');
+  expect(composeEffectivePromptPreview('Base oficial', 'Instrução extra')).toBe(
+    `Base oficial\n\n${PROMPT_COMPLEMENTARY_HEADER}\nInstrução extra`
+  );
+  expect(isValidComplementaryPrompt('curto')).toBe(false);
+  expect(isValidComplementaryPrompt('Orientação pedagógica válida com mais de 10 caracteres.')).toBe(
+    true
+  );
+
+  const polluted = `Base oficial\n${PROMPT_OFFICIAL_QUALITY_MARKER}\n\n${PROMPT_COMPLEMENTARY_HEADER}\nManter linguagem acolhedora.`;
+  expect(hasDuplicatedBasePrompt(polluted, 'Base oficial')).toBe(true);
+  expect(stripDuplicatedBasePrompt(polluted, 'Base oficial')).toBe('Manter linguagem acolhedora.');
+});
+
 for (const status of Object.values(LessonStageStatus)) {
   test(`edição/conclusão respeitam o contrato da etapa ${status}`, () => {
     const candidate = { ...stage, status };
@@ -129,7 +155,7 @@ for (const status of Object.values(LessonStageStatus)) {
 for (const status of Object.values(LessonStatus)) {
   test(`geração respeita agregado ${status}`, () => {
     expect(lessonProductionActions({ ...lesson, status }, stage, false, false).canGenerate).toBe(
-      !GENERATION_BLOCKED_LESSON_STATUSES.includes(status)
+      !GENERATION_BLOCKED_LESSON_STATUSES.includes(status) && status !== LessonStatus.PUBLISHING
     );
   });
 }
@@ -144,6 +170,10 @@ test('bloqueia ações conflitantes, dependência ausente e publicação incompl
     stages: [stage, { ...stage, id: 'generating', status: LessonStageStatus.GENERATING }],
   };
   expect(lessonProductionActions(busy, stage, false, false).canEdit).toBe(false);
+  expect(
+    lessonProductionActions({ ...lesson, status: LessonStatus.PUBLISHING }, stage, false, false)
+      .canEdit
+  ).toBe(false);
   const ready = {
     ...lesson,
     status: LessonStatus.READY_FOR_PUBLICATION,

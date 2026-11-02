@@ -485,7 +485,7 @@ export const AiProvidersConfigPage: React.FC = () => {
         </RadioGroup>
       </Paper>
 
-      {/* Botão de Busca de Modelos em Tempo Real (Full Width on Mobile) */}
+      {/* Botão de Consulta de Catálogo de Modelos (Full Width on Mobile) */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2.5 }}>
         <Button
           data-testid="ai-providers-fetch-models-button"
@@ -512,8 +512,10 @@ export const AiProvidersConfigPage: React.FC = () => {
           }}
         >
           {loadingOpenAiModels || loadingGeminiModels
-            ? 'Consultando API...'
-            : `Consultar Modelos em Tempo Real (GET /api/${form.llmProvider}/models)`}
+            ? 'Consultando modelos...'
+            : form.llmProvider === LlmProviderType.OPENAI
+              ? 'Atualizar modelos disponíveis (OpenAI)'
+              : 'Consultar catálogo de modelos (Gemini)'}
         </Button>
       </Box>
 
@@ -640,7 +642,7 @@ export const AiProvidersConfigPage: React.FC = () => {
                     ))}
                   </Select>
                   <FormHelperText>
-                    Modelos de texto consultados via GET /api/openai/models.
+                    Modelos de texto da OpenAI disponíveis no servidor.
                   </FormHelperText>
                 </FormControl>
 

@@ -1,16 +1,28 @@
 import {
   LESSON_STAGE_LABELS as LABELS,
+  SPECIAL_STAGE_LABELS as SPECIAL_LABELS,
   LESSON_STAGE_SHORT_LABELS as SHORT_LABELS,
+  SPECIAL_STAGE_SHORT_LABELS as SPECIAL_SHORT_LABELS,
+  localizeLegacyDocumentLabels,
 } from './lessonDraftDetail.constants';
-import { STUDIO_STAGE_ORDER as STAGE_ORDER } from '@/features/ai-lessons/constants';
-import { LessonStageAction, LessonStatus } from '@/features/ai-lessons/types';
+import {
+  LESSON_ACTION_NOTE_MAX_LENGTH,
+  getStudioStageOrder,
+} from '@/features/ai-lessons/constants';
+import {
+  LessonCategory,
+  LessonConnectionState,
+  LessonStageAction,
+  LessonStatus,
+} from '@/features/ai-lessons/types';
 import { canPublishLesson } from '@/features/ai-lessons/workflow';
-import { ManualWorkPreview } from '@/features/ai-lessons/manual-work-preview/ManualWorkPreview';
 import { lessonReviewActions } from '@/features/ai-lessons/review-actions';
-import { getErrorMessage } from '@/utils/apiError';
-import { OlderMeditationEditor } from '@/features/ai-lessons/older-meditation-editor';
-import { YoungerMeditationEditor } from '@/features/ai-lessons/younger-meditation-editor';
-import React, { useState } from 'react';
+import { LessonStageContentViewer } from '@/features/ai-lessons/components/LessonStageContentViewer';
+import { useLessonPdfPreview } from '@/features/ai-lessons/useLessonPdfPreview';
+import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
+import { formatLessonBadgeLabel, hasCompleteStageAssets } from '@/features/ai-lessons/utils';
+import { getErrorMessage, getHttpStatus } from '@/utils/apiError';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   alpha,
@@ -20,6 +32,10 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   LinearProgress,
   Paper,
@@ -33,6 +49,8 @@ import {
 import {
   ArrowBack,
   CheckCircle as ApproveIcon,
+  Download,
+  PictureAsPdf,
   RateReview as ChangesIcon,
   EventNoteOutlined as WeekIcon,
   Send as PublishIcon,
@@ -40,21 +58,21 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   useLessonDraft,
+  useLessonDraftEvents,
   usePublishLesson,
   useStageAction,
   useSubmitLessonPackage,
 } from '@/hooks/api/useAiLessons';
 import { LessonStageStatus, LessonStageType } from '@/services/aiLessonsService';
-import { LibreOfficeDocEditor } from '@/components/ai-lessons/LibreOfficeDocEditor';
-import { StoryVisualCarousel } from '@/features/ai-lessons/components/StoryVisualCarousel';
-import { visualAssets } from '@/features/ai-lessons/utils';
 
 export const LessonReviewDetailPage: React.FC = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
 
-  const { data: lesson, isLoading, error } = useLessonDraft(id);
+  const { data: lesson, isLoading, error, refetch } = useLessonDraft(id);
+  const isSpecial = lesson?.category === LessonCategory.SPECIAL;
+  const connection = useLessonDraftEvents(id);
   const approve = useStageAction(LessonStageAction.APPROVE);
   const changes = useStageAction(LessonStageAction.CHANGES);
   const publishMutation = usePublishLesson();
@@ -63,6 +81,36 @@ export const LessonReviewDetailPage: React.FC = () => {
   const [selectedType, setSelectedType] = useState<LessonStageType>(LessonStageType.LESSON);
   const [feedbackMap, setFeedbackMap] = useState<Record<string, string>>({});
   const [publicationMessage, setPublicationMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setFeedbackMap({});
+    setPublicationMessage(null);
+  }, [id]);
+
+  const stage = useMemo(
+    () => lesson?.stages.find((s) => s.type === selectedType),
+    [lesson, selectedType]
+  );
+  const currentVersion =
+    stage?.versions.find((version) => version.id === stage.currentVersionId) ?? null;
+  const preview = useLessonPdfPreview(
+    id,
+    selectedType,
+    stage?.lockVersion,
+    stage?.currentVersionId
+  );
+  const hasUnsentFeedback = useMemo(
+    () => Object.values(feedbackMap).some((text) => text.trim().length > 0),
+    [feedbackMap]
+  );
+  const confirmLeave = useStudioUnsavedChanges(hasUnsentFeedback);
+  const document = useMemo(
+    () =>
+      localizeLegacyDocumentLabels(
+        currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }
+      ),
+    [currentVersion?.tiptapAstJson]
+  );
 
   if (isLoading) {
     return (
@@ -84,7 +132,9 @@ export const LessonReviewDetailPage: React.FC = () => {
         <Alert severity="error">Não foi possível carregar a lição para revisão.</Alert>
         <Button
           startIcon={<ArrowBack />}
-          onClick={() => navigate('/adm/estudio/revisao')}
+          onClick={() => {
+            if (confirmLeave()) navigate('/adm/estudio/revisao');
+          }}
           sx={{ mt: 2 }}
         >
           Voltar para Revisão
@@ -93,22 +143,35 @@ export const LessonReviewDetailPage: React.FC = () => {
     );
   }
 
-  const stage = lesson.stages.find((s) => s.type === selectedType);
-  const currentVersion =
-    stage?.versions.find((version) => version.id === stage.currentVersionId) ?? null;
-
   const approvedCount = lesson.stages.filter((s) => s.status === LessonStageStatus.APPROVED).length;
   const totalStages = lesson.stages.length || 8;
   const allApproved = approvedCount === totalStages;
   const progress = (approvedCount / totalStages) * 100;
+  const remoteBusy =
+    lesson.status === LessonStatus.PUBLISHING ||
+    lesson.stages.some((item) => item.status === LessonStageStatus.GENERATING);
+  const assetsComplete = stage
+    ? hasCompleteStageAssets(stage.type, currentVersion?.structuredDataJson)
+    : false;
 
   const reviewActions = lessonReviewActions(
     lesson.status,
     stage?.status,
-    Boolean(stage?.currentVersionId)
+    Boolean(stage?.currentVersionId),
+    { busy: remoteBusy, assetsComplete }
   );
+  const requestChangesAllowed = lessonReviewActions(
+    lesson.status,
+    stage?.status,
+    Boolean(stage?.currentVersionId),
+    { busy: remoteBusy }
+  ).canReviewItem;
   const actionsPending =
-    approve.isPending || changes.isPending || submitReview.isPending || publishMutation.isPending;
+    remoteBusy ||
+    approve.isPending ||
+    changes.isPending ||
+    submitReview.isPending ||
+    publishMutation.isPending;
   const currentFeedback = feedbackMap[selectedType] || '';
   const stageComments =
     lesson.comments?.filter((comment) => comment.sectionKey === selectedType) ?? [];
@@ -118,47 +181,49 @@ export const LessonReviewDetailPage: React.FC = () => {
   };
 
   const handleApproveStage = () => {
-    if (
-      !stage ||
-      !reviewActions.canReviewItem ||
-      approve.isPending ||
-      changes.isPending ||
-      submitReview.isPending ||
-      publishMutation.isPending
-    )
-      return;
+    if (!stage || !reviewActions.canReviewItem || actionsPending) return;
+    const observedLock = stage.lockVersion;
     approve.mutate(
-      { id, stage: stage.type },
+      { id, stage: stage.type, lockVersion: observedLock },
       {
         onSuccess: () => {
           setPublicationMessage(null);
+        },
+        onError: (err) => {
+          if (getHttpStatus(err) === 409) {
+            void refetch();
+          }
         },
       }
     );
   };
 
   const handleRequestChanges = () => {
-    if (
-      !stage ||
-      !reviewActions.canReviewItem ||
-      approve.isPending ||
-      changes.isPending ||
-      submitReview.isPending ||
-      publishMutation.isPending
-    )
-      return;
+    if (!stage || !requestChangesAllowed || actionsPending) return;
     if (!currentFeedback.trim()) {
       setPublicationMessage('Descreva os ajustes necessários antes de devolver o item.');
       return;
     }
+    const observedLock = stage.lockVersion;
+    const submittedText = currentFeedback;
     changes.mutate(
-      { id, stage: stage.type, note: currentFeedback.trim() },
+      {
+        id,
+        stage: stage.type,
+        lockVersion: observedLock,
+        note: submittedText.trim(),
+      },
       {
         onSuccess: () => {
           setPublicationMessage('Ajustes solicitados salvos para esta etapa.');
           setFeedbackMap((current) =>
-            current[stage.type] === currentFeedback ? { ...current, [stage.type]: '' } : current
+            current[stage.type] === submittedText ? { ...current, [stage.type]: '' } : current
           );
+        },
+        onError: (err) => {
+          if (getHttpStatus(err) === 409) {
+            void refetch();
+          }
         },
       }
     );
@@ -170,14 +235,20 @@ export const LessonReviewDetailPage: React.FC = () => {
     publishMutation.mutate(id, {
       onSuccess: (result) => {
         setPublicationMessage(
-          `Lição aprovada com sucesso e enviada para o Materiais Semanais (ID: ${result.weekMaterialId}).`
+          `Lição aprovada com sucesso e enviada para o Materiais Semanais (ID: ${result.weekMaterialId}). A definição da semana atual permanece controlada separadamente em Materiais Semanais.`
         );
       },
       onError: () => {
-        setPublicationMessage('Não foi possível publicar. Verifique se os dados estão completos.');
+        void refetch();
+        setPublicationMessage(
+          'Não foi possível confirmar a publicação imediatamente. O estado da lição foi recarregado; verifique antes de tentar novamente.'
+        );
       },
     });
   };
+
+  const actionError = submitReview.error ?? approve.error ?? changes.error;
+  const isConflictError = getHttpStatus(actionError) === 409;
 
   return (
     <Box
@@ -191,11 +262,50 @@ export const LessonReviewDetailPage: React.FC = () => {
       {/* Voltar */}
       <Button
         startIcon={<ArrowBack />}
-        onClick={() => navigate('/adm/estudio/revisao')}
+        onClick={() => {
+          if (confirmLeave()) navigate('/adm/estudio/revisao');
+        }}
         sx={{ mb: 2, fontWeight: 700, textTransform: 'none', borderRadius: 2 }}
       >
         Voltar para a lista de Revisão
       </Button>
+
+      {connection.state !== LessonConnectionState.CONNECTED && (
+        <Alert
+          data-testid="ai-lesson-review-connection-status"
+          severity={connection.state === LessonConnectionState.DENIED ? 'error' : 'info'}
+          sx={{ mb: 2 }}
+        >
+          {connection.state === LessonConnectionState.DENIED
+            ? 'Sem acesso às atualizações desta revisão. Verifique sua sessão e permissão.'
+            : connection.state === LessonConnectionState.RECONNECTING
+              ? 'Conexão interrompida. Reconectando; suas observações locais estão preservadas.'
+              : 'Conectando às atualizações da revisão…'}
+        </Alert>
+      )}
+
+      {lesson.status === LessonStatus.PUBLISHING && (
+        <Alert
+          data-testid="ai-lesson-publishing-notice"
+          severity="info"
+          icon={<CircularProgress size={20} />}
+          sx={{ mb: 2, borderRadius: 2 }}
+        >
+          Publicação em andamento no Materiais Semanais. Aguarde a conclusão; envios duplicados
+          estão bloqueados.
+        </Alert>
+      )}
+
+      {lesson.publicationFailureMessage && lesson.status !== LessonStatus.PUBLISHED && (
+        <Alert
+          data-testid="ai-lesson-publication-failure-notice"
+          severity="warning"
+          sx={{ mb: 2, borderRadius: 2 }}
+        >
+          Última tentativa de publicação interrompida: {lesson.publicationFailureMessage}. Os itens
+          aprovados foram preservados e você pode retomar o envio quando desejar.
+        </Alert>
+      )}
 
       {reviewActions.canStartReview && (
         <Alert
@@ -209,18 +319,16 @@ export const LessonReviewDetailPage: React.FC = () => {
             alignItems={{ xs: 'stretch', sm: 'center' }}
           >
             <Typography variant="body2" sx={{ flex: 1 }}>
-              Os oito itens estão concluídos. Inicie a revisão para habilitar a aprovação de cada
+              {lesson.category === LessonCategory.SPECIAL
+                ? 'Os três itens do Material Especial'
+                : 'Os oito itens'}{' '}
+              estão concluídos. Inicie a revisão para habilitar a aprovação de cada
               item.
             </Typography>
             <Button
               data-testid="ai-lesson-review-start"
               color="inherit"
-              disabled={
-                submitReview.isPending ||
-                approve.isPending ||
-                changes.isPending ||
-                publishMutation.isPending
-              }
+              disabled={actionsPending}
               onClick={() => submitReview.mutate(id)}
               sx={{ minHeight: 44, whiteSpace: 'nowrap' }}
             >
@@ -231,10 +339,9 @@ export const LessonReviewDetailPage: React.FC = () => {
       )}
       {(submitReview.isError || approve.isError || changes.isError) && (
         <Alert data-testid="ai-lesson-review-action-error" severity="error" sx={{ mb: 2 }}>
-          {getErrorMessage(
-            submitReview.error ?? approve.error ?? changes.error,
-            'Não foi possível concluir a ação de revisão.'
-          )}
+          {isConflictError
+            ? 'Este item foi alterado em outra sessão enquanto estava aberto. O conteúdo atualizado foi recarregado e suas observações locais foram preservadas; revise a nova versão antes de decidir.'
+            : getErrorMessage(actionError, 'Não foi possível concluir a ação de revisão.')}
         </Alert>
       )}
       {publicationMessage && (
@@ -286,8 +393,8 @@ export const LessonReviewDetailPage: React.FC = () => {
               sx={{ gap: 1, mb: 1 }}
             >
               <Chip
-                label={`Semana ${lesson.weekNumber}`}
-                color="primary"
+                label={formatLessonBadgeLabel(lesson)}
+                color={lesson.category === LessonCategory.SPECIAL ? 'secondary' : 'primary'}
                 size="small"
                 sx={{ fontWeight: 800, borderRadius: 1.5 }}
               />
@@ -302,12 +409,18 @@ export const LessonReviewDetailPage: React.FC = () => {
                 label={
                   lesson.status === LessonStatus.PUBLISHED
                     ? 'PUBLICADO NO MATERIAIS SEMANAIS'
-                    : allApproved
-                      ? 'TODOS OS ITENS APROVADOS'
-                      : `${approvedCount}/${totalStages} ITENS APROVADOS`
+                    : lesson.status === LessonStatus.PUBLISHING
+                      ? 'PUBLICANDO NO MATERIAIS SEMANAIS'
+                      : allApproved
+                        ? 'TODOS OS ITENS APROVADOS'
+                        : `${approvedCount}/${totalStages} ITENS APROVADOS`
                 }
                 color={
-                  lesson.status === LessonStatus.PUBLISHED || allApproved ? 'success' : 'warning'
+                  lesson.status === LessonStatus.PUBLISHED || allApproved
+                    ? 'success'
+                    : lesson.status === LessonStatus.PUBLISHING
+                      ? 'info'
+                      : 'warning'
                 }
                 sx={{ fontWeight: 800, borderRadius: 1.5 }}
               />
@@ -358,13 +471,15 @@ export const LessonReviewDetailPage: React.FC = () => {
               disabled={
                 actionsPending ||
                 !canPublishLesson(lesson) ||
-                lesson.status !== 'READY_FOR_PUBLICATION'
+                lesson.status !== LessonStatus.READY_FOR_PUBLICATION
               }
               onClick={handlePublish}
               fullWidth
               sx={{ borderRadius: 3, py: 1.5, px: 3, fontWeight: 800, fontSize: '0.95rem' }}
             >
-              {publishMutation.isPending ? 'Publicando…' : 'Enviar ao Materiais Semanais'}
+              {publishMutation.isPending || lesson.status === LessonStatus.PUBLISHING
+                ? 'Publicando…'
+                : 'Enviar ao Materiais Semanais'}
             </Button>
           </Box>
         </Stack>
@@ -383,7 +498,7 @@ export const LessonReviewDetailPage: React.FC = () => {
       >
         <Tabs
           value={selectedType}
-          onChange={(_, next) => setSelectedType(next)}
+          onChange={(_, next: LessonStageType) => setSelectedType(next)}
           variant="scrollable"
           scrollButtons="auto"
           sx={{
@@ -396,7 +511,7 @@ export const LessonReviewDetailPage: React.FC = () => {
             },
           }}
         >
-          {STAGE_ORDER.map((stageType) => {
+          {getStudioStageOrder(lesson.category).map((stageType) => {
             const st = lesson.stages?.find((item) => item.type === stageType);
             const isApproved = st?.status === LessonStageStatus.APPROVED;
             const isRequested = st?.status === LessonStageStatus.CHANGES_REQUESTED;
@@ -408,7 +523,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                 value={stageType}
                 label={
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <span>{SHORT_LABELS[stageType]}</span>
+                    <span>{isSpecial ? (SPECIAL_SHORT_LABELS[stageType] ?? SHORT_LABELS[stageType]) : SHORT_LABELS[stageType]}</span>
                     <Chip
                       size="small"
                       label={isApproved ? 'APROVADO' : isRequested ? 'AJUSTES' : 'EM REVISÃO'}
@@ -445,60 +560,62 @@ export const LessonReviewDetailPage: React.FC = () => {
         >
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
-            spacing={1}
+            spacing={1.5}
             justifyContent="space-between"
             alignItems={{ xs: 'flex-start', sm: 'center' }}
             sx={{ mb: 2 }}
           >
-            <Typography variant="h6" fontWeight={800}>
-              {LABELS[selectedType]}
-            </Typography>
-            {stage?.status === LessonStageStatus.APPROVED && (
-              <Chip
-                icon={<ApproveIcon />}
-                label="Item Aprovado"
-                color="success"
-                sx={{ fontWeight: 800 }}
-              />
-            )}
+            <Box>
+              <Typography variant="h6" fontWeight={800}>
+                {isSpecial ? (SPECIAL_LABELS[selectedType] ?? LABELS[selectedType]) : LABELS[selectedType]}
+              </Typography>
+              {currentVersion && (
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                  Versão #{currentVersion.versionNumber} · Lock #{stage?.lockVersion ?? 1}
+                </Typography>
+              )}
+            </Box>
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+              <Button
+                data-testid="ai-lesson-review-pdf-preview"
+                variant="outlined"
+                color="secondary"
+                size="small"
+                startIcon={
+                  preview.loading ? <CircularProgress size={16} /> : <PictureAsPdf />
+                }
+                disabled={!stage?.currentVersionId || preview.loading}
+                onClick={() => void preview.open()}
+                sx={{ minHeight: 44, borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+              >
+                Visualizar PDF do item
+              </Button>
+              {stage?.status === LessonStageStatus.APPROVED && (
+                <Chip
+                  icon={<ApproveIcon />}
+                  label="Item Aprovado"
+                  color="success"
+                  sx={{ fontWeight: 800 }}
+                />
+              )}
+            </Stack>
           </Stack>
 
           <Divider sx={{ mb: 3 }} />
 
-          {/* Se a etapa possui visuais da história ou imagens */}
-          {selectedType === LessonStageType.LESSON_VISUALS ? (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" fontWeight={700} color="text.secondary" gutterBottom>
-                Cenas Visuais da História
-              </Typography>
-              <StoryVisualCarousel
-                assets={visualAssets(currentVersion?.structuredDataJson, selectedType)}
-                orientation=""
-                title="Visuais da Lição"
-              />
-            </Box>
-          ) : null}
-
-          {/* Editor/Visualizador LibreOffice / Tiptap */}
-          {selectedType === LessonStageType.MANUAL_WORK ? (
-            <ManualWorkPreview structuredData={currentVersion?.structuredDataJson ?? {}} />
-          ) : selectedType === LessonStageType.MEDITATION_YOUNGER ? (
-            <YoungerMeditationEditor
-              initialJson={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
+          {stage ? (
+            <LessonStageContentViewer
+              stage={stage}
+              version={currentVersion}
+              document={document}
               structuredData={currentVersion?.structuredDataJson ?? {}}
               editable={false}
-            />
-          ) : selectedType === LessonStageType.MEDITATION_OLDER ? (
-            <OlderMeditationEditor
-              initialJson={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
-              structuredData={currentVersion?.structuredDataJson ?? {}}
-              editable={false}
+              onOpenPdfPreview={() => void preview.open()}
+              pdfPreviewLoading={preview.loading}
+              pdfPreviewDisabled={!stage.currentVersionId}
             />
           ) : (
-            <LibreOfficeDocEditor
-              initialJson={currentVersion?.tiptapAstJson ?? { type: 'doc', content: [] }}
-              editable={false}
-            />
+            <Alert severity="error">Etapa não encontrada na lição.</Alert>
           )}
         </Paper>
 
@@ -529,15 +646,29 @@ export const LessonReviewDetailPage: React.FC = () => {
                 placeholder="Ex: Ajustar o parágrafo inicial para ficar mais claro para as crianças..."
                 value={currentFeedback}
                 onChange={(e) => handleFeedbackChange(e.target.value)}
+                slotProps={{ htmlInput: { maxLength: LESSON_ACTION_NOTE_MAX_LENGTH } }}
+                helperText={`${currentFeedback.length}/${LESSON_ACTION_NOTE_MAX_LENGTH} caracteres`}
                 sx={{ mb: 2 }}
               />
 
               {stageComments.length > 0 && (
-                <Alert severity="info" sx={{ mb: 2 }}>
+                <Alert
+                  data-testid="ai-lesson-review-comments-history"
+                  severity="info"
+                  sx={{ mb: 2 }}
+                >
+                  <Typography variant="caption" fontWeight={800} sx={{ display: 'block', mb: 0.75 }}>
+                    Histórico de observações desta etapa:
+                  </Typography>
                   {stageComments.map((comment) => (
-                    <Typography key={comment.id} variant="body2" sx={{ mb: 0.5 }}>
-                      {comment.commentText}
-                    </Typography>
+                    <Box key={comment.id} sx={{ mb: 1 }}>
+                      <Typography variant="body2">{comment.commentText}</Typography>
+                      {comment.createdAt && (
+                        <Typography variant="caption" color="text.secondary">
+                          {new Date(comment.createdAt).toLocaleString('pt-BR')}
+                        </Typography>
+                      )}
+                    </Box>
                   ))}
                 </Alert>
               )}
@@ -552,7 +683,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                   data-testid="ai-lesson-review-approve"
                   disabled={actionsPending || !reviewActions.canReviewItem}
                   onClick={handleApproveStage}
-                  sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.2 }}
+                  sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.2, minHeight: 44 }}
                 >
                   {approve.isPending
                     ? 'Aprovando…'
@@ -566,9 +697,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                   variant="outlined"
                   color="error"
                   startIcon={<ChangesIcon />}
-                  disabled={
-                    actionsPending || !currentFeedback.trim() || !reviewActions.canReviewItem
-                  }
+                  disabled={actionsPending || !currentFeedback.trim() || !requestChangesAllowed}
                   data-testid="ai-lesson-review-request-changes"
                   onClick={handleRequestChanges}
                   sx={{ borderRadius: 2.5, fontWeight: 700, minHeight: 44 }}
@@ -603,6 +732,74 @@ export const LessonReviewDetailPage: React.FC = () => {
           )}
         </Stack>
       </Box>
+
+      {/* Dialog de Preview de PDF em Revisão */}
+      <Dialog
+        data-testid="ai-lesson-pdf-preview-dialog"
+        open={preview.loading || Boolean(preview.url) || Boolean(preview.error)}
+        onClose={preview.close}
+        fullWidth
+        maxWidth="lg"
+        slotProps={{
+          paper: {
+            sx: {
+              height: { xs: 'calc(100dvh - 12px)', md: '90vh' },
+              m: { xs: 0.75, md: 4 },
+              width: { xs: 'calc(100% - 12px)', md: '100%' },
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>
+          Preview final —{' '}
+          {stage ? (isSpecial ? (SPECIAL_LABELS[stage.type] ?? LABELS[stage.type]) : LABELS[stage.type]) : 'Item'}
+        </DialogTitle>
+        <DialogContent
+          dividers
+          sx={{ p: { xs: 0.5, md: 1.5 }, display: 'flex', flexDirection: 'column' }}
+        >
+          {preview.loading ? (
+            <Box data-testid="ai-lesson-pdf-loading" role="status" sx={{ p: 3 }}>
+              <CircularProgress aria-label="Gerando PDF" />
+            </Box>
+          ) : preview.error ? (
+            <Alert data-testid="ai-lesson-pdf-error" severity="error">
+              {preview.error}
+            </Alert>
+          ) : preview.url ? (
+            <Box
+              component="iframe"
+              title="Preview do PDF do item"
+              src={preview.url}
+              sx={{
+                border: 0,
+                width: '100%',
+                flex: 1,
+                minHeight: { xs: 520, md: 650 },
+                bgcolor: 'grey.100',
+              }}
+            />
+          ) : null}
+        </DialogContent>
+        <DialogActions
+          sx={{
+            px: { xs: 1.5, sm: 3 },
+            '& .MuiButton-root': { minHeight: 44, flex: { xs: 1, sm: 'initial' } },
+          }}
+        >
+          <Button onClick={preview.close}>Fechar</Button>
+          {preview.url && (
+            <Button
+              component="a"
+              href={preview.url}
+              download={`preview-${stage?.type.toLowerCase() ?? 'item'}.pdf`}
+              startIcon={<Download />}
+            >
+              Baixar preview
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

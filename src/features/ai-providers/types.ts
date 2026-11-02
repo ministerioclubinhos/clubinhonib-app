@@ -23,11 +23,22 @@ export enum AiProviderFeedbackSeverity {
   ERROR = 'error',
   INFO = 'info',
 }
+export enum AiModelCatalogSource {
+  LIVE = 'LIVE',
+  FALLBACK = 'FALLBACK',
+  STATIC = 'STATIC',
+}
 export interface OpenAiModelsResponse {
   models: { general: string[]; image: string[] };
+  source?: AiModelCatalogSource;
+  isLive?: boolean;
+  warning?: string | null;
 }
 export interface GeminiModelsResponse {
   models: { general: string[]; image: string[] };
+  source?: AiModelCatalogSource;
+  isLive?: boolean;
+  warning?: string | null;
 }
 export interface OpenAiSettings {
   generalModel: string;

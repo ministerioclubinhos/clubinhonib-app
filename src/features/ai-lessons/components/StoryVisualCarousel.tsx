@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ArrowBackIosNew, ArrowForwardIos } from '@mui/icons-material';
-import { Box, Card, CardContent, Chip, IconButton, Stack, Typography } from '@mui/material';
+import { Alert, Box, Card, CardContent, Chip, IconButton, Stack, Typography } from '@mui/material';
 
+import { CUTOUT_CATEGORY_LABELS } from '../constants';
 import { LessonVisualOrientation, VisualCarouselProps } from '../types';
 
 export const StoryVisualCarousel = ({
@@ -12,14 +13,17 @@ export const StoryVisualCarousel = ({
   testIdPrefix = 'ai-story-visual',
 }: VisualCarouselProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [failedIndices, setFailedIndices] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     setActiveIndex((current) => Math.min(current, Math.max(assets.length - 1, 0)));
-  }, [assets.length]);
+    setFailedIndices({});
+  }, [assets]);
 
   if (!assets.length) return null;
 
   const asset = assets[activeIndex];
+  const hasValidImage = Boolean(asset?.url?.trim()) && !failedIndices[activeIndex];
   const previous = () =>
     setActiveIndex((current) => (current === 0 ? assets.length - 1 : current - 1));
   const next = () => setActiveIndex((current) => (current === assets.length - 1 ? 0 : current + 1));
@@ -63,24 +67,47 @@ export const StoryVisualCarousel = ({
             borderColor: 'divider',
           }}
         >
-          <Box
-            component="img"
-            src={asset.url}
-            alt={asset.altText ?? asset.purpose ?? `Visual ${activeIndex + 1}`}
-            sx={{
-              display: 'block',
-              width: '100%',
-              maxHeight: { xs: 420, md: 680 },
-              aspectRatio: orientation === LessonVisualOrientation.PORTRAIT ? '3 / 4' : '4 / 3',
-              objectFit: 'contain',
-              bgcolor: 'grey.50',
-            }}
-          />
+          {hasValidImage ? (
+            <Box
+              component="img"
+              src={asset.url}
+              alt={asset.altText ?? asset.purpose ?? `Visual ${activeIndex + 1}`}
+              onError={() =>
+                setFailedIndices((prev) => ({
+                  ...prev,
+                  [activeIndex]: true,
+                }))
+              }
+              sx={{
+                display: 'block',
+                width: '100%',
+                maxHeight: { xs: 420, md: 680 },
+                aspectRatio: orientation === LessonVisualOrientation.PORTRAIT ? '3 / 4' : '4 / 3',
+                objectFit: 'contain',
+                bgcolor: 'grey.50',
+              }}
+            />
+          ) : (
+            <Alert
+              data-testid={`${testIdPrefix}-missing-media`}
+              severity="warning"
+              sx={{ m: 2, borderRadius: 2 }}
+            >
+              Imagem indisponível ou ausente para este passo visual. Gere novamente esta etapa antes
+              de aprovar.
+            </Alert>
+          )}
           <CardContent>
             <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap>
               <Typography variant="overline" color="primary.main" fontWeight={800}>
-                Visual {activeIndex + 1}
+                {asset.items?.length ? 'Prancha' : 'Visual'} {activeIndex + 1}
               </Typography>
+              {asset.category && (
+                <Chip
+                  size="small"
+                  label={CUTOUT_CATEGORY_LABELS[asset.category] ?? asset.category}
+                />
+              )}
               {asset.identityReference && (
                 <Chip
                   size="small"
@@ -90,7 +117,23 @@ export const StoryVisualCarousel = ({
                 />
               )}
             </Stack>
+            {asset.title && <Typography fontWeight={700}>{asset.title}</Typography>}
             {asset.purpose && <Typography fontWeight={700}>{asset.purpose}</Typography>}
+            {!!asset.items?.length && (
+              <Box
+                data-testid={`${testIdPrefix}-items-${asset.id ?? activeIndex}`}
+                component="ol"
+                sx={{ mt: 1, mb: 0, pl: 3 }}
+              >
+                {asset.items.map((item, index) => (
+                  <Typography component="li" variant="body2" key={`${item.label}-${index}`}>
+                    <strong>{item.label}</strong>
+                    {item.description ? ` — ${item.description}` : ''}
+                    {item.variantOf ? ` (variante de ${item.variantOf})` : ''}
+                  </Typography>
+                ))}
+              </Box>
+            )}
             {asset.instruction && (
               <Typography
                 data-testid={`${testIdPrefix}-instruction-${asset.stepNumber ?? activeIndex + 1}`}

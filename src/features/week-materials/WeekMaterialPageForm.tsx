@@ -18,6 +18,8 @@ import {
   Tab,
   Tabs,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
   useMediaQuery,
   useTheme,
@@ -42,8 +44,12 @@ import {
   useWeekMaterialById,
   useWeekMaterialForm,
 } from './hooks';
-import { toMediaDraft } from './utils';
-import { WeekMaterialMediaDraft } from './types';
+import {
+  isSpecialMaterialDescription,
+  stripSpecialMaterialTag,
+  toMediaDraft,
+} from './utils';
+import { WeekMaterialMediaDraft, WeekMaterialType } from './types';
 
 interface WeekMaterialPageFormProps {
   /** True quando o admin está criando a página a partir da galeria de modelos. */
@@ -58,6 +64,7 @@ const MEDIA_DRAFT_KEY: Record<MediaType, keyof WeekMaterialMediaDraft> = {
 };
 
 const EMPTY_VALUES = {
+  materialType: WeekMaterialType.WEEKLY,
   pageTitle: '',
   pageSubtitle: '',
   pageDescription: '',
@@ -111,6 +118,14 @@ export default function WeekMaterialPageForm({
     pageId: loadedMaterial?.id,
   });
 
+  const isSpecial = values.materialType === WeekMaterialType.SPECIAL;
+
+  const handleMaterialTypeChange = (materialType: WeekMaterialType) => {
+    setValue('materialType', materialType);
+    if (materialType === WeekMaterialType.SPECIAL && !values.pageTitle.trim())
+      setValue('pageTitle', 'Material Especial');
+  };
+
   useEffect(() => {
     if (fromTemplatePage) {
       reset(EMPTY_VALUES, EMPTY_MEDIA);
@@ -124,7 +139,10 @@ export default function WeekMaterialPageForm({
       {
         pageTitle: loadedMaterial.title,
         pageSubtitle: loadedMaterial.subtitle,
-        pageDescription: loadedMaterial.description,
+        pageDescription: stripSpecialMaterialTag(loadedMaterial.description),
+        materialType: isSpecialMaterialDescription(loadedMaterial.description)
+          ? WeekMaterialType.SPECIAL
+          : WeekMaterialType.WEEKLY,
         currentWeek: loadedMaterial.currentWeek,
       },
       toMediaDraft(loadedMaterial),
@@ -207,7 +225,7 @@ export default function WeekMaterialPageForm({
           fontWeight={700}
           sx={{ mb: { xs: 2, md: 3 } }}
         >
-          Editar Semana
+          {isSpecial ? 'Editar Material Especial' : 'Editar Material Semanal'}
         </Typography>
       )}
 
@@ -222,10 +240,33 @@ export default function WeekMaterialPageForm({
           Aparecem no topo da página que os professores abrem.
         </Typography>
 
+        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
+          Tipo de material
+        </Typography>
+        <ToggleButtonGroup
+          data-testid="week-materials-material-type-selector"
+          exclusive
+          color="primary"
+          size="small"
+          value={values.materialType ?? WeekMaterialType.WEEKLY}
+          disabled={saving}
+          onChange={(_, value: WeekMaterialType | null) => {
+            if (value) handleMaterialTypeChange(value);
+          }}
+          sx={{ mb: 2.5 }}
+        >
+          <ToggleButton value={WeekMaterialType.WEEKLY} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+            Material Semanal
+          </ToggleButton>
+          <ToggleButton value={WeekMaterialType.SPECIAL} sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700 }}>
+            Material Especial
+          </ToggleButton>
+        </ToggleButtonGroup>
+
         <Grid2 container spacing={2}>
           <Grid2 size={{ xs: 12, md: 5 }}>
             <TextField
-              label="Semana"
+              label={isSpecial ? 'Identificação do Material Especial' : 'Semana'}
               fullWidth
               required
               value={values.pageTitle}
@@ -234,14 +275,16 @@ export default function WeekMaterialPageForm({
               helperText={
                 errors.title
                   ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD
-                  : 'Ex.: Semana 12'
+                  : isSpecial
+                    ? 'Ex.: Material Especial ou Lição Especial — Semana 1'
+                    : 'Ex.: Semana 12'
               }
             />
           </Grid2>
 
           <Grid2 size={{ xs: 12, md: 7 }}>
             <TextField
-              label="Tema da Semana"
+              label={isSpecial ? 'Tema do Material Especial' : 'Tema da Semana'}
               fullWidth
               required
               value={values.pageSubtitle}
@@ -250,22 +293,27 @@ export default function WeekMaterialPageForm({
               helperText={
                 errors.subtitle
                   ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD
-                  : 'Assunto tratado na visita'
+                  : isSpecial
+                    ? 'Ex.: O Picolé Roubado / O Plano da Salvação na Linha do Tempo'
+                    : 'Assunto tratado na visita'
               }
             />
           </Grid2>
 
           <Grid2 size={12}>
             <TextField
-              label="Descrição do Tema da Semana"
+              label={
+                isSpecial
+                  ? 'Descrição / Contexto do Material Especial'
+                  : 'Descrição do Tema da Semana'
+              }
               fullWidth
               required
               multiline
               minRows={3}
+              data-testid="week-materials-description-input"
               value={values.pageDescription}
-              onChange={(event) =>
-                setValue('pageDescription', event.target.value)
-              }
+              onChange={(event) => setValue('pageDescription', event.target.value)}
               error={errors.description}
               helperText={
                 errors.description
@@ -280,7 +328,7 @@ export default function WeekMaterialPageForm({
       <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <Box sx={{ px: { xs: 2, md: 3 }, pt: { xs: 2, md: 3 } }}>
           <Typography variant="subtitle1" fontWeight={700}>
-            Materiais da Semana
+            {isSpecial ? 'Materiais da Lição Especial' : 'Materiais da Semana'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Adicione os arquivos e links de cada tipo. Nenhum tipo é obrigatório.
