@@ -56,7 +56,7 @@ import ChildrenBrowserPage from './features/pagela-teacher/ChildrenBrowserPage';
 import ChildPagelasPage from './features/pagela-teacher/ChildPagelasPage';
 import Register from './pages/Register/Register';
 import PagelaClubsManager from './features/pagela-clubs/PagelaClubsManager';
-import CommentsManager from './features/comments/CommentsManager';
+import CommentModerationPage from './features/comments/CommentModerationPage';
 import FeedbackManager from './features/feedback/FeedbackManager';
 import UsersManager from './features/users/UsersManager';
 import UnsubscribePage from './features/email-preferences/UnsubscribePage';
@@ -309,7 +309,7 @@ function App() {
                       <Route index element={<AdminDashboardPage />} />
                       <Route path="meditacoes" element={<MeditationsManager />} />
                       <Route element={<FeatureRoute flag={FEATURE.COMMENT_MODERATION} redirectTo="/adm" />}>
-                        <Route path="comentarios" element={<CommentsManager />} />
+                        <Route path="comentarios" element={<CommentModerationPage />} />
                       </Route>
                       <Route path="documentos" element={<DocumentsManager />} />
                       <Route path="informativos" element={<InformativesManager />} />

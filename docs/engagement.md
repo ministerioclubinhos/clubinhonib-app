@@ -2,6 +2,58 @@
 
 The Engagement module facilitates interaction, communication, and feedback within the platform.
 
+## Feed photo comments
+
+`src/features/feed-photo-comments/` owns the API contract, TanStack Query cache,
+author panel and photo moderation screen. Active users comment inside the photo
+viewer; every submission still waits for an administrator in the backend.
+The author-facing interface uses neutral copy: Enviar comentário and Comentário
+enviado!, without triage notices or pending/approved status badges.
+Comentários shows approved comments only. Meus comentários shows the author's
+own submissions with a delete action, without implying they are public.
+A rejected comment shows “Comentário reprovado” and its reason to its author.
+Text is rendered as text, never HTML.
+
+`/adm/comentarios` preserves the Depoimentos tab. Fotos do feed
+(`?tab=photos`) starts with pending comments and provides search, status filters,
+pagination, photo preview, approve and reject/withdraw actions. Rejection requires
+a nonblank reason; the field explains that the author will receive it. A stale review
+returns a conflict; close and reopen it to review the current version.
+
+Queries are scoped by photo and account identity. Drafts stay associated with
+their photo when navigating; transport retries reuse a request UUID. Arrow keys
+inside text inputs never change the photo. The viewer stacks image and comments
+on mobile, with a sidebar for comments from `md` upward and 44px touch targets.
+Opening a comment tab refreshes its content; the refresh button also reloads the
+current list. Cloud photo previews in moderation reuse the shared media helper.
+
+Requests use the shared Axios client and `/feed-photo-comments`; the API checks
+activity, ownership and moderation roles. See
+`../clubinhonib-api/docs/feed-photo-comments.md` for the exact DTOs and errors.
+Regression coverage is in `e2e/unit/feed-photo-comments.spec.ts` and
+`e2e/flows/feed-photo-comments.spec.ts` (real local API and browser).
+
+### Private rejection inbox
+
+`NavbarNotifications` preserves profile alerts and club-link invitations and
+renders the bell in desktop navigation and the mobile top bar. Photo notices
+come from `GET /feed-photo-comments/notifications`, with owner-scoped query
+keys, paginated history and a total unread count. Polling runs every 30 seconds
+while the application is foregrounded; focus and opening the menu refresh it.
+The list supports loading, empty, failure/retry, read/unread and more pages.
+
+Opening a notice displays the full comment and rejection reason in a mobile-first
+dialog. “Entendi” calls `PATCH /feed-photo-comments/notifications/:id/read` and
+refreshes the counter; closing alone leaves it unread. Read state survives reload.
+Notice queries require an active session and the feed flag; changing accounts
+remounts the bell/dialog to prevent stale private content from another account.
+Existing profile alerts remain actionable.
+
+The independent backend flag `email_feed_photo_comment_rejected` controls only
+the corresponding email. Turning it off never disables the in-app inbox.
+The E2E setup disables all `email_*` flags, including this one, while testing the
+real rejection, private notice, acknowledgment and persistent history flow.
+
 ## 📁 Key Files
 
 - **Features**:

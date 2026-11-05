@@ -1,52 +1,20 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Button, Stack } from '@mui/material';
 import { RootState } from '@/store/slices';
 import UserMenu from './UserMenu';
-import CompleteProfileAlert from './CompleteProfileAlert';
-import { useProfileAlerts } from '@/features/profile/hooks';
+import NavbarNotifications from './NavbarNotifications';
+import type { NavLinksProps } from './types';
 import { FEATURE } from '@/features/feature-flags';
 import { useFeatureFlags } from '@/hooks';
-import LinkClubModal from '@/features/auth/components/LinkClubModal';
 
-interface Props {
-  closeMenu?: () => void;
-  isMobile?: boolean;
-}
-
-const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
+const NavLinks: React.FC<NavLinksProps> = ({ closeMenu, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const { flags } = useFeatureFlags();
-  const profileAlerts = useProfileAlerts();
-  const [linkClubOpen, setLinkClubOpen] = useState(false);
-
-  // O convite para se vincular só existe enquanto o pedido de vínculo existe.
-  const needsClubLink = useMemo(
-    () =>
-      flags[FEATURE.CLUB_LINK_REQUEST] &&
-      user?.role === 'teacher' &&
-      (!user?.teacherProfile || !user?.teacherProfile?.club),
-    [flags, user],
-  );
-
-  const allAlerts = useMemo(() => {
-    if (!needsClubLink) return profileAlerts;
-    return [
-      {
-        id: 'link-club',
-        message: 'De qual clubinho você faz parte?',
-        action: () => setLinkClubOpen(true),
-      },
-      ...profileAlerts,
-    ];
-  }, [profileAlerts, needsClubLink]);
-
-
-
   const handleClick = () => closeMenu?.();
 
   const renderLink = (to: string, label: string) => {
@@ -60,7 +28,7 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
           navigate(to);
           handleClick();
         }}
-        variant={active ? 'contained' : (isLogin ? 'outlined' : 'text')}
+        variant={active ? 'contained' : isLogin ? 'outlined' : 'text'}
         color={active ? 'success' : 'inherit'}
         fullWidth={!!isMobile}
         sx={{
@@ -68,13 +36,15 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
           fontWeight: 'bold',
           ...(isMobile ? { color: '#fff' } : {}),
           ...(active && !isMobile ? { boxShadow: 'none' } : null),
-          ...(isLogin && !active && !isMobile ? {
-            borderColor: 'rgba(255,255,255,0.5)',
-            '&:hover': {
-              borderColor: '#fff',
-              backgroundColor: 'rgba(255,255,255,0.1)'
-            }
-          } : {}),
+          ...(isLogin && !active && !isMobile
+            ? {
+                borderColor: 'rgba(255,255,255,0.5)',
+                '&:hover': {
+                  borderColor: '#fff',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                },
+              }
+            : {}),
           minHeight: 44,
           textTransform: 'none',
           maxWidth: '100%',
@@ -86,7 +56,8 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
   };
 
   return (
-    <Stack data-testid="nav-bar-nav-links"
+    <Stack
+      data-testid="nav-bar-nav-links"
       direction={isMobile ? 'column' : 'row'}
       spacing={isMobile ? 1.5 : 4} // Standard spacing for links
       alignItems={isMobile ? 'stretch' : 'center'}
@@ -95,7 +66,7 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
         width: '100%',
         maxWidth: '100%',
         overflowX: 'hidden',
-        position: 'relative' // Needed if we want absolute positioning, but flex is better
+        position: 'relative', // Needed if we want absolute positioning, but flex is better
       }}
     >
       {/* Navigation Links Group */}
@@ -124,19 +95,14 @@ const NavLinks: React.FC<Props> = ({ closeMenu, isMobile }) => {
           alignItems="center"
           sx={!isMobile ? { ml: 4 } : {}} // Add some margin from links on desktop if needed
         >
-          {!isMobile && <CompleteProfileAlert alerts={allAlerts} />}
+          {!isMobile && <NavbarNotifications />}
           <UserMenu user={user} onCloseMobile={handleClick} isMobile={isMobile} />
         </Stack>
       ) : (
         renderLink('/login', 'Entrar')
       )}
-
-      {flags[FEATURE.CLUB_LINK_REQUEST] && (
-        <LinkClubModal open={linkClubOpen} onClose={() => setLinkClubOpen(false)} />
-      )}
     </Stack>
   );
 };
-
 
 export default NavLinks;

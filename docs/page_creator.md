@@ -57,3 +57,27 @@ a fixed "erro ao salvar".
   - Link to cloud storage (Google Drive, OneDrive).
 - **Template System**: Pre-defined structures for common page types to ensure consistency.
 - **Preview & Publish**: Review content before making it live to users.
+
+## Public Clubinho feed
+
+`/feed-clubinho` composes `src/features/clubinho-feed/` as a chronological news
+feed. Its compact white header and neutral surfaces use the green from the public
+navbar. Publications appear in the main column; a recent-publications sidebar
+appears on desktop. Mobile keeps a single column. The former hero photo deck and
+stories strip are no longer part of the page.
+
+The header, loading state and content share a mobile-first width of 98%,
+switching to 95% at `md` with no fixed maximum. Browser tests cover 320, 390,
+768, 1440 and 1920px without horizontal overflow. Photo comments stack below
+the image on mobile and move beside it on desktop; see [Engagement](engagement.md).
+
+The view selector offers Publicações (Feed on mobile), Álbuns and Fotos. Search
+filters only the publications already loaded. Photo previews open the shared
+lightbox; reactions remain local to the browser, and sharing uses a direct link
+to the publication. Upload and management actions retain their existing feature
+flag and role checks.
+
+The feed still reads `GET /image-pages/:id/sections` through the shared Axios
+client and TanStack Query, using `VITE_FEED_MINISTERIO_ID`, six sections per page
+and the API's descending creation-date order. Pagination, refresh and the API's
+visibility rules are unchanged.
