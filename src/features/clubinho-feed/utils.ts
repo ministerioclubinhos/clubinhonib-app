@@ -1,7 +1,4 @@
-import {
-  MediaPlatform,
-  MediaUploadType,
-} from '@/store/slices/types';
+import { MediaType, MediaPlatform, MediaUploadType } from '@/store/slices/types';
 import {
   FEED_INITIAL_PAGE,
   FEED_SECTION_ANCHOR_PREFIX,
@@ -24,7 +21,7 @@ import {
 /** Monta exatamente os parâmetros aceitos por `GET /image-pages/:id/sections`. */
 export function buildFeedSectionsQuery(
   page: number = FEED_INITIAL_PAGE,
-  limit: number = FEED_SECTIONS_PAGE_SIZE,
+  limit: number = FEED_SECTIONS_PAGE_SIZE
 ): QueryClubinhoFeedSectionsParams {
   const safePage = Number.isFinite(page) && page >= 1 ? Math.floor(page) : FEED_INITIAL_PAGE;
   const safeLimit =
@@ -39,7 +36,9 @@ export function buildFeedSectionsQuery(
 }
 
 /** Indica se ainda existem seções além da página recebida. */
-export function hasNextFeedPage(pageDto: Pick<ClubinhoFeedPageDto, 'page' | 'limit' | 'total'>): boolean {
+export function hasNextFeedPage(
+  pageDto: Pick<ClubinhoFeedPageDto, 'page' | 'limit' | 'total'>
+): boolean {
   return pageDto.page * pageDto.limit < pageDto.total;
 }
 
@@ -53,6 +52,8 @@ export function extractGoogleDriveThumbnailUrl(url: string): string | null {
 export function resolveFeedMediaPreviewUrl(media: ClubinhoFeedMediaItemDto): string {
   const rawUrl = (media.url ?? '').trim();
   if (!rawUrl) return '';
+
+  if (media.mediaType === MediaType.VIDEO) return rawUrl;
 
   if (media.uploadType === MediaUploadType.UPLOAD || media.isLocalFile) {
     return rawUrl;
@@ -154,7 +155,7 @@ export function formatFeedDateParts(isoValue?: string | null): {
 /** Calcula rótulo temporal amigável ("Hoje", "Ontem", "Há N dias" ou data curta). */
 export function formatRelativeFeedDate(
   isoValue?: string | null,
-  referenceDate: Date = new Date(),
+  referenceDate: Date = new Date()
 ): string {
   if (!isoValue) return 'Recente';
   const parsed = new Date(isoValue);
@@ -164,11 +165,11 @@ export function formatRelativeFeedDate(
   const startOfRef = new Date(
     referenceDate.getFullYear(),
     referenceDate.getMonth(),
-    referenceDate.getDate(),
+    referenceDate.getDate()
   );
 
   const diffDays = Math.round(
-    (startOfRef.getTime() - startOfTarget.getTime()) / (1000 * 60 * 60 * 24),
+    (startOfRef.getTime() - startOfTarget.getTime()) / (1000 * 60 * 60 * 24)
   );
 
   if (diffDays === 0) return 'Hoje';
@@ -190,11 +191,7 @@ export function buildSectionAnchorId(sectionId: string): string {
 }
 
 /** Constrói link direto compartilhável para uma publicação específica do feed. */
-export function buildSectionShareUrl(
-  origin: string,
-  pathname: string,
-  sectionId: string,
-): string {
+export function buildSectionShareUrl(origin: string, pathname: string, sectionId: string): string {
   const cleanOrigin = origin.replace(/\/+$/, '');
   const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
   return `${cleanOrigin}${cleanPath}#${buildSectionAnchorId(sectionId)}`;
@@ -203,7 +200,7 @@ export function buildSectionShareUrl(
 /** Mapeia uma seção crua da API para o ViewModel consumido pelos componentes visuais. */
 export function toFeedSectionViewModel(
   dto: ClubinhoFeedSectionDto,
-  referenceDate: Date = new Date(),
+  referenceDate: Date = new Date()
 ): FeedSectionViewModel {
   const caption = dto.caption?.trim() || 'Momento no Clubinho';
   const description = dto.description?.trim() || '';
@@ -214,9 +211,12 @@ export function toFeedSectionViewModel(
       return {
         key: item.id ? `${dto.id}-${item.id}` : `${dto.id}-media-${idx}`,
         id: item.id,
-        title: item.title?.trim() || `${caption} — Foto ${idx + 1}`,
+        title:
+          item.title?.trim() ||
+          `${caption} — ${item.mediaType === MediaType.VIDEO ? 'Vídeo' : 'Foto'} ${idx + 1}`,
         description: item.description?.trim() || '',
         previewUrl,
+        mediaType: item.mediaType,
         originalUrl: (item.url ?? '').trim() || previewUrl,
         platformType: item.platformType ?? MediaPlatform.ANY,
         uploadType: item.uploadType ?? MediaUploadType.UPLOAD,
@@ -228,9 +228,7 @@ export function toFeedSectionViewModel(
   const createdParts = formatFeedDateParts(dto.createdAt);
   const updatedParts = formatFeedDateParts(dto.updatedAt);
   const hasDistinctUpdate =
-    updatedParts.isValid &&
-    createdParts.isValid &&
-    updatedParts.fullDate !== createdParts.fullDate;
+    updatedParts.isValid && createdParts.isValid && updatedParts.fullDate !== createdParts.fullDate;
 
   return {
     id: dto.id,
@@ -239,7 +237,9 @@ export function toFeedSectionViewModel(
     description,
     isPublic: dto.public,
     clubBadge: extractClubBadgeLabel(caption),
-    monogram: buildCaptionMonogram(caption),
+    monogram: buildCaptionMonogram(dto.author?.name || caption),
+    authorName: dto.author?.name?.trim() || 'Autor não informado',
+    isVideo: mediaItems.some((item) => item.mediaType === MediaType.VIDEO),
     formattedDate: createdParts.fullDate,
     formattedTime: createdParts.time,
     relativeDate: formatRelativeFeedDate(dto.createdAt, referenceDate),
@@ -253,7 +253,7 @@ export function toFeedSectionViewModel(
 /** Consolida páginas do `useInfiniteQuery` deduplicando seções por `id`. */
 export function mergeFeedPages(
   pages: ReadonlyArray<ClubinhoFeedPageDto> | undefined,
-  referenceDate: Date = new Date(),
+  referenceDate: Date = new Date()
 ): MergedFeedData {
   if (!pages || pages.length === 0) {
     return {
@@ -277,10 +277,7 @@ export function mergeFeedPages(
     }
   }
 
-  const totalLoadedMedia = mergedSections.reduce(
-    (sum, item) => sum + item.mediaCount,
-    0,
-  );
+  const totalLoadedMedia = mergedSections.reduce((sum, item) => sum + item.mediaCount, 0);
 
   const { sections: _ignoredSections, ...firstPageMeta } = firstPage;
 
@@ -299,14 +296,14 @@ export function mergeFeedPages(
 /** Filtra seções já carregadas por título, história, número do Clubinho ou data (sem acentos). */
 export function filterFeedSections(
   sections: ReadonlyArray<FeedSectionViewModel>,
-  rawQuery: string,
+  rawQuery: string
 ): FeedSectionViewModel[] {
   const normalizedQuery = normalizeSearchText(rawQuery);
   if (!normalizedQuery) return [...sections];
 
   return sections.filter((section) => {
     const searchable = normalizeSearchText(
-      `${section.caption} ${section.description} ${section.clubBadge} ${section.formattedDate}`,
+      `${section.authorName} ${section.caption} ${section.description} ${section.clubBadge} ${section.formattedDate}`
     );
     return searchable.includes(normalizedQuery);
   });
@@ -314,7 +311,7 @@ export function filterFeedSections(
 
 /** Achata todas as mídias das seções visíveis para a exposição fotográfica (Galeria Viva). */
 export function flattenFeedPhotos(
-  sections: ReadonlyArray<FeedSectionViewModel>,
+  sections: ReadonlyArray<FeedSectionViewModel>
 ): FeedPhotoWallItem[] {
   const items: FeedPhotoWallItem[] = [];
 
@@ -324,6 +321,8 @@ export function flattenFeedPhotos(
         key: media.key,
         sectionId: section.id,
         sectionCaption: section.caption,
+        authorName: section.authorName,
+        mediaType: media.mediaType,
         clubBadge: section.clubBadge,
         formattedDate: section.relativeDate,
         mediaIndex: index,
@@ -366,10 +365,6 @@ export function resolveBentoTileColSpan(index: number, total: number): number {
 }
 
 /** Formata pluralização simples em português para contadores do cabeçalho e cartões. */
-export function formatCountLabel(
-  count: number,
-  singular: string,
-  plural: string,
-): string {
+export function formatCountLabel(count: number, singular: string, plural: string): string {
   return `${count} ${count === 1 ? singular : plural}`;
 }

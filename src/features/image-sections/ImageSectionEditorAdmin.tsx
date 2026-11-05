@@ -18,27 +18,17 @@ import SaveIcon from '@mui/icons-material/Save';
 
 import BackHeader from '@/components/common/header/BackHeader';
 import { RootState } from '@/store/slices';
-import {
-  clearData,
-  setData,
-  SectionData,
-} from '@/store/slices/image-section/imageSectionSlice';
-import type {
-  MediaPlatform,
-  MediaType,
-  MediaUploadType,
-} from '@/store/slices/types';
+import { clearData, setData, SectionData } from '@/store/slices/image-section/imageSectionSlice';
+import type { MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 import { extractErrorMessage } from '@/utils/apiError';
-import {
-  FORM_VALIDATION_MESSAGES,
-  GENERIC_ERROR_MESSAGES,
-} from '@/constants/errorMessages';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
 import { LoadingSpinner } from '@/pages/TeacherArea/components/Modals';
 import { NotificationModal } from '@/pages/TeacherArea/components/Modals';
 import ImageSectionEditor from '@/pages/TeacherArea/ImageSection/ImageSectionEditor';
 
 import { apiFetchImageSection, apiUpdateImageSection } from './api';
+import { validateClubinhoPublication } from './media-utils';
 import { buildSectionFormData, buildSectionUpload } from './utils';
 import type { ImageSectionResponse } from './types';
 
@@ -88,7 +78,7 @@ export default function ImageSectionEditorAdmin() {
   const { id: routeId } = useParams<{ id: string }>();
 
   const sectionData = useSelector(
-    (state: RootState) => state.imageSection.data,
+    (state: RootState) => state.imageSection.data
   ) as SectionData | null;
 
   const [loading, setLoading] = useState(false);
@@ -124,9 +114,7 @@ export default function ImageSectionEditorAdmin() {
         if (!cancelado) dispatch(setData(toSectionData(section)));
       } catch (error: unknown) {
         if (!cancelado) {
-          setLoadError(
-            extractErrorMessage(error, 'Erro ao carregar a publicação'),
-          );
+          setLoadError(extractErrorMessage(error, 'Erro ao carregar a publicação'));
         }
       } finally {
         if (!cancelado) setLoading(false);
@@ -149,8 +137,9 @@ export default function ImageSectionEditorAdmin() {
       showError(FORM_VALIDATION_MESSAGES.SHARED_GALLERY_DESCRIPTION_REQUIRED);
       return false;
     }
-    if (!sectionData?.mediaItems?.length) {
-      showError(FORM_VALIDATION_MESSAGES.SHARED_GALLERY_MEDIA_REQUIRED);
+    const mediaError = validateClubinhoPublication(sectionData.mediaItems, true);
+    if (mediaError) {
+      showError(mediaError);
       return false;
     }
     return true;
@@ -178,10 +167,7 @@ export default function ImageSectionEditorAdmin() {
         mediaItems: sectionData!.mediaItems,
       });
 
-      await apiUpdateImageSection(
-        sectionId,
-        buildSectionFormData(payload, uploads),
-      );
+      await apiUpdateImageSection(sectionId, buildSectionFormData(payload, uploads));
 
       dispatch(clearData());
       navigate(LIST_ROUTE);
@@ -198,7 +184,10 @@ export default function ImageSectionEditorAdmin() {
 
   if (loading) {
     return (
-      <Box data-testid="image-sections-image-section-editor-admin" sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <Box
+        data-testid="image-sections-image-section-editor-admin"
+        sx={{ display: 'flex', justifyContent: 'center', py: 8 }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -206,7 +195,11 @@ export default function ImageSectionEditorAdmin() {
 
   if (loadError) {
     return (
-      <Container data-testid="image-sections-image-section-editor-admin" maxWidth="lg" sx={{ py: 4 }}>
+      <Container
+        data-testid="image-sections-image-section-editor-admin"
+        maxWidth="lg"
+        sx={{ py: 4 }}
+      >
         <Alert
           severity="error"
           action={
@@ -226,7 +219,8 @@ export default function ImageSectionEditorAdmin() {
   const noAr = sectionData.public;
 
   return (
-    <Box data-testid="image-sections-image-section-editor-admin"
+    <Box
+      data-testid="image-sections-image-section-editor-admin"
       sx={{
         minHeight: '100vh',
         '@supports (min-height: 100dvh)': { minHeight: '100dvh' },
@@ -236,7 +230,7 @@ export default function ImageSectionEditorAdmin() {
       }}
     >
       <Container maxWidth="lg" disableGutters>
-        <BackHeader title="Revisar fotos do clubinho" />
+        <BackHeader title="Revisar fotos e vídeos" />
 
         <Paper
           elevation={0}
@@ -301,13 +295,9 @@ export default function ImageSectionEditorAdmin() {
             </Stack>
           </Stack>
 
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: 'block', mt: 1.5 }}
-          >
-            Ajuste a legenda, a descrição e as fotos antes de decidir. Publicar
-            leva a galeria para o feed do clubinho.
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+            Confira o título, a descrição e as fotos ou o vídeo antes de decidir. Publicar leva o
+            registro para o feed do clubinho.
           </Typography>
         </Paper>
 
@@ -331,6 +321,7 @@ export default function ImageSectionEditorAdmin() {
 
           <ImageSectionEditor
             isEditMode
+            disabled={isSaving}
             initialCaption={sectionData.caption || ''}
             initialDescription={sectionData.description || ''}
             // Fora do ar por padrão: publicar é escolha explícita nos botões.

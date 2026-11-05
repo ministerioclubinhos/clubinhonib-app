@@ -1,3 +1,4 @@
+import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
 import { Avatar, Box, Button, ButtonBase, Divider, Paper, Stack, Typography } from '@mui/material';
 import AddAPhotoRoundedIcon from '@mui/icons-material/AddAPhotoRounded';
 import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRounded';
@@ -64,7 +65,7 @@ export function FeedTimelineRail({
             >
               <Avatar
                 variant="rounded"
-                src={section.coverUrl || undefined}
+                src={!section.isVideo ? section.coverUrl || undefined : undefined}
                 alt=""
                 sx={{
                   width: 52,
@@ -75,7 +76,7 @@ export function FeedTimelineRail({
                   fontSize: '0.85rem',
                 }}
               >
-                {section.monogram}
+                {section.isVideo ? <VideocamOutlinedIcon /> : section.monogram}
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography
@@ -121,7 +122,7 @@ export function FeedTimelineRail({
               borderRadius: 2,
             }}
           >
-            Enviar fotos do Clubinho
+            Enviar fotos ou vídeo do Clubinho
           </Button>
         )}
       </Paper>

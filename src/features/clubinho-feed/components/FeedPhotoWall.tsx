@@ -1,3 +1,4 @@
+import { MediaType } from '@/store/slices/types';
 import { Box, Paper, Typography } from '@mui/material';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 
@@ -19,14 +20,12 @@ export function FeedPhotoWall({ photos, onSelectPhoto }: FeedPhotoWallProps) {
           border: `1px dashed ${FEED_PALETTE.borderStrong}`,
         }}
       >
-        <PhotoLibraryOutlinedIcon
-          sx={{ fontSize: 40, color: FEED_PALETTE.inkMuted, mb: 1 }}
-        />
+        <PhotoLibraryOutlinedIcon sx={{ fontSize: 40, color: FEED_PALETTE.inkMuted, mb: 1 }} />
         <Typography sx={{ fontWeight: 700, color: FEED_PALETTE.inkPrimary, mb: 0.5 }}>
-          Nenhuma fotografia disponível nesta seleção
+          Nenhuma foto ou vídeo disponível nesta seleção
         </Typography>
         <Typography variant="body2" sx={{ color: FEED_PALETTE.inkMuted }}>
-          As fotos das publicações aparecerão reunidas aqui para navegação rápida.
+          As fotos e os vídeos das publicações aparecerão reunidas aqui para navegação rápida.
         </Typography>
       </Paper>
     );
@@ -59,8 +58,9 @@ export function FeedPhotoWall({ photos, onSelectPhoto }: FeedPhotoWallProps) {
         >
           <FeedMediaFrame
             src={photo.previewUrl}
+            mediaType={photo.mediaType}
             alt={photo.altText}
-            ariaLabel={`Abrir foto ${photo.mediaIndex + 1} de ${photo.sectionCaption}`}
+            ariaLabel={`Abrir ${photo.mediaType === MediaType.VIDEO ? 'vídeo' : 'foto'} ${photo.mediaIndex + 1} de ${photo.sectionCaption}`}
             testId={`${FEED_TEST_IDS.PHOTO_WALL_ITEM_PREFIX}-${photo.key}`}
             aspectRatio="1 / 1.05"
             minHeight={{ xs: 150, sm: 200, md: 230 }}
@@ -95,7 +95,12 @@ export function FeedPhotoWall({ photos, onSelectPhoto }: FeedPhotoWallProps) {
                 fontSize: '0.7rem',
               }}
             >
-              {photo.formattedDate} · Foto {photo.mediaIndex + 1}/{photo.totalInSection}
+              {photo.authorName} ·{' '}
+              {photo.mediaType === MediaType.VIDEO
+                ? 'Vídeo'
+                : `Foto ${photo.mediaIndex + 1}/${photo.totalInSection}`}
+              <br />
+              {photo.formattedDate}
             </Typography>
           </Box>
         </Box>

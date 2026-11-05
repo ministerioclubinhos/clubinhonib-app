@@ -54,6 +54,7 @@ export interface ClubinhoFeedSectionDto {
   createdAt: string;
   updatedAt: string;
   mediaItems: ClubinhoFeedMediaItemDto[];
+  author?: { name: string } | null;
 }
 
 /** DTO de saída paginado de `GET /image-pages/:id/sections`. */
@@ -78,6 +79,7 @@ export interface FeedMediaViewModel {
   title: string;
   description: string;
   previewUrl: string;
+  mediaType: MediaType;
   originalUrl: string;
   platformType: MediaPlatform;
   uploadType: MediaUploadType;
@@ -93,6 +95,8 @@ export interface FeedSectionViewModel {
   isPublic: boolean;
   clubBadge: string;
   monogram: string;
+  authorName: string;
+  isVideo: boolean;
   formattedDate: string;
   formattedTime: string;
   relativeDate: string;
@@ -107,11 +111,13 @@ export interface FeedPhotoWallItem {
   key: string;
   sectionId: string;
   sectionCaption: string;
+  authorName: string;
   clubBadge: string;
   formattedDate: string;
   mediaIndex: number;
   totalInSection: number;
   previewUrl: string;
+  mediaType: MediaType;
   altText: string;
 }
 
@@ -214,6 +220,7 @@ export interface AdaptiveMediaCollageProps {
 /** Props de um quadro individual de foto `FeedMediaFrame`. */
 export interface FeedMediaFrameProps {
   src: string;
+  mediaType?: MediaType;
   alt: string;
   ariaLabel: string;
   testId: string;

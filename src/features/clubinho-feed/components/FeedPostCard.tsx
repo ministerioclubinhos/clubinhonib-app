@@ -1,3 +1,5 @@
+import { ClubinhoVideoPlayer } from '@/features/image-sections';
+import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
 import { Avatar, Box, Button, Chip, Paper, Stack, Typography } from '@mui/material';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
@@ -54,10 +56,10 @@ export function FeedPostCard({
             <Typography
               sx={{ fontSize: '0.88rem', fontWeight: 700, color: FEED_PALETTE.inkPrimary }}
             >
-              {section.clubBadge}
+              {section.authorName}
             </Typography>
             <Typography sx={{ fontSize: '0.76rem', color: FEED_PALETTE.inkMuted }}>
-              {section.formattedDate}
+              {section.clubBadge} · {section.formattedDate}
               {section.formattedTime && ` · ${section.formattedTime}`}
             </Typography>
           </Box>
@@ -100,17 +102,27 @@ export function FeedPostCard({
       </Box>
       {section.mediaCount > 0 && (
         <Box sx={{ px: { xs: 1, sm: 1.5 } }}>
-          <AdaptiveMediaCollage
-            sectionId={section.id}
-            caption={section.caption}
-            mediaItems={section.mediaItems}
-            onSelectMedia={(mediaIndex) => onOpenLightbox(section, mediaIndex)}
-          />
+          {section.isVideo ? (
+            <ClubinhoVideoPlayer src={section.mediaItems[0].originalUrl} title={section.caption} />
+          ) : (
+            <AdaptiveMediaCollage
+              sectionId={section.id}
+              caption={section.caption}
+              mediaItems={section.mediaItems}
+              onSelectMedia={(mediaIndex) => onOpenLightbox(section, mediaIndex)}
+            />
+          )}
           <Button
             data-testid={`clubinho-feed-post-photos-${section.id}`}
             type="button"
             onClick={() => onOpenLightbox(section, 0)}
-            startIcon={<CollectionsOutlinedIcon sx={{ fontSize: 17 }} />}
+            startIcon={
+              section.isVideo ? (
+                <VideocamOutlinedIcon />
+              ) : (
+                <CollectionsOutlinedIcon sx={{ fontSize: 17 }} />
+              )
+            }
             sx={{
               minHeight: FEED_TOUCH_TARGET_PX,
               px: 1.5,
@@ -119,7 +131,9 @@ export function FeedPostCard({
               fontSize: '0.78rem',
             }}
           >
-            {formatCountLabel(section.mediaCount, 'foto', 'fotos')} · Ver álbum completo
+            {section.isVideo
+              ? 'Vídeo · Abrir visualização'
+              : `${formatCountLabel(section.mediaCount, 'foto', 'fotos')} · Ver álbum completo`}
           </Button>
         </Box>
       )}
@@ -149,7 +163,7 @@ export function FeedPostCard({
         >
           {isCelebrated ? 'Celebrado' : 'Celebrar'}
         </Button>
-        {section.mediaCount > 0 && (
+        {section.mediaCount > 0 && !section.isVideo && (
           <Button
             data-testid={`clubinho-feed-post-comment-${section.id}`}
             type="button"

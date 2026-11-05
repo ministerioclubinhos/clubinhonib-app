@@ -1,9 +1,10 @@
+import { MediaType } from '@/store/slices/types';
 import {
   EMPTY_VALUE,
   IMAGE_SECTIONS_DEFAULT_ORDER,
   IMAGE_SECTIONS_DEFAULT_SORT,
   IMAGE_SECTION_PAYLOAD_FIELD,
-} from "./constants";
+} from './constants';
 import type {
   ImageSectionFilters,
   ImageSectionMediaInput,
@@ -14,14 +15,14 @@ import type {
   ImageSectionSortOrder,
   ImageSectionUpload,
   ImageSectionsQueryParams,
-} from "./types";
+} from './types';
 
 /** Corta o texto no limite, preferindo a borda da palavra. */
-export function truncate(text = "", max = 100): string {
+export function truncate(text = '', max = 100): string {
   if (text.length <= max) return text;
 
   const cortado = text.slice(0, max);
-  const ultimoEspaco = cortado.lastIndexOf(" ");
+  const ultimoEspaco = cortado.lastIndexOf(' ');
 
   return `${ultimoEspaco > max * 0.6 ? cortado.slice(0, ultimoEspaco) : cortado}…`;
 }
@@ -33,31 +34,32 @@ export function formatDateTime(value?: string | null): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return date.toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
 /** A publicação ainda aguarda aprovação da administração. */
 export function isPending(section: ImageSectionResponse): boolean {
-  return section.pageId === null;
+  return !section.public;
 }
 
 /** Só as imagens, que é o que a grade de miniaturas mostra. */
 export function imageMedias(section: ImageSectionResponse) {
-  return section.mediaItems.filter((media) => media.mediaType === "image");
+  return section.mediaItems.filter((media) => media.mediaType === 'image');
 }
 
 /** Resumo da quantidade de fotos, para a faixa do card. */
 export function mediaSummary(section: ImageSectionResponse): string {
   const total = section.mediaItems.length;
-  if (total === 0) return "Sem fotos";
+  if (section.mediaItems.some((media) => media.mediaType === MediaType.VIDEO)) return '1 vídeo';
+  if (total === 0) return 'Sem arquivos';
 
-  return total === 1 ? "1 foto" : `${total} fotos`;
+  return total === 1 ? '1 foto' : `${total} fotos`;
 }
 
 /**
@@ -92,7 +94,7 @@ export function buildImageSectionsQuery(args: {
  */
 export function buildSectionFormData(
   payload: ImageSectionPayload,
-  uploads: ImageSectionUpload[] = [],
+  uploads: ImageSectionUpload[] = []
 ): FormData {
   const formData = new FormData();
 
@@ -129,31 +131,28 @@ export function buildSectionUpload(section: {
 }): { payload: ImageSectionPayload; uploads: ImageSectionUpload[] } {
   const uploads: ImageSectionUpload[] = [];
 
-  const mediaItems: ImageSectionMediaInput[] = section.mediaItems.map(
-    (media, index) => {
-      const base: ImageSectionMediaInput = {
-        id: media.id,
-        title: media.title || "",
-        description: media.description || "",
-        uploadType: (media.uploadType as "upload" | "link") ?? "upload",
-        mediaType:
-          (media.mediaType as "image" | "video" | "document") ?? "image",
-        isLocalFile: Boolean(media.isLocalFile),
-        url: media.url || "",
-        platformType: media.platformType as ImageSectionPlatform | undefined,
-        originalName: media.originalName,
-        size: media.size,
-      };
+  const mediaItems: ImageSectionMediaInput[] = section.mediaItems.map((media, index) => {
+    const base: ImageSectionMediaInput = {
+      id: media.id,
+      title: media.title || '',
+      description: media.description || '',
+      uploadType: (media.uploadType as 'upload' | 'link') ?? 'upload',
+      mediaType: (media.mediaType as 'image' | 'video' | 'document') ?? 'image',
+      isLocalFile: Boolean(media.isLocalFile),
+      url: media.url || '',
+      platformType: media.platformType as ImageSectionPlatform | undefined,
+      originalName: media.originalName,
+      size: media.size,
+    };
 
-      if (media.isLocalFile && media.file) {
-        const fieldKey = `file_${index}`;
-        uploads.push({ fieldKey, file: media.file });
-        return { ...base, fieldKey, originalName: media.file.name };
-      }
+    if (media.isLocalFile && media.file) {
+      const fieldKey = `file_${index}`;
+      uploads.push({ fieldKey, file: media.file });
+      return { ...base, fieldKey, originalName: media.file.name };
+    }
 
-      return base;
-    },
-  );
+    return base;
+  });
 
   const payload: ImageSectionPayload = {
     caption: section.caption,

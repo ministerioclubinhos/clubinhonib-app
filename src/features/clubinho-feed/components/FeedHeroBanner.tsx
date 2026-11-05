@@ -193,7 +193,7 @@ export function FeedHeroBanner({
                     '&:hover': { bgcolor: FEED_PALETTE.brandSoft },
                   }}
                 >
-                  Enviar fotos
+                  Enviar fotos ou vídeo
                 </Button>
               )}
             </Stack>

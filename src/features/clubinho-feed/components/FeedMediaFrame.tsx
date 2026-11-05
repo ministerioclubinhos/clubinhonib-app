@@ -1,3 +1,5 @@
+import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
+import { MediaType } from '@/store/slices/types';
 import { useEffect, useState } from 'react';
 import { Box, ButtonBase, Skeleton, Typography } from '@mui/material';
 import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
@@ -8,6 +10,7 @@ import type { FeedMediaFrameProps } from '../types';
 
 export function FeedMediaFrame({
   src,
+  mediaType = MediaType.IMAGE,
   alt,
   ariaLabel,
   testId,
@@ -28,6 +31,54 @@ export function FeedMediaFrame({
   }, [src]);
 
   const showFallback = !src || failed;
+
+  if (mediaType === MediaType.VIDEO) {
+    return (
+      <ButtonBase
+        data-testid={testId}
+        type="button"
+        onClick={onClick}
+        aria-label={ariaLabel}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          position: 'relative',
+          overflow: 'hidden',
+          width: '100%',
+          height: '100%',
+          aspectRatio: aspectRatio ?? '16 / 9',
+          minHeight: minHeight ?? 160,
+          borderRadius: 2,
+          bgcolor: FEED_PALETTE.brandForestDeep,
+          color: 'common.white',
+        }}
+      >
+        <Box
+          component="video"
+          src={src}
+          preload="metadata"
+          muted
+          playsInline
+          aria-hidden="true"
+          tabIndex={-1}
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0.45,
+            pointerEvents: 'none',
+          }}
+        />
+        <PlayCircleOutlineRoundedIcon sx={{ fontSize: 52, position: 'relative' }} />
+        <Typography sx={{ position: 'relative', color: 'inherit', fontWeight: 700 }}>
+          Assistir vídeo
+        </Typography>
+      </ButtonBase>
+    );
+  }
 
   return (
     <ButtonBase

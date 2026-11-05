@@ -103,7 +103,7 @@ const buttonMap: Record<string, FofinhoButtonProps> = {
   },
   photos: {
     to: '/imagens-clubinho',
-    label: 'Envie fotos do seu Clubinho',
+    label: 'Envie fotos ou vídeo do seu Clubinho',
     icon: PhotoCameraIcon,
     color: 'success',
   },

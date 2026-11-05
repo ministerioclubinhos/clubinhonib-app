@@ -1,3 +1,4 @@
+import { MediaType } from '@/store/slices/types';
 import { useState } from 'react';
 import { Box, Button } from '@mui/material';
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
@@ -9,10 +10,7 @@ import {
   FEED_TEST_IDS,
   FEED_TOUCH_TARGET_PX,
 } from '../constants';
-import {
-  type AdaptiveMediaCollageProps,
-  CollageLayoutKind,
-} from '../types';
+import { type AdaptiveMediaCollageProps, CollageLayoutKind } from '../types';
 import { resolveCollageLayout } from '../utils';
 import { FeedMediaFrame } from './FeedMediaFrame';
 
@@ -33,7 +31,7 @@ export function AdaptiveMediaCollage({
   }
 
   const buildFrameLabel = (index: number) =>
-    `Abrir foto ${index + 1} de ${total} da publicação ${caption}`;
+    `Abrir ${mediaItems[index]?.mediaType === MediaType.VIDEO ? 'vídeo' : 'foto'} ${index + 1} de ${total} da publicação ${caption}`;
   const buildFrameTestId = (index: number) =>
     `${FEED_TEST_IDS.MEDIA_FRAME_PREFIX}-${sectionId}-${index}`;
 
@@ -43,6 +41,7 @@ export function AdaptiveMediaCollage({
       <Box data-testid={rootTestId}>
         <FeedMediaFrame
           src={first.previewUrl}
+          mediaType={first.mediaType}
           alt={first.title}
           ariaLabel={buildFrameLabel(0)}
           testId={buildFrameTestId(0)}
@@ -240,9 +239,7 @@ export function AdaptiveMediaCollage({
               size="small"
               variant="text"
               onClick={() => setExpandedAll((prev) => !prev)}
-              startIcon={
-                expandedAll ? <ExpandLessRoundedIcon /> : <CollectionsOutlinedIcon />
-              }
+              startIcon={expandedAll ? <ExpandLessRoundedIcon /> : <CollectionsOutlinedIcon />}
               sx={{
                 minHeight: FEED_TOUCH_TARGET_PX,
                 px: 2,

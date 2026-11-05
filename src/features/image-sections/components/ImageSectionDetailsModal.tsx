@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import { MediaType } from '@/store/slices/types';
+import { ClubinhoVideoPlayer } from './ClubinhoVideoPlayer';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -15,14 +17,14 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
-import ScheduleIcon from "@mui/icons-material/Schedule";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 
-import { formatDateTime, imageMedias, isPending } from "../utils";
-import type { ImageSectionResponse } from "../types";
+import { formatDateTime, imageMedias, isPending } from '../utils';
+import type { ImageSectionResponse } from '../types';
 
 type Props = {
   section: ImageSectionResponse | null;
@@ -40,17 +42,19 @@ export default function ImageSectionDetailsModal({
   onDelete,
 }: Props) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [ampliada, setAmpliada] = useState<string | null>(null);
 
   if (!section) return null;
 
   const fotos = imageMedias(section);
+  const video = section.mediaItems.find((media) => media.mediaType === MediaType.VIDEO);
   const pendente = isPending(section);
 
   return (
     <>
-      <Dialog data-testid="image-sections-image-section-details-modal"
+      <Dialog
+        data-testid="image-sections-image-section-details-modal"
         open={open}
         onClose={onClose}
         maxWidth="md"
@@ -64,7 +68,7 @@ export default function ImageSectionDetailsModal({
           justifyContent="space-between"
           sx={{ p: 2, pb: 1 }}
         >
-          <DialogTitle sx={{ p: 0, fontSize: { xs: "1rem", md: "1.15rem" } }}>
+          <DialogTitle sx={{ p: 0, fontSize: { xs: '1rem', md: '1.15rem' } }}>
             Detalhes da publicação
           </DialogTitle>
           <IconButton onClick={onClose} aria-label="Fechar">
@@ -78,19 +82,14 @@ export default function ImageSectionDetailsModal({
               <Typography variant="h6" fontWeight={700}>
                 {section.caption}
               </Typography>
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                sx={{ mt: 0.5 }}
-              >
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
                 <Chip
                   size="small"
-                  label={pendente ? "Aguardando aprovação" : "No feed"}
-                  color={pendente ? "warning" : "success"}
+                  label={pendente ? 'Aguardando aprovação' : 'No feed'}
+                  color={pendente ? 'warning' : 'success'}
                 />
                 <Stack direction="row" spacing={0.5} alignItems="center">
-                  <ScheduleIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                  <ScheduleIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                   <Typography variant="caption" color="text.secondary">
                     {formatDateTime(section.createdAt)}
                   </Typography>
@@ -98,14 +97,15 @@ export default function ImageSectionDetailsModal({
               </Stack>
             </Box>
 
+            <Typography data-testid="image-section-author" variant="body2" color="text.secondary">
+              Enviado por {section.author?.name || 'Autor não informado'}
+            </Typography>
             {section.description ? (
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Descrição
                 </Typography>
-                <Typography
-                  sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-                >
+                <Typography sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                   {section.description}
                 </Typography>
               </Box>
@@ -115,25 +115,27 @@ export default function ImageSectionDetailsModal({
 
             <Box>
               <Typography variant="caption" color="text.secondary">
-                Fotos ({fotos.length})
+                {video ? 'Vídeo' : `Fotos (${fotos.length})`}
               </Typography>
 
-              {fotos.length ? (
+              {video ? (
+                <ClubinhoVideoPlayer src={video.url} title={video.title || section.caption} />
+              ) : fotos.length ? (
                 <ImageList
                   cols={isMobile ? 2 : 3}
                   gap={8}
-                  sx={{ mt: 1, mb: 0, overflow: "visible" }}
+                  sx={{ mt: 1, mb: 0, overflow: 'visible' }}
                 >
                   {fotos.map((media) => (
                     <ImageListItem
                       key={media.id}
                       onClick={() => setAmpliada(media.url)}
                       sx={{
-                        cursor: "zoom-in",
+                        cursor: 'zoom-in',
                         borderRadius: 2,
-                        overflow: "hidden",
+                        overflow: 'hidden',
                         border: 1,
-                        borderColor: "divider",
+                        borderColor: 'divider',
                       }}
                     >
                       <img
@@ -141,10 +143,10 @@ export default function ImageSectionDetailsModal({
                         alt={media.title ?? section.caption}
                         loading="lazy"
                         style={{
-                          width: "100%",
-                          aspectRatio: "1 / 1",
-                          objectFit: "cover",
-                          display: "block",
+                          width: '100%',
+                          aspectRatio: '1 / 1',
+                          objectFit: 'cover',
+                          display: 'block',
                         }}
                       />
                     </ImageListItem>
@@ -152,7 +154,7 @@ export default function ImageSectionDetailsModal({
                 </ImageList>
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  Esta publicação está sem fotos.
+                  Esta publicação está sem arquivos.
                 </Typography>
               )}
             </Box>
@@ -163,8 +165,8 @@ export default function ImageSectionDetailsModal({
           sx={{
             p: 2,
             gap: 1,
-            flexDirection: { xs: "column-reverse", sm: "row" },
-            alignItems: { xs: "stretch", sm: "center" },
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+            alignItems: { xs: 'stretch', sm: 'center' },
           }}
         >
           <Button onClick={onClose} fullWidth={isMobile}>
@@ -178,7 +180,7 @@ export default function ImageSectionDetailsModal({
             fullWidth={isMobile}
             startIcon={<PlaylistAddCheckIcon />}
           >
-            {pendente ? "Revisar e aprovar" : "Revisar"}
+            {pendente ? 'Revisar e aprovar' : 'Revisar'}
           </Button>
 
           <Button
@@ -194,12 +196,13 @@ export default function ImageSectionDetailsModal({
       </Dialog>
 
       {/* Revisar foto é olhar de perto: um toque amplia sem sair da tela. */}
-      <Dialog data-testid="image-sections-image-section-details-modal"
+      <Dialog
+        data-testid="image-sections-image-section-details-modal"
         open={!!ampliada}
         onClose={() => setAmpliada(null)}
         maxWidth="lg"
         onClick={() => setAmpliada(null)}
-        PaperProps={{ sx: { bgcolor: "transparent", boxShadow: "none" } }}
+        PaperProps={{ sx: { bgcolor: 'transparent', boxShadow: 'none' } }}
       >
         {ampliada ? (
           <Box
@@ -207,10 +210,10 @@ export default function ImageSectionDetailsModal({
             src={ampliada}
             alt="Foto ampliada"
             sx={{
-              maxWidth: "100%",
-              maxHeight: "85dvh",
+              maxWidth: '100%',
+              maxHeight: '85dvh',
               borderRadius: 2,
-              display: "block",
+              display: 'block',
             }}
           />
         ) : null}

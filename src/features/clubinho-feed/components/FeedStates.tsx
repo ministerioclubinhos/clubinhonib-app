@@ -240,7 +240,7 @@ export function FeedEmptyState({
               },
             }}
           >
-            Enviar fotos do meu Clubinho
+            Enviar fotos ou vídeo do meu Clubinho
           </Button>
         )}
 

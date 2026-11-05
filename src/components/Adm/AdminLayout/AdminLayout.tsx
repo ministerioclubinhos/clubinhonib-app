@@ -142,7 +142,7 @@ function AdminLayout() {
         title: "Mídias",
         items: [
           { label: "Páginas de fotos", to: "/adm/paginas-fotos", icon: <PhotoLibrary /> },
-          { label: "Fotos dos clubinhos", to: "/adm/fotos-clubinhos", icon: <Collections />, flag: FEATURE.PHOTO_MODERATION },
+          { label: "Fotos e vídeos", to: "/adm/fotos-clubinhos", icon: <Collections />, flag: FEATURE.PHOTO_MODERATION },
           { label: "Páginas de vídeos", to: "/adm/paginas-videos", icon: <VideoLibrary /> },
         ],
       },

@@ -45,7 +45,7 @@ test.describe('Moderação: fotos e ideias', () => {
     await page.goto(`/adm/editar-imagens-clubinho/${photos.id}`);
     const editor = page.getByTestId('teacher-area-image-section-image-section-editor');
     await expect(editor).toBeVisible();
-    await replaceText(editor.getByLabel('Título da Galeria'), `E2E Fotos Aprovadas ${suffix}`);
+    await replaceText(editor.getByLabel('Título da publicação'), `E2E Fotos Aprovadas ${suffix}`);
     await replaceText(editor.getByLabel('Descrição'), 'Descrição revisada');
     await page.getByRole('button', { name: 'Aprovar e publicar' }).click();
 

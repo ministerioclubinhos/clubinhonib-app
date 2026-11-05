@@ -1,354 +1,182 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Typography, Paper, useTheme, useMediaQuery, IconButton } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { motion } from 'framer-motion';
-
-import { apiCreateImageSection } from '@/features/image-sections';
-import { setData, clearData, SectionData } from '@/store/slices/image-section/imageSectionSlice';
-import { MediaType, MediaUploadType, MediaPlatform } from '@/store/slices/types';
-import { RootState } from '@/store/slices';
-
-import { LoadingSpinner } from '../components/Modals';
-import { NotificationModal } from '../components/Modals';
-import ImageSectionEditor from './ImageSectionEditor';
-import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
-import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
-
-interface NotificationState {
-  open: boolean;
-  message: string;
-  severity: 'success' | 'error';
-}
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material';
+import { ArrowBack, CheckCircleOutline, SendOutlined } from '@mui/icons-material';
+import {
+  apiCreateImageSection,
+  buildSectionFormData,
+  buildSectionUpload,
+  ClubinhoMediaEditor,
+  validateClubinhoPublication,
+} from '@/features/image-sections';
+import type { SectionData } from '@/store/slices/image-section/imageSectionSlice';
+import { extractErrorMessage } from '@/utils/apiError';
 
 export default function ImageSectionPage() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const sectionData = useSelector((state: RootState) => state.imageSection.data) as SectionData | null;
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [notification, setNotification] = useState<NotificationState>({
-    open: false,
-    message: '',
-    severity: 'success',
+  const [draft, setDraft] = useState<SectionData>({
+    caption: '',
+    description: '',
+    public: false,
+    mediaItems: [],
   });
-
-  useEffect(() => {
-    dispatch(clearData());
-  }, [dispatch]);
-
-  const showError = (message: string) => {
-    setNotification({ open: true, message, severity: 'error' });
-  };
-
-  const validate = useCallback((): boolean => {
-    if (!sectionData?.caption?.trim()) {
-      showError(FORM_VALIDATION_MESSAGES.SHARED_GALLERY_TITLE_REQUIRED);
-      return false;
-    }
-    if (!sectionData?.description?.trim()) {
-      showError(FORM_VALIDATION_MESSAGES.DESCRIPTION_REQUIRED);
-      return false;
-    }
-    if (!sectionData?.mediaItems?.length) {
-      showError(FORM_VALIDATION_MESSAGES.MEDIA_REQUIRED);
-      return false;
-    }
-    return true;
-  }, [sectionData]);
-
-  const prepareFormData = useCallback((): FormData => {
-    const formData = new FormData();
-
-    const mediaItems = sectionData!.mediaItems.map((media, index) => {
-      const base = {
-        isLocalFile: media.isLocalFile,
-        url: media.url || '',
-        uploadType: media.uploadType || MediaUploadType.UPLOAD,
-        mediaType: MediaType.IMAGE,
-        title: media.title || '',
-        description: media.description || '',
-        platformType: media.platformType || MediaPlatform.ANY,
-        originalName: media.originalName,
-        size: media.size,
-      };
-
-      if (media.isLocalFile && media.file) {
-        const fieldKey = `file_${index}`;
-        formData.append(fieldKey, media.file);
-        return { ...base, fieldKey, id: media.id };
-      }
-
-      return { ...base, id: media.id };
-    });
-
-    // `public` não vai no corpo: as fotos entram na fila e quem leva ao feed
-    // é a administração. A API recusa a requisição inteira se ele chegar.
-    const payload = {
-      caption: sectionData!.caption,
-      description: sectionData!.description,
-      mediaItems,
-    };
-
-    formData.append('sectionData', JSON.stringify(payload));
-    return formData;
-  }, [sectionData]);
-
-  const saveSection = async (formData: FormData) => {
-
-    await apiCreateImageSection(formData);
-
-    setNotification({
-      open: true,
-      message: FEATURE_SUCCESS_MESSAGES.IMAGES_CLUB_SHARED,
-      severity: 'success',
-    });
-
-    dispatch(clearData());
-  };
-
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const handleSave = async () => {
-    if (!validate()) return;
-
+    if (isSaving) return;
+    const validation = !draft.caption.trim()
+      ? 'Preencha o título da publicação.'
+      : !draft.description.trim()
+        ? 'Conte um pouco sobre esse momento na descrição.'
+        : validateClubinhoPublication(draft.mediaItems);
+    if (validation) {
+      setError(validation);
+      return;
+    }
     setIsSaving(true);
-    const formData = prepareFormData();
-
+    setError('');
     try {
-      await saveSection(formData);
-
-      navigate('/area-do-professor');
-    } catch (error) {
-      console.error('Erro ao salvar a seção:', error);
-      showError('Falha ao compartilhar as imagens do seu Clubinho. Tente novamente.');
+      const { payload, uploads } = buildSectionUpload({
+        caption: draft.caption.trim(),
+        description: draft.description.trim(),
+        mediaItems: draft.mediaItems,
+      });
+      await apiCreateImageSection(buildSectionFormData(payload, uploads));
+      setSubmitted(true);
+      setDraft({ caption: '', description: '', public: false, mediaItems: [] });
+    } catch (failure: unknown) {
+      setError(
+        extractErrorMessage(
+          failure,
+          'Não foi possível enviar. Seus arquivos continuam aqui para tentar novamente.'
+        )
+      );
     } finally {
       setIsSaving(false);
     }
   };
-
-  const handleChange = (updatedData: Partial<SectionData>) => {
-    dispatch(setData({ ...(sectionData || {}), ...updatedData } as SectionData));
-  };
-
-  const handleBack = () => {
-    navigate('/area-do-professor');
-  };
-
   return (
-    <Box data-testid="teacher-area-image-section-image-section-page"
-      sx={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        py: { xs: 2, md: 4 },
-        px: { xs: 1, md: 0 },
-      }}
+    <Box
+      data-testid="teacher-area-image-section-image-section-page"
+      sx={{ bgcolor: 'grey.50', minHeight: '100vh', py: { xs: 3, md: 5 } }}
     >
       <Container maxWidth="lg">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+        <Button
+          type="button"
+          disabled={isSaving}
+          startIcon={<ArrowBack />}
+          onClick={() => navigate('/area-do-professor')}
+          sx={{ minHeight: 44, mb: 2 }}
         >
+          Área do professor
+        </Button>
+        <Typography variant="overline" color="success.main" display="block" fontWeight={700}>
+          Momentos do Clubinho
+        </Typography>
+        <Typography
+          component="h1"
+          variant="h3"
+          fontWeight={800}
+          sx={{ fontSize: { xs: '1.8rem', md: '2.6rem' }, mb: 1 }}
+        >
+          Uma história para compartilhar.
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 4, maxWidth: 650 }}>
+          Envie fotos ou um vídeo do seu Clubinho. Compartilhe as descobertas, a alegria e os
+          encontros que merecem ser lembrados.
+        </Typography>
+        {submitted ? (
           <Paper
-            elevation={8}
-            sx={{
-              p: { xs: 3, md: 4 },
-              borderRadius: 4,
-              background: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-            }}
+            data-testid="clubinho-upload-success"
+            variant="outlined"
+            sx={{ p: { xs: 3, md: 6 }, textAlign: 'center', borderRadius: 3 }}
           >
-            <Box
-              sx={{
-                display: { xs: 'flex', sm: 'none' },
-                justifyContent: 'flex-start',
-                mb: 2,
-              }}
-            >
-              <IconButton
-                onClick={handleBack}
-                sx={{
-                  bgcolor: 'rgba(255, 255, 255, 0.9)',
-                  color: 'primary.main',
-                  '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 1)',
-                    transform: 'scale(1.05)',
-                  },
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                  width: 40,
-                  height: 40,
-                }}
-                aria-label="Voltar para área do professor"
+            <CheckCircleOutline color="success" sx={{ fontSize: 56 }} />
+            <Typography component="h2" variant="h5" mt={2} fontWeight={700}>
+              Seu momento foi enviado!
+            </Typography>
+            <Typography color="text.secondary" mt={1}>
+              A equipe vai revisar sua publicação. Após a aprovação, ela aparecerá no feed com seu
+              nome.
+            </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="center" gap={2} mt={3}>
+              <Button
+                type="button"
+                variant="contained"
+                color="success"
+                onClick={() => navigate('/feed-clubinho')}
+                sx={{ minHeight: 44 }}
               >
-                <ArrowBackIcon fontSize="inherit" />
-              </IconButton>
-            </Box>
-
-            <Box
-              sx={{
-                textAlign: 'center',
-                mb: 4,
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  zIndex: 10,
-                  display: { xs: 'none', sm: 'block' },
-                }}
+                Ir para o feed
+              </Button>
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={() => setSubmitted(false)}
+                sx={{ minHeight: 44 }}
               >
-                <IconButton
-                  onClick={handleBack}
-                  sx={{
-                    bgcolor: 'rgba(255, 255, 255, 0.9)',
-                    color: 'primary.main',
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 255, 255, 1)',
-                      transform: 'scale(1.05)',
-                    },
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                    width: 44,
-                    height: 44,
-                  }}
-                  aria-label="Voltar para área do professor"
-                >
-                  <ArrowBackIcon fontSize="inherit" />
-                </IconButton>
-              </Box>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: -50,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 100,
-                  height: 100,
-                  background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
-                  borderRadius: '50%',
-                  opacity: 0.1,
-                  filter: 'blur(20px)',
-                }}
-              />
-
-              <Box
-                sx={{
-                  width: { xs: '95%', sm: '100%' },
-                  mx: 'auto',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                <Typography
-                  variant="h3"
-                  fontWeight="bold"
-                  sx={{
-                    fontSize: { xs: '1.2rem', sm: '2rem', md: '2.5rem' },
-                    background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    mb: 1,
-                  }}
-                >
-                  📸 Enviar Imagens do seu Clubinho
-                </Typography>
-
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{
-                    fontSize: { xs: '0.9rem', md: '1rem' },
-                    maxWidth: { xs: '100%', sm: 600 },
-                    mx: 'auto',
-                  }}
-                >
-                  Registre e compartilhe os momentos especiais das atividades do seu Clubinho para inspirar outros professores
-                </Typography>
-              </Box>
-            </Box>
-
-            <LoadingSpinner open={isSaving} aria-label="Salvando a seção" />
-
-            <NotificationModal
-              open={notification.open}
-              message={notification.message}
-              severity={notification.severity}
-              onClose={() => setNotification({ ...notification, open: false })}
-            />
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <ImageSectionEditor
-                isEditMode={false}
-                initialCaption={sectionData?.caption || ''}
-                initialDescription={sectionData?.description || ''}
-                initialIsPublic={sectionData?.public ?? true}
-                initialMediaItems={sectionData?.mediaItems || []}
-                onChange={handleChange}
-                captionPlaceholder="EX: Clubinho 90: Gincana de Páscoa - Crianças aprendendo sobre ressurreição"
-                descriptionPlaceholder="EX: Descreva as atividades realizadas no seu Clubinho: dinâmicas, brincadeiras, ensinamentos bíblicos, momentos especiais com as crianças e como elas reagiram às atividades."
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-            >
-              <Box
-                mt={4}
-                display="flex"
-                justifyContent="center"
-                sx={{
-                  px: { xs: 1, md: 0 },
-                }}
-              >
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  size={isMobile ? "medium" : "large"}
-                  sx={{
-                    minWidth: { xs: 200, md: 250 },
-                    height: { xs: 44, md: 52 },
-                    fontSize: { xs: '0.9rem', md: '1rem' },
-                    fontWeight: 600,
-                    borderRadius: 3,
-                    background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                    boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
-                    '&:hover': {
-                      background: 'linear-gradient(45deg, #5a6fd8, #6a4190)',
-                      boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
-                      transform: 'translateY(-2px)',
-                    },
-                    '&:disabled': {
-                      background: 'rgba(0, 0, 0, 0.12)',
-                      boxShadow: 'none',
-                      transform: 'none',
-                    },
-                    transition: 'all 0.3s ease',
-                  }}
-                  aria-label="Compartilhar imagens do Clubinho"
-                >
-                  {isSaving ? 'Enviando...' : '🚀 Compartilhar Imagens'}
-                </Button>
-              </Box>
-            </motion.div>
+                Enviar outro momento
+              </Button>
+            </Stack>
           </Paper>
-        </motion.div>
+        ) : (
+          <>
+            <ClubinhoMediaEditor
+              initialCaption={draft.caption}
+              initialDescription={draft.description}
+              initialIsPublic={false}
+              initialMediaItems={draft.mediaItems}
+              disabled={isSaving}
+              onChange={(changes) => {
+                setDraft((current) => ({ ...current, ...changes }));
+                setError('');
+              }}
+            />
+            {error && (
+              <Alert data-testid="clubinho-upload-error" severity="error" sx={{ mt: 3 }}>
+                {error}
+              </Alert>
+            )}
+            <Paper variant="outlined" sx={{ p: 2.5, mt: 3, borderRadius: 3 }}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                justifyContent="space-between"
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                gap={2}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  {isSaving
+                    ? 'Enviando arquivos. Aguarde até a confirmação.'
+                    : 'Tudo pronto? Envie seu registro para a equipe.'}
+                </Typography>
+                <Button
+                  data-testid="clubinho-upload-submit"
+                  type="button"
+                  variant="contained"
+                  color="success"
+                  disabled={isSaving}
+                  onClick={() => void handleSave()}
+                  startIcon={
+                    isSaving ? <CircularProgress size={18} color="inherit" /> : <SendOutlined />
+                  }
+                  sx={{ minHeight: 48, px: 3 }}
+                >
+                  {isSaving ? 'Enviando…' : 'Enviar para revisão'}
+                </Button>
+              </Stack>
+            </Paper>
+          </>
+        )}
       </Container>
     </Box>
   );

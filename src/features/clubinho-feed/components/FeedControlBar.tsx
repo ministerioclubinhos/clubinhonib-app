@@ -141,7 +141,7 @@ export function FeedControlBar({
         {hasFilter
           ? `${visibleCount} de ${loadedCount} publicações carregadas`
           : viewMode === FeedViewMode.GALLERY
-            ? formatCountLabel(totalPhotosCount, 'foto', 'fotos')
+            ? formatCountLabel(totalPhotosCount, 'registro', 'registros')
             : 'Publicações mais recentes'}
       </Typography>
     </Box>

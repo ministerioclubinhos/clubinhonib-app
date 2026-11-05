@@ -1,3 +1,5 @@
+import type { MediaItem, MediaType } from '@/store/slices/types';
+import type { SectionData } from '@/store/slices/image-section/imageSectionSlice';
 /**
  * Contratos de fotos do clubinho.
  *
@@ -27,6 +29,7 @@ export interface ImageSectionResponse {
   public: boolean;
   /** Página do feed onde entrou; `null` enquanto aguarda aprovação. */
   pageId: string | null;
+  author?: { name: string } | null;
   mediaItems: ImageSectionMedia[];
   createdAt: string;
   updatedAt: string;
@@ -42,8 +45,8 @@ export interface Paginated<T> {
 }
 
 /** Campo de ordenação aceito pela API. */
-export type ImageSectionSortField = "createdAt" | "caption";
-export type ImageSectionSortOrder = "ASC" | "DESC";
+export type ImageSectionSortField = 'createdAt' | 'caption';
+export type ImageSectionSortOrder = 'ASC' | 'DESC';
 
 /** Filtros da fila de revisão. */
 export interface ImageSectionFilters {
@@ -66,12 +69,7 @@ export interface ImageSectionsQueryParams {
 }
 
 /** Plataformas aceitas em uma mídia de link (`PlatformType`). */
-export type ImageSectionPlatform =
-  | "youtube"
-  | "googledrive"
-  | "onedrive"
-  | "dropbox"
-  | "ANY";
+export type ImageSectionPlatform = 'youtube' | 'googledrive' | 'onedrive' | 'dropbox' | 'ANY';
 
 /** Uma mídia na entrada (`MediaItemDto`). */
 export interface ImageSectionMediaInput {
@@ -79,8 +77,8 @@ export interface ImageSectionMediaInput {
   id?: string;
   title?: string;
   description?: string;
-  uploadType: "upload" | "link";
-  mediaType: "image" | "video" | "document";
+  uploadType: 'upload' | 'link';
+  mediaType: 'image' | 'video' | 'document';
   isLocalFile: boolean;
   url?: string;
   platformType?: ImageSectionPlatform;
@@ -108,4 +106,28 @@ export interface ImageSectionUpload {
 /** Resposta das rotas que só confirmam a operação. */
 export interface ApiMessage {
   message: string;
+}
+
+export interface ClubinhoMediaEditorProps {
+  isEditMode?: boolean;
+  initialCaption: string;
+  initialDescription: string;
+  initialIsPublic: boolean;
+  initialMediaItems: MediaItem[];
+  onChange: (updatedData: Partial<SectionData>) => void;
+  captionPlaceholder?: string;
+  descriptionPlaceholder?: string;
+  disabled?: boolean;
+}
+export interface ClubinhoMediaPreviewProps {
+  media: Pick<MediaItem, 'url' | 'mediaType' | 'title' | 'file'>;
+}
+export interface ClubinhoVideoPlayerProps {
+  src: string;
+  title: string;
+}
+export interface ClubinhoFileSelection {
+  files: File[];
+  mediaType: MediaType;
+  currentCount: number;
 }

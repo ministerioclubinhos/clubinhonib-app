@@ -1,21 +1,11 @@
-import {
-  Box,
-  ButtonBase,
-  IconButton,
-  Stack,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
+import { Box, ButtonBase, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 
-import {
-  FEED_PALETTE,
-  FEED_TEST_IDS,
-  FEED_TOUCH_TARGET_PX,
-} from '../constants';
+import { FEED_PALETTE, FEED_TEST_IDS, FEED_TOUCH_TARGET_PX } from '../constants';
 import type { FeedBentoMuralProps } from '../types';
 import { resolveBentoTileColSpan } from '../utils';
 
@@ -105,7 +95,17 @@ export function FeedBentoMural({
               }}
             >
               {/* Neutral fallback keeps white captions readable without a photo. */}
-              {section.coverUrl ? (
+              {section.isVideo ? (
+                <PlayCircleOutlineRoundedIcon
+                  sx={{
+                    position: 'absolute',
+                    top: '34%',
+                    left: '42%',
+                    fontSize: 70,
+                    color: 'common.white',
+                  }}
+                />
+              ) : section.coverUrl ? (
                 <Box
                   component="img"
                   className="bento-cover-img"
@@ -189,7 +189,7 @@ export function FeedBentoMural({
                     }}
                   >
                     <CollectionsOutlinedIcon sx={{ fontSize: 14 }} />
-                    <span>{section.mediaCount}</span>
+                    <span>{section.isVideo ? 'Vídeo' : `${section.mediaCount} fotos`}</span>
                   </Stack>
                 )}
               </Stack>
@@ -245,8 +245,16 @@ export function FeedBentoMural({
                   </Typography>
                 )}
 
-                <Stack direction="row" alignItems="center" spacing={0.6} sx={{ color: FEED_PALETTE.brandLeaf }}>
-                  <Typography variant="caption" sx={{ fontWeight: 800, color: 'inherit', fontSize: '0.78rem' }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={0.6}
+                  sx={{ color: FEED_PALETTE.brandLeaf }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ fontWeight: 800, color: 'inherit', fontSize: '0.78rem' }}
+                  >
                     Explorar publicação
                   </Typography>
                   <ArrowForwardRoundedIcon sx={{ fontSize: 16 }} />
@@ -276,9 +284,7 @@ export function FeedBentoMural({
                   width: FEED_TOUCH_TARGET_PX,
                   height: FEED_TOUCH_TARGET_PX,
                   color: celebrated ? FEED_PALETTE.coralHeart : '#ffffff',
-                  bgcolor: celebrated
-                    ? '#ffffff'
-                    : 'rgba(11, 36, 22, 0.52)',
+                  bgcolor: celebrated ? '#ffffff' : 'rgba(11, 36, 22, 0.52)',
                   backdropFilter: 'blur(8px)',
                   border: '1px solid rgba(255, 255, 255, 0.22)',
                   '&:hover': {

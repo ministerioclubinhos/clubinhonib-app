@@ -1,33 +1,25 @@
-import React, { useMemo, useState } from "react";
-import { Grid2 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import React, { useMemo, useState } from 'react';
+import { Grid2 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 
-import {
-  ListingLayout,
-  ListingToolbar,
-  type ListingFilter,
-} from "@/components/common/listing";
-import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
-import { setData } from "@/store/slices/image-section/imageSectionSlice";
-import type { SectionData } from "@/store/slices/image-section/imageSectionSlice";
-import type {
-  MediaPlatform,
-  MediaType,
-  MediaUploadType,
-} from "@/store/slices/types";
+import { ListingLayout, ListingToolbar, type ListingFilter } from '@/components/common/listing';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
+import { setData } from '@/store/slices/image-section/imageSectionSlice';
+import type { SectionData } from '@/store/slices/image-section/imageSectionSlice';
+import type { MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 
-import ImageSectionCard from "./components/ImageSectionCard";
-import ImageSectionDetailsModal from "./components/ImageSectionDetailsModal";
-import { useImageSectionMutations, useImageSections } from "./hooks";
-import { IMAGE_SECTIONS_PAGE_SIZE_OPTIONS } from "./constants";
-import type { ImageSectionResponse } from "./types";
+import ImageSectionCard from './components/ImageSectionCard';
+import ImageSectionDetailsModal from './components/ImageSectionDetailsModal';
+import { useImageSectionMutations, useImageSections } from './hooks';
+import { IMAGE_SECTIONS_PAGE_SIZE_OPTIONS } from './constants';
+import type { ImageSectionResponse } from './types';
 
 /** Rota onde a administração revisa as fotos e aprova a publicação. */
 const reviewRoute = (id: string) => `/adm/editar-imagens-clubinho/${id}`;
 
 /** Valor usado quando o filtro está sem seleção. */
-const ANY = "";
+const ANY = '';
 
 /**
  * Fila de fotos enviadas pelos clubinhos.
@@ -56,47 +48,45 @@ export default function ImageSectionManager() {
     refresh,
   } = useImageSections();
 
-  const { actionLoading, actionError, setActionError, remove } =
-    useImageSectionMutations(refresh);
+  const { actionLoading, actionError, setActionError, remove } = useImageSectionMutations(refresh);
 
   const [viewing, setViewing] = useState<ImageSectionResponse | null>(null);
-  const [confirmDelete, setConfirmDelete] =
-    useState<ImageSectionResponse | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<ImageSectionResponse | null>(null);
 
   const toolbarFilters = useMemo<ListingFilter[]>(
     () => [
       {
-        id: "approved",
-        label: "Situação",
+        id: 'approved',
+        label: 'Situação',
         value: filters.approved === undefined ? ANY : String(filters.approved),
         options: [
-          { value: ANY, label: "Todas" },
-          { value: "false", label: "Aguardando" },
-          { value: "true", label: "No feed" },
+          { value: ANY, label: 'Todas' },
+          { value: 'false', label: 'Aguardando' },
+          { value: 'true', label: 'No feed' },
         ],
         onChange: (value) =>
           setFilters((current) => ({
             ...current,
-            approved: value === ANY ? undefined : value === "true",
+            approved: value === ANY ? undefined : value === 'true',
           })),
       },
       {
-        id: "hasMedia",
-        label: "Fotos",
+        id: 'hasMedia',
+        label: 'Arquivos',
         value: filters.hasMedia === undefined ? ANY : String(filters.hasMedia),
         options: [
-          { value: ANY, label: "Todas" },
-          { value: "true", label: "Com fotos" },
-          { value: "false", label: "Sem fotos" },
+          { value: ANY, label: 'Todas' },
+          { value: 'true', label: 'Com arquivos' },
+          { value: 'false', label: 'Sem arquivos' },
         ],
         onChange: (value) =>
           setFilters((current) => ({
             ...current,
-            hasMedia: value === ANY ? undefined : value === "true",
+            hasMedia: value === ANY ? undefined : value === 'true',
           })),
       },
     ],
-    [filters, setFilters],
+    [filters, setFilters]
   );
 
   /** Leva a publicação para a tela de revisão. */
@@ -110,8 +100,8 @@ export default function ImageSectionManager() {
       updatedAt: section.updatedAt,
       mediaItems: section.mediaItems.map((media) => ({
         id: media.id,
-        title: media.title ?? "",
-        description: media.description ?? "",
+        title: media.title ?? '',
+        description: media.description ?? '',
         uploadType: media.uploadType as MediaUploadType,
         mediaType: media.mediaType as MediaType,
         isLocalFile: media.isLocalFile,
@@ -137,12 +127,13 @@ export default function ImageSectionManager() {
   };
 
   return (
-    <ListingLayout data-testid="image-sections-image-section-manager"
-      title="Fotos dos clubinhos"
+    <ListingLayout
+      data-testid="image-sections-image-section-manager"
+      title="Fotos e vídeos dos Clubinhos"
       summary={
         total > 0
           ? `${total} publicação(ões) encontrada(s)`
-          : "Nenhuma publicação para os filtros atuais"
+          : 'Nenhuma publicação para os filtros atuais'
       }
       toolbar={
         <ListingToolbar
@@ -156,12 +147,12 @@ export default function ImageSectionManager() {
       loading={loading}
       error={error || actionError}
       onDismissError={() => {
-        setError("");
-        setActionError("");
+        setError('');
+        setActionError('');
       }}
       itemCount={items.length}
       emptyTitle="Nenhuma publicação encontrada"
-      emptySubtitle="Quando um clubinho enviar fotos, elas aparecem aqui para revisão."
+      emptySubtitle="Os registros enviados pelos Clubinhos aparecem aqui. Assista aos vídeos, confira as fotos e aprove para publicar no feed."
       pagination={{
         page,
         pageSize,
@@ -186,7 +177,7 @@ export default function ImageSectionManager() {
 
           <DeleteConfirmDialog
             open={!!confirmDelete}
-            title={confirmDelete ? `publicação "${confirmDelete.caption}"` : ""}
+            title={confirmDelete ? `publicação "${confirmDelete.caption}"` : ''}
             onClose={() => setConfirmDelete(null)}
             onConfirm={handleDelete}
           />

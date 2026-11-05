@@ -56,7 +56,6 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
   const { flags } = useFeatureFlags();
 
   const {
-    feedPageId,
     isMissingConfig,
     pageMeta,
     sections,
@@ -84,7 +83,9 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
   const initialHashHandledRef = useRef(false);
 
   const canUploadPhotos = Boolean(isAuthenticated && flags[FEATURE.CLUB_PHOTO_UPLOAD]);
-  const canManageFeed = Boolean(isAuthenticated && user?.role === UserRole.ADMIN && feedPageId);
+  const canManageFeed = Boolean(
+    isAuthenticated && user?.role === UserRole.ADMIN && flags[FEATURE.PHOTO_MODERATION]
+  );
   const hasSearchFilter = searchQuery.trim().length > 0;
 
   const visibleSections = useMemo(
@@ -273,11 +274,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
         isRefreshing={isRefreshing}
         onNavigateHome={() => navigate(FEED_ROUTES.HOME)}
         onNavigateUpload={() => navigate(FEED_ROUTES.UPLOAD_PHOTOS)}
-        onNavigateManage={() => {
-          if (feedPageId) {
-            navigate(`${FEED_ROUTES.ADMIN_EDIT_GALLERY_PREFIX}/${feedPageId}`);
-          }
-        }}
+        onNavigateManage={() => navigate(FEED_ROUTES.ADMIN_MEDIA)}
         onRefresh={() => {
           void refreshFeed();
         }}

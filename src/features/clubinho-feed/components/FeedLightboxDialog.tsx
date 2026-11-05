@@ -1,3 +1,5 @@
+import { MediaType } from '@/store/slices/types';
+import { ClubinhoVideoPlayer } from '@/features/image-sections';
 import { PhotoCommentsPanel } from '@/features/feed-photo-comments';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TouchEvent } from 'react';
@@ -62,7 +64,7 @@ export function FeedLightboxDialog({ activeState, onClose }: FeedLightboxDialogP
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.target instanceof HTMLElement &&
-        event.target.closest('input, textarea, [contenteditable="true"], [role="tablist"]')
+        event.target.closest('input, textarea, [contenteditable="true"], [role="tablist"], video')
       )
         return;
       if (event.key === 'ArrowLeft') {
@@ -155,7 +157,7 @@ export function FeedLightboxDialog({ activeState, onClose }: FeedLightboxDialogP
                     color: FEED_PALETTE.brandLeaf,
                   }}
                 >
-                  {section.clubBadge}
+                  {section.authorName} · {section.clubBadge}
                 </Typography>
                 {mediaCount > 0 && (
                   <Typography
@@ -193,13 +195,13 @@ export function FeedLightboxDialog({ activeState, onClose }: FeedLightboxDialogP
 
             <Stack direction="row" spacing={1} alignItems="center">
               {currentMedia?.originalUrl && (
-                <Tooltip title="Abrir imagem original em nova aba">
+                <Tooltip title="Abrir arquivo original em nova aba">
                   <IconButton
                     component="a"
                     href={currentMedia.originalUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Abrir imagem original em nova aba"
+                    aria-label="Abrir arquivo original em nova aba"
                     sx={{
                       width: FEED_TOUCH_TARGET_PX,
                       height: FEED_TOUCH_TARGET_PX,
@@ -299,7 +301,13 @@ export function FeedLightboxDialog({ activeState, onClose }: FeedLightboxDialogP
                   </IconButton>
                 )}
 
-                {currentMedia && !imageFailed ? (
+                {currentMedia?.mediaType === MediaType.VIDEO ? (
+                  <ClubinhoVideoPlayer
+                    key={currentMedia.key}
+                    src={currentMedia.originalUrl}
+                    title={currentMedia.title}
+                  />
+                ) : currentMedia && !imageFailed ? (
                   <Box
                     key={currentMedia.key}
                     data-testid={FEED_TEST_IDS.LIGHTBOX_IMAGE}
@@ -449,9 +457,11 @@ export function FeedLightboxDialog({ activeState, onClose }: FeedLightboxDialogP
                 )}
               </Box>
             </Box>
-            <Box sx={{ width: { xs: '100%', md: 360 }, flexShrink: 0, minHeight: 0 }}>
-              <PhotoCommentsPanel mediaId={currentMedia?.id} />
-            </Box>
+            {currentMedia?.mediaType !== MediaType.VIDEO && (
+              <Box sx={{ width: { xs: '100%', md: 360 }, flexShrink: 0, minHeight: 0 }}>
+                <PhotoCommentsPanel mediaId={currentMedia?.id} />
+              </Box>
+            )}
           </Box>
         </Box>
       )}

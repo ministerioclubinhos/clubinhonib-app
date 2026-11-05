@@ -50,7 +50,7 @@ export const FEED_ROUTES = {
   HOME: '/',
   FEED: '/feed-clubinho',
   UPLOAD_PHOTOS: '/imagens-clubinho',
-  ADMIN_EDIT_GALLERY_PREFIX: '/adm/editar-pagina-imagens',
+  ADMIN_MEDIA: '/adm/fotos-clubinhos',
 } as const;
 
 /** Fábrica estável de query keys do Feed Clubinho (inclui todos os filtros que alteram a resposta). */
@@ -107,15 +107,15 @@ export const FEED_VIEW_MODE_OPTIONS: ReadonlyArray<{
   },
   {
     mode: FeedViewMode.BENTO,
-    label: 'Álbuns',
-    shortLabel: 'Álbuns',
-    description: 'Veja os álbuns de cada encontro',
+    label: 'Momentos',
+    shortLabel: 'Momentos',
+    description: 'Veja fotos e vídeos de cada encontro',
   },
   {
     mode: FeedViewMode.GALLERY,
-    label: 'Fotos',
-    shortLabel: 'Fotos',
-    description: 'Explore todas as fotos publicadas',
+    label: 'Fotos e vídeos',
+    shortLabel: 'Galeria',
+    description: 'Explore as fotos e os vídeos publicados',
   },
 ] as const;
 
@@ -161,7 +161,7 @@ export const FEED_MESSAGES = {
   NEXT_PAGE_ERROR: 'Não foi possível carregar mais publicações. Tente novamente.',
   EMPTY_TITLE: 'As novidades dos Clubinhos chegam por aqui',
   EMPTY_DESCRIPTION:
-    'Assim que novas fotos e histórias dos Clubinhos forem publicadas, elas aparecerão aqui para inspirar toda a comunidade.',
+    'Assim que novas fotos, vídeos e histórias dos Clubinhos forem publicadas, elas aparecerão aqui para inspirar toda a comunidade.',
   FILTER_EMPTY_TITLE: 'Nenhuma publicação encontrada',
   FILTER_EMPTY_DESCRIPTION:
     'Tente buscar por outro termo ou limpe o filtro para voltar a ver todas as publicações carregadas.',
