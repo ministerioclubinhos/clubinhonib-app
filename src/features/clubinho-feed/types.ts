@@ -58,7 +58,7 @@ export interface ClubinhoFeedSectionDto {
   authorId?: string | null;
   celebrators?: string[];
   celebrationCount?: number;
-  authorId?: string | null;
+  celebratedByMe?: boolean;
 }
 
 /** DTO de saída paginado de `GET /image-pages/:id/sections`. */
@@ -111,6 +111,7 @@ export interface FeedSectionViewModel {
   mediaCount: number;
   celebrators: string[];
   celebrationCount: number;
+  celebratedByMe: boolean;
   isOwnPublication: boolean;
 }
 

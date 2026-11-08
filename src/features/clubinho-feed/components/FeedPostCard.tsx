@@ -209,11 +209,12 @@ export function FeedPostCard({
       </Stack>
       {section.celebrationCount > 0 && (() => {
         const names = section.celebrators;
-        const shown = names.slice(0, 2);
-        const others = Math.max(0, section.celebrationCount - shown.length);
-        const summary = section.celebrationCount === 1
-          ? `${shown[0] ?? '1 pessoa'} celebrou sua publicação`
-          : `${shown.join(' e ')}${others > 0 ? ` e outras ${others} pessoas` : ''} celebraram sua publicação`;
+        const shown = names.slice(0, section.celebratedByMe ? 1 : 2).map((name) => name.trim().split(/\s+/)[0]);
+        const others = Math.max(0, section.celebrationCount - shown.length - (section.celebratedByMe ? 1 : 0));
+        const participants = [ ...(section.celebratedByMe ? ['Você'] : []), ...shown ];
+        const summary = section.celebrationCount === 1 && section.celebratedByMe
+          ? 'Você celebrou esta publicação'
+          : `${participants.join(' e ')}${others > 0 ? ` e mais ${others} ${others === 1 ? 'pessoa' : 'professores'}` : ''} celebraram esta publicação`;
         return (
           <Tooltip
             placement="top-start"

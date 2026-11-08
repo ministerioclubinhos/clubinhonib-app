@@ -240,7 +240,7 @@ export function toFeedSectionViewModel(
     isPublic: dto.public,
     clubBadge: extractClubBadgeLabel(caption),
     monogram: buildCaptionMonogram(dto.author?.name || caption),
-    authorName: dto.author?.name?.trim() || 'Autor não informado',
+    authorName: dto.author?.name?.trim() || 'Comunidade do Clubinho',
     isVideo: mediaItems.some((item) => item.mediaType === MediaType.VIDEO),
     formattedDate: createdParts.fullDate,
     formattedTime: createdParts.time,
@@ -251,6 +251,7 @@ export function toFeedSectionViewModel(
     mediaCount: mediaItems.length,
     celebrators: dto.celebrators ?? [],
     celebrationCount: dto.celebrationCount ?? 0,
+    celebratedByMe: dto.celebratedByMe ?? false,
     isOwnPublication: Boolean(dto.authorId && currentUserId && dto.authorId === currentUserId),
   };
 }
