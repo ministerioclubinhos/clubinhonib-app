@@ -122,17 +122,15 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
     };
   }, []);
 
-  // Rolagem automática caso a URL contenha âncora direta (#publicacao-feed-...)
+  // Link compartilhado abre diretamente a publicação no modo expandido.
   useEffect(() => {
     if (initialHashHandledRef.current || sections.length === 0) return;
     const rawHash = window.location.hash.replace(/^#/, '');
-    if (!rawHash) return;
-
-    const target = document.getElementById(rawHash);
-    if (target) {
-      initialHashHandledRef.current = true;
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (!rawHash.startsWith('publicacao-feed-')) return;
+    const section = sections.find((item) => item.anchorId === rawHash);
+    if (!section) return;
+    initialHashHandledRef.current = true;
+    setActiveLightbox({ section, initialIndex: 0 });
   }, [sections]);
 
   // Observa qual publicação está visível para destacar no índice lateral
