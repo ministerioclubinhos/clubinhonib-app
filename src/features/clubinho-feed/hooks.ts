@@ -57,9 +57,7 @@ function writeStoredCelebrationIds(ids: ReadonlySet<string>): void {
  * com um único dono de estado remoto (TanStack Query).
  */
 export function useClubinhoFeed(): UseClubinhoFeedResult {
-  const isAuthenticated = useSelector((state: RootState) =>
-    Boolean(state.auth.isAuthenticated),
-  );
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const rawFeedPageId = import.meta.env.VITE_FEED_MINISTERIO_ID;
   const feedPageId =
     typeof rawFeedPageId === 'string' && rawFeedPageId.trim().length > 0
@@ -86,8 +84,11 @@ export function useClubinhoFeed(): UseClubinhoFeedResult {
   });
 
   const merged = useMemo(
-    () => mergeFeedPages(query.data?.pages),
-    [query.data?.pages],
+    () => {
+      const result = mergeFeedPages(query.data?.pages);
+      return { ...result, sections: result.sections.map((section) => ({ ...section, isOwnPublication: Boolean(section.authorId && user?.id === section.authorId) })) };
+    },
+    [query.data?.pages, user?.id],
   );
 
   const loadNextPage = useCallback(() => {

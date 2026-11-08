@@ -49,6 +49,7 @@ import { FEATURE } from '@/features/feature-flags';
 import { useFeatureFlags } from '@/hooks';
 import type { RootState } from '@/store/slices';
 import { UserRole } from '@/types/shared';
+import { apiToggleFeedCelebration } from '@/features/clubinho-feed/api';
 
 export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
   const { flags } = useFeatureFlags();
 
   const {
+    feedPageId,
     isMissingConfig,
     pageMeta,
     sections,
@@ -71,6 +73,15 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
   } = useClubinhoFeed();
 
   const { isCelebrated, toggleCelebration, markStoryViewed } = useFeedCelebrations();
+  const handleCelebrate = useCallback(async (sectionId: string) => {
+    if (!isAuthenticated || !feedPageId) return;
+    try {
+      await apiToggleFeedCelebration(feedPageId, sectionId);
+      toggleCelebration(sectionId);
+      // Refresh obtains the server-authoritative names and total.
+      await refreshFeed();
+    } catch { /* Keep current state if the request fails. */ }
+  }, [feedPageId, isAuthenticated, refreshFeed, toggleCelebration]);
 
   const [viewMode, setViewMode] = useState<FeedViewMode>(FeedViewMode.TIMELINE);
   const [searchQuery, setSearchQuery] = useState('');
@@ -385,7 +396,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
                       section={section}
                       isCelebrated={isCelebrated(section.id)}
                       isCopied={copiedSectionId === section.id}
-                      onToggleCelebrate={toggleCelebration}
+                      onToggleCelebrate={handleCelebrate}
                       onShare={(targetSection) => {
                         void handleShareSection(targetSection);
                       }}
@@ -407,7 +418,7 @@ export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
               <FeedBentoMural
                 sections={visibleSections}
                 isCelebrated={isCelebrated}
-                onToggleCelebrate={toggleCelebration}
+                onToggleCelebrate={handleCelebrate}
                 onOpenLightbox={handleOpenLightbox}
               />
             ) : (

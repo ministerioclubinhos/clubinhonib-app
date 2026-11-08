@@ -34,3 +34,10 @@ export async function apiGetClubinhoFeedSections(
 
   return data;
 }
+
+export async function apiToggleFeedCelebration(pageId: string, sectionId: string) {
+  const { data } = await api.post<{ celebrated: boolean; celebrationCount: number; celebrators: string[]; ownPublication?: boolean }>(
+    `${FEED_IMAGE_PAGES_ENDPOINT}/${pageId}/sections/${sectionId}/celebrations/toggle`,
+  );
+  return data;
+}

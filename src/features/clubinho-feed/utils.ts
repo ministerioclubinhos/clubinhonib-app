@@ -200,7 +200,8 @@ export function buildSectionShareUrl(origin: string, pathname: string, sectionId
 /** Mapeia uma seção crua da API para o ViewModel consumido pelos componentes visuais. */
 export function toFeedSectionViewModel(
   dto: ClubinhoFeedSectionDto,
-  referenceDate: Date = new Date()
+  referenceDate: Date = new Date(),
+  currentUserId?: string | null,
 ): FeedSectionViewModel {
   const caption = dto.caption?.trim() || 'Momento no Clubinho';
   const description = dto.description?.trim() || '';
@@ -232,6 +233,7 @@ export function toFeedSectionViewModel(
 
   return {
     id: dto.id,
+    authorId: dto.authorId ?? null,
     anchorId: buildSectionAnchorId(dto.id),
     caption,
     description,
@@ -247,6 +249,9 @@ export function toFeedSectionViewModel(
     mediaItems,
     coverUrl: mediaItems[0]?.previewUrl ?? '',
     mediaCount: mediaItems.length,
+    celebrators: dto.celebrators ?? [],
+    celebrationCount: dto.celebrationCount ?? 0,
+    isOwnPublication: Boolean(dto.authorId && currentUserId && dto.authorId === currentUserId),
   };
 }
 

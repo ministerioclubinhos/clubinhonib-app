@@ -55,6 +55,10 @@ export interface ClubinhoFeedSectionDto {
   updatedAt: string;
   mediaItems: ClubinhoFeedMediaItemDto[];
   author?: { name: string } | null;
+  authorId?: string | null;
+  celebrators?: string[];
+  celebrationCount?: number;
+  authorId?: string | null;
 }
 
 /** DTO de saída paginado de `GET /image-pages/:id/sections`. */
@@ -89,6 +93,7 @@ export interface FeedMediaViewModel {
 /** Publicação enriquecida para os modos Crônicas, Mural e Stories. */
 export interface FeedSectionViewModel {
   id: string;
+  authorId?: string | null;
   anchorId: string;
   caption: string;
   description: string;
@@ -104,6 +109,9 @@ export interface FeedSectionViewModel {
   mediaItems: FeedMediaViewModel[];
   coverUrl: string;
   mediaCount: number;
+  celebrators: string[];
+  celebrationCount: number;
+  isOwnPublication: boolean;
 }
 
 /** Item achatado para o modo Galeria Viva (exposição fotográfica). */
