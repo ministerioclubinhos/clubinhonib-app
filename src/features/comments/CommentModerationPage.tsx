@@ -27,7 +27,7 @@ export default function CommentModerationPage() {
         <Tab
           data-testid="comment-moderation-photos-tab"
           value={CommentModerationTab.PHOTOS}
-          label="Fotos do feed"
+          label="Fotos e vídeos"
           sx={{ textTransform: 'none' }}
         />
       </Tabs>

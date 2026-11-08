@@ -1,4 +1,4 @@
-import type { MediaPlatform, MediaUploadType } from '@/store/slices/types';
+import type { MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 
 export enum PhotoCommentStatus {
   PENDING = 'pending',
@@ -31,6 +31,8 @@ export interface OwnPhotoCommentResponse extends PhotoCommentResponse {
 }
 
 export interface AdminPhotoCommentResponse extends OwnPhotoCommentResponse {
+  /** Missing on older API responses, which only contain photos. */
+  mediaType?: MediaType;
   authorId: string;
   photoUrl: string;
   photoUploadType: MediaUploadType;

@@ -173,7 +173,7 @@ export function ClubinhoMediaEditor({
               <Box key={media.id ?? `${media.originalName}-${index}`} sx={{ minWidth: 0 }}>
                 <ClubinhoMediaPreview media={media} />
                 <Stack direction="row" alignItems="center" justifyContent="space-between" gap={0.5}>
-                  <Typography variant="caption" noWrap>
+                  <Typography variant="caption" noWrap sx={{ minWidth: 0, flex: 1 }}>
                     {media.originalName || media.title || `Foto ${index + 1}`}
                   </Typography>
                   <IconButton

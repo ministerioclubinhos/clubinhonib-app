@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { ClubinhoVideoPlayer } from '@/features/image-sections';
 import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
@@ -22,6 +23,11 @@ export function FeedPostCard({
   onShare,
   onOpenLightbox,
 }: FeedPostCardProps) {
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const openMedia = (index: number) => {
+    mediaRef.current?.querySelector('video')?.pause();
+    onOpenLightbox(section, index);
+  };
   return (
     <Paper
       data-testid={`${FEED_TEST_IDS.POST_CARD_PREFIX}-${section.id}`}
@@ -101,7 +107,7 @@ export function FeedPostCard({
         )}
       </Box>
       {section.mediaCount > 0 && (
-        <Box sx={{ px: { xs: 1, sm: 1.5 } }}>
+        <Box ref={mediaRef} sx={{ px: { xs: 1, sm: 1.5 } }}>
           {section.isVideo ? (
             <ClubinhoVideoPlayer src={section.mediaItems[0].originalUrl} title={section.caption} />
           ) : (
@@ -109,13 +115,13 @@ export function FeedPostCard({
               sectionId={section.id}
               caption={section.caption}
               mediaItems={section.mediaItems}
-              onSelectMedia={(mediaIndex) => onOpenLightbox(section, mediaIndex)}
+              onSelectMedia={openMedia}
             />
           )}
           <Button
             data-testid={`clubinho-feed-post-photos-${section.id}`}
             type="button"
-            onClick={() => onOpenLightbox(section, 0)}
+            onClick={() => openMedia(0)}
             startIcon={
               section.isVideo ? (
                 <VideocamOutlinedIcon />
@@ -163,11 +169,11 @@ export function FeedPostCard({
         >
           {isCelebrated ? 'Celebrado' : 'Celebrar'}
         </Button>
-        {section.mediaCount > 0 && !section.isVideo && (
+        {section.mediaCount > 0 && (
           <Button
             data-testid={`clubinho-feed-post-comment-${section.id}`}
             type="button"
-            onClick={() => onOpenLightbox(section, 0)}
+            onClick={() => openMedia(0)}
             startIcon={<ChatBubbleOutlineRoundedIcon />}
             sx={{
               minHeight: FEED_TOUCH_TARGET_PX,

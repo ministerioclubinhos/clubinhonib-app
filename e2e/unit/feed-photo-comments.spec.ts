@@ -7,7 +7,7 @@ import {
 import { photoCommentKeys } from '../../src/features/feed-photo-comments/constants';
 import { PhotoCommentStatus } from '../../src/features/feed-photo-comments/types';
 import { getPhotoCommentPreviewUrl } from '../../src/features/feed-photo-comments/utils';
-import { MediaPlatform, MediaUploadType } from '../../src/store/slices/types';
+import { MediaPlatform, MediaType, MediaUploadType } from '../../src/store/slices/types';
 
 test('moderation previews cloud images instead of rendering their sharing page as an image', () => {
   expect(
@@ -33,6 +33,18 @@ test('comments reject blank and oversized input, preserving plain text', () => {
   expect(validatePhotoComment('a'.repeat(1001))).not.toBeNull();
   expect(validatePhotoComment('a'.repeat(1000))).toBeNull();
   expect(validatePhotoComment('<script>plain text</script>')).toBeNull();
+});
+
+test('video moderation uses the original playable URL', () => {
+  expect(
+    getPhotoCommentPreviewUrl({
+      photoUrl: 'https://example.test/clubinho.webm',
+      photoTitle: 'Vídeo',
+      photoUploadType: MediaUploadType.UPLOAD,
+      photoPlatformType: null,
+      mediaType: MediaType.VIDEO,
+    })
+  ).toBe('https://example.test/clubinho.webm');
 });
 
 test('moderation query trims search and omits empty filters', () => {

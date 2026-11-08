@@ -155,6 +155,8 @@ export function FeedLightboxDialog({ activeState, onClose }: FeedLightboxDialogP
                     letterSpacing: '0.06em',
                     textTransform: 'uppercase',
                     color: FEED_PALETTE.brandLeaf,
+                    overflowWrap: 'anywhere',
+                    minWidth: 0,
                   }}
                 >
                   {section.authorName} · {section.clubBadge}
@@ -170,6 +172,7 @@ export function FeedLightboxDialog({ activeState, onClose }: FeedLightboxDialogP
                       fontSize: '0.72rem',
                       fontWeight: 700,
                       color: '#ffffff',
+                      flexShrink: 0,
                     }}
                   >
                     {currentIndex + 1} / {mediaCount}
@@ -254,14 +257,21 @@ export function FeedLightboxDialog({ activeState, onClose }: FeedLightboxDialogP
                 flexDirection: 'column',
                 minWidth: 0,
                 minHeight: 0,
-                height: { xs: '45dvh', md: '100%' },
+                height: {
+                  xs: currentMedia?.mediaType === MediaType.VIDEO ? 'auto' : '45dvh',
+                  md: '100%',
+                },
                 flex: { xs: '0 0 auto', md: 1 },
               }}
             >
               {/* Palco central da fotografia */}
               <Box
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
+                onTouchStart={
+                  currentMedia?.mediaType === MediaType.VIDEO ? undefined : handleTouchStart
+                }
+                onTouchEnd={
+                  currentMedia?.mediaType === MediaType.VIDEO ? undefined : handleTouchEnd
+                }
                 sx={{
                   position: 'relative',
                   flex: 1,
@@ -457,11 +467,9 @@ export function FeedLightboxDialog({ activeState, onClose }: FeedLightboxDialogP
                 )}
               </Box>
             </Box>
-            {currentMedia?.mediaType !== MediaType.VIDEO && (
-              <Box sx={{ width: { xs: '100%', md: 360 }, flexShrink: 0, minHeight: 0 }}>
-                <PhotoCommentsPanel mediaId={currentMedia?.id} />
-              </Box>
-            )}
+            <Box sx={{ width: { xs: '100%', md: 360 }, flexShrink: 0, minHeight: 0, minWidth: 0 }}>
+              <PhotoCommentsPanel mediaId={currentMedia?.id} />
+            </Box>
           </Box>
         </Box>
       )}

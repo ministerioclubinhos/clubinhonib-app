@@ -99,8 +99,9 @@ The API records the sender from the authenticated session. Responses expose only
 media views and moderation show the name, with `Autor não informado` for legacy
 posts. Searching loaded feed publications includes the author name. Video posts
 use a native player with controls, inline playback and no autoplay. Other feed
-views open the same video in the shared viewer. Existing photo comments remain
-photo-only; videos do not call the photo comment API.
+views open the same video in the shared viewer. Photos and videos share moderated comments through the existing comment API.
+On mobile the player and comments stack vertically, with internally scrollable
+full-screen dialogs. Opening the viewer pauses the inline feed video.
 
 Moderation keeps the original author and supports playing a video before
 approval. Saving without publishing leaves the section detached from the feed;

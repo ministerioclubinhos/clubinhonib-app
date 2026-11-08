@@ -71,7 +71,7 @@ export default function ImageSectionDetailsModal({
           <DialogTitle sx={{ p: 0, fontSize: { xs: '1rem', md: '1.15rem' } }}>
             Detalhes da publicação
           </DialogTitle>
-          <IconButton onClick={onClose} aria-label="Fechar">
+          <IconButton onClick={onClose} aria-label="Fechar" sx={{ minWidth: 44, minHeight: 44 }}>
             <CloseIcon />
           </IconButton>
         </Stack>
@@ -79,10 +79,17 @@ export default function ImageSectionDetailsModal({
         <DialogContent dividers>
           <Stack spacing={2}>
             <Box>
-              <Typography variant="h6" fontWeight={700}>
+              <Typography variant="h6" fontWeight={700} sx={{ overflowWrap: 'anywhere' }}>
                 {section.caption}
               </Typography>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+              <Stack
+                direction="row"
+                spacing={1}
+                useFlexGap
+                flexWrap="wrap"
+                alignItems="center"
+                sx={{ mt: 0.5 }}
+              >
                 <Chip
                   size="small"
                   label={pendente ? 'Aguardando aprovação' : 'No feed'}
@@ -167,6 +174,9 @@ export default function ImageSectionDetailsModal({
             gap: 1,
             flexDirection: { xs: 'column-reverse', sm: 'row' },
             alignItems: { xs: 'stretch', sm: 'center' },
+            pb: 'max(16px, env(safe-area-inset-bottom))',
+            '& .MuiButton-root': { minHeight: 44 },
+            '& > :not(style) ~ :not(style)': { ml: 0 },
           }}
         >
           <Button onClick={onClose} fullWidth={isMobile}>

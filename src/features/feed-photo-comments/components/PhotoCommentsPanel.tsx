@@ -77,10 +77,12 @@ export function PhotoCommentsPanel({ mediaId }: PhotoCommentsPanelProps) {
     <Box
       data-testid="feed-photo-comments-panel"
       component="section"
-      aria-label="Comentários desta foto"
+      aria-label="Comentários"
       sx={{
         bgcolor: 'background.paper',
         color: 'text.primary',
+        minWidth: 0,
+        boxSizing: 'border-box',
         p: { xs: 2, sm: 2.5 },
         height: { xs: 'auto', md: '100%' },
         overflowY: { xs: 'visible', md: 'auto' },
@@ -89,7 +91,7 @@ export function PhotoCommentsPanel({ mediaId }: PhotoCommentsPanelProps) {
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
         <Typography component="h3" sx={{ fontWeight: 700, fontSize: '1.05rem' }}>
-          Comentários da foto
+          Comentários
         </Typography>
         {mediaId && (
           <IconButton
@@ -106,7 +108,7 @@ export function PhotoCommentsPanel({ mediaId }: PhotoCommentsPanelProps) {
         )}
       </Stack>
       {!mediaId ? (
-        <Alert severity="info">Os comentários não estão disponíveis para esta foto.</Alert>
+        <Alert severity="info">Os comentários não estão disponíveis no momento.</Alert>
       ) : (
         <>
           {canComment ? (
@@ -207,7 +209,7 @@ export function PhotoCommentsPanel({ mediaId }: PhotoCommentsPanelProps) {
               // A moderator may have reviewed the comment in another session.
               void (value === PhotoCommentTab.MINE ? mine : published).refetch();
             }}
-            aria-label="Comentários da foto e meus comentários"
+            aria-label="Comentários e meus comentários"
             variant="fullWidth"
             sx={{ mt: 2 }}
           >
@@ -256,9 +258,7 @@ export function PhotoCommentsPanel({ mediaId }: PhotoCommentsPanelProps) {
               color="text.secondary"
               sx={{ py: 3, fontSize: '0.9rem' }}
             >
-              {showMine
-                ? 'Você ainda não enviou comentários nesta foto.'
-                : 'Ainda não há comentários nesta foto.'}
+              {showMine ? 'Você ainda não enviou comentários aqui.' : 'Ainda não há comentários.'}
             </Typography>
           ) : (
             <Box data-testid="feed-photo-comments-list">
@@ -303,7 +303,7 @@ export function PhotoCommentsPanel({ mediaId }: PhotoCommentsPanelProps) {
           >
             <DialogTitle id="feed-photo-comment-delete-title">Excluir seu comentário?</DialogTitle>
             <DialogContent>
-              O comentário será removido desta foto.
+              O comentário será removido.
               {remove.isError && (
                 <Alert severity="error" sx={{ mt: 2 }}>
                   {extractErrorMessage(remove.error, 'Não foi possível excluir.')}

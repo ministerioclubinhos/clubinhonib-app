@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
+import { MediaType } from '@/store/slices/types';
 import { useSelector } from 'react-redux';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, Button, Chip, Grid2, Paper, Stack, Typography } from '@mui/material';
@@ -57,7 +59,7 @@ export function PhotoCommentsManager() {
   return (
     <ListingLayout
       data-testid="feed-photo-comments-manager"
-      title="Comentários das fotos"
+      title="Comentários de fotos e vídeos"
       summary="Revise cada envio antes de publicá-lo no feed."
       loading={query.isPending}
       error={error ?? undefined}
@@ -154,13 +156,26 @@ export function PhotoCommentsManager() {
               overflow: 'hidden',
             }}
           >
-            <Box
-              component="img"
-              src={getPhotoCommentPreviewUrl(comment)}
-              alt={comment.photoTitle || comment.sectionCaption}
-              loading="lazy"
-              sx={{ height: 160, width: '100%', objectFit: 'cover', bgcolor: 'grey.100' }}
-            />
+            {comment.mediaType === MediaType.VIDEO ? (
+              <Stack
+                data-testid="feed-comment-video-preview"
+                alignItems="center"
+                justifyContent="center"
+                gap={1}
+                sx={{ minHeight: 160, bgcolor: 'success.dark', color: 'common.white' }}
+              >
+                <VideocamOutlinedIcon fontSize="large" />
+                <Typography color="inherit">Comentário em vídeo</Typography>
+              </Stack>
+            ) : (
+              <Box
+                component="img"
+                src={getPhotoCommentPreviewUrl(comment)}
+                alt={comment.photoTitle || comment.sectionCaption}
+                loading="lazy"
+                sx={{ height: 160, width: '100%', objectFit: 'cover', bgcolor: 'grey.100' }}
+              />
+            )}
             <Box sx={{ p: 2, flex: 1 }}>
               <Chip
                 size="small"

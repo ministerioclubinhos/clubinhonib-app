@@ -2,10 +2,10 @@
 
 The Engagement module facilitates interaction, communication, and feedback within the platform.
 
-## Feed photo comments
+## Feed photo and video comments
 
 `src/features/feed-photo-comments/` owns the API contract, TanStack Query cache,
-author panel and photo moderation screen. Active users comment inside the photo
+author panel and media moderation screen. Active users comment inside the photo/video
 viewer; every submission still waits for an administrator in the backend.
 The author-facing interface uses neutral copy: Enviar comentário and Comentário
 enviado!, without triage notices or pending/approved status badges.
@@ -14,9 +14,9 @@ own submissions with a delete action, without implying they are public.
 A rejected comment shows “Comentário reprovado” and its reason to its author.
 Text is rendered as text, never HTML.
 
-`/adm/comentarios` preserves the Depoimentos tab. Fotos do feed
+`/adm/comentarios` preserves the Depoimentos tab. Fotos e vídeos
 (`?tab=photos`) starts with pending comments and provides search, status filters,
-pagination, photo preview, approve and reject/withdraw actions. Rejection requires
+pagination, photo/video preview, approve and reject/withdraw actions. Rejection requires
 a nonblank reason; the field explains that the author will receive it. A stale review
 returns a conflict; close and reopen it to review the current version.
 
@@ -133,3 +133,13 @@ The shell is designed for the phone and grows into the desktop.
 - The admin comment listing keeps its rows in local state. It used to write
   them into the Redux slice the home page reads, so after opening the admin
   screen the home carousel showed unpublished comments.
+
+Video comments keep the existing per-media endpoints and moderation rules. The
+feed exposes Comentar for videos, pauses the inline player when opening the
+viewer, and stacks the player and comments on mobile. Video controls are not
+intercepted by photo swipe navigation. The moderation DTO includes optional
+`mediaType` (missing means legacy photo); reviews use the native video player.
+Mobile review dialogs use the full screen, internal scrolling, 44px actions and
+safe-area padding. Browser coverage includes 320, 390, 768 and 1440px widths, plus
+a shortened viewport while composing a video comment. No comment backfill or
+schema change is needed.

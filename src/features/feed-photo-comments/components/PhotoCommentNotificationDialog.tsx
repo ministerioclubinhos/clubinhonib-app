@@ -43,7 +43,7 @@ export function PhotoCommentNotificationDialog({
             <Typography variant="body2" color="text.secondary">
               {formatPhotoCommentDate(notification.createdAt)}
             </Typography>
-            <Typography sx={{ mt: 2, fontWeight: 700 }}>Comentário na foto do feed</Typography>
+            <Typography sx={{ mt: 2, fontWeight: 700 }}>Comentário no feed</Typography>
             <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', my: 1 }}>
               {notification.commentText}
             </Typography>

@@ -1,12 +1,23 @@
 import { expect, test } from '@playwright/test';
 import { ApiClient, PNG_1X1, uniqueSuffix } from '../support/api';
 import type { ImageSectionResponse } from '@/features/image-sections/types';
+import {
+  PhotoCommentStatus,
+  type OwnPhotoCommentResponse,
+  type PhotoCommentsPage,
+  type AdminPhotoCommentResponse,
+} from '@/features/feed-photo-comments/types';
+import {
+  MEDIA_TEST_VIEWPORTS,
+  expectNoHorizontalOverflow,
+  expectTouchTarget,
+} from '../support/responsive';
 
 // A tiny synthetic clip keeps this flow independent of third-party videos.
 test('Clubinho: upload video, review, publish with author, and view on mobile', async ({
   page,
 }, testInfo) => {
-  test.setTimeout(120_000);
+  test.setTimeout(240_000);
   const api = await ApiClient.login();
   const caption = `E2E Vídeo Clubinho 90 ${uniqueSuffix()}`;
   let sectionId: string | undefined;
@@ -15,6 +26,14 @@ test('Clubinho: upload video, review, publish with author, and view on mobile', 
     await expect(page.getByTestId('clubinho-upload-submit')).toBeVisible();
     await page.getByTestId('clubinho-upload-submit').click();
     await expect(page.getByTestId('clubinho-upload-error')).toContainText('título');
+    for (const viewport of MEDIA_TEST_VIEWPORTS) {
+      await page.setViewportSize(viewport);
+      await expectNoHorizontalOverflow(
+        page,
+        page.getByTestId('teacher-area-image-section-image-section-editor')
+      );
+      await expectTouchTarget(page.getByTestId('clubinho-upload-submit'));
+    }
     await page.getByLabel('Título da publicação').fill(caption);
     await page
       .getByRole('textbox', { name: /^Descrição/ })
@@ -77,15 +96,26 @@ test('Clubinho: upload video, review, publish with author, and view on mobile', 
     expect(created.mediaItems[0].mediaType).toBe('video');
     expect(created.public).toBe(false);
     await expect(page.getByTestId('clubinho-upload-success')).toBeVisible();
-    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.setViewportSize({ width: 320, height: 740 });
     await page.goto('/adm/fotos-clubinhos', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { name: 'Fotos e vídeos dos Clubinhos' })).toBeVisible();
     const card = page.getByTestId(`image-sections-image-section-card-${created.id}`);
     await expect(card).toContainText(created.author!.name);
+    await expectNoHorizontalOverflow(page, card);
     await card.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
     await expect(page.getByTestId('clubinho-video')).toBeVisible();
+    await expectNoHorizontalOverflow(page, page.getByRole('dialog'));
+    await expectTouchTarget(
+      page.getByRole('button', { name: 'Revisar e aprovar', exact: true }).last()
+    );
+    await page.screenshot({ path: testInfo.outputPath('clubinho-video-details-mobile.png') });
     await page.getByRole('button', { name: 'Revisar e aprovar', exact: true }).last().click();
     await expect(page.getByLabel('Título da publicação')).toHaveValue(caption);
+    await expectNoHorizontalOverflow(
+      page,
+      page.getByTestId('teacher-area-image-section-image-section-editor')
+    );
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.screenshot({
       path: testInfo.outputPath('clubinho-video-review-desktop.png'),
       fullPage: true,
@@ -95,6 +125,8 @@ test('Clubinho: upload video, review, publish with author, and view on mobile', 
     const draft = await api.get<ImageSectionResponse>(`/image-sections/${created.id}`);
     expect(draft.pageId).toBeNull();
     expect(draft.author).toEqual(created.author);
+    expect(await api.statusOf(`/feed-photo-comments/photos/${created.mediaItems[0].id}`)).toBe(404);
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/adm/editar-imagens-clubinho/${created.id}`, {
       waitUntil: 'domcontentloaded',
     });
@@ -126,7 +158,12 @@ test('Clubinho: upload video, review, publish with author, and view on mobile', 
           .evaluate((element) => (element instanceof HTMLVideoElement ? element.currentTime : 0))
       )
       .toBeGreaterThan(0);
-    await expect(post.getByRole('button', { name: 'Comentar', exact: true })).toHaveCount(0);
+    await expect(post.getByRole('button', { name: 'Comentar', exact: true })).toBeVisible();
+    for (const viewport of MEDIA_TEST_VIEWPORTS) {
+      await page.setViewportSize(viewport);
+      await expectNoHorizontalOverflow(page, post);
+      await expectTouchTarget(post.getByRole('button', { name: 'Comentar', exact: true }));
+    }
     await page.setViewportSize({ width: 390, height: 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true
@@ -135,9 +172,67 @@ test('Clubinho: upload video, review, publish with author, and view on mobile', 
       path: testInfo.outputPath('clubinho-video-feed-mobile.png'),
       fullPage: true,
     });
-    await post.getByRole('button', { name: 'Vídeo · Abrir visualização' }).click();
+    await post.getByRole('button', { name: 'Comentar', exact: true }).click();
     await expect(page.getByRole('dialog').getByTestId('clubinho-video')).toBeVisible();
     await expect(page.getByRole('dialog')).toContainText(created.author!.name);
+    const comments = page.getByTestId('feed-photo-comments-panel');
+    for (const viewport of MEDIA_TEST_VIEWPORTS) {
+      await page.setViewportSize(viewport);
+      await expectNoHorizontalOverflow(page, page.getByRole('dialog'));
+      await expectNoHorizontalOverflow(page, comments);
+    }
+    await page.setViewportSize({ width: 320, height: 480 });
+    const commentText = `Comentário no vídeo ${caption}`;
+    const input = page.getByTestId('feed-photo-comment-input');
+    await input.fill(commentText);
+    await input.press('ArrowRight');
+    await expect(input).toHaveValue(commentText);
+    await expectTouchTarget(page.getByTestId('feed-photo-comment-submit'));
+    await page.getByTestId('feed-photo-comment-submit').click();
+    await expect(page.getByTestId('feed-photo-comment-submitted')).toHaveText(
+      'Comentário enviado!'
+    );
+    const commentPath = `/feed-photo-comments/photos/${created.mediaItems[0].id}`;
+    const own = await api.get<PhotoCommentsPage<OwnPhotoCommentResponse>>(`${commentPath}/mine`);
+    const comment = own.data.find((item) => item.text === commentText);
+    expect(comment?.status).toBe(PhotoCommentStatus.PENDING);
+    if (!comment) throw new Error('Comentário do vídeo não persistido');
+    expect((await api.get<PhotoCommentsPage<OwnPhotoCommentResponse>>(commentPath)).data).toEqual(
+      []
+    );
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByTestId('feed-photo-comment-input').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath('clubinho-video-comments-mobile.png') });
+    await page.getByTestId('clubinho-feed-lightbox-close').click();
+    await page.goto('/adm/comentarios?tab=photos', { waitUntil: 'domcontentloaded' });
+    const moderation = await api.get<PhotoCommentsPage<AdminPhotoCommentResponse>>(
+      '/feed-photo-comments/moderation',
+      { searchString: caption }
+    );
+    expect(moderation.data.find((item) => item.id === comment.id)?.mediaType).toBe('video');
+    await page.getByTestId(`feed-photo-comment-review-${comment.id}`).click();
+    const review = page.getByTestId('feed-photo-comment-review-dialog');
+    await expect(review.getByTestId('clubinho-video')).toBeVisible();
+    await expectNoHorizontalOverflow(page, review);
+    await expectTouchTarget(page.getByTestId('feed-photo-comment-approve'));
+    await page.screenshot({
+      path: testInfo.outputPath('clubinho-video-comment-review-mobile.png'),
+    });
+    await page.getByTestId('feed-photo-comment-approve').click();
+    await expect(review).toBeHidden();
+    await page.goto('/feed-clubinho', { waitUntil: 'domcontentloaded' });
+    await post.getByRole('button', { name: 'Comentar', exact: true }).click();
+    await expect(page.getByTestId(`feed-photo-comment-${comment.id}`)).toContainText(commentText);
+    await page.getByTestId('feed-photo-comments-mine-tab').click();
+    await page
+      .getByTestId(`feed-photo-comment-${comment.id}`)
+      .getByRole('button', { name: /Excluir/ })
+      .click();
+    await page
+      .getByTestId('feed-photo-comment-delete-dialog')
+      .getByRole('button', { name: 'Excluir', exact: true })
+      .click();
+    await expect(page.getByTestId(`feed-photo-comment-${comment.id}`)).toHaveCount(0);
   } finally {
     if (sectionId) await api.delete(`/image-sections/${sectionId}`);
     await api.dispose();

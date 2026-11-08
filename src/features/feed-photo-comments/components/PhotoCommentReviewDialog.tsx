@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { ClubinhoVideoPlayer } from '@/features/image-sections';
+import { MediaType } from '@/store/slices/types';
 import {
   Alert,
   Box,
@@ -11,6 +13,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   PHOTO_COMMENT_REASON_MAX_LENGTH,
@@ -28,6 +32,7 @@ export function PhotoCommentReviewDialog({
   onClose,
   onModerate,
 }: PhotoCommentReviewDialogProps) {
+  const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'));
   const [reason, setReason] = useState('');
   const [reasonError, setReasonError] = useState(false);
   return (
@@ -38,33 +43,41 @@ export function PhotoCommentReviewDialog({
         if (!pending) onClose();
       }}
       fullWidth
+      fullScreen={isMobile}
       maxWidth="sm"
       aria-labelledby="feed-photo-comment-review-title"
       PaperProps={{
         sx: {
-          m: { xs: 1, sm: 3 },
-          width: { xs: 'calc(100% - 16px)', sm: '100%' },
-          maxHeight: 'calc(100dvh - 16px)',
+          m: { xs: 0, sm: 3 },
+          width: '100%',
+          maxHeight: { xs: '100dvh', sm: 'calc(100dvh - 48px)' },
         },
       }}
     >
-      <DialogTitle id="feed-photo-comment-review-title">Revisar comentário da foto</DialogTitle>
+      <DialogTitle id="feed-photo-comment-review-title">Revisar comentário</DialogTitle>
       {comment && (
         <>
           <DialogContent dividers>
-            <Box
-              component="img"
-              src={getPhotoCommentPreviewUrl(comment)}
-              alt={comment.photoTitle || comment.sectionCaption}
-              sx={{
-                width: '100%',
-                maxHeight: 260,
-                objectFit: 'contain',
-                borderRadius: 2,
-                bgcolor: 'grey.100',
-              }}
-            />
-            <Typography variant="subtitle2" sx={{ mt: 1 }}>
+            {comment.mediaType === MediaType.VIDEO ? (
+              <ClubinhoVideoPlayer
+                src={comment.photoUrl}
+                title={comment.photoTitle || comment.sectionCaption}
+              />
+            ) : (
+              <Box
+                component="img"
+                src={getPhotoCommentPreviewUrl(comment)}
+                alt={comment.photoTitle || comment.sectionCaption}
+                sx={{
+                  width: '100%',
+                  maxHeight: 260,
+                  objectFit: 'contain',
+                  borderRadius: 2,
+                  bgcolor: 'grey.100',
+                }}
+              />
+            )}
+            <Typography variant="subtitle2" sx={{ mt: 1, overflowWrap: 'anywhere' }}>
               {comment.sectionCaption}
             </Typography>
             <Stack
@@ -130,7 +143,16 @@ export function PhotoCommentReviewDialog({
               </Alert>
             )}
           </DialogContent>
-          <DialogActions sx={{ flexWrap: 'wrap', gap: 1, p: 2 }}>
+          <DialogActions
+            sx={{
+              flexDirection: { xs: 'column-reverse', sm: 'row' },
+              alignItems: { xs: 'stretch', sm: 'center' },
+              gap: 1,
+              p: 2,
+              pb: 'max(16px, env(safe-area-inset-bottom))',
+              '& > :not(style) ~ :not(style)': { ml: 0 },
+            }}
+          >
             <Button
               type="button"
               disabled={pending}

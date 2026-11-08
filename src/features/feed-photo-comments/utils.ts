@@ -10,9 +10,10 @@ import { getMediaPreviewUrl } from '@/utils/getMediaPreviewUrl';
 export function getPhotoCommentPreviewUrl(
   comment: Pick<
     AdminPhotoCommentResponse,
-    'photoUrl' | 'photoTitle' | 'photoUploadType' | 'photoPlatformType'
+    'photoUrl' | 'photoTitle' | 'photoUploadType' | 'photoPlatformType' | 'mediaType'
   >
 ): string {
+  if (comment.mediaType === MediaType.VIDEO) return comment.photoUrl;
   return getMediaPreviewUrl({
     url: comment.photoUrl,
     title: comment.photoTitle,
