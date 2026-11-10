@@ -72,6 +72,11 @@ See the API contract in `clubinhonib-api/docs/api-week-materials.md`.
 
 ## 💡 Ideas Pages Feature
 
+Teacher shared ideas use a separate `features/ideas-sections` form. It accepts
+documents and images as uploads only, videos as MP4/WEBM uploads or validated
+YouTube links, and creates media titles on the API. The generic `MediaEditor`
+continues serving admin idea pages and weekly materials.
+
 `src/features/ideas-pages/` owns every ideas page screen and contract:
 
 ```text
@@ -293,3 +298,11 @@ provider/editor tests. Integration fixtures are created through the local API;
 fixtures in the local MySQL database, allowing manual-content tests without AI
 provider calls. Tests save and reread content through HTTP and delete their
 fixtures. The helper rejects remote databases and unowned lesson IDs.
+
+### Administrative review of shared ideas
+
+`/adm/editar-ideias-compartilhadas/:id` now compares the immutable original with the current AI result. The 95% desktop / 98% mobile layout places comparison and the publication panel alongside one another on desktop. Text has word differences; documents have PDF previews and editable DOCX downloads; images have a keyboard-accessible before/after slider. Skipped and rejected materials explain why the original is retained.
+
+The admin can choose each version, apply all approved improvements, keep all originals, or request another attempt. Attempts always start from the snapshot, are limited to three, and retain history. New results reset the confirmation required before publication. Removing a material from the publication does not restore it through an AI choice or delete its source. An already published idea exposes its current publication and historical choices.
+
+Polling runs every five seconds while an attempt is active, stops on terminal states/unmount, and retains the previous comparison during retry/failure. An active attempt triggers explicit confirmation before publishing the complete original; that action invalidates late results. The existing moderation flag protects the routes. The automatic-AI flag controls teacher auto-enqueue only: admin comparison and manual retry remain available when it is off.

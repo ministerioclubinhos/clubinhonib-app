@@ -15,6 +15,7 @@ export interface FeatureFlags {
   site_feedback: boolean;
   /** Envio de uma ideia para a fila de revisão. */
   idea_submission: boolean;
+  idea_ai_enhancement: boolean;
   /** Galeria das ideias já publicadas. */
   ideas_sharing: boolean;
   /** Página de eventos e os atalhos que levam até ela. */
@@ -77,6 +78,7 @@ export interface FeatureFlags {
  * áreas inteiras sumirem da tela.
  */
 export const MOCKED_FEATURE_FLAGS: FeatureFlags = {
+  idea_ai_enhancement: false,
   children_area: false,
   club_photo_upload: true,
   weekly_materials: true,

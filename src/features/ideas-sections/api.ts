@@ -1,18 +1,20 @@
-import api from "@/config/axiosConfig";
+import api from '@/config/axiosConfig';
 
-import { apiListIdeasPageOptions } from "@/features/ideas-pages/api";
+import { apiListIdeasPageOptions } from '@/features/ideas-pages/api';
 
-import { IDEAS_SECTIONS_ENDPOINT } from "./constants";
-import { buildIdeasSectionsQuery } from "./utils";
+import { IDEAS_SECTIONS_ENDPOINT } from './constants';
+import { IDEA_SHARE_UPLOAD_TIMEOUT_MS } from './constants';
+import { buildIdeasSectionsQuery } from './utils';
 import type {
   ApiMessage,
+  IdeaAiQueued,
   IdeasPage,
   IdeasSectionFilters,
   IdeasSectionResponse,
   IdeasSectionSortField,
   IdeasSectionSortOrder,
   Paginated,
-} from "./types";
+} from './types';
 
 /** Fila de ideias aguardando decisão, com busca aplicada pela API. */
 export async function apiFetchIdeasSections(
@@ -23,21 +25,17 @@ export async function apiFetchIdeasSections(
     sort?: IdeasSectionSortField;
     order?: IdeasSectionSortOrder;
   },
-  options?: { signal?: AbortSignal },
+  options?: { signal?: AbortSignal }
 ): Promise<Paginated<IdeasSectionResponse>> {
-  const { data } = await api.get<Paginated<IdeasSectionResponse>>(
-    IDEAS_SECTIONS_ENDPOINT,
-    { params: buildIdeasSectionsQuery(args), signal: options?.signal },
-  );
+  const { data } = await api.get<Paginated<IdeasSectionResponse>>(IDEAS_SECTIONS_ENDPOINT, {
+    params: buildIdeasSectionsQuery(args),
+    signal: options?.signal,
+  });
   return data;
 }
 
-export async function apiFetchIdeasSection(
-  id: string,
-): Promise<IdeasSectionResponse> {
-  const { data } = await api.get<IdeasSectionResponse>(
-    `${IDEAS_SECTIONS_ENDPOINT}/${id}`,
-  );
+export async function apiFetchIdeasSection(id: string): Promise<IdeasSectionResponse> {
+  const { data } = await api.get<IdeasSectionResponse>(`${IDEAS_SECTIONS_ENDPOINT}/${id}`);
   return data;
 }
 
@@ -45,9 +43,7 @@ export async function apiFetchIdeasSection(
 export async function apiCountPendingIdeasSections(): Promise<{
   pending: number;
 }> {
-  const { data } = await api.get<{ pending: number }>(
-    `${IDEAS_SECTIONS_ENDPOINT}/pending-count`,
-  );
+  const { data } = await api.get<{ pending: number }>(`${IDEAS_SECTIONS_ENDPOINT}/pending-count`);
   return data;
 }
 
@@ -57,24 +53,27 @@ export async function apiCountPendingIdeasSections(): Promise<{
  */
 export async function apiCreateIdeasSection(
   payload: FormData,
+  options?: { onUploadProgress?: (progress: number) => void }
 ): Promise<IdeasSectionResponse> {
-  const { data } = await api.post<IdeasSectionResponse>(
-    IDEAS_SECTIONS_ENDPOINT,
-    payload,
-    { headers: { "Content-Type": "multipart/form-data" } },
-  );
+  const { data } = await api.post<IdeasSectionResponse>(IDEAS_SECTIONS_ENDPOINT, payload, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: IDEA_SHARE_UPLOAD_TIMEOUT_MS,
+    onUploadProgress: (event) => {
+      if (event.total) options?.onUploadProgress?.(Math.round((event.loaded * 100) / event.total));
+    },
+  });
   return data;
 }
 
 /** Edita a ideia sem mexer em onde ela está publicada. */
 export async function apiUpdateIdeasSection(
   id: string,
-  payload: FormData,
+  payload: FormData
 ): Promise<IdeasSectionResponse> {
   const { data } = await api.patch<IdeasSectionResponse>(
     `${IDEAS_SECTIONS_ENDPOINT}/${id}`,
     payload,
-    { headers: { "Content-Type": "multipart/form-data" } },
+    { headers: { 'Content-Type': 'multipart/form-data' } }
   );
   return data;
 }
@@ -83,21 +82,19 @@ export async function apiUpdateIdeasSection(
 export async function apiAttachIdeasSectionToPage(
   id: string,
   pageId: string,
-  payload: FormData,
+  payload: FormData
 ): Promise<IdeasSectionResponse> {
   const { data } = await api.patch<IdeasSectionResponse>(
     `${IDEAS_SECTIONS_ENDPOINT}/${id}/attach/${pageId}`,
     payload,
-    { headers: { "Content-Type": "multipart/form-data" } },
+    { headers: { 'Content-Type': 'multipart/form-data' } }
   );
   return data;
 }
 
 /** Recusa a ideia. */
 export async function apiDeleteIdeasSection(id: string): Promise<ApiMessage> {
-  const { data } = await api.delete<ApiMessage>(
-    `${IDEAS_SECTIONS_ENDPOINT}/${id}`,
-  );
+  const { data } = await api.delete<ApiMessage>(`${IDEAS_SECTIONS_ENDPOINT}/${id}`);
   return data;
 }
 
@@ -109,4 +106,9 @@ export async function apiDeleteIdeasSection(id: string): Promise<ApiMessage> {
  */
 export async function apiFetchIdeasPages(): Promise<IdeasPage[]> {
   return apiListIdeasPageOptions();
+}
+
+export async function apiRequestIdeaAiEnhancement(id: string): Promise<IdeaAiQueued> {
+  const { data } = await api.post<IdeaAiQueued>(`${IDEAS_SECTIONS_ENDPOINT}/${id}/ai-enhancement`);
+  return data;
 }

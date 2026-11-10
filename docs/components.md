@@ -1,5 +1,10 @@
 # UI Components & Design System
 
+`features/ideas-sections/components/share/IdeaShareForm.tsx` is the dedicated
+teacher submission flow. It owns the three guided sections, media selection,
+YouTube links, removal, upload progress and persisted-success state; it does
+not reuse the admin `MediaEditor`.
+
 The application uses a component-based UI architecture built on top of **Material UI (MUI)**.
 
 ## 🎨 Design Principles
@@ -144,3 +149,5 @@ identificam as opções.
 
 Cor da fonte e destaque oferecem 25 cores prontas, seletor de cor personalizada
 e código hexadecimal. A cor é salva no documento e preservada na exportação PDF.
+
+Shared-idea presentation components live under `features/ideas-sections/components/share`, `review` and `ai`. `useIdeaShareForm` owns the form state and media lifecycle. Comparison uses dedicated text/document/image components with stable test IDs and accessible version controls; the feature does not add conditional behavior to shared material editors.

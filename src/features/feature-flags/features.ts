@@ -20,6 +20,7 @@ export const FEATURE = {
   SITE_FEEDBACK: 'site_feedback',
   /** Envio de uma ideia para a fila de revisão. */
   IDEA_SUBMISSION: 'idea_submission',
+  IDEA_AI_ENHANCEMENT: 'idea_ai_enhancement',
   /** Galeria das ideias já publicadas. */
   IDEAS_SHARING: 'ideas_sharing',
   /** Página de eventos e os atalhos que levam até ela. */

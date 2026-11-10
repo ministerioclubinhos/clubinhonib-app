@@ -1,5 +1,15 @@
 # API Integration & Configuration
 
+## Shared idea submissions
+
+`apiCreateIdeasSection` sends `multipart/form-data` to `POST /ideas-sections`.
+The `sectionData` JSON includes the idea title, description and `medias`;
+uploaded documents, images and videos use `fieldKey` multipart parts. The
+teacher flow omits per-media title and description; the API generates those
+values. Document/image links are not accepted; video links must be YouTube.
+The shared Axios instance reports upload progress and uses a five-minute
+timeout. HTTP 201 confirms persistence and is safe to show as success.
+
 This document outlines how the application interfaces with the backend and external services.
 
 ## 📡 Axios Configuration
@@ -87,3 +97,9 @@ marcas de fonte/tamanho/cor/link, espaçamento do parágrafo e células mesclada
 versão para montar o DOCX e converter em PDF, também nas meditações editadas.
 Localizar/substituir altera o mesmo documento; contadores e tela cheia são
 apenas controles do editor.
+
+### Shared idea AI contracts
+
+The ideas feature exposes `apiRequestIdeaAiEnhancement(id)` (`POST /ideas-sections/:id/ai-enhancement`, `202`) and typed detail fields for snapshot, active/current attempts, history and publication choices. API URLs remain in `api.ts`; components do not call HTTP directly. `useIdeasSectionById` owns active-job polling and `useIdeaAiReprocess` prevents duplicate requests.
+
+`aiDecisions` carries the `enhancementId`, title/description choice and selected source-media IDs. `409` indicates active work, attempt limit or stale choices. Attach with `ignoreAiEnhancement: true` explicitly requests the complete original and cancels active work. Validation and transport errors use the existing global error extraction pipeline. See backend `docs/api-ideas-enhancement.md` for the complete contract and rollout prerequisites.

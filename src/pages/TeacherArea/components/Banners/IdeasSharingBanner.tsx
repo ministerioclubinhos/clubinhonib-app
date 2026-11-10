@@ -16,7 +16,8 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
   const isCompact = variant === 'compact';
 
   return (
-    <motion.div data-testid="teacher-area-banners-ideas-sharing-banner"
+    <motion.div
+      data-testid="teacher-area-banners-ideas-sharing-banner"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -30,9 +31,7 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
           borderRadius: { xs: 2, md: 3 },
           width: '100%',
           height: '100%',
-          minHeight: isCompact
-            ? { xs: 240, sm: 260, md: 320 }
-            : { xs: 240, sm: 220, md: 200 },
+          minHeight: isCompact ? { xs: 240, sm: 260, md: 320 } : { xs: 240, sm: 220, md: 200 },
           display: 'flex',
           flexDirection: isCompact ? 'column' : { xs: 'column', md: 'row' },
           alignItems: 'center',
@@ -127,7 +126,7 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
             }}
           >
-            ✨ Compartilhe a Inspiração que Deus Te Deu!
+            ✨ Compartilhe uma ideia incrível
           </Typography>
 
           <Typography
@@ -141,8 +140,8 @@ const IdeasSharingBanner: React.FC<IdeasSharingBannerProps> = ({ variant = 'full
               fontWeight: 400,
             }}
           >
-            💡 Criou uma brincadeira ou uma forma especial de contar uma história bíblica?
-            Compartilhe com outros professores — sua ideia pode transformar vidas! 🌟
+            Envie documentos, fotos ou vídeos para inspirar outros professores. Leva cerca de 2
+            minutos.
           </Typography>
         </Box>
 

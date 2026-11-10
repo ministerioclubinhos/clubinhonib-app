@@ -1,15 +1,16 @@
-import React from "react";
-import { IconButton, Tooltip, Typography } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import PermMediaIcon from "@mui/icons-material/PermMedia";
-import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
-import ScheduleIcon from "@mui/icons-material/Schedule";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import IdeaAiStatusChip from './ai/IdeaAiStatusChip';
+import React from 'react';
+import { IconButton, Tooltip, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PermMediaIcon from '@mui/icons-material/PermMedia';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
-import { ListingCard } from "@/components/common/listing";
+import { ListingCard } from '@/components/common/listing';
 
-import { formatDateTime, isPending, mediaSummary } from "../utils";
-import type { IdeasSectionResponse } from "../types";
+import { formatDateTime, isPending, mediaSummary } from '../utils';
+import type { IdeasSectionResponse } from '../types';
 
 type Props = {
   section: IdeasSectionResponse;
@@ -22,27 +23,22 @@ type Props = {
 const ICON_SX = { fontSize: 16 } as const;
 
 /** Uma ideia compartilhada na fila da administração. */
-export default function IdeasSectionCard({
-  section,
-  onView,
-  onReview,
-  onDelete,
-  disabled,
-}: Props) {
+export default function IdeasSectionCard({ section, onView, onReview, onDelete, disabled }: Props) {
   const pendente = isPending(section);
 
   return (
-    <ListingCard data-testid={`ideas-sections-ideas-section-card-${section.id}`}
+    <ListingCard
+      data-testid={`ideas-sections-ideas-section-card-${section.id}`}
       avatar={<PermMediaIcon />}
       title={section.title}
       subtitle={mediaSummary(section)}
       // Pendente chama atenção; já publicada descansa em verde.
-      accent={pendente ? "warning" : "success"}
+      accent={pendente ? 'warning' : 'success'}
       onClick={onView}
       badges={[
         pendente
-          ? { label: "Aguardando decisão", color: "warning" }
-          : { label: "Publicada", color: "success" },
+          ? { label: 'Aguardando decisão', color: 'warning' }
+          : { label: 'Publicada', color: 'success' },
       ]}
       excerpt={section.description}
       meta={[
@@ -56,9 +52,12 @@ export default function IdeasSectionCard({
         },
       ]}
       footer={
-        <Typography variant="caption" color="text.secondary" noWrap>
-          {pendente ? "Fora do site" : "Visível no site"}
-        </Typography>
+        <>
+          <IdeaAiStatusChip status={section.aiStatus} />
+          <Typography variant="caption" color="text.secondary" noWrap>
+            {pendente ? 'Fora do site' : 'Visível no site'}
+          </Typography>
+        </>
       }
       actions={
         <>
@@ -76,13 +75,13 @@ export default function IdeasSectionCard({
             </IconButton>
           </Tooltip>
 
-          <Tooltip title={pendente ? "Revisar e publicar" : "Revisar"}>
+          <Tooltip title={pendente ? 'Revisar e publicar' : 'Revisar'}>
             <span>
               <IconButton
                 size="small"
                 color="success"
                 disabled={disabled}
-                aria-label={pendente ? "Revisar e publicar" : "Revisar"}
+                aria-label={pendente ? 'Revisar e publicar' : 'Revisar'}
                 onClick={(event) => {
                   event.stopPropagation();
                   onReview();

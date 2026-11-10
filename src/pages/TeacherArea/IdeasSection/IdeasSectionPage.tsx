@@ -1,6 +1,6 @@
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { IDEAS_SECTION_PAGE_TITLE } from '@/features/ideas-sections/constants';
-import { IdeasSectionUserCreator } from '@/components/Adm/PageCreator/Templates/IdeasSectionEditor';
+import { IdeaShareForm } from '@/features/ideas-sections';
 
 /**
  * Tela pública de compartilhar uma ideia.
@@ -11,5 +11,5 @@ import { IdeasSectionUserCreator } from '@/components/Adm/PageCreator/Templates/
 export default function IdeasSectionPage() {
   useDocumentTitle(IDEAS_SECTION_PAGE_TITLE);
 
-  return <IdeasSectionUserCreator data-testid="teacher-area-ideas-section-ideas-section-page" />;
+  return <div data-testid="teacher-area-ideas-section-page"><IdeaShareForm /></div>;
 }
