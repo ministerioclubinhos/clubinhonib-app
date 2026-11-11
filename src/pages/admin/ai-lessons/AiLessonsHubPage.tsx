@@ -84,6 +84,13 @@ export const AiLessonsHubPage: React.FC = () => {
       bg: alpha(theme.palette.warning.main, 0.1),
     },
     {
+      label: 'Aguardando revisão',
+      value: (data?.byStatus.PACKAGE_READY ?? 0) + (data?.byStatus.IN_REVIEW ?? 0),
+      icon: <FactCheck />,
+      color: theme.palette.secondary.main,
+      bg: alpha(theme.palette.secondary.main, 0.1),
+    },
+    {
       label: 'Prontas',
       value: data?.byStatus.READY_FOR_PUBLICATION ?? 0,
       icon: <CheckCircle />,
@@ -318,7 +325,7 @@ export const AiLessonsHubPage: React.FC = () => {
               display: 'grid',
               gridTemplateColumns: {
                 xs: 'repeat(2, minmax(0, 1fr))',
-                md: 'repeat(4, minmax(0, 1fr))',
+                md: 'repeat(5, minmax(0, 1fr))',
               },
               gap: 1.25,
               mb: 2,

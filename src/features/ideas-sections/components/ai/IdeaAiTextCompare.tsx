@@ -11,6 +11,11 @@ export default function IdeaAiTextCompare({
   onChange,
   disabled,
 }: IdeaAiTextCompareProps) {
+  /**
+   * Sem versão da IA a comparação vira uma coluna só: no celular, o cartão
+   * vazio empurrava o conteúdo seguinte uma tela inteira para baixo.
+   */
+  const hasEnhanced = enhanced !== null;
   return (
     <Stack data-testid="idea-ai-text-compare" spacing={1.5}>
       <Stack
@@ -25,12 +30,18 @@ export default function IdeaAiTextCompare({
         <IdeaAiChoice
           label={label}
           decision={decision}
-          enhanced={enhanced !== null}
+          enhanced={hasEnhanced}
           onChange={onChange}
           disabled={disabled}
         />
       </Stack>
-      <Box sx={{ display: 'grid', gridTemplateColumns: IDEA_AI_COMPARE_COLUMNS, gap: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: hasEnhanced ? IDEA_AI_COMPARE_COLUMNS : 'minmax(0, 1fr)',
+          gap: 2,
+        }}
+      >
         <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover', minWidth: 0 }}>
           <Typography variant="overline" color="text.secondary">
             Original
@@ -39,32 +50,34 @@ export default function IdeaAiTextCompare({
             {original}
           </Typography>
         </Paper>
-        <Paper
-          variant="outlined"
-          sx={{ p: 2, minWidth: 0, borderColor: enhanced !== null ? 'success.light' : 'divider' }}
-        >
-          <Typography variant="overline" color="success.main">
-            Melhorada pela IA
-          </Typography>
-          <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-            {enhanced === null
-              ? 'Nenhuma melhoria aprovada para este campo.'
-              : ideaWordDiff(original, enhanced).map((part, index) => (
-                  <Box
-                    component="span"
-                    key={index}
-                    sx={
-                      part.changed
-                        ? { bgcolor: 'success.main', color: 'success.contrastText' }
-                        : undefined
-                    }
-                  >
-                    {part.text}
-                  </Box>
-                ))}
-          </Typography>
-        </Paper>
+        {hasEnhanced && (
+          <Paper variant="outlined" sx={{ p: 2, minWidth: 0, borderColor: 'success.light' }}>
+            <Typography variant="overline" color="success.main">
+              Melhorada pela IA
+            </Typography>
+            <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+              {ideaWordDiff(original, enhanced).map((part, index) => (
+                <Box
+                  component="span"
+                  key={index}
+                  sx={
+                    part.changed
+                      ? { bgcolor: 'success.main', color: 'success.contrastText' }
+                      : undefined
+                  }
+                >
+                  {part.text}
+                </Box>
+              ))}
+            </Typography>
+          </Paper>
+        )}
       </Box>
+      {!hasEnhanced && (
+        <Typography variant="caption" color="text.secondary">
+          Nenhuma melhoria aprovada para este campo.
+        </Typography>
+      )}
     </Stack>
   );
 }

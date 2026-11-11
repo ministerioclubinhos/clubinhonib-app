@@ -4,6 +4,7 @@ import {
   LessonSortOrder,
   LessonStageType,
   LessonStatus,
+  StageAssetIssue,
   type GetLessonDraftsParams,
   type Lesson,
   type ParsedSseChunk,
@@ -43,12 +44,7 @@ export const parseSseChunk = (text: string): ParsedSseChunk => {
     }
   }
 
-  return {
-    messages,
-    remainder,
-    heartbeats,
-    hasActivity: messages.length > 0 || heartbeats > 0,
-  };
+  return { messages, remainder, heartbeats };
 };
 
 export const objectValue = (value: unknown): Record<string, unknown> =>
@@ -73,34 +69,60 @@ export const visualAssets = (
     : [];
 };
 
+const OPTIONAL_ASSET_KEYS: Partial<Record<LessonStageType, 'assets' | 'printableAssets'>> = {
+  [LessonStageType.STANDARD_GAME]: 'assets',
+  [LessonStageType.VERSE_FIXATION]: 'assets',
+  [LessonStageType.MEDITATION_YOUNGER]: 'printableAssets',
+  [LessonStageType.MEDITATION_OLDER]: 'printableAssets',
+};
+
+/** The single rule for "this item has all its required art", used by gates and viewers alike. */
 export function hasCompleteStageAssets(
   stage: LessonStageType,
   structuredData: Record<string, unknown> | null | undefined
 ): boolean {
   if (stage === LessonStageType.LESSON) return true;
-  if (!structuredData) return false;
-  if (Object.keys(structuredData).length === 0) return true;
-
-  if (
-    stage === LessonStageType.STANDARD_GAME ||
-    stage === LessonStageType.VERSE_FIXATION
-  ) {
-    if (!('assets' in structuredData)) return true;
-    const assets = visualAssets(structuredData, stage);
-    return assets.length > 0 && assets.every((asset) => Boolean(asset.url?.trim()));
-  }
-
-  if (
-    stage === LessonStageType.MEDITATION_YOUNGER ||
-    stage === LessonStageType.MEDITATION_OLDER
-  ) {
-    if (!('printableAssets' in structuredData)) return true;
-    const assets = visualAssets(structuredData, stage);
-    return assets.length > 0 && assets.every((asset) => Boolean(asset.url?.trim()));
-  }
-
-  const assets = visualAssets(structuredData, stage);
+  const data = structuredData ?? {};
+  const optionalKey = OPTIONAL_ASSET_KEYS[stage];
+  // Legacy text-first items saved before art existed carry no asset list at all.
+  if (optionalKey && !(optionalKey in data)) return true;
+  const assets = visualAssets(data, stage);
   return assets.length > 0 && assets.every((asset) => Boolean(asset.url?.trim()));
+}
+
+export function stageAssetUrls(
+  stage: LessonStageType,
+  structuredData: Record<string, unknown> | null | undefined
+): string[] {
+  return visualAssets(structuredData, stage)
+    .map((asset) => asset.url?.trim() ?? '')
+    .filter(Boolean);
+}
+
+export function resolveStageAssetIssue(
+  stage: LessonStageType,
+  structuredData: Record<string, unknown> | null | undefined,
+  brokenUrls: readonly string[] = []
+): StageAssetIssue {
+  if (!hasCompleteStageAssets(stage, structuredData)) return StageAssetIssue.MISSING;
+  const urls = stageAssetUrls(stage, structuredData);
+  return urls.some((url) => brokenUrls.includes(url))
+    ? StageAssetIssue.BROKEN
+    : StageAssetIssue.NONE;
+}
+
+export function formatElapsedTime(totalSeconds: number): string {
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const minutes = Math.floor(safe / 60);
+  const seconds = safe % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+export function parseStageType(
+  value: string | null | undefined,
+  allowed: readonly LessonStageType[]
+): LessonStageType | null {
+  return allowed.find((item) => item === value) ?? null;
 }
 
 export function computeLessonSnapshotSignature(lesson: Lesson): string {
@@ -109,7 +131,7 @@ export function computeLessonSnapshotSignature(lesson: Lesson): string {
     .sort((a, b) => a.type.localeCompare(b.type))
     .map(
       (stage) =>
-        `${stage.type}:${stage.status}:${stage.lockVersion}:${stage.currentVersionId ?? ''}:${stage.failureMessage ?? ''}`
+        `${stage.type}:${stage.status}:${stage.lockVersion}:${stage.currentVersionId ?? ''}:${stage.failureCode ?? ''}:${stage.failureMessage ?? ''}`
     )
     .join('|');
   const commentsCount = lesson.comments?.length ?? 0;

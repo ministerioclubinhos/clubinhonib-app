@@ -1,3 +1,5 @@
+import { canDeleteLesson } from '@/features/ai-lessons/workflow';
+import { getErrorMessage } from '@/utils/apiError';
 import { downloadLessonPdf, lessonPdfError } from '@/features/ai-lessons/pdf';
 import { LessonCategory, LessonStatus } from '@/features/ai-lessons/types';
 import {
@@ -21,6 +23,7 @@ import {
 } from '@/features/ai-lessons/listConstants';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -62,6 +65,7 @@ export const AiLessonsListPage: React.FC = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Lesson | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(LESSON_LIST_PAGE_SIZE);
   const [search, setSearch] = useState('');
@@ -112,8 +116,9 @@ export const AiLessonsListPage: React.FC = () => {
       await deleteMutation.mutateAsync(deleteTarget.id);
       setDeleteTarget(null);
       refetch();
-    } catch {
-      setErrorMsg('Não foi possível excluir a lição.');
+    } catch (error) {
+      // The request skips the global toast: the reason is shown inside the dialog.
+      setDeleteError(getErrorMessage(error, 'Não foi possível excluir a lição.'));
     }
   };
 
@@ -262,9 +267,15 @@ export const AiLessonsListPage: React.FC = () => {
                   color="error.main"
                   sx={{ mt: 1.5, fontWeight: 600, fontSize: '0.875rem' }}
                 >
-                  ⚠️ Esta ação é irreversível. Todas as 8 etapas, versões geradas, comentários e
-                  arquivos de imagem associados serão permanentemente removidos.
+                  Esta ação é irreversível. Todas as {deleteTarget?.stages?.length ?? ''} etapas,
+                  versões geradas, comentários e arquivos de imagem associados serão
+                  permanentemente removidos.
                 </DialogContentText>
+                {deleteError && (
+                  <Alert data-testid="ai-lessons-delete-error" severity="error" sx={{ mt: 2 }}>
+                    {deleteError}
+                  </Alert>
+                )}
               </DialogContent>
               <DialogActions sx={{ px: 3, pb: 2 }}>
                 <Button
@@ -301,7 +312,7 @@ export const AiLessonsListPage: React.FC = () => {
           ).length;
           const totalStages = item.stages.length || getStudioStageOrder(item.category).length;
           const progressPercent = Math.round((completed / totalStages) * 100);
-          const presentation = statusPresentation[item.status] ?? statusPresentation.DRAFT;
+          const presentation = statusPresentation[item.status];
 
           const badges: ListingBadge[] = [{ label: presentation.label, color: presentation.color }];
           if (item.category === LessonCategory.SPECIAL) {
@@ -398,19 +409,23 @@ export const AiLessonsListPage: React.FC = () => {
                       </IconButton>
                     </Tooltip>
 
-                    <Tooltip title="Excluir Lição">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        aria-label={`Excluir lição ${item.theme}`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setDeleteTarget(item);
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    {canDeleteLesson(item) && (
+                      <Tooltip title="Excluir Lição">
+                        <IconButton
+                          data-testid={`ai-lessons-delete-action-${item.id}`}
+                          size="small"
+                          color="error"
+                          aria-label={`Excluir lição ${item.theme}`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setDeleteError(null);
+                            setDeleteTarget(item);
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </>
                 }
               />

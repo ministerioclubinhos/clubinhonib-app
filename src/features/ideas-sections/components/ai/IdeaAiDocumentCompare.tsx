@@ -21,64 +21,74 @@ export default function IdeaAiDocumentCompare({
   disabled,
 }: IdeaAiMediaCompareProps) {
   const [preview, setPreview] = useState<IdeasSectionMedia | null>(null);
+  /** Sem versão da IA não há o que comparar: uma coluna só, sem cartão vazio. */
+  const enhancedMedia = result?.enhancedMedia ?? null;
+  const columns: IdeasSectionMedia[] = enhancedMedia ? [original, enhancedMedia] : [original];
   return (
     <Stack data-testid="idea-ai-document-compare" spacing={1.5}>
       <IdeaAiChoice
         label={original.originalName ?? 'documento'}
         decision={decision}
-        enhanced={Boolean(result?.enhancedMedia)}
+        enhanced={Boolean(enhancedMedia)}
         onChange={onChange}
         disabled={disabled}
       />
-      <Box sx={{ display: 'grid', gridTemplateColumns: IDEA_AI_COMPARE_COLUMNS, gap: 2 }}>
-        {[original, result?.enhancedMedia].map((media, index) => (
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: enhancedMedia ? IDEA_AI_COMPARE_COLUMNS : 'minmax(0, 1fr)',
+          gap: 2,
+        }}
+      >
+        {columns.map((media, index) => (
           <Paper variant="outlined" key={index} sx={{ p: 2, minWidth: 0 }}>
             <Typography variant="overline">
               {index === 0 ? 'Original' : 'Melhorada pela IA'}
             </Typography>
-            {media ? (
-              <Stack spacing={1}>
-                <Typography sx={{ overflowWrap: 'anywhere' }}>
-                  {media.originalName ?? 'Documento'}
-                </Typography>
-                {(media.originalName ?? media.url).toLowerCase().endsWith('.pdf') && (
-                  <Button
-                    type="button"
-                    data-testid="idea-ai-document-preview"
-                    onClick={() => setPreview(media)}
-                    sx={{ minHeight: 44 }}
-                  >
-                    Visualizar PDF
-                  </Button>
-                )}
+            <Stack spacing={1} alignItems="flex-start">
+              <Typography sx={{ overflowWrap: 'anywhere' }}>
+                {media.originalName ?? 'Documento'}
+              </Typography>
+              {(media.originalName ?? media.url).toLowerCase().endsWith('.pdf') && (
+                <Button
+                  type="button"
+                  data-testid="idea-ai-document-preview"
+                  onClick={() => setPreview(media)}
+                  sx={{ minHeight: 44 }}
+                >
+                  Visualizar PDF
+                </Button>
+              )}
+              <Button
+                component="a"
+                href={media.url}
+                target="_blank"
+                rel="noreferrer"
+                sx={{ minHeight: 44 }}
+              >
+                Baixar arquivo
+              </Button>
+              {index === 1 && result?.editableMedia && (
                 <Button
                   component="a"
-                  href={media.url}
+                  data-testid="idea-ai-document-docx"
+                  href={result.editableMedia.url}
                   target="_blank"
                   rel="noreferrer"
                   sx={{ minHeight: 44 }}
                 >
-                  Baixar arquivo
+                  Baixar DOCX editável
                 </Button>
-                {index === 1 && result?.editableMedia && (
-                  <Button
-                    component="a"
-                    data-testid="idea-ai-document-docx"
-                    href={result.editableMedia.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    sx={{ minHeight: 44 }}
-                  >
-                    Baixar DOCX editável
-                  </Button>
-                )}
-              </Stack>
-            ) : (
-              <Typography color="text.secondary">Original mantido.</Typography>
-            )}
+              )}
+            </Stack>
           </Paper>
         ))}
       </Box>
+      {!enhancedMedia && (
+        <Typography variant="caption" color="text.secondary">
+          Original mantido.
+        </Typography>
+      )}
       <Dialog
         data-testid="idea-ai-document-dialog"
         open={Boolean(preview)}

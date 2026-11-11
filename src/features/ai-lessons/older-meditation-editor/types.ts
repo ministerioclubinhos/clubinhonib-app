@@ -30,4 +30,5 @@ export interface OlderMeditationEditorProps {
   onChange?: (json: TiptapDocument) => void;
   editable?: boolean;
   structuredData: Record<string, unknown>;
+  onOverflowChange?: (overflow: boolean) => void;
 }

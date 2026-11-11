@@ -1,20 +1,4 @@
-import {
-  LessonCategory,
-  LessonConnectionState,
-  LessonStageAction,
-  LessonStatus,
-} from '@/features/ai-lessons/types';
-import {
-  LESSON_STATUS_LABELS,
-  PRODUCTION_COMPLETED_STATUSES,
-} from '@/features/ai-lessons/constants';
-import { lessonProductionActions } from '@/features/ai-lessons/workflow';
-import { useLessonLocalDrafts } from '@/features/ai-lessons/useLessonLocalDrafts';
-import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
-import { useLessonPdfPreview } from '@/features/ai-lessons/useLessonPdfPreview';
-import { getHttpStatus } from '@/utils/apiError';
-import { LessonStageContentViewer } from '@/features/ai-lessons/components/LessonStageContentViewer';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   alpha,
@@ -24,6 +8,10 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   LinearProgress,
   Paper,
@@ -35,40 +23,86 @@ import {
 import {
   ArrowBack,
   AutoAwesome,
+  AutoStories,
   Check,
   DeleteOutline as DeleteIcon,
+  EditNote,
   PictureAsPdf,
   RateReview,
-  EditNote,
-  AutoStories,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
+import ConfirmDialog from '@/components/common/modal/ConfirmDialog';
+import UnsavedChangesDialog from '@/components/common/modal/UnsavedChangesDialog';
 import {
   useDeleteLessonDraft,
   useGenerateStage,
   useLessonDraft,
   useLessonDraftEvents,
+  useResolveLessonComment,
   useStageAction,
   useUpdateDraftContent,
 } from '@/hooks/api/useAiLessons';
+import { LessonCommentsPanel } from '@/features/ai-lessons/components/LessonCommentsPanel';
+import { LessonConnectionAlert } from '@/features/ai-lessons/components/LessonConnectionAlert';
+import { LessonStageContentViewer } from '@/features/ai-lessons/components/LessonStageContentViewer';
+import { StageImpactList } from '@/features/ai-lessons/components/StageImpactList';
+import { StoryVisualConfiguration } from '@/features/ai-lessons/components/StoryVisualConfiguration';
 import {
-  LessonStage,
+  EMPTY_STRUCTURED_DATA,
+  EMPTY_TIPTAP_DOCUMENT,
+  FINAL_REVIEW_LESSON_STATUSES,
+  HTTP_STATUS_CONFLICT,
+  LESSON_ERROR_CODES,
+  PRODUCTION_COMPLETED_STATUSES,
+  SIGNED_OFF_STAGE_STATUSES,
+  STORY_VISUAL_MAX_QUANTITY,
+} from '@/features/ai-lessons/constants';
+import { isLessonDraftOutdated } from '@/features/ai-lessons/drafts';
+import {
+  LESSON_INSTRUCTIONS_MAX_LENGTH,
+  LESSON_STAGE_STATUS_COLORS as STATUS_COLORS,
+  LESSON_STAGE_STATUS_LABELS as STATUS_LABELS,
+  LESSON_STATUS_PRESENTATION,
+  MANUAL_SAVE_CHANGE_SUMMARY,
+  STUDIO_ROUTES,
+  VERSE_DEPENDENT_STAGES,
+} from '@/features/ai-lessons/presentation.constants';
+import {
+  lessonStageDescription,
+  lessonStageLabel,
+  localizeLegacyDocumentLabels,
+} from '@/features/ai-lessons/presentation.utils';
+import {
+  LessonCategory,
+  LessonConnectionState,
+  LessonStageAction,
   LessonStageStatus,
   LessonStageType,
   LessonVisualOrientation,
   LessonVisualType,
-} from '@/services/aiLessonsService';
-import { StoryVisualConfiguration } from '@/features/ai-lessons/components/StoryVisualConfiguration';
-import { formatLessonBadgeLabel, objectValue } from '@/features/ai-lessons/utils';
+  StageNavigationMode,
+  StudioScreenKind,
+  type LessonStage,
+  type ProductionConfirmation,
+  ProductionConfirmationKind,
+} from '@/features/ai-lessons/types';
+import { useElapsedSeconds } from '@/features/ai-lessons/useElapsedSeconds';
+import { useLessonLocalDrafts } from '@/features/ai-lessons/useLessonLocalDrafts';
+import { useLessonPdfPreview } from '@/features/ai-lessons/useLessonPdfPreview';
+import { useStageParam } from '@/features/ai-lessons/useStageParam';
+import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
 import {
-  LESSON_STAGE_DESCRIPTIONS as DESCRIPTIONS,
-  SPECIAL_STAGE_DESCRIPTIONS as SPECIAL_DESCRIPTIONS,
-  SPECIAL_STAGE_LABELS as SPECIAL_LABELS,
-  LESSON_STAGE_LABELS as LABELS,
-  LESSON_STAGE_STATUS_COLORS as STATUS_COLORS,
-  LESSON_STAGE_STATUS_LABELS as STATUS_LABELS,
-  localizeLegacyDocumentLabels,
-} from './lessonDraftDetail.constants';
+  formatElapsedTime,
+  formatLessonBadgeLabel,
+  objectValue,
+} from '@/features/ai-lessons/utils';
+import {
+  canDeleteLesson,
+  lessonProductionActions,
+  stagesInvalidatedBy,
+  staleOriginStage,
+} from '@/features/ai-lessons/workflow';
+import { getApiErrorCode, getErrorMessage, getHttpStatus } from '@/utils/apiError';
 import { LessonDraftDialogs } from './components/LessonDraftDialogs';
 import { LessonStageNavigation } from './components/LessonStageNavigation';
 
@@ -83,9 +117,10 @@ export const LessonDraftDetailPage: React.FC = () => {
   const save = useUpdateDraftContent();
   const complete = useStageAction(LessonStageAction.COMPLETE);
   const deleteMutation = useDeleteLessonDraft();
+  const resolveComment = useResolveLessonComment();
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<LessonStageType>(LessonStageType.LESSON);
+  const [selectedType, selectStage] = useStageParam();
   const [instructionsByStage, setInstructionsByStage] = useState<
     Partial<Record<LessonStageType, string>>
   >({});
@@ -93,6 +128,12 @@ export const LessonDraftDetailPage: React.FC = () => {
   const [visualOrientation, setVisualOrientation] = useState<LessonVisualOrientation | ''>('');
   const [visualQuantity, setVisualQuantity] = useState<number | ''>('');
   const [llmErrorOpen, setLlmErrorOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState<ProductionConfirmation | null>(null);
+  const [remoteVersionOpen, setRemoteVersionOpen] = useState(false);
+  const [layoutOverflow, setLayoutOverflow] = useState(false);
+  // `isPending` only changes on the next render; this closes the same-frame double click.
+  const submitting = useRef(false);
+
   const stage = useMemo(
     () => lesson?.stages.find((item) => item.type === selectedType),
     [lesson, selectedType]
@@ -107,20 +148,18 @@ export const LessonDraftDetailPage: React.FC = () => {
   const version = stage?.versions.find((item) => item.id === stage.currentVersionId);
   const local = useLessonLocalDrafts(id, stage, version);
   const edited = local.draft?.document;
-  const confirmLeave = useStudioUnsavedChanges(local.hasDrafts || save.isPending);
-  const document = useMemo(
-    () =>
-      localizeLegacyDocumentLabels(
-        edited ?? version?.tiptapAstJson ?? { type: 'doc', content: [] }
-      ),
-    [edited, version?.tiptapAstJson]
+  const leave = useStudioUnsavedChanges(local.hasDrafts || save.isPending);
+  // Only the server copy needs the legacy relabeling; a local edit already went through it.
+  const remoteDocument = useMemo(
+    () => localizeLegacyDocumentLabels(version?.tiptapAstJson ?? EMPTY_TIPTAP_DOCUMENT),
+    [version?.tiptapAstJson]
   );
+  const document = edited ?? remoteDocument;
+  const structuredData =
+    local.draft?.structuredData ?? version?.structuredDataJson ?? EMPTY_STRUCTURED_DATA;
   const instructions = instructionsByStage[selectedType] ?? '';
   const setInstructions = (value: string) => {
-    setInstructionsByStage((prev) => ({
-      ...prev,
-      [selectedType]: value,
-    }));
+    setInstructionsByStage((prev) => ({ ...prev, [selectedType]: value }));
   };
   const stageComments = useMemo(
     () => (lesson?.comments ?? []).filter((comment) => comment.sectionKey === selectedType),
@@ -131,9 +170,11 @@ export const LessonDraftDetailPage: React.FC = () => {
     (item) => item.id === approvedLessonStage.currentVersionId
   );
   const mainVerse = objectValue(approvedLessonVersion?.structuredDataJson?.memoryVerse);
+  const stageGenerating = generate.isPending || stage?.status === LessonStageStatus.GENERATING;
   const generationLocked =
     generate.isPending ||
     Boolean(lesson?.stages.some((item) => item.status === LessonStageStatus.GENERATING));
+  const elapsedSeconds = useElapsedSeconds(generationLocked);
 
   useEffect(() => {
     setInstructionsByStage({});
@@ -142,6 +183,10 @@ export const LessonDraftDetailPage: React.FC = () => {
   useEffect(() => {
     if (stage?.failureMessage) setLlmErrorOpen(true);
   }, [stage?.failureMessage]);
+
+  useEffect(() => {
+    setLayoutOverflow(false);
+  }, [selectedType, id]);
 
   useEffect(() => {
     if (selectedType !== LessonStageType.LESSON_VISUALS) return;
@@ -161,16 +206,22 @@ export const LessonDraftDetailPage: React.FC = () => {
         : ''
     );
     setVisualQuantity(
-      typeof config.quantity === 'number' && config.quantity >= 1 && config.quantity <= 10
+      typeof config.quantity === 'number' &&
+        config.quantity >= 1 &&
+        config.quantity <= STORY_VISUAL_MAX_QUANTITY
         ? config.quantity
         : ''
     );
+    // The form follows the saved version, not every structured-data identity change.
   }, [selectedType, version?.id, lesson?.category]);
+
+  const backToList = () => leave.requestLeave(() => navigate(STUDIO_ROUTES.production));
 
   if (isLoading) {
     return (
       <Box
         data-testid="ai-lessons-detail-loading"
+        role="status"
         sx={{ display: 'grid', placeItems: 'center', py: 12 }}
       >
         <CircularProgress size={44} thickness={4} />
@@ -190,141 +241,206 @@ export const LessonDraftDetailPage: React.FC = () => {
         <Alert severity="error" sx={{ borderRadius: 3 }}>
           Não foi possível carregar os detalhes da lição.
         </Alert>
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={() => {
-            if (confirmLeave()) navigate('/adm/estudio/licoes');
-          }}
-          sx={{ mt: 2 }}
-        >
+        <Button startIcon={<ArrowBack />} onClick={backToList} sx={{ mt: 2, minHeight: 44 }}>
           Voltar para lições
         </Button>
+        <UnsavedChangesDialog {...leave.dialog} />
       </Box>
     );
   }
 
+  const lessonGone = connection.state === LessonConnectionState.NOT_FOUND;
   const actions = lessonProductionActions(
     lesson,
     stage,
     local.hasDrafts,
-    save.isPending || complete.isPending || generate.isPending || deleteMutation.isPending
+    lessonGone ||
+      save.isPending ||
+      complete.isPending ||
+      generate.isPending ||
+      deleteMutation.isPending
   );
   // Typing may continue during save; later edits keep their own draft revision.
   const editorEditable = lessonProductionActions(
     lesson,
     stage,
     false,
-    complete.isPending || generate.isPending || deleteMutation.isPending
+    lessonGone || complete.isPending || generate.isPending || deleteMutation.isPending
   ).canEdit;
   const canGenerate = actions.canGenerate;
+  const draftOutdated = isLessonDraftOutdated(local.draft, stage);
   const approvedCount = lesson.stages.filter(
     (item) => item.status === LessonStageStatus.APPROVED
   ).length;
   const packageCompletedCount = lesson.stages.filter((item) =>
     PRODUCTION_COMPLETED_STATUSES.includes(item.status)
   ).length;
-  const isFinalReview =
-    lesson.status === LessonStatus.IN_REVIEW ||
-    lesson.status === LessonStatus.READY_FOR_PUBLICATION ||
-    lesson.status === LessonStatus.PUBLISHING ||
-    lesson.status === LessonStatus.PUBLISHED;
+  const isFinalReview = FINAL_REVIEW_LESSON_STATUSES.includes(lesson.status);
   const progressCount = isFinalReview ? approvedCount : packageCompletedCount;
   const progress = lesson.stages.length ? (progressCount / lesson.stages.length) * 100 : 0;
-  const action = (mutation: typeof complete, target: LessonStage) =>
-    mutation.mutate(
-      { id, stage: target.type, lockVersion: target.lockVersion },
-      {
-        onError: (err) => {
-          if (getHttpStatus(err) === 409) {
-            void refetch();
-          }
-        },
-      }
+  const impactedStages = stage ? stagesInvalidatedBy(lesson, stage.type) : [];
+  const staleOrigin =
+    stage?.status === LessonStageStatus.STALE ? staleOriginStage(lesson, stage) : null;
+  const stageLabel = stage ? lessonStageLabel(stage.type, lesson.category) : '';
+  const statusPresentation = LESSON_STATUS_PRESENTATION[lesson.status];
+
+  const guarded = (run: (release: () => void) => void) => {
+    if (submitting.current) return;
+    submitting.current = true;
+    run(() => {
+      submitting.current = false;
+    });
+  };
+
+  const completeStage = (target: LessonStage, acknowledgeStale = false) =>
+    guarded((release) =>
+      complete.mutate(
+        { id, stage: target.type, lockVersion: target.lockVersion, acknowledgeStale },
+        {
+          onError: (err) => {
+            // The API asks for an explicit decision before concluding an outdated item.
+            if (getApiErrorCode(err) === LESSON_ERROR_CODES.staleUpstream) {
+              complete.reset();
+              setConfirmation({ kind: ProductionConfirmationKind.COMPLETE_OUTDATED });
+              return;
+            }
+            if (getHttpStatus(err) === HTTP_STATUS_CONFLICT) void refetch();
+          },
+          onSettled: release,
+        }
+      )
     );
 
-  const generateSelectedStage = () => {
+  const runGeneration = () => {
     if (!stage || !canGenerate) return;
-    generate.mutate({
-      id,
-      payload: {
-        stage: stage.type,
-        revisionInstructions: instructions || undefined,
-        ...(stage.type === LessonStageType.LESSON_VISUALS
-          ? {
-              visualType: visualType as LessonVisualType,
-              visualOrientation: visualOrientation as LessonVisualOrientation,
-              visualQuantity: Number(visualQuantity),
-            }
-          : {}),
-      },
-    });
+    guarded((release) =>
+      generate.mutate(
+        {
+          id,
+          payload: {
+            stage: stage.type,
+            revisionInstructions: instructions || undefined,
+            ...(stage.type === LessonStageType.LESSON_VISUALS
+              ? {
+                  visualType: visualType as LessonVisualType,
+                  visualOrientation: visualOrientation as LessonVisualOrientation,
+                  visualQuantity: Number(visualQuantity),
+                }
+              : {}),
+          },
+        },
+        { onSettled: release }
+      )
+    );
+  };
+
+  const requestGeneration = () => {
+    if (!stage || !canGenerate) return;
+    // Replacing existing content is paid and unapproves what depends on it: always confirm.
+    if (stage.currentVersionId) setConfirmation({ kind: ProductionConfirmationKind.REGENERATE });
+    else runGeneration();
   };
 
   const openStagePreview = async () => {
     if (!stage || edited) return;
     await preview.open();
   };
-  const saveSelectedStage = () => {
+
+  const runSave = () => {
     const sent = local.draft;
     if (!sent || !actions.canSave) return;
-    save.mutate(
-      {
-        id: sent.lessonId,
-        payload: {
-          stage: sent.stage,
-          lockVersion: sent.lockVersion,
-          tiptapAstJson: sent.document,
-          structuredDataJson: sent.structuredData ?? undefined,
-          changeSummary: 'Revisão manual',
+    guarded((release) =>
+      save.mutate(
+        {
+          id: sent.lessonId,
+          payload: {
+            stage: sent.stage,
+            lockVersion: sent.lockVersion,
+            tiptapAstJson: sent.document,
+            structuredDataJson: sent.structuredData ?? undefined,
+            changeSummary: MANUAL_SAVE_CHANGE_SUMMARY,
+          },
         },
-      },
-      {
-        onSuccess: (saved) => {
-          const savedStage = saved.stages.find((item) => item.type === sent.stage);
-          if (savedStage) local.acknowledge(sent, savedStage);
-        },
-      }
+        {
+          onSuccess: (saved) => {
+            const savedStage = saved.stages.find((item) => item.type === sent.stage);
+            if (savedStage) local.acknowledge(sent, savedStage);
+          },
+          onSettled: release,
+        }
+      )
     );
   };
 
+  const requestSave = () => {
+    if (!local.draft || !actions.canSave) return;
+    if (impactedStages.length) setConfirmation({ kind: ProductionConfirmationKind.SAVE });
+    else runSave();
+  };
+
+  const confirmDelete = () =>
+    guarded((release) =>
+      deleteMutation.mutate(id, {
+        onSuccess: () => navigate(STUDIO_ROUTES.production),
+        onSettled: release,
+      })
+    );
+
+  const confirmCurrent = () => {
+    const kind = confirmation?.kind;
+    setConfirmation(null);
+    if (kind === ProductionConfirmationKind.SAVE) runSave();
+    if (kind === ProductionConfirmationKind.REGENERATE) runGeneration();
+    if (kind === ProductionConfirmationKind.COMPLETE_OUTDATED && stage) completeStage(stage, true);
+    if (kind === ProductionConfirmationKind.DISCARD) {
+      local.discard();
+      save.reset();
+    }
+    if (kind === ProductionConfirmationKind.REBASE) {
+      local.rebase();
+      save.reset();
+    }
+  };
+
+  const completeBlockedReason = layoutOverflow
+    ? 'O conteúdo ultrapassa a folha de impressão. Reduza o texto antes de concluir o item.'
+    : local.hasDrafts
+      ? 'Salve ou descarte as edições pendentes antes de concluir.'
+      : null;
+
   return (
     <Box
-      component="fieldset"
       data-testid="ai-lessons-detail"
-      disabled={generationLocked}
       aria-busy={generationLocked}
       sx={{
         width: { xs: '98%', md: '95%' },
-        m: 0,
         mx: 'auto',
         py: { xs: 1.5, sm: 2.5, md: 3.5 },
-        px: 0,
-        border: 0,
-        minInlineSize: 0,
       }}
     >
-      {/* Top Bar with Back Button */}
       <Button
+        data-testid="ai-lesson-back-to-production"
         startIcon={<ArrowBack />}
-        onClick={() => {
-          if (confirmLeave()) navigate('/adm/estudio/licoes');
-        }}
-        sx={{ mb: 2, fontWeight: 700, textTransform: 'none', borderRadius: 2 }}
+        onClick={backToList}
+        sx={{ mb: 2, minHeight: 44, fontWeight: 700, textTransform: 'none', borderRadius: 2 }}
       >
         Voltar para Produção de Lições
       </Button>
 
-      {connection.state !== LessonConnectionState.CONNECTED && (
+      <LessonConnectionAlert
+        state={connection.state}
+        screen={StudioScreenKind.PRODUCTION}
+        onBackToList={() => navigate(STUDIO_ROUTES.production)}
+      />
+      {local.recovered && (
         <Alert
-          data-testid="ai-lesson-connection-status"
-          severity={connection.state === LessonConnectionState.DENIED ? 'error' : 'info'}
+          data-testid="ai-lesson-draft-recovered"
+          severity="info"
+          onClose={local.dismissRecovered}
           sx={{ mb: 2 }}
         >
-          {connection.state === LessonConnectionState.DENIED
-            ? 'Sem acesso às atualizações desta lição. Verifique sua sessão e permissão.'
-            : connection.state === LessonConnectionState.RECONNECTING
-              ? 'Conexão interrompida. Reconectando; suas edições locais estão preservadas.'
-              : 'Conectando às atualizações da lição…'}
+          Rascunho recuperado: suas edições não salvas desta lição foram restauradas neste
+          navegador. Revise e salve para não perdê-las.
         </Alert>
       )}
       {local.hasDrafts && (
@@ -333,21 +449,60 @@ export const LessonDraftDetailPage: React.FC = () => {
           concluir ou gerar conteúdo.
         </Alert>
       )}
-      {save.isError && (
+      {draftOutdated && (
+        <Alert
+          data-testid="ai-lesson-draft-outdated"
+          severity="error"
+          sx={{ mb: 2, '& .MuiAlert-message': { width: '100%' } }}
+        >
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Esta etapa recebeu uma versão mais nova em outra sessão enquanto você editava. Sua edição
+            foi preservada, mas não pode ser salva sobre a versão antiga.
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <Button
+              data-testid="ai-lesson-draft-view-remote"
+              color="inherit"
+              variant="outlined"
+              onClick={() => setRemoteVersionOpen(true)}
+              sx={{ minHeight: 44 }}
+            >
+              Ver versão remota
+            </Button>
+            <Button
+              data-testid="ai-lesson-draft-rebase"
+              color="inherit"
+              variant="outlined"
+              disabled={save.isPending}
+              onClick={() => setConfirmation({ kind: ProductionConfirmationKind.REBASE })}
+              sx={{ minHeight: 44 }}
+            >
+              Reaplicar minha edição sobre a versão atual
+            </Button>
+          </Stack>
+        </Alert>
+      )}
+      {save.isError && !draftOutdated && (
         <Alert data-testid="ai-lesson-save-error" severity="error" sx={{ mb: 2 }}>
-          {getHttpStatus(save.error) === 409
-            ? 'Esta etapa foi alterada em outra sessão. Sua edição foi preservada. Copie seu texto antes de descartar a edição e carregar a versão atual.'
-            : 'Não foi possível salvar. Sua edição foi preservada; tente novamente.'}
+          {getHttpStatus(save.error) === HTTP_STATUS_CONFLICT
+            ? 'Esta etapa foi alterada em outra sessão. Sua edição foi preservada; aguarde a versão atual carregar para compará-la ou reaplicar sua edição.'
+            : getErrorMessage(
+                save.error,
+                'Não foi possível salvar. Sua edição foi preservada; tente novamente.'
+              )}
         </Alert>
       )}
       {complete.isError && (
         <Alert data-testid="ai-lesson-complete-error" severity="error" sx={{ mb: 2 }}>
-          {getHttpStatus(complete.error) === 409
+          {getHttpStatus(complete.error) === HTTP_STATUS_CONFLICT
             ? 'Esta etapa foi atualizada em outra sessão. A versão mais recente foi recarregada; revise o conteúdo antes de concluir o item.'
-            : 'Não foi possível concluir o item para o pacote. Verifique se o conteúdo e as ilustrações estão prontos e tente novamente.'}
+            : getErrorMessage(
+                complete.error,
+                'Não foi possível concluir o item para o pacote. Verifique se o conteúdo e as ilustrações estão prontos e tente novamente.'
+              )}
         </Alert>
       )}
-      {/* Hero Card Header */}
+
       <Paper
         elevation={0}
         sx={{
@@ -382,6 +537,7 @@ export const LessonDraftDetailPage: React.FC = () => {
               />
               <Typography
                 variant="h4"
+                component="h1"
                 fontWeight={800}
                 sx={{
                   fontSize: { xs: '1.4rem', sm: '1.8rem', md: '2.1rem' },
@@ -392,15 +548,9 @@ export const LessonDraftDetailPage: React.FC = () => {
                 {lesson.theme}
               </Typography>
               <Chip
-                label={LESSON_STATUS_LABELS[lesson.status] ?? lesson.status}
-                color={
-                  lesson.status === LessonStatus.READY_FOR_PUBLICATION ||
-                  lesson.status === LessonStatus.PUBLISHED
-                    ? 'success'
-                    : lesson.status === LessonStatus.CHANGES_REQUESTED
-                      ? 'warning'
-                      : 'primary'
-                }
+                data-testid="ai-lesson-status-chip"
+                label={statusPresentation.label}
+                color={statusPresentation.color}
                 sx={{ fontWeight: 700, borderRadius: 1.5 }}
               />
             </Stack>
@@ -448,6 +598,7 @@ export const LessonDraftDetailPage: React.FC = () => {
               <LinearProgress
                 variant="determinate"
                 value={progress}
+                aria-label="Progresso geral da lição"
                 sx={{
                   height: 9,
                   borderRadius: 4.5,
@@ -461,29 +612,37 @@ export const LessonDraftDetailPage: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Action Buttons Top Bar */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ flexShrink: 0 }}>
             <Button
+              data-testid="ai-lesson-go-to-review"
               startIcon={<RateReview />}
               variant="contained"
-              onClick={() => {
-                if (confirmLeave()) navigate(`/adm/estudio/revisao/${id}`);
-              }}
+              onClick={() =>
+                leave.requestLeave(() => navigate(`${STUDIO_ROUTES.review}/${id}`))
+              }
               sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 700 }}
             >
               Ir para Revisão e Aprovação
             </Button>
 
-            <Button
-              startIcon={<DeleteIcon />}
-              variant="outlined"
-              color="error"
-              disabled={local.hasDrafts || save.isPending || complete.isPending}
-              onClick={() => setDeleteConfirmOpen(true)}
-              sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 600 }}
-            >
-              Excluir lição
-            </Button>
+            {canDeleteLesson(lesson) && (
+              <Button
+                data-testid="ai-lesson-delete-button"
+                startIcon={<DeleteIcon />}
+                variant="outlined"
+                color="error"
+                disabled={
+                  generationLocked || local.hasDrafts || save.isPending || complete.isPending
+                }
+                onClick={() => {
+                  deleteMutation.reset();
+                  setDeleteConfirmOpen(true);
+                }}
+                sx={{ borderRadius: 2.5, minHeight: 48, fontWeight: 600 }}
+              >
+                Excluir lição
+              </Button>
+            )}
           </Stack>
         </Stack>
       </Paper>
@@ -492,14 +651,14 @@ export const LessonDraftDetailPage: React.FC = () => {
         category={lesson.category}
         stages={lesson.stages}
         selectedType={selectedType}
-        mode="mobile"
+        draftStages={local.draftStages}
+        mode={StageNavigationMode.MOBILE}
         onSelect={(type) => {
           complete.reset();
-          setSelectedType(type);
+          selectStage(type);
         }}
       />
 
-      {/* Main Grid: Sidebar (Desktop) + Stage Content */}
       <Box
         sx={{
           display: 'grid',
@@ -509,21 +668,21 @@ export const LessonDraftDetailPage: React.FC = () => {
         }}
       >
         <LessonStageNavigation
-        category={lesson.category}
+          category={lesson.category}
           stages={lesson.stages}
           selectedType={selectedType}
-          mode="desktop"
+          draftStages={local.draftStages}
+          mode={StageNavigationMode.DESKTOP}
           onSelect={(type) => {
             complete.reset();
-            setSelectedType(type);
+            selectStage(type);
           }}
         />
 
-        {/* Stage Main Details Card */}
         <Box>
           {!stage ? (
-            <Alert severity="error" sx={{ borderRadius: 3 }}>
-              Etapa ausente no pacote.
+            <Alert data-testid="ai-lesson-stage-missing" severity="error" sx={{ borderRadius: 3 }}>
+              Esta etapa não faz parte deste pacote. Selecione outra etapa no fluxo da produção.
             </Alert>
           ) : (
             <Card
@@ -538,7 +697,6 @@ export const LessonDraftDetailPage: React.FC = () => {
               }}
             >
               <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-                {/* Stage Header */}
                 <Stack
                   direction={{ xs: 'column', sm: 'row' }}
                   justifyContent="space-between"
@@ -549,35 +707,26 @@ export const LessonDraftDetailPage: React.FC = () => {
                   <Box>
                     <Typography
                       variant="h5"
+                      component="h2"
                       fontWeight={800}
                       sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
                     >
-                      {lesson.category === LessonCategory.SPECIAL
-                        ? (SPECIAL_LABELS[stage.type] ?? LABELS[stage.type])
-                        : LABELS[stage.type]}
+                      {stageLabel}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-                      {lesson.category === LessonCategory.SPECIAL
-                        ? (SPECIAL_DESCRIPTIONS[stage.type] ?? DESCRIPTIONS[stage.type])
-                        : DESCRIPTIONS[stage.type]}
+                      {lessonStageDescription(stage.type, lesson.category)}
                     </Typography>
                   </Box>
 
                   <Chip
-                    label={STATUS_LABELS[stage.status] ?? stage.status}
-                    color={STATUS_COLORS[stage.status] ?? 'default'}
+                    data-testid="ai-lesson-stage-status-chip"
+                    label={STATUS_LABELS[stage.status]}
+                    color={STATUS_COLORS[stage.status]}
                     sx={{ fontWeight: 800, px: 1, borderRadius: 2 }}
                   />
                 </Stack>
 
-                {/* Biblical Verse Reference Box if applicable */}
-                {[
-                  LessonStageType.VERSE_VISUALS,
-                  LessonStageType.VERSE_FIXATION,
-                  LessonStageType.MEDITATION_YOUNGER,
-                  LessonStageType.MEDITATION_OLDER,
-                  LessonStageType.MANUAL_WORK,
-                ].includes(stage.type) && mainVerse.text ? (
+                {VERSE_DEPENDENT_STAGES.includes(stage.type) && mainVerse.text ? (
                   <Alert
                     severity="success"
                     icon={<AutoStories />}
@@ -596,60 +745,55 @@ export const LessonDraftDetailPage: React.FC = () => {
                   >
                     {stage.status === LessonStageStatus.CHANGES_REQUESTED
                       ? 'Esta etapa recebeu solicitação de ajustes na revisão. Revise as observações abaixo, edite ou regenere o conteúdo e conclua o item novamente.'
-                      : 'Esta etapa ficou desatualizada após alterações na Lição Bíblica base. Regenere ou revise o conteúdo e conclua o item novamente.'}
+                      : `Esta etapa ficou desatualizada após alterações em ${
+                          staleOrigin
+                            ? `“${lessonStageLabel(staleOrigin, lesson.category)}”`
+                            : 'uma etapa anterior do fluxo'
+                        }. Regenere ou revise o conteúdo e conclua o item novamente.`}
                   </Alert>
                 )}
 
-                {stageComments.length > 0 && (
-                  <Paper
-                    data-testid="ai-lesson-stage-comments"
-                    variant="outlined"
-                    sx={{
-                      p: 2,
-                      mb: 2.5,
-                      borderRadius: 2.5,
-                      bgcolor: alpha(theme.palette.warning.main, 0.04),
-                      borderColor: alpha(theme.palette.warning.main, 0.3),
-                    }}
-                  >
-                    <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
-                      Observações da Revisão ({stageComments.length})
-                    </Typography>
-                    <Stack spacing={1.25}>
-                      {stageComments.map((comment) => (
-                        <Box key={comment.id}>
-                          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                            {comment.commentText}
-                          </Typography>
-                          {comment.createdAt && (
-                            <Typography variant="caption" color="text.secondary">
-                              Registrado em {new Date(comment.createdAt).toLocaleString('pt-BR')}
-                            </Typography>
-                          )}
-                        </Box>
-                      ))}
-                    </Stack>
-                  </Paper>
-                )}
+                <LessonCommentsPanel
+                  data-testid="ai-lesson-stage-comments"
+                  title="Observações da Revisão"
+                  comments={stageComments}
+                  onResolve={(commentId) => resolveComment.mutate({ id, commentId })}
+                  resolvingId={
+                    resolveComment.isPending ? (resolveComment.variables?.commentId ?? null) : null
+                  }
+                />
 
-                {(generate.isPending || stage.status === LessonStageStatus.GENERATING) && (
+                {stageGenerating && (
                   <Alert
                     data-testid="ai-lesson-stage-generating"
                     severity="info"
+                    role="status"
                     icon={<CircularProgress size={20} />}
                     sx={{ mb: 2, borderRadius: 2.5 }}
                   >
-                    Gerando o conteúdo com IA. Esta tela será atualizada automaticamente.
+                    Gerando o conteúdo com IA há {formatElapsedTime(elapsedSeconds)}. Itens com
+                    imagens podem levar alguns minutos; você pode navegar pelas outras etapas e esta
+                    tela será atualizada automaticamente.
+                  </Alert>
+                )}
+                {generationLocked && !stageGenerating && (
+                  <Alert
+                    data-testid="ai-lesson-other-stage-generating"
+                    severity="info"
+                    sx={{ mb: 2, borderRadius: 2.5 }}
+                  >
+                    Outra etapa desta lição está sendo gerada há {formatElapsedTime(elapsedSeconds)}.
+                    Edição, geração e conclusão ficam bloqueadas até ela terminar; a leitura continua
+                    liberada.
                   </Alert>
                 )}
 
                 {!actions.dependencyReady && (
                   <Alert severity="warning" sx={{ mb: 2, borderRadius: 2.5 }}>
-                    Aprove a etapa anterior no fluxo antes de gerar esta.
+                    Conclua a etapa anterior do fluxo antes de gerar esta.
                   </Alert>
                 )}
 
-                {/* AI Instructions Input */}
                 {stage.type !== LessonStageType.LESSON_VISUALS && (
                   <Box sx={{ mb: 3 }}>
                     <TextField
@@ -660,11 +804,14 @@ export const LessonDraftDetailPage: React.FC = () => {
                       placeholder="Ex: Enfatize o amor de Deus, mantenha linguagem acessível para crianças de 6 anos..."
                       value={instructions}
                       onChange={(event) => setInstructions(event.target.value)}
-                      slotProps={{ htmlInput: { maxLength: 1000 } }}
-                      helperText={`${instructions.length}/1000 caracteres`}
-                      sx={{
-                        '& .MuiOutlinedInput-root': { borderRadius: 2.5 },
+                      slotProps={{
+                        htmlInput: {
+                          maxLength: LESSON_INSTRUCTIONS_MAX_LENGTH,
+                          'data-testid': 'ai-lesson-generation-instructions',
+                        },
                       }}
+                      helperText={`${instructions.length}/${LESSON_INSTRUCTIONS_MAX_LENGTH} caracteres`}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
                     />
                   </Box>
                 )}
@@ -677,40 +824,33 @@ export const LessonDraftDetailPage: React.FC = () => {
                     visualQuantity={visualQuantity}
                     instructions={instructions}
                     hasVersion={Boolean(stage.currentVersionId)}
-                    isGenerating={
-                      generate.isPending || stage.status === LessonStageStatus.GENERATING
-                    }
+                    isGenerating={stageGenerating}
                     canGenerate={canGenerate}
                     onVisualTypeChange={setVisualType}
                     onVisualOrientationChange={setVisualOrientation}
                     onVisualQuantityChange={setVisualQuantity}
                     onInstructionsChange={setInstructions}
-                    onGenerate={generateSelectedStage}
+                    onGenerate={runGeneration}
                   />
                 )}
 
-                {/* Stage Action Controls */}
                 <Stack
                   direction={{ xs: 'column', sm: 'row' }}
                   spacing={1.5}
                   flexWrap="wrap"
                   useFlexGap
-                  sx={{ mb: 3 }}
+                  sx={{ mb: completeBlockedReason ? 1 : 3 }}
                 >
                   {stage.type !== LessonStageType.LESSON_VISUALS && (
                     <Button
                       data-testid="ai-lesson-generate-stage-button"
                       startIcon={<AutoAwesome />}
                       variant="contained"
-                      disabled={
-                        !canGenerate ||
-                        generate.isPending ||
-                        stage.status === LessonStageStatus.GENERATING
-                      }
-                      onClick={generateSelectedStage}
+                      disabled={!canGenerate || stageGenerating}
+                      onClick={requestGeneration}
                       sx={{ borderRadius: 2.5, px: 2.5, minHeight: 44, fontWeight: 700 }}
                     >
-                      {generate.isPending || stage.status === LessonStageStatus.GENERATING
+                      {stageGenerating
                         ? 'Gerando com IA…'
                         : stage.currentVersionId
                           ? 'Regenerar com IA'
@@ -722,14 +862,15 @@ export const LessonDraftDetailPage: React.FC = () => {
                     variant="outlined"
                     startIcon={<EditNote />}
                     data-testid="ai-lesson-save-edit"
-                    disabled={!edited || !actions.canSave}
-                    onClick={saveSelectedStage}
+                    disabled={!edited || !actions.canSave || draftOutdated}
+                    onClick={requestSave}
                     sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 600 }}
                   >
                     {save.isPending ? 'Salvando…' : 'Salvar edição'}
                   </Button>
 
                   <Button
+                    data-testid="ai-lesson-stage-pdf-preview"
                     variant="outlined"
                     color="secondary"
                     startIcon={previewLoading ? <CircularProgress size={18} /> : <PictureAsPdf />}
@@ -745,29 +886,30 @@ export const LessonDraftDetailPage: React.FC = () => {
                     color="primary"
                     variant="contained"
                     data-testid="ai-lesson-complete-stage"
-                    disabled={!actions.canComplete}
-                    onClick={() => action(complete, stage)}
+                    disabled={!actions.canComplete || layoutOverflow}
+                    onClick={() => completeStage(stage)}
                     sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700 }}
                   >
                     {complete.isPending ? 'Concluindo…' : 'Concluir item para o pacote'}
                   </Button>
                 </Stack>
+                {completeBlockedReason && (
+                  <Typography
+                    data-testid="ai-lesson-complete-blocked-reason"
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 3 }}
+                  >
+                    {completeBlockedReason}
+                  </Typography>
+                )}
 
                 {edited && (
                   <Button
                     data-testid="ai-lesson-discard-edit"
                     disabled={save.isPending}
                     sx={{ minHeight: 44, mb: 2 }}
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          'Descartar a edição local desta etapa e carregar a versão atual?'
-                        )
-                      ) {
-                        local.discard();
-                        save.reset();
-                      }
-                    }}
+                    onClick={() => setConfirmation({ kind: ProductionConfirmationKind.DISCARD })}
                   >
                     Descartar edição desta etapa
                   </Button>
@@ -778,7 +920,7 @@ export const LessonDraftDetailPage: React.FC = () => {
                   stage={stage}
                   version={version}
                   document={document}
-                  structuredData={local.draft?.structuredData ?? version?.structuredDataJson ?? {}}
+                  structuredData={structuredData}
                   visualOrientation={visualOrientation}
                   editable={editorEditable}
                   onChangeDocument={local.edit}
@@ -786,12 +928,14 @@ export const LessonDraftDetailPage: React.FC = () => {
                   pdfPreviewLoading={previewLoading}
                   pdfPreviewDisabled={!stage.currentVersionId || Boolean(edited)}
                   pdfPreviewLabel={edited ? 'Salve para visualizar' : undefined}
+                  onLayoutOverflowChange={setLayoutOverflow}
                 />
               </CardContent>
             </Card>
           )}
         </Box>
       </Box>
+
       <LessonDraftDialogs
         lesson={lesson}
         stage={stage}
@@ -803,18 +947,142 @@ export const LessonDraftDetailPage: React.FC = () => {
         previewLoading={previewLoading}
         deleteConfirmOpen={deleteConfirmOpen}
         deletePending={deleteMutation.isPending}
+        deleteError={
+          deleteMutation.isError
+            ? getErrorMessage(deleteMutation.error, 'Não foi possível excluir a lição.')
+            : null
+        }
         onCloseLlmError={() => setLlmErrorOpen(false)}
         onRetryGeneration={() => {
           setLlmErrorOpen(false);
-          generateSelectedStage();
+          runGeneration();
         }}
         onClosePreview={preview.close}
         onCloseDelete={() => setDeleteConfirmOpen(false)}
-        onConfirmDelete={async () => {
-          await deleteMutation.mutateAsync(id);
-          navigate('/adm/estudio/licoes');
-        }}
+        onConfirmDelete={confirmDelete}
       />
+
+      <ConfirmDialog
+        data-testid="ai-lesson-production-confirm-dialog"
+        open={Boolean(confirmation)}
+        maxWidth="sm"
+        title={
+          confirmation?.kind === ProductionConfirmationKind.COMPLETE_OUTDATED
+            ? 'Concluir este item sem gerar novamente?'
+            : confirmation?.kind === ProductionConfirmationKind.SAVE
+            ? 'Salvar e desatualizar os itens seguintes?'
+            : confirmation?.kind === ProductionConfirmationKind.REGENERATE
+              ? `Regenerar “${stageLabel}” com IA?`
+              : confirmation?.kind === ProductionConfirmationKind.REBASE
+                ? 'Reaplicar sua edição sobre a versão atual?'
+                : 'Descartar a edição desta etapa?'
+        }
+        confirmText={
+          confirmation?.kind === ProductionConfirmationKind.COMPLETE_OUTDATED
+            ? 'Continua válido, concluir'
+            : confirmation?.kind === ProductionConfirmationKind.SAVE
+            ? 'Salvar mesmo assim'
+            : confirmation?.kind === ProductionConfirmationKind.REGENERATE
+              ? 'Regenerar'
+              : confirmation?.kind === ProductionConfirmationKind.REBASE
+                ? 'Reaplicar minha edição'
+                : 'Descartar edição'
+        }
+        confirmColor={
+          confirmation?.kind === ProductionConfirmationKind.DISCARD ? 'error' : 'primary'
+        }
+        onConfirm={confirmCurrent}
+        onClose={() => setConfirmation(null)}
+        autoCloseOnConfirm={false}
+      >
+        {confirmation?.kind === ProductionConfirmationKind.SAVE && (
+          <>
+            <Typography variant="body2">
+              Salvar esta edição marca como desatualizados os itens abaixo, que dependem dela. Eles
+              perdem a conclusão ou a aprovação e precisarão ser revistos e concluídos novamente:
+            </Typography>
+            <StageImpactList stages={impactedStages} category={lesson.category} />
+          </>
+        )}
+        {confirmation?.kind === ProductionConfirmationKind.REGENERATE && stage && (
+          <>
+            {SIGNED_OFF_STAGE_STATUSES.includes(stage.status) && (
+              <Alert severity="warning" sx={{ mb: 1.5 }}>
+                Este item já foi concluído ou aprovado. Regenerar descarta essa conclusão.
+              </Alert>
+            )}
+            <Typography variant="body2">
+              A IA criará uma nova versão que substitui o conteúdo atual deste item. A versão
+              anterior fica apenas no histórico e a geração consome créditos do provedor.
+            </Typography>
+            {impactedStages.length > 0 && (
+              <>
+                <Typography variant="body2" sx={{ mt: 1.5 }}>
+                  Os itens abaixo também ficarão desatualizados:
+                </Typography>
+                <StageImpactList stages={impactedStages} category={lesson.category} />
+              </>
+            )}
+          </>
+        )}
+        {confirmation?.kind === ProductionConfirmationKind.COMPLETE_OUTDATED && (
+          <Typography variant="body2">
+            Este item foi produzido a partir de uma versão anterior
+            {staleOrigin ? ` de “${lessonStageLabel(staleOrigin, lesson.category)}”` : ' dos itens anteriores'}
+            , que mudou depois. Confirme apenas se você conferiu que o conteúdo continua correto
+            (por exemplo, o versículo e a história); caso contrário, gere o item novamente ou
+            edite-o.
+          </Typography>
+        )}
+        {confirmation?.kind === ProductionConfirmationKind.REBASE && (
+          <Typography variant="body2">
+            Seu texto passa a substituir a versão que está no servidor quando você salvar. As
+            alterações feitas na outra sessão que você não incorporou serão sobrescritas. Use “Ver
+            versão remota” antes, se quiser comparar.
+          </Typography>
+        )}
+        {confirmation?.kind === ProductionConfirmationKind.DISCARD && (
+          <Typography variant="body2">
+            A edição local desta etapa será apagada e a versão atual do servidor será carregada.
+          </Typography>
+        )}
+      </ConfirmDialog>
+
+      <Dialog
+        data-testid="ai-lesson-remote-version-dialog"
+        open={remoteVersionOpen && Boolean(stage)}
+        onClose={() => setRemoteVersionOpen(false)}
+        aria-labelledby="ai-lesson-remote-version-title"
+        fullWidth
+        maxWidth="lg"
+      >
+        <DialogTitle id="ai-lesson-remote-version-title" sx={{ fontWeight: 800 }}>
+          Versão atual no servidor — {stageLabel}
+        </DialogTitle>
+        <DialogContent dividers>
+          {stage && (
+            <LessonStageContentViewer
+              stage={stage}
+              version={version}
+              document={remoteDocument}
+              structuredData={version?.structuredDataJson ?? EMPTY_STRUCTURED_DATA}
+              editable={false}
+              readOnly
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            data-testid="ai-lesson-remote-version-close"
+            onClick={() => setRemoteVersionOpen(false)}
+            sx={{ minHeight: 44 }}
+          >
+            Fechar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <UnsavedChangesDialog {...leave.dialog} />
     </Box>
   );
 };

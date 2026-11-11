@@ -1,4 +1,4 @@
-import { lessonStageLabel } from './lessonStagePresentation.utils';
+import { lessonStageLabel } from '@/features/ai-lessons/presentation.utils';
 import { STAGE_CONFIG, PROMPT_PRESETS } from '@/features/ai-lessons/promptConstants';
 import {
   getStudioStageOrder,
@@ -10,16 +10,34 @@ import {
 import { aiLessonsKeys } from '@/features/ai-lessons/queryKeys';
 import {
   acknowledgePromptDraft,
-  composeEffectivePromptPreview,
+  resolveEffectivePromptPreview,
   editPromptDraft,
   hasDuplicatedBasePrompt,
   isValidComplementaryPrompt,
+  isPersistedPromptDrafts,
+  isPromptDraftOutdated,
+  rebasePromptDraft,
   resolvePromptDraftValue,
+  restorePromptDrafts,
   stripDuplicatedBasePrompt,
+  toPersistedPromptDrafts,
 } from '@/features/ai-lessons/drafts';
+import {
+  readStudioSnapshot,
+  resolveStudioStorage,
+  studioSnapshotKey,
+} from '@/features/ai-lessons/draftStorage';
+import { STUDIO_ROUTES } from '@/features/ai-lessons/presentation.constants';
+import {
+  usePersistedStudioState,
+  useStudioUserId,
+} from '@/features/ai-lessons/usePersistedStudioState';
+import UnsavedChangesDialog from '@/components/common/modal/UnsavedChangesDialog';
 import {
   LessonCategory,
   StudioFeedbackSeverity,
+  StudioSnapshotScope,
+  type PersistedPromptDrafts,
   type PromptCategoryDrafts,
   type PromptLocalDrafts,
   type SavePromptVariables,
@@ -28,7 +46,7 @@ import {
 import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
 import { getHttpStatus } from '@/utils/apiError';
 import type { RootState } from '@/store/slices';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -86,7 +104,9 @@ export const AdminPromptSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const client = useQueryClient();
-  const userId = useSelector((state: RootState) => state.auth.user?.id ?? null);
+  const sessionUserId = useSelector((state: RootState) => state.auth.user?.id ?? null);
+  // Sticky: an expired session must not look like "another user" and wipe the drafts.
+  const userId = useStudioUserId() || sessionUserId;
   const [category, setCategory] = useState(LessonCategory.REGULAR);
   const preferencesKey = aiLessonsKeys.preferencesByUser(userId, category);
 
@@ -102,10 +122,24 @@ export const AdminPromptSettingsPage: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<StudioFeedback | null>(null);
 
+  const storageKey = userId ? studioSnapshotKey(StudioSnapshotScope.PROMPT_DRAFTS, userId) : '';
+  const [persisted, setPersisted] = useState<PersistedPromptDrafts | null>(null);
+  const [restoredCategories, setRestoredCategories] = useState<LessonCategory[]>([]);
+  const [loadedKey, setLoadedKey] = useState('');
+  const [recovered, setRecovered] = useState(false);
+
   useEffect(() => {
     setCategoryDrafts({});
     setFeedback(null);
-  }, [userId]);
+    setRestoredCategories([]);
+    setRecovered(false);
+    setPersisted(
+      storageKey
+        ? readStudioSnapshot(resolveStudioStorage(), storageKey, isPersistedPromptDrafts)
+        : null
+    );
+    setLoadedKey(storageKey);
+  }, [storageKey]);
 
   const query = useQuery({
     queryKey: preferencesKey,
@@ -113,20 +147,62 @@ export const AdminPromptSettingsPage: React.FC = () => {
     staleTime: PROMPT_STALE_TIME_MS,
   });
 
+  // Stored drafts only carry the typed text; they are rebuilt once their preferences load.
+  useEffect(() => {
+    if (!query.data || loadedKey !== storageKey || restoredCategories.includes(category)) return;
+    const restored = restorePromptDrafts(persisted?.[category], query.data);
+    if (Object.keys(restored).length) {
+      setCategoryDrafts((all) => ({ ...all, [category]: { ...restored, ...all[category] } }));
+      setRecovered(true);
+    }
+    setRestoredCategories((current) => [...current, category]);
+  }, [category, loadedKey, persisted, query.data, restoredCategories, storageKey]);
+  const persistedDrafts = useMemo(() => {
+    const live = toPersistedPromptDrafts(categoryDrafts);
+    const result: PersistedPromptDrafts = {};
+    for (const item of Object.values(LessonCategory)) {
+      // A category already rebuilt on screen is owned by the live drafts, not by the snapshot.
+      const source = restoredCategories.includes(item) ? live[item] : persisted?.[item];
+      if (source && Object.keys(source).length) result[item] = source;
+    }
+    return result;
+  }, [categoryDrafts, persisted, restoredCategories]);
+  usePersistedStudioState(
+    loadedKey === storageKey && restoredCategories.includes(category) ? storageKey : '',
+    persistedDrafts
+  );
+
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(copyTimer.current), []);
   const preference = query.data?.find((item) => item.stage === stage);
   const value = resolvePromptDraftValue(drafts[stage], preference);
-  const effectivePreview = preference
-    ? composeEffectivePromptPreview(preference.basePrompt, value)
-    : '';
+  const effectivePreview = preference ? resolveEffectivePromptPreview(preference, value) : '';
   const hasBaseDuplication = preference
     ? hasDuplicatedBasePrompt(value, preference.basePrompt)
     : false;
   const isPromptValid = isValidComplementaryPrompt(value);
   const dirty = Boolean(drafts[stage]);
   const dirtyCount = Object.values(categoryDrafts).reduce((total, items) => total + Object.keys(items).length, 0);
-  const confirmLeave = useStudioUnsavedChanges(dirtyCount > 0);
+  const leaveGuard = useStudioUnsavedChanges(dirtyCount > 0);
+  const draftOutdated = isPromptDraftOutdated(drafts[stage], preference);
+  const discardCurrentDraft = () => {
+    setDrafts((current) => {
+      const next = { ...current };
+      delete next[stage];
+      return next;
+    });
+    setFeedback(null);
+    save.reset();
+  };
+  const rebaseCurrentDraft = () => {
+    if (!preference) return;
+    setDrafts((current) => {
+      const existing = current[stage];
+      return existing ? { ...current, [stage]: rebasePromptDraft(existing, preference) } : current;
+    });
+    setFeedback(null);
+    save.reset();
+  };
   const changePrompt = (text: string) => {
     if (!preference) return;
     setDrafts((current) => ({
@@ -156,7 +232,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
         severity: StudioFeedbackSeverity.ERROR,
         text:
           getHttpStatus(error) === 409
-            ? 'As orientações foram alteradas em outra sessão. Sua edição foi preservada. Copie o texto antes de recarregar.'
+            ? 'As orientações foram alteradas em outra sessão. Sua edição foi preservada; escolha abaixo entre aplicá-la sobre a versão atual ou descartá-la.'
             : 'Não foi possível salvar. Suas orientações locais foram preservadas.',
       });
     },
@@ -169,7 +245,12 @@ export const AdminPromptSettingsPage: React.FC = () => {
       client.setQueryData<AdminPromptPreference[]>(preferencesKey, (items = []) =>
         items.map((item) => (item.stage === saved.stage ? saved : item))
       );
-      setDrafts((current) => acknowledgePromptDraft(current, sent.draft, saved));
+      // Restoring the official prompt also drops any text typed and not saved for this stage.
+      setDrafts((current) => {
+        const next = { ...acknowledgePromptDraft(current, sent.draft, saved) };
+        delete next[saved.stage];
+        return next;
+      });
       setResetOpen(false);
       setFeedback({
         severity: StudioFeedbackSeverity.SUCCESS,
@@ -191,10 +272,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
     },
   });
 
-  const leave = () => {
-    if (!confirmLeave()) return;
-    navigate('/adm/estudio');
-  };
+  const leave = () => leaveGuard.requestLeave(() => navigate(STUDIO_ROUTES.hub));
 
   const handleCopyBasePrompt = () => {
     if (preference?.basePrompt) {
@@ -670,6 +748,49 @@ export const AdminPromptSettingsPage: React.FC = () => {
                     />
                   </Box>
 
+                  {recovered && (
+                    <Alert
+                      data-testid="admin-prompts-draft-recovered"
+                      severity="info"
+                      onClose={() => setRecovered(false)}
+                      sx={{ mb: 2, borderRadius: 2.5 }}
+                    >
+                      Rascunho recuperado: as orientações que você digitou e não salvou foram
+                      restauradas neste navegador.
+                    </Alert>
+                  )}
+                  {draftOutdated && (
+                    <Alert
+                      data-testid="admin-prompts-draft-outdated"
+                      severity="warning"
+                      sx={{ mb: 2, borderRadius: 2.5, '& .MuiAlert-message': { width: '100%' } }}
+                    >
+                      <Typography variant="body2" sx={{ mb: 1 }}>
+                        As orientações desta etapa foram alteradas em outra sessão. Seu texto foi
+                        preservado, mas precisa de uma decisão para poder ser salvo.
+                      </Typography>
+                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                        <Button
+                          data-testid="admin-prompts-draft-rebase"
+                          color="inherit"
+                          variant="outlined"
+                          onClick={rebaseCurrentDraft}
+                          sx={{ minHeight: 44, textTransform: 'none' }}
+                        >
+                          Aplicar meu texto sobre a versão atual
+                        </Button>
+                        <Button
+                          data-testid="admin-prompts-draft-discard-outdated"
+                          color="inherit"
+                          onClick={discardCurrentDraft}
+                          sx={{ minHeight: 44, textTransform: 'none' }}
+                        >
+                          Descartar meu texto e ver a versão atual
+                        </Button>
+                      </Stack>
+                    </Alert>
+                  )}
+
                   {/* Alerta de Feedback */}
                   {feedback && (
                     <Alert
@@ -688,7 +809,23 @@ export const AdminPromptSettingsPage: React.FC = () => {
                     spacing={1.5}
                     sx={{ mt: 3 }}
                   >
+                    {dirty && (
+                      <Button
+                        data-testid="admin-prompts-discard-draft"
+                        disabled={save.isPending || reset.isPending}
+                        onClick={discardCurrentDraft}
+                        sx={{
+                          borderRadius: 2.5,
+                          minHeight: 44,
+                          fontWeight: 600,
+                          textTransform: 'none',
+                        }}
+                      >
+                        Descartar alterações desta etapa
+                      </Button>
+                    )}
                     <Button
+                      data-testid="admin-prompts-reset-open"
                       color="warning"
                       variant="outlined"
                       startIcon={<RestartAlt />}
@@ -707,7 +844,9 @@ export const AdminPromptSettingsPage: React.FC = () => {
                       variant="contained"
                       color="primary"
                       startIcon={<Save />}
-                      disabled={!dirty || !isPromptValid || save.isPending || reset.isPending}
+                      disabled={
+                        !dirty || !isPromptValid || draftOutdated || save.isPending || reset.isPending
+                      }
                       onClick={saveCurrentPrompt}
                       sx={{
                         borderRadius: 2.5,
@@ -795,6 +934,15 @@ export const AdminPromptSettingsPage: React.FC = () => {
             A sua personalização para a etapa <strong>{lessonStageLabel(stage, category)}</strong> será
             removida. O sistema voltará a utilizar o prompt-base padrão.
           </DialogContentText>
+          {dirty && (
+            <DialogContentText
+              data-testid="admin-prompts-reset-unsaved-warning"
+              color="warning.main"
+              sx={{ mt: 1.5, fontWeight: 600 }}
+            >
+              O texto que você digitou e ainda não salvou nesta etapa também será descartado.
+            </DialogContentText>
+          )}
         </DialogContent>
         <DialogActions
           sx={{
@@ -829,6 +977,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <UnsavedChangesDialog {...leaveGuard.dialog} />
     </Box>
   );
 };

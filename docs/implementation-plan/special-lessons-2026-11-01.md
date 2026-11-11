@@ -1,6 +1,6 @@
 # Estúdio Clubinho — Plano de Implementação Frontend: Lições Especiais (`SPECIAL`), 2026-11-01
 
-Status: planejado (aguardando aprovação para implementação).
+Status: implementado. Nota de 2026-11-10: a referência vigente do contrato é `clubinhonib-api/docs/api-ai-lessons.md`.
 
 Referências de domínio analisadas:
 - [`lições/especial/licao_especial.pdf`](../../../lições/especial/licao_especial.pdf) — *"O Picolé Roubado"* (narrativa contemporânea conectada às Escrituras e ao Plano da Salvação).

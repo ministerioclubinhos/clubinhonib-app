@@ -69,9 +69,13 @@ for (const width of [360, 1440]) {
       await selectStudioStage(page, LessonStageType.STANDARD_GAME, width);
       await expect(editor).toContainText('Edição local da brincadeira');
       // Confirm browser-native leave protection separately from stage navigation.
-      page.once('dialog', (dialog) => dialog.dismiss());
       await page.getByRole('button', { name: 'Voltar para Produção de Lições' }).click();
-      await expect(page).toHaveURL(new RegExp(`${lesson.id}$`));
+      await page
+        .getByTestId('modal-unsaved-changes-dialog')
+        .getByRole('button', { name: 'Continuar editando' })
+        .click();
+      // The selected item now lives in the URL (?stage=).
+      await expect(page).toHaveURL(new RegExp(`${lesson.id}(\\?.*)?$`));
       const bounds = await page.getByTestId('ai-lessons-detail').boundingBox();
       expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(width);
     } finally {
@@ -233,7 +237,7 @@ for (const target of [
       await page.goto(`/adm/estudio/revisao/${lesson.id}`);
       await page.getByTestId(tab).click();
       await page
-        .getByLabel('Sugestões de melhoria / observações')
+        .getByTestId('ai-lesson-review-feedback-input')
         .fill('Ajustar o conteúdo desta etapa para a turma.');
       await page.getByTestId('ai-lesson-review-request-changes').click();
       await expect(page.getByTestId('ai-lesson-review-request-changes')).toBeDisabled();

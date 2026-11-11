@@ -135,16 +135,6 @@ export default function IdeasSectionReviewMaterials({
   return (
     <Box data-testid="ideas-section-review-materials">
       <Stack spacing={2.5}>
-        <Box>
-          <Typography component="h2" variant="h6" fontWeight={700}>
-            Materiais recebidos
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Confira os arquivos enviados. Materiais em formato antigo podem ser mantidos ou
-            removidos.
-          </Typography>
-        </Box>
-
         {medias.length === 0 ? (
           <Alert severity="info">Esta ideia ainda não tem materiais.</Alert>
         ) : (
@@ -184,6 +174,13 @@ export default function IdeasSectionReviewMaterials({
                           sx={{
                             display: 'flex',
                             alignItems: 'center',
+                            /*
+                             * No celular o nome do arquivo some atrás das
+                             * ações: com `wrap` elas descem para a segunda
+                             * linha em vez de reduzir o nome a reticências.
+                             */
+                            flexWrap: 'wrap',
+                            rowGap: 1,
                             gap: 1.5,
                             py: '12px !important',
                           }}
@@ -195,8 +192,8 @@ export default function IdeasSectionReviewMaterials({
                           ) : (
                             <MovieOutlined color="action" />
                           )}
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography noWrap title={name}>
+                          <Box sx={{ flex: '1 1 160px', minWidth: 0 }}>
+                            <Typography title={name} sx={{ overflowWrap: 'anywhere' }}>
                               {name}
                             </Typography>
                             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
@@ -220,29 +217,36 @@ export default function IdeasSectionReviewMaterials({
                               )}
                             </Stack>
                           </Box>
-                          {media.url && (
-                            <Button
-                              component="a"
-                              href={media.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              size="small"
-                              sx={{ minHeight: 44, flexShrink: 0 }}
-                            >
-                              Visualizar
-                            </Button>
-                          )}
-                          <Tooltip title={`Remover ${name}`}>
-                            <IconButton
-                              data-testid="ideas-section-review-media-remove"
-                              aria-label={`Remover ${name}`}
-                              disabled={disabled}
-                              onClick={() => removeMedia(index)}
-                              sx={{ minWidth: 44, minHeight: 44 }}
-                            >
-                              <DeleteOutline />
-                            </IconButton>
-                          </Tooltip>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={0.5}
+                            sx={{ ml: 'auto', flexShrink: 0 }}
+                          >
+                            {media.url && (
+                              <Button
+                                component="a"
+                                href={media.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                size="small"
+                                sx={{ minHeight: 44 }}
+                              >
+                                Visualizar
+                              </Button>
+                            )}
+                            <Tooltip title={`Remover ${name}`}>
+                              <IconButton
+                                data-testid="ideas-section-review-media-remove"
+                                aria-label={`Remover ${name}`}
+                                disabled={disabled}
+                                onClick={() => removeMedia(index)}
+                                sx={{ minWidth: 44, minHeight: 44 }}
+                              >
+                                <DeleteOutline />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
                         </CardContent>
                       </Card>
                     );
@@ -274,7 +278,7 @@ export default function IdeasSectionReviewMaterials({
               variant="outlined"
               onClick={() => inputRef.current?.click()}
               disabled={disabled || medias.length >= IDEA_SHARE_MAX_MEDIAS}
-              sx={{ minHeight: 44 }}
+              sx={{ minHeight: 44, textTransform: 'none' }}
             >
               Escolher{' '}
               {selectedKind === IdeaMaterialKind.DOCUMENT
@@ -305,7 +309,11 @@ export default function IdeasSectionReviewMaterials({
                   placeholder="Link do YouTube"
                   inputProps={{ 'data-testid': 'ideas-section-review-youtube-url' }}
                 />
-                <Button onClick={addYoutube} disabled={disabled} sx={{ minHeight: 44 }}>
+                <Button
+                  onClick={addYoutube}
+                  disabled={disabled}
+                  sx={{ minHeight: 44, textTransform: 'none' }}
+                >
                   Adicionar vídeo do YouTube
                 </Button>
               </>

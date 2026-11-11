@@ -2,16 +2,40 @@ export enum LlmProviderType {
   OPENAI = 'openai',
   GEMINI = 'gemini',
 }
+/** Mirrors `OpenAiReasoningEffort` in the API settings DTO. */
 export enum OpenAIReasoningEffort {
   NONE = 'none',
+  MINIMAL = 'minimal',
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
+  XHIGH = 'xhigh',
 }
+/** Mirrors `OpenAiImageQuality` in the API settings DTO. */
 export enum OpenAIImageQuality {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
+  AUTO = 'auto',
+}
+/** Mirrors `GeminiImageSize` in the API settings DTO. */
+export enum GeminiImageSize {
+  ONE_K = '1K',
+  TWO_K = '2K',
+  FOUR_K = '4K',
+}
+export interface AiProviderOption<T extends string> {
+  value: T;
+  label: string;
+}
+export interface GeminiRetryErrors {
+  maxRetries: string | null;
+  retryBaseDelayMs: string | null;
+}
+export interface AiModelCatalogBadge {
+  label: string;
+  color: 'success' | 'warning' | 'info' | 'default';
+  description: string;
 }
 export enum ApiKeyAction {
   PRESERVE = 'preserve',
@@ -56,9 +80,13 @@ export interface GeminiSettings {
 }
 export interface OpenAiSettingsResponse extends OpenAiSettings {
   hasApiKey: boolean;
+  /** Set by the API when a stored key can no longer be decrypted and must be typed again. */
+  apiKeyUnreadable?: boolean;
 }
 export interface GeminiSettingsResponse extends GeminiSettings {
   hasApiKey: boolean;
+  /** Set by the API when a stored key can no longer be decrypted and must be typed again. */
+  apiKeyUnreadable?: boolean;
 }
 export interface AiProviderSettings {
   llmProvider: LlmProviderType;

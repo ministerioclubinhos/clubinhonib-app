@@ -1,16 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { TextAlign } from '@tiptap/extension-text-align';
-import { Subscript } from '@tiptap/extension-subscript';
-import { Superscript } from '@tiptap/extension-superscript';
-import { Highlight } from '@tiptap/extension-highlight';
-import { TextStyle, FontFamily, FontSize } from '@tiptap/extension-text-style';
-import { Color } from '@tiptap/extension-color';
-import { Table } from '@tiptap/extension-table';
-import { TableRow } from '@tiptap/extension-table-row';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
 import {
   Box,
   Divider,
@@ -54,7 +43,7 @@ import {
   LessonEditorColorMode,
   type LessonDocumentEditorProps,
 } from '@/features/ai-lessons/editor.types';
-import { LessonParagraphSpacing } from '@/features/ai-lessons/editor.extensions';
+import { createLessonEditorExtensions } from '@/features/ai-lessons/editor.extensions';
 import { countEditorText } from '@/features/ai-lessons/editor.utils';
 import { LessonEditorColorTools } from '@/features/ai-lessons/components/LessonEditorColorTools';
 import { LessonEditorAdvancedTools } from '@/features/ai-lessons/components/LessonEditorAdvancedTools';
@@ -68,37 +57,27 @@ export const LibreOfficeDocEditor = ({
   const compact = useMediaQuery(theme.breakpoints.down('md'));
 
   const [fullscreen, setFullscreen] = useState(false);
+  const lastEmitted = useRef<TiptapDocument | null>(null);
   const [toolsAnchor, setToolsAnchor] = useState<null | HTMLElement>(null);
   const [tableAnchor, setTableAnchor] = useState<null | HTMLElement>(null);
 
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ link: { openOnClick: false } }),
-      Subscript,
-      Superscript,
-      Highlight.configure({ multicolor: true }),
-      TextStyle,
-      FontFamily,
-      FontSize,
-      LessonParagraphSpacing,
-      Color,
-      TextAlign.configure({
-        types: ['heading', 'paragraph', 'blockquote'],
-      }),
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableHeader,
-      TableCell,
-    ],
+    extensions: createLessonEditorExtensions(),
     content: initialJson,
     editable,
-    onUpdate: ({ editor: value }) => onChange?.(value.getJSON() as TiptapDocument),
+    // Toolbar state (active marks, undo/redo, counters) follows selection changes too.
+    shouldRerenderOnTransaction: true,
+    onUpdate: ({ editor: value }) => {
+      const json = value.getJSON() as TiptapDocument;
+      lastEmitted.current = json;
+      onChange?.(json);
+    },
   });
 
   useEffect(() => {
-    if (editor && JSON.stringify(editor.getJSON()) !== JSON.stringify(initialJson)) {
+    // The parent echoing back what this editor just emitted needs no comparison.
+    if (!editor || initialJson === lastEmitted.current) return;
+    if (JSON.stringify(editor.getJSON()) !== JSON.stringify(initialJson)) {
       editor.commands.setContent(initialJson, { emitUpdate: false });
     }
   }, [editor, initialJson]);
@@ -167,6 +146,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Negrito (Ctrl+B)">
         <IconButton
           color={editor.isActive('bold') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('bold')}
           onClick={() => editor.chain().focus().toggleBold().run()}
         >
           <FormatBold />
@@ -175,6 +155,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Itálico (Ctrl+I)">
         <IconButton
           color={editor.isActive('italic') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('italic')}
           onClick={() => editor.chain().focus().toggleItalic().run()}
         >
           <FormatItalic />
@@ -183,6 +164,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Sublinhado (Ctrl+U)">
         <IconButton
           color={editor.isActive('underline') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('underline')}
           onClick={() => editor.chain().focus().toggleUnderline().run()}
         >
           <FormatUnderlined />
@@ -191,6 +173,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Tachado">
         <IconButton
           color={editor.isActive('strike') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('strike')}
           onClick={() => editor.chain().focus().toggleStrike().run()}
         >
           <StrikethroughS />
@@ -199,6 +182,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Subscrito (<sub>)">
         <IconButton
           color={editor.isActive('subscript') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('subscript')}
           onClick={() => editor.chain().focus().toggleSubscript().run()}
         >
           <SubscriptIcon />
@@ -207,6 +191,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Sobrescrito (<sup>)">
         <IconButton
           color={editor.isActive('superscript') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('superscript')}
           onClick={() => editor.chain().focus().toggleSuperscript().run()}
         >
           <SuperscriptIcon />
@@ -225,6 +210,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Título 1 (H1)">
         <IconButton
           color={editor.isActive('heading', { level: 1 }) ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('heading', { level: 1 })}
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         >
           <Title />
@@ -233,6 +219,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Subtítulo H2">
         <IconButton
           color={editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('heading', { level: 2 })}
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         >
           <Box component="span" sx={{ fontWeight: 800, fontSize: 13 }}>
@@ -243,6 +230,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Subtítulo H3">
         <IconButton
           color={editor.isActive('heading', { level: 3 }) ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('heading', { level: 3 })}
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         >
           <Box component="span" sx={{ fontWeight: 800, fontSize: 13 }}>
@@ -257,6 +245,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Alinhar à Esquerda">
         <IconButton
           color={editor.isActive({ textAlign: 'left' }) ? 'primary' : 'default'}
+          aria-pressed={editor.isActive({ textAlign: 'left' })}
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
         >
           <FormatAlignLeft />
@@ -265,6 +254,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Centralizar">
         <IconButton
           color={editor.isActive({ textAlign: 'center' }) ? 'primary' : 'default'}
+          aria-pressed={editor.isActive({ textAlign: 'center' })}
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
         >
           <FormatAlignCenter />
@@ -273,6 +263,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Alinhar à Direita">
         <IconButton
           color={editor.isActive({ textAlign: 'right' }) ? 'primary' : 'default'}
+          aria-pressed={editor.isActive({ textAlign: 'right' })}
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
         >
           <FormatAlignRight />
@@ -281,6 +272,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Justificar (Ambos os Lados)">
         <IconButton
           color={editor.isActive({ textAlign: 'justify' }) ? 'primary' : 'default'}
+          aria-pressed={editor.isActive({ textAlign: 'justify' })}
           onClick={() => editor.chain().focus().setTextAlign('justify').run()}
         >
           <FormatAlignJustify />
@@ -293,6 +285,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Lista com Marcadores">
         <IconButton
           color={editor.isActive('bulletList') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('bulletList')}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         >
           <FormatListBulleted />
@@ -301,6 +294,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Lista Numerada">
         <IconButton
           color={editor.isActive('orderedList') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('orderedList')}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
         >
           <FormatListNumbered />
@@ -309,6 +303,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Bloco de Citação">
         <IconButton
           color={editor.isActive('blockquote') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('blockquote')}
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
         >
           <FormatQuote />
@@ -326,6 +321,7 @@ export const LibreOfficeDocEditor = ({
       <Tooltip title="Inserir / Gerenciar Tabela">
         <IconButton
           color={editor.isActive('table') ? 'primary' : 'default'}
+          aria-pressed={editor.isActive('table')}
           onClick={(e) => setTableAnchor(e.currentTarget)}
         >
           <TableChart />

@@ -128,8 +128,15 @@ export interface LessonStage {
   status: LessonStageStatus;
   currentVersionId: string | null;
   lockVersion: number;
+  failureCode?: string | null;
   failureMessage: string | null;
   versions: LessonVersion[];
+}
+export enum LessonPublicationState {
+  IDLE = 'IDLE',
+  PUBLISHING = 'PUBLISHING',
+  FAILED = 'FAILED',
+  PUBLISHED = 'PUBLISHED',
 }
 export interface Lesson {
   id: string;
@@ -141,7 +148,7 @@ export interface Lesson {
   status: LessonStatus;
   weekMaterialId: string | null;
   publicationFailureMessage?: string | null;
-  publicationState?: string;
+  publicationState?: LessonPublicationState;
   createdAt: string;
   updatedAt: string;
   stages: LessonStage[];
@@ -157,7 +164,7 @@ export interface LessonComment {
 }
 export interface LessonDashboard {
   total: number;
-  byStatus: Record<string, number>;
+  byStatus: Partial<Record<LessonStatus, number>>;
   recent: Lesson[];
 }
 export interface GenerateLessonPayload {
@@ -213,18 +220,31 @@ export enum LessonStageAction {
   COMPLETE = 'complete',
   APPROVE = 'approve',
   CHANGES = 'changes',
+  REOPEN = 'reopen',
+}
+export enum LessonArchiveAction {
+  ARCHIVE = 'archive',
+  UNARCHIVE = 'unarchive',
+}
+export interface ResolveCommentVariables {
+  id: string;
+  commentId: string;
 }
 export enum LessonConnectionState {
   CONNECTING = 'connecting',
   CONNECTED = 'connected',
   RECONNECTING = 'reconnecting',
   DENIED = 'denied',
+  NOT_FOUND = 'not_found',
+  PAUSED = 'paused',
 }
 export enum LessonStreamEnd {
   CANCELLED = 'cancelled',
   TRANSIENT = 'transient',
   DENIED = 'denied',
+  NOT_FOUND = 'not_found',
   ROTATED = 'rotated',
+  BYTE_LIMIT = 'byte_limit',
 }
 export interface LessonStreamMetrics {
   bytes: number;
@@ -264,6 +284,8 @@ export interface StageActionVariables {
   stage: LessonStageType;
   lockVersion: number;
   note?: string;
+  /** Confirms an outdated item is still valid without regeneration. */
+  acknowledgeStale?: boolean;
 }
 export interface LessonLocalDraft {
   lessonId: string;
@@ -271,6 +293,36 @@ export interface LessonLocalDraft {
   lockVersion: number;
   document: TiptapDocument;
   structuredData: Record<string, unknown> | null;
+}
+export interface SubscribeLessonStreamOptions {
+  maxDurationMs?: number;
+  maxBytes?: number;
+}
+export interface StudioStorage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+  key(index: number): string | null;
+  readonly length: number;
+}
+export enum StudioSnapshotScope {
+  LESSON_DRAFTS = 'drafts',
+  REVIEW_FEEDBACK = 'review',
+  PROMPT_DRAFTS = 'prompts',
+}
+export interface PersistedPromptDraft {
+  value: string;
+  lockVersion: number | null;
+}
+export type PersistedPromptDrafts = Partial<
+  Record<LessonCategory, Partial<Record<LessonStageType, PersistedPromptDraft>>>
+>;
+export type ReviewFeedbackMap = Partial<Record<LessonStageType, string>>;
+export type AcknowledgedStageVersions = Partial<Record<LessonStageType, string | null>>;
+export enum StageAssetIssue {
+  NONE = 'none',
+  MISSING = 'missing',
+  BROKEN = 'broken',
 }
 export type LessonLocalDrafts = Record<string, LessonLocalDraft | undefined>;
 export interface PromptLocalDraft {
@@ -294,7 +346,6 @@ export interface ParsedSseChunk {
   messages: string[];
   remainder: string;
   heartbeats: number;
-  hasActivity: boolean;
 }
 
 export interface LessonStreamTransport {
@@ -313,6 +364,11 @@ export interface LessonStageContentViewerProps {
   pdfPreviewLoading?: boolean;
   pdfPreviewDisabled?: boolean;
   pdfPreviewLabel?: string;
+  /** Computed by the screen so the viewer notice and the action gate never disagree. */
+  assetIssue?: StageAssetIssue | null;
+  /** True for the read-only review screen. */
+  readOnly?: boolean;
+  onLayoutOverflowChange?: (overflow: boolean) => void;
 }
 
 export interface LessonDraftDialogsProps {
@@ -326,11 +382,78 @@ export interface LessonDraftDialogsProps {
   previewLoading: boolean;
   deleteConfirmOpen: boolean;
   deletePending: boolean;
+  deleteError: string | null;
   onCloseLlmError: () => void;
   onRetryGeneration: () => void;
   onClosePreview: () => void;
   onCloseDelete: () => void;
-  onConfirmDelete: () => Promise<void>;
+  onConfirmDelete: () => void;
 }
 
 export type PromptCategoryDrafts = Partial<Record<LessonCategory, PromptLocalDrafts>>;
+
+export enum StudioScreenKind {
+  PRODUCTION = 'production',
+  REVIEW = 'review',
+}
+export interface LessonConnectionAlertProps {
+  state: LessonConnectionState;
+  screen: StudioScreenKind;
+  onBackToList: () => void;
+}
+export interface LessonCommentsPanelProps {
+  comments: LessonComment[];
+  title: string;
+  'data-testid': string;
+  /** When given, open notes can be marked as handled. */
+  onResolve?: (commentId: string) => void;
+  resolvingId?: string | null;
+}
+export interface LessonPdfPreviewDialogProps {
+  title: string;
+  fileName: string;
+  url: string | null;
+  error: string | null;
+  loading: boolean;
+  onClose: () => void;
+  'data-testid'?: string;
+}
+export interface StageImpactListProps {
+  stages: LessonStage[];
+  category?: LessonCategory;
+}
+export type StudioChipColor =
+  | 'default'
+  | 'primary'
+  | 'secondary'
+  | 'error'
+  | 'info'
+  | 'success'
+  | 'warning';
+export enum StageNavigationMode {
+  MOBILE = 'mobile',
+  DESKTOP = 'desktop',
+}
+export interface LessonStageNavigationProps {
+  stages: LessonStage[];
+  category?: LessonCategory;
+  selectedType: LessonStageType;
+  mode: StageNavigationMode;
+  draftStages?: LessonStageType[];
+  onSelect: (type: LessonStageType) => void;
+}
+export enum ProductionConfirmationKind {
+  SAVE = 'save',
+  COMPLETE_OUTDATED = 'complete_outdated',
+  REGENERATE = 'regenerate',
+  DISCARD = 'discard',
+  REBASE = 'rebase',
+}
+export interface ProductionConfirmation {
+  kind: ProductionConfirmationKind;
+}
+export interface LessonAiGenerateModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: (lessonId: string) => void;
+}

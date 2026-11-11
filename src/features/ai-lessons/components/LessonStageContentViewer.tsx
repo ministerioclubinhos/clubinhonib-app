@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Alert,
   alpha,
   Box,
   Button,
-  Card,
-  CardContent,
   CircularProgress,
   Paper,
   Stack,
@@ -17,19 +15,15 @@ import { LibreOfficeDocEditor } from '@/components/ai-lessons/LibreOfficeDocEdit
 import { ManualWorkPreview } from '@/features/ai-lessons/manual-work-preview/ManualWorkPreview';
 import { OlderMeditationEditor } from '@/features/ai-lessons/older-meditation-editor';
 import { YoungerMeditationEditor } from '@/features/ai-lessons/younger-meditation-editor';
+import { IMAGE_ONLY_STAGES } from '../presentation.constants';
 import {
   LessonStageType,
   LessonVisualOrientation,
+  StageAssetIssue,
   type LessonStageContentViewerProps,
 } from '../types';
-import { hasCompleteStageAssets, objectValue, visualAssets } from '../utils';
+import { objectValue, resolveStageAssetIssue, visualAssets } from '../utils';
 import { StoryVisualCarousel } from './StoryVisualCarousel';
-
-const IMAGE_ONLY_STAGES = [
-  LessonStageType.LESSON_VISUALS,
-  LessonStageType.VERSE_VISUALS,
-  LessonStageType.MANUAL_WORK,
-];
 
 export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> = ({
   stage,
@@ -43,10 +37,17 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
   pdfPreviewLoading = false,
   pdfPreviewDisabled = false,
   pdfPreviewLabel,
+  assetIssue,
+  readOnly = false,
+  onLayoutOverflowChange,
 }) => {
   const theme = useTheme();
-  const assets = visualAssets(structuredData, stage.type);
-  const assetsComplete = hasCompleteStageAssets(stage.type, structuredData);
+  // A stable array keeps the carousel from resetting on every keystroke of the parent.
+  const assets = useMemo(
+    () => visualAssets(structuredData, stage.type),
+    [structuredData, stage.type]
+  );
+  const issue = assetIssue ?? resolveStageAssetIssue(stage.type, structuredData);
   const resolvedOrientation =
     visualOrientation ||
     (objectValue(structuredData.visualConfig).orientation === LessonVisualOrientation.PORTRAIT
@@ -55,21 +56,43 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
 
   return (
     <Box data-testid={`ai-lesson-stage-viewer-${stage.type}`}>
-      {version && !assetsComplete && (
+      {version && issue !== StageAssetIssue.NONE && (
         <Alert
           data-testid="ai-lesson-stage-incomplete-assets"
+          data-asset-issue={issue}
           severity="warning"
           sx={{ mb: 2.5, borderRadius: 2.5 }}
         >
-          Este item possui ilustrações ou artes obrigatórias ausentes. Gere ou atualize a etapa
-          antes de aprovar.
+          {issue === StageAssetIssue.BROKEN
+            ? 'Uma ou mais imagens deste item não carregaram. Gere a etapa novamente ou recarregue a página antes de aprovar.'
+            : 'Este item possui ilustrações ou artes obrigatórias ausentes. Gere ou atualize a etapa antes de aprovar.'}
         </Alert>
+      )}
+      {!version && IMAGE_ONLY_STAGES.includes(stage.type) && (
+        <Paper
+          data-testid="ai-lesson-stage-empty"
+          elevation={0}
+          sx={{
+            p: 4,
+            textAlign: 'center',
+            borderRadius: 3,
+            border: '1px dashed',
+            borderColor: 'divider',
+            bgcolor: alpha(theme.palette.primary.main, 0.02),
+          }}
+        >
+          <Typography color="text.secondary" fontWeight={500}>
+            {readOnly
+              ? 'Este item ainda não possui conteúdo gerado.'
+              : 'Gere esta etapa para visualizar as artes do item.'}
+          </Typography>
+        </Paper>
       )}
 
       {!IMAGE_ONLY_STAGES.includes(stage.type) && (
         <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1.5 }}>
-            Editor de Conteúdo da Lição
+          <Typography variant="subtitle1" component="h3" fontWeight={800} sx={{ mb: 1.5 }}>
+            {readOnly ? 'Conteúdo do item' : 'Editor de conteúdo do item'}
           </Typography>
 
           {version ? (
@@ -79,6 +102,7 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
                 structuredData={structuredData}
                 editable={editable}
                 onChange={onChangeDocument}
+                onOverflowChange={onLayoutOverflowChange}
               />
             ) : stage.type === LessonStageType.MEDITATION_OLDER ? (
               <OlderMeditationEditor
@@ -86,6 +110,7 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
                 structuredData={structuredData}
                 editable={editable}
                 onChange={onChangeDocument}
+                onOverflowChange={onLayoutOverflowChange}
               />
             ) : (
               <LibreOfficeDocEditor
@@ -107,7 +132,9 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
               }}
             >
               <Typography color="text.secondary" fontWeight={500}>
-                Gere esta etapa para iniciar a revisão e visualização do conteúdo.
+                {readOnly
+                  ? 'Este item ainda não possui conteúdo gerado.'
+                  : 'Gere esta etapa para iniciar a revisão e visualização do conteúdo.'}
               </Typography>
             </Paper>
           )}
@@ -180,74 +207,6 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
         />
       )}
 
-      {assets.length > 0 &&
-        stage.type !== LessonStageType.MANUAL_WORK &&
-        stage.type !== LessonStageType.LESSON_VISUALS &&
-        stage.type !== LessonStageType.STANDARD_GAME &&
-        stage.type !== LessonStageType.VERSE_FIXATION &&
-        stage.type !== LessonStageType.VERSE_VISUALS &&
-        stage.type !== LessonStageType.MEDITATION_YOUNGER &&
-        stage.type !== LessonStageType.MEDITATION_OLDER && (
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" fontWeight={800} gutterBottom>
-              Ilustrações das atividades
-            </Typography>
-
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-                gap: 2.5,
-                mt: 2,
-              }}
-            >
-              {assets.map((asset, index) => (
-                <Card
-                  key={asset.id ?? index}
-                  elevation={0}
-                  sx={{
-                    borderRadius: 3,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={asset.url}
-                    alt={asset.altText ?? asset.purpose ?? `Visual ${index + 1}`}
-                    sx={{
-                      display: 'block',
-                      width: '100%',
-                      aspectRatio: '3 / 2',
-                      objectFit: 'contain',
-                      bgcolor: 'grey.50',
-                    }}
-                  />
-                  <CardContent sx={{ p: 2 }}>
-                    <Typography fontWeight={700}>
-                      {asset.purpose ?? `Visual ${index + 1}`}
-                    </Typography>
-                    {asset.displayText && (
-                      <Typography
-                        sx={{ mt: 0.75, fontWeight: 600 }}
-                        color="primary.main"
-                        variant="body2"
-                      >
-                        {asset.displayText}
-                      </Typography>
-                    )}
-                    {asset.altText && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                        {asset.altText}
-                      </Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </Box>
-          </Box>
-        )}
     </Box>
   );
 };

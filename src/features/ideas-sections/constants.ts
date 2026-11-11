@@ -86,3 +86,7 @@ export const IDEA_REVIEW_EMPTY_DRAFT: IdeasSectionDraft = {
   public: true,
   medias: [],
 };
+
+/** Limites dos campos de texto na revisão, iguais aos aceitos pela API. */
+export const IDEA_REVIEW_MAX_TITLE = 120;
+export const IDEA_REVIEW_MAX_DESCRIPTION = 2000;

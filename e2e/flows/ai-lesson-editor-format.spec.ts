@@ -51,10 +51,10 @@ for (const width of [375, 1440]) {
     };
 
     let saved: TiptapDocument | undefined;
-    await page.route('**/api/v1/lessons/toolbar-regression', (route) =>
+    await page.route(/\/api\/v1\/lessons\/toolbar-regression(\?.*)?$/, (route) =>
       route.fulfill({ json: lesson })
     );
-    await page.route('**/api/v1/lessons/toolbar-regression/events', (route) =>
+    await page.route('**/api/v1/lessons/toolbar-regression/events*', (route) =>
       route.fulfill({ contentType: 'text/event-stream', body: '' })
     );
     await page.route('**/api/v1/lessons/toolbar-regression/stages/content', (route) => {

@@ -78,10 +78,10 @@ for (const width of [375, 1440]) {
       })
     );
     let saved: TiptapDocument | undefined;
-    await page.route('**/api/v1/lessons/younger-editor-regression', (route) =>
+    await page.route(/\/api\/v1\/lessons\/younger-editor-regression(\?.*)?$/, (route) =>
       route.fulfill({ json: lesson })
     );
-    await page.route('**/api/v1/lessons/younger-editor-regression/events', (route) =>
+    await page.route('**/api/v1/lessons/younger-editor-regression/events*', (route) =>
       route.fulfill({ contentType: 'text/event-stream', body: '' })
     );
     await page.route('**/api/v1/lessons/younger-editor-regression/stages/content', (route) => {

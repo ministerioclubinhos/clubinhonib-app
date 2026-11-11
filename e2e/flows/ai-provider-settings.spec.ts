@@ -10,6 +10,9 @@ test('salva Gemini no servidor, recarrega a escolha e não anuncia sucesso em er
   page,
 }) => {
   let saved: AiProviderSettings = structuredClone(DEFAULT_AI_PROVIDER_SETTINGS);
+  // The API refuses to activate a provider without a key; the page mirrors that rule.
+  saved.openai.hasApiKey = true;
+  saved.gemini.hasApiKey = true;
   let rejectSave = false;
   await page.route('**/api/v1/lessons/providers/**', async (route) => {
     const request = route.request();
@@ -39,15 +42,15 @@ test('salva Gemini no servidor, recarrega a escolha e não anuncia sucesso em er
       const payload = request.postDataJSON() as SaveAiProviderSettingsRequest;
       saved = {
         llmProvider: payload.llmProvider,
-        openai: { ...payload.openai, hasApiKey: false },
-        gemini: { ...payload.gemini, hasApiKey: false },
+        openai: { ...payload.openai, hasApiKey: true },
+        gemini: { ...payload.gemini, hasApiKey: true },
       };
     }
     await route.fulfill({ json: saved });
   });
   await page.goto('/adm/config-provedores-ia');
   await page.getByTestId('ai-provider-radio-gemini').click();
-  await page.getByLabel('maxRetries', { exact: true }).fill('0');
+  await page.getByTestId('ai-provider-gemini-max-retries').fill('0');
   await page.getByTestId('ai-providers-save-button').click();
   await expect(page.getByTestId('ai-providers-config-feedback')).toContainText('sucesso');
   expect(saved.llmProvider).toBe(LlmProviderType.GEMINI);
@@ -56,7 +59,7 @@ test('salva Gemini no servidor, recarrega a escolha e não anuncia sucesso em er
   await page.reload();
   await expect(page.getByTestId('ai-provider-radio-gemini').getByRole('radio')).toBeChecked();
   rejectSave = true;
-  await page.getByLabel('maxRetries', { exact: true }).fill('1');
+  await page.getByTestId('ai-provider-gemini-max-retries').fill('1');
   await page.getByTestId('ai-providers-save-button').click();
   await expect(page.getByTestId('ai-providers-config-feedback')).toContainText(
     'Parâmetros inválidos'
@@ -90,11 +93,11 @@ test('refetch preserva edição local; modelos com erro não anunciam sucesso; c
     });
   });
   await page.goto('/adm/config-provedores-ia');
-  await expect(page.getByLabel('OPENAI_API_KEY', { exact: true })).toHaveValue('');
-  await page.getByLabel('maxRetries', { exact: true }).fill('7');
+  await expect(page.getByTestId('ai-provider-openai-key-input')).toHaveValue('');
+  await page.getByTestId('ai-provider-gemini-max-retries').fill('4');
   settings.gemini.maxRetries = 2;
   await page.getByRole('button', { name: /Recarregar|Atualizar configurações/ }).click();
-  await expect(page.getByLabel('maxRetries', { exact: true })).toHaveValue('7');
+  await expect(page.getByTestId('ai-provider-gemini-max-retries')).toHaveValue('4');
   expect(await page.content()).not.toContain('synthetic-persisted-secret');
   failModels = true;
   await page.getByRole('button', { name: /Consultar Modelos|Buscar modelos/ }).click();

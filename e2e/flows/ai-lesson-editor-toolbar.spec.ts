@@ -55,10 +55,10 @@ for (const width of [320, 375, 768, 1440]) {
         ],
       })),
     };
-    await page.route('**/api/v1/lessons/toolbar-regression', (route) =>
+    await page.route(/\/api\/v1\/lessons\/toolbar-regression(\?.*)?$/, (route) =>
       route.fulfill({ json: lesson })
     );
-    await page.route('**/api/v1/lessons/toolbar-regression/events', (route) =>
+    await page.route('**/api/v1/lessons/toolbar-regression/events*', (route) =>
       route.fulfill({ contentType: 'text/event-stream', body: '' })
     );
     await page.goto('/adm/estudio/licoes/toolbar-regression');

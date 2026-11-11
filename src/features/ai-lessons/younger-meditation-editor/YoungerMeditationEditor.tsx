@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
-import { Box } from '@mui/material';
+import { Alert, Box } from '@mui/material';
 import { MeditationToolbar } from '../meditation-editor-core/MeditationToolbar';
 import { MeditationRichField } from '../meditation-editor-core/MeditationRichField';
 import { buildMeditationDocument } from '../meditation-editor-core/document';
+import { MEDITATION_COPY_SELECTOR } from '../meditation-editor-core/constants';
+import { useFullscreenSheet } from '../meditation-editor-core/useFullscreenSheet';
+import { useSheetOverflow } from '../meditation-editor-core/useSheetOverflow';
 import {
   meditationFieldDocument,
   preserveMeditationFormatting,
@@ -23,11 +26,14 @@ export function YoungerMeditationEditor({
   initialJson,
   structuredData,
   onChange,
+  onOverflowChange,
   editable = true,
 }: YoungerMeditationEditorProps) {
   const content = readYoungerMeditation(initialJson, structuredData);
   const fit = youngerMeditationDisplayFit(content);
-  const [fullscreen, setFullscreen] = useState(false);
+  const { fullscreen, toggleFullscreen, containerRef, dialogProps } = useFullscreenSheet();
+  const paperRef = useRef<HTMLDivElement>(null);
+  const overflow = useSheetOverflow(paperRef, MEDITATION_COPY_SELECTOR, onOverflowChange);
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
   const canonical = preserveMeditationFormatting(
     buildMeditationDocument({
@@ -52,11 +58,8 @@ export function YoungerMeditationEditor({
   return (
     <Box
       data-testid="younger-meditation-editor"
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') setFullscreen(false);
-      }}
-      role={fullscreen ? 'dialog' : undefined}
-      aria-label={fullscreen ? 'Editor da meditação em tela cheia' : undefined}
+      ref={containerRef}
+      {...dialogProps}
       sx={{
         maxWidth: '100%',
         bgcolor: 'grey.100',
@@ -70,14 +73,21 @@ export function YoungerMeditationEditor({
         <MeditationToolbar
           editor={activeEditor}
           fullscreen={fullscreen}
-          onToggleFullscreen={() => setFullscreen((value) => !value)}
+          onToggleFullscreen={toggleFullscreen}
         />
+      )}
+      {overflow && (
+        <Alert data-testid="younger-meditation-overflow" severity="warning" sx={{ mb: 1 }}>
+          O conteúdo ultrapassa o espaço de uma das cópias da folha. Reduza o texto ou a formatação
+          antes de concluir ou exportar.
+        </Alert>
       )}
       <Box
         data-testid="younger-meditation-paper-scroll"
         sx={{ overflowX: 'auto', maxWidth: '100%' }}
       >
         <Box
+          ref={paperRef}
           data-testid="younger-meditation-a4-page"
           sx={{
             width: P.width,
@@ -98,6 +108,7 @@ export function YoungerMeditationEditor({
             <Box
               key={copy}
               data-testid={`younger-meditation-${copy}-copy`}
+              data-meditation-copy={copy}
               sx={{
                 border: `4px solid ${P.colors.black}`,
                 minHeight: 0,

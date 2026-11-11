@@ -150,4 +150,17 @@ identificam as opções.
 Cor da fonte e destaque oferecem 25 cores prontas, seletor de cor personalizada
 e código hexadecimal. A cor é salva no documento e preservada na exportação PDF.
 
+Componentes compartilhados entre produção e revisão, em
+`features/ai-lessons/components`: `LessonStageContentViewer` (renderiza qualquer
+etapa, com as artes dos itens 2 a 5), `StoryVisualCarousel` (carrossel que
+pré-carrega todas as imagens e sinaliza as quebradas), `StoryVisualConfiguration`
+(quantidade e confirmação de regeneração dos visuais), `LessonConnectionAlert`
+(aviso de conexão, exibido só após falhas seguidas), `LessonCommentsPanel`
+(observações, com ação de resolver na produção), `LessonPdfPreviewDialog`
+(prévia de PDF) e `StageImpactList` (itens que serão invalidados por uma ação).
+`LessonDraftDialogs` reúne as confirmações de salvar, regerar, descartar e
+excluir. Os diálogos têm título associado (`aria-labelledby`), a navegação de
+etapas marca a atual (`aria-current`) e a tela cheia das meditações prende o
+foco.
+
 Shared-idea presentation components live under `features/ideas-sections/components/share`, `review` and `ai`. `useIdeaShareForm` owns the form state and media lifecycle. Comparison uses dedicated text/document/image components with stable test IDs and accessible version controls; the feature does not add conditional behavior to shared material editors.

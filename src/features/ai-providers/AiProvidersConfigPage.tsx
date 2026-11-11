@@ -1,7 +1,3 @@
-import { FALLBACK_GEMINI_IMAGE_MODELS } from './constants';
-import { FALLBACK_GEMINI_GENERAL_MODELS } from './constants';
-import { FALLBACK_OPEN_AI_IMAGE_MODELS } from './constants';
-import { FALLBACK_OPEN_AI_GENERAL_MODELS } from './constants';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -50,7 +46,22 @@ import {
   useOpenAiModels,
   useSaveAiProviderSettings,
 } from './hooks';
-import { DEFAULT_AI_PROVIDER_SETTINGS } from './constants';
+import {
+  DEFAULT_AI_PROVIDER_SETTINGS,
+  FALLBACK_GEMINI_GENERAL_MODELS,
+  FALLBACK_GEMINI_IMAGE_MODELS,
+  FALLBACK_OPEN_AI_GENERAL_MODELS,
+  FALLBACK_OPEN_AI_IMAGE_MODELS,
+  GEMINI_IMAGE_SIZE_OPTIONS,
+  GEMINI_MAX_RETRIES,
+  GEMINI_MAX_RETRY_DELAY_MS,
+  GEMINI_RETRY_DELAY_STEP_MS,
+  MODEL_IN_USE_SUFFIX,
+  OPENAI_IMAGE_QUALITY_OPTIONS,
+  OPENAI_REASONING_EFFORT_OPTIONS,
+} from './constants';
+import UnsavedChangesDialog from '@/components/common/modal/UnsavedChangesDialog';
+import { STUDIO_ROUTES } from '@/features/ai-lessons/presentation.constants';
 import {
   LlmProviderType,
   ApiKeyAction,
@@ -58,7 +69,16 @@ import {
   OpenAIImageQuality,
   OpenAIReasoningEffort,
 } from './types';
-import { buildAiProviderSettingsPayload, providerSettingsForm, liveModelsFeedback } from './utils';
+import {
+  activeProviderKeyIssue,
+  buildAiProviderSettingsPayload,
+  liveModelsFeedback,
+  modelCatalogBadge,
+  modelOptions,
+  parseIntegerInput,
+  providerSettingsForm,
+  validateGeminiRetrySettings,
+} from './utils';
 import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
 import { getErrorMessage } from '@/utils/apiError';
 import type {
@@ -78,7 +98,7 @@ export const AiProvidersConfigPage: React.FC = () => {
   const [draft, setDraft] = useState<AiProviderForm | null>(null);
   const form = draft ?? providerSettingsForm(settings ?? DEFAULT_AI_PROVIDER_SETTINGS);
   const isDirty = draft !== null;
-  const confirmLeave = useStudioUnsavedChanges(isDirty);
+  const leave = useStudioUnsavedChanges(isDirty);
   const setForm = (change: (previous: AiProviderForm) => AiProviderForm) =>
     setDraft((current) =>
       change(current ?? providerSettingsForm(settings ?? DEFAULT_AI_PROVIDER_SETTINGS))
@@ -174,11 +194,36 @@ export const AiProvidersConfigPage: React.FC = () => {
     });
   };
 
-  const openAiGeneralModels = openaiModelsData?.models.general ?? FALLBACK_OPEN_AI_GENERAL_MODELS;
-  const openAiImageModels = openaiModelsData?.models.image ?? FALLBACK_OPEN_AI_IMAGE_MODELS;
-
-  const geminiGeneralModels = geminiModelsData?.models.general ?? FALLBACK_GEMINI_GENERAL_MODELS;
-  const geminiImageModels = geminiModelsData?.models.image ?? FALLBACK_GEMINI_IMAGE_MODELS;
+  // The saved and the selected model stay in the list even if the catalog dropped them.
+  const openAiGeneralModels = modelOptions(
+    openaiModelsData?.models.general ?? FALLBACK_OPEN_AI_GENERAL_MODELS,
+    settings?.openai.generalModel ?? '',
+    form.openai.generalModel
+  );
+  const openAiImageModels = modelOptions(
+    openaiModelsData?.models.image ?? FALLBACK_OPEN_AI_IMAGE_MODELS,
+    settings?.openai.imageModel ?? '',
+    form.openai.imageModel
+  );
+  const geminiGeneralModels = modelOptions(
+    geminiModelsData?.models.general ?? FALLBACK_GEMINI_GENERAL_MODELS,
+    settings?.gemini.generalModel ?? '',
+    settings?.gemini.fallbackModel ?? '',
+    form.gemini.generalModel,
+    form.gemini.fallbackModel
+  );
+  const geminiImageModels = modelOptions(
+    geminiModelsData?.models.image ?? FALLBACK_GEMINI_IMAGE_MODELS,
+    settings?.gemini.imageModel ?? '',
+    form.gemini.imageModel
+  );
+  const openAiCatalog = modelCatalogBadge(openaiModelsData);
+  const geminiCatalog = modelCatalogBadge(geminiModelsData);
+  const retryErrors = validateGeminiRetrySettings(form.gemini);
+  const hasRetryErrors = Boolean(retryErrors.maxRetries || retryErrors.retryBaseDelayMs);
+  const keyIssue = activeProviderKeyIssue(form, settings);
+  const inUse = (model: string, saved: string | undefined) =>
+    model === saved ? MODEL_IN_USE_SUFFIX : '';
 
   if (isLoading) {
     return (
@@ -225,9 +270,7 @@ export const AiProvidersConfigPage: React.FC = () => {
       {/* Botão de Voltar */}
       <Button
         startIcon={<ArrowBack />}
-        onClick={() => {
-          if (confirmLeave()) navigate('/adm/estudio');
-        }}
+        onClick={() => leave.requestLeave(() => navigate(STUDIO_ROUTES.hub))}
         sx={{
           mb: 2,
           fontWeight: 700,
@@ -486,7 +529,31 @@ export const AiProvidersConfigPage: React.FC = () => {
       </Paper>
 
       {/* Botão de Consulta de Catálogo de Modelos (Full Width on Mobile) */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2.5 }}>
+      {keyIssue && (
+        <Alert data-testid="ai-providers-key-issue" severity="warning" sx={{ mb: 2.5 }}>
+          {keyIssue}
+        </Alert>
+      )}
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1.5}
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        justifyContent="flex-end"
+        sx={{ mb: 2.5 }}
+      >
+        <Chip
+          data-testid="ai-providers-catalog-source"
+          data-catalog-source={
+            (form.llmProvider === LlmProviderType.OPENAI ? openaiModelsData : geminiModelsData)
+              ?.source ?? 'UNCHECKED'
+          }
+          label={`Catálogo de modelos: ${
+            (form.llmProvider === LlmProviderType.OPENAI ? openAiCatalog : geminiCatalog).label
+          }`}
+          color={(form.llmProvider === LlmProviderType.OPENAI ? openAiCatalog : geminiCatalog).color}
+          variant="outlined"
+          sx={{ fontWeight: 700 }}
+        />
         <Button
           data-testid="ai-providers-fetch-models-button"
           fullWidth
@@ -517,7 +584,7 @@ export const AiProvidersConfigPage: React.FC = () => {
               ? 'Atualizar modelos disponíveis (OpenAI)'
               : 'Consultar catálogo de modelos (Gemini)'}
         </Button>
-      </Box>
+      </Stack>
 
       {/* Painéis dos Provedores (1 coluna no mobile, 2 colunas no desktop) */}
       <Grid2 container spacing={2.5}>
@@ -566,8 +633,12 @@ export const AiProvidersConfigPage: React.FC = () => {
                 {/* OPENAI_API_KEY */}
                 <TextField
                   fullWidth
-                  label="OPENAI_API_KEY"
+                  label="Chave de API da OpenAI"
                   type={showOpenAiKey ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'ai-provider-openai-key-input', spellCheck: false },
+                  }}
                   value={form.openai.apiKey ?? ''}
                   onChange={(e) => handleOpenAiChange('apiKey', e.target.value)}
                   placeholder="sk-proj-..."
@@ -637,12 +708,13 @@ export const AiProvidersConfigPage: React.FC = () => {
                   >
                     {openAiGeneralModels.map((m) => (
                       <MenuItem key={m} value={m}>
-                        {m} {m === 'gpt-6-luna' ? '★ (Ativo no ambiente)' : ''}
+                        {m}
+                        {inUse(m, settings?.openai.generalModel)}
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>
-                    Modelos de texto da OpenAI disponíveis no servidor.
+                  <FormHelperText data-testid="ai-provider-openai-catalog-note">
+                    {openAiCatalog.description}
                   </FormHelperText>
                 </FormControl>
 
@@ -660,12 +732,13 @@ export const AiProvidersConfigPage: React.FC = () => {
                   >
                     {openAiImageModels.map((m) => (
                       <MenuItem key={m} value={m}>
-                        {m} {m === 'gpt-image-2' ? '★ (Ativo no ambiente)' : ''}
+                        {m}
+                        {inUse(m, settings?.openai.imageModel)}
                       </MenuItem>
                     ))}
                   </Select>
                   <FormHelperText>
-                    Filtrado dinamicamente por prefixo (ex: gpt-image-*).
+                    Apenas modelos de imagem que o Estúdio consegue acionar são listados.
                   </FormHelperText>
                 </FormControl>
 
@@ -683,10 +756,11 @@ export const AiProvidersConfigPage: React.FC = () => {
                     }
                     sx={{ borderRadius: 2.5, minHeight: 48 }}
                   >
-                    <MenuItem value="none">none (Resposta Direta / Sem Delay)</MenuItem>
-                    <MenuItem value="low">low (Raciocínio Leve)</MenuItem>
-                    <MenuItem value="medium">medium (Raciocínio Moderado)</MenuItem>
-                    <MenuItem value="high">high (Raciocínio Profundo / O1)</MenuItem>
+                    {OPENAI_REASONING_EFFORT_OPTIONS.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
 
@@ -704,9 +778,11 @@ export const AiProvidersConfigPage: React.FC = () => {
                     }
                     sx={{ borderRadius: 2.5, minHeight: 48 }}
                   >
-                    <MenuItem value="low">low (Desempenho)</MenuItem>
-                    <MenuItem value="medium">medium (Equilibrado)</MenuItem>
-                    <MenuItem value="high">high (Alta Resolução)</MenuItem>
+                    {OPENAI_IMAGE_QUALITY_OPTIONS.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Stack>
@@ -765,8 +841,12 @@ export const AiProvidersConfigPage: React.FC = () => {
                       ? 'Chave salva no servidor. Digite para substituir; deixe vazio para preservar.'
                       : 'Nenhuma chave salva. Digite uma chave para configurar.'
                   }
-                  label="GEMINI_API_KEY"
+                  label="Chave de API do Gemini"
                   type={showGeminiKey ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'ai-provider-gemini-key-input', spellCheck: false },
+                  }}
                   value={form.gemini.apiKey ?? ''}
                   onChange={(e) => handleGeminiChange('apiKey', e.target.value)}
                   placeholder="Informe sua chave Gemini"
@@ -889,31 +969,69 @@ export const AiProvidersConfigPage: React.FC = () => {
                     onChange={(e) => handleGeminiChange('imageSize', e.target.value)}
                     sx={{ borderRadius: 2.5, minHeight: 48 }}
                   >
-                    <MenuItem value="1K">1K</MenuItem>
-                    <MenuItem value="2K">2K</MenuItem>
-                    <MenuItem value="4K">4K</MenuItem>
-                    <MenuItem value="1024x1024">1024x1024</MenuItem>
+                    {modelOptions(
+                      GEMINI_IMAGE_SIZE_OPTIONS.map((option) => option.value),
+                      form.gemini.imageSize
+                    ).map((size) => (
+                      <MenuItem key={size} value={size}>
+                        {size}
+                        {GEMINI_IMAGE_SIZE_OPTIONS.some((option) => option.value === size)
+                          ? ''
+                          : ' (valor antigo, não aceito ao salvar)'}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                   <TextField
                     fullWidth
-                    label="maxRetries"
+                    label="Tentativas extras em falhas temporárias"
                     type="number"
-                    value={form.gemini.maxRetries}
-                    onChange={(e) => handleGeminiChange('maxRetries', Number(e.target.value))}
-                    slotProps={{ htmlInput: { min: 0, max: 10 } }}
+                    value={Number.isNaN(form.gemini.maxRetries) ? '' : form.gemini.maxRetries}
+                    onChange={(e) =>
+                      handleGeminiChange('maxRetries', parseIntegerInput(e.target.value))
+                    }
+                    error={Boolean(retryErrors.maxRetries)}
+                    helperText={
+                      retryErrors.maxRetries ??
+                      `0 a ${GEMINI_MAX_RETRIES}. Cada tentativa extra pode gerar nova cobrança.`
+                    }
+                    slotProps={{
+                      htmlInput: {
+                        min: 0,
+                        max: GEMINI_MAX_RETRIES,
+                        step: 1,
+                        inputMode: 'numeric',
+                        'data-testid': 'ai-provider-gemini-max-retries',
+                      },
+                    }}
                     InputProps={{ sx: { borderRadius: 2.5, minHeight: 48 } }}
                   />
 
                   <TextField
                     fullWidth
-                    label="retryBaseDelayMs"
+                    label="Intervalo base entre tentativas (ms)"
                     type="number"
-                    value={form.gemini.retryBaseDelayMs}
-                    onChange={(e) => handleGeminiChange('retryBaseDelayMs', Number(e.target.value))}
-                    slotProps={{ htmlInput: { min: 0, max: 10000, step: 100 } }}
+                    value={
+                      Number.isNaN(form.gemini.retryBaseDelayMs) ? '' : form.gemini.retryBaseDelayMs
+                    }
+                    onChange={(e) =>
+                      handleGeminiChange('retryBaseDelayMs', parseIntegerInput(e.target.value))
+                    }
+                    error={Boolean(retryErrors.retryBaseDelayMs)}
+                    helperText={
+                      retryErrors.retryBaseDelayMs ?? `0 a ${GEMINI_MAX_RETRY_DELAY_MS} ms.`
+                    }
+                    slotProps={{
+                      htmlInput: {
+                        min: 0,
+                        max: GEMINI_MAX_RETRY_DELAY_MS,
+                        step: GEMINI_RETRY_DELAY_STEP_MS,
+                        inputMode: 'numeric',
+                        'data-testid': 'ai-provider-gemini-retry-delay',
+                      },
+                    }}
                     InputProps={{ sx: { borderRadius: 2.5, minHeight: 48 } }}
                   />
                 </Stack>
@@ -998,6 +1116,8 @@ export const AiProvidersConfigPage: React.FC = () => {
             }
             disabled={
               !isDirty ||
+              hasRetryErrors ||
+              Boolean(keyIssue) ||
               saveMutation.isPending ||
               (form.openai.keyAction === ApiKeyAction.REPLACE && !form.openai.apiKey.trim()) ||
               (form.gemini.keyAction === ApiKeyAction.REPLACE && !form.gemini.apiKey.trim())
@@ -1016,6 +1136,7 @@ export const AiProvidersConfigPage: React.FC = () => {
           </Button>
         </Stack>
       </Paper>
+      <UnsavedChangesDialog {...leave.dialog} />
     </Box>
   );
 };

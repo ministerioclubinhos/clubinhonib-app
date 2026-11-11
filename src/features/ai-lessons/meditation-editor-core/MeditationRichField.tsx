@@ -1,18 +1,7 @@
 import { useEffect } from 'react';
 import { Box } from '@mui/material';
 import { EditorContent, useEditor, type Editor } from '@tiptap/react';
-import { Subscript } from '@tiptap/extension-subscript';
-import { Superscript } from '@tiptap/extension-superscript';
-import { Table } from '@tiptap/extension-table';
-import { TableRow } from '@tiptap/extension-table-row';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
-import { LessonParagraphSpacing } from '../editor.extensions';
-import StarterKit from '@tiptap/starter-kit';
-import { TextAlign } from '@tiptap/extension-text-align';
-import { TextStyle, FontFamily, FontSize } from '@tiptap/extension-text-style';
-import { Color } from '@tiptap/extension-color';
-import { Highlight } from '@tiptap/extension-highlight';
+import { createLessonEditorExtensions } from '../editor.extensions';
 import type { TiptapDocument } from '@/services/aiLessonsService';
 import type { MeditationRichFieldProps } from './types';
 import { MeditationTextField } from './constants';
@@ -29,22 +18,7 @@ export function MeditationRichField({
   onChange,
 }: MeditationRichFieldProps) {
   const editor: Editor | null = useEditor({
-    extensions: [
-      StarterKit.configure({ link: { openOnClick: false } }),
-      Subscript,
-      Superscript,
-      LessonParagraphSpacing,
-      Table.configure({ resizable: true }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      TextStyle,
-      FontFamily,
-      FontSize,
-      Color,
-      Highlight.configure({ multicolor: true }),
-      TextAlign.configure({ types: ['paragraph', 'heading', 'blockquote'] }),
-    ],
+    extensions: createLessonEditorExtensions(),
     content: document,
     editable,
     editorProps: {

@@ -13,17 +13,18 @@ export const StoryVisualCarousel = ({
   testIdPrefix = 'ai-story-visual',
 }: VisualCarouselProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [failedIndices, setFailedIndices] = useState<Record<number, boolean>>({});
+  const [failedUrls, setFailedUrls] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setActiveIndex((current) => Math.min(current, Math.max(assets.length - 1, 0)));
-    setFailedIndices({});
-  }, [assets]);
+  }, [assets.length]);
 
   if (!assets.length) return null;
 
   const asset = assets[activeIndex];
-  const hasValidImage = Boolean(asset?.url?.trim()) && !failedIndices[activeIndex];
+  const activeUrl = asset?.url?.trim() ?? '';
+  // Failures are keyed by URL: a new image gets a fresh attempt, a re-render does not.
+  const hasValidImage = Boolean(activeUrl) && !failedUrls[activeUrl];
   const previous = () =>
     setActiveIndex((current) => (current === 0 ? assets.length - 1 : current - 1));
   const next = () => setActiveIndex((current) => (current === assets.length - 1 ? 0 : current + 1));
@@ -72,12 +73,7 @@ export const StoryVisualCarousel = ({
               component="img"
               src={asset.url}
               alt={asset.altText ?? asset.purpose ?? `Visual ${activeIndex + 1}`}
-              onError={() =>
-                setFailedIndices((prev) => ({
-                  ...prev,
-                  [activeIndex]: true,
-                }))
-              }
+              onError={() => setFailedUrls((prev) => ({ ...prev, [activeUrl]: true }))}
               sx={{
                 display: 'block',
                 width: '100%',

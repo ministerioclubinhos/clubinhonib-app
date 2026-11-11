@@ -8,6 +8,7 @@ import {
   hasDuplicatedBasePrompt,
   isValidComplementaryPrompt,
   lessonDraftKey,
+  resolveEffectivePromptPreview,
   resolvePromptDraftValue,
   stripDuplicatedBasePrompt,
 } from '@/features/ai-lessons/drafts';
@@ -25,6 +26,7 @@ import {
 import {
   EDITABLE_STAGE_STATUSES,
   GENERATION_BLOCKED_LESSON_STATUSES,
+  PROMPT_COMPLEMENTARY_FOOTER,
   PROMPT_COMPLEMENTARY_HEADER,
   PROMPT_OFFICIAL_QUALITY_MARKER,
   STUDIO_STAGE_ORDER,
@@ -124,9 +126,14 @@ test('prompt complementar inicializa apenas customPrompt e limpa duplicação le
     resolvePromptDraftValue(undefined, { ...preference, customPrompt: 'Foco em crianças de 6 anos' })
   ).toBe('Foco em crianças de 6 anos');
   expect(composeEffectivePromptPreview('Base oficial', '')).toBe('Base oficial');
+  // Same template the API uses in composeEffectivePrompt.
   expect(composeEffectivePromptPreview('Base oficial', 'Instrução extra')).toBe(
-    `Base oficial\n\n${PROMPT_COMPLEMENTARY_HEADER}\nInstrução extra`
+    `Base oficial\n\n${PROMPT_COMPLEMENTARY_HEADER}\nInstrução extra\n\n${PROMPT_COMPLEMENTARY_FOOTER}`
   );
+  expect(PROMPT_COMPLEMENTARY_HEADER.endsWith(':')).toBe(false);
+  const saved = { ...preference, customPrompt: 'Texto salvo', effectivePrompt: 'COMPOSTO PELA API' };
+  expect(resolveEffectivePromptPreview(saved, 'Texto salvo')).toBe('COMPOSTO PELA API');
+  expect(resolveEffectivePromptPreview(saved, 'Texto editado')).toContain('Texto editado');
   expect(isValidComplementaryPrompt('curto')).toBe(false);
   expect(isValidComplementaryPrompt('Orientação pedagógica válida com mais de 10 caracteres.')).toBe(
     true

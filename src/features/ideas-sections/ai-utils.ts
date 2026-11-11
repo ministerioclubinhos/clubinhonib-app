@@ -78,3 +78,27 @@ export function excludedIdeaSourceIds(
     })
     .map((source) => source.id);
 }
+
+/**
+ * Resumo das escolhas, para o cartão de publicação.
+ *
+ * Quem publica está a algumas telas de distância da comparação: a lista diz,
+ * em uma linha por item, o que o botão vai enviar.
+ */
+export function ideaAiChoiceSummary(
+  decisions: IdeaAiDecisions | null,
+  excludedMediaIds: string[] = []
+): string[] {
+  if (!decisions) return [];
+  const label = (decision: IdeaAiDecision) =>
+    decision === IdeaAiDecision.ENHANCED ? 'versão da IA' : 'original';
+  const medias = decisions.medias.filter((m) => !excludedMediaIds.includes(m.sourceMediaId));
+  const enhanced = medias.filter((m) => m.decision === IdeaAiDecision.ENHANCED).length;
+  const original = medias.length - enhanced;
+  const lines = [`Título: ${label(decisions.title)}`, `Descrição: ${label(decisions.description)}`];
+  if (medias.length)
+    lines.push(
+      `Materiais: ${enhanced} com IA e ${original} ${original === 1 ? 'original' : 'originais'}`
+    );
+  return lines;
+}

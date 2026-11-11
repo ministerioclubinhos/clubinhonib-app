@@ -1,4 +1,5 @@
 import {
+  PROMPT_COMPLEMENTARY_FOOTER,
   PROMPT_COMPLEMENTARY_HEADER,
   PROMPT_MAX_LENGTH,
   PROMPT_MIN_LENGTH,
@@ -6,6 +7,12 @@ import {
 } from './constants';
 import type {
   AdminPromptPreference,
+  LessonCategory,
+  LessonStageType,
+  PersistedPromptDraft,
+  PersistedPromptDrafts,
+  PromptCategoryDrafts,
+  ReviewFeedbackMap,
   LessonLocalDraft,
   LessonLocalDrafts,
   LessonStage,
@@ -54,6 +61,111 @@ export function acknowledgeLessonDraft(
   return { ...drafts, [key]: { ...current, lockVersion: saved.lockVersion } };
 }
 
+/** Moves a draft onto the current remote version, keeping only the text the user typed. */
+export function rebaseLessonDraft(
+  draft: LessonLocalDraft,
+  stage: LessonStage,
+  version: LessonVersion | undefined
+): LessonLocalDraft {
+  return {
+    ...draft,
+    lockVersion: stage.lockVersion,
+    structuredData: version?.structuredDataJson ?? draft.structuredData,
+  };
+}
+
+export function isLessonDraftOutdated(
+  draft: LessonLocalDraft | undefined,
+  stage: LessonStage | undefined
+): boolean {
+  return Boolean(draft && stage && draft.lockVersion !== stage.lockVersion);
+}
+
+export function isLessonLocalDrafts(value: unknown): value is LessonLocalDrafts {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  return Object.values(value).every((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const draft = item as Partial<LessonLocalDraft>;
+    return (
+      typeof draft.lessonId === 'string' &&
+      typeof draft.stage === 'string' &&
+      typeof draft.lockVersion === 'number' &&
+      Boolean(draft.document) &&
+      draft.document?.type === 'doc'
+    );
+  });
+}
+
+export function isReviewFeedbackMap(value: unknown): value is ReviewFeedbackMap {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  return Object.values(value).every((item) => typeof item === 'string');
+}
+
+export function isPersistedPromptDrafts(value: unknown): value is PersistedPromptDrafts {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  return Object.values(value).every(
+    (category) =>
+      Boolean(category) &&
+      typeof category === 'object' &&
+      Object.values(category as object).every(
+        (item) =>
+          Boolean(item) &&
+          typeof item === 'object' &&
+          typeof (item as PersistedPromptDraft).value === 'string'
+      )
+  );
+}
+
+export function toPersistedPromptDrafts(drafts: PromptCategoryDrafts): PersistedPromptDrafts {
+  const result: PersistedPromptDrafts = {};
+  for (const [category, stages] of Object.entries(drafts) as Array<
+    [LessonCategory, PromptLocalDrafts | undefined]
+  >) {
+    for (const [stage, draft] of Object.entries(stages ?? {}) as Array<
+      [LessonStageType, PromptLocalDraft | undefined]
+    >) {
+      if (!draft) continue;
+      result[category] = {
+        ...result[category],
+        [stage]: { value: draft.value, lockVersion: draft.base.lockVersion },
+      };
+    }
+  }
+  return result;
+}
+
+/** Rebuilds prompt drafts once the preferences they were based on are loaded again. */
+export function restorePromptDrafts(
+  persisted: Partial<Record<LessonStageType, PersistedPromptDraft>> | undefined,
+  preferences: AdminPromptPreference[]
+): PromptLocalDrafts {
+  const result: PromptLocalDrafts = {};
+  for (const preference of preferences) {
+    const saved = persisted?.[preference.stage];
+    if (!saved || saved.value === (preference.customPrompt ?? '')) continue;
+    result[preference.stage] = {
+      value: saved.value,
+      base: { ...preference, lockVersion: saved.lockVersion },
+    };
+  }
+  return result;
+}
+
+/** Keeps the typed text and adopts the current remote version as the new base. */
+export function rebasePromptDraft(
+  draft: PromptLocalDraft,
+  current: AdminPromptPreference
+): PromptLocalDraft {
+  return { value: draft.value, base: current };
+}
+
+export function isPromptDraftOutdated(
+  draft: PromptLocalDraft | undefined,
+  current: AdminPromptPreference | undefined
+): boolean {
+  return Boolean(draft && current && draft.base.lockVersion !== current.lockVersion);
+}
+
 export function editPromptDraft(
   current: PromptLocalDraft | undefined,
   base: AdminPromptPreference,
@@ -87,7 +199,20 @@ export function resolvePromptDraftValue(
 export function composeEffectivePromptPreview(basePrompt: string, customValue: string): string {
   const trimmed = customValue.trim();
   if (!trimmed) return basePrompt;
-  return `${basePrompt}\n\n${PROMPT_COMPLEMENTARY_HEADER}\n${trimmed}`;
+  return `${basePrompt}\n\n${PROMPT_COMPLEMENTARY_HEADER}\n${trimmed}\n\n${PROMPT_COMPLEMENTARY_FOOTER}`;
+}
+
+/**
+ * What the AI will actually receive. The saved text shows the prompt composed by the API;
+ * an unsaved edit is composed locally with the same template.
+ */
+export function resolveEffectivePromptPreview(
+  preference: AdminPromptPreference,
+  value: string
+): string {
+  if (value.trim() === (preference.customPrompt ?? '').trim() && preference.effectivePrompt)
+    return preference.effectivePrompt;
+  return composeEffectivePromptPreview(preference.basePrompt, value);
 }
 
 export function isValidComplementaryPrompt(value: string): boolean {

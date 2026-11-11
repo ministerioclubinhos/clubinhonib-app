@@ -157,10 +157,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
             item.stages?.filter((s) => s.status === LessonStageStatus.APPROVED).length ?? 0;
           const totalStages = item.stages?.length ?? getStudioStageOrder(item.category).length;
           const progress = totalStages > 0 ? (approvedCount / totalStages) * 100 : 0;
-          const statusInfo = statusPresentation[item.status] ?? {
-            label: item.status,
-            color: 'default' as const,
-          };
+          const statusInfo = statusPresentation[item.status];
 
           const meta: ListingMeta[] = [
             { label: `${approvedCount}/${totalStages} itens aprovados (${Math.round(progress)}%)` },

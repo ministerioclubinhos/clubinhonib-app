@@ -1,4 +1,5 @@
 import type { TiptapDocument } from '@/services/aiLessonsService';
+import { MeditationTextField } from './constants';
 import type { MeditationDocumentContent } from './types';
 
 export function object(value: unknown): Record<string, unknown> {
@@ -35,10 +36,11 @@ export function section(document: TiptapDocument, heading: string): string[] {
 }
 
 export function buildMeditationDocument(content: MeditationDocumentContent): TiptapDocument {
-  const heading = (text: string, level = 2) => ({
+  // ProseMirror rejects empty text nodes, so an empty heading carries no content at all.
+  const heading = (text: string, level = 2, attrs: Record<string, unknown> = {}) => ({
     type: 'heading',
-    attrs: { level },
-    content: [{ type: 'text', text }],
+    attrs: { level, ...attrs },
+    content: text ? [{ type: 'text', text }] : [],
   });
   const paragraph = (text: string) => ({
     type: 'paragraph',
@@ -47,7 +49,8 @@ export function buildMeditationDocument(content: MeditationDocumentContent): Tip
   return {
     type: 'doc',
     content: [
-      heading(content.title, 1),
+      // Marked so the title is found even when it reads like a section label.
+      heading(content.title, 1, { meditationField: MeditationTextField.TITLE }),
       heading('VERSÍCULO PARA MEMORIZAR'),
       paragraph(`“${content.verseText}”`),
       paragraph(content.verseReference),

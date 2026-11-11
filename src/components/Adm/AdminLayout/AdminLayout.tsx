@@ -459,7 +459,11 @@ function AdminLayout() {
         display: "flex",
         width: "100%",
         maxWidth: "100vw",
-        overflowX: "hidden",
+        // `clip` corta o transbordo horizontal sem virar um contêiner de
+        // rolagem: com `hidden`, este Box passava a ser o scrollport mais
+        // próximo e qualquer `position: sticky` das telas internas parava de
+        // grudar, porque ele mesmo nunca rola.
+        overflowX: "clip",
         minHeight: "100vh",
         m: 0,
         p: 0,

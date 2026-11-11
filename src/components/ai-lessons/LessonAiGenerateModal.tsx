@@ -21,14 +21,8 @@ import {
   LESSON_SPECIAL_CONTEXT_MAX_LENGTH,
   LESSON_THEME_MIN_LENGTH,
 } from '@/features/ai-lessons/constants';
-import { LessonCategory } from '@/features/ai-lessons/types';
+import { LessonCategory, type LessonAiGenerateModalProps } from '@/features/ai-lessons/types';
 import { useGenerateLessonDraft } from '../../hooks/api/useAiLessons';
-
-interface LessonAiGenerateModalProps {
-  open: boolean;
-  onClose: () => void;
-  onSuccess: (lessonId: string) => void;
-}
 
 export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
   open,
@@ -70,8 +64,8 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
 
       onSuccess(result.id);
       handleCloseModal(true);
-    } catch (error) {
-      console.error('Erro ao gerar lição:', error);
+    } catch {
+      // The failure is rendered from `generateMutation.error`; nothing to log here.
     }
   };
 

@@ -89,14 +89,44 @@ chaves e parâmetros em uma única operação. O servidor é a fonte de verdade:
 seleção não fica em localStorage e erros de salvamento são exibidos na tela.
 A geração usa somente os parâmetros salvos, sem fallback para env.
 
-## Edição e exportação do Estúdio
+## Estúdio Clubinho
 
-`PATCH /lessons/:id/stages/content` salva o documento Tiptap completo, incluindo
-marcas de fonte/tamanho/cor/link, espaçamento do parágrafo e células mescladas.
-É necessário salvar a edição antes da prévia ou exportação. O backend usa essa
-versão para montar o DOCX e converter em PDF, também nas meditações editadas.
-Localizar/substituir altera o mesmo documento; contadores e tela cheia são
-apenas controles do editor.
+O cliente HTTP e os hooks do Estúdio ficam em `src/features/ai-lessons/api.ts` e
+`src/features/ai-lessons/hooks.ts`; `src/services/aiLessonsService.ts` e
+`src/hooks/api/useAiLessons.ts` apenas reexportam, por compatibilidade. O
+contrato completo está em `clubinhonib-api/docs/api-ai-lessons.md`. Todas as
+rotas têm o prefixo `/api/v1/lessons`.
+
+| Chamada | Uso no app |
+| --- | --- |
+| `POST /api/v1/lessons` | Criar pacote (semanal ou especial) |
+| `GET /api/v1/lessons`, `GET /api/v1/lessons/dashboard` | Listas e painel; `statuses` separado por vírgula na fila de revisão |
+| `GET /api/v1/lessons/:id?view=compact` | Detalhe com apenas a versão atual de cada etapa |
+| `GET /api/v1/lessons/:id/events?view=compact` | Stream SSE de snapshots e `heartbeat` |
+| `DELETE /api/v1/lessons/:id` | Excluir (oculto para publicada, em publicação ou arquivada) |
+| `POST /api/v1/lessons/:id/archive`, `/unarchive` | Arquivar e restaurar lição publicada |
+| `POST /api/v1/lessons/:id/comments/:commentId/resolve` | Marcar observação como resolvida |
+| `POST /api/v1/lessons/:id/stages/generate` | Gerar ou regerar etapa (com confirmação) |
+| `PATCH /api/v1/lessons/:id/stages/content` | Salvar edição com o `lockVersion` do rascunho |
+| `POST /api/v1/lessons/:id/stages/complete-production` | Concluir; envia `lockVersion` e, após confirmação, `acknowledgeStale` |
+| `POST /api/v1/lessons/:id/package/submit-review` | Iniciar revisão |
+| `POST /api/v1/lessons/:id/stages/approve`, `/request-changes`, `/reopen` | Revisão; sempre com o `lockVersion` reconhecido pelo revisor |
+| `GET /api/v1/lessons/:id/stages/:stage/preview.pdf` | Prévia vinculada a `lockVersion` e `versionId` |
+| `POST /api/v1/lessons/:id/export/pdf` | PDF consolidado |
+| `POST /api/v1/lessons/:id/publish-week-material` | Publicar (com confirmação) |
+| `GET/PATCH /api/v1/lessons/prompt-preferences/me`, `POST …/reset` | Orientações por etapa; a prévia usa o `effectivePrompt` da API |
+
+`PATCH /api/v1/lessons/:id/stages/content` salva o documento Tiptap completo,
+incluindo marcas de fonte/tamanho/cor/link, espaçamento do parágrafo e células
+mescladas. É necessário salvar a edição antes da prévia ou exportação. O backend
+reconcilia o documento sobre o dado estruturado do servidor e usa essa versão
+para montar o DOCX e converter em PDF, também nas meditações editadas.
+
+Erros tratados pela interface: `LESSON_9303` (conflito de versão: preserva o
+texto digitado e oferece reaplicar sobre a versão atual), `LESSON_9308` (item
+desatualizado: pede confirmação e reenvia com `acknowledgeStale`), 404 no stream
+(lição excluída em outra sessão) e 422 da prévia (conteúdo não cabe na folha).
+`failureCode` e `failureMessage` da etapa são exibidos no diálogo de falha.
 
 ### Shared idea AI contracts
 

@@ -6,19 +6,19 @@ This module manages the educational and spiritual resources distributed to clubs
 
 As rotas `/adm/estudio` permitem ao administrador criar, gerar, editar, revisar e publicar pacotes de lições. A listagem envia busca, status, paginação e ordenação ao backend. O detalhe é carregado sem efeitos colaterais no servidor.
 
-A criação exige número da semana, tema e todas as referências bíblicas. O pacote mantém oito produtos separados; orientações personalizadas complementam o padrão do Estúdio e não podem substituir os contratos editoriais ou de segurança.
+A criação exige tema e todas as referências bíblicas. O número da semana é obrigatório no Material Semanal (oito produtos separados) e opcional no Material Especial (três produtos: lição, visuais da história e visuais do versículo). Orientações personalizadas complementam o padrão do Estúdio e não podem substituir os contratos editoriais ou de segurança.
 
-A publicação usa uma mutation única: enquanto a requisição está ativa o botão fica bloqueado, sucesso e falha aparecem na própria tela e o cache do detalhe/listagem é atualizado. O backend persiste `weekMaterialId`; repetir a publicação de uma lição já publicada devolve o mesmo material em vez de criar outro.
+A publicação pede confirmação (é irreversível e dispara o aviso por e-mail) e usa uma mutation única: enquanto a requisição está ativa o botão fica bloqueado, e o aviso de sucesso ou falha é derivado do status da lição. O backend persiste `weekMaterialId`; repetir a publicação de uma lição já publicada devolve o mesmo material em vez de criar outro. Uma lição publicada pode ser arquivada e restaurada, mas não excluída; antes de publicar, um item aprovado pode ser reaberto com uma observação.
 
-Durante uma geração, o detalhe mantém um stream SSE autenticado com a API. O stream atualiza o cache da tela e reconecta automaticamente quando o frontend ou a API reinicia. A solicitação de geração é persistida no MySQL antes da resposta HTTP; ao iniciar, a API retoma jobs que ainda estejam em `GENERATING`, evitando etapas órfãs.
+As telas de produção e de revisão mantêm um stream SSE autenticado com a API (`view=compact`). O stream atualiza o cache da tela e reconecta automaticamente quando o frontend ou a API reinicia. A solicitação de geração é persistida no MySQL antes da resposta HTTP; a API retoma gerações interrompidas, com no máximo três tentativas por pedido.
 
-Os visuais da história são gerados exclusivamente a partir do texto completo do tópico `LIÇÃO BÍBLICA` da versão atual. O administrador informa em um campo numérico uma quantidade inteira de 4 a 10 imagens, e a LLM decide a quebra integral da narrativa nessa quantidade, sem omitir, repetir ou reescrever trechos. A revisão usa um carrossel responsivo, com navegação anterior/próxima, indicadores, identificação da cena e o trecho de origem. A tela ocupa 98% da largura no mobile e 95% a partir do desktop.
+Os visuais da história dependem da categoria. No Material Semanal, o administrador informa de 4 a 10 pranchas e a IA gera um kit de recortes (personagens, animais, construções, cenário, céu e natureza, objetos) em fundo branco, com legendas aplicadas no PDF. No Material Especial, a IA divide a narrativa completa do tópico `LIÇÃO BÍBLICA` em 4 a 10 trechos literais e gera um cartaz por trecho. A revisão usa um carrossel responsivo, com navegação anterior/próxima, indicadores e identificação de cada peça. A tela ocupa 98% da largura no mobile e 95% a partir do desktop.
 
-A primeira cena funciona como referência-mãe de identidade visual. Todas as cenas posteriores recebem a mesma referência para preservar personagens, roupas, estilo, paleta, iluminação e ambientes; o carrossel identifica qual imagem ancora a sequência.
+A primeira arte gerada (a prancha de personagens, no kit de recortes) funciona como referência de identidade visual. As seguintes recebem a mesma referência para preservar personagens, roupas, estilo, paleta e ambientes; o carrossel identifica qual imagem ancora a sequência.
 
-Na etapa `3. Brincadeira`, cada passo da atividade gera exatamente um visual instrucional correspondente. A imagem deve demonstrar como executar aquele passo, usando o contexto completo da brincadeira, e a instrução literal aparece abaixo da arte no carrossel `Como brincar — passo a passo visual`. A primeira imagem também ancora a identidade visual das seguintes. Uma ação junto ao carrossel abre o preview responsivo do PDF em um diálogo e permite baixá-lo; cada página visual do PDF identifica o passo e imprime sua instrução acima da imagem.
+Na etapa `3. Brincadeira`, cada passo da atividade (no máximo oito) gera exatamente um visual instrucional correspondente. A imagem deve demonstrar como executar aquele passo, usando o contexto completo da brincadeira, e a instrução literal aparece abaixo da arte no carrossel `Como brincar — passo a passo visual`. A primeira imagem também ancora a identidade visual das seguintes. Uma ação junto ao carrossel abre o preview responsivo do PDF em um diálogo e permite baixá-lo; cada página visual do PDF identifica o passo e imprime sua instrução acima da imagem.
 
-Enquanto qualquer etapa estiver com geração de IA em andamento, a tela de detalhes entra em estado ocupado e todos os botões e controles de formulário ficam temporariamente desabilitados. A consulta automática continua ativa e libera os controles assim que a geração termina ou falha, evitando gerações, salvamentos, aprovações ou exclusões concorrentes.
+Enquanto qualquer etapa estiver com geração de IA em andamento, as ações que alteram a lição (gerar, salvar, concluir, aprovar, devolver, excluir) ficam desabilitadas; navegação entre etapas, leitura e prévias continuam disponíveis, e a tela mostra o tempo decorrido. O backend aplica o mesmo bloqueio. Os controles são liberados assim que a geração termina ou falha.
 
 Na etapa `4. Visuais do versículo`, cada imagem já é gerada pronta seguindo a referência visual de `lições/Semana 7/versciculo`: o trecho aparece dentro da própria arte em tipografia infantil extragrande, arredondada, multicolorida, com contorno branco e sombra, ocupando aproximadamente 95% da composição. Não existe texto HTML nem composição posterior sobre a imagem. Não entram personagens, animais, cenas ou objetos reconhecíveis; os detalhes ficam pequenos e restritos às extremidades. A revisão usa um carrossel responsivo com contador, setas, indicadores e a imagem final da referência como último slide.
 
@@ -170,8 +170,9 @@ full A4 page and three challenges. Both cores share only meditation AST helpers,
 and both omit the separate activity illustrations gallery. Other stages continue
 using `LibreOfficeDocEditor`.
 
-The PDF reserves a fixed half-page height per copy and fits text and drawings
-to that space, preventing the second copy from moving to a second page.
+O PDF reserva meia página por cópia e ajusta texto e desenhos a esse espaço.
+Quando o conteúdo não cabe, a exportação responde 422 em vez de cortar o texto;
+o editor avisa do excesso e bloqueia a conclusão do item.
 
 Meditation prompts target ages 4–7 and 8–11. Activities follow the approved
 lesson theme and form a narrative, comprehension and application sequence.
@@ -203,8 +204,7 @@ left edge reachable; toolbar positioning and printed page geometry are unchanged
 
 A etapa 7 mantém três desafios com mecânicas variadas e progressão de narrativa,
 compreensão e aplicação. Novas gerações têm elementos estruturados e revisão de
-conteúdo e das imagens reais. Questões textuais não recebem imagens que repitam
-seus enunciados. Não há mínimo de palavras para preencher espaço.
+conteúdo e das imagens reais. Não há mínimo de palavras para preencher espaço.
 
 O editor e o PDF usam os campos salvos, incluindo formatação manual. O editor
 mantém fonte legível, blocos com altura natural e grades textuais editáveis com
@@ -219,85 +219,80 @@ Na revisão final, pacotes PACKAGE_READY exibem “Iniciar revisão”. A ação
 
 The manual-work producer and reviewer use the same `ManualWorkPreview`, sourced from the current version's `printableAssets`, verse text and verse reference. Both display two vertically stacked copies, each with a black outer frame, matching the PDF composition; missing artwork produces an explicit empty state. Previewing never regenerates or recolors the approved artwork.
 
-## Studio editing, review and transport integrity
+## Estúdio: integridade de edição, revisão e transporte
 
-Production keeps one in-memory draft per lesson and stage. Switching the mobile
-tabs or desktop navigation preserves every draft. A draft captures the original
-`lockVersion` and structured data on its first edit; SSE and query refetches only
-update the remote version. Save uses that captured lock. A 409 preserves the draft
-and explains the conflict; the producer can copy the text and explicitly discard
-the local draft to load the remote version. There is no automatic conflict retry.
-Typing during a save remains possible: only the submitted draft is cleared, and
-later typing advances its base to the successful save's lock. Drafts are not
-persisted across closing the tab. Pending edits are guarded on page buttons,
-admin navigation, browser back/forward and refresh.
+**Rascunhos.** A produção mantém um rascunho por lição e etapa. Trocar de etapa
+preserva todos. O rascunho captura o `lockVersion` original na primeira edição;
+SSE e refetch só atualizam a versão remota, e o salvamento usa o lock capturado.
+Os rascunhos do editor, as observações do revisor e os rascunhos de orientações
+são gravados em `sessionStorage`, com chave por usuário e lição, e recuperados
+após recarregar a página ou refazer o login (a tela mostra o aviso "Rascunho
+recuperado"). Logout explícito apaga os rascunhos; o login de outro usuário
+apaga os alheios. Edições pendentes são protegidas nos botões da página, na
+navegação administrativa, no voltar/avançar do navegador e ao recarregar.
 
-The three document editors receive explicit edit permissions matching
-`LessonDraftService.saveContent`. Mounting an editor, loading saved content and
-changing edit permissions do not emit content changes or create local drafts.
-In particular, completing an item must leave the next item available without a
-false unsaved-edits warning; real edits still require saving or discarding.
-Production completion and generation are
-blocked while any local stage draft is unresolved or a conflicting mutation is
-pending. The existing whole-page generation lock remains in place. Review and
-publication use the API's states; the browser never fabricates a workflow
-transition. The current API allows review of remaining `IN_REVIEW` items when the
-lesson is `CHANGES_REQUESTED`, and resubmission of a completed package containing
-producer-approved, in-review and approved items. Saving still invalidates
-downstream stages according to the server's rules. Publication is explicit and
-creating the weekly material does not set the current week.
+**Conflito de edição.** Quando a versão remota muda sob um rascunho, um aviso
+aparece de imediato com "Ver versão remota" e "Reaplicar minha edição sobre a
+versão atual". Um 409 no salvamento preserva o rascunho. Não há nova tentativa
+automática. Digitar durante um salvamento continua possível: só o rascunho
+enviado é limpo.
 
-The review list sends `statuses` as a comma-separated query parameter, choosing
-the existing review set (PACKAGE_READY, IN_REVIEW, CHANGES_REQUESTED,
-READY_FOR_PUBLICATION, PUBLISHED), or only the selected status. Search, count and
-pagination are applied by the server. It does not filter an already paginated
-response. List, detail, dashboard and prompt-preference query keys have separate
-prefixes. Lesson mutations refresh summaries without invalidating unrelated
-prompt preferences.
+**Confirmações.** Salvar lista os itens que ficarão desatualizados e pede
+confirmação. Regerar com IA pede confirmação, com aviso reforçado quando o item
+já foi concluído ou aprovado. Concluir um item desatualizado pede confirmação
+explícita. Publicar e excluir também pedem confirmação; erros aparecem dentro do
+próprio diálogo. A etapa selecionada fica na URL (`?stage=`).
 
-Prompt edits initialize solely from `customPrompt` (complementary guidance), never
-`effectivePrompt`, while displaying the read-only `basePrompt` and live effective
-preview (`basePrompt` + complementary header + `customPrompt`). Legacy duplicated
-base prompts are detected and can be stripped in one click. Both `PATCH` and
-`POST /prompt-preferences/me/reset` send `lockVersion`. Provider settings likewise
-keep an explicit local draft, so refetch cannot overwrite unsaved values, and
-model catalog lookups distinguish `LIVE`, `FALLBACK` and `STATIC` sources.
+**Revisão.** A tela guarda, por etapa, a versão que o revisor abriu. Se ela
+mudar durante a leitura, aparece um aviso e Aprovar, Devolver e Reabrir ficam
+bloqueados até o revisor confirmar que revisou a versão atual. As ações enviam
+o `lockVersion` reconhecido. Um 409 preserva a observação digitada. A aprovação
+é bloqueada quando falta arte obrigatória ou alguma imagem não carrega, e o
+motivo aparece junto aos botões. Produção e revisão compartilham
+`LessonStageContentViewer` para todas as etapas, e a revisão oferece a prévia de
+PDF de cada item. A publicação invalida `['week-material-pages']` e
+`['week-materials']`.
 
-Provider settings responses expose `hasApiKey`, never a saved `apiKey`. API
-adapters explicitly select public fields on aggregate and individual endpoints,
-so legacy secret fields cannot enter the query cache. Credential controls offer
-preserve (omit `apiKey`), replace (trimmed newly typed key) and remove (explicit
-empty `apiKey`). Blank typing preserves the key; removal requires the separate
-control and Save. Restoring recommended defaults prepares an editable draft and
-preserves credentials. Newly typed keys are transient; completed mutation state
-is reset, mutation cache has zero retention, and no form or credential is logged.
-Session changes and logout cancel and remove `['ai-lessons']` and `['ai-providers']`
-query caches, and prompt preferences are keyed by authenticated user ID.
+**Listas e cache.** A fila de revisão envia `statuses` separados por vírgula;
+busca, contagem e paginação são do servidor. Listas, detalhe, painel e
+orientações têm chaves de cache separadas. Troca de sessão e logout cancelam e
+removem os caches `['ai-lessons']` e `['ai-providers']`; as orientações são
+chaveadas pelo usuário autenticado.
 
-SSE continues through the shared authenticated Axios client with the existing
-2-second reconnect delay and 10-second inactivity watchdog, recognizing
-`: heartbeat` and `event: heartbeat` frames, deduplicating unchanged snapshots,
-ignoring stale `lockVersion` regressions, and rotating long-lived XHR streams
-(`AI_LESSON_EVENTS_MAX_DURATION_MS` / `AI_LESSON_EVENTS_MAX_BYTES`) cleanly via
-`LessonStreamEnd.ROTATED` without flashing a reconnection warning. Both production
-and review detail screens subscribe to live updates and share
-`LessonStageContentViewer` for consistent rendering of all 8 stages.
+**Orientações (prompts).** A edição parte somente de `customPrompt`; o
+prompt-base é somente leitura. A prévia usa o `effectivePrompt` devolvido pela
+API e, para texto ainda não salvo, compõe com o mesmo cabeçalho do backend.
+Salvar e restaurar enviam `lockVersion`. Após um conflito, a tela oferece
+aplicar o texto sobre a versão atual ou descartar.
 
-PDF preview requests are tied to their lesson, stage, `lockVersion`, `versionId`
-and request identity. Closing the dialog, changing the stage, receiving a newer
-remote stage version or unmounting invalidates late responses; object URLs are
-revoked on replacement/close/unmount. Review exposes PDF preview across all 8
-stages, sends `lockVersion` on `complete-production`, `approve` and
-`request-changes`, blocks approval when required stage artwork is missing, and
-invalidates `['week-material-pages']` and `['week-materials']` upon publication.
+**Provedores.** As respostas expõem `hasApiKey`, nunca a chave. Os controles de
+credencial oferecem preservar (omitir `apiKey`), substituir e remover (`apiKey`
+vazio, por controle próprio). As opções de qualidade, esforço e tamanho são
+exatamente as aceitas pela API, e retries vão de 0 a 5. Um selo permanente
+indica a origem do catálogo de modelos (`LIVE`, `FALLBACK` ou `STATIC`), e o
+modelo "em uso" vem das configurações salvas. Salvar é bloqueado quando o
+provedor ativo não tem chave utilizável.
 
-Regression coverage lives in `e2e/unit/studio-*.spec.ts`,
-`e2e/flows/studio-integrity.spec.ts`, `e2e/flows/studio-resilience.spec.ts` and the
-provider/editor tests. Integration fixtures are created through the local API;
-`e2e/support/studioFixture.mjs` only prepares statuses for those uniquely named
-fixtures in the local MySQL database, allowing manual-content tests without AI
-provider calls. Tests save and reread content through HTTP and delete their
-fixtures. The helper rejects remote databases and unowned lesson IDs.
+**Stream.** O SSE usa o cliente Axios autenticado. O fechamento planejado do
+servidor (após ao menos um evento) é tratado como rotação, sem aviso. O aviso
+"Conexão interrompida" só aparece após três falhas seguidas; a reconexão usa
+backoff exponencial com jitter, limitado a 30 s. A conexão pausa com a aba
+oculta e a tela refaz a consulta ao voltar. Lição excluída em outra sessão tem
+estado próprio, com mensagem e botão de voltar. O limite de bytes por conexão
+só corta em fronteira de mensagem e depois de um snapshot. Snapshots idênticos
+são deduplicados e regressões de `lockVersion` são ignoradas.
+
+**Prévia de PDF.** Cada pedido é vinculado a lição, etapa, `lockVersion` e
+`versionId`. Fechar o diálogo, trocar de etapa, receber versão mais nova ou
+desmontar a tela invalida respostas tardias; as object URLs são revogadas. A
+prévia é reaproveitada enquanto a versão não muda.
+
+**Testes.** A cobertura de regressão está em `e2e/unit/studio-*.spec.ts`
+(incluindo `studio-recovery.spec.ts`), `e2e/flows/studio-integrity.spec.ts`,
+`e2e/flows/studio-resilience.spec.ts` e nos testes de provedores e editores. Os
+fluxos de integração criam fixtures pela API local;
+`e2e/support/studioFixture.mjs` apenas prepara os status dessas fixtures no
+MySQL local, recusando bancos remotos e lições que não sejam suas.
 
 ### Administrative review of shared ideas
 

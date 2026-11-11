@@ -255,11 +255,17 @@ export interface IdeaWordDiff {
   text: string;
   changed: boolean;
 }
+/** Etapa 2 da revisão: a comparação item a item. */
 export interface IdeaAiCompareProps {
   excludedMediaIds?: string[];
   section: IdeasSectionResponse;
   decisions: IdeaAiDecisions | null;
   onChange: (value: IdeaAiDecisions) => void;
+  disabled: boolean;
+}
+/** Etapa 1 da revisão: estado da melhoria por IA e o pedido de nova tentativa. */
+export interface IdeaAiStatusPanelProps {
+  section: IdeasSectionResponse;
   onRetry: () => void;
   retrying: boolean;
   disabled: boolean;

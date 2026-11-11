@@ -43,6 +43,13 @@ export default function IdeaShareMaterials({
                         sx={{
                           display: 'flex',
                           alignItems: 'center',
+                          /*
+                           * No celular a miniatura e o botão espremiam o nome
+                           * do arquivo; com `wrap`, o botão desce em vez de
+                           * roubar a largura do nome.
+                           */
+                          flexWrap: 'wrap',
+                          rowGap: 1,
                           gap: 2,
                           py: '12px !important',
                         }}
@@ -82,7 +89,7 @@ export default function IdeaShareMaterials({
                             Prévia
                           </Button>
                         )}
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ flex: '1 1 140px', minWidth: 0 }}>
                           <Typography sx={{ overflowWrap: 'anywhere' }}>{item.name}</Typography>
                           {item.file && (
                             <Typography variant="body2" noWrap color="text.secondary">
@@ -96,7 +103,7 @@ export default function IdeaShareMaterials({
                           aria-label={`Remover ${item.name}`}
                           onClick={() => onRemove(item)}
                           disabled={disabled}
-                          sx={{ minHeight: 44 }}
+                          sx={{ minHeight: 44, ml: 'auto', flexShrink: 0, textTransform: 'none' }}
                         >
                           Remover
                         </Button>

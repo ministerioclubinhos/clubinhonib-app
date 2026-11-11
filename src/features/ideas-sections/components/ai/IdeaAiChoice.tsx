@@ -18,7 +18,11 @@ export default function IdeaAiChoice({
         if (value) onChange(value);
       }}
       size="small"
-      sx={{ '& button': { minHeight: 44 } }}
+      /* No celular o par ocupa a linha inteira: dois alvos largos de 44 px. */
+      sx={{
+        width: { xs: '100%', sm: 'auto' },
+        '& button': { minHeight: 44, flex: { xs: 1, sm: 'none' } },
+      }}
     >
       <ToggleButton data-testid="idea-ai-choice-original" value={IdeaAiDecision.ORIGINAL}>
         Original

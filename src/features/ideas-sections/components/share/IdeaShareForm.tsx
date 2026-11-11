@@ -22,6 +22,7 @@ import {
   ImageOutlined,
   MovieOutlined,
 } from '@mui/icons-material';
+import { STICKY_ACTION_BAR_Z_INDEX } from '@/constants/app';
 import { IDEA_SHARE_ACCEPT_BY_KIND, IDEA_SHARE_MAX_MEDIAS } from '../../constants';
 import { IdeaMaterialKind } from '../../types';
 import { useIdeaShareForm } from '../../useIdeaShareForm';
@@ -132,7 +133,7 @@ export function IdeaShareForm() {
               type="button"
               startIcon={<ArrowBackRounded />}
               onClick={() => navigate('/area-do-professor')}
-              sx={{ mb: 2, minHeight: 44 }}
+              sx={{ mb: 2, minHeight: 44, textTransform: 'none' }}
             >
               Área do professor
             </Button>
@@ -192,7 +193,7 @@ export function IdeaShareForm() {
                     ({materials.length}/{IDEA_SHARE_MAX_MEDIAS})
                   </Typography>
                 </Typography>
-                <Typography id="idea-share-file-help" color="text.secondary">
+                <Typography id="idea-share-file-help" variant="body2" color="text.secondary">
                   Documentos PDF, DOC ou DOCX (até 20 MB), imagens JPG, PNG, WEBP ou GIF (até 10 MB)
                   e vídeos MP4 ou WEBM (até 100 MB).
                 </Typography>
@@ -274,7 +275,7 @@ export function IdeaShareForm() {
                     variant="outlined"
                     disabled={share.isSubmitting}
                     color="success"
-                    sx={{ minHeight: 44 }}
+                    sx={{ minHeight: 44, textTransform: 'none' }}
                   >
                     Escolher arquivos
                     <input
@@ -317,7 +318,7 @@ export function IdeaShareForm() {
                         data-testid="idea-share-youtube-add"
                         onClick={addYoutube}
                         disabled={share.isSubmitting}
-                        sx={{ minHeight: 48, whiteSpace: 'nowrap' }}
+                        sx={{ minHeight: 48, whiteSpace: 'nowrap', textTransform: 'none' }}
                       >
                         Adicionar vídeo
                       </Button>
@@ -356,7 +357,7 @@ export function IdeaShareForm() {
                 poderão ser processados pelo provedor de IA configurado para melhorar a
                 apresentação. O original será preservado e vídeos não serão processados.
               </Typography>
-              <Divider sx={{ my: 1 }} />
+              <Divider sx={{ my: 1, display: { xs: 'none', md: 'block' } }} />
               {apiError && (
                 <Alert
                   severity="error"
@@ -387,7 +388,7 @@ export function IdeaShareForm() {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  zIndex: 1100,
+                  zIndex: STICKY_ACTION_BAR_Z_INDEX,
                   bgcolor: 'background.paper',
                   p: { xs: 2, md: 0 },
                   pb: { xs: 'max(16px, env(safe-area-inset-bottom))', md: 0 },
@@ -412,7 +413,7 @@ export function IdeaShareForm() {
                   startIcon={
                     share.isSubmitting ? <CircularProgress size={18} color="inherit" /> : undefined
                   }
-                  sx={{ minHeight: 48, px: 4 }}
+                  sx={{ minHeight: 48, px: 4, textTransform: 'none', fontWeight: 700 }}
                 >
                   {share.isSubmitting ? 'Enviando…' : 'Enviar ideia para revisão'}
                 </Button>

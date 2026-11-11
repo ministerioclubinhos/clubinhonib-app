@@ -1,3 +1,8 @@
+import {
+  purgeStudioSnapshots,
+  resolveStudioStorage,
+  suppressStudioPersistence,
+} from '@/features/ai-lessons/draftStorage';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -143,6 +148,11 @@ function App() {
       queryClient.removeQueries({ queryKey: ['ai-lessons'] });
       queryClient.removeQueries({ queryKey: ['ai-providers'] });
     }
+    if (currentUserId) {
+      // Unsaved Studio work is recovered only by the user who typed it.
+      suppressStudioPersistence(false);
+      purgeStudioSnapshots(resolveStudioStorage(), currentUserId);
+    }
     previousUserIdRef.current = currentUserId;
   }, [queryClient, user?.id]);
 
@@ -162,6 +172,9 @@ function App() {
     void queryClient.cancelQueries({ queryKey: ['ai-providers'] });
     queryClient.removeQueries({ queryKey: ['ai-lessons'] });
     queryClient.removeQueries({ queryKey: ['ai-providers'] });
+    // An explicit logout discards unsaved Studio work; an expired session keeps it for recovery.
+    suppressStudioPersistence(true);
+    purgeStudioSnapshots(resolveStudioStorage());
     dispatch(logout());
     setForceReady(true);
     window.location.href = '/login';

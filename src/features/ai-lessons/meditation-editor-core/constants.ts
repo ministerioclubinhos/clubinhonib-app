@@ -18,3 +18,8 @@ export const MEDITATION_SECTION_FIELDS = {
   biblicalText: 'TEXTO BÍBLICO',
   introduction: 'ENTENDENDO A LIÇÃO',
 } as const;
+export const MEDITATION_SHEET_OVERFLOW_TOLERANCE_PX = 2;
+export const MEDITATION_FULLSCREEN_LABEL = 'Editor da meditação em tela cheia';
+export const MEDITATION_COPY_SELECTOR = '[data-meditation-copy]';
+export const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])';

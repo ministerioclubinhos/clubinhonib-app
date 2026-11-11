@@ -11,19 +11,25 @@ export default function IdeaAiImageCompare({
 }: IdeaAiMediaCompareProps) {
   const [position, setPosition] = useState(50);
   const name = original.originalName ?? 'Imagem da ideia';
+  /** Os dois rótulos só fazem sentido quando há duas versões sob o cursor. */
+  const enhancedMedia = result?.enhancedMedia ?? null;
   return (
     <Stack data-testid="idea-ai-image-compare" spacing={1.5}>
       <IdeaAiChoice
         label={name}
         decision={decision}
-        enhanced={Boolean(result?.enhancedMedia)}
+        enhanced={Boolean(enhancedMedia)}
         onChange={onChange}
         disabled={disabled}
       />
-      <Stack direction="row" justifyContent="space-between">
+      {enhancedMedia ? (
+        <Stack direction="row" justifyContent="space-between">
+          <Typography variant="overline">Original</Typography>
+          <Typography variant="overline">Melhorada pela IA</Typography>
+        </Stack>
+      ) : (
         <Typography variant="overline">Original</Typography>
-        <Typography variant="overline">Melhorada pela IA</Typography>
-      </Stack>
+      )}
       <Box
         sx={{
           position: 'relative',
@@ -37,12 +43,17 @@ export default function IdeaAiImageCompare({
           component="img"
           src={original.url}
           alt={`Original: ${name}`}
-          sx={{ width: '100%', maxHeight: 480, objectFit: 'contain', display: 'block' }}
+          sx={{
+            width: '100%',
+            maxHeight: { xs: 320, md: 480 },
+            objectFit: 'contain',
+            display: 'block',
+          }}
         />
-        {result?.enhancedMedia && (
+        {enhancedMedia && (
           <Box
             component="img"
-            src={result.enhancedMedia.url}
+            src={enhancedMedia.url}
             alt={`Melhorada: ${name}`}
             sx={{
               position: 'absolute',
@@ -55,7 +66,7 @@ export default function IdeaAiImageCompare({
           />
         )}
       </Box>
-      {result?.enhancedMedia && (
+      {enhancedMedia && (
         <Slider
           data-testid="idea-ai-image-slider"
           value={position}

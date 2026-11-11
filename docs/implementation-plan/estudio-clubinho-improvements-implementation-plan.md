@@ -1,6 +1,6 @@
 # Plano de Implementação Frontend — Estúdio Clubinho: correções baseadas em evidências
 
-**Status:** frontend implemented against the current local backend contracts; validation results and rollout dependencies are recorded in section 11. The audit below remains historical evidence.
+**Status:** superado pelo [plano de 2026-11-01](studio-clubinho-improvements-2026-11-01.md); mantido como histórico. A referência vigente do contrato é `clubinhonib-api/docs/api-ai-lessons.md` (nota de 2026-11-10).
 
 **Revisão:** 2026-10-11 — revisão 2, após a exigência de precisão e zero suposições.
 

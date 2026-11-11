@@ -33,23 +33,40 @@ The source code follows a feature-based modular architecture:
 
 ## 🧾 Dívida conhecida
 
-[`pendencias-tecnicas.md`](pendencias-tecnicas.md) lista o que a varredura de
+[`pendencias-tecnicas.md`](../../clubinhonib-api/docs/pendencias-tecnicas.md) (no repositório da API) lista o que a varredura de
 setembro de 2026 encontrou fora do padrão descrito aqui — features sem
 `types`/`utils`/`constants`, arquivos longos demais, telas ainda fora do
 `ListingLayout` — em ordem de prioridade e com caixas para marcar conforme for
 resolvido.
 
-## Studio state and transport helpers
+## Estúdio: estado e transporte
 
-`src/features/ai-lessons/` owns transport DTOs/enums (`types.ts`), query key
-factories (`queryKeys.ts`), immutable draft reconciliation (`drafts.ts`), workflow
-availability (`workflow.ts`, `review-actions.ts`), the SSE lifecycle (`stream.ts`),
-PDF helpers (`pdf.ts`, `useLessonPdfPreview.ts`) and shared stage rendering
-(`components/LessonStageContentViewer.tsx`, `components/StoryVisualCarousel.tsx`).
-`useLessonLocalDrafts` owns local document edits; `useStudioUnsavedChanges`
-extends the shared dirty-form guard for studio browser-history navigation.
-Existing service and hook imports remain compatible;
-`src/services/aiLessonsService.ts` re-exports feature types while keeping HTTP
-operations on the shared Axios instance. Routed Studio pages live under
-`src/pages/admin/ai-lessons/` and are lazy-loaded via `React.lazy` and `Suspense`
-in `src/App.tsx`.
+`src/features/ai-lessons/` concentra o domínio do Estúdio:
+
+- `api.ts` e `hooks.ts`: cliente HTTP e hooks de consulta/mutação.
+  `src/services/aiLessonsService.ts` e `src/hooks/api/useAiLessons.ts` só
+  reexportam, por compatibilidade.
+- `types.ts`, `queryKeys.ts`, `constants.ts`, `presentation.constants.ts` e
+  `presentation.utils.ts`: DTOs/enums, chaves de cache, limites e rótulos.
+- `drafts.ts`, `useLessonLocalDrafts.ts`, `draftStorage.ts` e
+  `usePersistedStudioState.ts`: rascunhos por etapa e sua persistência em
+  `sessionStorage`. `useReviewFeedback.ts` faz o mesmo para as observações do
+  revisor.
+- `workflow.ts` e `review-actions.ts`: disponibilidade das ações.
+  `useAcknowledgedVersions.ts` guarda a versão que o revisor abriu.
+- `stream.ts`: ciclo de vida do SSE (rotação, backoff, pausa com aba oculta).
+- `pdf.ts` e `useLessonPdfPreview.ts`: prévia de PDF.
+- `useStageParam.ts`, `useElapsedSeconds.ts`, `useStageAssetIssue.ts` e
+  `useStudioUnsavedChanges.ts`: etapa na URL, tempo de geração, completude das
+  artes e guarda de saída.
+- `components/`: `LessonStageContentViewer`, `StoryVisualCarousel`,
+  `StoryVisualConfiguration`, `LessonConnectionAlert`, `LessonCommentsPanel`,
+  `LessonPdfPreviewDialog`, `StageImpactList` e as ferramentas do editor.
+- `meditation-editor-core/`, `younger-meditation-editor/`,
+  `older-meditation-editor/` e `manual-work-preview/`: editores e prévias
+  próprios dos itens 6, 7 e 8.
+
+`src/features/ai-providers/` contém a página de configuração de provedores, e
+`src/components/ai-lessons/` o editor de documento (`LibreOfficeDocEditor`) e o
+modal de criação. As páginas roteadas ficam em `src/pages/admin/ai-lessons/` e
+são carregadas sob demanda com `React.lazy` e `Suspense` em `src/App.tsx`.

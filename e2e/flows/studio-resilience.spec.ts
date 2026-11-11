@@ -38,7 +38,7 @@ const fixture: Lesson = {
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.route('**/api/v1/lessons/studio-resilience', (route) =>
+  await page.route(/\/api\/v1\/lessons\/studio-resilience(\?.*)?$/, (route) =>
     route.fulfill({ json: fixture })
   );
 });
@@ -47,7 +47,7 @@ test('SSE 403 para de reconectar; PDF 422 exibe mensagem segura e prévia tardia
   page,
 }) => {
   let connections = 0;
-  await page.route('**/api/v1/lessons/studio-resilience/events', (route) => {
+  await page.route('**/api/v1/lessons/studio-resilience/events*', (route) => {
     connections += 1;
     return route.fulfill({ status: 403, json: { message: 'Acesso negado' } });
   });
@@ -96,7 +96,7 @@ test('EOF reconecta e navegação por voltar/refresh preserva edição ao cancel
   page,
 }) => {
   let connections = 0;
-  await page.route('**/api/v1/lessons/studio-resilience/events', (route) => {
+  await page.route('**/api/v1/lessons/studio-resilience/events*', (route) => {
     connections += 1;
     return route.fulfill({
       contentType: 'text/event-stream',
@@ -115,14 +115,15 @@ test('EOF reconecta e navegação por voltar/refresh preserva edição ao cancel
   await editor.fill('Não perder este texto');
   await expect.poll(() => connections).toBeGreaterThan(1);
   await expect(editor).toContainText('Não perder este texto');
-  page.once('dialog', (dialog) => dialog.dismiss());
   await page.evaluate(() => window.history.back());
-  await expect(page).toHaveURL(/studio-resilience$/);
+  // The in-app leave guard uses the shared dialog; staying keeps the route and the text.
+  await page.getByTestId('modal-unsaved-changes-dialog').getByRole('button', { name: 'Continuar editando' }).click();
+  await expect(page).toHaveURL(/studio-resilience(\?.*)?$/);
   await expect(editor).toContainText('Não perder este texto');
   page.once('dialog', (dialog) => dialog.dismiss());
   await page.evaluate(() => window.location.reload());
   await expect(editor).toContainText('Não perder este texto');
-  page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Voltar para Produção de Lições' }).click();
+  await page.getByTestId('modal-unsaved-changes-dialog').getByRole('button', { name: 'Sair sem salvar' }).click();
   await expect(page).toHaveURL(/\/adm\/estudio\/licoes$/);
 });

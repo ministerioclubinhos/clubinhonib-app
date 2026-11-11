@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import { Alert, Box } from '@mui/material';
 import { MeditationToolbar } from '../meditation-editor-core/MeditationToolbar';
 import { MeditationRichField } from '../meditation-editor-core/MeditationRichField';
 import { buildMeditationDocument } from '../meditation-editor-core/document';
+import { useFullscreenSheet } from '../meditation-editor-core/useFullscreenSheet';
+import { useSheetOverflow } from '../meditation-editor-core/useSheetOverflow';
 import {
   preserveMeditationFormatting,
   replaceMeditationField,
@@ -25,36 +27,14 @@ export function OlderMeditationEditor({
   initialJson,
   structuredData,
   onChange,
+  onOverflowChange,
   editable = true,
 }: OlderMeditationEditorProps) {
   const content = readOlderMeditation(initialJson, structuredData);
   const fit = olderMeditationDisplayFit(content);
-  const [fullscreen, setFullscreen] = useState(false);
+  const { fullscreen, toggleFullscreen, containerRef, dialogProps } = useFullscreenSheet();
   const paperRef = useRef<HTMLDivElement>(null);
-  const [overflow, setOverflow] = useState(false);
-  useEffect(() => {
-    const paper = paperRef.current;
-    if (!paper) return;
-    const measure = () =>
-      setOverflow(paper.scrollHeight > paper.clientHeight + D.overflowTolerance);
-    const resize = new ResizeObserver(measure);
-    resize.observe(paper);
-    paper
-      .querySelectorAll('[data-testid$="-field"], img')
-      .forEach((element) => resize.observe(element));
-    const mutations = new MutationObserver(measure);
-    mutations.observe(paper, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      characterData: true,
-    });
-    measure();
-    return () => {
-      resize.disconnect();
-      mutations.disconnect();
-    };
-  }, [initialJson, structuredData]);
+  const overflow = useSheetOverflow(paperRef, null, onOverflowChange);
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
   const canonical = preserveMeditationFormatting(
     buildMeditationDocument({
@@ -79,11 +59,8 @@ export function OlderMeditationEditor({
   return (
     <Box
       data-testid="older-meditation-editor"
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') setFullscreen(false);
-      }}
-      role={fullscreen ? 'dialog' : undefined}
-      aria-label={fullscreen ? 'Editor da meditação em tela cheia' : undefined}
+      ref={containerRef}
+      {...dialogProps}
       sx={{
         maxWidth: '100%',
         bgcolor: 'grey.100',
@@ -97,12 +74,13 @@ export function OlderMeditationEditor({
         <MeditationToolbar
           editor={activeEditor}
           fullscreen={fullscreen}
-          onToggleFullscreen={() => setFullscreen((value) => !value)}
+          onToggleFullscreen={toggleFullscreen}
         />
       )}
       {overflow && (
         <Alert data-testid="older-meditation-overflow" severity="warning" sx={{ mb: 1 }}>
-          O conteúdo ultrapassa a folha. Reduza o texto, as artes ou a formatação antes de exportar.
+          O conteúdo ultrapassa a folha. Reduza o texto, as artes ou a formatação antes de concluir
+          ou exportar.
         </Alert>
       )}
       <Box data-testid="older-meditation-paper-scroll" sx={{ overflowX: 'auto', maxWidth: '100%' }}>

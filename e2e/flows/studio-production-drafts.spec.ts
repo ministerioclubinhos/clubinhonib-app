@@ -87,8 +87,11 @@ for (const width of [360, 1440]) {
 
         await field.fill('Edição a descartar');
         await expect(notice).toBeVisible();
-        page.once('dialog', (dialog) => dialog.accept());
         await page.getByTestId('ai-lesson-discard-edit').click();
+        await page
+          .getByTestId('ai-lesson-production-confirm-dialog')
+          .getByRole('button', { name: 'Descartar edição' })
+          .click();
         await expect(field).toContainText(editedText);
         await expect(notice).toHaveCount(0);
 

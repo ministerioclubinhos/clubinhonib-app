@@ -1,25 +1,28 @@
-import { LessonCategory } from '@/features/ai-lessons/types';
-import { lessonStageLabel } from '../lessonStagePresentation.utils';
 import { Box, Button, Chip, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
-import type { LessonStage, LessonStageType } from '@/services/aiLessonsService';
 import {
   LESSON_STAGE_STATUS_COLORS,
   LESSON_STAGE_STATUS_LABELS,
-} from '../lessonDraftDetail.constants';
+} from '@/features/ai-lessons/presentation.constants';
+import { lessonStageLabel } from '@/features/ai-lessons/presentation.utils';
+import {
+  StageNavigationMode,
+  type LessonStageNavigationProps,
+} from '@/features/ai-lessons/types';
 
-type Props = {
-  stages: LessonStage[];
-  category?: LessonCategory;
-  selectedType: LessonStageType;
-  mode: 'mobile' | 'desktop';
-  onSelect: (type: LessonStageType) => void;
-};
-
-export function LessonStageNavigation({ stages, category, selectedType, mode, onSelect }: Props) {
-  if (mode === 'mobile') {
+export function LessonStageNavigation({
+  stages,
+  category,
+  selectedType,
+  mode,
+  draftStages = [],
+  onSelect,
+}: LessonStageNavigationProps) {
+  if (mode === StageNavigationMode.MOBILE) {
     return (
       <Paper
         data-testid="ai-lesson-stage-navigation-mobile"
+        component="nav"
+        aria-label="Etapas da lição"
         elevation={0}
         sx={{
           display: { xs: 'block', lg: 'none' },
@@ -32,7 +35,7 @@ export function LessonStageNavigation({ stages, category, selectedType, mode, on
       >
         <Tabs
           value={selectedType}
-          onChange={(_, next: LessonStageType) => onSelect(next)}
+          onChange={(_, next: typeof selectedType) => onSelect(next)}
           variant="scrollable"
           scrollButtons="auto"
           sx={{
@@ -51,8 +54,16 @@ export function LessonStageNavigation({ stages, category, selectedType, mode, on
                   <span>{lessonStageLabel(stage.type, category, true)}</span>
                   <Chip
                     size="small"
-                    label={LESSON_STAGE_STATUS_LABELS[stage.status] ?? stage.status}
-                    color={LESSON_STAGE_STATUS_COLORS[stage.status] ?? 'default'}
+                    label={
+                      draftStages.includes(stage.type)
+                        ? 'Edição não salva'
+                        : LESSON_STAGE_STATUS_LABELS[stage.status]
+                    }
+                    color={
+                      draftStages.includes(stage.type)
+                        ? 'warning'
+                        : LESSON_STAGE_STATUS_COLORS[stage.status]
+                    }
                     sx={{ height: 20, fontSize: '0.675rem', fontWeight: 700, borderRadius: 1 }}
                   />
                 </Stack>
@@ -67,6 +78,8 @@ export function LessonStageNavigation({ stages, category, selectedType, mode, on
   return (
     <Paper
       data-testid="ai-lesson-stage-navigation-desktop"
+      component="nav"
+      aria-label="Etapas da lição"
       elevation={0}
       sx={{
         display: { xs: 'none', lg: 'block' },
@@ -79,7 +92,7 @@ export function LessonStageNavigation({ stages, category, selectedType, mode, on
         bgcolor: 'background.paper',
       }}
     >
-      <Typography variant="h6" fontWeight={800} gutterBottom>
+      <Typography variant="h6" component="h2" fontWeight={800} gutterBottom>
         Fluxo da produção
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -88,11 +101,13 @@ export function LessonStageNavigation({ stages, category, selectedType, mode, on
       <Stack spacing={1}>
         {stages.map((stage) => {
           const selected = selectedType === stage.type;
+          const hasDraft = draftStages.includes(stage.type);
           return (
             <Button
               key={stage.id}
               data-testid={`ai-stage-tab-${stage.type}`}
               fullWidth
+              aria-current={selected ? 'step' : undefined}
               variant={selected ? 'contained' : 'outlined'}
               color={selected ? 'primary' : 'inherit'}
               onClick={() => onSelect(stage.type)}
@@ -101,6 +116,7 @@ export function LessonStageNavigation({ stages, category, selectedType, mode, on
                 textAlign: 'left',
                 py: 1.25,
                 px: 2,
+                minHeight: 44,
                 borderRadius: 2.5,
                 border: '1px solid',
                 borderColor: selected ? 'primary.main' : 'divider',
@@ -113,15 +129,22 @@ export function LessonStageNavigation({ stages, category, selectedType, mode, on
                 <Typography
                   variant="body2"
                   fontWeight={700}
-                  sx={{ color: selected ? '#ffffff' : 'text.primary', lineHeight: 1.3 }}
+                  sx={{
+                    color: selected ? 'primary.contrastText' : 'text.primary',
+                    lineHeight: 1.3,
+                  }}
                 >
                   {lessonStageLabel(stage.type, category)}
                 </Typography>
                 <Chip
                   size="small"
-                  label={LESSON_STAGE_STATUS_LABELS[stage.status] ?? stage.status}
+                  label={hasDraft ? 'Edição não salva' : LESSON_STAGE_STATUS_LABELS[stage.status]}
                   color={
-                    selected ? 'default' : (LESSON_STAGE_STATUS_COLORS[stage.status] ?? 'default')
+                    selected
+                      ? 'default'
+                      : hasDraft
+                        ? 'warning'
+                        : LESSON_STAGE_STATUS_COLORS[stage.status]
                   }
                   sx={{
                     mt: 0.5,
@@ -129,7 +152,7 @@ export function LessonStageNavigation({ stages, category, selectedType, mode, on
                     fontSize: '0.675rem',
                     fontWeight: 700,
                     bgcolor: selected ? 'rgba(255,255,255,0.25)' : undefined,
-                    color: selected ? '#ffffff' : undefined,
+                    color: selected ? 'primary.contrastText' : undefined,
                   }}
                 />
               </Box>

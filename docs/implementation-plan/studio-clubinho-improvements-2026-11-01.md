@@ -1,6 +1,6 @@
 # Studio Clubinho — frontend implementation plan, 2026-11-01
 
-Status: implemented and verified (packages FE01–FE09 completed).
+Status: implementado (pacotes FE01–FE09) e complementado pelas correções de 2026-11-10. Este documento é histórico; a referência vigente do contrato é `clubinhonib-api/docs/api-ai-lessons.md`.
 
 Baseline: frontend HEAD `48016ec`; backend HEAD `4031642` plus its existing local changes. This is a new assessment of the current working trees. The [October plan](estudio-clubinho-improvements-implementation-plan.md) remains historical evidence; its completed frontend work must not be implemented again.
 
