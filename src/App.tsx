@@ -306,9 +306,9 @@ function App() {
                   </Route>
 
                   {/*
-                    Quem entra na Área das Crianças é decidido pelos perfis
-                    alvo da própria flag: o mapa já responde `false` para um
-                    perfil que ela não alcança. A rota só exige a sessão.
+                    Regra de perfil: qualquer sessão. Feature flag: os perfis
+                    alvo de `children_area` restringem, dentro disso, quem
+                    entra — o mapa responde `false` para quem ela não alcança.
                   */}
                   <Route element={<ProtectedRoute />}>
                     <Route element={<FeatureRoute flag={FEATURE.CHILDREN_AREA} />}>

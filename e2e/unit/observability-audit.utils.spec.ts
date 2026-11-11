@@ -32,13 +32,17 @@ import {
   formatHttp,
   levelColor,
   levelLabel,
-  localDateTimeToIsoUtc,
+  localDayBoundary,
+  validUuid,
+  validErrorCode,
+  validActionName,
+  filterFieldError,
   outcomeColor,
   outcomeLabel,
   queryKeyOf,
   roleLabel,
   sourceTypeLabel,
-  toLocalDateTimeInput,
+  toLocalDateInput,
   truncateId,
   truncateText,
   validatePeriod,
@@ -49,31 +53,39 @@ const period = { from: '2026-09-04T12:00:00.000Z', to: '2026-09-05T12:00:00.000Z
 const shared = { requestId: '', limit: 25 };
 
 test.describe('período', () => {
-  test('defaultPeriod cobre as últimas 24 horas no fuso local', () => {
-    const now = new Date(2026, 8, 5, 15, 30);
-    expect(defaultPeriod(now)).toEqual({ from: '2026-09-04T15:30', to: '2026-09-05T15:30' });
+  test('defaultPeriod é esta semana, de domingo a sábado, no fuso local', () => {
+    // 05/09/2026 é sábado; 09/09/2026 é quarta; 06/09/2026 é domingo.
+    expect(defaultPeriod(new Date(2026, 8, 5, 15, 30))).toEqual({ from: '2026-08-30', to: '2026-09-05' });
+    expect(defaultPeriod(new Date(2026, 8, 9, 0, 5))).toEqual({ from: '2026-09-06', to: '2026-09-12' });
+    expect(defaultPeriod(new Date(2026, 8, 6, 23, 59))).toEqual({ from: '2026-09-06', to: '2026-09-12' });
   });
 
-  test('toLocalDateTimeInput e localDateTimeToIsoUtc são inversas sem deslocamento', () => {
-    const local = new Date(2026, 8, 5, 9, 5);
-    const input = toLocalDateTimeInput(local);
-    expect(input).toBe('2026-09-05T09:05');
-    expect(localDateTimeToIsoUtc(input)).toBe(local.toISOString());
-    expect(localDateTimeToIsoUtc('05/09/2026')).toBeNull();
-    expect(localDateTimeToIsoUtc('')).toBeNull();
+  test('toLocalDateInput e localDayBoundary cobrem o dia inteiro sem deslocamento', () => {
+    expect(toLocalDateInput(new Date(2026, 8, 5, 23, 59))).toBe('2026-09-05');
+    expect(localDayBoundary('2026-09-05', false)).toEqual(new Date(2026, 8, 5));
+    expect(localDayBoundary('2026-09-05', true)).toEqual(new Date(2026, 8, 5, 23, 59, 59, 999));
+    expect(localDayBoundary('2026-02-31', false)).toBeNull();
+    expect(localDayBoundary('05/09/2026', false)).toBeNull();
+    expect(localDayBoundary('2026-09-05T10:00', false)).toBeNull();
+    expect(localDayBoundary('', true)).toBeNull();
   });
 
-  test('validatePeriod aceita o válido e rejeita vazio, invertido e longo antes da request', () => {
-    const ok = validatePeriod('2026-09-04T10:00', '2026-09-05T10:00');
+  test('validatePeriod aceita dias inteiros (inclusive o mesmo dia) e rejeita vazio, invertido e longo', () => {
+    const ok = validatePeriod('2026-09-04', '2026-09-05');
     expect(ok.ok).toBe(true);
     if (ok.ok) {
-      expect(ok.from).toBe(new Date('2026-09-04T10:00').toISOString());
-      expect(ok.to).toBe(new Date('2026-09-05T10:00').toISOString());
+      expect(ok.from).toBe(new Date(2026, 8, 4).toISOString());
+      expect(ok.to).toBe(new Date(2026, 8, 5, 23, 59, 59, 999).toISOString());
     }
-    expect(validatePeriod('', '2026-09-05T10:00')).toMatchObject({ ok: false, message: 'Informe início e fim do período' });
-    expect(validatePeriod('2026-09-05T10:00', '2026-09-05T10:00')).toMatchObject({ ok: false });
-    expect(validatePeriod('2026-09-06T10:00', '2026-09-05T10:00')).toMatchObject({ ok: false, message: 'O início do período precisa ser anterior ao fim' });
-    expect(validatePeriod('2026-07-01T10:00', '2026-09-05T10:00')).toMatchObject({
+    expect(validatePeriod('2026-09-05', '2026-09-05')).toMatchObject({ ok: true });
+    expect(validatePeriod('', '2026-09-05')).toMatchObject({ ok: false, message: 'Informe o dia inicial e o dia final' });
+    expect(validatePeriod('2026-09-06', '2026-09-05')).toMatchObject({
+      ok: false,
+      message: 'O dia inicial não pode ser depois do dia final',
+    });
+    // 31 dias inteiros cabem; 32 não.
+    expect(validatePeriod('2026-08-06', '2026-09-05')).toMatchObject({ ok: true });
+    expect(validatePeriod('2026-08-05', '2026-09-05')).toMatchObject({
       ok: false,
       message: `O período não pode passar de ${RECORDS_MAX_RANGE_DAYS} dias`,
     });
@@ -91,7 +103,7 @@ test.describe('query builders', () => {
     expect(
       buildObservabilityQuery(
         period,
-        { requestId: ' req-1 ', limit: 50 },
+        { requestId: ' 7C9E6679-7425-40de-944b-e07fc1f90ae7 ', limit: 50 },
         { level: ObservabilityLevel.Error, errorCode: 'int_9001', sourceType: SourceType.Job },
         3,
       ),
@@ -100,7 +112,7 @@ test.describe('query builders', () => {
       to: period.to,
       page: 3,
       limit: 50,
-      requestId: 'req-1',
+      requestId: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
       level: ObservabilityLevel.Error,
       errorCode: 'INT_9001',
       sourceType: SourceType.Job,
@@ -114,7 +126,7 @@ test.describe('query builders', () => {
   });
 
   test('auditoria: filtros allowlisted, sem vazio, com a página pedida', () => {
-    expect(buildAuditQuery(period, shared, { actorId: '', actorRole: '', outcome: '', actionName: '', sourceType: '' }, 1)).toEqual({
+    expect(buildAuditQuery(period, shared, { actorName: '', actorId: '', actorRole: '', outcome: '', actionName: '', sourceType: '' }, 1)).toEqual({
       from: period.from,
       to: period.to,
       page: 1,
@@ -123,8 +135,8 @@ test.describe('query builders', () => {
     expect(
       buildAuditQuery(
         period,
-        { requestId: 'r', limit: 10 },
-        { actorId: 'u1', actorRole: UserRole.ADMIN, outcome: AuditOutcome.Denied, actionName: ' ClubsModule.ClubsController.create ', sourceType: SourceType.Http },
+        { requestId: '7c9e6679-7425-40de-944b-e07fc1f90ae7', limit: 10 },
+        { actorName: ' Maria ', actorId: '3f2504e0-4f89-41d3-9a0c-0305e82c3301', actorRole: UserRole.ADMIN, outcome: AuditOutcome.Denied, actionName: ' ClubsModule.ClubsController.create ', sourceType: SourceType.Http },
         2,
       ),
     ).toEqual({
@@ -132,14 +144,15 @@ test.describe('query builders', () => {
       to: period.to,
       page: 2,
       limit: 10,
-      requestId: 'r',
-      actorId: 'u1',
+      requestId: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
+      actorName: 'Maria',
+      actorId: '3f2504e0-4f89-41d3-9a0c-0305e82c3301',
       actorRole: UserRole.ADMIN,
       outcome: AuditOutcome.Denied,
       actionName: 'ClubsModule.ClubsController.create',
       sourceType: SourceType.Http,
     });
-    expect(buildAuditQuery(period, shared, { actorId: '', actorRole: 'chefe', outcome: 'meh', actionName: '', sourceType: '' }, 1)).toEqual({
+    expect(buildAuditQuery(period, shared, { actorName: '', actorId: '', actorRole: 'chefe', outcome: 'meh', actionName: '', sourceType: '' }, 1)).toEqual({
       from: period.from,
       to: period.to,
       page: 1,
@@ -148,7 +161,7 @@ test.describe('query builders', () => {
   });
 
   test('queryKeyOf muda quando qualquer campo muda', () => {
-    const a = buildAuditQuery(period, shared, { actorId: '', actorRole: '', outcome: '', actionName: '', sourceType: '' }, 1);
+    const a = buildAuditQuery(period, shared, { actorName: '', actorId: '', actorRole: '', outcome: '', actionName: '', sourceType: '' }, 1);
     const b = { ...a, limit: 50 };
     expect(queryKeyOf(a)).not.toBe(queryKeyOf(b));
     expect(queryKeyOf(a)).toBe(queryKeyOf({ ...a }));
@@ -167,7 +180,7 @@ test.describe('paginação e toolbar', () => {
     expect(activeFilterCount({ requestId: '' }, { level: '', errorCode: '', sourceType: '' })).toBe(0);
     expect(activeFilterCount({ requestId: 'r' }, { level: 'error', errorCode: ' ', sourceType: '' })).toBe(2);
     const base = defaultBaseFilters(new Date(2026, 8, 5, 15, 30));
-    expect(base).toEqual({ from: '2026-09-04T15:30', to: '2026-09-05T15:30', requestId: '', limit: 25 });
+    expect(base).toEqual({ from: '2026-08-30', to: '2026-09-05', requestId: '', limit: 25 });
   });
 });
 
@@ -322,5 +335,30 @@ test.describe('campos do modal de detalhes', () => {
     expect(byKey.occurrences.value).toBe('3');
     expect(byKey['error-code'].value).toBe('PERM_3004');
     expect(new Set(fields.map((f) => f.key)).size).toBe(fields.length);
+  });
+});
+
+test.describe('filtros de texto', () => {
+  test('valor incompleto ou inválido não vira request e o campo explica', () => {
+    const uuid = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+    expect(validUuid(` ${uuid.toUpperCase()} `)).toBe(uuid);
+    expect(validUuid('7c9e6679-7425')).toBeUndefined();
+    expect(validUuid('')).toBeUndefined();
+    expect(validErrorCode(' er_data_too_long ')).toBe('ER_DATA_TOO_LONG');
+    expect(validErrorCode('int_9001')).toBe('INT_9001');
+    expect(validErrorCode('int 9001')).toBeUndefined();
+    expect(validActionName(' ClubsController ')).toBe('ClubsController');
+    expect(validActionName('<script>')).toBeUndefined();
+    expect(filterFieldError('', undefined, 'msg')).toBe('');
+    expect(filterFieldError('7c9e', validUuid('7c9e'), 'msg')).toBe('msg');
+    expect(filterFieldError(uuid, validUuid(uuid), 'msg')).toBe('');
+
+    const query = buildAuditQuery(
+      period,
+      { requestId: 'meio-uuid', limit: 25 },
+      { actorName: 'M', actorId: '7c9e', actorRole: '', outcome: '', actionName: '<x>', sourceType: '' },
+      1,
+    );
+    expect(query).toEqual({ from: period.from, to: period.to, page: 1, limit: 25 });
   });
 });

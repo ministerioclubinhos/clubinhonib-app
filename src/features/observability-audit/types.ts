@@ -84,11 +84,15 @@ export interface ObservabilityRecordResponse extends LogRecordCommonResponse {
   durationMs: number | null;
   providerName: string | null;
   jobName: string | null;
+  /** 1 no registro normal; N no resumo de repetições de uma janela. */
+  occurrenceCount?: number;
 }
 
 /** `AuditRecordResponseDto` da API. */
 export interface AuditRecordResponse extends LogRecordCommonResponse {
   recordType: RecordType.Audit;
+  /** Nome de exibição de quem agiu; `null` em eventos anônimos, de sistema ou antigos. */
+  actorName?: string | null;
   actionType: AuditActionType;
   actionName: string;
   moduleName: string | null;
@@ -134,6 +138,7 @@ export interface ObservabilityRecordsQuery extends LogRecordsQueryBase {
 /** `QueryAuditRecordsDto`. */
 export interface AuditRecordsQuery extends LogRecordsQueryBase {
   actorId?: string;
+  actorName?: string;
   actorRole?: UserRole;
   outcome?: AuditOutcome;
   actionName?: string;
@@ -158,6 +163,7 @@ export interface ObservabilityFilters {
 
 /** Filtros próprios do painel de auditoria (`''` = sem filtro). */
 export interface AuditFilters {
+  actorName: string;
   actorId: string;
   actorRole: string;
   outcome: string;
@@ -185,8 +191,16 @@ export interface FilterOption {
   label: string;
 }
 
+/** Blocos do modal de detalhes, na ordem em que aparecem. */
+export enum DetailSection {
+  What = 'what',
+  Who = 'who',
+  Request = 'request',
+  Technical = 'technical',
+}
 /** Um par rótulo/valor do modal de detalhes. */
 export interface DetailField {
+  section: DetailSection;
   /** Chave estável, em kebab-case, usada no `data-testid`. */
   key: string;
   label: string;

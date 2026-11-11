@@ -137,6 +137,11 @@ export default function ObservabilityRecordsTable({ items, onCopy, onSelect }: O
                     {truncateText(item.message)}
                   </Typography>
                 </Tooltip>
+                {(item.occurrenceCount ?? 1) > 1 && (
+                  <Typography variant="caption" color="warning.main" display="block" fontWeight={700}>
+                    {OBSERVABILITY_AUDIT_MESSAGES.repeats(item.occurrenceCount ?? 1)}
+                  </Typography>
+                )}
               </TableCell>
               <TableCell>
                 <TruncatedId value={item.requestId} kind="requisição" onCopy={onCopy} />

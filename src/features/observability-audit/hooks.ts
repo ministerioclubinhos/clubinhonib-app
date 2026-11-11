@@ -32,7 +32,7 @@ import {
 } from './utils';
 
 const INITIAL_OBSERVABILITY_FILTERS: ObservabilityFilters = { level: '', errorCode: '', sourceType: '' };
-const INITIAL_AUDIT_FILTERS: AuditFilters = { actorId: '', actorRole: '', outcome: '', actionName: '', sourceType: '' };
+const INITIAL_AUDIT_FILTERS: AuditFilters = { actorName: '', actorId: '', actorRole: '', outcome: '', actionName: '', sourceType: '' };
 
 const HTTP_FORBIDDEN = 403;
 const FIRST_PAGE = 1;
@@ -207,7 +207,14 @@ function useBaseFilters() {
   // Só o que é digitado espera a pessoa terminar; período e limite valem na hora.
   const debouncedRequestId = useDebouncedValue(base.requestId);
   const period: PeriodValidation = useMemo(() => validatePeriod(base.from, base.to), [base.from, base.to]);
-  const validPeriod = useMemo(() => (period.ok ? { from: period.from, to: period.to } : null), [period]);
+  // A mensagem de erro é imediata; a consulta espera a digitação parar, porque
+  // o seletor passa por datas intermediárias (dia, depois mês, depois ano).
+  const settledFrom = useDebouncedValue(base.from);
+  const settledTo = useDebouncedValue(base.to);
+  const validPeriod = useMemo(() => {
+    const settled = validatePeriod(settledFrom, settledTo);
+    return period.ok && settled.ok ? { from: settled.from, to: settled.to } : null;
+  }, [period, settledFrom, settledTo]);
   const refresh = useCallback(() => setRefreshToken((token) => token + 1), []);
   const setLimit = useCallback((limit: number) => setBase((previous) => ({ ...previous, limit })), []);
   return { base, setBase, setLimit, period, validPeriod, debouncedRequestId, refreshToken, refresh };
@@ -267,6 +274,7 @@ export function useAuditPanel() {
   const filters = useBaseFilters();
   const [specific, setSpecific] = useState<AuditFilters>(INITIAL_AUDIT_FILTERS);
   const debouncedActorId = useDebouncedValue(specific.actorId);
+  const debouncedActorName = useDebouncedValue(specific.actorName);
   const debouncedActionName = useDebouncedValue(specific.actionName);
   const { validPeriod, base, debouncedRequestId } = filters;
 
@@ -275,10 +283,10 @@ export function useAuditPanel() {
       buildAuditQuery(
         validPeriod ?? { from: '', to: '' },
         { requestId: debouncedRequestId, limit: base.limit },
-        { ...specific, actorId: debouncedActorId, actionName: debouncedActionName },
+        { ...specific, actorId: debouncedActorId, actorName: debouncedActorName, actionName: debouncedActionName },
         page,
       ),
-    [validPeriod, debouncedRequestId, base.limit, specific, debouncedActorId, debouncedActionName],
+    [validPeriod, debouncedRequestId, base.limit, specific, debouncedActorId, debouncedActorName, debouncedActionName],
   );
 
   const records = usePagedRecords<ReturnType<typeof buildQuery>, AuditRecordResponse>({

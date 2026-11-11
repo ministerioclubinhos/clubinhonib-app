@@ -12,7 +12,7 @@ import type {
   UpdateFeatureFlagRequest,
 } from './types';
 
-/** A chave viaja na URL e aceita `-` e `_`; escapar evita surpresa. */
+/** A chave viaja na URL; escapar evita surpresa com chaves antigas. */
 const flagPath = (key: string): string =>
   `${FEATURE_FLAGS_ENDPOINT}/${encodeURIComponent(key)}`;
 
@@ -79,7 +79,7 @@ export async function apiCreateFeatureFlag(
   return data;
 }
 
-/** Atualiza uma flag; a chave não muda depois de criada. */
+/** Atualiza uma flag; a chave também pode ser renomeada. */
 export async function apiUpdateFeatureFlag(
   key: string,
   payload: UpdateFeatureFlagRequest,

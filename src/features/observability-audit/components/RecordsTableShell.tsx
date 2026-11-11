@@ -1,11 +1,16 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Alert, AlertTitle, Box, Button, Paper, Skeleton, Stack, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Button, Chip, Collapse, Paper, Skeleton, Stack, Typography } from '@mui/material';
 
 import { OBSERVABILITY_AUDIT_MESSAGES } from '../constants';
 
 interface RecordsTableShellProps {
   title: string;
   description: string;
+  /** O que entra e o que o filtro de ruído deixa de fora; recolhido por padrão. */
+  rules: string;
+  /** Total de registros do período e dos filtros atuais. */
+  total: number;
   testIds: {
     panel: string;
     loading: string;
@@ -42,6 +47,8 @@ const SKELETON_ROWS = 5;
 export default function RecordsTableShell({
   title,
   description,
+  rules,
+  total,
   testIds,
   loading,
   initialLoading,
@@ -57,6 +64,8 @@ export default function RecordsTableShell({
 }: RecordsTableShellProps) {
   const headingId = `${testIds.panel}-title`;
   const showTable = !initialLoading && !isEmpty && !unavailable;
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const rulesId = `${testIds.panel}-rules`;
 
   return (
     <Paper
@@ -68,12 +77,40 @@ export default function RecordsTableShell({
       sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: { xs: 2, sm: 3 }, minWidth: 0 }}
     >
       <Stack spacing={0.5} sx={{ mb: 2 }}>
-        <Typography id={headingId} variant="h6" component="h2" fontWeight={700}>
-          {title}
-        </Typography>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+          <Typography id={headingId} variant="h6" component="h2" fontWeight={700} sx={{ minWidth: 0 }}>
+            {title}
+          </Typography>
+          {!initialLoading && !unavailable && (
+            <Chip
+              data-testid={`${testIds.panel}-total`}
+              size="small"
+              color={total > 0 ? 'primary' : 'default'}
+              variant="outlined"
+              label={OBSERVABILITY_AUDIT_MESSAGES.total(total)}
+              sx={{ fontWeight: 700, flexShrink: 0 }}
+            />
+          )}
+        </Stack>
         <Typography variant="body2" color="text.secondary">
           {description}
         </Typography>
+        <Box>
+          <Button
+            size="small"
+            onClick={() => setRulesOpen((open) => !open)}
+            aria-expanded={rulesOpen}
+            aria-controls={rulesId}
+            sx={{ minHeight: 44, px: 0, textTransform: 'none', fontWeight: 600 }}
+          >
+            {rulesOpen ? OBSERVABILITY_AUDIT_MESSAGES.rulesHide : OBSERVABILITY_AUDIT_MESSAGES.rulesShow}
+          </Button>
+          <Collapse in={rulesOpen} id={rulesId}>
+            <Typography data-testid={`${testIds.panel}-rules`} variant="body2" color="text.secondary" sx={{ pb: 1 }}>
+              {rules}
+            </Typography>
+          </Collapse>
+        </Box>
       </Stack>
 
       {toolbar}

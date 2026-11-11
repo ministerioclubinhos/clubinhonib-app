@@ -24,18 +24,25 @@ import {
 
 import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
-import { OBSERVABILITY_AUDIT_MESSAGES } from '../constants';
+import { OBSERVABILITY_AUDIT_MESSAGES, TOOLBAR_FIELD_SX } from '../constants';
+import DayField from './DayField';
 import type { PeriodValidation, RecordsBaseFilters } from '../types';
-import { formatDateTime } from '../utils';
+import { filterFieldError, formatDateTime, validUuid } from '../utils';
 
 /** Altura mínima de toque (44px) e estilização mobile-first dos controles. */
-export const TOOLBAR_FIELD_SX = {
-  '& .MuiInputBase-root': {
-    minHeight: 44,
-    borderRadius: 2,
-    bgcolor: 'background.paper',
-  },
+export { TOOLBAR_FIELD_SX };
+
+/**
+ * Grade única dos filtros avançados: cada filtro é uma célula de mesma
+ * largura. Uma coluna no celular; de `sm` para cima, quantas couberem.
+ */
+export const FILTER_GRID_SX = {
+  display: 'grid',
+  gap: 1.5,
+  alignItems: 'start',
+  gridTemplateColumns: { xs: '1fr', sm: 'repeat(auto-fit, minmax(220px, 1fr))' },
 } as const;
+export const FILTER_CELL_SX = { minWidth: 0 } as const;
 
 interface RecordsToolbarProps {
   /** Prefixo dos ids de campo, para os rótulos não colidirem entre as abas. */
@@ -139,7 +146,7 @@ export default function RecordsToolbar({
             <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary', lineHeight: 1.2 }}>
               Filtros e Período
             </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', overflowWrap: 'anywhere' }}>
               {OBSERVABILITY_AUDIT_MESSAGES.timezoneNote} ({timeZone})
             </Typography>
           </Box>
@@ -175,50 +182,33 @@ export default function RecordsToolbar({
 
       <Grid2 container spacing={1.5} alignItems="flex-start">
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-          <TextField
-            id={`${idPrefix}-from`}
-            label="Início"
-            type="datetime-local"
+          <DayField
+            label="Dia inicial"
             value={base.from}
-            onChange={(event) => onBaseChange({ ...base, from: event.target.value })}
+            onChange={(from) => onBaseChange({ ...base, from })}
             error={Boolean(periodError)}
-            fullWidth
-            size="small"
-            slotProps={{
-              inputLabel: { shrink: true },
-              htmlInput: { 'aria-label': 'Início do período' },
-            }}
-            sx={TOOLBAR_FIELD_SX}
           />
         </Grid2>
 
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-          <TextField
-            id={`${idPrefix}-to`}
-            label="Fim"
-            type="datetime-local"
+          <DayField
+            label="Dia final"
             value={base.to}
-            onChange={(event) => onBaseChange({ ...base, to: event.target.value })}
+            onChange={(to) => onBaseChange({ ...base, to })}
             error={Boolean(periodError)}
-            fullWidth
-            size="small"
-            slotProps={{
-              inputLabel: { shrink: true },
-              htmlInput: { 'aria-label': 'Fim do período' },
-            }}
-            sx={TOOLBAR_FIELD_SX}
           />
         </Grid2>
 
         <Grid2 size={{ xs: 12, md: 6 }}>
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
+            direction="row"
             spacing={1}
             justifyContent={{ md: 'flex-end' }}
-            sx={{ width: '100%' }}
+            useFlexGap
+            sx={{ width: '100%', flexWrap: { xs: 'wrap', sm: 'nowrap' } }}
           >
             {!wide && (
-              <Badge badgeContent={activeFilters} color="primary" sx={{ display: 'flex', width: '100%' }}>
+              <Badge badgeContent={activeFilters} color="primary" sx={{ display: 'flex', flex: '1 1 0', minWidth: 0 }}>
                 <Button
                   variant="outlined"
                   startIcon={<FilterListIcon />}
@@ -249,7 +239,8 @@ export default function RecordsToolbar({
                 fontWeight: 600,
                 textTransform: 'none',
                 px: 2,
-                width: { xs: '100%', sm: 'auto' },
+                flex: { xs: '1 1 0', sm: '0 0 auto' },
+                minWidth: 0,
                 borderColor: alpha(theme.palette.divider, 0.8),
                 color: 'text.secondary',
                 '&:hover': {
@@ -305,14 +296,16 @@ export default function RecordsToolbar({
             borderTop: `1px dashed ${alpha(theme.palette.divider, 0.6)}`,
           }}
         >
-          <Grid2 container spacing={1.5}>
-            <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+          <Box sx={FILTER_GRID_SX}>
+            <Box sx={FILTER_CELL_SX}>
               <TextField
                 id={`${idPrefix}-request-id`}
                 label="ID da requisição"
                 value={base.requestId}
                 onChange={(event) => onBaseChange({ ...base, requestId: event.target.value })}
                 placeholder="UUID do cabeçalho X-Request-Id"
+                error={Boolean(filterFieldError(base.requestId, validUuid(base.requestId), OBSERVABILITY_AUDIT_MESSAGES.incompleteUuid))}
+                helperText={filterFieldError(base.requestId, validUuid(base.requestId), OBSERVABILITY_AUDIT_MESSAGES.incompleteUuid) || undefined}
                 fullWidth
                 size="small"
                 slotProps={{
@@ -320,12 +313,12 @@ export default function RecordsToolbar({
                 }}
                 sx={TOOLBAR_FIELD_SX}
               />
-            </Grid2>
+            </Box>
 
-            <Grid2 size={{ xs: 12, md: 8 }}>{children}</Grid2>
+            {children}
 
             {canDelete && !wide && (
-              <Grid2 size={12}>
+              <Box sx={{ gridColumn: '1 / -1' }}>
                 <Button
                   data-testid={testIds.deleteRange}
                   color="error"
@@ -344,9 +337,9 @@ export default function RecordsToolbar({
                 >
                   {OBSERVABILITY_AUDIT_MESSAGES.deleteRange}
                 </Button>
-              </Grid2>
+              </Box>
             )}
-          </Grid2>
+          </Box>
         </Box>
       </Collapse>
 

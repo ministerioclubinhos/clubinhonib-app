@@ -3,10 +3,16 @@ import { expect, test } from '@playwright/test';
 import { UserRole } from '@/types/shared';
 
 import { FEATURE_FLAG_AUDIENCE_OPTIONS } from '@/features/feature-flags/constants';
+import { AudienceRuleStatus, FeatureProfileRuleKind } from '@/features/feature-flags/types';
 import type { FeatureFlagAudience, FeatureFlagResponse } from '@/features/feature-flags/types';
 import {
   audienceInfo,
   audienceOfRoles,
+  audienceRuleWarning,
+  checkAudienceAgainstRule,
+  formatRoles,
+  profileRuleLabel,
+  profileRuleOf,
   flagInitials,
   formatDate,
   hasErrors,
@@ -212,5 +218,54 @@ test.describe('apresentação', () => {
   test('lê metadata só quando há conteúdo', () => {
     expect(parseMetadataJson('   ')).toBeUndefined();
     expect(parseMetadataJson('{"a":1}')).toEqual({ a: 1 });
+  });
+});
+
+test.describe('regra de perfil × feature flag', () => {
+  test('identifica a regra de perfil de cada flag', () => {
+    expect(profileRuleOf('statistics')).toEqual({
+      kind: FeatureProfileRuleKind.Roles,
+      roles: [UserRole.ADMIN],
+    });
+    expect(profileRuleOf('contact_form')?.kind).toBe(FeatureProfileRuleKind.Public);
+    expect(profileRuleOf('email_password_recovery')?.kind).toBe(FeatureProfileRuleKind.Switch);
+    expect(profileRuleOf('idea_ai_enhancement')?.kind).toBe(FeatureProfileRuleKind.Switch);
+    expect(profileRuleOf('flag_criada_no_painel')).toBeNull();
+  });
+
+  test('descreve a regra em texto curto', () => {
+    expect(profileRuleLabel(profileRuleOf('statistics'))).toBe('Regra de perfil: só admin');
+    expect(profileRuleLabel(profileRuleOf('pagelas'))).toBe('Regra de perfil: só admin e coordenador');
+    expect(profileRuleLabel(profileRuleOf('children_area'))).toBe('Regra de perfil: qualquer perfil logado');
+    expect(profileRuleLabel(null)).toBe('Sem regra de perfil no código');
+    expect(formatRoles([UserRole.TEACHER, UserRole.ADMIN, UserRole.COORDINATOR])).toBe(
+      'admin, coordenador e professor',
+    );
+  });
+
+  test('público dentro da regra não gera aviso', () => {
+    expect(checkAudienceAgainstRule('statistics', 'ADMIN').status).toBe(AudienceRuleStatus.Ok);
+    expect(checkAudienceAgainstRule('club_weekly_summary', 'COORDINATOR').status).toBe(AudienceRuleStatus.Ok);
+    expect(checkAudienceAgainstRule('contact_form', 'EVERYONE').status).toBe(AudienceRuleStatus.Ok);
+    expect(audienceRuleWarning('flag_criada_no_painel', 'TEACHER')).toBeNull();
+  });
+
+  test('o público não amplia o acesso além da regra', () => {
+    expect(checkAudienceAgainstRule('statistics', 'ALL_ROLES')).toEqual({
+      status: AudienceRuleStatus.Outside,
+      roles: [UserRole.COORDINATOR, UserRole.TEACHER],
+      visitor: false,
+    });
+    expect(checkAudienceAgainstRule('children_area', 'EVERYONE')).toEqual({
+      status: AudienceRuleStatus.Outside,
+      roles: [],
+      visitor: true,
+    });
+    expect(audienceRuleWarning('statistics', 'ADMIN_TEACHER')).toContain('professor continua sem acesso');
+  });
+
+  test('interruptor do sistema ignora o público', () => {
+    expect(checkAudienceAgainstRule('email_event_created', 'ADMIN').status).toBe(AudienceRuleStatus.Ignored);
+    expect(audienceRuleWarning('email_event_created', 'ADMIN')).toContain('não tem efeito');
   });
 });

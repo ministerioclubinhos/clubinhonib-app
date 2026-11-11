@@ -1,7 +1,18 @@
 import { UserRole } from '@/types/shared';
 
-import { FEATURE_FLAG_AUDIENCE_OPTIONS } from './constants';
+import {
+  EMAIL_FLAG_PREFIX,
+  FEATURE_FLAG_AUDIENCE_OPTIONS,
+  FEATURE_PROFILE_RULES,
+  PROFILE_ROLE_LABELS,
+} from './constants';
 import { FEATURE } from './features';
+import {
+  AudienceRuleStatus,
+  FeatureProfileRuleKind,
+  type AudienceRuleCheck,
+  type FeatureProfileRule,
+} from './types';
 import type {
   CreateFeatureFlagRequest,
   FeatureFlagAudience,
@@ -199,4 +210,86 @@ export function parseSortOption(value: string): {
       : 'name';
 
   return { sort: field, order: order === 'DESC' ? 'DESC' : 'ASC' };
+}
+
+/** A regra de perfil da flag, ou `null` quando o código não define uma. */
+export function profileRuleOf(key: string): FeatureProfileRule | null {
+  const trimmed = key.trim();
+  if (trimmed.startsWith(EMAIL_FLAG_PREFIX)) {
+    return { kind: FeatureProfileRuleKind.Switch };
+  }
+  return FEATURE_PROFILE_RULES[trimmed] ?? null;
+}
+
+/** Lista legível de perfis: "admin, coordenador e professor". */
+export function formatRoles(roles: UserRole[]): string {
+  const labels = ROLE_ORDER.filter((role) => roles.includes(role)).map(
+    (role) => PROFILE_ROLE_LABELS[role],
+  );
+  if (labels.length <= 1) return labels.join('');
+  return `${labels.slice(0, -1).join(', ')} e ${labels[labels.length - 1]}`;
+}
+
+/** Texto curto da regra de perfil, para o card e o formulário. */
+export function profileRuleLabel(rule: FeatureProfileRule | null): string {
+  if (!rule) return 'Sem regra de perfil no código';
+  if (rule.kind === FeatureProfileRuleKind.Public) {
+    return 'Regra de perfil: aberto, sem login';
+  }
+  if (rule.kind === FeatureProfileRuleKind.Switch) {
+    return 'Interruptor do sistema (sem perfil)';
+  }
+  if (rule.roles.length === ROLE_ORDER.length) {
+    return 'Regra de perfil: qualquer perfil logado';
+  }
+  return `Regra de perfil: só ${formatRoles(rule.roles)}`;
+}
+
+/**
+ * Compara o público escolhido com a regra de perfil do recurso.
+ *
+ * O público só restringe: um perfil que ele inclui e a regra não aceita
+ * continua sem acesso. "Para todos" alcança também o visitante, que fica de
+ * fora sempre que a regra exige login.
+ */
+export function checkAudienceAgainstRule(
+  key: string,
+  audience: FeatureFlagAudience,
+): AudienceRuleCheck {
+  const rule = profileRuleOf(key);
+  if (!rule || rule.kind === FeatureProfileRuleKind.Public) {
+    return { status: AudienceRuleStatus.Ok };
+  }
+  if (rule.kind === FeatureProfileRuleKind.Switch) {
+    return { status: AudienceRuleStatus.Ignored };
+  }
+
+  const audienceRoles = AUDIENCE_ROLES[audience];
+  const visitor = audienceRoles.length === 0;
+  const reached = visitor ? ROLE_ORDER : audienceRoles;
+  const roles = reached.filter((role) => !rule.roles.includes(role));
+
+  return roles.length === 0 && !visitor
+    ? { status: AudienceRuleStatus.Ok }
+    : { status: AudienceRuleStatus.Outside, roles, visitor };
+}
+
+/** Aviso para o formulário, ou `null` quando não há o que avisar. */
+export function audienceRuleWarning(
+  key: string,
+  audience: FeatureFlagAudience,
+): string | null {
+  const check = checkAudienceAgainstRule(key, audience);
+
+  if (check.status === AudienceRuleStatus.Ignored) {
+    return 'Esta flag é lida pelo sistema, sem sessão: o público escolhido não tem efeito. Só "Ligada/Desligada" conta.';
+  }
+  if (check.status !== AudienceRuleStatus.Outside) return null;
+
+  const parts: string[] = [];
+  if (check.visitor) parts.push('visitantes sem login');
+  if (check.roles.length > 0) parts.push(formatRoles(check.roles));
+  const plural = check.visitor || check.roles.length > 1;
+
+  return `A flag não amplia acesso: ${parts.join(' e ')} continua${plural ? 'm' : ''} sem acesso, porque a regra de perfil do código não permite. O público só restringe dentro dessa regra.`;
 }

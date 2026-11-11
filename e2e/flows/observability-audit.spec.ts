@@ -293,8 +293,9 @@ test.describe('Observabilidade e auditoria', () => {
     const before = calls;
 
     const toolbar = page.getByTestId('observability-records-toolbar');
-    await toolbar.getByLabel('Início do período').fill('2026-01-01T00:00');
-    await toolbar.getByLabel('Fim do período').fill('2026-03-01T00:00');
+    await toolbar.getByLabel('Dia inicial').fill('01/01/2026');
+    await toolbar.getByLabel('Dia final').fill('01/03/2026');
+    await expect(toolbar.getByLabel('Dia inicial')).toHaveValue('01/01/2026');
     await expect(page.getByTestId('observability-records-period-error')).toContainText('31 dias');
     await page.waitForTimeout(600);
     expect(calls).toBe(before);
@@ -332,10 +333,10 @@ test.describe('Observabilidade e auditoria', () => {
 
     // Toolbar mobile: período e Atualizar à mão; o resto atrás de "Mais filtros".
     const toolbar = page.getByTestId('audit-records-toolbar');
-    await expect(toolbar.getByLabel('Início do período')).toBeVisible();
+    await expect(toolbar.getByLabel('Dia inicial')).toBeVisible();
     await expect(toolbar.getByTestId('audit-records-refresh')).toBeVisible();
     await expect(toolbar.getByLabel('ID da requisição')).toBeHidden();
-    await toolbar.getByRole('button', { name: 'Mais filtros' }).click();
+    await toolbar.getByRole('button', { name: 'Filtros', exact: true }).click();
     await expect(toolbar.getByLabel('ID da requisição')).toBeVisible();
     await expect(toolbar.getByRole('combobox', { name: 'Resultado' })).toBeVisible();
 

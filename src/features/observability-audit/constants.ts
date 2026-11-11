@@ -1,6 +1,7 @@
 import { UserRole } from '@/types/shared';
 
 import {
+  DetailSection,
   ActorType,
   AuditActionType,
   AuditOutcome,
@@ -19,13 +20,20 @@ export const LOG_QUERY_UNAVAILABLE_CODE = 'LOG_9101';
 /** Rota exclusiva do administrador; não entra no menu nem no painel. */
 export const OBSERVABILITY_AUDIT_ROUTE = '/adm/observabilidade-auditoria';
 
+/** Mesmos formatos que a API valida; valor incompleto não vira request. */
+export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export const ERROR_CODE_PATTERN = /^[A-Z][A-Z0-9_]*$/;
+export const ACTION_NAME_PATTERN = /^[A-Za-z0-9_.:/ -]+$/;
+/** Mesmos limites do filtro `actorName` da API. */
+export const ACTOR_NAME_MIN_LENGTH = 2;
+export const ACTOR_NAME_MAX_LENGTH = 120;
 export const RECORDS_DEFAULT_LIMIT = 25;
 export const RECORDS_LIMIT_OPTIONS = [10, 25, 50, 100] as const;
 
 /** Limite do servidor (FE-BE-005): acima disso a API responde 422. */
 export const RECORDS_MAX_RANGE_DAYS = 31;
-/** Período inicial: as últimas 24 horas. */
-export const RECORDS_INITIAL_LOOKBACK_HOURS = 24;
+/** Período inicial: esta semana (domingo a sábado). Dias do domingo até o sábado. */
+export const WEEK_LAST_DAY_OFFSET = 6;
 
 /** Placeholder único para valor ausente. */
 export const EMPTY_VALUE = '—';
@@ -103,9 +111,15 @@ export const ROLE_LABELS: Readonly<Record<UserRole, string>> = {
 
 const ANY_OPTION: FilterOption = { value: '', label: 'Todos' };
 
+/** Só os níveis que a API persiste: `error`/`fatal` e os 4xx como `warn`. */
+export const PERSISTED_LEVELS: ReadonlyArray<ObservabilityLevel> = [
+  ObservabilityLevel.Fatal,
+  ObservabilityLevel.Error,
+  ObservabilityLevel.Warn,
+];
 export const LEVEL_FILTER_OPTIONS: ReadonlyArray<FilterOption> = [
   ANY_OPTION,
-  ...Object.values(ObservabilityLevel).map((value) => ({ value, label: LEVEL_LABELS[value] })),
+  ...PERSISTED_LEVELS.map((value) => ({ value, label: LEVEL_LABELS[value] })),
 ];
 
 export const SOURCE_TYPE_FILTER_OPTIONS: ReadonlyArray<FilterOption> = [
@@ -129,9 +143,14 @@ export const OBSERVABILITY_AUDIT_MESSAGES = {
   pageDescription:
     'Registros técnicos da API e ações auditadas por usuário. Consulta somente leitura, exclusiva para administradores.',
   observabilityTitle: 'Observabilidade',
-  observabilityDescription: 'Erros capturados pela API: exceções, falhas de integração, jobs e processo.',
+  observabilityDescription: 'Todo erro da API, do mais grave ao recusado por regra.',
+  observabilityRules:
+    'Entram: exceções, falhas de integração, jobs e processo (nível Erro) e requisições recusadas com 4xx (nível Aviso). Não entram: 401 (token expirado ou senha errada) e 404 de rota inexistente. Erros iguais em 60 s viram o primeiro registro mais um resumo com a contagem.',
   auditTitle: 'Auditoria',
-  auditDescription: 'Cada ação executada na API, com quem a fez, o recurso e o resultado.',
+  auditDescription: 'Toda ação que altera dados: quem fez, em quê e o resultado.',
+  auditRules:
+    'Entram: criar, editar, excluir, login e jobs, inclusive tentativas negadas ou rejeitadas. Não entram: leituras, renovação automática de token, notificação marcada como lida e o batimento do agendador.',
+  repeats: (count: number) => `${count.toLocaleString('pt-BR')} repetições na janela`,
   empty: 'Nenhum registro encontrado no período selecionado',
   observabilityError: 'Não foi possível carregar os registros técnicos',
   auditError: 'Não foi possível carregar os eventos de auditoria',
@@ -139,9 +158,9 @@ export const OBSERVABILITY_AUDIT_MESSAGES = {
   refreshAll: 'Atualizar tudo',
   previous: 'Página anterior',
   next: 'Próxima página',
-  clearFilters: 'Limpar filtros',
-  moreFilters: 'Mais filtros',
-  lessFilters: 'Menos filtros',
+  clearFilters: 'Limpar',
+  moreFilters: 'Filtros',
+  lessFilters: 'Ocultar',
   refresh: 'Atualizar',
   itemsPerPage: 'Itens por página',
   noItems: 'Nenhum item',
@@ -160,10 +179,19 @@ export const OBSERVABILITY_AUDIT_MESSAGES = {
   detailsOpenHint: 'Ver detalhes',
   close: 'Fechar',
   copyFailed: 'Não foi possível copiar o identificador.',
-  invalidPeriod: 'Informe início e fim do período',
-  periodOrder: 'O início do período precisa ser anterior ao fim',
+  invalidPeriod: 'Informe o dia inicial e o dia final',
+  periodOrder: 'O dia inicial não pode ser depois do dia final',
   periodTooLong: `O período não pode passar de ${RECORDS_MAX_RANGE_DAYS} dias`,
-  timezoneNote: 'Datas exibidas no fuso do navegador',
+  timezoneNote: 'Dias inteiros, no fuso do navegador',
+  total: (count: number) =>
+    count === 1 ? '1 registro' : `${count.toLocaleString('pt-BR')} registros`,
+  totalLabel: 'Total',
+  shortActorName: `Digite ao menos ${ACTOR_NAME_MIN_LENGTH} letras.`,
+  incompleteUuid: 'Cole o identificador completo (UUID).',
+  invalidErrorCode: 'Use o código como aparece na tabela, ex.: INT_9001.',
+  invalidActionName: 'Use só letras, números, ponto, barra e hífen.',
+  rulesShow: 'O que é gravado aqui',
+  rulesHide: 'Ocultar explicação',
 } as const;
 
 /** `data-testid` combinados com a suíte Playwright. */
@@ -210,3 +238,28 @@ export enum RecordsTab {
   Observability = 'observability',
   Audit = 'audit',
 }
+
+export const DETAIL_SECTION_ORDER: ReadonlyArray<DetailSection> = [
+  DetailSection.What,
+  DetailSection.Who,
+  DetailSection.Request,
+  DetailSection.Technical,
+];
+export const DETAIL_SECTION_TITLES: Readonly<Record<DetailSection, string>> = {
+  [DetailSection.What]: 'O que aconteceu',
+  [DetailSection.Who]: 'Quem',
+  [DetailSection.Request]: 'Requisição',
+  [DetailSection.Technical]: 'Identificadores e ambiente',
+};
+
+/** Aparência comum dos campos da barra de filtros. */
+export const TOOLBAR_FIELD_SX = {
+  '& .MuiInputBase-root': {
+    minHeight: 44,
+    borderRadius: 2,
+    bgcolor: 'background.paper',
+  },
+} as const;
+/** Formatos do campo de dia: o que a pessoa vê e o valor guardado. */
+export const DAY_FIELD_DISPLAY_FORMAT = 'DD/MM/YYYY';
+export const DAY_FIELD_VALUE_FORMAT = 'YYYY-MM-DD';

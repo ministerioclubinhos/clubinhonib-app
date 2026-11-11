@@ -1,4 +1,10 @@
-import type { FeatureFlagAudience } from './types';
+import { UserRole } from '@/types/shared';
+
+import {
+  FeatureProfileRuleKind,
+  type FeatureFlagAudience,
+  type FeatureProfileRule,
+} from './types';
 
 /** Caminho base dos endpoints de feature flags. */
 export const FEATURE_FLAGS_ENDPOINT = '/feature-flags';
@@ -98,3 +104,61 @@ export const FEATURE_FLAG_SORT_OPTIONS = [
   { value: 'createdAt:DESC', label: 'Mais recentes' },
   { value: 'createdAt:ASC', label: 'Mais antigas' },
 ] as const;
+
+const PROFILE_ALL_ROLES = [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.TEACHER];
+const PROFILE_ADMIN_COORDINATOR = [UserRole.ADMIN, UserRole.COORDINATOR];
+
+/**
+ * A regra de perfil (regra de negócio) de cada flag que a aplicação consulta.
+ *
+ * Espelha o que o código exige hoje — as rotas de `App.tsx` e os guards de
+ * papel da API — e serve para o painel mostrar a regra ao lado do público da
+ * flag. Uma chave fora deste mapa não tem regra de perfil própria no código: o
+ * público da flag é o único recorte que ela recebe.
+ *
+ * Mudar a regra de perfil é mudar o código (rota e guard), nunca o painel.
+ */
+export const FEATURE_PROFILE_RULES: Readonly<Record<string, FeatureProfileRule>> = {
+  // Rotas abertas, fora de `ProtectedRoute`.
+  contact_form: { kind: FeatureProfileRuleKind.Public },
+  events_section: { kind: FeatureProfileRuleKind.Public },
+  clubinho_feed: { kind: FeatureProfileRuleKind.Public },
+  password_recovery: { kind: FeatureProfileRuleKind.Public },
+  public_registration: { kind: FeatureProfileRuleKind.Public },
+  google_login: { kind: FeatureProfileRuleKind.Public },
+  special_family_day: { kind: FeatureProfileRuleKind.Public },
+  home_comments: { kind: FeatureProfileRuleKind.Public },
+  public_galleries: { kind: FeatureProfileRuleKind.Public },
+  public_videos: { kind: FeatureProfileRuleKind.Public },
+
+  // `ProtectedRoute` sem perfil exigido: qualquer sessão.
+  children_area: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ALL_ROLES },
+  club_photo_upload: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ALL_ROLES },
+  weekly_materials: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ALL_ROLES },
+  site_feedback: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ALL_ROLES },
+  idea_submission: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ALL_ROLES },
+
+  // Painel `/adm`: administrador e coordenador.
+  pagelas: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ADMIN_COORDINATOR },
+  photo_moderation: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ADMIN_COORDINATOR },
+  idea_moderation: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ADMIN_COORDINATOR },
+  comment_moderation: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ADMIN_COORDINATOR },
+  club_weekly_summary: { kind: FeatureProfileRuleKind.Roles, roles: PROFILE_ADMIN_COORDINATOR },
+
+  // Bloco exclusivo do administrador.
+  statistics: { kind: FeatureProfileRuleKind.Roles, roles: [UserRole.ADMIN] },
+  club_control: { kind: FeatureProfileRuleKind.Roles, roles: [UserRole.ADMIN] },
+
+  // Lido só pela API, sem sessão.
+  idea_ai_enhancement: { kind: FeatureProfileRuleKind.Switch },
+};
+
+/** Prefixo das flags de e-mail: disparos do sistema, sem sessão. */
+export const EMAIL_FLAG_PREFIX = 'email_';
+
+/** Nome de cada perfil nas mensagens do painel. */
+export const PROFILE_ROLE_LABELS: Readonly<Record<UserRole, string>> = {
+  [UserRole.ADMIN]: 'admin',
+  [UserRole.COORDINATOR]: 'coordenador',
+  [UserRole.TEACHER]: 'professor',
+};

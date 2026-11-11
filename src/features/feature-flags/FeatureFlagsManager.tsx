@@ -36,6 +36,10 @@ import { parseSortOption } from './utils';
  * Cada flag declara quem a enxerga — de "para todos" a qualquer combinação dos
  * três perfis —, e é essa escolha que a aplicação consulta em
  * `/feature-flags/map` para decidir o que mostrar a quem.
+ *
+ * O público da flag não é a regra de perfil: quem pode usar cada recurso é
+ * decidido no código (rotas e guards), e a flag só restringe dentro disso. Por
+ * isso cada card mostra as duas coisas lado a lado.
  */
 export default function FeatureFlagsManager() {
   const theme = useTheme();

@@ -123,7 +123,7 @@ export default function AuditRecordsTable({ items, onCopy, onSelect }: AuditReco
                 </Typography>
                 <TruncatedId value={item.actorId} kind="ator" onCopy={onCopy} />
               </TableCell>
-              <TableCell sx={{ maxWidth: 320 }}>
+              <TableCell sx={{ minWidth: 240, maxWidth: 340 }}>
                 <Tooltip title={item.actionName}>
                   <Typography variant="body2" component="span" fontFamily="monospace" sx={{ display: 'block', wordBreak: 'break-all' }}>
                     {truncateText(item.actionName, 72)}

@@ -30,8 +30,11 @@ import type {
 } from '../types';
 import {
   audienceInfo,
+  audienceRuleWarning,
   hasErrors,
   isKeyUsedByApp,
+  profileRuleLabel,
+  profileRuleOf,
   toFormValues,
   validateForm,
 } from '../utils';
@@ -105,6 +108,11 @@ export default function FeatureFlagFormDialog({
   };
 
   const selected = audienceInfo(values.audience);
+
+  // A regra de perfil vem do código e não é editável aqui; o público da flag
+  // só restringe dentro dela.
+  const profileRule = profileRuleLabel(profileRuleOf(values.key));
+  const ruleWarning = audienceRuleWarning(values.key, values.audience);
 
   // Renomear uma chave que o código procura desliga o recurso na tela até o
   // código apontar para a chave nova.
@@ -221,7 +229,23 @@ export default function FeatureFlagFormDialog({
 
         <Box sx={{ mt: 3 }}>
           <Typography variant="subtitle2" fontWeight={700}>
-            Quem enxerga a flag
+            Público da flag
+          </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block' }}
+          >
+            Para quem o recurso está ligado. Não substitui a regra de perfil:
+            quem pode usar o recurso é definido no código, e a flag só
+            restringe dentro disso.
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{ display: 'block', fontWeight: 600, mt: 0.5 }}
+            data-testid="feature-flags-profile-rule"
+          >
+            {profileRule}
           </Typography>
           <Typography
             variant="caption"
@@ -255,6 +279,16 @@ export default function FeatureFlagFormDialog({
               );
             })}
           </Stack>
+
+          {ruleWarning ? (
+            <Alert
+              severity="info"
+              sx={{ mt: 1.5 }}
+              data-testid="feature-flags-audience-rule-warning"
+            >
+              {ruleWarning}
+            </Alert>
+          ) : null}
         </Box>
 
         <Box sx={{ mt: 3 }}>

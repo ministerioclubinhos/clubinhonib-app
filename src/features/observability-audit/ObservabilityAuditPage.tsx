@@ -78,7 +78,7 @@ export default function ObservabilityAuditPage() {
   }, [audit, announceDeleted]);
 
   return (
-    <Box data-testid={OBSERVABILITY_AUDIT_TEST_IDS.page} sx={{ minWidth: 0, maxWidth: '100%', overflowX: 'hidden' }}>
+    <Box data-testid={OBSERVABILITY_AUDIT_TEST_IDS.page} sx={{ minWidth: 0, maxWidth: '100%', overflowX: 'hidden', px: { xs: 1, sm: 0 }, boxSizing: 'border-box' }}>
       <BackHeader title={OBSERVABILITY_AUDIT_MESSAGES.pageTitle} />
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {OBSERVABILITY_AUDIT_MESSAGES.pageDescription}
@@ -120,6 +120,8 @@ export default function ObservabilityAuditPage() {
         <RecordsTableShell
           title={OBSERVABILITY_AUDIT_MESSAGES.observabilityTitle}
           description={OBSERVABILITY_AUDIT_MESSAGES.observabilityDescription}
+          rules={OBSERVABILITY_AUDIT_MESSAGES.observabilityRules}
+          total={observability.total}
           testIds={{
             panel: OBSERVABILITY_AUDIT_TEST_IDS.observabilityPanel,
             loading: OBSERVABILITY_AUDIT_TEST_IDS.observabilityLoading,
@@ -188,6 +190,8 @@ export default function ObservabilityAuditPage() {
         <RecordsTableShell
           title={OBSERVABILITY_AUDIT_MESSAGES.auditTitle}
           description={OBSERVABILITY_AUDIT_MESSAGES.auditDescription}
+          rules={OBSERVABILITY_AUDIT_MESSAGES.auditRules}
+          total={audit.total}
           testIds={{
             panel: OBSERVABILITY_AUDIT_TEST_IDS.auditPanel,
             loading: OBSERVABILITY_AUDIT_TEST_IDS.auditLoading,

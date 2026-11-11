@@ -126,3 +126,32 @@ botão "Copiar" com feedback.
   recolhida), abas, modal de detalhes (clique, teclado, copiar sem abrir, Esc),
   exclusão de item e de período com confirmação, aviso de storage `file`,
   smoke com a API real (`401`/`403`/`200`) e papéis (coordenador e anônimo).
+
+
+## Revisão de 2026-11-11
+
+- **Mobile first.** A página é desenhada para 360 px: lista em cards, período e
+  botões em toque de 44 px, filtros avançados recolhidos em "Filtros" e abertos
+  em uma coluna; de `sm` para cima os filtros formam uma grade única de células
+  iguais (`FILTER_GRID_SX`). O teste `e2e/flows/observability-audit.mobile.spec.ts`
+  confere que nada gera rolagem lateral.
+- **Período por dia.** Os campos "Dia inicial" e "Dia final" usam o
+  `SimpleDatePicker` em português (`DD/MM/AAAA`), sem horário. O dia inicial
+  começa às 00:00 e o final vai até 23:59:59,999, no fuso do navegador. O mesmo
+  dia nos dois campos é válido; o limite continua em 31 dias. A página abre com
+  **esta semana** (domingo a sábado) já preenchida.
+- **Total.** O total de registros aparece no topo de cada aba (selo) e na
+  paginação ("Total: N registros").
+- **Filtros.** Valor incompleto não vira requisição: UUID pela metade, código de
+  erro ou ação com caractere inválido ficam marcados no campo com a explicação,
+  em vez de gerar um 400. "Ação" casa por trecho. Na auditoria há o filtro
+  "Nome do usuário" (trecho, sem diferenciar maiúsculas ou acentos). O filtro
+  "Nível" lista só o que a API persiste (Fatal, Erro, Aviso).
+- **Nome do usuário.** `actorName` vem na resposta da auditoria e aparece só no
+  modal de detalhes (cabeçalho e bloco "Quem"), nunca na lista.
+- **Modal de detalhes.** Dividido em blocos ("O que aconteceu", "Quem",
+  "Requisição", "Identificadores e ambiente"), com a mensagem ou a ação em
+  destaque, campos vazios ocultos e tela cheia no celular.
+- **O que é gravado.** Cada aba tem o texto recolhível "O que é gravado aqui",
+  que resume o filtro de ruído da API; na observabilidade, um registro de resumo
+  mostra "N repetições na janela".

@@ -64,6 +64,14 @@ export default function RecordsPagination({
       sx={{ mt: 2 }}
     >
       <Typography variant="body2" color="text.secondary" aria-live="polite" sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+        <Typography
+          component="span"
+          variant="body2"
+          data-testid={`${testId}-total`}
+          sx={{ display: 'block', fontWeight: 700, color: 'text.primary' }}
+        >
+          {OBSERVABILITY_AUDIT_MESSAGES.totalLabel}: {OBSERVABILITY_AUDIT_MESSAGES.total(total)}
+        </Typography>
         {paginationSummary(page, appliedLimit > 0 ? appliedLimit : limit, total)}
         {pageCount > 0 ? ` · Página ${page} de ${pageCount}` : ''}
       </Typography>

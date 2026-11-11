@@ -11,14 +11,19 @@ import {
   OUTCOME_COLORS,
   OUTCOME_LABELS,
   RECORDS_DEFAULT_LIMIT,
-  RECORDS_INITIAL_LOOKBACK_HOURS,
+  WEEK_LAST_DAY_OFFSET,
+  ACTION_NAME_PATTERN,
+  ACTOR_NAME_MAX_LENGTH,
+  ACTOR_NAME_MIN_LENGTH,
+  ERROR_CODE_PATTERN,
+  UUID_PATTERN,
   RECORDS_MAX_RANGE_DAYS,
   ROLE_LABELS,
   SOURCE_TYPE_LABELS,
   TEXT_MAX_LENGTH,
   UNKNOWN_LABEL,
 } from './constants';
-import { ActorType, AuditOutcome, ObservabilityLevel, SourceType } from './types';
+import { ActorType, AuditOutcome, DetailSection, ObservabilityLevel, SourceType } from './types';
 import type {
   AuditFilters,
   AuditRecordResponse,
@@ -35,27 +40,29 @@ import type {
 const DAY_MS = 86_400_000;
 const pad = (value: number): string => String(value).padStart(2, '0');
 
-/** `Date` -> `YYYY-MM-DDTHH:mm` no fuso local, o formato do `datetime-local`. */
-export function toLocalDateTimeInput(date: Date): string {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+/** `Date` -> `YYYY-MM-DD` no fuso local, o formato do `<input type="date">`. */
+export function toLocalDateInput(date: Date): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-/** Período inicial: das últimas 24 horas até agora. */
+/** Período inicial: esta semana, de domingo a sábado, em dias inteiros. */
 export function defaultPeriod(now: Date = new Date()): Pick<RecordsBaseFilters, 'from' | 'to'> {
-  const from = new Date(now.getTime() - RECORDS_INITIAL_LOOKBACK_HOURS * 3_600_000);
-  return { from: toLocalDateTimeInput(from), to: toLocalDateTimeInput(now) };
+  const sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+  const saturday = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() + WEEK_LAST_DAY_OFFSET);
+  return { from: toLocalDateInput(sunday), to: toLocalDateInput(saturday) };
 }
 
 /**
- * `YYYY-MM-DDTHH:mm` (fuso local) -> ISO-8601 UTC.
- *
- * O `Date` do navegador interpreta esse formato como hora local; o instante
- * resultante é o mesmo que a pessoa vê na tela, sem deslocamento acidental.
+ * `YYYY-MM-DD` -> o primeiro ou o último instante desse dia no fuso do
+ * navegador. O filtro é por dia inteiro: a pessoa não escolhe horário.
  */
-export function localDateTimeToIsoUtc(value: string): string | null {
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(value)) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+export function localDayBoundary(value: string, end: boolean): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  const date = end ? new Date(year, month - 1, day, 23, 59, 59, 999) : new Date(year, month - 1, day);
+  // `new Date(2026, 1, 31)` vira março: dia que não existe é inválido.
+  return date.getMonth() === month - 1 && date.getDate() === day ? date : null;
 }
 
 /** Valida o período antes de qualquer request (FE-BE-005). */
@@ -64,24 +71,51 @@ export function validatePeriod(
   to: string,
   maxDays: number = RECORDS_MAX_RANGE_DAYS,
 ): PeriodValidation {
-  const fromIso = localDateTimeToIsoUtc(from);
-  const toIso = localDateTimeToIsoUtc(to);
-  if (!fromIso || !toIso) {
+  const start = localDayBoundary(from, false);
+  const end = localDayBoundary(to, true);
+  if (!start || !end) {
     return { ok: false, message: OBSERVABILITY_AUDIT_MESSAGES.invalidPeriod };
   }
-  const start = new Date(fromIso).getTime();
-  const end = new Date(toIso).getTime();
-  if (start >= end) return { ok: false, message: OBSERVABILITY_AUDIT_MESSAGES.periodOrder };
-  if (end - start > maxDays * DAY_MS) {
+  // O mesmo dia nos dois campos é válido: cobre o dia inteiro.
+  if (start.getTime() > end.getTime()) return { ok: false, message: OBSERVABILITY_AUDIT_MESSAGES.periodOrder };
+  if (end.getTime() - start.getTime() > maxDays * DAY_MS) {
     return { ok: false, message: OBSERVABILITY_AUDIT_MESSAGES.periodTooLong };
   }
-  return { ok: true, from: fromIso, to: toIso };
+  return { ok: true, from: start.toISOString(), to: end.toISOString() };
 }
 
 const trimmedOrUndefined = (value: string): string | undefined => {
   const trimmed = value.trim();
   return trimmed ? trimmed : undefined;
 };
+
+/**
+ * Valor de filtro pronto para a API, ou `undefined` enquanto está vazio ou
+ * incompleto: digitar meio UUID não pode virar um 400 a cada tecla.
+ */
+export function validUuid(value: string): string | undefined {
+  const trimmed = trimmedOrUndefined(value);
+  return trimmed && UUID_PATTERN.test(trimmed) ? trimmed.toLowerCase() : undefined;
+}
+export function validErrorCode(value: string): string | undefined {
+  const upper = trimmedOrUndefined(value)?.toUpperCase();
+  return upper && ERROR_CODE_PATTERN.test(upper) ? upper : undefined;
+}
+/** Trecho do nome com o tamanho que a API aceita. */
+export function validActorName(value: string): string | undefined {
+  const trimmed = trimmedOrUndefined(value);
+  return trimmed && trimmed.length >= ACTOR_NAME_MIN_LENGTH && trimmed.length <= ACTOR_NAME_MAX_LENGTH
+    ? trimmed
+    : undefined;
+}
+export function validActionName(value: string): string | undefined {
+  const trimmed = trimmedOrUndefined(value);
+  return trimmed && ACTION_NAME_PATTERN.test(trimmed) ? trimmed : undefined;
+}
+/** Mensagem para o campo preenchido com valor que a API recusaria. */
+export function filterFieldError(value: string, valid: string | undefined, message: string): string {
+  return value.trim() !== '' && valid === undefined ? message : '';
+}
 
 const isEnumValue = <T extends string>(values: readonly T[], value: string): value is T =>
   (values as readonly string[]).includes(value);
@@ -94,11 +128,11 @@ export function buildObservabilityQuery(
   page: number,
 ): ObservabilityRecordsQuery {
   const query: ObservabilityRecordsQuery = { from: period.from, to: period.to, page, limit: base.limit };
-  const requestId = trimmedOrUndefined(base.requestId);
-  const errorCode = trimmedOrUndefined(filters.errorCode);
+  const requestId = validUuid(base.requestId);
+  const errorCode = validErrorCode(filters.errorCode);
   if (requestId) query.requestId = requestId;
   if (isEnumValue(Object.values(ObservabilityLevel), filters.level)) query.level = filters.level;
-  if (errorCode) query.errorCode = errorCode.toUpperCase();
+  if (errorCode) query.errorCode = errorCode;
   if (isEnumValue(Object.values(SourceType), filters.sourceType)) query.sourceType = filters.sourceType;
   return query;
 }
@@ -110,10 +144,12 @@ export function buildAuditQuery(
   page: number,
 ): AuditRecordsQuery {
   const query: AuditRecordsQuery = { from: period.from, to: period.to, page, limit: base.limit };
-  const requestId = trimmedOrUndefined(base.requestId);
-  const actorId = trimmedOrUndefined(filters.actorId);
-  const actionName = trimmedOrUndefined(filters.actionName);
+  const requestId = validUuid(base.requestId);
+  const actorId = validUuid(filters.actorId);
+  const actionName = validActionName(filters.actionName);
+  const actorName = validActorName(filters.actorName);
   if (requestId) query.requestId = requestId;
+  if (actorName) query.actorName = actorName;
   if (actorId) query.actorId = actorId;
   if (isEnumValue(Object.values(UserRole), filters.actorRole)) query.actorRole = filters.actorRole;
   if (isEnumValue(Object.values(AuditOutcome), filters.outcome)) query.outcome = filters.outcome;
@@ -235,24 +271,27 @@ export function defaultBaseFilters(now: Date = new Date()): RecordsBaseFilters {
 }
 
 const field = (
+  section: DetailSection,
   key: string,
   label: string,
   value: string | number | null | undefined,
   options: Pick<DetailField, 'monospace' | 'copyable' | 'wide'> = {},
-): DetailField => ({ key, label, value: valueOrPlaceholder(value), ...options });
+): DetailField => ({ section, key, label, value: valueOrPlaceholder(value), ...options });
 
-/** Campos comuns aos dois modais, na ordem em que aparecem. */
+const { What, Who, Request, Technical } = DetailSection;
+
+/** Campos comuns aos dois modais. */
 function commonDetailFields(record: ObservabilityRecordResponse | AuditRecordResponse): DetailField[] {
   return [
-    field('occurred-at', 'Data/hora', formatDateTime(record.occurredAt)),
-    field('event-id', 'ID do evento', record.eventId, { monospace: true, copyable: true }),
-    field('request-id', 'ID da requisição', record.requestId, { monospace: true, copyable: true }),
-    field('source-type', 'Origem', sourceTypeLabel(record.sourceType)),
-    field('actor', 'Ator', describeActor(record.actorType, record.actorRole)),
-    field('actor-id', 'ID do ator', record.actorId, { monospace: true, copyable: true }),
-    field('environment', 'Ambiente', record.environment),
-    field('service', 'Serviço', record.service),
-    field('schema-version', 'Versão do contrato', record.schemaVersion),
+    field(Who, 'actor', 'Ator', describeActor(record.actorType, record.actorRole)),
+    field(Who, 'actor-id', 'ID do ator', record.actorId, { monospace: true, copyable: true }),
+    field(Request, 'request-id', 'ID da requisição', record.requestId, { monospace: true, copyable: true }),
+    field(Request, 'source-type', 'Origem', sourceTypeLabel(record.sourceType)),
+    field(Technical, 'occurred-at', 'Data/hora', formatDateTime(record.occurredAt)),
+    field(Technical, 'event-id', 'ID do evento', record.eventId, { monospace: true, copyable: true }),
+    field(Technical, 'environment', 'Ambiente', record.environment),
+    field(Technical, 'service', 'Serviço', record.service),
+    field(Technical, 'schema-version', 'Versão do contrato', record.schemaVersion),
   ];
 }
 
@@ -262,47 +301,55 @@ function commonDetailFields(record: ObservabilityRecordResponse | AuditRecordRes
  */
 export function observabilityDetailFields(record: ObservabilityRecordResponse): DetailField[] {
   return [
-    field('level', 'Nível', levelLabel(record.level)),
-    field('message', 'Mensagem', record.message, { wide: true }),
-    field('error-code', 'Código do erro', record.errorCode, { monospace: true }),
-    field('error-name', 'Classe do erro', record.errorName, { monospace: true }),
-    field('error-message', 'Mensagem do erro', record.errorMessage, { wide: true }),
-    field('context', 'Contexto', record.context),
-    field('module', 'Módulo', record.moduleName),
-    field('operation', 'Operação', record.operation),
-    field('http', 'HTTP', formatHttp(record.httpMethod, record.statusCode)),
-    field('route', 'Rota', record.routeTemplate, { monospace: true }),
-    field('duration', 'Duração', formatDuration(record.durationMs)),
+    field(What, 'level', 'Nível', levelLabel(record.level)),
+    field(What, 'message', 'Mensagem', record.message, { wide: true }),
+    field(What, 'error-code', 'Código do erro', record.errorCode, { monospace: true }),
+    field(What, 'error-name', 'Classe do erro', record.errorName, { monospace: true }),
+    field(What, 'error-message', 'Mensagem do erro', record.errorMessage, { wide: true }),
+    field(What, 'occurrences', 'Repetições na janela', (record.occurrenceCount ?? 1) > 1 ? record.occurrenceCount : null),
+    field(What, 'context', 'Contexto', record.context),
+    field(What, 'module', 'Módulo', record.moduleName),
+    field(What, 'operation', 'Operação', record.operation),
+    field(What, 'provider', 'Integração', record.providerName),
+    field(What, 'job', 'Job', record.jobName),
     field(
+      What,
       'source-location',
       'Origem no código',
       record.sourceFile ? `${record.sourceFile}${record.sourceLine === null ? '' : `:${record.sourceLine}`}` : null,
-      { monospace: true },
+      { monospace: true, wide: true },
     ),
-    field('fingerprint', 'Fingerprint', record.errorFingerprint, { monospace: true }),
-    field('provider', 'Integração', record.providerName),
-    field('job', 'Job', record.jobName),
+    field(Request, 'http', 'HTTP', formatHttp(record.httpMethod, record.statusCode)),
+    field(Request, 'route', 'Rota', record.routeTemplate, { monospace: true }),
+    field(Request, 'duration', 'Duração', formatDuration(record.durationMs)),
+    field(Technical, 'fingerprint', 'Fingerprint', record.errorFingerprint, { monospace: true }),
     ...commonDetailFields(record),
   ];
 }
 
-/** Detalhes do evento de auditoria. */
+/** Detalhes do evento de auditoria. O nome de quem agiu só aparece aqui. */
 export function auditDetailFields(record: AuditRecordResponse): DetailField[] {
   return [
-    field('outcome', 'Resultado', outcomeLabel(record.outcome)),
-    field('action-name', 'Ação', record.actionName, { monospace: true, wide: true }),
-    field('action-type', 'Tipo de ação', actionTypeLabel(record.actionType)),
-    field('module', 'Módulo', record.moduleName),
-    field('controller', 'Controller', record.controllerName),
-    field('handler', 'Handler', record.handlerName),
-    field('resource-type', 'Tipo do recurso', record.resourceType),
-    field('resource-id', 'ID do recurso', record.resourceId, { monospace: true, copyable: true }),
-    field('http', 'HTTP', formatHttp(record.httpMethod, record.statusCode)),
-    field('route', 'Rota', record.routeTemplate, { monospace: true }),
-    field('duration', 'Duração', formatDuration(record.durationMs)),
-    field('error-code', 'Código do erro', record.errorCode, { monospace: true }),
-    field('occurrences', 'Ocorrências na janela', record.occurrenceCount),
-    field('job', 'Job', record.jobName),
+    field(What, 'outcome', 'Resultado', outcomeLabel(record.outcome)),
+    field(What, 'action-name', 'Ação', record.actionName, { monospace: true, wide: true }),
+    field(What, 'action-type', 'Tipo de ação', actionTypeLabel(record.actionType)),
+    field(What, 'module', 'Módulo', record.moduleName),
+    field(What, 'controller', 'Controller', record.controllerName),
+    field(What, 'handler', 'Handler', record.handlerName),
+    field(What, 'resource-type', 'Tipo do recurso', record.resourceType),
+    field(What, 'resource-id', 'ID do recurso', record.resourceId, { monospace: true, copyable: true }),
+    field(What, 'error-code', 'Código do erro', record.errorCode, { monospace: true }),
+    field(What, 'occurrences', 'Ocorrências na janela', record.occurrenceCount > 1 ? record.occurrenceCount : null),
+    field(What, 'job', 'Job', record.jobName),
+    field(Who, 'actor-name', 'Nome do usuário', record.actorName, { wide: true }),
+    field(Request, 'http', 'HTTP', formatHttp(record.httpMethod, record.statusCode)),
+    field(Request, 'route', 'Rota', record.routeTemplate, { monospace: true }),
+    field(Request, 'duration', 'Duração', formatDuration(record.durationMs)),
     ...commonDetailFields(record),
   ];
+}
+
+/** Campos preenchidos de um bloco; valor ausente não ocupa espaço no modal. */
+export function detailFieldsOf(fields: DetailField[], section: DetailSection): DetailField[] {
+  return fields.filter((item) => item.section === section && item.value !== EMPTY_VALUE);
 }

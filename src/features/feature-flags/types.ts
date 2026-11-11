@@ -111,3 +111,53 @@ export interface FeatureFlagFormErrors {
   name: boolean;
   metadataJson: boolean;
 }
+
+/**
+ * Regra de perfil × feature flag.
+ *
+ * São duas condições diferentes, e usar um recurso exige as duas:
+ *
+ *   pode usar = regra de perfil (código) E flag ligada para o perfil (painel)
+ *
+ * - A **regra de perfil** é regra de negócio: quem o sistema permite usar o
+ *   recurso. Ela mora no código — `ProtectedRoute requiredRole`, os guards de
+ *   papel da API, a lista de rotas do coordenador — e não muda pelo painel.
+ * - A **feature flag** liga ou desliga o recurso sem deploy e, pelo público
+ *   ("Para todos", "Só professor"...), escolhe para quem ele está ligado.
+ *
+ * O público da flag só **restringe** dentro da regra; nunca concede acesso que
+ * a regra de perfil não dá.
+ */
+export enum FeatureProfileRuleKind {
+  /** O recurso funciona sem login. */
+  Public = 'public',
+  /** Exige login, e só os perfis listados passam. */
+  Roles = 'roles',
+  /**
+   * Interruptor lido pelo sistema (e-mails, processamento automático): não há
+   * sessão do outro lado, então o público da flag não é consultado.
+   */
+  Switch = 'switch',
+}
+
+/** A regra de perfil que o código aplica a um recurso. */
+export type FeatureProfileRule =
+  | { kind: FeatureProfileRuleKind.Public }
+  | { kind: FeatureProfileRuleKind.Roles; roles: UserRole[] }
+  | { kind: FeatureProfileRuleKind.Switch };
+
+/** Como o público escolhido se encaixa na regra de perfil. */
+export enum AudienceRuleStatus {
+  /** O público cabe dentro da regra. */
+  Ok = 'ok',
+  /** Interruptor do sistema: o público não tem efeito. */
+  Ignored = 'ignored',
+  /** Há perfis (ou visitantes) no público que a regra não aceita. */
+  Outside = 'outside',
+}
+
+/** Resultado da comparação entre público e regra de perfil. */
+export type AudienceRuleCheck =
+  | { status: AudienceRuleStatus.Ok }
+  | { status: AudienceRuleStatus.Ignored }
+  | { status: AudienceRuleStatus.Outside; roles: UserRole[]; visitor: boolean };

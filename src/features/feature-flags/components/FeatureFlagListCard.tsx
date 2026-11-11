@@ -2,13 +2,20 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
+import GppGoodOutlinedIcon from '@mui/icons-material/GppGoodOutlined';
 import { IconButton, Switch, Tooltip } from '@mui/material';
 
 import { ListingCard } from '@/components/common/listing';
 import type { ListingBadge, ListingMeta } from '@/components/common/listing';
 
 import type { FeatureFlagResponse } from '../types';
-import { audienceInfo, flagInitials, formatDate } from '../utils';
+import {
+  audienceInfo,
+  flagInitials,
+  formatDate,
+  profileRuleLabel,
+  profileRuleOf,
+} from '../utils';
 
 interface Props {
   flag: FeatureFlagResponse;
@@ -37,7 +44,16 @@ export default function FeatureFlagListCard({
     { label: audience.label, color: audience.color },
   ];
 
+  /*
+   * O selo de público é a flag; a linha abaixo é a regra de perfil do código.
+   * Mostrar as duas lado a lado deixa claro que o público só restringe dentro
+   * da regra — ele não abre a tela para quem a regra não aceita.
+   */
   const meta: ListingMeta[] = [
+    {
+      icon: <GppGoodOutlinedIcon sx={{ fontSize: 16 }} />,
+      label: profileRuleLabel(profileRuleOf(flag.key)),
+    },
     {
       icon: <EventOutlinedIcon sx={{ fontSize: 16 }} />,
       label: `Alterada em ${formatDate(flag.updatedAt)}`,
