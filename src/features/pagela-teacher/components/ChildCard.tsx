@@ -1,3 +1,4 @@
+import { hasAcceptedChrist } from "@/features/children/utils";
 import * as React from "react";
 import {
   Card, CardActionArea, CardContent, Stack, Typography,
@@ -50,7 +51,7 @@ export default function ChildCard({
     return parts.map((p) => p[0]?.toUpperCase() || "").join("");
   }, [child.name]);
 
-  const alreadyAccepted = child.acceptedChrists?.length > 0;
+  const alreadyAccepted = hasAcceptedChrist(child.acceptedChrists);
   const [modalOpen, setModalOpen] = React.useState(false);
   const canRegisterDecision = useFeatureEnabled(FEATURE.ACCEPTED_CHRISTS);
 
@@ -245,6 +246,10 @@ export default function ChildCard({
               <Tooltip title={child.isActive ? "Desativar criança" : "Ativar criança"}>
                 <Box
                   component="button"
+                  type="button"
+                  role="switch"
+                  aria-checked={child.isActive}
+                  aria-label={child.isActive ? "Desativar criança" : "Ativar criança"}
                   onClick={(e) => { e.stopPropagation(); onToggleActive(child); }}
                   sx={{
                     position: "relative",
@@ -318,8 +323,9 @@ export default function ChildCard({
         onClose={handleCloseModal}
         child={child}
         onSuccess={async () => {
+          // Quem fecha é o modal: depois de excluir um registro ele segue
+          // aberto, com o histórico já atualizado.
           if (onRefresh) await onRefresh();
-          handleCloseModal();
         }}
       />
 

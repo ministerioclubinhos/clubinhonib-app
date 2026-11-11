@@ -85,5 +85,32 @@ export type PagelaFilters = {
 /** Como a semana da criança foi cumprida. */
 export type PagelaStatus = "complete" | "partial" | "absent";
 
+/** Por que o lançamento de pagelas está fechado. */
+export enum PagelaLaunchClosedReason {
+  NO_PERIOD = "NO_PERIOD",
+  NOT_STARTED = "NOT_STARTED",
+  ENDED = "ENDED",
+}
+
+/**
+ * Resposta de `GET /pagelas/launch-window` (`PagelaLaunchWindowDto`).
+ *
+ * Pagela só se lança dentro do período letivo: `open` diz se hoje aceita
+ * lançamento, e `currentWeek` é a maior semana letiva que pode ser lançada.
+ */
+export type PagelaLaunchWindow = {
+  open: boolean;
+  reason: PagelaLaunchClosedReason | null;
+  /** Explicação pronta quando `open` é `false`. */
+  message: string | null;
+  /** Hoje no fuso do Clubinho, em `YYYY-MM-DD`. */
+  today: string;
+  year: number | null;
+  currentWeek: number | null;
+  totalWeeks: number | null;
+  startDate: string | null;
+  endDate: string | null;
+};
+
 /** Resposta das rotas que só confirmam a operação. */
 export type ApiMessage = { message: string };

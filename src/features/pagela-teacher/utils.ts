@@ -52,3 +52,21 @@ export function getISOWeekYear(date: Date): { year: number; week: number } {
 
   return { year, week };
 }
+
+/**
+ * Semanas letivas que aceitam lançamento, da atual para a primeira.
+ *
+ * Fora do período letivo não há nenhuma. A ordem é decrescente porque quase
+ * todo lançamento é da semana atual ou da anterior.
+ */
+export function launchableWeeks(window: {
+  open: boolean;
+  currentWeek: number | null;
+} | null): number[] {
+  if (!window?.open || !window.currentWeek) return [];
+
+  return Array.from(
+    { length: window.currentWeek },
+    (_, index) => window.currentWeek! - index,
+  );
+}

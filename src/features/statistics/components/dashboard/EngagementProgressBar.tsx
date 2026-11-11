@@ -34,7 +34,7 @@ export const EngagementProgressBar: React.FC<EngagementProgressBarProps> = ({
                             Taxa de Engajamento Mensal
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                            {activeChildren} de {totalChildren} criancas ativas
+                            {activeChildren} de {totalChildren} crianças ativas
                         </Typography>
                     </Box>
                     <Chip

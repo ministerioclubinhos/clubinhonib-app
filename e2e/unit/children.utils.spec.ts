@@ -184,6 +184,40 @@ test.describe("payloads", () => {
   });
 });
 
+test.describe("endereço na edição", () => {
+  test("campo apagado vai como texto vazio, para a API limpar", () => {
+    const payload = toUpdateChildRequest(
+      validForm({ complement: "", number: " ", postalCode: "" }),
+    );
+
+    expect(payload.address).toMatchObject({
+      complement: "",
+      number: "",
+      postalCode: "",
+    });
+  });
+
+  test("na criação o campo vazio some do corpo", () => {
+    const payload = toCreateChildRequest(validForm({ complement: "" }));
+
+    expect(payload.address?.complement).toBeUndefined();
+  });
+});
+
+test.describe("clubinho obrigatório", () => {
+  test("professor e coordenador não cadastram criança sem clubinho", () => {
+    const errors = validateChildForm(validForm({ clubId: null }), {
+      requireClub: true,
+    });
+
+    expect(errors.clubId).toBeTruthy();
+  });
+
+  test("o administrador pode cadastrar sem clubinho", () => {
+    expect(validateChildForm(validForm({ clubId: null })).clubId).toBeUndefined();
+  });
+});
+
 test.describe("childToForm", () => {
   test("achata o endereço nos campos do formulário", () => {
     const form = childToForm(child);

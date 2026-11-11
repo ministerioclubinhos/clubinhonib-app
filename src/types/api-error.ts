@@ -31,6 +31,7 @@ export enum ValidationErrorCode {
     FILE_REQUIRED = 'VAL_4004',
     INVALID_DATE_RANGE = 'VAL_4005',
     INVALID_FORMAT = 'VAL_4006',
+    ACADEMIC_PERIOD_CLOSED = 'VAL_4007',
 }
 
 export enum ResourceErrorCode {

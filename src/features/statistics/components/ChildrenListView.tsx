@@ -26,6 +26,7 @@ import { useChildren } from '../hooks';
 import type { ChildrenStatsQueryDto } from '../types';
 import { PeriodFilter } from './PeriodFilter';
 import { getPeriodDates } from '../utils/periodHelpers';
+import { resolveRangeOnPeriodChange } from '../utils/periodRange';
 import ChildrenListDesktop from './ChildrenListDesktop';
 import ChildrenListMobile from './ChildrenListMobile';
 import { ChartError } from './ui';
@@ -203,12 +204,16 @@ export const ChildrenListView: React.FC = () => {
                 startDate={filters.startDate}
                 endDate={filters.endDate}
                 onPeriodChange={(period) => {
-                  const dates = getPeriodDates(period);
+                  // "Personalizado" mantém as datas em uso até a pessoa
+                  // escolher outras; "Todos" limpa as duas.
+                  const dates = period
+                    ? resolveRangeOnPeriodChange(period, getPeriodDates(period) ?? null, filters)
+                    : {};
                   setFilters({
                     ...filters,
                     period,
-                    startDate: dates?.startDate,
-                    endDate: dates?.endDate,
+                    startDate: dates.startDate,
+                    endDate: dates.endDate,
                     page: 1,
                   });
                 }}

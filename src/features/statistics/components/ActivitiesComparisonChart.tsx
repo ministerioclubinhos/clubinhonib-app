@@ -30,6 +30,8 @@ import { CompareArrows } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
 import type { PagelasStatsQueryDto } from '../types';
 import { ChartError } from './ui';
+import { weightedAverageRate } from '../utils/rates';
+import { NO_DATA_PLACEHOLDER } from '../constants';
 
 /** Barra de atividade exibida no tooltip. */
 interface ActivitiesTooltipPayload {
@@ -90,20 +92,16 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
     })),
   };
 
-  const radarData = [
-    {
-      metric: 'Presença',
-      value: data.byGender.reduce((sum, g) => sum + g.presenceRate, 0) / data.byGender.length,
-    },
-    {
-      metric: 'Meditação',
-      value: data.byGender.reduce((sum, g) => sum + g.meditationRate, 0) / data.byGender.length,
-    },
-    {
-      metric: 'Recitação',
-      value: data.byGender.reduce((sum, g) => sum + g.verseRecitationRate, 0) / data.byGender.length,
-    },
+  // Ponderado pelo total de pagelas de cada gênero: a média simples das linhas
+  // tratava um grupo de 10 e um de 90 como iguais. `null` = sem pagela no
+  // recorte, que não é o mesmo que 0%.
+  const overallRates = [
+    { metric: 'Presença', rate: weightedAverageRate(data.byGender, (g) => g.presenceRate) },
+    { metric: 'Meditação', rate: weightedAverageRate(data.byGender, (g) => g.meditationRate) },
+    { metric: 'Recitação', rate: weightedAverageRate(data.byGender, (g) => g.verseRecitationRate) },
   ];
+  const hasOverallData = overallRates.some((item) => item.rate !== null);
+  const radarData = overallRates.map((item) => ({ metric: item.metric, value: item.rate ?? 0 }));
 
   const CustomTooltip = ({ active, payload }: ChartTooltipProps<ActivitiesTooltipPayload>) => {
     if (active && payload && payload.length) {
@@ -175,14 +173,19 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
           Taxas Médias Gerais
         </Typography>
         <Grid2 container spacing={2}>
-          {radarData.map((item) => (
+          {overallRates.map((item) => (
             <Grid2 size={{ xs: 12, sm: 4 }} key={item.metric}>
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   {item.metric}
                 </Typography>
-                <Typography variant="h5" fontWeight="bold" color="secondary">
-                  {item.value.toFixed(1)}%
+                <Typography
+                  data-testid="statistics-activities-overall-rate"
+                  variant="h5"
+                  fontWeight="bold"
+                  color="secondary"
+                >
+                  {item.rate === null ? NO_DATA_PLACEHOLDER : `${item.rate.toFixed(1)}%`}
                 </Typography>
               </Box>
             </Grid2>
@@ -281,7 +284,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               Atividade Mais Alta
             </Typography>
             <Typography variant="body1" fontWeight="bold">
-              {radarData.reduce((max, item) => (item.value > max.value ? item : max)).metric}
+              {hasOverallData
+                ? radarData.reduce((max, item) => (item.value > max.value ? item : max)).metric
+                : NO_DATA_PLACEHOLDER}
             </Typography>
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 4 }}>
@@ -289,7 +294,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               Atividade Mais Baixa
             </Typography>
             <Typography variant="body1" fontWeight="bold">
-              {radarData.reduce((min, item) => (item.value < min.value ? item : min)).metric}
+              {hasOverallData
+                ? radarData.reduce((min, item) => (item.value < min.value ? item : min)).metric
+                : NO_DATA_PLACEHOLDER}
             </Typography>
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 4 }}>
@@ -297,7 +304,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               Diferença Máxima
             </Typography>
             <Typography variant="body1" fontWeight="bold">
-              {(Math.max(...radarData.map((d) => d.value)) - Math.min(...radarData.map((d) => d.value))).toFixed(1)}%
+              {hasOverallData
+                ? `${(Math.max(...radarData.map((d) => d.value)) - Math.min(...radarData.map((d) => d.value))).toFixed(1)}%`
+                : NO_DATA_PLACEHOLDER}
             </Typography>
           </Grid2>
         </Grid2>

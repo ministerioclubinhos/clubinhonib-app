@@ -87,3 +87,13 @@ duplicating the rule in the client is how the two copies drift apart.
 - `referenceDate` is a calendar day, never a timestamp. Format it with
   `formatReferenceDate`, which reads the string by components — `new Date(str)`
   parses it as UTC midnight and shows the previous day in Manaus.
+
+## Ajustes de 2026-11-11 (`/adm/criancas` e formulário de criança)
+
+- Campo de endereço apagado na edição (rua, número, CEP, complemento) vai como
+  texto vazio, para a API limpar. Antes era omitido e o valor antigo voltava.
+- Professor e coordenador precisam informar o clubinho ao cadastrar; só o
+  administrador cadastra criança sem clubinho (a API recusa do mesmo jeito).
+- A busca por telefone aceita o número com máscara.
+
+Testes: `e2e/unit/children.utils.spec.ts`.

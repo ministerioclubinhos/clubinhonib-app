@@ -95,6 +95,90 @@ fazia nada, que é pior: pelo menos o erro aparecia.
 Conferido chamada a chamada contra a API: cada filtro muda de fato o número que
 promete mudar.
 
+## 🩹 2026-11-11 — Correções de exibição
+
+Nenhum endpoint mudou; a tela é que passou a ler o que a API já mandava.
+
+### Frequência
+
+- **Linha do tempo do clubinho** (`ClubAttendanceTimeline`): a API sempre
+  mandou `isException` e `isPending` por semana, e o tipo não os declarava — a
+  tela só lia `hasPagela`, então feriado e semana futura apareciam como falta
+  (X vermelho). Agora são quatro estados (`AttendanceWeekState`): com pagela,
+  sem pagela, **pendente** e **exceção/feriado**, com ícone, borda tracejada e
+  texto (`aria-label` + tooltip) próprios. A regra está em
+  `utils/attendance.ts#attendanceWeekState` e é a mesma que o back usa para
+  contar `weeksMissing`: pagela lançada vence tudo; sem pagela, exceção e
+  futuro não são falta.
+- O tipo declarava `presenceRate` na semana; o back manda `presenceCount`
+  (e só quando há pagela). Nada lia o campo. A paginação dessas rotas usa
+  `hasNextPage`/`hasPreviousPage` (`PaginationMeta`), não `hasNext`.
+- O seletor de ano da linha do tempo usa `useAcademicYears()`, como o resto do
+  painel.
+- **Grade semanal** (`WeeklyAttendanceGrid`): o status virou o enum
+  `WeeklyClubStatus`, com os seis valores do contrato. `pending`
+  ("Aguardando o dia do clubinho") e `partial` ("Parcial") caíam em
+  "Desconhecido". Os rótulos ficam em `WEEKLY_CLUB_STATUS_LABELS`
+  (`Record` sobre o enum: um estado novo deixa de compilar em vez de sumir).
+- **Vazio não é 0%**: sem semana esperada (`hasAcademicPeriod === false`,
+  período que não começou, só exceções) a linha do tempo mostra "—" e o
+  motivo; sem clubinho esperado na semana (`clubsActive === 0`) a grade faz o
+  mesmo. O KPI de presença mostra "—" + "Sem pagelas nesta semana/neste mês"
+  quando `total === 0`.
+
+### KPIs
+
+- O bloco de KPIs lê `/statistics/overview`, que **não recebe filtro**. Ele
+  agora diz isso ("Visão geral — não segue os filtros",
+  `KPI_FIXED_WINDOW_CAPTION`), inclusive no celular.
+- "Top Performers" saiu: mostrava `topEngagedChildren.length`, e a lista é
+  limitada a 20 pelo back — o número era o teto, não uma contagem. Com ele
+  saiu a consulta de insights que o bloco fazia só para isso.
+- "Ativos este mês" não passa mais `previousValue`: usava o total cadastrado
+  como "mês anterior" e desenhava uma queda falsa. `StatCard` só mostra
+  tendência quando há base (`utils/rates.ts#percentChange` devolve `null` com
+  anterior zero) e limita os números a uma casa decimal.
+- `lastSixWeeks` chega da semana mais nova para a mais antiga; o sparkline e o
+  gráfico "Últimas 6 semanas" ordenam com `sortWeeksAscending` antes de plotar.
+
+### Atividades
+
+- "Taxas Médias Gerais" era a média simples das linhas por gênero (M 90% de 10
+  + F 50% de 90 = 70%). Agora é ponderada pelo `total` de cada linha
+  (`weightedAverageRate` → 54%), e sem pagela no recorte mostra "—".
+
+### Período "Personalizado"
+
+- Escolher "Personalizado" **mantém as datas em uso** até a pessoa escolher
+  outras (`utils/periodRange.ts#resolveRangeOnPeriodChange`); antes o reducer
+  apagava as duas e `period=custom` sairia sozinho. Hoje nenhum controle
+  montado despacha `SET_PERIOD` com `custom` (a barra só oferece os atalhos, e
+  as datas entram por `SET_DATE_RANGE`, que já grava as duas) — a correção
+  fecha o caminho para quando existir.
+
+### Tipos alinhados aos DTOs
+
+| Tipo | Antes | Agora |
+| --- | --- | --- |
+| `AcceptedChristsStatsResponseDto.overall.byDecisionType` | `{ accepted, reconciled }` | `Partial<Record<DecisionType, number>>` (`ACCEPTED`/`RECONCILED`) |
+| `ClubStat.lastActivity`, `TeacherStat.lastActivity` | objeto obrigatório | opcional e `null` |
+| `ClubAttendanceAnalysisDto.period` | sem `exceptionsCount`/`hasAcademicPeriod` | com os dois |
+| `conversionFunnel`, `teacherEffectiveness`, `trends` | declarados | removidos: o DTO do back os lista como opcionais, mas nenhum serviço os preenche |
+
+### Testes
+
+- `e2e/unit/statistics.utils.attendance.spec.ts`, `statistics.utils.rates.spec.ts`,
+  `statistics.utils.periodRange.spec.ts`.
+- `e2e/flows/statistics-attendance.spec.ts`: grade e linha do tempo com a API
+  simulada (`page.route`), incluindo 360px.
+
+### Falta no back
+
+- A semana da linha do tempo traz `isException`, mas não o **motivo** da
+  exceção; a tela mostra só "Exceção/feriado".
+- `/statistics/overview` não aceita filtro nem informa se há período letivo
+  em curso: no recesso, o KPI só consegue inferir o vazio por `total === 0`.
+
 ## ⚠️ Débito conhecido
 
 - ~67 cores hexadecimais escritas à mão em dez arquivos. Trocar todas por

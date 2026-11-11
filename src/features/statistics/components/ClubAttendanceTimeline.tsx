@@ -14,6 +14,7 @@ import {
   TablePagination,
   Collapse,
   IconButton,
+  Tooltip,
   useMediaQuery,
 } from '@mui/material';
 import {
@@ -24,11 +25,21 @@ import {
   TrendingUp,
   ExpandMore,
   ExpandLess,
+  HourglassEmpty,
+  EventBusy,
 } from '@mui/icons-material';
-import { useClubAttendance, useClubs } from '../hooks';
+import { useAcademicYears, useClubAttendance, useClubs } from '../hooks';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
+import { AttendanceWeekState } from '../types';
 import type { ClubAttendanceAnalysisDto } from '../types';
+import {
+  ATTENDANCE_EMPTY_MESSAGES,
+  ATTENDANCE_WEEK_STATE_LABELS,
+  ATTENDANCE_WEEK_STATE_ORDER,
+  NO_DATA_PLACEHOLDER,
+} from '../constants';
+import { attendanceWeekState } from '../utils/attendance';
 
 dayjs.locale('pt-br');
 
@@ -55,6 +66,12 @@ export const ClubAttendanceTimeline: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const [selectedClubId, setSelectedClubId] = React.useState<string>('');
   const [year, setYear] = React.useState(currentYear);
+  // Os anos com período letivo cadastrado, como no resto do painel — e não os
+  // três últimos anos de calendário.
+  const { data: academicYears = [] } = useAcademicYears();
+  const yearOptions = academicYears.includes(year)
+    ? academicYears
+    : [year, ...academicYears].sort((a, b) => b - a);
 
   const [timelinePage, setTimelinePage] = React.useState(1);
   const [timelineLimit, setTimelineLimit] = React.useState(20);
@@ -80,6 +97,26 @@ export const ClubAttendanceTimeline: React.FC = () => {
     setTimelinePage(1);
     setMissingWeeksPage(1);
   }, [selectedClubId, year]);
+
+  /**
+   * Ícone, cor e borda de cada estado de semana.
+   *
+   * Futuro e exceção não são falta: saem do vermelho e ganham borda
+   * tracejada, para a diferença não depender só da cor.
+   */
+  const getWeekVisual = (weekState: AttendanceWeekState) => {
+    switch (weekState) {
+      case AttendanceWeekState.WithPagela:
+        return { Icon: CheckCircle, color: theme.palette.success.main, borderStyle: 'solid' };
+      case AttendanceWeekState.Pending:
+        return { Icon: HourglassEmpty, color: theme.palette.grey[500], borderStyle: 'dashed' };
+      case AttendanceWeekState.Exception:
+        return { Icon: EventBusy, color: theme.palette.info.main, borderStyle: 'dashed' };
+      case AttendanceWeekState.Missing:
+      default:
+        return { Icon: Cancel, color: theme.palette.error.main, borderStyle: 'solid' };
+    }
+  };
 
   const getSeverityColor = (severity: 'info' | 'warning' | 'critical') => {
     switch (severity) {
@@ -141,6 +178,11 @@ export const ClubAttendanceTimeline: React.FC = () => {
     return alert.message;
   };
 
+  // Sem semana esperada (ano sem período letivo, período que ainda não
+  // começou, só exceções) não existe taxa: "0.0%" seria lido como falta.
+  const hasExpectedWeeks =
+    !!data && data.period.hasAcademicPeriod !== false && data.attendance.weeksExpected > 0;
+
   if (isLoading) {
     return (
       <Paper data-testid="statistics-club-attendance-timeline" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
@@ -187,7 +229,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
               onChange={(e) => setYear(Number(e.target.value))}
               size="small"
             >
-              {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
+              {yearOptions.map((y) => (
                 <MenuItem key={y} value={y}>
                   {y}
                 </MenuItem>
@@ -224,8 +266,14 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                   Taxa de Frequência
                 </Typography>
-                <Typography variant="h5" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, mb: 0.5 }}>
-                  {data.attendance.attendanceRate.toFixed(1)}%
+                <Typography
+                  data-testid="statistics-timeline-attendance-rate"
+                  variant="h5"
+                  fontWeight="bold"
+                  color={hasExpectedWeeks ? 'success.main' : 'text.secondary'}
+                  sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, mb: 0.5 }}
+                >
+                  {hasExpectedWeeks ? `${data.attendance.attendanceRate.toFixed(1)}%` : NO_DATA_PLACEHOLDER}
                 </Typography>
                 <Chip
                   icon={<CheckCircle />}
@@ -316,10 +364,23 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                   de {data.period.totalWeeks} do ano
+                  {data.period.exceptionsCount > 0 ? ` · ${data.period.exceptionsCount} em exceção` : ''}
                 </Typography>
               </Paper>
             </Grid2>
           </Grid2>
+
+          {!hasExpectedWeeks && (
+            <Alert
+              data-testid="statistics-timeline-empty"
+              severity="info"
+              sx={{ mb: { xs: 2, sm: 3 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            >
+              {data.period.hasAcademicPeriod === false
+                ? ATTENDANCE_EMPTY_MESSAGES.noAcademicPeriod
+                : ATTENDANCE_EMPTY_MESSAGES.noExpectedWeeks}
+            </Alert>
+          )}
 
           {data.note && (
             <Alert severity="warning" sx={{ mb: { xs: 2, sm: 3 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
@@ -396,52 +457,68 @@ export const ClubAttendanceTimeline: React.FC = () => {
                     gap: { xs: 0.5, sm: 1 },
                   }}
                 >
-                  {data.timeline.map((week) => (
-                    <Box
-                      key={`${week.year}-${week.week}`}
-                      sx={{
-                        p: { xs: 0.5, sm: 1 },
-                        borderRadius: 1,
-                        textAlign: 'center',
-                        bgcolor: week.hasPagela
-                          ? `${theme.palette.success.main}20`
-                          : `${theme.palette.error.main}20`,
-                        border: `2px solid ${week.hasPagela ? theme.palette.success.main : theme.palette.error.main
-                          }`,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          transform: 'scale(1.05)',
-                          boxShadow: 2,
-                        },
-                      }}
-                    >
-                      <Typography variant="caption" fontWeight="bold" display="block" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                        S{week.week}
-                      </Typography>
-                      {week.hasPagela ? (
-                        <CheckCircle sx={{ fontSize: { xs: 16, sm: 20 }, color: theme.palette.success.main }} />
-                      ) : (
-                        <Cancel sx={{ fontSize: { xs: 16, sm: 20 }, color: theme.palette.error.main }} />
-                      )}
-                      {week.hasPagela && week.totalPagelas && (
-                        <Typography variant="caption" display="block" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                          {week.totalPagelas}
-                        </Typography>
-                      )}
-                    </Box>
-                  ))}
+                  {data.timeline.map((week) => {
+                    const weekState = attendanceWeekState(week);
+                    const visual = getWeekVisual(weekState);
+                    const WeekIcon = visual.Icon;
+                    const description = [
+                      `Semana ${week.week}`,
+                      dayjs(week.date).format('DD/MM/YYYY'),
+                      ATTENDANCE_WEEK_STATE_LABELS[weekState],
+                      weekState === AttendanceWeekState.WithPagela && week.totalPagelas
+                        ? `${week.totalPagelas} pagela(s)`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ');
+
+                    return (
+                      <Tooltip key={`${week.year}-${week.week}`} title={description} arrow>
+                        <Box
+                          data-testid="statistics-timeline-week"
+                          data-state={weekState}
+                          data-week={week.week}
+                          role="img"
+                          aria-label={description}
+                          sx={{
+                            p: { xs: 0.5, sm: 1 },
+                            borderRadius: 1,
+                            textAlign: 'center',
+                            bgcolor: `${visual.color}20`,
+                            border: `2px ${visual.borderStyle} ${visual.color}`,
+                          }}
+                        >
+                          <Typography variant="caption" fontWeight="bold" display="block" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                            S{week.week}
+                          </Typography>
+                          <WeekIcon sx={{ fontSize: { xs: 16, sm: 20 }, color: visual.color }} />
+                          {weekState === AttendanceWeekState.WithPagela && week.totalPagelas ? (
+                            <Typography variant="caption" display="block" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                              {week.totalPagelas}
+                            </Typography>
+                          ) : null}
+                        </Box>
+                      </Tooltip>
+                    );
+                  })}
                 </Box>
 
-                <Box sx={{ mt: { xs: 2, sm: 3 }, display: 'flex', gap: { xs: 1.5, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <CheckCircle sx={{ color: theme.palette.success.main, fontSize: { xs: 16, sm: 18 } }} />
-                    <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Com Pagela</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Cancel sx={{ color: theme.palette.error.main, fontSize: { xs: 16, sm: 18 } }} />
-                    <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>Sem Pagela</Typography>
-                  </Box>
+                <Box
+                  data-testid="statistics-timeline-legend"
+                  sx={{ mt: { xs: 2, sm: 3 }, display: 'flex', columnGap: { xs: 1.5, sm: 2 }, rowGap: 0.5, justifyContent: 'center', flexWrap: 'wrap' }}
+                >
+                  {ATTENDANCE_WEEK_STATE_ORDER.map((weekState) => {
+                    const visual = getWeekVisual(weekState);
+                    const LegendIcon = visual.Icon;
+                    return (
+                      <Box key={weekState} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <LegendIcon sx={{ color: visual.color, fontSize: { xs: 16, sm: 18 } }} />
+                        <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+                          {ATTENDANCE_WEEK_STATE_LABELS[weekState]}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
                 </Box>
 
                 {data.timelinePagination && (
@@ -581,7 +658,7 @@ export const ClubAttendanceTimeline: React.FC = () => {
                 </Box>
               </Collapse>
             </Paper>
-          ) : (
+          ) : !hasExpectedWeeks ? null : (
             <Paper
               elevation={0}
               sx={{

@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import { CalendarToday, TrendingUp, TrendingDown } from '@mui/icons-material';
 import { useOverview } from '../hooks';
+import { sortWeeksAscending } from '../utils/attendance';
 
 export const WeekMonthSummary: React.FC = () => {
   const theme = useTheme();
@@ -29,7 +30,9 @@ export const WeekMonthSummary: React.FC = () => {
 
   const lastSixWeeksData = React.useMemo(() => {
     if (!data?.pagelas?.lastSixWeeks || data.pagelas.lastSixWeeks.length === 0) return [];
-    return data.pagelas.lastSixWeeks.map((item) => ({
+    // O back manda da semana mais nova para a mais antiga; o gráfico lê da
+    // esquerda para a direita.
+    return sortWeeksAscending(data.pagelas.lastSixWeeks).map((item) => ({
       date: `S${item.week}/${item.year}`,
       value: item.total,
       presenceRate: item.presenceRate,

@@ -5,6 +5,7 @@ import type {
   ApiMessage,
   CreatePagelaRequest,
   PagelaFilters,
+  PagelaLaunchWindow,
   PagelaResponse,
   Paginated,
   UpdatePagelaRequest,
@@ -24,6 +25,17 @@ export async function apiFetchPagelas(
     "/pagelas/paginated",
     { params: buildPagelasQuery(args), signal: options?.signal },
   );
+
+  return data;
+}
+
+/** Se hoje aceita lançamento de pagela, e até qual semana letiva. */
+export async function apiFetchPagelaLaunchWindow(options?: {
+  signal?: AbortSignal;
+}): Promise<PagelaLaunchWindow> {
+  const { data } = await api.get<PagelaLaunchWindow>("/pagelas/launch-window", {
+    signal: options?.signal,
+  });
 
   return data;
 }

@@ -1,4 +1,4 @@
-import { PeriodShortcut } from './types';
+import { AttendanceWeekState, PeriodShortcut, WeeklyClubStatus } from './types';
 
 /**
  * As seções do painel.
@@ -210,3 +210,57 @@ export const TAB_FILTER_FIELDS: Record<StatisticsTab, StatisticsFilterField[]> =
 
 /** O aviso que explica por que o campo está desabilitado. */
 export const FILTER_NOT_APPLIED_HINT = 'Esta aba não usa este filtro';
+
+/**
+ * Rótulo de cada situação de clubinho na grade semanal.
+ *
+ * `Record` sobre o enum: um estado novo no contrato deixa de compilar aqui em
+ * vez de cair num "Desconhecido" cinza na tela.
+ */
+export const WEEKLY_CLUB_STATUS_LABELS: Record<WeeklyClubStatus, string> = {
+  [WeeklyClubStatus.Ok]: 'OK',
+  [WeeklyClubStatus.Partial]: 'Parcial',
+  [WeeklyClubStatus.Missing]: 'Faltou',
+  [WeeklyClubStatus.Pending]: 'Aguardando o dia do clubinho',
+  [WeeklyClubStatus.Vacation]: 'Férias',
+  [WeeklyClubStatus.Inactive]: 'Inativo',
+  [WeeklyClubStatus.OutOfPeriod]: 'Fora do período letivo',
+};
+
+/** Rótulo de cada estado de semana na linha do tempo do clubinho. */
+export const ATTENDANCE_WEEK_STATE_LABELS: Record<AttendanceWeekState, string> = {
+  [AttendanceWeekState.WithPagela]: 'Com pagela',
+  [AttendanceWeekState.Missing]: 'Sem pagela',
+  [AttendanceWeekState.Pending]: 'Pendente',
+  [AttendanceWeekState.Exception]: 'Exceção/feriado',
+};
+
+/** Ordem dos estados na legenda da linha do tempo. */
+export const ATTENDANCE_WEEK_STATE_ORDER: AttendanceWeekState[] = [
+  AttendanceWeekState.WithPagela,
+  AttendanceWeekState.Missing,
+  AttendanceWeekState.Pending,
+  AttendanceWeekState.Exception,
+];
+
+/** O que aparece no lugar de uma taxa quando não há dado para calculá-la. */
+export const NO_DATA_PLACEHOLDER = '—';
+
+/**
+ * Aviso do bloco de KPIs.
+ *
+ * `/statistics/overview` não recebe filtro nenhum: os números são de janelas
+ * fixas (esta semana, este mês, este ano), e a tela precisa dizer isso.
+ */
+export const KPI_FIXED_WINDOW_CAPTION = 'Visão geral — não segue os filtros';
+
+/** Mensagens de vazio da frequência, para não mostrar 0% onde não há dado. */
+export const ATTENDANCE_EMPTY_MESSAGES = {
+  noAcademicPeriod: 'Não há período letivo cadastrado para este ano.',
+  noExpectedWeeks:
+    'Nenhuma semana esperada até agora: o período ainda não começou ou só teve exceções.',
+  noExpectedClubs:
+    'Nenhum clubinho era esperado até agora nesta semana (dia ainda não chegou, exceção ou sem crianças).',
+  noPagelasThisWeek: 'Sem pagelas nesta semana',
+  noPagelasThisMonth: 'Sem pagelas neste mês',
+} as const;

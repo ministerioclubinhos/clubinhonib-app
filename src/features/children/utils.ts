@@ -161,8 +161,17 @@ export function childToForm(child: ChildResponse): ChildFormValues {
  * A validação da tela melhora a experiência, mas não substitui a da API: o
  * mesmo payload é validado de novo no NestJS.
  */
-export function validateChildForm(values: ChildFormValues): ChildFormErrors {
+export function validateChildForm(
+  values: ChildFormValues,
+  options: { requireClub?: boolean } = {},
+): ChildFormErrors {
   const errors: ChildFormErrors = {};
+
+  // Sem clubinho, só o administrador cadastra: a criança sem vínculo aparece
+  // para todos os papéis.
+  if (options.requireClub && !values.clubId) {
+    errors.clubId = "Informe o clubinho da criança.";
+  }
 
   if (values.name.trim().length < CHILD_NAME_MIN_LENGTH) {
     errors.name = "Informe o nome da criança.";
@@ -187,16 +196,25 @@ export function validateChildForm(values: ChildFormValues): ChildFormErrors {
   return errors;
 }
 
-/** Endereço no formato que a API aceita. */
-function toAddressInput(values: ChildFormValues): ChildAddressInput {
+/**
+ * Endereço no formato que a API aceita.
+ *
+ * Na criação, campo vazio some do corpo. Na edição ele vai como texto vazio:
+ * a API mescla o endereço, então omitir um campo apagado o deixava como
+ * estava — o complemento apagado voltava depois de salvar.
+ */
+function toAddressInput(
+  values: ChildFormValues,
+  emptyAs: "" | undefined = undefined,
+): ChildAddressInput {
   return {
-    street: values.street.trim() || undefined,
-    number: values.number.trim() || undefined,
+    street: values.street.trim() || emptyAs,
+    number: values.number.trim() || emptyAs,
     district: values.district.trim(),
     city: values.city.trim(),
     state: values.state.trim().toUpperCase(),
-    postalCode: values.postalCode.replace(/\D/g, "") || undefined,
-    complement: values.complement.trim() || undefined,
+    postalCode: values.postalCode.replace(/\D/g, "") || emptyAs,
+    complement: values.complement.trim() || emptyAs,
   };
 }
 
@@ -233,8 +251,20 @@ export function toUpdateChildRequest(
     guardianPhone: extractPhoneDigits(values.guardianPhone),
     joinedAt: values.joinedAt || null,
     clubId: values.clubId,
-    address: toAddressInput(values),
+    address: toAddressInput(values, ""),
   };
 }
 
 export { formatPhone };
+
+/**
+ * A criança já aceitou a Jesus?
+ *
+ * Conta `ACCEPTED` e `RECONCILED`, igual ao filtro da API. Registro antigo sem
+ * tipo não conta: ele não diz qual foi a decisão.
+ */
+export function hasAcceptedChrist(
+  decisions: readonly { decision: string | null }[] | undefined,
+): boolean {
+  return (decisions ?? []).some((item) => item.decision !== null);
+}

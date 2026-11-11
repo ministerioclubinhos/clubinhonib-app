@@ -17,6 +17,7 @@ import {
   ExpandMore,
   ExpandLess,
 } from '@mui/icons-material';
+import { KPI_FIXED_WINDOW_CAPTION } from '../../constants';
 import { useKPIData } from '../dashboard/useKPIData';
 import { KPICategorySelector } from '../dashboard/KPICategorySelector';
 import { KPICardsGrid } from '../dashboard/KPICardsGrid';
@@ -61,7 +62,7 @@ export const KPIDashboard: React.FC = memo(() => {
           background: alpha(activeColor, 0.03),
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, minWidth: 0 }}>
           <Box
             sx={{
               p: 1,
@@ -77,8 +78,15 @@ export const KPIDashboard: React.FC = memo(() => {
             <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
               Dashboard de KPIs
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              Indicadores-chave de desempenho
+            {/* Visível também no celular: é o que impede ler estes números
+                como resultado do filtro escolhido acima. */}
+            <Typography
+              data-testid="statistics-kpi-fixed-window-caption"
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', lineHeight: 1.3 }}
+            >
+              {KPI_FIXED_WINDOW_CAPTION}
             </Typography>
           </Box>
         </Box>

@@ -19,13 +19,13 @@ import {
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import { ArrowBack, FamilyRestroom, Phone, Add } from "@mui/icons-material";
-import { useChildrenBrowser, useChildPagelas } from "./hooks";
+import { useChildPagelas, usePagelaLaunchWindow } from "./hooks";
 import PagelaList from "./components/PagelaList";
 import PagelaQuickForm from "./components/PagelaQuickForm";
 import { apiFetchChild } from "../children/api";
 import type { ChildListItem, ChildResponse } from "../children/types";
 import type { Pagela } from "./types";
-import { getISOWeekYear } from "./utils";
+import { INACTIVE_CHILD_PAGELA_TEXT, PAGELA_PERIOD_TEXTS } from "./constants";
 import { getErrorMessage } from "@/utils/apiError";
 
 function genderPastel(seed: string, gender?: string) {
@@ -49,59 +49,54 @@ export default function ChildPagelasPage() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const {
-    byId,
-    loading: loadingChildren,
-    error: cError,
-    setError: setCErr,
-  } = useChildrenBrowser();
-
-  // O que a tela monta a partir de `ChildResponse` é um recorte de
-  // `ChildListItem`: as decisões não são carregadas aqui.
+  // A criança vem da navegação ou de uma busca só dela. Antes a tela carregava
+  // a lista inteira de crianças apenas para procurar esta.
   const [directChild, setDirectChild] = React.useState<Omit<
     ChildListItem,
     "acceptedChrists"
   > | null>(null);
-  const [, setFetchingChild] = React.useState(false);
+  const [loadingChild, setLoadingChild] = React.useState(!loc.state?.child);
+  const [cError, setCErr] = React.useState("");
 
   React.useEffect(() => {
-    if (childId && !loc.state?.child && !byId.get(childId)) {
-      let cancelled = false;
-      (async () => {
-        try {
-          setFetchingChild(true);
-          const full: ChildResponse = await apiFetchChild(childId);
-          if (!cancelled) {
-            setDirectChild({
-              id: full.id,
-              name: full.name,
-              guardianName: full.guardianName,
-              guardianPhone: full.guardianPhone,
-              gender: full.gender,
-              clubId: full.club?.id ?? null,
-              isActive: full.isActive,
-            });
-          }
-        } catch (err: unknown) {
-          if (!cancelled) {
-            setCErr(getErrorMessage(err, "Criança não encontrada"));
-          }
-        } finally {
-          if (!cancelled) setFetchingChild(false);
-        }
-      })();
-      return () => { cancelled = true; };
-    }
-  }, [childId, loc.state?.child]);
+    if (!childId) return;
+    let cancelled = false;
+    // Mesmo vindo da lista, a situação (ativa ou não) é conferida de novo.
+    apiFetchChild(childId)
+      .then((full: ChildResponse) => {
+        if (cancelled) return;
+        setDirectChild({
+          id: full.id,
+          name: full.name,
+          guardianName: full.guardianName,
+          guardianPhone: full.guardianPhone,
+          gender: full.gender,
+          clubId: full.club?.id ?? null,
+          isActive: full.isActive,
+        });
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setCErr(getErrorMessage(err, "Criança não encontrada"));
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingChild(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [childId]);
 
-  const child = loc.state?.child || directChild || byId.get(childId) || null;
-  const currentIso = React.useMemo(() => getISOWeekYear(new Date()), []);
+  const child = directChild || loc.state?.child || null;
   const colors = React.useMemo(
     () => genderPastel(child?.name || childId, child?.gender),
     [child, childId]
   );
 
   const { filters, list, actions } = useChildPagelas(childId);
+  const launch = usePagelaLaunchWindow();
+  const launchClosed = !!launch.window && !launch.window.open;
+  // Criança desativada saiu do clubinho: não recebe nem tem pagela editada.
+  const childInactive = child?.isActive === false;
 
   const [snack, setSnack] = React.useState({
     open: false,
@@ -119,9 +114,10 @@ export default function ChildPagelasPage() {
   const [formInitial, setFormInitial] = React.useState<Pagela | null>(null);
 
   const findPagela = React.useCallback(
-    (y: number, w: number) =>
-      list.rows.find((r) => r.childId === childId && r.year === y && r.week === w) ?? null,
-    [list.rows, childId]
+    async (y: number, w: number) =>
+      list.rows.find((r) => r.childId === childId && r.year === y && r.week === w) ??
+      (await actions.findByWeek(y, w)),
+    [list.rows, childId, actions.findByWeek]
   );
 
   const openCreate = () => {
@@ -352,21 +348,35 @@ export default function ChildPagelasPage() {
         </Alert>
       )}
 
+      {childInactive && (
+        <Alert severity="warning" sx={{ mb: 2 }} data-testid="pagela-child-inactive">
+          {INACTIVE_CHILD_PAGELA_TEXT}
+        </Alert>
+      )}
+
+      {isXs && launchClosed && !childInactive && (
+        <Alert severity="warning" sx={{ mb: 2 }} data-testid="pagela-launch-closed-banner">
+          <strong>{PAGELA_PERIOD_TEXTS.closedTitle}.</strong>{" "}
+          {launch.window?.message || PAGELA_PERIOD_TEXTS.closedFallback}
+        </Alert>
+      )}
+
       <Grid container spacing={{ xs: 1.5, md: 2.5 }}>
         <Grid item xs={12} lg={5}>
-          {(list.loading && !list.rows.length) || loadingChildren ? (
+          {(list.loading && !list.rows.length) || loadingChild ? (
             <Box textAlign="center" my={4}>
               <CircularProgress />
             </Box>
           ) : child ? (
-            isXs ? null : (
+            isXs || childInactive ? null : (
               <PagelaQuickForm
                 initial={formInitial}
                 childId={childId}
                 childName={child?.name || ""}
                 childGender={child?.gender || ""}
-                defaultYear={currentIso.year}
-                defaultWeek={currentIso.week}
+                launchWindow={launch.window}
+                launchLoading={launch.loading}
+                launchError={launch.error}
                 teacherProfileId={TEACHER_PROFILE_ID}
                 findPagela={findPagela}
                 onCreate={async (p) => {
@@ -402,6 +412,7 @@ export default function ChildPagelasPage() {
               setPage={list.setPage}
               filters={filters}
               onEdit={(row) => {
+                if (childInactive) return;
                 if (isXs) {
                   openEdit(row);
                 } else {
@@ -409,15 +420,19 @@ export default function ChildPagelasPage() {
                 }
               }}
               onDelete={async (row) => {
-                await actions.remove(row.id);
-                showSnack("Pagela excluída.", "info");
+                try {
+                  await actions.remove(row.id);
+                  showSnack("Pagela excluída.", "info");
+                } catch (err: unknown) {
+                  showSnack(getErrorMessage(err, "Não foi possível excluir a pagela."), "error");
+                }
               }}
             />
           </Paper>
         </Grid>
       </Grid>
 
-      {isXs && (
+      {isXs && !launchClosed && !childInactive && (
         <Fab
           color="primary"
           aria-label="Criar pagela"
@@ -434,7 +449,7 @@ export default function ChildPagelasPage() {
           open={sheetOpen}
           onOpen={() => setSheetOpen(true)}
           onClose={closeSheet}
-          disableSwipeToOpen={false}
+          disableSwipeToOpen
           ModalProps={{ keepMounted: true }}
           PaperProps={{
             sx: { height: "86vh", borderTopLeftRadius: 24, borderTopRightRadius: 24 },
@@ -446,8 +461,9 @@ export default function ChildPagelasPage() {
               childId={childId}
               childName={child?.name || ""}
               childGender={child?.gender || ""}
-              defaultYear={currentIso.year}
-              defaultWeek={currentIso.week}
+              launchWindow={launch.window}
+              launchLoading={launch.loading}
+              launchError={launch.error}
               teacherProfileId={TEACHER_PROFILE_ID}
               findPagela={findPagela}
               onCreate={async (p) => {

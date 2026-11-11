@@ -45,10 +45,11 @@ export async function apiFetchChildrenSimple(params?: {
   acceptedChrist?: boolean;
   page?: number;
   limit?: number;
-}): Promise<PaginatedChildren<ChildListItem>> {
+}, options?: { signal?: AbortSignal }): Promise<PaginatedChildren<ChildListItem>> {
   const { data } = await api.get<PaginatedChildren<ChildListItem>>(
     `${CHILDREN_ENDPOINT}/simple`,
     {
+      signal: options?.signal,
       params: {
         searchString: params?.searchString?.trim() || undefined,
         isActive: params?.isActive,

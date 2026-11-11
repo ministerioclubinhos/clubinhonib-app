@@ -9,4 +9,5 @@ export type {
   CreatePagelaRequest as CreatePagelaPayload,
   UpdatePagelaRequest as UpdatePagelaPayload,
   Paginated as PageDto,
+  PagelaLaunchWindow,
 } from "@/features/pagelas/types";

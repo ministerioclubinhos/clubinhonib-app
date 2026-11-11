@@ -17,6 +17,7 @@ export {
   apiCreatePagela,
   apiUpdatePagela,
   apiDeletePagela,
+  apiFetchPagelaLaunchWindow,
 } from "@/features/pagelas/api";
 
 export type { CreatePagelaPayload, UpdatePagelaPayload };
@@ -71,4 +72,14 @@ export async function apiCreateAcceptedChrist(
     payload,
   );
   return data;
+}
+
+/**
+ * Exclui uma decisão lançada por engano.
+ *
+ * A aceitação só sai depois das reconciliações da criança: a API recusa o
+ * contrário com uma mensagem explicando.
+ */
+export async function apiDeleteAcceptedChrist(id: string): Promise<void> {
+  await api.delete(`/accepted-christs/${id}`);
 }

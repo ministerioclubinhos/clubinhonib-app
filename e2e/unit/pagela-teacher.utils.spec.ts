@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { clampWeek, getISOWeekYear, toLabelWeek, todayISO } from "@/features/pagela-teacher/utils";
+import { clampWeek, getISOWeekYear, launchableWeeks, toLabelWeek, todayISO } from "@/features/pagela-teacher/utils";
 
 test.describe("clampWeek", () => {
   test("mantém a semana dentro dos limites ISO", () => {
@@ -58,5 +58,16 @@ test.describe("todayISO", () => {
     const esperado = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
 
     expect(todayISO()).toBe(esperado);
+  });
+});
+
+test.describe("launchableWeeks", () => {
+  test("lista da semana atual até a primeira", () => {
+    expect(launchableWeeks({ open: true, currentWeek: 3 })).toEqual([3, 2, 1]);
+  });
+
+  test("fora do período letivo não há semana que aceite lançamento", () => {
+    expect(launchableWeeks({ open: false, currentWeek: null })).toEqual([]);
+    expect(launchableWeeks(null)).toEqual([]);
   });
 });

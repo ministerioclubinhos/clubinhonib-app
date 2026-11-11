@@ -306,10 +306,11 @@ export interface ClubStat {
     performanceScore: number;
     totalDecisions: number;
   };
-  lastActivity: {
+  /** `null` (ou ausente) quando o clubinho nunca lançou pagela. */
+  lastActivity?: {
     date: string | null;
     type: string;
-  };
+  } | null;
   rank: number;
 }
 
@@ -341,10 +342,11 @@ export interface TeacherStat {
     avgVerseRate: number;
     effectivenessScore: number;
   };
-  lastActivity: {
+  /** `null` (ou ausente) quando o professor nunca lançou pagela. */
+  lastActivity?: {
     date: string | null;
     totalPagelas: number;
-  };
+  } | null;
   isActive: boolean;
   rank: number;
 }
@@ -498,14 +500,8 @@ export interface AcceptedChristsChartDataDto {
     reconciled?: number;
     avgMonthsParticipating: number;
   }>;
-  conversionFunnel?: {
-    totalChildren: number;
-    childrenWithPagelas: number;
-    childrenWithDecisions: number;
-    childrenAccepted: number;
-    childrenReconciled: number;
-    conversionRate: number;
-  };
+  // `conversionFunnel` saiu daqui: o DTO do back o declara como opcional, mas
+  // nenhum serviço o preenche — a tela tipava um dado que nunca chega.
 }
 
 export interface CombinedInsightsDto {
@@ -532,16 +528,8 @@ export interface CombinedInsightsDto {
     totalDecisions: number;
     performanceScore: number;
   }>;
-  teacherEffectiveness?: Array<{
-    teacherId: string;
-    name: string;
-    effectivenessScore: number;
-  }>;
-  trends?: Array<{
-    metric: string;
-    trend: 'up' | 'down' | 'stable';
-    changePercentage: number;
-  }>;
+  // `teacherEffectiveness` e `trends` saíram daqui: o DTO do back os declara
+  // como opcionais, mas `/statistics/insights` nunca os preenche.
 }
 
 export interface PagelasStatsResponseDto {
@@ -564,16 +552,17 @@ export interface PagelasStatsResponseDto {
 
 export interface AcceptedChristsStatsResponseDto {
   period: {
-    startDate: string;
-    endDate: string;
+    startDate?: string;
+    endDate?: string;
   };
   overall: {
     totalDecisions: number;
     uniqueChildren: number;
-    byDecisionType: {
-      accepted: number;
-      reconciled: number;
-    };
+    /**
+     * As chaves são as do enum (`ACCEPTED`/`RECONCILED`), e um tipo sem
+     * nenhuma decisão no recorte simplesmente não vem.
+     */
+    byDecisionType: Partial<Record<DecisionType, number>>;
   };
   byPeriod?: AcceptedChristPeriodStats[];
   recentDecisions?: RecentDecision[];
@@ -663,6 +652,54 @@ export interface TeachersStatsResponseDto {
   pagination: PaginationInfo;
 }
 
+/**
+ * Uma semana da linha do tempo de um clubinho (`AttendanceTimelineWeekDto`).
+ *
+ * `isException` e `isPending` sempre vieram do back e não constavam aqui: a
+ * tela só lia `hasPagela`, então feriado e semana futura viravam "faltou".
+ * O back não manda `presenceRate` — manda `presenceCount`, e só quando há
+ * pagela.
+ */
+export interface AttendanceTimelineWeek {
+  year: number;
+  week: number;
+  date: string;
+  hasPagela: boolean;
+  /** Semana marcada como exceção (feriado, recesso): não conta como falta. */
+  isException: boolean;
+  /** A data ainda não chegou: não é falta, é futuro. */
+  isPending: boolean;
+  expectedChildren: number;
+  totalPagelas?: number;
+  firstDate?: string;
+  presenceCount?: number;
+}
+
+/** Como uma semana da linha do tempo é mostrada. */
+export enum AttendanceWeekState {
+  WithPagela = 'with_pagela',
+  Missing = 'missing',
+  Pending = 'pending',
+  Exception = 'exception',
+}
+
+/**
+ * Situação de um clubinho numa semana (`WeeklyClubStatus` no back).
+ *
+ * `pending` e `partial` já eram devolvidos e não constavam na união daqui —
+ * caíam no `default` e apareciam como "Desconhecido".
+ */
+export enum WeeklyClubStatus {
+  Ok = 'ok',
+  Partial = 'partial',
+  Missing = 'missing',
+  Pending = 'pending',
+  Vacation = 'vacation',
+  Inactive = 'inactive',
+  /** O dia do clubinho naquela semana cai fora do período letivo. */
+  OutOfPeriod = 'out_of_period',
+}
+
 export interface ClubAttendanceAnalysisDto {
   clubId: string;
   clubNumber: number;
@@ -672,6 +709,10 @@ export interface ClubAttendanceAnalysisDto {
     endDate: string;
     totalWeeks: number;
     activeWeeks: number;
+    /** Quantas semanas do período caíram em exceção (feriado, recesso). */
+    exceptionsCount: number;
+    /** `false` quando o ano não tem período letivo cadastrado. */
+    hasAcademicPeriod: boolean;
   };
   attendance: {
     weeksWithPagela: number;
@@ -689,16 +730,10 @@ export interface ClubAttendanceAnalysisDto {
     weeksMissing?: number;
     lastPagelaDate?: string;
   }>;
-  timeline: Array<{
-    year: number;
-    week: number;
-    date: string;
-    hasPagela: boolean;
-    totalPagelas?: number;
-    presenceRate?: number;
-  }>;
-  timelinePagination?: PaginationInfo;
-  missingWeeksPagination?: PaginationInfo;
+  timeline: AttendanceTimelineWeek[];
+  /** As rotas de frequência paginam com `hasNextPage`/`hasPreviousPage`. */
+  timelinePagination?: PaginationMeta;
+  missingWeeksPagination?: PaginationMeta;
   note?: string;
 }
 
@@ -715,8 +750,9 @@ export interface WeeklyAttendanceDto {
     weekday: string;
     hasPagela: boolean;
     totalPagelas?: number;
+    expectedChildren: number;
     expectedDate: string;
-    status: 'ok' | 'missing' | 'vacation' | 'inactive';
+    status: WeeklyClubStatus;
   }>;
   summary: {
     totalClubs: number;

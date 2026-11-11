@@ -213,18 +213,20 @@ const StatisticsContent: React.FC = memo(() => {
         />
 
         {/*
-          O recorte vem antes de qualquer número. Ele é o que rege a tela
-          inteira — os KPIs, os gráficos e as onze abas respondem a ele —, e
-          ficava embaixo dos KPIs: a leitura natural era de cima para baixo, o
-          que fazia os números parecerem absolutos e o filtro, um detalhe de
-          uma seção. Primeiro se declara o período; depois se lê o que ele
-          produziu.
+          O recorte vem antes de qualquer número. Ele rege os gráficos e as
+          onze abas, e ficava embaixo dos KPIs: a leitura natural era de cima
+          para baixo, o que fazia o filtro parecer um detalhe de uma seção.
+
+          Os KPIs logo abaixo são a exceção: vêm de `/statistics/overview`,
+          que não recebe filtro nenhum (janelas fixas: esta semana, este mês,
+          este ano). O próprio bloco avisa isso — ver
+          `KPI_FIXED_WINDOW_CAPTION`.
         */}
         <Box sx={{ mb: 3 }}>
           <SmartFilters />
         </Box>
 
-        {/* Os números do recorte escolhido acima. */}
+        {/* Visão geral em janelas fixas: não segue o recorte acima. */}
         <Box sx={{ mb: 3 }}>
           <Suspense fallback={<Skeleton variant="rounded" height={200} sx={{ borderRadius: 3 }} />}>
             <KPIDashboard />

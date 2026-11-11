@@ -79,8 +79,14 @@ export default function ChildFormDialog({
   const isCreate = mode === "create";
 
   const fieldErrors = useMemo(
-    () => (value ? validateChildForm(value) : {}),
-    [value],
+    // Sem clubinho, só o administrador cadastra; a API recusa do mesmo jeito.
+    () =>
+      value
+        ? validateChildForm(value, {
+            requireClub: isCreate && role !== UserRole.ADMIN,
+          })
+        : {},
+    [value, isCreate, role],
   );
   const hasErrors = Object.keys(fieldErrors).length > 0;
 
@@ -221,6 +227,7 @@ export default function ChildFormDialog({
               onChange={(clubId) => setField("clubId", clubId)}
               label="Clubinho"
               disabled={clubLocked}
+              errorText={showErrors ? fieldErrors.clubId : undefined}
               helperText={
                 clubLocked
                   ? "Para transferir a criança, fale com a coordenação."

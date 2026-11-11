@@ -19,7 +19,6 @@ import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveCon
 import { ToggleActiveSubject } from "@/components/common/modal/types";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 import { useAuthRole } from "@/utils/useAuthRole";
-import { extractErrorMessage } from "@/utils/apiError";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { CHILDREN_BROWSER_PAGE_TITLE } from "./constants";
 
@@ -31,7 +30,9 @@ export default function ChildrenBrowserPage() {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  // `noSsr` dá a resposta certa já na primeira renderização: sem ele a tela
+  // buscava 10 crianças e, logo em seguida, 5.
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"), { noSsr: true });
   const pageSize = isMobile ? 5 : 10;
 
   const {
@@ -41,6 +42,7 @@ export default function ChildrenBrowserPage() {
     setIsActiveFilter,
     acceptedChristFilter,
     setAcceptedChristFilter,
+    clearFilters,
     items,
     loading,
     error,
@@ -69,7 +71,13 @@ export default function ChildrenBrowserPage() {
     void refetch();
   });
 
-  const openCreate = () => setCreating(emptyChildForm());
+  // O aviso global do cliente HTTP já mostra a falha de excluir, ativar e
+  // desativar. O erro guardado aqui é o do formulário, e é limpo ao abrir um
+  // novo para a mensagem de uma ação anterior não reaparecer nele.
+  const openCreate = () => {
+    setDialogError("");
+    setCreating(emptyChildForm());
+  };
 
   const submitCreate = async () => {
     if (!creating) return;
@@ -88,12 +96,8 @@ export default function ChildrenBrowserPage() {
       setEditing(childToForm(full));
       setDialogError("");
     } catch (err: unknown) {
-      setDialogError(
-        extractErrorMessage(
-          err,
-          "Não foi possível abrir a criança para edição",
-        ),
-      );
+      // O aviso global já mostrou a falha; o formulário não chega a abrir.
+      void err;
     }
   };
 
@@ -125,7 +129,8 @@ export default function ChildrenBrowserPage() {
       sx={{
         px: { xs: 2, md: 4 },
         pt: { xs: 2, md: 4 },
-        pb: { xs: 2, md: 4 },
+        // Folga para o botão flutuante não cobrir a paginação no celular.
+        pb: { xs: 12, md: 4 },
         minHeight: "100vh",
         bgcolor: "#f6f7f9"
       }}
@@ -233,8 +238,9 @@ export default function ChildrenBrowserPage() {
           />
 
           <FormControl size="small" sx={{ minWidth: { xs: '100%', md: 180 } }}>
-            <InputLabel>Status</InputLabel>
+            <InputLabel id="children-status-label">Status</InputLabel>
             <Select
+              labelId="children-status-label"
               value={isActiveFilter === undefined ? 'all' : isActiveFilter ? 'active' : 'inactive'}
               onChange={(e) => {
                 const val = e.target.value;
@@ -249,8 +255,9 @@ export default function ChildrenBrowserPage() {
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: { xs: '100%', md: 200 } }}>
-            <InputLabel>Decisão</InputLabel>
+            <InputLabel id="children-decision-label">Decisão</InputLabel>
             <Select
+              labelId="children-decision-label"
               value={acceptedChristFilter === undefined ? 'all' : acceptedChristFilter ? 'accepted' : 'not_accepted'}
               onChange={(e) => {
                 const val = e.target.value;
@@ -265,11 +272,7 @@ export default function ChildrenBrowserPage() {
           </FormControl>
 
           <Button
-            onClick={() => {
-              setSearchString("");
-              setIsActiveFilter(undefined);
-              setAcceptedChristFilter(undefined);
-            }}
+            onClick={clearFilters}
             disabled={!searchString && isActiveFilter === undefined && acceptedChristFilter === undefined}
             startIcon={<FilterAltOff />}
             variant="outlined"
@@ -337,8 +340,9 @@ export default function ChildrenBrowserPage() {
                 onChange={(_, newPage) => handlePageChange(newPage)}
                 color="primary"
                 size={isMobile ? "small" : "medium"}
-                showFirstButton
-                showLastButton
+                siblingCount={isMobile ? 0 : 1}
+                showFirstButton={!isMobile}
+                showLastButton={!isMobile}
               />
             </Box>
           )}
@@ -396,22 +400,20 @@ export default function ChildrenBrowserPage() {
         onConfirm={async () => {
           if (!confirmToggleActive) return;
 
-          try {
-            const fullChild = await apiFetchChild(confirmToggleActive.id);
-            const ok = await toggleActive(fullChild.id);
-            if (ok) {
-              enqueueSnackbar(
-                confirmToggleActive.isActive
-                  ? "Criança desativada com sucesso"
-                  : "Criança ativada com sucesso",
-                { variant: "info" }
-              );
-              setConfirmToggleActive(null);
-              setDialogError("");
-              await refetch();
-            }
-          } catch (err: unknown) {
-            setDialogError(extractErrorMessage(err, "Erro ao alterar status da criança"));
+          // A rota inverte a situação no servidor: um segundo toque enquanto
+          // a primeira chamada anda desfaria a troca.
+          if (dialogLoading) return;
+          const wasActive = confirmToggleActive.isActive;
+          const ok = await toggleActive(confirmToggleActive.id);
+          if (ok) {
+            enqueueSnackbar(
+              wasActive
+                ? "Criança desativada com sucesso"
+                : "Criança ativada com sucesso",
+              { variant: "info" }
+            );
+            setConfirmToggleActive(null);
+            setDialogError("");
           }
         }}
         loading={dialogLoading}

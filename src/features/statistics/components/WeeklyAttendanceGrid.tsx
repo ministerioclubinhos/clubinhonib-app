@@ -29,6 +29,10 @@ import {
   Cancel,
   BeachAccess,
   Block,
+  HourglassEmpty,
+  EventBusy,
+  HelpOutline,
+  Timelapse,
   NavigateBefore,
   NavigateNext,
   CalendarToday,
@@ -36,6 +40,12 @@ import {
 import { useWeeklyAttendance, useCurrentWeek, useAcademicYears } from '../hooks';
 import dayjs from 'dayjs';
 import { ChartError } from './ui';
+import { WeeklyClubStatus } from '../types';
+import {
+  ATTENDANCE_EMPTY_MESSAGES,
+  NO_DATA_PLACEHOLDER,
+  WEEKLY_CLUB_STATUS_LABELS,
+} from '../constants';
 
 export const WeeklyAttendanceGrid: React.FC = () => {
   const theme = useTheme();
@@ -82,40 +92,65 @@ export const WeeklyAttendanceGrid: React.FC = () => {
     }
   }, [currentWeekInfo, academicYear, academicWeek]);
 
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status: WeeklyClubStatus) => {
+    // Ícone e cor de cada situação; o rótulo vem de `constants.ts`. Cores:
+    // parcial é o alerta (âmbar); férias/exceção e "aguardando" não são
+    // problema, então saem do âmbar e do vermelho.
     switch (status) {
-      case 'ok':
+      case WeeklyClubStatus.Ok:
         return {
           icon: <CheckCircle />,
           color: theme.palette.success.main,
-          label: 'OK',
+          label: WEEKLY_CLUB_STATUS_LABELS[status],
           bgcolor: `${theme.palette.success.main}20`,
         };
-      case 'missing':
+      case WeeklyClubStatus.Partial:
+        return {
+          icon: <Timelapse />,
+          color: theme.palette.warning.dark,
+          label: WEEKLY_CLUB_STATUS_LABELS[status],
+          bgcolor: `${theme.palette.warning.main}20`,
+        };
+      case WeeklyClubStatus.Missing:
         return {
           icon: <Cancel />,
           color: theme.palette.error.main,
-          label: 'Faltou',
+          label: WEEKLY_CLUB_STATUS_LABELS[status],
           bgcolor: `${theme.palette.error.main}20`,
         };
-      case 'vacation':
+      case WeeklyClubStatus.Pending:
+        return {
+          icon: <HourglassEmpty />,
+          color: theme.palette.info.dark,
+          label: WEEKLY_CLUB_STATUS_LABELS[status],
+          bgcolor: `${theme.palette.info.main}14`,
+        };
+      case WeeklyClubStatus.Vacation:
         return {
           icon: <BeachAccess />,
-          color: theme.palette.warning.main,
-          label: 'Férias',
-          bgcolor: `${theme.palette.warning.main}20`,
+          color: theme.palette.secondary.dark,
+          label: WEEKLY_CLUB_STATUS_LABELS[status],
+          bgcolor: `${theme.palette.secondary.main}14`,
         };
-      case 'inactive':
+      case WeeklyClubStatus.OutOfPeriod:
+        return {
+          icon: <EventBusy />,
+          color: theme.palette.text.secondary,
+          label: WEEKLY_CLUB_STATUS_LABELS[status],
+          bgcolor: theme.palette.action.hover,
+        };
+      case WeeklyClubStatus.Inactive:
         return {
           icon: <Block />,
           color: theme.palette.grey[500],
-          label: 'Inativo',
+          label: WEEKLY_CLUB_STATUS_LABELS[status],
           bgcolor: theme.palette.grey[200],
         };
       default:
+        // Um estado que o back passe a mandar antes de a tela conhecê-lo.
         return {
-          icon: <Cancel />,
-          color: theme.palette.grey[500],
+          icon: <HelpOutline />,
+          color: theme.palette.grey[600],
           label: 'Desconhecido',
           bgcolor: theme.palette.grey[200],
         };
@@ -183,6 +218,9 @@ export const WeeklyAttendanceGrid: React.FC = () => {
   }
 
   const hasClubs = data.clubs && data.clubs.length > 0;
+  // Nenhum clubinho era esperado ainda (todos aguardando, em exceção ou sem
+  // crianças): a taxa não existe, e "0%" seria lido como semana ruim.
+  const hasExpectedClubs = data.summary.clubsActive > 0;
   const isCurrentWeek = academicYear === currentWeekInfo?.academicYear &&
     academicWeek === currentWeekInfo?.academicWeek;
 
@@ -307,9 +345,25 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                 <Typography variant="caption" color="text.secondary">
                   Taxa de Frequência
                 </Typography>
-                <Typography variant="h5" fontWeight="bold" color={data.summary.attendanceRate >= 80 ? 'success.main' : 'warning.main'}>
-                  {data.summary.attendanceRate.toFixed(1)}%
-                </Typography>
+                {hasExpectedClubs ? (
+                  <Typography
+                    data-testid="statistics-weekly-attendance-rate"
+                    variant="h5"
+                    fontWeight="bold"
+                    color={data.summary.attendanceRate >= 80 ? 'success.main' : 'warning.main'}
+                  >
+                    {data.summary.attendanceRate.toFixed(1)}%
+                  </Typography>
+                ) : (
+                  <Typography
+                    data-testid="statistics-weekly-attendance-rate"
+                    variant="h5"
+                    fontWeight="bold"
+                    color="text.secondary"
+                  >
+                    {NO_DATA_PLACEHOLDER}
+                  </Typography>
+                )}
               </Paper>
             </Grid2>
 
@@ -335,7 +389,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
               border: `1px solid ${theme.palette.divider}`,
             }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', columnGap: 1, mb: 1 }}>
               <Typography variant="body2" fontWeight={600}>
                 Frequência Geral da Semana
               </Typography>
@@ -343,19 +397,30 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                 {data.summary.clubsWithPagela} de {data.summary.clubsActive} clubinhos
               </Typography>
             </Box>
-            <LinearProgress
-              variant="determinate"
-              value={data.summary.attendanceRate}
-              sx={{
-                height: 12,
-                borderRadius: 6,
-                bgcolor: `${theme.palette.error.main}20`,
-                '& .MuiLinearProgress-bar': {
+            {hasExpectedClubs ? (
+              <LinearProgress
+                variant="determinate"
+                value={Math.min(100, Math.max(0, data.summary.attendanceRate))}
+                aria-label="Frequência geral da semana"
+                sx={{
+                  height: 12,
                   borderRadius: 6,
-                  background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.primary.main} 100%)`,
-                },
-              }}
-            />
+                  bgcolor: `${theme.palette.error.main}20`,
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 6,
+                    background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.primary.main} 100%)`,
+                  },
+                }}
+              />
+            ) : (
+              <Typography
+                data-testid="statistics-weekly-attendance-empty"
+                variant="body2"
+                color="text.secondary"
+              >
+                {ATTENDANCE_EMPTY_MESSAGES.noExpectedClubs}
+              </Typography>
+            )}
           </Paper>
 
           {isMobile ? (
@@ -432,18 +497,21 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                           </Box>
                           <Box>
                             <Chip
+                              data-testid="statistics-weekly-attendance-status"
+                              data-status={club.status}
                               icon={statusConfig.icon}
                               label={statusConfig.label}
                               size="small"
                               sx={{
+                                maxWidth: '100%',
                                 bgcolor: statusConfig.bgcolor,
                                 color: statusConfig.color,
                                 border: `1px solid ${statusConfig.color}`,
                                 fontWeight: 600,
-                                fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                                height: { xs: 20, sm: 24 },
-                                '& .MuiChip-icon': { fontSize: { xs: 14, sm: 16 } },
-                                '& .MuiChip-label': { px: { xs: 0.75, sm: 1 } }
+                                fontSize: '0.75rem',
+                                height: 24,
+                                '& .MuiChip-icon': { fontSize: 16, color: 'inherit' },
+                                '& .MuiChip-label': { px: 1 }
                               }}
                             />
                           </Box>
@@ -502,6 +570,8 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                         </TableCell>
                         <TableCell align="center">
                           <Chip
+                            data-testid="statistics-weekly-attendance-status"
+                            data-status={club.status}
                             icon={statusConfig.icon}
                             label={statusConfig.label}
                             size="small"
@@ -510,6 +580,7 @@ export const WeeklyAttendanceGrid: React.FC = () => {
                               color: statusConfig.color,
                               border: `1px solid ${statusConfig.color}`,
                               fontWeight: 600,
+                              '& .MuiChip-icon': { color: 'inherit' },
                             }}
                           />
                         </TableCell>

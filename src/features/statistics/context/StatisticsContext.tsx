@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useCallback, useMemo, use
 import { PeriodShortcut } from '../types';
 import type { PagelasStatsQueryDto } from '../types';
 import { StatisticsTab } from '../constants';
+import { resolveRangeOnPeriodChange } from '../utils/periodRange';
 import dayjs from 'dayjs';
 
 export interface DateRange {
@@ -185,19 +186,30 @@ const statisticsReducer = (state: StatisticsState, action: StatisticsAction): St
     }
 
     case 'SET_PERIOD': {
-      const dateRange = getPeriodDateRange(action.payload);
-      const groupBy = getGroupByForPeriod(action.payload);
+      // "Personalizado" mantém as datas em uso até a pessoa escolher outras;
+      // antes as duas eram apagadas e `period=custom` saía sozinho.
+      const dateRange = resolveRangeOnPeriodChange(
+        action.payload,
+        getPeriodDateRange(action.payload),
+        state.filters,
+      );
+      const isCustom = action.payload === PeriodShortcut.CUSTOM;
+      const keptRange =
+        isCustom && dateRange.startDate && dateRange.endDate
+          ? { startDate: dateRange.startDate, endDate: dateRange.endDate }
+          : null;
       return {
         ...state,
         filters: {
           ...state.filters,
           period: action.payload,
-          startDate: dateRange?.startDate,
-          endDate: dateRange?.endDate,
-          groupBy,
-          year: action.payload === 'this_year' ? dayjs().year() : undefined,
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          // O agrupamento também fica como estava: a janela não mudou.
+          groupBy: isCustom ? state.filters.groupBy : getGroupByForPeriod(action.payload),
+          year: action.payload === PeriodShortcut.THIS_YEAR ? dayjs().year() : undefined,
         },
-        customDateRange: action.payload === 'custom' ? state.customDateRange : null,
+        customDateRange: isCustom ? (state.customDateRange ?? keptRange) : null,
       };
     }
 

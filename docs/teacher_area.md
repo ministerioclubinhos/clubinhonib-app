@@ -27,3 +27,59 @@ The Teacher Area is the central hub for club leaders and teachers to manage thei
 Teachers select Documento, Imagem or Vídeo before adding files. Only Vídeo exposes the alternative YouTube input. Supported formats/limits are explained beside the upload control. Grouped previews support remove/undo. Field errors preserve focus and API failures preserve the draft with a retry action. Navigation uses the shared unsaved-change guard; temporary preview URLs are revoked on reset/unmount.
 
 A successful `201` immediately shows “Ideia recebida”, with explicit actions to share another idea or leave. When automatic AI is enabled, the success message explains background processing; the form never waits for AI or email. The submission notice also explains possible admin-initiated AI processing and preservation of the original.
+
+## Período letivo no lançamento de pagelas (2026-11-11)
+
+Pagela só é lançada ou editada dentro do período letivo. A tela
+`/area-das-criancas/:childId` pergunta à API (`GET /pagelas/launch-window`)
+antes de abrir o formulário:
+
+- **Fechado** (sem período, ainda não começou ou já terminou): o formulário dá
+  lugar a um aviso com o motivo e a data; no celular o botão de criar some e o
+  aviso aparece no topo. Excluir continua possível.
+- **Aberto**: o ano é o do período (somente leitura) e a semana é escolhida em
+  uma lista da semana letiva atual até a 1. Semana futura não existe na lista.
+- A semana é a **letiva**, contada do início do período. Antes o formulário
+  preenchia a semana do calendário (ISO), e a pagela ficava em uma semana que o
+  controle de clubinhos não reconhecia.
+- Trocar para uma semana que já tem pagela transforma o formulário em edição; a
+  busca vai à API, porque a lista da tela é paginada e filtrada.
+- Editar envia só presença, meditação, versículo e observação. Antes reenviava
+  a data (que virava "hoje") e o professor (que era apagado quando quem editava
+  era coordenador ou administrador).
+- Recusa da API aparece dentro do formulário; o botão fica travado enquanto
+  salva. Excluir e salvar só mexem na lista depois que a API confirma.
+
+Arquivos: `pagela-teacher/components/PagelaQuickForm.tsx`, `hooks.ts`
+(`usePagelaLaunchWindow`, `findByWeek`), `utils.ts` (`launchableWeeks`).
+Testes: `e2e/flows/pagela-launch-window.spec.ts`,
+`e2e/unit/pagela-teacher.utils.spec.ts`.
+
+## Lista da área das crianças (2026-11-11)
+
+- Busca, filtros e página ficam na URL (`busca`, `ativas`, `aceitaram`,
+  `pagina`): voltar da tela de uma criança devolve a lista onde estava.
+- Cada busca cancela a anterior; a página que ficou vazia depois de excluir ou
+  desativar recua para a última que existe.
+- Ativar/desativar não faz mais uma busca extra antes, e o segundo toque
+  durante a chamada é ignorado (a rota inverte a situação no servidor).
+- No celular a página tem folga para o botão flutuante não cobrir a paginação.
+- A tela da criança busca só aquela criança, e não a lista inteira.
+- Falhas de excluir, ativar e desativar aparecem pelo aviso global do cliente
+  HTTP; o erro guardado na tela é só o do formulário.
+
+Teste: `e2e/flows/children-browser.spec.ts`.
+
+## Decisões e criança desativada (2026-11-11)
+
+- O modal de decisão oferece **aceitação** para quem nunca aceitou e
+  **reconciliação** para quem já aceitou (`hasAcceptedChrist`, a mesma conta do
+  filtro da API: registro antigo sem tipo não conta).
+- O modal mostra o histórico de decisões com data, e cada registro pode ser
+  excluído com confirmação (`DELETE /accepted-christs/:id`). A aceitação só
+  sai depois das reconciliações.
+- A recusa da API aparece dentro do modal.
+- Criança desativada não recebe decisão nem pagela: o modal e a tela de
+  pagelas explicam o motivo e não oferecem o formulário.
+
+Teste: `e2e/flows/child-decisions.spec.ts`.

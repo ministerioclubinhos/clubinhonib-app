@@ -36,7 +36,8 @@ export type AcceptedChristResponse = {
 /** Corpo de `POST /accepted-christs` (`CreateAcceptedChristDto`). */
 export type CreateAcceptedChristRequest = {
   childId: string;
-  decision?: DecisionType;
+  /** Obrigatória: a API aplica as regras de decisão a partir do tipo. */
+  decision: DecisionType;
   notes?: string | null;
 };
 
