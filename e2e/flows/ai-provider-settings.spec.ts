@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { DEFAULT_AI_PROVIDER_SETTINGS } from '@/features/ai-providers/constants';
+import { AI_PROVIDER_PROFILES } from '@/features/ai-providers/constants';
 import {
+  AiModelCatalogSource,
+  AiProviderProfile,
   AiProviderSettings,
   LlmProviderType,
   type SaveAiProviderSettingsRequest,
@@ -100,9 +103,74 @@ test('refetch preserva edição local; modelos com erro não anunciam sucesso; c
   await expect(page.getByTestId('ai-provider-gemini-max-retries')).toHaveValue('4');
   expect(await page.content()).not.toContain('synthetic-persisted-secret');
   failModels = true;
-  await page.getByRole('button', { name: /Consultar Modelos|Buscar modelos/ }).click();
+  await page.getByTestId('ai-providers-fetch-models-button').click();
   await expect(page.getByTestId('ai-providers-config-feedback')).toContainText(
     'Não foi possível consultar'
   );
   await expect(page.getByTestId('ai-providers-config-feedback')).not.toContainText('disponíveis:');
+});
+
+test('perfil de testes preenche os dois provedores, salva e pode voltar para produção ou manual', async ({
+  page,
+}) => {
+  let saved: AiProviderSettings = structuredClone(DEFAULT_AI_PROVIDER_SETTINGS);
+  saved.openai.hasApiKey = true;
+  let lastPayload: SaveAiProviderSettingsRequest | undefined;
+  await page.route('**/api/v1/lessons/providers/**', async (route) => {
+    const request = route.request();
+    if (new URL(request.url()).pathname.endsWith('/models')) {
+      await route.fulfill({
+        json: {
+          models: { general: [saved.openai.generalModel], image: [saved.openai.imageModel] },
+          source: AiModelCatalogSource.LIVE,
+        },
+      });
+      return;
+    }
+    if (request.method() === 'PUT') {
+      lastPayload = request.postDataJSON() as SaveAiProviderSettingsRequest;
+      saved = {
+        llmProvider: lastPayload.llmProvider,
+        openai: { ...lastPayload.openai, hasApiKey: true },
+        gemini: { ...lastPayload.gemini, hasApiKey: false },
+      };
+    }
+    await route.fulfill({ json: saved });
+  });
+  await page.goto('/adm/config-provedores-ia');
+  await expect(page.getByTestId('ai-providers-saved-profile')).toHaveAttribute(
+    'data-profile',
+    AiProviderProfile.PRODUCTION
+  );
+  await expect(page.getByTestId('ai-providers-save-button')).toBeDisabled();
+  await page.getByTestId('ai-providers-profile-test').click();
+  await expect(page.getByTestId('ai-providers-profile-test')).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  );
+  // The live catalog of this key does not list the cheaper models: the page says so.
+  await expect(page.getByTestId('ai-providers-missing-models')).toContainText(
+    AI_PROVIDER_PROFILES[AiProviderProfile.TEST].openai.imageModel
+  );
+  await page.getByTestId('ai-providers-save-button').click();
+  await expect(page.getByTestId('ai-providers-config-feedback')).toContainText('sucesso');
+  expect(lastPayload?.openai).toEqual(AI_PROVIDER_PROFILES[AiProviderProfile.TEST].openai);
+  expect(lastPayload?.gemini).toEqual(AI_PROVIDER_PROFILES[AiProviderProfile.TEST].gemini);
+  expect(lastPayload?.llmProvider).toBe(LlmProviderType.OPENAI);
+  await expect(page.getByTestId('ai-providers-saved-profile')).toHaveAttribute(
+    'data-profile',
+    AiProviderProfile.TEST
+  );
+  // A manual change is still possible and turns the profile into a custom one.
+  await page.getByTestId('ai-provider-gemini-max-retries').fill('2');
+  await expect(page.getByTestId('ai-providers-custom-profile')).toBeVisible();
+  // Discarding goes back to the saved profile with nothing left to save.
+  await page.getByTestId('ai-providers-discard-button').click();
+  await expect(page.getByTestId('ai-providers-save-button')).toBeDisabled();
+  await page.getByTestId('ai-providers-profile-production').click();
+  await page.getByTestId('ai-providers-save-button').click();
+  await expect(page.getByTestId('ai-providers-saved-profile')).toHaveAttribute(
+    'data-profile',
+    AiProviderProfile.PRODUCTION
+  );
 });

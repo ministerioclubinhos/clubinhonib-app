@@ -306,9 +306,19 @@ aplicar o texto sobre a versão atual ou descartar.
 credencial oferecem preservar (omitir `apiKey`), substituir e remover (`apiKey`
 vazio, por controle próprio). As opções de qualidade, esforço e tamanho são
 exatamente as aceitas pela API, e retries vão de 0 a 5. Um selo permanente
-indica a origem do catálogo de modelos (`LIVE`, `FALLBACK` ou `STATIC`), e o
-modelo "em uso" vem das configurações salvas. Salvar é bloqueado quando o
-provedor ativo não tem chave utilizável.
+indica a origem do catálogo de modelos (`LIVE` ou `FALLBACK`, para OpenAI e
+Gemini), e o modelo "em uso" vem das configurações salvas. O catálogo ao vivo
+usa a chave salva e, quando falha, o aviso diz o motivo (chave recusada, sem
+permissão, ilegível ou provedor indisponível). Salvar é bloqueado quando o
+provedor ativo não tem chave utilizável. "Alterações pendentes" compara o
+formulário com o que está salvo e "Descartar" volta ao salvo. Os perfis de
+custo ("Testes (econômico)" e "Produção (qualidade)", em
+`AI_PROVIDER_PROFILES`) preenchem modelos e parâmetros da OpenAI e do Gemini de
+uma vez, sem trocar o provedor ativo nem as chaves; qualquer ajuste manual
+depois disso vira "Personalizado". O perfil só vale após salvar. Um aviso lista
+os modelos selecionados que o catálogo ao vivo não devolveu para a chave salva.
+O nível de raciocínio fica desabilitado, com explicação, quando o modelo de
+texto escolhido não o usa.
 
 **Stream.** O SSE usa o cliente Axios autenticado. O fechamento planejado do
 servidor (após ao menos um evento) é tratado como rotação, sem aviso. O aviso

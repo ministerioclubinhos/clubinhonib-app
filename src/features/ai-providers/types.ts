@@ -119,3 +119,16 @@ export interface AiProviderFeedback {
   severity: AiProviderFeedbackSeverity;
   message: string;
 }
+/** Ready-made cost profiles; `CUSTOM` is any manual combination. */
+export enum AiProviderProfile {
+  TEST = 'test',
+  PRODUCTION = 'production',
+  CUSTOM = 'custom',
+}
+export interface AiProviderProfilePreset {
+  label: string;
+  description: string;
+  openai: OpenAiSettings;
+  gemini: GeminiSettings;
+}
+export type AiProviderPresetProfile = Exclude<AiProviderProfile, AiProviderProfile.CUSTOM>;

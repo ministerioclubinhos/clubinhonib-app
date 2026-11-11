@@ -1,5 +1,8 @@
 import {
   ApiKeyAction,
+  AiProviderProfile,
+  type AiProviderPresetProfile,
+  OpenAIReasoningEffort,
   AiModelCatalogSource,
   AiProviderFeedbackSeverity,
   type AiProviderSettings,
@@ -15,6 +18,12 @@ import {
   type GeminiSettings,
 } from './types';
 import {
+  AI_PROVIDER_PROFILE_ORDER,
+  AI_PROVIDER_PROFILES,
+  AI_PROVIDER_TEXT,
+  OPENAI_NON_REASONING_FRAGMENT,
+  OPENAI_O_SERIES_MODEL_PATTERN,
+  OPENAI_REASONING_MODEL_PATTERN,
   GEMINI_MAX_RETRIES,
   GEMINI_MAX_RETRY_DELAY_MS,
   MODEL_CATALOG_BADGES,
@@ -148,8 +157,7 @@ export function modelCatalogBadge(
 }
 
 function integerError(value: unknown, max: number, unit: string): string | null {
-  if (typeof value !== 'number' || !Number.isInteger(value))
-    return 'Informe um número inteiro.';
+  if (typeof value !== 'number' || !Number.isInteger(value)) return 'Informe um número inteiro.';
   if (value < 0 || value > max) return `Informe um valor entre 0 e ${max}${unit}.`;
   return null;
 }
@@ -181,4 +189,72 @@ export function activeProviderKeyIssue(
   if (active.keyAction === ApiKeyAction.REMOVE || !stored?.hasApiKey)
     return 'O provedor ativo precisa de uma chave de API. Digite a chave para poder salvar.';
   return null;
+}
+
+/** Unsaved only when the request it would send differs from what is saved. */
+export function hasUnsavedAiProviderChanges(
+  form: AiProviderForm,
+  saved: AiProviderSettings
+): boolean {
+  return (
+    JSON.stringify(buildAiProviderSettingsPayload(form)) !==
+    JSON.stringify(buildAiProviderSettingsPayload(providerSettingsForm(saved)))
+  );
+}
+
+export function supportsOpenAiReasoning(model: string): boolean {
+  return (
+    OPENAI_REASONING_MODEL_PATTERN.test(model) && !model.includes(OPENAI_NON_REASONING_FRAGMENT)
+  );
+}
+
+/** Tells the administrator what the API will really send for this model. */
+export function openAiReasoningNote(model: string, effort: OpenAIReasoningEffort): string {
+  if (!supportsOpenAiReasoning(model)) return AI_PROVIDER_TEXT.reasoningUnsupported;
+  if (effort === OpenAIReasoningEffort.NONE && OPENAI_O_SERIES_MODEL_PATTERN.test(model))
+    return AI_PROVIDER_TEXT.reasoningNoneOnOSeries;
+  return AI_PROVIDER_TEXT.reasoningDefault;
+}
+
+/** Fills models and parameters of both providers; keys and the active provider stay. */
+export function applyAiProviderProfile(
+  form: AiProviderForm,
+  profile: AiProviderPresetProfile
+): AiProviderForm {
+  const preset = AI_PROVIDER_PROFILES[profile];
+  return {
+    ...form,
+    openai: { ...form.openai, ...preset.openai },
+    gemini: { ...form.gemini, ...preset.gemini },
+  };
+}
+
+/** The profile whose values the form currently holds, or `CUSTOM` after any manual change. */
+export function matchingAiProviderProfile(
+  value: Pick<AiProviderForm, 'openai' | 'gemini'> | Pick<AiProviderSettings, 'openai' | 'gemini'>
+): AiProviderProfile {
+  const same = <T extends object>(preset: T, current: T): boolean =>
+    (Object.keys(preset) as Array<keyof T>).every((key) => preset[key] === current[key]);
+  return (
+    AI_PROVIDER_PROFILE_ORDER.find(
+      (profile) =>
+        same(AI_PROVIDER_PROFILES[profile].openai, value.openai) &&
+        same(AI_PROVIDER_PROFILES[profile].gemini, value.gemini)
+    ) ?? AiProviderProfile.CUSTOM
+  );
+}
+
+/** Selected models a live catalog did not return for the saved key. */
+export function modelsMissingFromLiveCatalog(
+  data: OpenAiModelsResponse | GeminiModelsResponse | undefined,
+  general: string[],
+  image: string[]
+): string[] {
+  if (data?.source !== AiModelCatalogSource.LIVE) return [];
+  return Array.from(
+    new Set([
+      ...general.filter((model) => model && !data.models.general.includes(model)),
+      ...image.filter((model) => model && !data.models.image.includes(model)),
+    ])
+  );
 }

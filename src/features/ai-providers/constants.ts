@@ -5,7 +5,14 @@ import {
   OpenAIImageQuality,
   OpenAIReasoningEffort,
 } from './types';
-import type { AiModelCatalogBadge, AiProviderOption, AiProviderSettings } from './types';
+import { AiProviderProfile } from './types';
+import type {
+  AiModelCatalogBadge,
+  AiProviderOption,
+  AiProviderPresetProfile,
+  AiProviderProfilePreset,
+  AiProviderSettings,
+} from './types';
 
 export const OPENAI_MODELS_ENDPOINT = '/api/v1/lessons/providers/openai/models';
 
@@ -57,7 +64,7 @@ export const FALLBACK_GEMINI_GENERAL_MODELS = [
   'gemini-1.5-pro',
 ];
 
-export const FALLBACK_GEMINI_IMAGE_MODELS = ['gemini-3.1-flash-image', 'imagen-3.0-generate-002'];
+export const FALLBACK_GEMINI_IMAGE_MODELS = ['gemini-3.1-flash-image'];
 
 /** Mirror the bounds enforced by the API settings DTO. */
 export const GEMINI_MAX_RETRIES = 5;
@@ -88,7 +95,8 @@ export const MODEL_CATALOG_BADGES: Record<AiModelCatalogSource, AiModelCatalogBa
   [AiModelCatalogSource.LIVE]: {
     label: 'Consulta ao vivo',
     color: 'success',
-    description: 'Lista obtida agora do provedor com a chave salva.',
+    description:
+      'Lista obtida do provedor com a chave salva: só aparecem modelos que ela pode usar.',
   },
   [AiModelCatalogSource.FALLBACK]: {
     label: 'Lista de contingência',
@@ -112,3 +120,76 @@ export const MODEL_CATALOG_UNCHECKED_BADGE: AiModelCatalogBadge = {
 export const MODEL_IN_USE_SUFFIX = ' (em uso)';
 export const AI_PROVIDER_SETTINGS_STALE_TIME_MS = 60_000;
 export const AI_PROVIDER_MODELS_STALE_TIME_MS = 300_000;
+
+/** Mirror `supportsOpenAiReasoning` / `isOpenAiOSeries` in the API. */
+export const OPENAI_REASONING_MODEL_PATTERN = /^(?:gpt-[56](?:[.-]|$)|o[134](?:-|$))/;
+export const OPENAI_O_SERIES_MODEL_PATTERN = /^o[134](?:-|$)/;
+export const OPENAI_NON_REASONING_FRAGMENT = '-chat';
+export const AI_PROVIDER_LABELS: Record<LlmProviderType, string> = {
+  [LlmProviderType.OPENAI]: 'OpenAI',
+  [LlmProviderType.GEMINI]: 'Gemini',
+};
+export const AI_PROVIDER_TEXT = {
+  reasoningUnsupported: 'O modelo de texto selecionado não usa raciocínio: este ajuste é ignorado.',
+  reasoningNoneOnOSeries:
+    'Este modelo sempre raciocina: "Nenhum" não é enviado e vale o padrão do provedor.',
+  reasoningDefault:
+    'Níveis mais altos melhoram a revisão do texto, mas deixam a geração mais lenta e cara. Nem todo modelo aceita todos os níveis.',
+  sameFallbackModel: 'Igual ao modelo principal: não haverá segunda tentativa com outro modelo.',
+  fallbackModel: 'Usado quando o modelo principal esgota as tentativas.',
+  missingModels:
+    'O catálogo ao vivo não listou estes modelos para a chave salva; a geração pode falhar com eles:',
+  staleSettings:
+    'Não foi possível atualizar as configurações agora. Os valores exibidos podem estar desatualizados.',
+} as const;
+
+/**
+ * Cost profiles applied to both providers at once. Images dominate the bill,
+ * so the test profile uses the small image model, the lowest quality/size and
+ * no paid retries. Keys and the active provider are never part of a profile.
+ */
+export const AI_PROVIDER_PROFILES: Record<AiProviderPresetProfile, AiProviderProfilePreset> = {
+  [AiProviderProfile.TEST]: {
+    label: 'Testes (econômico)',
+    description:
+      'Modelos menores, imagem em baixa qualidade e sem tentativas extras. Para testar o fluxo gastando pouco; não use para material que vai às crianças.',
+    openai: {
+      generalModel: 'gpt-4o-mini',
+      imageModel: 'gpt-image-1-mini',
+      imageQuality: OpenAIImageQuality.LOW,
+      reasoningEffort: OpenAIReasoningEffort.NONE,
+    },
+    gemini: {
+      generalModel: 'gemini-2.5-flash',
+      fallbackModel: 'gemini-2.5-flash',
+      imageModel: 'gemini-3.1-flash-image',
+      imageSize: GeminiImageSize.ONE_K,
+      maxRetries: 0,
+      retryBaseDelayMs: 1000,
+    },
+  },
+  [AiProviderProfile.PRODUCTION]: {
+    label: 'Produção (qualidade)',
+    description:
+      'Modelos e qualidade de imagem recomendados para o material final. Custo mais alto por lição.',
+    openai: {
+      generalModel: DEFAULT_AI_PROVIDER_SETTINGS.openai.generalModel,
+      imageModel: DEFAULT_AI_PROVIDER_SETTINGS.openai.imageModel,
+      imageQuality: DEFAULT_AI_PROVIDER_SETTINGS.openai.imageQuality,
+      reasoningEffort: DEFAULT_AI_PROVIDER_SETTINGS.openai.reasoningEffort,
+    },
+    gemini: {
+      generalModel: DEFAULT_AI_PROVIDER_SETTINGS.gemini.generalModel,
+      fallbackModel: DEFAULT_AI_PROVIDER_SETTINGS.gemini.fallbackModel,
+      imageModel: DEFAULT_AI_PROVIDER_SETTINGS.gemini.imageModel,
+      imageSize: DEFAULT_AI_PROVIDER_SETTINGS.gemini.imageSize,
+      maxRetries: DEFAULT_AI_PROVIDER_SETTINGS.gemini.maxRetries,
+      retryBaseDelayMs: DEFAULT_AI_PROVIDER_SETTINGS.gemini.retryBaseDelayMs,
+    },
+  },
+};
+export const AI_PROVIDER_PROFILE_ORDER: AiProviderPresetProfile[] = [
+  AiProviderProfile.TEST,
+  AiProviderProfile.PRODUCTION,
+];
+export const AI_PROVIDER_CUSTOM_PROFILE_LABEL = 'Personalizado (manual)';
