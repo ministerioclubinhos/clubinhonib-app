@@ -106,3 +106,16 @@ export const WEEK_MATERIAL_MEDIA_TABS: ReadonlyArray<{
     color: '#9c27b0',
   },
 ];
+
+/** Marca gravada na descrição das páginas de Material Especial. */
+export const SPECIAL_MATERIAL_TAG = '[tipo:especial]';
+
+/**
+ * Marcas técnicas que podem estar na descrição salva e nunca são exibidas:
+ * o tipo do material e a origem no Estúdio (`[origem:licao:<uuid>]`, presente
+ * só em páginas antigas).
+ */
+export const MATERIAL_DESCRIPTION_MARKERS: readonly RegExp[] = [
+  /\[tipo:especial\]/gi,
+  /\[origem:licao:[^\]\s]*\]/gi,
+];

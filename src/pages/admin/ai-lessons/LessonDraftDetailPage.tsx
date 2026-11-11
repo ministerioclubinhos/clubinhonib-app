@@ -99,6 +99,8 @@ import {
 import {
   canDeleteLesson,
   lessonProductionActions,
+  isReviewCycleActive,
+  regenerationLockReason,
   stagesInvalidatedBy,
   staleOriginStage,
 } from '@/features/ai-lessons/workflow';
@@ -279,6 +281,8 @@ export const LessonDraftDetailPage: React.FC = () => {
   const progressCount = isFinalReview ? approvedCount : packageCompletedCount;
   const progress = lesson.stages.length ? (progressCount / lesson.stages.length) * 100 : 0;
   const impactedStages = stage ? stagesInvalidatedBy(lesson, stage.type) : [];
+  const reviewCycleActive = isReviewCycleActive(lesson);
+  const regenerationLock = actions.regenerationLocked ? regenerationLockReason(stage) : null;
   const staleOrigin =
     stage?.status === LessonStageStatus.STALE ? staleOriginStage(lesson, stage) : null;
   const stageLabel = stage ? lessonStageLabel(stage.type, lesson.category) : '';
@@ -336,7 +340,7 @@ export const LessonDraftDetailPage: React.FC = () => {
 
   const requestGeneration = () => {
     if (!stage || !canGenerate) return;
-    // Replacing existing content is paid and unapproves what depends on it: always confirm.
+    // Replacing existing content is paid and may outdate what depends on it: always confirm.
     if (stage.currentVersionId) setConfirmation({ kind: ProductionConfirmationKind.REGENERATE });
     else runGeneration();
   };
@@ -839,7 +843,7 @@ export const LessonDraftDetailPage: React.FC = () => {
                   spacing={1.5}
                   flexWrap="wrap"
                   useFlexGap
-                  sx={{ mb: completeBlockedReason ? 1 : 3 }}
+                  sx={{ mb: completeBlockedReason || regenerationLock ? 1 : 3 }}
                 >
                   {stage.type !== LessonStageType.LESSON_VISUALS && (
                     <Button
@@ -893,6 +897,16 @@ export const LessonDraftDetailPage: React.FC = () => {
                     {complete.isPending ? 'Concluindo…' : 'Concluir item para o pacote'}
                   </Button>
                 </Stack>
+                {regenerationLock && (
+                  <Typography
+                    data-testid="ai-lesson-regeneration-locked-reason"
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: completeBlockedReason ? 1 : 3 }}
+                  >
+                    {regenerationLock}
+                  </Typography>
+                )}
                 {completeBlockedReason && (
                   <Typography
                     data-testid="ai-lesson-complete-blocked-reason"
@@ -999,7 +1013,8 @@ export const LessonDraftDetailPage: React.FC = () => {
           <>
             <Typography variant="body2">
               Salvar esta edição marca como desatualizados os itens abaixo, que dependem dela. Eles
-              perdem a conclusão ou a aprovação e precisarão ser revistos e concluídos novamente:
+              perdem a conclusão e precisarão ser revistos e concluídos novamente. Itens aprovados
+              ou em revisão não são alterados:
             </Typography>
             <StageImpactList stages={impactedStages} category={lesson.category} />
           </>
@@ -1008,7 +1023,7 @@ export const LessonDraftDetailPage: React.FC = () => {
           <>
             {SIGNED_OFF_STAGE_STATUSES.includes(stage.status) && (
               <Alert severity="warning" sx={{ mb: 1.5 }}>
-                Este item já foi concluído ou aprovado. Regenerar descarta essa conclusão.
+                Este item já foi concluído. Regenerar descarta essa conclusão.
               </Alert>
             )}
             <Typography variant="body2">
@@ -1022,6 +1037,17 @@ export const LessonDraftDetailPage: React.FC = () => {
                 </Typography>
                 <StageImpactList stages={impactedStages} category={lesson.category} />
               </>
+            )}
+            {impactedStages.length === 0 && (
+              <Typography
+                data-testid="ai-lesson-regenerate-no-impact"
+                variant="body2"
+                sx={{ mt: 1.5 }}
+              >
+                {reviewCycleActive
+                  ? 'O pacote está em revisão: os demais itens não serão alterados e os aprovados continuam aprovados.'
+                  : 'Os demais itens não serão alterados.'}
+              </Typography>
             )}
           </>
         )}

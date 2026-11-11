@@ -21,11 +21,13 @@ import {
 import {
   ArrowBack,
   CheckCircle as ApproveIcon,
+  Download as DownloadIcon,
   EventNoteOutlined as WeekIcon,
   PictureAsPdf,
   RateReview as ChangesIcon,
   Send as PublishIcon,
 } from '@mui/icons-material';
+import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import ConfirmDialog from '@/components/common/modal/ConfirmDialog';
 import UnsavedChangesDialog from '@/components/common/modal/UnsavedChangesDialog';
@@ -33,13 +35,17 @@ import {
   useLessonArchive,
   useLessonDraft,
   useLessonDraftEvents,
+  useLessonPublicationPreview,
   usePublishLesson,
+  useSetLessonMaterialCurrentWeek,
   useStageAction,
   useSubmitLessonPackage,
 } from '@/hooks/api/useAiLessons';
 import { LessonCommentsPanel } from '@/features/ai-lessons/components/LessonCommentsPanel';
 import { LessonConnectionAlert } from '@/features/ai-lessons/components/LessonConnectionAlert';
 import { LessonPdfPreviewDialog } from '@/features/ai-lessons/components/LessonPdfPreviewDialog';
+import { LessonPublishConfirmDialog } from '@/features/ai-lessons/components/LessonPublishConfirmDialog';
+import { LessonPublishedPanel } from '@/features/ai-lessons/components/LessonPublishedPanel';
 import { LessonStageContentViewer } from '@/features/ai-lessons/components/LessonStageContentViewer';
 import {
   EMPTY_STRUCTURED_DATA,
@@ -57,6 +63,17 @@ import {
   lessonStageLabel,
   localizeLegacyDocumentLabels,
 } from '@/features/ai-lessons/presentation.utils';
+import {
+  canDownloadLessonPackage,
+  canPublishOrRepublishLesson,
+  canRepublishLesson,
+  canSetMaterialAsCurrentWeek,
+  isPublishedMaterialMissing,
+  isStagePdfFailure,
+  lessonPackageFileName,
+  publicationFailureNotice,
+  publicationKindLabel,
+} from '@/features/ai-lessons/publication';
 import { lessonReviewActions } from '@/features/ai-lessons/review-actions';
 import {
   LessonArchiveAction,
@@ -71,6 +88,7 @@ import {
   type StudioFeedback,
 } from '@/features/ai-lessons/types';
 import { useAcknowledgedVersions } from '@/features/ai-lessons/useAcknowledgedVersions';
+import { useLessonPackageDownload } from '@/features/ai-lessons/useLessonPackageDownload';
 import { useLessonPdfPreview } from '@/features/ai-lessons/useLessonPdfPreview';
 import { useReviewFeedback } from '@/features/ai-lessons/useReviewFeedback';
 import { useStageAssetIssue } from '@/features/ai-lessons/useStageAssetIssue';
@@ -80,8 +98,12 @@ import { formatLessonBadgeLabel } from '@/features/ai-lessons/utils';
 import {
   canPublishLesson,
   canReopenStage,
+  nextPendingReviewStage,
   reviewBlockReason,
+  staleOriginStage,
 } from '@/features/ai-lessons/workflow';
+import type { AppDispatch } from '@/store/slices';
+import { fetchRoutes } from '@/store/slices/route/routeSlice';
 import { getErrorMessage, getHttpStatus } from '@/utils/apiError';
 
 export const LessonReviewDetailPage: React.FC = () => {
@@ -106,6 +128,20 @@ export const LessonReviewDetailPage: React.FC = () => {
   const acknowledged = useAcknowledgedVersions(lesson);
   const [notice, setNotice] = useState<StudioFeedback | null>(null);
   const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
+  const [currentWeekConfirmOpen, setCurrentWeekConfirmOpen] = useState(false);
+  const publishCallToAction = useRef<HTMLButtonElement | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  // The preview is only needed for the publish dialog and for the published state.
+  const publication = useLessonPublicationPreview(
+    id,
+    lesson?.status,
+    publishConfirmOpen || lesson?.status === LessonStatus.PUBLISHED
+  );
+  const setCurrentWeek = useSetLessonMaterialCurrentWeek(id, () => dispatch(fetchRoutes()));
+  const packageDownload = useLessonPackageDownload(
+    id,
+    lesson ? lessonPackageFileName(lesson) : ''
+  );
   // `isPending` only changes on the next render; this closes the same-frame double click.
   const submitting = useRef(false);
 
@@ -207,8 +243,22 @@ export const LessonReviewDetailPage: React.FC = () => {
     lesson.comments?.filter((comment) => comment.sectionKey === selectedType) ?? [];
   const stageLabel = lessonStageLabel(selectedType, lesson.category);
   const published = lesson.status === LessonStatus.PUBLISHED;
+  const publicationPreview = publication.data;
+  const previewLoading = publication.isLoading;
+  const materialMissing = isPublishedMaterialMissing(lesson, publicationPreview);
+  const republish = canRepublishLesson(lesson, publicationPreview);
+  const canPublishNow = canPublishOrRepublishLesson(lesson, publicationPreview);
   const publishFailed =
-    publishMutation.isError && lesson.status === LessonStatus.READY_FOR_PUBLICATION;
+    publishMutation.isError &&
+    (lesson.status === LessonStatus.READY_FOR_PUBLICATION || materialMissing);
+  const kindLabel = publicationKindLabel(isSpecial);
+  const approvePdfFailed =
+    approve.isError &&
+    approve.variables?.stage === selectedType &&
+    isStagePdfFailure(approve.error);
+  // Informative only: approved items are no longer invalidated by an earlier correction.
+  const newerUpstream =
+    stage && !published && !archived ? staleOriginStage(lesson, stage) : null;
 
   const guarded = (run: (release: () => void) => void) => {
     if (submitting.current) return;
@@ -226,7 +276,35 @@ export const LessonReviewDetailPage: React.FC = () => {
     guarded((release) =>
       approve.mutate(
         { id, stage: stage.type, lockVersion: stage.lockVersion },
-        { onSuccess: () => setNotice(null), onError: onConflict, onSettled: release }
+        {
+          onSuccess: (updated) => {
+            const next = nextPendingReviewStage(updated, stage.type);
+            if (next) {
+              selectStage(next);
+              setNotice({
+                severity: StudioFeedbackSeverity.SUCCESS,
+                text: `“${stageLabel}” aprovado. Próximo item aguardando decisão: “${lessonStageLabel(next, updated.category)}”.`,
+              });
+              return;
+            }
+            const everyApproved = updated.stages.every(
+              (item) => item.status === LessonStageStatus.APPROVED
+            );
+            setNotice({
+              severity: StudioFeedbackSeverity.SUCCESS,
+              text: everyApproved
+                ? `“${stageLabel}” aprovado. Todos os itens estão aprovados: o pacote está pronto para publicar.`
+                : `“${stageLabel}” aprovado. Não há outro item aguardando decisão no momento.`,
+            });
+            if (everyApproved)
+              window.requestAnimationFrame(() => {
+                publishCallToAction.current?.scrollIntoView({ block: 'center' });
+                publishCallToAction.current?.focus();
+              });
+          },
+          onError: onConflict,
+          onSettled: release,
+        }
       )
     );
   };
@@ -288,7 +366,7 @@ export const LessonReviewDetailPage: React.FC = () => {
 
   const handlePublish = () => {
     setPublishConfirmOpen(false);
-    if (!canPublishLesson(lesson) || actionsPending) return;
+    if (!canPublishNow || actionsPending) return;
     setNotice(null);
     guarded((release) =>
       publishMutation.mutate(id, {
@@ -299,9 +377,17 @@ export const LessonReviewDetailPage: React.FC = () => {
     );
   };
 
+  const handleSetCurrentWeek = () => {
+    setCurrentWeekConfirmOpen(false);
+    const material = publicationPreview?.weekMaterial;
+    if (!material || !canSetMaterialAsCurrentWeek(lesson, publicationPreview)) return;
+    if (actionsPending || setCurrentWeek.isPending) return;
+    setCurrentWeek.mutate(material.id);
+  };
+
   const actionError =
     submitReview.error ??
-    approve.error ??
+    (approvePdfFailed ? null : approve.error) ??
     changes.error ??
     reopen.error ??
     archive.error ??
@@ -348,32 +434,30 @@ export const LessonReviewDetailPage: React.FC = () => {
           icon={<CircularProgress size={20} />}
           sx={{ mb: 2, borderRadius: 2 }}
         >
-          Publicação em andamento no Materiais Semanais. Isso pode levar alguns minutos enquanto os
+          Publicação do {kindLabel} em andamento em Materiais Semanais. Isso pode levar alguns minutos enquanto os
           PDFs são gerados; envios duplicados estão bloqueados e esta tela será atualizada sozinha.
         </Alert>
       )}
 
       {published && (
-        <Alert
-          data-testid="ai-lesson-published-notice"
-          severity="success"
-          sx={{ mb: 2, borderRadius: 2 }}
-          action={
-            <Button
-              data-testid="ai-lesson-published-open-week-materials"
-              color="inherit"
-              size="small"
-              startIcon={<WeekIcon />}
-              onClick={() => navigate(STUDIO_ROUTES.weekMaterials)}
-              sx={{ minHeight: 44 }}
-            >
-              Ver em Materiais Semanais
-            </Button>
+        <LessonPublishedPanel
+          isSpecial={isSpecial}
+          preview={publicationPreview}
+          previewLoading={previewLoading}
+          busy={actionsPending}
+          settingCurrentWeek={setCurrentWeek.isPending}
+          currentWeekError={
+            setCurrentWeek.isError
+              ? getErrorMessage(
+                  setCurrentWeek.error,
+                  'Não foi possível definir este material como semana atual.'
+                )
+              : null
           }
-        >
-          Lição publicada no Materiais Semanais. A definição da semana atual permanece controlada
-          separadamente em Materiais Semanais.
-        </Alert>
+          onOpenWeekMaterials={() => navigate(STUDIO_ROUTES.weekMaterials)}
+          onSetCurrentWeek={() => setCurrentWeekConfirmOpen(true)}
+          onRepublish={() => setPublishConfirmOpen(true)}
+        />
       )}
 
       {archived && (
@@ -408,7 +492,7 @@ export const LessonReviewDetailPage: React.FC = () => {
         >
           {getErrorMessage(
             publishMutation.error,
-            'Não foi possível publicar a lição. Os itens aprovados foram preservados; tente novamente.'
+            `Não foi possível publicar o ${kindLabel}. Os itens aprovados foram preservados; tente novamente.`
           )}
         </Alert>
       )}
@@ -419,8 +503,7 @@ export const LessonReviewDetailPage: React.FC = () => {
           severity="warning"
           sx={{ mb: 2, borderRadius: 2 }}
         >
-          Última tentativa de publicação interrompida: {lesson.publicationFailureMessage}. Os itens
-          aprovados foram preservados e você pode retomar o envio quando desejar.
+          {publicationFailureNotice(lesson.publicationFailureMessage)}
         </Alert>
       )}
 
@@ -468,6 +551,16 @@ export const LessonReviewDetailPage: React.FC = () => {
           sx={{ mb: 2, borderRadius: 2 }}
         >
           {notice.text}
+        </Alert>
+      )}
+      {packageDownload.error && (
+        <Alert
+          data-testid="ai-lesson-review-download-package-error"
+          severity="error"
+          onClose={packageDownload.dismissError}
+          sx={{ mb: 2, borderRadius: 2 }}
+        >
+          {packageDownload.error}
         </Alert>
       )}
 
@@ -575,6 +668,23 @@ export const LessonReviewDetailPage: React.FC = () => {
           </Box>
 
           <Box sx={{ flexShrink: 0, width: { xs: '100%', md: 'auto' } }}>
+            {canDownloadLessonPackage(lesson) && (
+              <Button
+                data-testid="ai-lesson-review-download-package"
+                variant="outlined"
+                color="secondary"
+                size="large"
+                startIcon={
+                  packageDownload.loading ? <CircularProgress size={18} /> : <DownloadIcon />
+                }
+                disabled={packageDownload.loading}
+                onClick={() => void packageDownload.download()}
+                fullWidth
+                sx={{ borderRadius: 3, mb: 1, fontWeight: 700, minHeight: 44, textTransform: 'none' }}
+              >
+                {packageDownload.loading ? 'Gerando o PDF do pacote…' : 'Baixar pacote completo (PDF)'}
+              </Button>
+            )}
             {published && (
               <Button
                 data-testid="ai-lesson-archive"
@@ -588,7 +698,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                 {archive.isPending ? 'Arquivando…' : 'Arquivar lição'}
               </Button>
             )}
-            {published ? (
+            {published && !materialMissing ? (
               <Button
                 data-testid="ai-lesson-review-open-week-materials"
                 variant="outlined"
@@ -598,7 +708,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                 fullWidth
                 sx={{ borderRadius: 3, py: 1.5, px: 3, fontWeight: 800 }}
               >
-                Ver em Materiais Semanais
+                Abrir Materiais Semanais
               </Button>
             ) : archived ? null : (
               <Button
@@ -607,14 +717,18 @@ export const LessonReviewDetailPage: React.FC = () => {
                 color={allApproved ? 'success' : 'primary'}
                 size="large"
                 startIcon={<PublishIcon />}
-                disabled={actionsPending || !canPublishLesson(lesson)}
+                disabled={actionsPending || !canPublishNow}
                 onClick={() => setPublishConfirmOpen(true)}
                 fullWidth
                 sx={{ borderRadius: 3, py: 1.5, px: 3, fontWeight: 800, fontSize: '0.95rem' }}
               >
                 {publishMutation.isPending || lesson.status === LessonStatus.PUBLISHING
                   ? 'Publicando…'
-                  : 'Enviar ao Materiais Semanais'}
+                  : republish
+                    ? 'Publicar novamente'
+                    : isSpecial
+                      ? 'Publicar como Material Especial'
+                      : 'Enviar ao Materiais Semanais'}
               </Button>
             )}
           </Box>
@@ -758,6 +872,13 @@ export const LessonReviewDetailPage: React.FC = () => {
             </Alert>
           )}
 
+          {newerUpstream && (
+            <Alert data-testid="ai-lesson-review-upstream-changed" severity="info" sx={{ mb: 2 }}>
+              “{lessonStageLabel(newerUpstream, lesson.category)}” foi alterado depois desta versão;
+              confira se este item continua coerente com ele. Este aviso é apenas informativo.
+            </Alert>
+          )}
+
           <Divider sx={{ mb: 3 }} />
 
           {stage ? (
@@ -837,11 +958,49 @@ export const LessonReviewDetailPage: React.FC = () => {
                   sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.2, minHeight: 44 }}
                 >
                   {approve.isPending
-                    ? 'Aprovando…'
+                    ? 'Gerando o PDF e aprovando…'
                     : stage?.status === LessonStageStatus.APPROVED
                       ? 'Item Aprovado'
                       : 'Aprovar Este Item'}
                 </Button>
+                {approve.isPending && (
+                  <Typography
+                    data-testid="ai-lesson-review-approve-pending"
+                    role="status"
+                    variant="caption"
+                    color="text.secondary"
+                  >
+                    A aprovação confere se o PDF deste item pode ser gerado; isso pode levar alguns
+                    segundos.
+                  </Typography>
+                )}
+                {approvePdfFailed && (
+                  <Alert
+                    data-testid="ai-lesson-review-approve-pdf-error"
+                    severity="error"
+                    onClose={() => approve.reset()}
+                    sx={{ '& .MuiAlert-message': { width: '100%' } }}
+                  >
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      {getErrorMessage(
+                        approve.error,
+                        'Não foi possível gerar o PDF deste item, então ele não foi aprovado. Tente novamente.'
+                      )}
+                    </Typography>
+                    <Button
+                      data-testid="ai-lesson-review-approve-pdf-error-preview"
+                      color="inherit"
+                      variant="outlined"
+                      size="small"
+                      startIcon={<PictureAsPdf />}
+                      disabled={!stage?.currentVersionId || preview.loading}
+                      onClick={() => void preview.open()}
+                      sx={{ minHeight: 44, textTransform: 'none' }}
+                    >
+                      Visualizar PDF do item
+                    </Button>
+                  </Alert>
+                )}
 
                 <Button
                   fullWidth
@@ -884,6 +1043,7 @@ export const LessonReviewDetailPage: React.FC = () => {
 
           {(canPublishLesson(lesson) || publishMutation.isPending) && (
             <Alert
+              data-testid="ai-lesson-review-ready-notice"
               severity="success"
               variant="filled"
               sx={{ borderRadius: 3 }}
@@ -894,6 +1054,7 @@ export const LessonReviewDetailPage: React.FC = () => {
                   startIcon={<PublishIcon />}
                   onClick={() => setPublishConfirmOpen(true)}
                   data-testid="ai-lesson-review-publish-now"
+                  ref={publishCallToAction}
                   disabled={actionsPending || !canPublishLesson(lesson)}
                   sx={{ fontWeight: 800, minHeight: 44 }}
                 >
@@ -901,7 +1062,10 @@ export const LessonReviewDetailPage: React.FC = () => {
                 </Button>
               }
             >
-              Todos os itens foram aprovados! A lição está pronta para ir ao Materiais Semanais.
+              Todos os itens foram aprovados!{' '}
+              {isSpecial
+                ? 'O Material Especial está pronto para ser publicado em Materiais Semanais.'
+                : 'A lição está pronta para ir ao Materiais Semanais.'}
             </Alert>
           )}
         </Stack>
@@ -917,26 +1081,33 @@ export const LessonReviewDetailPage: React.FC = () => {
         onClose={preview.close}
       />
 
-      <ConfirmDialog
-        data-testid="ai-lesson-publish-confirm-dialog"
+      <LessonPublishConfirmDialog
         open={publishConfirmOpen}
-        maxWidth="sm"
-        title="Publicar no Materiais Semanais?"
-        confirmText="Publicar"
-        confirmColor="success"
+        lessonTheme={lesson.theme}
+        fallbackIsSpecial={isSpecial}
+        fallbackDocumentCount={totalStages}
+        republish={republish}
+        preview={publicationPreview}
+        previewLoading={previewLoading}
+        previewFailed={publication.isError}
         onConfirm={handlePublish}
         onClose={() => setPublishConfirmOpen(false)}
+      />
+
+      <ConfirmDialog
+        data-testid="ai-lesson-current-week-confirm-dialog"
+        open={currentWeekConfirmOpen}
+        title="Definir como semana atual?"
+        confirmText="Definir como semana atual"
+        onConfirm={handleSetCurrentWeek}
+        onClose={() => setCurrentWeekConfirmOpen(false)}
         autoCloseOnConfirm={false}
       >
-        <Typography variant="body2" sx={{ mb: 1.5 }}>
-          Os {totalStages} itens aprovados de <strong>{lesson.theme}</strong> serão convertidos em
-          PDF e publicados como um novo material semanal.
+        <Typography variant="body2">
+          Este material passa a ser o material da semana atual e substitui o que está definido
+          hoje. O material anterior continua publicado em Materiais Semanais, apenas deixa de ser o
+          da semana.
         </Typography>
-        <Alert severity="warning">
-          Esta ação não pode ser desfeita pelo Estúdio: depois de publicada, a lição não pode mais
-          ser editada nem excluída aqui, e os destinatários cadastrados são avisados por e-mail
-          sobre o novo material.
-        </Alert>
       </ConfirmDialog>
 
       <ConfirmDialog

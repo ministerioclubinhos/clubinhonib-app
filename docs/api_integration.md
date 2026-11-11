@@ -106,14 +106,16 @@ rotas têm o prefixo `/api/v1/lessons`.
 | `DELETE /api/v1/lessons/:id` | Excluir (oculto para publicada, em publicação ou arquivada) |
 | `POST /api/v1/lessons/:id/archive`, `/unarchive` | Arquivar e restaurar lição publicada |
 | `POST /api/v1/lessons/:id/comments/:commentId/resolve` | Marcar observação como resolvida |
-| `POST /api/v1/lessons/:id/stages/generate` | Gerar ou regerar etapa (com confirmação) |
+| `POST /api/v1/lessons/:id/stages/generate` | Gerar ou regerar etapa (com confirmação); item `APPROVED` ou `IN_REVIEW` responde 409 e o botão fica bloqueado com o motivo |
 | `PATCH /api/v1/lessons/:id/stages/content` | Salvar edição com o `lockVersion` do rascunho |
 | `POST /api/v1/lessons/:id/stages/complete-production` | Concluir; envia `lockVersion` e, após confirmação, `acknowledgeStale` |
 | `POST /api/v1/lessons/:id/package/submit-review` | Iniciar revisão |
-| `POST /api/v1/lessons/:id/stages/approve`, `/request-changes`, `/reopen` | Revisão; sempre com o `lockVersion` reconhecido pelo revisor |
+| `POST /api/v1/lessons/:id/stages/approve`, `/request-changes`, `/reopen` | Revisão; sempre com o `lockVersion` reconhecido pelo revisor. A aprovação gera o PDF do item antes de aprovar: pode levar segundos e responder 422/503 (`LESSON_9314`), exibidos ao lado dos botões |
 | `GET /api/v1/lessons/:id/stages/:stage/preview.pdf` | Prévia vinculada a `lockVersion` e `versionId` |
 | `POST /api/v1/lessons/:id/export/pdf` | PDF consolidado |
-| `POST /api/v1/lessons/:id/publish-week-material` | Publicar (com confirmação) |
+| `GET /api/v1/lessons/:id/publication-preview` | Título final, tipo, número de PDFs, página vinculada (`exists`, `routePath`, `currentWeek`) e duplicatas; carregado ao abrir o diálogo de publicação e enquanto a lição está publicada |
+| `POST /api/v1/lessons/:id/publish-week-material` | Publicar (com confirmação); também republica uma lição `PUBLISHED` cuja página foi removida |
+| `POST /api/v1/week-material-pages/current-week/:id` | "Definir como semana atual" a partir da lição publicada (com confirmação) |
 | `GET/PATCH /api/v1/lessons/prompt-preferences/me`, `POST …/reset` | Orientações por etapa; a prévia usa o `effectivePrompt` da API |
 
 `PATCH /api/v1/lessons/:id/stages/content` salva o documento Tiptap completo,

@@ -301,7 +301,7 @@ test('salvar ou regenerar lista os itens que serão desatualizados e a origem do
     stage(LessonStageType.LESSON, LessonStageStatus.PRODUCER_APPROVED, [
       version('l2', '2026-11-05T10:00:00Z'),
     ]),
-    stage(LessonStageType.LESSON_VISUALS, LessonStageStatus.APPROVED, [
+    stage(LessonStageType.LESSON_VISUALS, LessonStageStatus.PRODUCER_APPROVED, [
       version('v1', '2026-11-02T10:00:00Z'),
     ]),
     stage(LessonStageType.STANDARD_GAME, LessonStageStatus.STALE, [

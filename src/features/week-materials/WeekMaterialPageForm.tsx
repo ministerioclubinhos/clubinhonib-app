@@ -46,7 +46,7 @@ import {
 } from './hooks';
 import {
   isSpecialMaterialDescription,
-  stripSpecialMaterialTag,
+  cleanMaterialDescription,
   toMediaDraft,
 } from './utils';
 import { WeekMaterialMediaDraft, WeekMaterialType } from './types';
@@ -139,7 +139,7 @@ export default function WeekMaterialPageForm({
       {
         pageTitle: loadedMaterial.title,
         pageSubtitle: loadedMaterial.subtitle,
-        pageDescription: stripSpecialMaterialTag(loadedMaterial.description),
+        pageDescription: cleanMaterialDescription(loadedMaterial.description),
         materialType: isSpecialMaterialDescription(loadedMaterial.description)
           ? WeekMaterialType.SPECIAL
           : WeekMaterialType.WEEKLY,

@@ -11,6 +11,8 @@ import {
   EDITABLE_STAGE_STATUSES,
   GENERATION_BLOCKED_LESSON_STATUSES,
   PRODUCTION_COMPLETED_STATUSES,
+  REGENERATION_LOCKED_STAGE_STATUSES,
+  REVIEW_CYCLE_STAGE_STATUSES,
   getStudioStageOrder,
 } from './constants';
 
@@ -30,6 +32,10 @@ export function lessonProductionActions(
   const dependencyReady =
     index === 0 || Boolean(previous && PRODUCTION_COMPLETED_STATUSES.includes(previous.status));
   const editable = Boolean(stage && EDITABLE_STAGE_STATUSES.includes(stage.status));
+  // The API refuses a new generation over an item the reviewer holds or approved.
+  const regenerationLocked = Boolean(
+    stage && REGENERATION_LOCKED_STAGE_STATUSES.includes(stage.status)
+  );
   return {
     canEdit: editable && Boolean(stage?.currentVersionId) && !busy,
     canSave: editable && hasDraft && !busy,
@@ -37,8 +43,10 @@ export function lessonProductionActions(
       Boolean(stage) &&
       dependencyReady &&
       !GENERATION_BLOCKED_LESSON_STATUSES.includes(lesson.status) &&
+      !regenerationLocked &&
       !busy &&
       !hasDraft,
+    regenerationLocked,
     canComplete: editable && Boolean(stage?.currentVersionId) && !busy && !hasDraft,
     dependencyReady,
   };
@@ -54,8 +62,18 @@ export function canPublishLesson(lesson: Lesson): boolean {
   );
 }
 
-/** Stages that a save or regeneration of `origin` will mark as outdated (and unapprove). */
+/** True once any item was submitted to, approved by or returned from the reviewer. */
+export function isReviewCycleActive(lesson: Pick<Lesson, 'stages'>): boolean {
+  return lesson.stages.some((stage) => REVIEW_CYCLE_STAGE_STATUSES.includes(stage.status));
+}
+
+/**
+ * Stages that a save or regeneration of `origin` will mark as outdated. Mirrors the API:
+ * inside a review cycle a correction touches only its own item, and items the reviewer
+ * holds, approved or returned are never marked as outdated.
+ */
 export function stagesInvalidatedBy(lesson: Lesson, origin: LessonStageType): LessonStage[] {
+  if (isReviewCycleActive(lesson)) return [];
   const order = getStudioStageOrder(lesson.category);
   const index = order.indexOf(origin);
   if (index < 0) return [];
@@ -66,8 +84,35 @@ export function stagesInvalidatedBy(lesson: Lesson, origin: LessonStageType): Le
       (item): item is LessonStage =>
         Boolean(item) &&
         item?.status !== LessonStageStatus.NOT_STARTED &&
-        item?.status !== LessonStageStatus.STALE
+        item?.status !== LessonStageStatus.STALE &&
+        !REVIEW_CYCLE_STAGE_STATUSES.includes(item?.status as LessonStageStatus)
     );
+}
+
+/** Why "Regenerar com IA" is unavailable for an item the reviewer holds; null when it is not. */
+export function regenerationLockReason(stage: LessonStage | undefined): string | null {
+  if (!stage) return null;
+  if (stage.status === LessonStageStatus.APPROVED)
+    return 'Este item já foi aprovado e está protegido. Para gerar de novo, reabra-o na revisão descrevendo o ajuste.';
+  if (stage.status === LessonStageStatus.IN_REVIEW)
+    return 'Este item está com o revisor. Para gerar de novo, ele precisa ser devolvido com um pedido de ajustes.';
+  return null;
+}
+
+/** Next item still awaiting the reviewer's decision, searching forward and wrapping around. */
+export function nextPendingReviewStage(
+  lesson: Pick<Lesson, 'stages' | 'category'>,
+  current: LessonStageType
+): LessonStageType | null {
+  const order = getStudioStageOrder(lesson.category);
+  const index = order.indexOf(current);
+  const candidates = [...order.slice(index + 1), ...order.slice(0, Math.max(index, 0))];
+  return (
+    candidates.find(
+      (type) =>
+        lesson.stages.find((item) => item.type === type)?.status === LessonStageStatus.IN_REVIEW
+    ) ?? null
+  );
 }
 
 /** The earlier stage whose newest content made `stage` outdated, when it can be told apart. */

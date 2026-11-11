@@ -219,6 +219,43 @@ Na revisão final, pacotes PACKAGE_READY exibem “Iniciar revisão”. A ação
 
 The manual-work producer and reviewer use the same `ManualWorkPreview`, sourced from the current version's `printableAssets`, verse text and verse reference. Both display two vertically stacked copies, each with a black outer frame, matching the PDF composition; missing artwork produces an explicit empty state. Previewing never regenerates or recolors the approved artwork.
 
+## Estúdio: revisão, aprovação e publicação
+
+**Marcas técnicas.** A descrição salva de um material pode conter
+`[tipo:especial]` (o Material Especial é um material semanal com título e
+descrição próprios; a marca alimenta o selo) e, em páginas antigas,
+`[origem:licao:<uuid>]`. `cleanMaterialDescription`
+(`features/week-materials/utils.ts`) remove as duas e é usada em toda exibição:
+página pública, modal de detalhes, card da listagem, lista da Área do Professor
+(texto e busca) e valor inicial do formulário. Ao salvar, o formulário regrava
+apenas `[tipo:especial]`, conforme o tipo escolhido.
+
+**Regra de invalidação.** Itens `APPROVED`, `IN_REVIEW` ou `CHANGES_REQUESTED`
+nunca ficam desatualizados. Com o pacote em ciclo de revisão (qualquer item
+nesses status), salvar ou regerar um item não altera os demais; os diálogos
+dizem isso. Na produção inicial a regra antiga continua. Item aprovado ou com o
+revisor não pode ser regerado: o botão fica desabilitado com o motivo (reabrir
+ou devolver primeiro). A lógica espelhada fica em
+`features/ai-lessons/workflow.ts` (`isReviewCycleActive`, `stagesInvalidatedBy`,
+`regenerationLockReason`).
+
+**Tela de revisão.** Após aprovar, a tela seleciona o próximo item `IN_REVIEW`
+(`nextPendingReviewStage`) e anuncia; sem pendentes, destaca a chamada para
+publicar. Durante a aprovação o botão mostra "Gerando o PDF e aprovando…"; a
+falha de PDF aparece junto aos botões com atalho para a prévia. Quando um item
+anterior tem versão mais nova que o item em revisão, um aviso informativo nomeia
+esse item. Com todos os itens aprovados há "Baixar pacote completo (PDF)".
+
+**Publicação.** O diálogo de confirmação (`LessonPublishConfirmDialog`) mostra o
+título final, o número de PDFs, o tipo (Material Especial ou material semanal) e
+um aviso não bloqueante com os materiais já existentes para a mesma semana ou
+título. Se a prévia falhar, publicar continua possível. Depois de publicada,
+`LessonPublishedPanel` oferece "Ver material" (rota real da página), "Definir
+como semana atual" (com confirmação; oculto quando já é a atual) e "Abrir
+Materiais Semanais". Se a página foi removida, o painel avisa e oferece
+"Publicar novamente". As regras ficam em `features/ai-lessons/publication.ts`;
+testes em `e2e/unit/lesson-publication.spec.ts`.
+
 ## Estúdio: integridade de edição, revisão e transporte
 
 **Rascunhos.** A produção mantém um rascunho por lição e etapa. Trocar de etapa

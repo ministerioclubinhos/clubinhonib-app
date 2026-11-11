@@ -9,6 +9,7 @@ import type {
   GetLessonDraftsParams,
   LessonListResponse,
   LessonDeleteResponse,
+  LessonPublicationPreview,
   LessonPublicationResponse,
   LessonStreamCallbacks,
 } from './types';
@@ -181,6 +182,15 @@ export const aiLessonsService = {
         // The review screen owns publication feedback (state banner + retry guidance).
         { skipGlobalError: true }
       )
+    ).data;
+  },
+  async getPublicationPreview(id: string, signal?: AbortSignal): Promise<LessonPublicationPreview> {
+    return (
+      await apiAxios.get<LessonPublicationPreview>(`${endpoint}/${id}/publication-preview`, {
+        signal,
+        // Informative only: the publish dialog shows its own note when this fails.
+        skipGlobalError: true,
+      })
     ).data;
   },
   async getPromptPreferences(signal?: AbortSignal, category: LessonCategory = LessonCategory.REGULAR): Promise<AdminPromptPreference[]> {

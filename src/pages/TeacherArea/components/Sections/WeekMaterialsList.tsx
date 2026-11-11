@@ -24,6 +24,7 @@ import { RootState } from 'store/slices';
 import { FEATURE, useVisibleRoutes } from '@/features/feature-flags';
 import { useFeatureEnabled } from '@/hooks';
 import { MediaTargetType } from 'store/slices/types';
+import { cleanMaterialDescription } from '@/features/week-materials/utils';
 import { LISTING_SEARCH_DEBOUNCE_MS } from '@/hooks';
 import { FofinhoButton } from '../Buttons';
 
@@ -70,7 +71,7 @@ const WeekMaterialsList = () => {
             (route) =>
                 route.title.toLowerCase().includes(term) ||
                 route.subtitle.toLowerCase().includes(term) ||
-                route.description.toLowerCase().includes(term)
+                cleanMaterialDescription(route.description).toLowerCase().includes(term)
         );
     }, [weekMaterialsRoutes, debouncedFilter]);
 
@@ -359,7 +360,7 @@ const WeekMaterialsList = () => {
                                                             lineHeight: 1.4,
                                                         }}
                                                     >
-                                                        {route.description}
+                                                        {cleanMaterialDescription(route.description)}
                                                     </Typography>
                                                 </CardContent>
                                                 <Box sx={{ p: { xs: 2, md: 2.5 }, pt: 0 }}>

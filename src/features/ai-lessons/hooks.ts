@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { aiLessonsService } from './api';
-import { AI_LESSON_EVENTS_FAILURES_BEFORE_NOTICE } from './constants';
+import {
+  AI_LESSON_EVENTS_FAILURES_BEFORE_NOTICE,
+  PUBLICATION_PREVIEW_STALE_TIME_MS,
+} from './constants';
 import { nextReconnectDelay } from './stream';
 import { aiLessonsKeys } from './queryKeys';
+import { setCurrentWeek } from '@/features/week-materials/api';
 import {
   computeLessonSnapshotSignature,
   isLessonSnapshotNewerOrEqual,
@@ -194,7 +198,36 @@ export function useLessonArchive(action: LessonArchiveAction) {
       action === LessonArchiveAction.ARCHIVE
         ? aiLessonsService.archive(id)
         : aiLessonsService.unarchive(id),
-    onSuccess: (lesson) => updateLesson(client, lesson),
+    onSuccess: async (lesson) => {
+      await updateLesson(client, lesson);
+      await client.invalidateQueries({ queryKey: aiLessonsKeys.publicationPreviews(lesson.id) });
+    },
+  });
+}
+/**
+ * What publishing will create (title, PDFs, same-week duplicates) and the state of the page
+ * already linked to the lesson. Keyed by status so each lesson transition refetches it.
+ */
+export function useLessonPublicationPreview(id: string, status: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: aiLessonsKeys.publicationPreview(id, status),
+    queryFn: ({ signal }) => aiLessonsService.getPublicationPreview(id, signal),
+    enabled: Boolean(id) && enabled,
+    staleTime: PUBLICATION_PREVIEW_STALE_TIME_MS,
+    retry: false,
+  });
+}
+/** Publishes the lesson's page as the current week, then refreshes the preview and the public routes. */
+export function useSetLessonMaterialCurrentWeek(lessonId: string, onRoutesChanged: () => unknown) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (weekMaterialId: string) => setCurrentWeek(weekMaterialId),
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: aiLessonsKeys.publicationPreviews(lessonId) }),
+        Promise.resolve(onRoutesChanged()),
+      ]);
+    },
   });
 }
 export function useResolveLessonComment() {
@@ -229,6 +262,9 @@ export function usePublishLesson() {
     onSuccess: async (result) => {
       await updateLesson(client, result.lesson);
       await Promise.all([
+        client.invalidateQueries({
+          queryKey: aiLessonsKeys.publicationPreviews(result.lesson.id),
+        }),
         client.invalidateQueries({ queryKey: ['week-material-pages'] }),
         client.invalidateQueries({ queryKey: ['week-materials'] }),
       ]);

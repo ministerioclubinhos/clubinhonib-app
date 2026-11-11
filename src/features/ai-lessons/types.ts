@@ -271,6 +271,51 @@ export interface LessonPublicationResponse {
   lesson: Lesson;
   weekMaterialId: string;
 }
+/** Weekly material page linked to the lesson, as the API sees it right now. */
+export interface LessonPublicationMaterial {
+  id: string;
+  /** False when the page was deleted in Materiais Semanais after the publication. */
+  exists: boolean;
+  routePath: string | null;
+  currentWeek: boolean;
+}
+export interface LessonPublicationDuplicate {
+  id: string;
+  title: string;
+  routePath: string | null;
+}
+/** `GET /lessons/:id/publication-preview`. */
+export interface LessonPublicationPreview {
+  title: string;
+  isSpecial: boolean;
+  documentCount: number;
+  weekMaterial: LessonPublicationMaterial | null;
+  duplicates: LessonPublicationDuplicate[];
+}
+export interface LessonPublishConfirmDialogProps {
+  open: boolean;
+  lessonTheme: string;
+  /** Fallbacks used while the preview loads or when it could not be loaded. */
+  fallbackIsSpecial: boolean;
+  fallbackDocumentCount: number;
+  republish: boolean;
+  preview: LessonPublicationPreview | undefined;
+  previewLoading: boolean;
+  previewFailed: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}
+export interface LessonPublishedPanelProps {
+  isSpecial: boolean;
+  preview: LessonPublicationPreview | undefined;
+  previewLoading: boolean;
+  busy: boolean;
+  settingCurrentWeek: boolean;
+  currentWeekError: string | null;
+  onOpenWeekMaterials: () => void;
+  onSetCurrentWeek: () => void;
+  onRepublish: () => void;
+}
 export interface SaveLessonVariables {
   id: string;
   payload: SaveTiptapPayload;

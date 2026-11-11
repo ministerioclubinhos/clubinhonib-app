@@ -133,7 +133,32 @@ export const HTTP_STATUS_CONFLICT = 409;
 export const LESSON_ERROR_CODES = {
   stageLockConflict: 'LESSON_9303',
   staleUpstream: 'LESSON_9308',
+  stagePdfUnavailable: 'LESSON_9314',
 } as const;
+/** Statuses a approval answers with when the item cannot become a PDF (422) or the converter is busy (503). */
+export const STAGE_PDF_FAILURE_HTTP_STATUSES: readonly number[] = [422, 503];
+/** Items in any of these statuses mean the package is inside a review cycle. */
+export const REVIEW_CYCLE_STAGE_STATUSES: readonly LessonStageStatus[] = [
+  LessonStageStatus.IN_REVIEW,
+  LessonStageStatus.APPROVED,
+  LessonStageStatus.CHANGES_REQUESTED,
+];
+/** Items the reviewer holds: they must be returned or reopened before a new generation. */
+export const REGENERATION_LOCKED_STAGE_STATUSES: readonly LessonStageStatus[] = [
+  LessonStageStatus.IN_REVIEW,
+  LessonStageStatus.APPROVED,
+];
+/** Lesson statuses in which the consolidated PDF of the approved package can be downloaded. */
+export const PACKAGE_DOWNLOAD_LESSON_STATUSES: readonly LessonStatus[] = [
+  LessonStatus.READY_FOR_PUBLICATION,
+  LessonStatus.PUBLISHED,
+  LessonStatus.ARCHIVED,
+];
+export const PUBLICATION_KIND_LABELS = {
+  special: 'Material Especial',
+  weekly: 'material semanal',
+} as const;
+export const PUBLICATION_PREVIEW_STALE_TIME_MS = 15_000;
 /** Stage statuses whose content was already signed off by someone. */
 export const SIGNED_OFF_STAGE_STATUSES = [
   LessonStageStatus.PRODUCER_APPROVED,

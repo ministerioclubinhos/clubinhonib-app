@@ -158,6 +158,10 @@ pré-carrega todas as imagens e sinaliza as quebradas), `StoryVisualConfiguratio
 (aviso de conexão, exibido só após falhas seguidas), `LessonCommentsPanel`
 (observações, com ação de resolver na produção), `LessonPdfPreviewDialog`
 (prévia de PDF) e `StageImpactList` (itens que serão invalidados por uma ação).
+Na revisão, `LessonPublishConfirmDialog` confirma a publicação com título final,
+tipo e aviso de duplicatas, e `LessonPublishedPanel` mostra o estado da lição
+publicada (ver material, definir como semana atual, publicar novamente quando a
+página foi removida).
 `LessonDraftDialogs` reúne as confirmações de salvar, regerar, descartar e
 excluir. Os diálogos têm título associado (`aria-labelledby`), a navegação de
 etapas marca a atual (`aria-current`) e a tela cheia das meditações prende o

@@ -1,6 +1,8 @@
 import { MediaItem, MediaType, MediaUploadType } from '@/store/slices/types';
 import { MEDIA_PLATFORM_LABELS } from '@/components/common/media/constants';
 import {
+  MATERIAL_DESCRIPTION_MARKERS,
+  SPECIAL_MATERIAL_TAG,
   WEEK_MATERIAL_CARD_DESCRIPTION_MAX_CHARS,
   WEEK_MATERIAL_MEDIA_TABS,
   WEEK_MATERIAL_FALLBACK_FILE_EXTENSION,
@@ -251,18 +253,30 @@ export function countMediaOf(material: WeekMaterialResponse | null): number {
   return mediaGroupsOf(material).reduce((total, group) => total + group.items.length, 0);
 }
 
-/** Marca gravada na descrição das páginas de Material Especial. */
-export const SPECIAL_MATERIAL_TAG = '[tipo:especial]';
+export { SPECIAL_MATERIAL_TAG };
 
 export const isSpecialMaterialDescription = (description?: string | null): boolean =>
   Boolean(description?.includes(SPECIAL_MATERIAL_TAG));
 
-export const stripSpecialMaterialTag = (description?: string | null): string =>
-  (description ?? '').replace(/ ?\[tipo:especial\]/g, '');
+/**
+ * Descrição como o leitor deve vê-la: sem as marcas técnicas de tipo e de
+ * origem. Toda exibição de descrição de material passa por aqui.
+ */
+export const cleanMaterialDescription = (description?: string | null): string =>
+  MATERIAL_DESCRIPTION_MARKERS.reduce(
+    (text, marker) => text.replace(marker, ' '),
+    description ?? '',
+  )
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/[ \t]+(\r?\n)/g, '$1')
+    .trim();
+
+/** Mantido para os chamadores antigos; remove todas as marcas técnicas. */
+export const stripSpecialMaterialTag = cleanMaterialDescription;
 
 /** Garante (ou remove) a marca de Material Especial; texto vazio permanece vazio. */
 export const withSpecialMaterialTag = (description: string, special: boolean): string => {
-  const clean = stripSpecialMaterialTag(description);
-  if (!clean.trim()) return '';
+  const clean = cleanMaterialDescription(description);
+  if (!clean) return '';
   return special ? `${clean} ${SPECIAL_MATERIAL_TAG}` : clean;
 };
