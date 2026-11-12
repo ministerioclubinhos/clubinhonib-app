@@ -39,7 +39,9 @@ import {
   ArrowForward as ArrowIcon,
   AutoAwesome as AiIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { STUDIO_LIST_STATUS_PARAM } from '@/features/ai-lessons/hub.constants';
+import { parseListStatus } from '@/features/ai-lessons/hub.utils';
 
 import { ListingCard, ListingLayout, ListingToolbar } from '@/components/common/listing';
 import type { ListingFilter, ListingMeta } from '@/components/common/listing';
@@ -54,7 +56,11 @@ export const AiLessonsReviewListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(LESSON_LIST_PAGE_SIZE);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<LessonStatus | ''>('');
+  // O painel do estúdio abre a lista já filtrada: `?status=PUBLISHED`.
+  const [searchParams] = useSearchParams();
+  const [status, setStatus] = useState<LessonStatus | ''>(() =>
+    parseListStatus(searchParams.get(STUDIO_LIST_STATUS_PARAM))
+  );
   const [category, setCategory] = useState<LessonCategory | ''>('');
 
   const debouncedSearch = useDebouncedValue(search, LESSON_SEARCH_DEBOUNCE_MS);

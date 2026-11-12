@@ -165,7 +165,59 @@ export interface LessonComment {
 export interface LessonDashboard {
   total: number;
   byStatus: Partial<Record<LessonStatus, number>>;
+  /** Lessons still in the works (not published, not archived), newest first. */
+  active?: Lesson[];
   recent: Lesson[];
+}
+
+/** What the dashboard asks the user to do next with a lesson, most urgent first. */
+export enum StudioHubAction {
+  FIX_CHANGES = 'FIX_CHANGES',
+  RETRY_FAILED = 'RETRY_FAILED',
+  PUBLISH = 'PUBLISH',
+  REVIEW = 'REVIEW',
+  CONTINUE = 'CONTINUE',
+  START = 'START',
+  WAIT = 'WAIT',
+}
+
+/** How far a stage is, reduced to what one dot of the pipeline can show. */
+export enum StudioHubStageTone {
+  DONE = 'DONE',
+  PRODUCED = 'PRODUCED',
+  WORKING = 'WORKING',
+  PROBLEM = 'PROBLEM',
+  STALE = 'STALE',
+  TODO = 'TODO',
+}
+
+/** The buckets of the dashboard's counters. */
+export enum StudioHubMetric {
+  CHANGES = 'CHANGES',
+  PRODUCTION = 'PRODUCTION',
+  REVIEW = 'REVIEW',
+  READY = 'READY',
+  PUBLISHED = 'PUBLISHED',
+}
+
+export interface StudioHubStageDot {
+  type: LessonStageType;
+  label: string;
+  statusLabel: string;
+  tone: StudioHubStageTone;
+}
+
+/** One row of the dashboard's work queue. */
+export interface StudioHubQueueItem {
+  lesson: Lesson;
+  action: StudioHubAction;
+  /** Button text, e.g. "Continuar: 3. Brincadeira". */
+  actionLabel: string;
+  /** Where the button goes. */
+  href: string;
+  stages: StudioHubStageDot[];
+  completed: number;
+  total: number;
 }
 export interface GenerateLessonPayload {
   theme: string;

@@ -348,3 +348,33 @@ MySQL local, recusando bancos remotos e lições que não sejam suas.
 The admin can choose each version, apply all approved improvements, keep all originals, or request another attempt. Attempts always start from the snapshot, are limited to three, and retain history. New results reset the confirmation required before publication. Removing a material from the publication does not restore it through an AI choice or delete its source. An already published idea exposes its current publication and historical choices.
 
 Polling runs every five seconds while an attempt is active, stops on terminal states/unmount, and retains the previous comparison during retry/failure. An active attempt triggers explicit confirmation before publishing the complete original; that action invalidates late results. The existing moderation flag protects the routes. The automatic-AI flag controls teacher auto-enqueue only: admin comparison and manual retry remain available when it is off.
+
+## Painel do Estúdio (`/adm/estudio`) — revisão de 2026-11-11
+
+O painel deixou de ser uma vitrine e virou uma **fila de trabalho**.
+
+- **Cabeçalho enxuto**: título, "N lições no estúdio · M em andamento" e os três
+  atalhos (Produzir lição, Revisão, Orientações).
+- **Números clicáveis**: Ajustes solicitados, Em produção, Aguardando revisão,
+  Prontas para publicar e Publicadas. Cada um abre a lista que conta; quando o
+  número é de um status só, a lista abre já filtrada (`?status=PUBLISHED`, lido
+  por `parseListStatus` em `AiLessonsListPage` e `AiLessonsReviewListPage`).
+  "Ajustes solicitados" só se destaca quando é maior que zero.
+- **Fila de trabalho**: as lições em andamento (`dashboard.active`), ordenadas
+  por urgência — ajuste pedido pelo revisor, geração que falhou, pronta para
+  publicar, aguardando revisão, em produção, não iniciada. Cada linha mostra o
+  motivo, a semana, há quanto tempo foi mexida, as etapas como uma barra de
+  segmentos (aprovada, concluída, em produção, com problema, desatualizada, não
+  iniciada) e um botão com o próximo passo, que abre a lição direto na etapa
+  certa (`?stage=`): "Continuar: 3. Brincadeira", "Tentar de novo: 2. Visuais
+  da história", "Revisar: …", "Publicar".
+- **Publicadas recentemente** na lateral, e o **fluxo editorial** (os 8 itens +
+  material semanal e o padrão do estúdio) recolhido em uma seção que abre sob
+  demanda — é referência, não trabalho pendente.
+- Carregamento com esqueleto no lugar do círculo girando.
+
+Arquivos: `pages/admin/ai-lessons/AiLessonsHubPage.tsx`,
+`features/ai-lessons/hub.utils.ts` (regras puras), `hub.constants.ts`,
+`components/hub/*`. Testes: `e2e/unit/ai-lessons.hub.spec.ts` (regras) e
+`e2e/flows/ai-lessons-hub-mobile.spec.ts` (tela contra a API real, de 320 a
+1440 px; não cria lições, porque criar dispara geração por IA).

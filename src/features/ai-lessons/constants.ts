@@ -51,7 +51,6 @@ export const cutoutKitSummary = (quantity: number): string => {
     : `${quantity} pranchas: o básico completo.`;
 };
 
-export const AI_LESSON_HUB_RECENT_LIMIT = 3;
 
 export const PROMPT_MIN_LENGTH = 10;
 export const PROMPT_MAX_LENGTH = 12_000;
