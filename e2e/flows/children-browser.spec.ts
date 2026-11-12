@@ -1,78 +1,97 @@
-import { expect, Page, Route, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
+import { ApiClient } from '../support/api';
+import { childInList, removeChild, seedChild, type SeededChild } from '../support/children';
 
 /**
- * Lista da área das crianças (`/area-das-criancas`).
+ * Lista da área das crianças (`/area-das-criancas`), contra a API real.
  *
- * A API é simulada. O que se prova: os filtros moram na URL, a página vazia
- * recua sozinha e a falha de uma ação aparece para quem a pediu.
+ * Cada teste cria a própria criança, com nome e telefone únicos, e a apaga no
+ * fim. A busca pelo nome único é o que isola o teste do resto do banco.
  */
-const json = (route: Route, body: unknown, status = 200) =>
-  route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+let api: ApiClient;
+let child: SeededChild | undefined;
 
-const child = (index: number) => ({
-  id: `00000000-0000-4000-8000-00000000000${index}`,
-  name: `Criança ${index}`,
-  guardianName: 'Responsável',
-  guardianPhone: '92999990000',
-  gender: 'F',
-  clubId: null,
-  isActive: true,
-  acceptedChrists: [],
+test.beforeAll(async () => {
+  api = await ApiClient.login();
 });
 
-async function mockChildren(page: Page) {
-  const queries: URLSearchParams[] = [];
-  await page.route('**/children/simple*', (route) => {
-    const params = new URL(route.request().url()).searchParams;
-    queries.push(params);
-    // Só existe a página 1: pedir outra devolve vazio, como a API faz.
-    const data = params.get('page') === '1' ? [child(1), child(2)] : [];
-    return json(route, { data, meta: { totalItems: 2, totalPages: 1 } });
-  });
-  return queries;
-}
+test.afterEach(async () => {
+  await removeChild(api, child);
+  child = undefined;
+});
+
+test.afterAll(async () => {
+  await api.dispose();
+});
+
+const search = 'Buscar por nome ou telefone do responsável…';
 
 test.describe('Área das crianças: lista', () => {
-  test('filtros e busca ficam na URL e voltam ao recarregar', async ({ page }) => {
-    const queries = await mockChildren(page);
+  test('busca e filtros ficam na URL e voltam ao recarregar', async ({ page }) => {
+    child = await seedChild(api);
     await page.goto('/area-das-criancas');
-    await expect(page.getByText('Criança 1')).toBeVisible();
 
-    await page.getByPlaceholder(/Buscar por nome/).fill('ana');
-    await expect(page).toHaveURL(/busca=ana/);
+    await page.getByPlaceholder(search).fill(child.name);
+    await expect(page).toHaveURL(/busca=/);
+    await expect(page.getByTestId('pagela-teacher-child-card')).toHaveCount(1);
     await page.getByRole('combobox', { name: 'Status' }).click();
     await page.getByRole('option', { name: 'Ativas' }).click();
     await expect(page).toHaveURL(/ativas=true/);
 
     await page.reload();
-    await expect(page.getByPlaceholder(/Buscar por nome/)).toHaveValue('ana');
-    await expect.poll(() => queries.at(-1)?.get('searchString')).toBe('ana');
-    expect(queries.at(-1)?.get('isActive')).toBe('true');
+    await expect(page.getByPlaceholder(search)).toHaveValue(child.name);
+    await expect(page.getByTestId('pagela-teacher-child-card')).toHaveCount(1);
+    await expect(page.getByText(child.name)).toBeVisible();
+
+    // Abrir a criança e voltar devolve a lista como estava.
+    await page.getByText(child.name).click();
+    await expect(page).toHaveURL(new RegExp(`/area-das-criancas/${child.id}`));
+    await page.goBack();
+    await expect(page.getByPlaceholder(search)).toHaveValue(child.name);
+    await expect(page).toHaveURL(/ativas=true/);
   });
 
-  test('página que ficou vazia recua para a última que existe', async ({ page }) => {
-    await mockChildren(page);
-    await page.goto('/area-das-criancas?pagina=3');
+  test('a busca acha pelo telefone digitado com máscara', async ({ page }) => {
+    child = await seedChild(api);
+    const phone = child.guardianPhone;
+    const masked = `(${phone.slice(0, 2)}) ${phone.slice(2, 7)}-${phone.slice(7)}`;
 
-    await expect(page.getByText('Criança 1')).toBeVisible();
+    await page.goto('/area-das-criancas');
+    await page.getByPlaceholder(search).fill(masked);
+
+    await expect(page.getByTestId('pagela-teacher-child-card')).toHaveCount(1);
+    await expect(page.getByText(child.name)).toBeVisible();
+  });
+
+  test('página que não existe recua para a última que tem criança', async ({ page }) => {
+    child = await seedChild(api);
+    await page.goto(`/area-das-criancas?busca=${encodeURIComponent(child.name)}&pagina=3`);
+
+    await expect(page.getByText(child.name)).toBeVisible();
     await expect(page).not.toHaveURL(/pagina=/);
   });
 
-  test('falha ao desativar aparece na tela', async ({ page }) => {
-    await mockChildren(page);
-    await page.route('**/children/*/toggle-active', (route) =>
-      json(
-        route,
-        { success: false, error: { code: 'CHILD_7002', message: 'Sem acesso à criança informada' } },
-        403,
-      ),
-    );
-    await page.goto('/area-das-criancas');
-    await expect(page.getByText('Criança 1')).toBeVisible();
+  test('desativar pela tela grava na API e o filtro de desativadas a encontra', async ({ page }) => {
+    child = await seedChild(api);
+    await page.goto(`/area-das-criancas?busca=${encodeURIComponent(child.name)}`);
+    await expect(page.getByText(child.name)).toBeVisible();
 
-    await page.getByRole('switch', { name: 'Desativar criança' }).first().click();
+    await page.getByRole('switch', { name: 'Desativar criança' }).click();
     await page.getByRole('dialog').getByRole('button', { name: /^Desativar/ }).click();
+    await expect(page.getByText('Criança desativada com sucesso')).toBeVisible();
 
-    await expect(page.getByText('Sem acesso à criança informada')).toBeVisible();
+    expect((await childInList(api, child)).isActive).toBe(false);
+
+    await page.getByRole('combobox', { name: 'Status' }).click();
+    await page.getByRole('option', { name: 'Desativadas' }).click();
+    await expect(page.getByText(child.name)).toBeVisible();
+    await expect(page.getByRole('switch', { name: 'Ativar criança' })).toBeVisible();
+
+    // Reativar pela mesma tela devolve a situação.
+    await page.getByRole('switch', { name: 'Ativar criança' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /^Ativar/ }).click();
+    await expect(page.getByText('Criança ativada com sucesso')).toBeVisible();
+    expect((await childInList(api, child)).isActive).toBe(true);
   });
 });

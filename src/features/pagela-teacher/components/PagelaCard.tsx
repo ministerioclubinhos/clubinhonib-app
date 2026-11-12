@@ -18,6 +18,7 @@ import SpaIcon from "@mui/icons-material/Spa";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import type { Pagela } from "../types";
 import { toLabelWeek } from "../utils";
+import { authorshipLine } from "@/features/children/utils";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
 function formatPtBrDate(iso: string | null | undefined) {
@@ -46,6 +47,13 @@ export default function PagelaCard({
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  // Quem lançou e, se outra pessoa mexeu depois, quem alterou.
+  const authorship = authorshipLine({
+    createdBy: row.createdBy,
+    updatedBy: row.updatedBy,
+    createdVerb: "Lançada",
+    updatedVerb: "alterada",
+  });
   const [busy, setBusy] = React.useState(false);
 
   const chipMobileSx = {
@@ -198,6 +206,16 @@ export default function PagelaCard({
                 Registro: {formatPtBrDate(row.referenceDate)}
               </Typography>
             </Stack>
+
+            {authorship && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                data-testid="pagela-authorship"
+              >
+                {authorship}
+              </Typography>
+            )}
 
             <Divider />
 

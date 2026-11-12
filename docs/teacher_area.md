@@ -83,3 +83,22 @@ Teste: `e2e/flows/children-browser.spec.ts`.
   pagelas explicam o motivo e não oferecem o formulário.
 
 Teste: `e2e/flows/child-decisions.spec.ts`.
+
+## Autoria e testes contra a API real (2026-11-11)
+
+- A pagela mostra "Lançada por Fulana" e, quando outra pessoa alterou depois,
+  "· alterada por Beltrana" (`authorshipLine`). O histórico de decisões mostra
+  "por Fulana", e a ficha da criança em `/adm/criancas` mostra quem cadastrou e
+  quem alterou por último. Registros antigos, sem autor, não mostram a linha.
+- Os fluxos desta área **não usam simulação**: batem na API real, criam a
+  própria criança (`e2e/support/children.ts`) e a apagam no fim.
+  - `e2e/flows/pagela-launch-window.spec.ts` — período letivo, semana letiva,
+    criança desativada, autoria. O cenário de período fechado desativa o
+    período do ano por alguns segundos e o reativa em seguida.
+  - `e2e/flows/children-browser.spec.ts` — lista, filtros na URL, busca por
+    telefone, ativar/desativar.
+  - `e2e/flows/child-decisions.spec.ts` — regras de decisão e exclusão.
+  - `e2e/flows/children-admin.spec.ts` — endereço, busca, clubinho obrigatório,
+    autoria na ficha.
+  - `e2e/flows/statistics-attendance.spec.ts` — regras de cálculo e frequência.
+  - `e2e/flows/children-roles.spec.ts` — os mesmos fluxos logado como professor e como coordenador: recorte por clubinho, autoria com o usuário certo, o que cada papel não pode fazer.

@@ -166,6 +166,7 @@ export default function DecisionModal({ open, onClose, child, onSuccess }: Props
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {new Date(item.createdAt).toLocaleDateString("pt-BR")}
+                      {item.createdBy ? ` · por ${item.createdBy.name}` : ""}
                     </Typography>
                   </Box>
                   {confirmingId === item.id ? (

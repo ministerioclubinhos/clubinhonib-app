@@ -72,6 +72,35 @@ export class ApiClient {
     return (await res.json()) as T;
   }
 
+  async put<T>(path: string, data?: unknown): Promise<T> {
+    const res = await this.ctx.put(path, { headers: this.headers(), data });
+    expect(res.ok(), `PUT ${path} -> ${res.status()} ${await res.text()}`).toBeTruthy();
+    return (await res.json()) as T;
+  }
+
+  /**
+   * Chamada crua: devolve o status e o corpo sem exigir sucesso.
+   *
+   * É o que os testes de regra precisam para provar uma **recusa** — o código
+   * HTTP e o código de erro da API —, coisa que `post`/`patch` reprovariam.
+   */
+  async send(
+    method: 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'GET',
+    path: string,
+    data?: unknown,
+  ): Promise<{ status: number; code: string | null; message: string | null; body: unknown }> {
+    const res = await this.ctx.fetch(path, { method, headers: this.headers(), data });
+    const text = await res.text();
+    let body: unknown = null;
+    try {
+      body = text ? JSON.parse(text) : null;
+    } catch {
+      body = text;
+    }
+    const error = (body as { error?: { code?: string; message?: string } } | null)?.error;
+    return { status: res.status(), code: error?.code ?? null, message: error?.message ?? null, body };
+  }
+
   /** Remoção tolerante: o que já sumiu não derruba a limpeza do teste. */
   async delete(path: string): Promise<void> {
     await this.ctx.delete(path, { headers: this.headers() });

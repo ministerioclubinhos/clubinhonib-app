@@ -268,3 +268,37 @@ export function hasAcceptedChrist(
 ): boolean {
   return (decisions ?? []).some((item) => item.decision !== null);
 }
+
+/**
+ * Texto de autoria: "Fulana" ou, sem autor conhecido, um traço.
+ *
+ * Registros anteriores à gravação de autoria não têm autor.
+ */
+export function authorLabel(
+  author: { name: string } | null | undefined,
+): string {
+  return author?.name?.trim() || "—";
+}
+
+/**
+ * Linha de autoria de um registro, pronta para a tela.
+ *
+ * Mostra quem criou e, quando outra pessoa alterou depois, quem alterou.
+ * Sem autor nenhum devolve `null`: a linha simplesmente não aparece.
+ */
+export function authorshipLine(input: {
+  createdBy: { id: string; name: string } | null | undefined;
+  updatedBy?: { id: string; name: string } | null;
+  createdVerb: string;
+  updatedVerb?: string;
+}): string | null {
+  const { createdBy, updatedBy } = input;
+  const parts: string[] = [];
+
+  if (createdBy) parts.push(`${input.createdVerb} por ${createdBy.name}`);
+  if (updatedBy && updatedBy.id !== createdBy?.id && input.updatedVerb) {
+    parts.push(`${input.updatedVerb} por ${updatedBy.name}`);
+  }
+
+  return parts.length > 0 ? parts.join(" · ") : null;
+}

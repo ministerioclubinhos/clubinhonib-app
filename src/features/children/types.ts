@@ -10,10 +10,20 @@ import type { Gender } from "./constants";
 /** Decisão da criança. Espelha o enum `DecisionType` da API. */
 export type DecisionType = "ACCEPTED" | "RECONCILED";
 
+/**
+ * Quem gravou um registro (`RecordAuthorDto`).
+ *
+ * `null` nos registros anteriores à gravação de autoria, ou quando o usuário
+ * foi excluído depois.
+ */
+export type RecordAuthor = { id: string; name: string };
+
 /** Decisão registrada, no recorte curto (`AcceptedChristShortDto`). */
 export type AcceptedChristShort = {
   id: string;
   decision: DecisionType | null;
+  /** Quem registrou a decisão. */
+  createdBy: RecordAuthor | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -29,6 +39,7 @@ export type AcceptedChristResponse = {
   decision: DecisionType | null;
   childId: string;
   notes: string | null;
+  createdBy: RecordAuthor | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -74,6 +85,10 @@ export type ChildResponse = {
   isActive: boolean;
   club: ChildClub | null;
   address: ChildAddress | null;
+  /** Quem cadastrou a criança. */
+  createdBy: RecordAuthor | null;
+  /** Quem alterou o cadastro por último. */
+  updatedBy: RecordAuthor | null;
   createdAt: string;
   updatedAt: string;
 };

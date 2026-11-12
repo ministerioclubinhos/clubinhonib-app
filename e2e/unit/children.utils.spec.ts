@@ -9,6 +9,8 @@ import {
   clubLabel,
   emptyChildForm,
   formatDateOnly,
+  authorLabel,
+  authorshipLine,
   toCreateChildRequest,
   toUpdateChildRequest,
   validateChildForm,
@@ -235,5 +237,25 @@ test.describe("apresentação", () => {
     expect(cityLabel(child)).toBe("Manaus/AM");
     expect(clubLabel({ ...child, club: null })).toBe("Sem clubinho");
     expect(cityLabel({ ...child, address: null })).toBe("—");
+  });
+});
+
+test.describe("autoria", () => {
+  const ana = { id: "u1", name: "Ana" };
+  const bia = { id: "u2", name: "Bia" };
+
+  test("mostra quem criou e, se foi outra pessoa, quem alterou", () => {
+    expect(
+      authorshipLine({ createdBy: ana, updatedBy: bia, createdVerb: "Lançada", updatedVerb: "alterada" }),
+    ).toBe("Lançada por Ana · alterada por Bia");
+    expect(
+      authorshipLine({ createdBy: ana, updatedBy: ana, createdVerb: "Lançada", updatedVerb: "alterada" }),
+    ).toBe("Lançada por Ana");
+  });
+
+  test("registro antigo, sem autor, não mostra linha", () => {
+    expect(authorshipLine({ createdBy: null, updatedBy: null, createdVerb: "Lançada" })).toBeNull();
+    expect(authorLabel(null)).toBe("—");
+    expect(authorLabel(ana)).toBe("Ana");
   });
 });

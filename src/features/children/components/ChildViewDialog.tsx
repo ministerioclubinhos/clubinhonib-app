@@ -30,6 +30,7 @@ import { buildWhatsappLink } from "@/utils/whatsapp";
 import { EMPTY_VALUE, Gender } from "../constants";
 import {
   ageInYears,
+  authorLabel,
   childInitials,
   clubLabel,
   formatDateOnly,
@@ -223,6 +224,13 @@ export default function ChildViewDialog({
                   title="Cadastrada em"
                 >
                   <Typography>{formatDateOnly(child.createdAt)}</Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    data-testid="child-created-by"
+                  >
+                    por {authorLabel(child.createdBy)}
+                  </Typography>
                 </DetailCard>
               </Grid2>
 
@@ -232,6 +240,13 @@ export default function ChildViewDialog({
                   title="Atualizada em"
                 >
                   <Typography>{formatDateOnly(child.updatedAt)}</Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    data-testid="child-updated-by"
+                  >
+                    por {authorLabel(child.updatedBy)}
+                  </Typography>
                 </DetailCard>
               </Grid2>
             </Grid2>

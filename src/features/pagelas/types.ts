@@ -18,6 +18,10 @@ export type PagelaResponse = {
   didMeditation: boolean;
   recitedVerse: boolean;
   notes: string | null;
+  /** Quem lançou a pagela; `null` em registros antigos. */
+  createdBy: { id: string; name: string } | null;
+  /** Quem alterou a pagela por último. */
+  updatedBy: { id: string; name: string } | null;
   createdAt: string;
   updatedAt: string;
 };
