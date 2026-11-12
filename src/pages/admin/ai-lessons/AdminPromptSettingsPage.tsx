@@ -1,12 +1,22 @@
-import { lessonStageLabel } from '@/features/ai-lessons/presentation.utils';
-import { STAGE_CONFIG, PROMPT_PRESETS } from '@/features/ai-lessons/promptConstants';
+import { PromptReference } from '@/features/ai-lessons/components/prompts/PromptReference';
+import { PromptResetDialog } from '@/features/ai-lessons/components/prompts/PromptResetDialog';
+import { PromptStageTabs } from '@/features/ai-lessons/components/prompts/PromptStageTabs';
+import { lessonStageDescription, lessonStageLabel } from '@/features/ai-lessons/presentation.utils';
 import {
-  getStudioStageOrder,
-  PROMPT_STALE_TIME_MS,
-  PROMPT_COPY_FEEDBACK_MS,
-  PROMPT_MAX_LENGTH,
-  PROMPT_MIN_LENGTH,
-} from '@/features/ai-lessons/constants';
+  PROMPT_PRESETS,
+  PROMPT_STAGE_EXAMPLES,
+  PROMPT_TEXTS,
+  STAGE_CONFIG,
+} from '@/features/ai-lessons/promptConstants';
+import {
+  firstName,
+  isClearingSavedPrompt,
+  promptCustomisationSummary,
+  promptSavedLabel,
+  promptSummaryLabel,
+  promptValidationMessage,
+} from '@/features/ai-lessons/prompt.utils';
+import { PROMPT_MAX_LENGTH, PROMPT_STALE_TIME_MS } from '@/features/ai-lessons/constants';
 import { aiLessonsKeys } from '@/features/ai-lessons/queryKeys';
 import {
   acknowledgePromptDraft,
@@ -27,7 +37,10 @@ import {
   resolveStudioStorage,
   studioSnapshotKey,
 } from '@/features/ai-lessons/draftStorage';
-import { STUDIO_ROUTES } from '@/features/ai-lessons/presentation.constants';
+import {
+  LESSON_CATEGORY_LABELS,
+  STUDIO_ROUTES,
+} from '@/features/ai-lessons/presentation.constants';
 import {
   usePersistedStudioState,
   useStudioUserId,
@@ -50,45 +63,24 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Alert,
-  alpha,
+  AlertTitle,
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Divider,
-  Grid2,
-  IconButton,
   Paper,
+  Skeleton,
   Stack,
-  Tab,
-  Tabs,
   TextField,
-  Tooltip,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
-  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
   ArrowBack,
-  AutoAwesome,
-  CheckCircle,
-  ContentCopy,
-  ExpandMore,
-  InfoOutlined,
   LightbulbOutlined,
+  PersonOutline,
   RestartAlt,
   Save,
   Tune,
@@ -100,9 +92,16 @@ import {
   LessonStageType,
 } from '@/services/aiLessonsService';
 
+/**
+ * Orientações de criação (`/adm/estudio/orientacoes`).
+ *
+ * Cada administrador escreve, por tipo de material e por etapa, o que quer
+ * acrescentar às regras oficiais que a IA recebe. A personalização é de quem
+ * está logado — a API a guarda por usuário e a aplica às gerações que esse
+ * usuário dispara —, e é isso que a tela deixa claro logo no topo.
+ */
 export const AdminPromptSettingsPage: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
   const client = useQueryClient();
   const sessionUserId = useSelector((state: RootState) => state.auth.user?.id ?? null);
   // Sticky: an expired session must not look like "another user" and wipe the drafts.
@@ -117,9 +116,6 @@ export const AdminPromptSettingsPage: React.FC = () => {
     setCategoryDrafts((all) => ({ ...all, [category]: update(all[category] ?? {}) }));
   };
   const [resetOpen, setResetOpen] = useState(false);
-  const [basePromptExpanded, setBasePromptExpanded] = useState(false);
-  const [effectivePreviewExpanded, setEffectivePreviewExpanded] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<StudioFeedback | null>(null);
 
   const storageKey = userId ? studioSnapshotKey(StudioSnapshotScope.PROMPT_DRAFTS, userId) : '';
@@ -172,8 +168,6 @@ export const AdminPromptSettingsPage: React.FC = () => {
     persistedDrafts
   );
 
-  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(() => () => clearTimeout(copyTimer.current), []);
   const preference = query.data?.find((item) => item.stage === stage);
   const value = resolvePromptDraftValue(drafts[stage], preference);
   const effectivePreview = preference ? resolveEffectivePromptPreview(preference, value) : '';
@@ -221,7 +215,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
       setDrafts((current) => acknowledgePromptDraft(current, sent.draft, saved));
       setFeedback({
         severity: StudioFeedbackSeverity.SUCCESS,
-        text: 'Prompt salvo com sucesso! Suas orientações serão aplicadas nas próximas gerações.',
+        text: PROMPT_TEXTS.saved,
       });
     },
     onError: (error) => {
@@ -232,8 +226,8 @@ export const AdminPromptSettingsPage: React.FC = () => {
         severity: StudioFeedbackSeverity.ERROR,
         text:
           getHttpStatus(error) === 409
-            ? 'As orientações foram alteradas em outra sessão. Sua edição foi preservada; escolha abaixo entre aplicá-la sobre a versão atual ou descartá-la.'
-            : 'Não foi possível salvar. Suas orientações locais foram preservadas.',
+            ? 'Você alterou esta orientação em outra aba ou aparelho. O texto daqui foi preservado; escolha abaixo entre aplicá-lo sobre a versão atual ou descartá-lo.'
+            : 'Não foi possível salvar. O texto que você digitou foi preservado.',
       });
     },
   });
@@ -254,7 +248,7 @@ export const AdminPromptSettingsPage: React.FC = () => {
       setResetOpen(false);
       setFeedback({
         severity: StudioFeedbackSeverity.SUCCESS,
-        text: 'Prompt oficial restaurado com sucesso.',
+        text: PROMPT_TEXTS.restored,
       });
     },
     onError: (error) => {
@@ -266,22 +260,13 @@ export const AdminPromptSettingsPage: React.FC = () => {
         severity: StudioFeedbackSeverity.ERROR,
         text:
           getHttpStatus(error) === 409
-            ? 'As orientações foram alteradas em outra sessão antes da restauração. Suas edições locais foram preservadas.'
-            : 'Não foi possível restaurar o prompt oficial.',
+            ? 'Você alterou esta orientação em outra aba ou aparelho antes de voltar ao padrão. O texto daqui foi preservado.'
+            : 'Não foi possível voltar ao padrão oficial.',
       });
     },
   });
 
   const leave = () => leaveGuard.requestLeave(() => navigate(STUDIO_ROUTES.hub));
-
-  const handleCopyBasePrompt = () => {
-    if (preference?.basePrompt) {
-      void navigator.clipboard.writeText(preference.basePrompt);
-      setCopied(true);
-      clearTimeout(copyTimer.current);
-      copyTimer.current = setTimeout(() => setCopied(false), PROMPT_COPY_FEEDBACK_MS);
-    }
-  };
 
   const handleInsertPreset = (presetText: string) => {
     const separator = value && !value.endsWith('\n') && !presetText.startsWith('\n') ? '\n' : '';
@@ -293,7 +278,49 @@ export const AdminPromptSettingsPage: React.FC = () => {
       save.mutate({ item: preference, draft });
     }
   };
-  const currentStageInfo = STAGE_CONFIG[stage];
+  const userName = useSelector((state: RootState) => state.auth.user?.name ?? '');
+  const otherCategory =
+    category === LessonCategory.REGULAR ? LessonCategory.SPECIAL : LessonCategory.REGULAR;
+  // Só para o resumo no seletor: quantas etapas do outro material estão personalizadas.
+  const otherQuery = useQuery({
+    queryKey: aiLessonsKeys.preferencesByUser(userId, otherCategory),
+    queryFn: ({ signal }) => aiLessonsService.getPromptPreferences(signal, otherCategory),
+    staleTime: PROMPT_STALE_TIME_MS,
+  });
+  const summaries: Record<LessonCategory, { customised: number; total: number }> = {
+    [category]: promptCustomisationSummary(query.data),
+    [otherCategory]: promptCustomisationSummary(otherQuery.data),
+  } as Record<LessonCategory, { customised: number; total: number }>;
+  const busy = save.isPending || reset.isPending;
+  const clearing = isClearingSavedPrompt(value, preference);
+  const validationMessage = promptValidationMessage(value);
+  const canSave = dirty && isPromptValid && !draftOutdated && !busy;
+  const stageIcon = STAGE_CONFIG[stage].icon;
+  const stageLabel = lessonStageLabel(stage, category);
+  const savedLabel = preference?.customPrompt ? promptSavedLabel(preference.updatedAt) : '';
+
+  // Ctrl+S (ou ⌘S) salva a etapa aberta, como em qualquer editor.
+  const saveShortcut = useRef(() => {});
+  saveShortcut.current = () => {
+    if (canSave) saveCurrentPrompt();
+  };
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        saveShortcut.current();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  const selectCategory = (next: LessonCategory) => {
+    setCategory(next);
+    setStage(LessonStageType.LESSON);
+    setFeedback(null);
+    setResetOpen(false);
+  };
 
   return (
     <Box
@@ -301,79 +328,65 @@ export const AdminPromptSettingsPage: React.FC = () => {
       sx={{
         width: { xs: '98%', md: '95%' },
         mx: 'auto',
-        py: { xs: 1.5, sm: 2.5, md: 3.5 },
-        pb: { xs: 10, sm: 4 },
+        py: { xs: 1.5, sm: 2.5 },
+        pb: { xs: 12, sm: 4 },
       }}
     >
-      {/* Botão de Voltar */}
       <Button
         startIcon={<ArrowBack />}
         onClick={leave}
-        sx={{ mb: 2, fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+        sx={{ mb: 1.5, fontWeight: 700, borderRadius: 2, textTransform: 'none', minHeight: 44 }}
       >
         Voltar para o Estúdio Clubinho
       </Button>
 
-      {/* Hero Paper Header */}
       <Paper
+        component="header"
         elevation={0}
-        sx={{
-          p: { xs: 2, sm: 3, md: 3.5 },
-          mb: 3,
-          borderRadius: 4,
-          border: '1px solid',
-          borderColor: 'divider',
-          bgcolor: 'background.paper',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-        }}
+        sx={{ p: { xs: 2, sm: 2.5 }, mb: 2, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}
       >
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           justifyContent="space-between"
           alignItems={{ xs: 'flex-start', sm: 'center' }}
-          spacing={2}
+          gap={1.5}
         >
-          <Box>
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
-              <Box
-                sx={{
-                  p: 1.25,
-                  borderRadius: 2.5,
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  color: 'primary.main',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <Tune fontSize="medium" />
-              </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 0.5 }}>
+              <Tune color="primary" />
               <Typography
-                variant="h4"
+                component="h1"
                 fontWeight={800}
-                sx={{ fontSize: { xs: '1.4rem', sm: '1.8rem', md: '2.1rem' } }}
+                color="text.primary"
+                sx={{ fontSize: { xs: '1.35rem', sm: '1.6rem' } }}
               >
-                Orientações de Criação
+                {PROMPT_TEXTS.title}
               </Typography>
             </Stack>
-            <Typography variant="body1" color="text.secondary">
-              Personalize, por etapa da lição, as instruções editoriais complementares para a
-              inteligência artificial.
-            </Typography>
+            <Typography color="text.secondary">{PROMPT_TEXTS.subtitle}</Typography>
           </Box>
-
           {dirtyCount > 0 && (
             <Chip
+              data-testid="admin-prompts-pending-count"
               color="warning"
-              variant="filled"
-              label={`${dirtyCount} ${dirtyCount === 1 ? 'etapa alterada' : 'etapas alteradas'}`}
-              sx={{ fontWeight: 800, borderRadius: 2, px: 0.5 }}
+              label={`${dirtyCount} ${dirtyCount === 1 ? 'etapa com texto não salvo' : 'etapas com texto não salvo'}`}
+              sx={{ fontWeight: 800, borderRadius: 2, flexShrink: 0 }}
             />
           )}
         </Stack>
 
-        <Alert severity="info" icon={<InfoOutlined />} sx={{ mt: 2.5, borderRadius: 2.5 }}>
-          As suas orientações complementam o contrato oficial. Estrutura de schema, regras de
-          segurança, NVI e campos obrigatórios continuam validados e protegidos pelo servidor.
+        {/* O ponto que mais confunde: a personalização é de quem está logado, não do sistema. */}
+        <Alert
+          data-testid="admin-prompts-personal-notice"
+          severity="info"
+          icon={<PersonOutline />}
+          sx={{ mt: 2, borderRadius: 2.5 }}
+        >
+          <AlertTitle sx={{ fontWeight: 800 }}>
+            {PROMPT_TEXTS.personalTitle}
+            {firstName(userName) ? `, ${firstName(userName)}` : ''}
+          </AlertTitle>
+          {PROMPT_TEXTS.personalBody}
         </Alert>
       </Paper>
 
@@ -382,32 +395,37 @@ export const AdminPromptSettingsPage: React.FC = () => {
         aria-label="Tipo de material das orientações"
         exclusive
         value={category}
-        disabled={save.isPending || reset.isPending}
+        disabled={busy}
         onChange={(_, next: LessonCategory | null) => {
-          if (!next) return;
-          setCategory(next);
-          setStage(LessonStageType.LESSON);
-          setFeedback(null);
-          setResetOpen(false);
-          setBasePromptExpanded(false);
-          setEffectivePreviewExpanded(false);
+          if (next) selectCategory(next);
         }}
         sx={{ mb: 2, flexWrap: 'wrap' }}
       >
-        <ToggleButton value={LessonCategory.REGULAR} sx={{ minHeight: 44 }}>Material Semanal</ToggleButton>
-        <ToggleButton value={LessonCategory.SPECIAL} sx={{ minHeight: 44 }}>Material Especial</ToggleButton>
+        {Object.values(LessonCategory).map((item) => (
+          <ToggleButton
+            key={item}
+            value={item}
+            data-testid={`admin-prompts-category-${item.toLowerCase()}`}
+            sx={{ minHeight: 44, textTransform: 'none', fontWeight: 700, gap: 1 }}
+          >
+            {LESSON_CATEGORY_LABELS[item]}
+            {summaries[item]?.customised > 0 && (
+              <Chip
+                size="small"
+                color="primary"
+                label={summaries[item].customised}
+                aria-label={promptSummaryLabel(summaries[item])}
+                sx={{ height: 20, fontWeight: 800 }}
+              />
+            )}
+          </ToggleButton>
+        ))}
       </ToggleButtonGroup>
 
-      {/* Main Content Layout */}
       {query.isLoading ? (
-        <Box
-          data-testid="admin-prompts-loading"
-          sx={{ display: 'grid', placeItems: 'center', py: 12 }}
-        >
-          <CircularProgress size={44} thickness={4} />
-          <Typography color="text.secondary" sx={{ mt: 2, fontWeight: 500 }}>
-            Carregando orientações...
-          </Typography>
+        <Box data-testid="admin-prompts-loading" aria-busy="true" aria-label="Carregando orientações">
+          <Skeleton variant="rounded" height={48} sx={{ borderRadius: 3, mb: 2 }} />
+          <Skeleton variant="rounded" height={420} sx={{ borderRadius: 4 }} />
         </Box>
       ) : query.isError ? (
         <Alert
@@ -420,563 +438,319 @@ export const AdminPromptSettingsPage: React.FC = () => {
             </Button>
           }
         >
-          Não foi possível carregar as orientações de criação.
+          {PROMPT_TEXTS.loadError}
         </Alert>
       ) : (
-        <Grid2 container spacing={3}>
-          {/* Navegação por Etapas (Tabs responsivos) */}
-          <Grid2 size={{ xs: 12 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'divider',
-                bgcolor: 'background.paper',
-                overflow: 'hidden',
+        <Stack gap={2}>
+          <Box>
+            <PromptStageTabs
+              category={category}
+              stage={stage}
+              preferences={query.data ?? []}
+              drafts={drafts}
+              onChange={(next) => {
+                setStage(next);
+                setFeedback(null);
               }}
+            />
+            <Typography
+              data-testid="admin-prompts-summary"
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', mt: 0.75, px: 0.5 }}
             >
-              <Tabs
-                data-testid="admin-prompts-stage-tabs"
-                value={stage}
-                onChange={(_, next: LessonStageType) => {
-                  setStage(next);
-                  setFeedback(null);
-                  setBasePromptExpanded(false);
-                }}
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{
-                  px: 1,
-                  py: 0.5,
-                  '& .MuiTab-root': {
-                    minHeight: 48,
-                    textTransform: 'none',
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    my: 0.5,
-                    mx: 0.25,
-                  },
-                }}
-              >
-                {getStudioStageOrder(category).map((item) => {
-                  const pref = query.data?.find((p) => p.stage === item);
-                  const isDirty = Boolean(drafts[item]);
-                  const isCustom = Boolean(pref?.customPrompt);
+              {promptSummaryLabel(summaries[category])}
+            </Typography>
+          </Box>
 
-                  return (
-                    <Tab
-                      key={item}
-                      data-testid={`admin-prompts-tab-${item.toLowerCase().replaceAll('_', '-')}`}
-                      value={item}
-                      label={
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <span>{lessonStageLabel(item, category, true)}</span>
-                          {isDirty ? (
-                            <Box
-                              sx={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: '50%',
-                                bgcolor: 'warning.main',
-                              }}
-                            />
-                          ) : isCustom ? (
-                            <Chip
-                              size="small"
-                              label="Personalizado"
-                              color="primary"
-                              sx={{ height: 18, fontSize: '0.625rem', fontWeight: 700 }}
-                            />
-                          ) : null}
-                        </Stack>
-                      }
-                    />
-                  );
-                })}
-              </Tabs>
-            </Paper>
-          </Grid2>
-
-          {/* Painel Principal de Edição */}
           {preference && (
-            <Grid2 size={{ xs: 12 }}>
-              <Card
-                elevation={0}
-                sx={{
-                  borderRadius: 4,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                }}
+            <Paper
+              component="section"
+              elevation={0}
+              aria-labelledby="admin-prompts-stage-title"
+              sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}
+            >
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                justifyContent="space-between"
+                alignItems={{ xs: 'flex-start', sm: 'center' }}
+                gap={1}
+                sx={{ mb: 2 }}
               >
-                <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
-                  {/* Etapa Cabeçalho */}
-                  <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    justifyContent="space-between"
-                    alignItems={{ xs: 'flex-start', sm: 'center' }}
-                    gap={1.5}
-                    sx={{ mb: 2 }}
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    id="admin-prompts-stage-title"
+                    component="h2"
+                    fontWeight={800}
+                    color="text.primary"
+                    sx={{ fontSize: { xs: '1.15rem', sm: '1.35rem' } }}
                   >
-                    <Box>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography
-                          variant="h5"
-                          fontWeight={800}
-                          sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
-                        >
-                          {currentStageInfo.icon} {lessonStageLabel(stage, category)}
-                        </Typography>
-                        <Chip
-                          color={preference.customPrompt ? 'primary' : 'default'}
-                          variant={preference.customPrompt ? 'filled' : 'outlined'}
-                          label={preference.customPrompt ? 'Personalizado' : 'Padrão oficial'}
-                          sx={{ fontWeight: 800, borderRadius: 1.5 }}
-                        />
-                      </Stack>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                        {currentStageInfo.description}
-                      </Typography>
-                    </Box>
-
-                    {dirty && (
-                      <Chip
-                        color="warning"
-                        label="Alterações pendentes"
-                        sx={{ fontWeight: 700, borderRadius: 1.5 }}
-                      />
-                    )}
-                  </Stack>
-
-                  <Divider sx={{ my: 2 }} />
-
-                  {/* Accordion do Prompt-base oficial (Imutável) */}
-                  <Accordion
-                    expanded={basePromptExpanded}
-                    onChange={(_, expanded) => setBasePromptExpanded(expanded)}
-                    elevation={0}
-                    sx={{
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: '12px !important',
-                      mb: 2,
-                      bgcolor: alpha(theme.palette.primary.main, 0.02),
-                      '&:before': { display: 'none' },
-                    }}
-                  >
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <AutoAwesome color="primary" fontSize="small" />
-                        <Typography fontWeight={700} variant="subtitle2" color="primary.main">
-                          Ver Prompt-Base Oficial do Sistema (Imutável)
-                        </Typography>
-                      </Stack>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Box sx={{ position: 'relative' }}>
-                        <Tooltip title={copied ? 'Copiado!' : 'Copiar prompt-base'}>
-                          <IconButton
-                            data-testid="admin-prompts-copy-base"
-                            aria-label="Copiar prompt-base"
-                            size="small"
-                            onClick={handleCopyBasePrompt}
-                            sx={{
-                              position: 'absolute',
-                              top: 8,
-                              right: 8,
-                              zIndex: 1,
-                              minWidth: 44,
-                              minHeight: 44,
-                            }}
-                          >
-                            {copied ? (
-                              <CheckCircle color="success" fontSize="small" />
-                            ) : (
-                              <ContentCopy fontSize="small" />
-                            )}
-                          </IconButton>
-                        </Tooltip>
-                        <TextField
-                          value={preference.basePrompt}
-                          multiline
-                          minRows={4}
-                          maxRows={10}
-                          fullWidth
-                          InputProps={{
-                            readOnly: true,
-                            sx: {
-                              fontFamily: 'monospace',
-                              fontSize: '0.825rem',
-                              bgcolor: 'background.paper',
-                              borderRadius: 2,
-                            },
-                          }}
-                          helperText="Instrução contratual base da plataforma. Suas personalizações abaixo serão combinadas a este prompt."
-                        />
-                      </Box>
-                    </AccordionDetails>
-                  </Accordion>
-
-                  {/* Accordion de Prévia do Prompt Efetivo Composto (Somente Leitura) */}
-                  <Accordion
-                    expanded={effectivePreviewExpanded}
-                    onChange={(_, expanded) => setEffectivePreviewExpanded(expanded)}
-                    elevation={0}
-                    sx={{
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: '12px !important',
-                      mb: 3,
-                      bgcolor: alpha(theme.palette.secondary.main, 0.02),
-                      '&:before': { display: 'none' },
-                    }}
-                  >
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <InfoOutlined color="secondary" fontSize="small" />
-                        <Typography fontWeight={700} variant="subtitle2" color="secondary.main">
-                          Ver Prévia do Prompt Efetivo Composto (Somente Leitura)
-                        </Typography>
-                      </Stack>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <TextField
-                        data-testid="admin-prompts-effective-preview"
-                        value={effectivePreview}
-                        multiline
-                        minRows={4}
-                        maxRows={10}
-                        fullWidth
-                        InputProps={{
-                          readOnly: true,
-                          sx: {
-                            fontFamily: 'monospace',
-                            fontSize: '0.825rem',
-                            bgcolor: 'background.paper',
-                            borderRadius: 2,
-                          },
-                        }}
-                        helperText="Prévia de como o prompt-base oficial e sua orientação complementar são combinados no envio à IA."
-                      />
-                    </AccordionDetails>
-                  </Accordion>
-
-                  {hasBaseDuplication && (
-                    <Alert
-                      data-testid="admin-prompts-duplication-warning"
-                      severity="warning"
-                      sx={{ mb: 2.5, borderRadius: 2.5 }}
-                      action={
-                        <Button
-                          data-testid="admin-prompts-strip-duplicated-base"
-                          color="inherit"
-                          size="small"
-                          onClick={() =>
-                            changePrompt(stripDuplicatedBasePrompt(value, preference.basePrompt))
-                          }
-                          sx={{ fontWeight: 700, minHeight: 44 }}
-                        >
-                          Remover base oficial duplicada
-                        </Button>
-                      }
-                    >
-                      Detectamos trechos do prompt-base oficial dentro do campo de orientação
-                      complementar. Para evitar duplicação e estouro de limite, mantenha apenas suas
-                      instruções complementares.
-                    </Alert>
+                    <span aria-hidden>{stageIcon} </span>
+                    {stageLabel}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {lessonStageDescription(stage, category)}
+                  </Typography>
+                </Box>
+                <Stack direction="row" flexWrap="wrap" alignItems="center" gap={0.75}>
+                  <Chip
+                    data-testid="admin-prompts-stage-status"
+                    color={preference.customPrompt ? 'primary' : 'default'}
+                    variant={preference.customPrompt ? 'filled' : 'outlined'}
+                    label={preference.customPrompt ? PROMPT_TEXTS.custom : PROMPT_TEXTS.official}
+                    sx={{ fontWeight: 800, borderRadius: 1.5 }}
+                  />
+                  {dirty && (
+                    <Chip color="warning" label={PROMPT_TEXTS.pending} sx={{ fontWeight: 700, borderRadius: 1.5 }} />
                   )}
-
-                  {/* Sugestões de Presets Rápidos */}
-                  <Box sx={{ mb: 2.5 }}>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                      <LightbulbOutlined fontSize="small" color="primary" />
-                      <Typography variant="caption" fontWeight={700} color="text.secondary">
-                        Sugestões rápidas de diretrizes (clique para adicionar à sua orientação
-                        complementar):
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ gap: 1 }}>
-                      {PROMPT_PRESETS.map((preset) => (
-                        <Chip
-                          key={preset.label}
-                          icon={<AddIcon fontSize="small" />}
-                          label={preset.label}
-                          onClick={() => handleInsertPreset(preset.text)}
-                          variant="outlined"
-                          size="small"
-                          sx={{
-                            fontWeight: 600,
-                            borderRadius: 2,
-                            cursor: 'pointer',
-                            '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.08) },
-                          }}
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
-
-                  {/* Editor Principal da Orientação Complementar */}
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      data-testid={`admin-prompt-page-input-${stage}`}
-                      label="Suas orientações personalizadas (complementares)"
-                      placeholder="Escreva aqui apenas as diretrizes pedagógicas, estilo de linguagem ou instruções adicionais..."
-                      disabled={reset.isPending}
-                      value={value}
-                      onChange={(event) => {
-                        changePrompt(event.target.value);
-                      }}
-                      multiline
-                      minRows={10}
-                      fullWidth
-                      error={value.trim().length > 0 && !isPromptValid}
-                      slotProps={{ htmlInput: { maxLength: PROMPT_MAX_LENGTH } }}
-                      InputProps={{
-                        sx: {
-                          fontFamily: 'monospace',
-                          fontSize: '0.875rem',
-                          borderRadius: 3,
-                          lineHeight: 1.5,
-                        },
-                      }}
-                      helperText={
-                        value.length > PROMPT_MAX_LENGTH
-                          ? `O texto excede o limite máximo de ${PROMPT_MAX_LENGTH} caracteres (${value.length}/${PROMPT_MAX_LENGTH}).`
-                          : `${value.length}/${PROMPT_MAX_LENGTH} caracteres · mínimo de ${PROMPT_MIN_LENGTH} caracteres (para voltar ao padrão oficial sem personalização, use "Restaurar padrão")`
-                      }
-                    />
-                  </Box>
-
-                  {recovered && (
-                    <Alert
-                      data-testid="admin-prompts-draft-recovered"
-                      severity="info"
-                      onClose={() => setRecovered(false)}
-                      sx={{ mb: 2, borderRadius: 2.5 }}
-                    >
-                      Rascunho recuperado: as orientações que você digitou e não salvou foram
-                      restauradas neste navegador.
-                    </Alert>
+                  {savedLabel && (
+                    <Typography data-testid="admin-prompts-saved-at" variant="caption" color="text.secondary">
+                      {savedLabel}
+                    </Typography>
                   )}
-                  {draftOutdated && (
-                    <Alert
-                      data-testid="admin-prompts-draft-outdated"
-                      severity="warning"
-                      sx={{ mb: 2, borderRadius: 2.5, '& .MuiAlert-message': { width: '100%' } }}
-                    >
-                      <Typography variant="body2" sx={{ mb: 1 }}>
-                        As orientações desta etapa foram alteradas em outra sessão. Seu texto foi
-                        preservado, mas precisa de uma decisão para poder ser salvo.
-                      </Typography>
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                        <Button
-                          data-testid="admin-prompts-draft-rebase"
-                          color="inherit"
-                          variant="outlined"
-                          onClick={rebaseCurrentDraft}
-                          sx={{ minHeight: 44, textTransform: 'none' }}
-                        >
-                          Aplicar meu texto sobre a versão atual
-                        </Button>
-                        <Button
-                          data-testid="admin-prompts-draft-discard-outdated"
-                          color="inherit"
-                          onClick={discardCurrentDraft}
-                          sx={{ minHeight: 44, textTransform: 'none' }}
-                        >
-                          Descartar meu texto e ver a versão atual
-                        </Button>
-                      </Stack>
-                    </Alert>
-                  )}
+                </Stack>
+              </Stack>
 
-                  {/* Alerta de Feedback */}
-                  {feedback && (
-                    <Alert
-                      data-testid="admin-prompts-feedback"
-                      severity={feedback.severity}
-                      sx={{ mb: 2, borderRadius: 2.5 }}
-                    >
-                      {feedback.text}
-                    </Alert>
-                  )}
+              <TextField
+                data-testid={`admin-prompt-page-input-${stage}`}
+                label={PROMPT_TEXTS.editorLabel}
+                placeholder={PROMPT_STAGE_EXAMPLES[stage]}
+                disabled={reset.isPending}
+                value={value}
+                onChange={(event) => changePrompt(event.target.value)}
+                multiline
+                minRows={8}
+                maxRows={24}
+                fullWidth
+                error={Boolean(validationMessage)}
+                helperText={
+                  validationMessage ??
+                  (clearing
+                    ? 'Campo vazio: ao confirmar, esta etapa volta ao padrão oficial.'
+                    : `${value.length}/${PROMPT_MAX_LENGTH} caracteres · ${PROMPT_TEXTS.saveShortcut}`)
+                }
+                slotProps={{
+                  htmlInput: { maxLength: PROMPT_MAX_LENGTH },
+                  inputLabel: { shrink: true },
+                  input: { sx: { fontSize: '0.95rem', borderRadius: 3, lineHeight: 1.55 } },
+                }}
+              />
 
-                  {/* Ações (Desktop / Tablet) */}
-                  <Stack
-                    direction={{ xs: 'column-reverse', sm: 'row' }}
-                    justifyContent="flex-end"
-                    spacing={1.5}
-                    sx={{ mt: 3 }}
-                  >
-                    {dirty && (
-                      <Button
-                        data-testid="admin-prompts-discard-draft"
-                        disabled={save.isPending || reset.isPending}
-                        onClick={discardCurrentDraft}
-                        sx={{
-                          borderRadius: 2.5,
-                          minHeight: 44,
-                          fontWeight: 600,
-                          textTransform: 'none',
-                        }}
-                      >
-                        Descartar alterações desta etapa
-                      </Button>
-                    )}
-                    <Button
-                      data-testid="admin-prompts-reset-open"
-                      color="warning"
+              <Box sx={{ mt: 1.5 }}>
+                <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mb: 0.75 }}>
+                  <LightbulbOutlined fontSize="small" color="primary" />
+                  <Typography variant="caption" fontWeight={700} color="text.secondary">
+                    {PROMPT_TEXTS.presetsLabel}
+                  </Typography>
+                </Stack>
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {PROMPT_PRESETS.map((preset) => (
+                    <Chip
+                      key={preset.label}
+                      icon={<AddIcon fontSize="small" />}
+                      label={preset.label}
+                      onClick={() => handleInsertPreset(preset.text)}
                       variant="outlined"
-                      startIcon={<RestartAlt />}
-                      disabled={!preference.customPrompt || reset.isPending || save.isPending}
-                      onClick={() => setResetOpen(true)}
-                      sx={{
-                        borderRadius: 2.5,
-                        minHeight: 44,
-                        fontWeight: 600,
-                        textTransform: 'none',
-                      }}
-                    >
-                      Restaurar padrão
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<Save />}
-                      disabled={
-                        !dirty || !isPromptValid || draftOutdated || save.isPending || reset.isPending
-                      }
-                      onClick={saveCurrentPrompt}
-                      sx={{
-                        borderRadius: 2.5,
-                        minHeight: 44,
-                        px: 3,
-                        fontWeight: 700,
-                        textTransform: 'none',
-                      }}
-                    >
-                      {save.isPending ? 'Salvando…' : 'Salvar personalização'}
-                    </Button>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid2>
+                      disabled={reset.isPending}
+                      sx={{ fontWeight: 600, borderRadius: 2, minHeight: 36 }}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+
+              <Stack gap={1.5} sx={{ mt: 2 }}>
+                {hasBaseDuplication && (
+                  <Alert
+                    data-testid="admin-prompts-duplication-warning"
+                    severity="warning"
+                    sx={{ borderRadius: 2.5 }}
+                    action={
+                      <Button
+                        data-testid="admin-prompts-strip-duplicated-base"
+                        color="inherit"
+                        size="small"
+                        onClick={() => changePrompt(stripDuplicatedBasePrompt(value, preference.basePrompt))}
+                        sx={{ fontWeight: 700, minHeight: 44 }}
+                      >
+                        Remover o trecho repetido
+                      </Button>
+                    }
+                  >
+                    Há trechos das regras oficiais dentro da sua orientação. Elas já são enviadas à IA:
+                    deixe aqui só o que é seu, para não repetir nem estourar o limite.
+                  </Alert>
+                )}
+                {recovered && (
+                  <Alert
+                    data-testid="admin-prompts-draft-recovered"
+                    severity="info"
+                    onClose={() => setRecovered(false)}
+                    sx={{ borderRadius: 2.5 }}
+                  >
+                    Rascunho recuperado: o texto que você digitou e não salvou foi restaurado neste
+                    navegador.
+                  </Alert>
+                )}
+                {draftOutdated && (
+                  <Alert
+                    data-testid="admin-prompts-draft-outdated"
+                    severity="warning"
+                    sx={{ borderRadius: 2.5, '& .MuiAlert-message': { width: '100%' } }}
+                  >
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      Você alterou esta orientação em outra aba ou aparelho. O texto daqui foi
+                      preservado, mas precisa de uma decisão para poder ser salvo.
+                    </Typography>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                      <Button
+                        data-testid="admin-prompts-draft-rebase"
+                        color="inherit"
+                        variant="outlined"
+                        onClick={rebaseCurrentDraft}
+                        sx={{ minHeight: 44, textTransform: 'none' }}
+                      >
+                        Aplicar meu texto sobre a versão atual
+                      </Button>
+                      <Button
+                        data-testid="admin-prompts-draft-discard-outdated"
+                        color="inherit"
+                        onClick={discardCurrentDraft}
+                        sx={{ minHeight: 44, textTransform: 'none' }}
+                      >
+                        Descartar meu texto e ver a versão atual
+                      </Button>
+                    </Stack>
+                  </Alert>
+                )}
+                {feedback && (
+                  <Alert data-testid="admin-prompts-feedback" severity={feedback.severity} sx={{ borderRadius: 2.5 }}>
+                    {feedback.text}
+                  </Alert>
+                )}
+              </Stack>
+
+              <Stack
+                direction={{ xs: 'column-reverse', sm: 'row' }}
+                justifyContent="flex-end"
+                gap={1.25}
+                sx={{ mt: 2.5, mb: 3 }}
+              >
+                {dirty && (
+                  <Button
+                    data-testid="admin-prompts-discard-draft"
+                    disabled={busy}
+                    onClick={discardCurrentDraft}
+                    sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 600, textTransform: 'none' }}
+                  >
+                    {PROMPT_TEXTS.discard}
+                  </Button>
+                )}
+                {!clearing && (
+                  <Button
+                    data-testid="admin-prompts-reset-open"
+                    color="warning"
+                    variant="outlined"
+                    startIcon={<RestartAlt />}
+                    disabled={!preference.customPrompt || busy}
+                    onClick={() => setResetOpen(true)}
+                    sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 600, textTransform: 'none' }}
+                  >
+                    {PROMPT_TEXTS.restore}
+                  </Button>
+                )}
+                {clearing ? (
+                  <Button
+                    data-testid="admin-prompts-remove"
+                    variant="contained"
+                    color="warning"
+                    startIcon={<RestartAlt />}
+                    disabled={busy}
+                    onClick={() => setResetOpen(true)}
+                    sx={{ borderRadius: 2.5, minHeight: 44, px: 3, fontWeight: 700, textTransform: 'none' }}
+                  >
+                    {PROMPT_TEXTS.remove}
+                  </Button>
+                ) : (
+                  <Button
+                    data-testid="admin-prompts-save"
+                    variant="contained"
+                    startIcon={<Save />}
+                    disabled={!canSave}
+                    onClick={saveCurrentPrompt}
+                    sx={{ borderRadius: 2.5, minHeight: 44, px: 3, fontWeight: 700, textTransform: 'none' }}
+                  >
+                    {save.isPending ? PROMPT_TEXTS.saving : PROMPT_TEXTS.save}
+                  </Button>
+                )}
+              </Stack>
+
+              <Typography
+                data-testid="admin-prompts-protected-note"
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mb: 1 }}
+              >
+                {PROMPT_TEXTS.protectedNote}
+              </Typography>
+              <PromptReference
+                basePrompt={preference.basePrompt}
+                effectivePreview={effectivePreview}
+                resetKey={`${category}:${stage}`}
+              />
+            </Paper>
           )}
-        </Grid2>
+        </Stack>
       )}
 
-      {/* Floating Action Bar em Dispositivos Móveis (Mobile-First Sticky Bar) */}
-      {preference && dirty && (
+      {/* No celular o botão de salvar acompanha a rolagem enquanto há texto não salvo. */}
+      {preference && dirty && !clearing && (
         <Paper
           elevation={4}
           sx={{
             display: { xs: 'flex', sm: 'none' },
             position: 'fixed',
             bottom: 0,
-            paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
             left: 0,
             right: 0,
             p: 1.5,
             px: 2,
-            bgcolor: 'background.paper',
+            paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
             borderTop: '1px solid',
             borderColor: 'divider',
             zIndex: 1100,
             flexDirection: 'column',
-            alignItems: 'stretch',
-            gap: 1,
+            gap: 0.75,
           }}
         >
           <Typography variant="caption" fontWeight={700} color="warning.main" textAlign="center">
-            Alterações pendentes
+            {validationMessage ?? PROMPT_TEXTS.pending}
           </Typography>
           <Button
+            data-testid="admin-prompts-save-mobile"
             variant="contained"
-            size="medium"
             startIcon={<Save />}
-            disabled={!isPromptValid || save.isPending || reset.isPending}
+            disabled={!canSave}
             onClick={saveCurrentPrompt}
             fullWidth
-            sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+            sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', minHeight: 44 }}
           >
-            {save.isPending ? 'Salvando…' : 'Salvar'}
+            {save.isPending ? PROMPT_TEXTS.saving : PROMPT_TEXTS.save}
           </Button>
         </Paper>
       )}
 
-      {/* Modal de Confirmação para Restaurar Prompt Oficial */}
-      <Dialog
-        data-testid="admin-prompt-page-reset-dialog"
-        aria-labelledby="admin-prompts-reset-title"
+      <PromptResetDialog
         open={resetOpen}
-        onClose={() => {
-          if (!reset.isPending) setResetOpen(false);
+        stageLabel={stageLabel}
+        hasUnsavedText={dirty && !clearing}
+        pending={reset.isPending}
+        onCancel={() => setResetOpen(false)}
+        onConfirm={() => {
+          if (preference) {
+            reset.mutate({ item: preference, draft: drafts[stage] ?? { base: preference, value } });
+          }
         }}
-        maxWidth="xs"
-        fullWidth
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: { xs: 2, sm: 3 },
-              p: { xs: 0, sm: 1 },
-              m: { xs: 1.5, sm: 4 },
-              width: { xs: 'calc(100% - 24px)', sm: '100%' },
-            },
-          },
-        }}
-      >
-        <DialogTitle id="admin-prompts-reset-title" sx={{ fontWeight: 800 }}>
-          Restaurar prompt oficial?
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText color="text.secondary">
-            A sua personalização para a etapa <strong>{lessonStageLabel(stage, category)}</strong> será
-            removida. O sistema voltará a utilizar o prompt-base padrão.
-          </DialogContentText>
-          {dirty && (
-            <DialogContentText
-              data-testid="admin-prompts-reset-unsaved-warning"
-              color="warning.main"
-              sx={{ mt: 1.5, fontWeight: 600 }}
-            >
-              O texto que você digitou e ainda não salvou nesta etapa também será descartado.
-            </DialogContentText>
-          )}
-        </DialogContent>
-        <DialogActions
-          sx={{
-            px: { xs: 2, sm: 3 },
-            pb: 2,
-            flexDirection: { xs: 'column-reverse', sm: 'row' },
-            '& > :not(style) ~ :not(style)': { ml: { xs: 0, sm: 1 }, mt: { xs: 1, sm: 0 } },
-            '& .MuiButton-root': { width: { xs: '100%', sm: 'auto' } },
-          }}
-        >
-          <Button
-            disabled={reset.isPending}
-            onClick={() => setResetOpen(false)}
-            sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            color="warning"
-            variant="contained"
-            onClick={() => {
-              if (preference)
-                reset.mutate({
-                  item: preference,
-                  draft: drafts[stage] ?? { base: preference, value },
-                });
-            }}
-            disabled={reset.isPending}
-            sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
-          >
-            {reset.isPending ? 'Restaurando...' : 'Restaurar'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      />
       <UnsavedChangesDialog {...leaveGuard.dialog} />
     </Box>
   );

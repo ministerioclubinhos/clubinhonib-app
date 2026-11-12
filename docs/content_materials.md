@@ -378,3 +378,37 @@ Arquivos: `pages/admin/ai-lessons/AiLessonsHubPage.tsx`,
 `components/hub/*`. Testes: `e2e/unit/ai-lessons.hub.spec.ts` (regras) e
 `e2e/flows/ai-lessons-hub-mobile.spec.ts` (tela contra a API real, de 320 a
 1440 px; não cria lições, porque criar dispara geração por IA).
+
+## Orientações de criação (`/adm/estudio/orientacoes`) — revisão de 2026-11-11
+
+As orientações são **pessoais**: a API as guarda por administrador, por tipo de
+material e por etapa (`admin_lesson_prompts`), e aplica as de quem dispara a
+geração. A tela agora diz isso no topo, com o nome de quem está logado.
+
+- **Aviso pessoal** (`admin-prompts-personal-notice`): "Estas orientações são
+  só suas" — valem para as próximas gerações de quem está logado; outros
+  administradores têm as próprias, e lições já geradas não mudam.
+- **Edição primeiro**: o campo de texto vem logo abaixo do título da etapa, com
+  um exemplo próprio de cada etapa no campo vazio (`PROMPT_STAGE_EXAMPLES`). As
+  regras oficiais e a prévia do que a IA recebe ficam depois, recolhidas
+  (`PromptReference`).
+- **Linguagem simples**: "Regras oficiais desta etapa (não editáveis)" e "Como
+  a IA vai receber", no lugar de "prompt-base" e "prompt efetivo composto".
+- **Resumo**: "N etapas personalizadas de M" sob as abas, e a quantidade de
+  cada tipo de material no seletor. Cada aba tem um ponto: laranja para texto
+  não salvo, azul para etapa personalizada.
+- **Quando foi salva**: "salva em 11/11/2026 às 12:30" (`updatedAt`, novo no
+  contrato de `GET /prompt-preferences/me`).
+- **Apagar o texto = voltar ao padrão**: com o campo vazio numa etapa
+  personalizada, o botão principal vira "Remover minha orientação". Antes a
+  tela travava o salvar por causa do mínimo de 10 caracteres.
+- **Ctrl+S** salva a etapa aberta; no celular o botão de salvar acompanha a
+  rolagem enquanto há texto não salvo.
+- A página foi dividida: `components/prompts/PromptStageTabs`,
+  `PromptReference`, `PromptResetDialog`, e as regras puras em
+  `prompt.utils.ts`.
+
+Testes: `e2e/unit/ai-lessons.prompts.spec.ts` (regras) e
+`e2e/flows/studio-guidelines.spec.ts` (tela contra a API real, incluindo que a
+orientação de um administrador não aparece para outro usuário). Salvar uma
+orientação não dispara geração por IA.

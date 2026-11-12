@@ -246,6 +246,8 @@ export interface AdminPromptPreference {
   customPrompt: string | null;
   effectivePrompt: string;
   lockVersion: number | null;
+  /** When this admin last saved or reset the stage; `null` when never customised. */
+  updatedAt?: string | null;
 }
 export interface GetLessonDraftsParams {
   status?: LessonStatus;

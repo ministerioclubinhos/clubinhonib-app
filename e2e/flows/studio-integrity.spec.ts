@@ -188,33 +188,39 @@ test('salvar e restaurar um prompt preserva o outro rascunho e seu lock', async 
       .getByRole('textbox')
       .fill(`Orientação B ${suffix}`);
     await page.getByTestId('admin-prompts-tab-lesson').click();
-    await page.getByRole('button', { name: 'Salvar personalização' }).click();
-    await expect(page.getByTestId('admin-prompts-feedback')).toContainText('sucesso');
-    await page.getByRole('button', { name: 'Restaurar padrão' }).click();
-    await page
-      .getByTestId('admin-prompt-page-reset-dialog')
-      .getByRole('button', { name: 'Restaurar', exact: true })
-      .click();
+    await page.getByTestId('admin-prompts-save').click();
+    await expect(page.getByTestId('admin-prompts-feedback')).toContainText('Orientação salva');
+    await page.getByTestId('admin-prompts-reset-open').click();
+    await page.getByTestId('admin-prompts-reset-confirm').click();
     await expect(page.getByTestId('admin-prompt-page-reset-dialog')).toBeHidden();
     await page.getByTestId('admin-prompts-tab-standard-game').click();
     await expect(
       page.getByTestId('admin-prompt-page-input-STANDARD_GAME').getByRole('textbox')
     ).toHaveValue(`Orientação B ${suffix}`);
-    await page.getByRole('button', { name: 'Salvar personalização' }).click();
-    await expect(page.getByTestId('admin-prompts-feedback')).toContainText('sucesso');
+    await page.getByTestId('admin-prompts-save').click();
+    await expect(page.getByTestId('admin-prompts-feedback')).toContainText('Orientação salva');
     const saved = await api.get<AdminPromptPreference[]>('/api/v1/lessons/prompt-preferences/me');
     expect(saved.find((item) => item.stage === LessonStageType.STANDARD_GAME)?.customPrompt).toBe(
       `Orientação B ${suffix}`
     );
   } finally {
+    // A API versiona cada orientação: restaurar e regravar exigem a versão atual.
+    const path = '/api/v1/lessons/prompt-preferences/me';
     for (const stage of [LessonStageType.LESSON, LessonStageType.STANDARD_GAME]) {
-      await api.post('/api/v1/lessons/prompt-preferences/me/reset', { stage });
+      const versionOf = async () =>
+        (await api.get<AdminPromptPreference[]>(path)).find((item) => item.stage === stage)
+          ?.lockVersion ?? null;
+      const lockVersion = await versionOf();
+      if (lockVersion !== null) await api.post(`${path}/reset`, { stage, lockVersion });
       const original = initial.find((item) => item.stage === stage);
-      if (original?.customPrompt)
-        await api.patch('/api/v1/lessons/prompt-preferences/me', {
+      if (original?.customPrompt) {
+        const afterReset = await versionOf();
+        await api.patch(path, {
           stage,
           prompt: original.customPrompt,
+          ...(afterReset !== null ? { lockVersion: afterReset } : {}),
         });
+      }
     }
     await api.dispose();
   }
