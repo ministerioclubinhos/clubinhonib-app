@@ -1,5 +1,7 @@
 import { subscribeLessonStream } from './stream';
 import type {
+  ActiveLessonGeneration,
+  RegenerateStageImagesPayload,
   Lesson,
   LessonDashboard,
   GenerateLessonPayload,
@@ -64,8 +66,25 @@ export const aiLessonsService = {
   async getDashboard(signal?: AbortSignal): Promise<LessonDashboard> {
     return (await apiAxios.get<LessonDashboard>(`${endpoint}/dashboard`, { signal })).data;
   },
+  async getActiveGenerations(signal?: AbortSignal): Promise<ActiveLessonGeneration[]> {
+    return (
+      await apiAxios.get<ActiveLessonGeneration[]>(`${endpoint}/generations/active`, {
+        signal,
+        // Background polling: a failure must not raise a toast every few seconds.
+        skipGlobalError: true,
+      })
+    ).data;
+  },
   async generateStage(id: string, payload: RegenerateSectionPayload): Promise<Lesson> {
     return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/generate`, payload)).data;
+  },
+  async regenerateStageImages(id: string, payload: RegenerateStageImagesPayload): Promise<Lesson> {
+    return (
+      await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/regenerate-images`, payload, {
+        // The selection dialog shows the refusal next to the choice.
+        skipGlobalError: true,
+      })
+    ).data;
   },
   async updateContent(id: string, payload: SaveTiptapPayload): Promise<Lesson> {
     return (
@@ -118,9 +137,7 @@ export const aiLessonsService = {
     ).data;
   },
   async resolveComment(id: string, commentId: string): Promise<Lesson> {
-    return (
-      await apiAxios.post<Lesson>(`${endpoint}/${id}/comments/${commentId}/resolve`)
-    ).data;
+    return (await apiAxios.post<Lesson>(`${endpoint}/${id}/comments/${commentId}/resolve`)).data;
   },
   async submitPackageReview(id: string): Promise<Lesson> {
     return (await apiAxios.post<Lesson>(`${endpoint}/${id}/package/submit-review`)).data;
@@ -193,9 +210,15 @@ export const aiLessonsService = {
       })
     ).data;
   },
-  async getPromptPreferences(signal?: AbortSignal, category: LessonCategory = LessonCategory.REGULAR): Promise<AdminPromptPreference[]> {
+  async getPromptPreferences(
+    signal?: AbortSignal,
+    category: LessonCategory = LessonCategory.REGULAR
+  ): Promise<AdminPromptPreference[]> {
     return (
-      await apiAxios.get<AdminPromptPreference[]>(`${endpoint}/prompt-preferences/me`, { signal, params: { category } })
+      await apiAxios.get<AdminPromptPreference[]>(`${endpoint}/prompt-preferences/me`, {
+        signal,
+        params: { category },
+      })
     ).data;
   },
   async savePromptPreference(

@@ -181,6 +181,7 @@ export const LessonDraftDetailPage: React.FC = () => {
               lesson={lesson}
               data={data}
               workflow={workflow}
+              refetch={refetch}
               preview={preview}
               resolvingCommentId={
                 resolveComment.isPending ? (resolveComment.variables?.commentId ?? null) : null

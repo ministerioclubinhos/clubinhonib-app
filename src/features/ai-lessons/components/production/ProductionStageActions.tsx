@@ -1,6 +1,7 @@
 import { Alert, Box, Button, CircularProgress, Link, Stack, Typography } from '@mui/material';
-import { AutoAwesome, Check, EditNote, PictureAsPdf } from '@mui/icons-material';
+import { AutoAwesome, Check, Collections, EditNote, PictureAsPdf } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
+import { IMAGE_REGENERATION_TEXTS } from '../../image-regeneration.constants';
 import { AI_PROVIDER_SETTINGS_ROUTE, PRODUCTION_TEXTS } from '../../production.constants';
 import { ProductionStageAction, type ProductionStageActionsProps } from '../../production.types';
 import { LessonStageType } from '../../types';
@@ -34,6 +35,7 @@ export function ProductionStageActions({
   onComplete,
   onDiscard,
   onOpenProviderSettings,
+  imageRegeneration,
 }: ProductionStageActionsProps) {
   const hasVersion = Boolean(stage.currentVersionId);
   const variantOf = (action: ProductionStageAction) =>
@@ -59,6 +61,20 @@ export function ProductionStageActions({
               : hasVersion
                 ? PRODUCTION_TEXTS.regenerate
                 : PRODUCTION_TEXTS.generate}
+          </Button>
+        )}
+
+        {imageRegeneration && hasVersion && (
+          <Button
+            data-testid="ai-lesson-regenerate-images-button"
+            startIcon={<Collections />}
+            variant="outlined"
+            color="warning"
+            disabled={!imageRegeneration.enabled || stageGenerating}
+            onClick={imageRegeneration.onOpen}
+            sx={BUTTON_SX}
+          >
+            {IMAGE_REGENERATION_TEXTS.button}
           </Button>
         )}
 
@@ -135,6 +151,16 @@ export function ProductionStageActions({
           sx={{ display: 'block', mt: providerCaption ? 0 : 1 }}
         >
           {regenerationLock}
+        </Typography>
+      )}
+      {imageRegeneration?.blockedReason && hasVersion && !stageGenerating && (
+        <Typography
+          data-testid="ai-lesson-regenerate-images-blocked-reason"
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mt: providerCaption ? 0 : 1 }}
+        >
+          {imageRegeneration.blockedReason}
         </Typography>
       )}
       {completeBlockedReason && (

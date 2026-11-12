@@ -1,6 +1,8 @@
 import { Alert, Button, CircularProgress, Stack, Typography } from '@mui/material';
 import { AutoAwesome, AutoStories, RateReview } from '@mui/icons-material';
+import { GENERATION_TEXTS } from '../../generation.constants';
 import { VERSE_DEPENDENT_STAGES } from '../../presentation.constants';
+import { GenerationProgress } from '../generation/GenerationProgress';
 import { displayAiFailure, lessonStageLabel } from '../../presentation.utils';
 import { PRODUCTION_TEXTS } from '../../production.constants';
 import type { ProductionStageGuidanceProps } from '../../production.types';
@@ -18,6 +20,7 @@ export function ProductionStageGuidance({
   staleOrigin,
   stageGenerating,
   generationLocked,
+  generation,
   elapsedSeconds,
   dependencyReady,
   completionNotice,
@@ -128,16 +131,32 @@ export function ProductionStageGuidance({
           severity="info"
           role="status"
           icon={<CircularProgress size={20} />}
-          sx={ALERT_SX}
+          sx={{ ...ALERT_SX, '& .MuiAlert-message': { flex: 1, minWidth: 0 } }}
         >
-          Gerando o conteúdo com IA há {elapsed}. Itens com imagens podem levar alguns minutos;
-          você pode navegar pelas outras etapas e esta tela será atualizada automaticamente.
+          <GenerationProgress progress={generation} elapsed={elapsed} />
+          <Typography variant="body2" sx={{ mt: 0.75 }}>
+            {GENERATION_TEXTS.keepBrowsing}
+          </Typography>
         </Alert>
       )}
       {generationLocked && !stageGenerating && (
-        <Alert data-testid="ai-lesson-other-stage-generating" severity="info" sx={ALERT_SX}>
-          Outra etapa desta lição está sendo gerada há {elapsed}. Edição, geração e conclusão
-          ficam bloqueadas até ela terminar; a leitura continua liberada.
+        <Alert
+          data-testid="ai-lesson-other-stage-generating"
+          severity="info"
+          sx={{ ...ALERT_SX, '& .MuiAlert-message': { flex: 1, minWidth: 0 } }}
+        >
+          <GenerationProgress
+            progress={generation}
+            elapsed={elapsed}
+            title={
+              generation
+                ? `Gerando “${lessonStageLabel(generation.stage, category)}”`
+                : 'Outra etapa desta lição está sendo gerada'
+            }
+          />
+          <Typography variant="body2" sx={{ mt: 0.75 }}>
+            {GENERATION_TEXTS.otherStage}
+          </Typography>
         </Alert>
       )}
 

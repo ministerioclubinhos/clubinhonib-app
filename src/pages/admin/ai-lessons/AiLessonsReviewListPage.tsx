@@ -8,6 +8,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { StudioActiveGenerations } from '@/features/ai-lessons/components/generation/StudioActiveGenerations';
 import { ListingCard, ListingLayout, ListingToolbar } from '@/components/common/listing';
 import type { ListingFilter } from '@/components/common/listing';
 import {
@@ -111,6 +112,7 @@ export const AiLessonsReviewListPage: React.FC = () => {
       data-testid="ai-lessons-review-list"
       sx={{ width: { xs: '98%', md: '95%' }, mx: 'auto', py: { xs: 1.5, md: 3 } }}
     >
+      <StudioActiveGenerations />
       <ListingLayout
         title={REVIEW_TEXTS.listTitle}
         summary={REVIEW_TEXTS.listSummary}
@@ -169,7 +171,9 @@ export const AiLessonsReviewListPage: React.FC = () => {
           </Stack>
         }
         loading={isLoading}
-        error={isError ? 'Não foi possível carregar a fila de revisão. Tente novamente.' : undefined}
+        error={
+          isError ? 'Não foi possível carregar a fila de revisão. Tente novamente.' : undefined
+        }
         itemCount={items.length}
         emptyTitle={REVIEW_EMPTY_TEXTS[view].title}
         emptySubtitle={REVIEW_EMPTY_TEXTS[view].subtitle}

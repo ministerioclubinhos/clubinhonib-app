@@ -5,13 +5,11 @@ import {
   AI_LESSON_EVENTS_FAILURES_BEFORE_NOTICE,
   PUBLICATION_PREVIEW_STALE_TIME_MS,
 } from './constants';
+import { ACTIVE_GENERATIONS_POLL_MS } from './generation.constants';
 import { nextReconnectDelay } from './stream';
 import { aiLessonsKeys } from './queryKeys';
 import { setCurrentWeek } from '@/features/week-materials/api';
-import {
-  computeLessonSnapshotSignature,
-  isLessonSnapshotNewerOrEqual,
-} from './utils';
+import { computeLessonSnapshotSignature, isLessonSnapshotNewerOrEqual } from './utils';
 import {
   LessonArchiveAction,
   LessonConnectionState,
@@ -19,6 +17,7 @@ import {
   LessonStreamEnd,
   type GenerateLessonPayload,
   type GenerateStageVariables,
+  type RegenerateStageImagesVariables,
   type GetLessonDraftsParams,
   type Lesson,
   type ResolveCommentVariables,
@@ -29,6 +28,7 @@ import {
 
 function invalidateSummaries(client: QueryClient) {
   return Promise.all([
+    client.invalidateQueries({ queryKey: aiLessonsKeys.activeGenerations }),
     client.invalidateQueries({ queryKey: aiLessonsKeys.lists }),
     client.invalidateQueries({ queryKey: aiLessonsKeys.dashboard }),
   ]);
@@ -159,6 +159,18 @@ export function useLessonDashboard() {
     queryFn: ({ signal }) => aiLessonsService.getDashboard(signal),
   });
 }
+/** Generations running anywhere in the studio; this is how a reloaded page finds them again. */
+export function useActiveLessonGenerations() {
+  return useQuery({
+    queryKey: aiLessonsKeys.activeGenerations,
+    queryFn: ({ signal }) => aiLessonsService.getActiveGenerations(signal),
+    refetchInterval: (query) =>
+      (query.state.data?.length ?? 0) > 0
+        ? ACTIVE_GENERATIONS_POLL_MS.running
+        : ACTIVE_GENERATIONS_POLL_MS.idle,
+    retry: false,
+  });
+}
 export function useUpdateDraftContent() {
   const client = useQueryClient();
   return useMutation({
@@ -172,6 +184,16 @@ export function useGenerateStage() {
   return useMutation({
     mutationFn: ({ id, payload }: GenerateStageVariables) =>
       aiLessonsService.generateStage(id, payload),
+    onSuccess: (lesson) => updateLesson(client, lesson),
+    onSettled: (_, __, value) =>
+      client.invalidateQueries({ queryKey: aiLessonsKeys.detail(value.id) }),
+  });
+}
+export function useRegenerateStageImages() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: RegenerateStageImagesVariables) =>
+      aiLessonsService.regenerateStageImages(id, payload),
     onSuccess: (lesson) => updateLesson(client, lesson),
     onSettled: (_, __, value) =>
       client.invalidateQueries({ queryKey: aiLessonsKeys.detail(value.id) }),
@@ -208,7 +230,11 @@ export function useLessonArchive(action: LessonArchiveAction) {
  * What publishing will create (title, PDFs, same-week duplicates) and the state of the page
  * already linked to the lesson. Keyed by status so each lesson transition refetches it.
  */
-export function useLessonPublicationPreview(id: string, status: string | undefined, enabled: boolean) {
+export function useLessonPublicationPreview(
+  id: string,
+  status: string | undefined,
+  enabled: boolean
+) {
   return useQuery({
     queryKey: aiLessonsKeys.publicationPreview(id, status),
     queryFn: ({ signal }) => aiLessonsService.getPublicationPreview(id, signal),

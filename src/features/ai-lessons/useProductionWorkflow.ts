@@ -66,9 +66,7 @@ export function useProductionWorkflow({
   const visual = useVisualConfigForm(selectedType, version, lesson?.category);
 
   const [confirmation, setConfirmation] = useState<ProductionConfirmation | null>(null);
-  const [completionNotice, setCompletionNotice] = useState<ProductionCompletionNotice | null>(
-    null
-  );
+  const [completionNotice, setCompletionNotice] = useState<ProductionCompletionNotice | null>(null);
   const [layoutOverflow, setLayoutOverflow] = useState(false);
   // `isPending` only changes on the next render; this closes the same-frame double click.
   const submitting = useRef(false);
@@ -81,7 +79,8 @@ export function useProductionWorkflow({
   const generationLocked =
     generate.isPending ||
     Boolean(lesson?.stages.some((item) => item.status === LessonStageStatus.GENERATING));
-  const elapsedSeconds = useElapsedSeconds(generationLocked);
+  const generation = generationLocked ? (lesson?.generation ?? null) : null;
+  const elapsedSeconds = useElapsedSeconds(generationLocked, generation?.startedAt);
 
   const blocked =
     lessonGone || complete.isPending || generate.isPending || deleteMutation.isPending;
@@ -208,9 +207,7 @@ export function useProductionWorkflow({
   useSaveShortcut(requestSave);
 
   const confirmDelete = () =>
-    guarded((release) =>
-      deleteMutation.mutate(id, { onSuccess: onDeleted, onSettled: release })
-    );
+    guarded((release) => deleteMutation.mutate(id, { onSuccess: onDeleted, onSettled: release }));
 
   const confirmCurrent = () => {
     const kind = confirmation?.kind;
@@ -253,6 +250,7 @@ export function useProductionWorkflow({
     impactedStages,
     stageGenerating,
     generationLocked,
+    generation,
     elapsedSeconds,
     savePending: save.isPending,
     completePending: complete.isPending,

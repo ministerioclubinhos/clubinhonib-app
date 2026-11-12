@@ -3,6 +3,7 @@ import { Box, Button, Grid2, Stack } from '@mui/material';
 import { Add as AddIcon, Settings as SettingsIcon } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { StudioActiveGenerations } from '@/features/ai-lessons/components/generation/StudioActiveGenerations';
 import { ListingLayout, ListingToolbar } from '@/components/common/listing';
 import type { ListingFilter } from '@/components/common/listing';
 import { LessonAiGenerateModal } from '@/components/ai-lessons/LessonAiGenerateModal';
@@ -158,6 +159,7 @@ export const AiLessonsListPage: React.FC = () => {
         minHeight: '100%',
       }}
     >
+      <StudioActiveGenerations />
       <ListingLayout
         data-testid="ai-lessons-listing-layout"
         title={PRODUCTION_LIST_TEXTS.title}

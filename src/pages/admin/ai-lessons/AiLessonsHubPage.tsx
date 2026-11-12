@@ -25,6 +25,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useLessonDashboard } from '@/hooks/api/useAiLessons';
 import { HubMetrics } from '@/features/ai-lessons/components/hub/HubMetrics';
 import { HubQueueItem } from '@/features/ai-lessons/components/hub/HubQueueItem';
+import { StudioActiveGenerations } from '@/features/ai-lessons/components/generation/StudioActiveGenerations';
 import { HubReference } from '@/features/ai-lessons/components/hub/HubReference';
 import {
   STUDIO_HUB_PUBLISHED_LIMIT,
@@ -115,7 +116,11 @@ export const AiLessonsHubPage: React.FC = () => {
               fontWeight={800}
               // A cor é explícita: o estilo global dos títulos os pinta de azul, que
               // some sobre o fundo azul do cabeçalho.
-              sx={{ color: '#fff', fontSize: { xs: '1.35rem', md: '1.6rem' }, letterSpacing: '-0.3px' }}
+              sx={{
+                color: '#fff',
+                fontSize: { xs: '1.35rem', md: '1.6rem' },
+                letterSpacing: '-0.3px',
+              }}
             >
               {STUDIO_HUB_TEXTS.title}
             </Typography>
@@ -176,6 +181,8 @@ export const AiLessonsHubPage: React.FC = () => {
           </Stack>
         </Stack>
       </Paper>
+
+      <StudioActiveGenerations />
 
       {isError ? (
         <Alert
@@ -244,7 +251,13 @@ export const AiLessonsHubPage: React.FC = () => {
                 <Box sx={{ minWidth: 0 }}>
                   <Stack direction="row" alignItems="center" gap={1}>
                     <TaskAlt color="primary" fontSize="small" />
-                    <Typography id="hub-queue-title" component="h2" fontWeight={800} fontSize="1.15rem" color="text.primary">
+                    <Typography
+                      id="hub-queue-title"
+                      component="h2"
+                      fontWeight={800}
+                      fontSize="1.15rem"
+                      color="text.primary"
+                    >
                       {STUDIO_HUB_TEXTS.queueTitle}
                     </Typography>
                     {queue.length > 0 && <Chip size="small" label={queue.length} />}
@@ -286,7 +299,12 @@ export const AiLessonsHubPage: React.FC = () => {
                     to={STUDIO_HUB_ROUTES.production}
                     variant="contained"
                     startIcon={<AutoStories />}
-                    sx={{ borderRadius: 2.5, fontWeight: 700, minHeight: 44, textTransform: 'none' }}
+                    sx={{
+                      borderRadius: 2.5,
+                      fontWeight: 700,
+                      minHeight: 44,
+                      textTransform: 'none',
+                    }}
                   >
                     Produzir lição
                   </Button>
@@ -300,8 +318,13 @@ export const AiLessonsHubPage: React.FC = () => {
               )}
 
               {queue.length > visibleQueue.length && (
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
-                  Mostrando {visibleQueue.length} de {queue.length}. Abra a lista completa em Ver todas.
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mt: 1.5 }}
+                >
+                  Mostrando {visibleQueue.length} de {queue.length}. Abra a lista completa em Ver
+                  todas.
                 </Typography>
               )}
             </Paper>
@@ -314,7 +337,14 @@ export const AiLessonsHubPage: React.FC = () => {
                 data-testid="ai-lessons-hub-published"
                 sx={panelSx}
               >
-                <Typography id="hub-published-title" component="h2" fontWeight={800} fontSize="1.05rem" color="text.primary" sx={{ mb: 1 }}>
+                <Typography
+                  id="hub-published-title"
+                  component="h2"
+                  fontWeight={800}
+                  fontSize="1.05rem"
+                  color="text.primary"
+                  sx={{ mb: 1 }}
+                >
                   {STUDIO_HUB_TEXTS.publishedTitle}
                 </Typography>
                 {published.length === 0 ? (

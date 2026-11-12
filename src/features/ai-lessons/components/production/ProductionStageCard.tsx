@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Box, Card, CardContent, Chip, Divider, Stack, TextField, Typography } from '@mui/material';
 import {
   LESSON_INSTRUCTIONS_MAX_LENGTH,
@@ -11,6 +12,8 @@ import { LessonCategory, LessonStageType } from '../../types';
 import { LessonCommentsPanel } from '../LessonCommentsPanel';
 import { LessonStageContentViewer } from '../LessonStageContentViewer';
 import { StoryVisualConfiguration } from '../StoryVisualConfiguration';
+import { useImageRegeneration } from '../../useImageRegeneration';
+import { ImageRegenerationDialog } from '../generation/ImageRegenerationDialog';
 import { ProductionStageActions } from './ProductionStageActions';
 import { ProductionStageGuidance } from './ProductionStageGuidance';
 
@@ -19,6 +22,7 @@ export function ProductionStageCard({
   lesson,
   data,
   workflow,
+  refetch,
   preview,
   resolvingCommentId,
   onResolveComment,
@@ -27,8 +31,19 @@ export function ProductionStageCard({
   onOpenProviderSettings,
 }: ProductionStageCardProps) {
   const { stage, version, edited } = data;
+  // Before the early return: hooks run on every render.
+  const imageRegeneration = useImageRegeneration({
+    lessonId: lesson.id,
+    stage,
+    version,
+    canGenerate: workflow.actions.canGenerate,
+    edited,
+    refetch,
+  });
+  const [editRequest, setEditRequest] = useState(0);
   if (!stage) return null;
   const { visual } = workflow;
+  const isStoryVisuals = stage.type === LessonStageType.LESSON_VISUALS;
   const hasVersion = Boolean(stage.currentVersionId);
   const openPreview = () => {
     // The PDF is built from the saved version; an unsaved edit would not be in it.
@@ -85,6 +100,7 @@ export function ProductionStageCard({
           staleOrigin={workflow.staleOrigin}
           stageGenerating={workflow.stageGenerating}
           generationLocked={workflow.generationLocked}
+          generation={workflow.generation}
           elapsedSeconds={workflow.elapsedSeconds}
           dependencyReady={workflow.actions.dependencyReady}
           completionNotice={workflow.completionNotice}
@@ -118,6 +134,8 @@ export function ProductionStageCard({
             onVisualQuantityChange={visual.setVisualQuantity}
             onInstructionsChange={workflow.setInstructions}
             onGenerate={workflow.runGeneration}
+            onRegenerate={imageRegeneration.openDialog}
+            editRequest={editRequest}
           />
         ) : (
           <TextField
@@ -162,6 +180,35 @@ export function ProductionStageCard({
           onComplete={() => workflow.completeStage(stage)}
           onDiscard={workflow.requestDiscard}
           onOpenProviderSettings={onOpenProviderSettings}
+          imageRegeneration={
+            // The story visuals open the same dialog from their own summary: one button only.
+            imageRegeneration.available && !isStoryVisuals
+              ? {
+                  enabled: imageRegeneration.enabled,
+                  blockedReason: imageRegeneration.blockedReason,
+                  onOpen: imageRegeneration.openDialog,
+                }
+              : null
+          }
+        />
+        <ImageRegenerationDialog
+          regeneration={imageRegeneration}
+          stageLabel={lessonStageLabel(stage.type, lesson.category)}
+          fullRegeneration={
+            isStoryVisuals
+              ? {
+                  canKeepChoices: workflow.actions.canGenerate && visual.complete,
+                  onKeepChoices: () => {
+                    imageRegeneration.close();
+                    workflow.runGeneration();
+                  },
+                  onChangeChoices: () => {
+                    imageRegeneration.close();
+                    setEditRequest((current) => current + 1);
+                  },
+                }
+              : undefined
+          }
         />
 
         <Divider sx={{ mb: 3 }} />

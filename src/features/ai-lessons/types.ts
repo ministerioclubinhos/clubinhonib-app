@@ -108,6 +108,10 @@ export interface StoryVisualConfigurationProps {
   onVisualQuantityChange: (value: number | '') => void;
   onInstructionsChange: (value: string) => void;
   onGenerate: () => void;
+  /** Opens the one dialog where images are redone (some, all or the whole item). */
+  onRegenerate: () => void;
+  /** Bumped to send the form back to its first step ("alterar escolhas"). */
+  editRequest: number;
 }
 
 export interface TiptapDocument {
@@ -153,6 +157,28 @@ export interface Lesson {
   updatedAt: string;
   stages: LessonStage[];
   comments: LessonComment[];
+  /** Live progress of the stage being generated; absent when none or unknown. */
+  generation?: LessonGenerationProgress | null;
+}
+export enum LessonGenerationPhase {
+  WRITING = 'WRITING',
+  IMAGES = 'IMAGES',
+  SAVING = 'SAVING',
+}
+export interface LessonGenerationProgress {
+  stage: LessonStageType;
+  phase: LessonGenerationPhase;
+  totalImages: number;
+  completedImages: number;
+  /** 0–99; null when the item has no images to count. */
+  percent: number | null;
+  startedAt: string;
+  updatedAt: string;
+}
+/** `GET /lessons/generations/active`. */
+export interface ActiveLessonGeneration extends LessonGenerationProgress {
+  lessonId: string;
+  theme: string;
 }
 export interface LessonComment {
   id: string;
@@ -380,6 +406,17 @@ export interface GenerateStageVariables {
   id: string;
   payload: RegenerateSectionPayload;
 }
+/** Body of `POST /lessons/:id/stages/regenerate-images`. */
+export interface RegenerateStageImagesPayload {
+  stage: LessonStageType;
+  lockVersion: number;
+  assetIds: string[];
+  instructions?: string;
+}
+export interface RegenerateStageImagesVariables {
+  id: string;
+  payload: RegenerateStageImagesPayload;
+}
 export interface StageActionVariables {
   id: string;
   stage: LessonStageType;
@@ -584,4 +621,20 @@ export interface ReviewCardAction {
   label: string;
   variant: 'contained' | 'outlined';
   color: 'primary' | 'success' | 'warning';
+}
+/** One image of an item, as the regeneration dialog lists it. */
+export interface RegenerableImage {
+  id: string;
+  url: string;
+  /** "Imagem 2 — Personagens". */
+  label: string;
+  /** The image the others copy their characters from. */
+  first: boolean;
+}
+/** Master image prompt of a version, as the regeneration dialog shows it. */
+export interface ImageBriefView {
+  artDirection: string;
+  /** Asset id → the part of the master prompt that belongs to that image. */
+  parts: Record<string, string>;
+  createdAt: string | null;
 }

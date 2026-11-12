@@ -1,6 +1,7 @@
 import type {
   Lesson,
   LessonCategory,
+  LessonGenerationProgress,
   LessonStage,
   LessonStageType,
   LessonVersion,
@@ -9,6 +10,7 @@ import type {
   ProductionConfirmation,
   TiptapDocument,
 } from './types';
+import type { ImageRegeneration } from './useImageRegeneration';
 import type { useLessonPdfPreview } from './useLessonPdfPreview';
 import type { useProductionStage } from './useProductionStage';
 import type { useProductionWorkflow } from './useProductionWorkflow';
@@ -118,12 +120,25 @@ export interface ProductionStageCardProps {
   lesson: Lesson;
   data: ProductionStageData;
   workflow: ProductionWorkflow;
+  refetch: () => unknown;
   preview: ProductionPdfPreview;
   resolvingCommentId: string | null;
   onResolveComment: (commentId: string) => void;
   onShowFailureDetails: () => void;
   onGoToReview: () => void;
   onOpenProviderSettings: () => void;
+}
+
+export interface ImageRegenerationDialogProps {
+  regeneration: ImageRegeneration;
+  /** "2. Visuais da história". */
+  stageLabel: string;
+  /** Only where the item has its own generation choices (story visuals). */
+  fullRegeneration?: {
+    canKeepChoices: boolean;
+    onKeepChoices: () => void;
+    onChangeChoices: () => void;
+  };
 }
 
 export interface ProductionStageGuidanceProps {
@@ -133,6 +148,7 @@ export interface ProductionStageGuidanceProps {
   staleOrigin: LessonStageType | null;
   stageGenerating: boolean;
   generationLocked: boolean;
+  generation: LessonGenerationProgress | null;
   elapsedSeconds: number;
   dependencyReady: boolean;
   completionNotice: ProductionCompletionNotice | null;
@@ -166,6 +182,12 @@ export interface ProductionStageActionsProps {
   onComplete: () => void;
   onDiscard: () => void;
   onOpenProviderSettings: () => void;
+  /** Absent when the item has no images. */
+  imageRegeneration: {
+    enabled: boolean;
+    blockedReason: string | null;
+    onOpen: () => void;
+  } | null;
 }
 
 export interface ProductionUnsavedBarProps {

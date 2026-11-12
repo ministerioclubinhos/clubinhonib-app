@@ -1,3 +1,4 @@
+import { generationSignature } from './generation.utils';
 import {
   LessonCategory,
   LessonSortField,
@@ -135,13 +136,10 @@ export function computeLessonSnapshotSignature(lesson: Lesson): string {
     )
     .join('|');
   const commentsCount = lesson.comments?.length ?? 0;
-  return `${lesson.id}:${lesson.status}:${lesson.weekMaterialId ?? ''}:${lesson.publicationFailureMessage ?? ''}:${commentsCount}:${stagesPart}`;
+  return `${lesson.id}:${lesson.status}:${lesson.weekMaterialId ?? ''}:${lesson.publicationFailureMessage ?? ''}:${commentsCount}:${stagesPart}:${generationSignature(lesson.generation)}`;
 }
 
-export function isLessonSnapshotNewerOrEqual(
-  previous: Lesson | undefined,
-  next: Lesson
-): boolean {
+export function isLessonSnapshotNewerOrEqual(previous: Lesson | undefined, next: Lesson): boolean {
   if (!previous || previous.id !== next.id) return true;
   return !previous.stages.some((prevStage) => {
     const nextStage = next.stages.find((item) => item.type === prevStage.type);
@@ -167,7 +165,9 @@ export function parseLessonStatus(value: string): LessonStatus | '' {
 
 export function formatLessonBadgeLabel(lesson: Pick<Lesson, 'category' | 'weekNumber'>): string {
   if (lesson.category === LessonCategory.SPECIAL) {
-    return lesson.weekNumber ? `Material Especial · Semana ${lesson.weekNumber}` : 'Material Especial';
+    return lesson.weekNumber
+      ? `Material Especial · Semana ${lesson.weekNumber}`
+      : 'Material Especial';
   }
   return lesson.weekNumber ? `Semana ${lesson.weekNumber}` : 'Material Semanal';
 }

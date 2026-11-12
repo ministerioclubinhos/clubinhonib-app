@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
-import { AutoAwesome, EditOutlined, Replay } from '@mui/icons-material';
+import { AutoAwesome, Replay } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -30,6 +26,7 @@ import {
   STORY_VISUAL_SETUP_STEPS,
   cutoutKitSummary,
 } from '../constants';
+import { IMAGE_REGENERATION_TEXTS } from '../image-regeneration.constants';
 import { LessonVisualOrientation, LessonVisualType, StoryVisualConfigurationProps } from '../types';
 
 const VISUAL_TYPE_OPTIONS = [
@@ -78,10 +75,11 @@ export const StoryVisualConfiguration = ({
   onVisualQuantityChange,
   onInstructionsChange,
   onGenerate,
+  onRegenerate,
+  editRequest,
 }: StoryVisualConfigurationProps) => {
   const [step, setStep] = useState(0);
   const [editing, setEditing] = useState(!hasVersion);
-  const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
 
   useEffect(() => {
     if (hasVersion) setEditing(false);
@@ -96,8 +94,14 @@ export const StoryVisualConfiguration = ({
     step === 0 ? validQuantity : step === 1 ? Boolean(visualType) : Boolean(visualOrientation);
   const configurationComplete = Boolean(validQuantity && visualType && visualOrientation);
 
+  // "Alterar escolhas" in the regeneration dialog reopens the steps from the start.
+  useEffect(() => {
+    if (editRequest === 0) return;
+    setStep(0);
+    setEditing(true);
+  }, [editRequest]);
+
   const generate = () => {
-    setRegenerateDialogOpen(false);
     setEditing(false);
     onGenerate();
   };
@@ -120,43 +124,11 @@ export const StoryVisualConfiguration = ({
           startIcon={<Replay />}
           variant="contained"
           disabled={!canGenerate || isGenerating}
-          onClick={() => setRegenerateDialogOpen(true)}
-          sx={{ mt: 2, minHeight: 44 }}
+          onClick={onRegenerate}
+          sx={{ mt: 2, minHeight: 48, width: { xs: '100%', sm: 'auto' }, fontWeight: 700 }}
         >
-          {isGenerating ? 'Gerando imagens…' : 'Regenerar imagens'}
+          {isGenerating ? 'Gerando imagens…' : IMAGE_REGENERATION_TEXTS.button}
         </Button>
-
-        <Dialog
-          data-testid="ai-story-visual-regenerate-dialog"
-          open={regenerateDialogOpen}
-          onClose={() => setRegenerateDialogOpen(false)}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>Como deseja regenerar?</DialogTitle>
-          <DialogContent>
-            <Typography color="text.secondary">
-              Você pode manter quantidade, estilo e formato atuais ou revisar as escolhas passo a
-              passo.
-            </Typography>
-          </DialogContent>
-          <DialogActions sx={{ p: 2, flexWrap: 'wrap' }}>
-            <Button onClick={() => setRegenerateDialogOpen(false)}>Cancelar</Button>
-            <Button
-              startIcon={<EditOutlined />}
-              onClick={() => {
-                setRegenerateDialogOpen(false);
-                setStep(0);
-                setEditing(true);
-              }}
-            >
-              Alterar escolhas
-            </Button>
-            <Button variant="contained" onClick={generate} disabled={!configurationComplete}>
-              Manter e regenerar
-            </Button>
-          </DialogActions>
-        </Dialog>
       </Paper>
     );
   }
@@ -285,6 +257,7 @@ export const StoryVisualConfiguration = ({
 
       <Stack direction="row" justifyContent="space-between" spacing={1} sx={{ mt: 2 }}>
         <Button
+          sx={{ minHeight: 48 }}
           disabled={step === 0}
           onClick={() => setStep((current) => Math.max(0, current - 1))}
         >
@@ -293,6 +266,7 @@ export const StoryVisualConfiguration = ({
         {step < STORY_VISUAL_SETUP_STEPS.length - 1 ? (
           <Button
             variant="contained"
+            sx={{ minHeight: 48, fontWeight: 700 }}
             disabled={!stepComplete}
             onClick={() => setStep((current) => current + 1)}
           >
@@ -303,6 +277,7 @@ export const StoryVisualConfiguration = ({
             data-testid="ai-story-visual-generate-button"
             startIcon={<AutoAwesome />}
             variant="contained"
+            sx={{ minHeight: 48, fontWeight: 700 }}
             disabled={!configurationComplete || !canGenerate || isGenerating}
             onClick={generate}
           >

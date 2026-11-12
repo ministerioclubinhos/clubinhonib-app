@@ -545,3 +545,57 @@ diálogo de exclusão em `components/production-list/`).
 - `ListingCard` ganhou `stackedFooter`, para rodapé e ações em linhas próprias.
 
 Testes: `e2e/unit/ai-lessons.production-list.spec.ts`.
+
+## Andamento da geração e retomada após recarregar (2026-11-12)
+
+A geração nunca dependeu da aba aberta — ela roda na API e é retomada sozinha —, mas a tela não mostrava isso: recarregar zerava o cronômetro, não havia contagem de imagens e, fora da lição, nada indicava que algo estava sendo gerado.
+
+- **Na lição** (`/adm/estudio/licoes/:id`): o aviso de geração mostra a etapa ("Escrevendo o conteúdo", "Gerando as imagens — 2 de 5 prontas, faltam 3", "Salvando o resultado"), o percentual, uma barra de progresso e o tempo desde o pedido. O tempo vem do `startedAt` do servidor, então sobrevive a recarregar a página e é igual em qualquer aba. Item sem imagens mostra barra indeterminada, sem percentual inventado.
+- **Fora da lição** (painel do estúdio, produção e fila de revisão): o bloco "geração em andamento" lista cada geração ativa com o mesmo andamento e o botão **Acompanhar**, que leva à lição. É por ele que quem recarregou ou saiu da tela reencontra o trabalho.
+- **De onde vem**: `lesson.generation` (em `GET /lessons/:id` e no stream SSE) e `GET /lessons/generations/active`, consultada a cada 3 s enquanto houver geração e a cada 20 s sem nenhuma. O andamento fica no Redis da API; o banco continua sendo a fonte do status.
+- **Sem Redis**: `generation` vem nulo e a lista vem vazia. A tela mostra "Gerando o conteúdo com IA" com o tempo contado localmente, como antes; nada é bloqueado.
+
+Código: `features/ai-lessons/generation.{constants,utils}.ts`, `components/generation/{GenerationProgress,StudioActiveGenerations}.tsx`, `useElapsedSeconds.ts`. Testes: `e2e/unit/ai-lessons.generation-progress.spec.ts`. Não há fluxo e2e que gere de verdade: gerar consome tokens de IA.
+
+## Regerar só algumas imagens (2026-11-12)
+
+Antes, não gostar de uma imagem obrigava a gerar o item inteiro de novo: texto e todas as imagens, pagos outra vez. Agora o item com imagens tem o botão **Regerar imagens**, ao lado de "Regenerar com IA".
+
+- **Escolha**: o diálogo mostra a miniatura de cada imagem da versão salva; marca-se uma, algumas ou todas ("Marcar todas"). O resumo diz quantas serão refeitas e quantas ficam. Sem nenhuma marcada, o botão de confirmar fica desabilitado.
+- **Ajuste opcional**: um campo de até 500 caracteres ("sem texto na arte", "personagens maiores") vale só para as imagens marcadas.
+- **O que fica**: o texto do item e as imagens não marcadas não são tocados nem pagos de novo. O resultado é uma versão nova; a anterior continua no histórico, com as imagens antigas.
+- **Depois**: o item volta para rascunho e precisa ser concluído de novo, como em qualquer regeneração. Durante o trabalho, o andamento aparece normalmente ("Gerando as imagens — 3 de 5 prontas, faltam 2": as mantidas já contam como prontas).
+- **Se falhar**: o item volta ao status em que estava, com a versão e as imagens de antes.
+- **Primeira imagem**: ela define a aparência dos personagens. Ao refazê-la sem as outras, a nova copia os personagens de uma imagem que ficou; o diálogo avisa.
+- **Quando não pode** (o motivo aparece abaixo dos botões): edição não salva, item desatualizado em relação aos anteriores, ou imagem que nunca chegou a ser gerada — nos dois últimos casos, gere o item por completo. Valem também os bloqueios da geração completa (revisão, outra geração em andamento).
+- **Meditação dos maiores**: as três artes são produzidas e conferidas em conjunto, então o diálogo só permite regerar todas.
+
+Código: `features/ai-lessons/image-regeneration.{constants,utils}.ts`, `useImageRegeneration.ts`, `components/generation/ImageRegenerationDialog.tsx`. Testes: `e2e/unit/ai-lessons.image-regeneration.spec.ts` e `e2e/flows/studio-image-regeneration.spec.ts` (API real; abre o diálogo e cancela — confirmar custaria tokens de IA).
+
+### Um botão só e versão para celular (2026-11-12)
+
+- **Um botão.** Nos visuais da história havia dois botões parecidos: "Regenerar imagens" (refazia o kit inteiro) e "Regerar imagens" (só as escolhidas). Agora existe só **Regerar imagens**, no resumo da configuração, e ele abre um único diálogo com as duas opções: marcar imagens para refazer, ou "Refazer o item inteiro" — com "Alterar escolhas" (volta aos passos de quantidade, estilo e formato) e "Refazer tudo com as escolhas atuais". Nos demais itens, "Regerar imagens" continua ao lado de "Regenerar com IA".
+- **Quando não dá para escolher imagens** (edição não salva, item desatualizado, imagem faltando), o diálogo mostra o motivo no lugar das miniaturas e mantém a opção de refazer o item inteiro.
+- **Celular.** Abaixo de 600 px o diálogo ocupa a tela toda: miniaturas em duas colunas, marcador grande no canto de cada uma, botão de confirmar de largura total fixo no rodapé (com folga para a barra do sistema) e fechar pelo X do título. Botões com no mínimo 48 px de altura.
+
+### Mesmo estilo e mesmos rostos ao refazer só algumas (2026-11-12)
+
+Quando todas as imagens são geradas juntas, a primeira define a identidade (traço, paleta, rostos) e as outras a seguem. Ao refazer só uma ou algumas, a API envia ao modelo uma imagem que ficou — a que definiu a identidade, ou a vizinha mais próxima — como guia de estilo, junto com a instrução de manter o mesmo traço, cores, rostos, roupas e ambientes. O diálogo avisa disso e lembra de conferir o resultado: a referência orienta o modelo, mas pequenas diferenças ainda podem aparecer. Se a nova imagem destoar, dá para refazê-la de novo descrevendo o que ajustar, ou marcar todas para o conjunto voltar a nascer junto.
+
+**Correção (2026-11-12).** A primeira versão enviava até três referências, e o modelo fundiu o conteúdo delas: ao refazer só a prancha "Animais", a imagem voltou com personagens, pergaminho, casa e árvores. Agora vai uma referência só, com a ordem de não reproduzir os elementos dela, e o pedido de cada prancha do kit de recortes virou uma lista fechada (quantidade e nomes dos elementos), sem o texto da lição.
+
+## Prompt mestre das imagens (2026-11-12)
+
+Antes de gerar qualquer imagem de um item, a IA escreve um **prompt mestre** específico daquela lição, a partir de três coisas: as regras-base do estúdio, as orientações do administrador para o item e a própria lição (história, versículo e as imagens planejadas). Ele tem uma direção de arte única (traço, contorno, paleta, sombreamento, época, roupas), uma ficha de aparência para cada personagem e lugar, e **uma parte para cada imagem**.
+
+- **Cada imagem recebe só a sua parte**, junto com a direção de arte e as fichas de quem aparece nela. É isso que mantém o mesmo estilo e os mesmos rostos sem depender de mandar outras imagens como exemplo.
+- **Refazer uma ou algumas imagens** reutiliza o prompt mestre guardado na versão, palavra por palavra.
+- **Refazer todas** (todas marcadas, ou gerar o item de novo) escreve um prompt mestre novo.
+- **Versões antigas**, sem prompt mestre, ganham um na primeira vez que alguma imagem é refeita.
+- **No diálogo "Regerar imagens"** o bloco "Prompt mestre das imagens" diz o que vai acontecer (reutilizar, escrever de novo ou criar) e, em "Ver prompt mestre", mostra a direção de arte e a parte de cada imagem marcada.
+- **Se a IA não conseguir escrever o prompt mestre**, as imagens são geradas só com as regras do item, como antes; nada falha por causa dele.
+- **Prancha de recortes sem personagens** (animais, objetos, construções, céu) não recebe imagem de referência: o estilo vem do prompt mestre. Com a referência, o modelo redesenhava os personagens nela.
+- A meditação dos maiores fica de fora: as três artes têm um fluxo próprio de geração e revisão.
+
+Código: `image-regeneration.utils.ts` (`imageBriefView`, `imageBriefOutcome`), `components/generation/ImageRegenerationDialog.tsx`. O prompt é escrito e aplicado na API (`docs/api-ai-lessons.md`, seção 4.8).
+
