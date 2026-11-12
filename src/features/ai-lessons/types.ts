@@ -556,3 +556,30 @@ export interface LessonAiGenerateModalProps {
   onClose: () => void;
   onSuccess: (lessonId: string) => void;
 }
+
+/** Recortes da fila de revisão, do que espera o revisor ao que já saiu. */
+export enum ReviewQueueView {
+  ALL = 'ALL',
+  TO_REVIEW = 'TO_REVIEW',
+  RETURNED = 'RETURNED',
+  READY = 'READY',
+  PUBLISHED = 'PUBLISHED',
+}
+
+/** Onde uma lição está na revisão, em números. */
+export interface ReviewLessonSummary {
+  approved: number;
+  /** Itens com o revisor, aguardando decisão. */
+  awaiting: number;
+  /** Itens devolvidos para a produção. */
+  returned: number;
+  total: number;
+  percent: number;
+}
+
+/** O botão do cartão da fila de revisão. */
+export interface ReviewCardAction {
+  label: string;
+  variant: 'contained' | 'outlined';
+  color: 'primary' | 'success' | 'warning';
+}

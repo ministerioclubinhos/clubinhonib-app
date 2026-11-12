@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  alpha,
   Box,
   Button,
   Card,
@@ -15,14 +14,14 @@ import {
   Tab,
   Tabs,
   TextField,
+  Tooltip,
   Typography,
-  useTheme,
 } from '@mui/material';
 import {
   ArrowBack,
+  ArrowForward as NextIcon,
   CheckCircle as ApproveIcon,
   Download as DownloadIcon,
-  EventNoteOutlined as WeekIcon,
   PictureAsPdf,
   RateReview as ChangesIcon,
   Send as PublishIcon,
@@ -75,6 +74,14 @@ import {
   publicationKindLabel,
 } from '@/features/ai-lessons/publication';
 import { lessonReviewActions } from '@/features/ai-lessons/review-actions';
+import { REVIEW_TEXTS } from '@/features/ai-lessons/review.constants';
+import {
+  isReviewDecisionOpen,
+  pendingReviewStages,
+  reviewHeaderStatus,
+  reviewLessonSummary,
+  reviewProgressText,
+} from '@/features/ai-lessons/review.utils';
 import {
   LessonArchiveAction,
   LessonCategory,
@@ -109,7 +116,7 @@ import { getErrorMessage, getHttpStatus } from '@/utils/apiError';
 export const LessonReviewDetailPage: React.FC = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
-  const theme = useTheme();
+  const feedbackInput = useRef<HTMLInputElement | null>(null);
 
   const { data: lesson, isLoading, error, refetch } = useLessonDraft(id);
   const isSpecial = lesson?.category === LessonCategory.SPECIAL;
@@ -200,10 +207,14 @@ export const LessonReviewDetailPage: React.FC = () => {
   }
 
   const stageOrder = getStudioStageOrder(lesson.category);
-  const approvedCount = lesson.stages.filter((s) => s.status === LessonStageStatus.APPROVED).length;
-  const totalStages = lesson.stages.length || stageOrder.length;
-  const allApproved = approvedCount === totalStages;
-  const progress = (approvedCount / totalStages) * 100;
+  const summary = reviewLessonSummary(lesson);
+  const totalStages = summary.total;
+  const allApproved = summary.approved === summary.total;
+  const headerStatus = reviewHeaderStatus(lesson, summary);
+  // Só há formulário de decisão enquanto o pacote está no ciclo de revisão.
+  const decisionOpen = isReviewDecisionOpen(lesson.status);
+  const pendingStages = pendingReviewStages(lesson);
+  const nextPending = pendingStages.find((type) => type !== selectedType) ?? null;
   const lessonGone = connection.state === LessonConnectionState.NOT_FOUND;
   const generating = lesson.stages.some((item) => item.status === LessonStageStatus.GENERATING);
   const remoteBusy = lessonGone || lesson.status === LessonStatus.PUBLISHING || generating;
@@ -397,7 +408,13 @@ export const LessonReviewDetailPage: React.FC = () => {
   return (
     <Box
       data-testid="ai-lesson-review-detail"
-      sx={{ width: { xs: '98%', md: '95%' }, mx: 'auto', py: { xs: 2, md: 3 } }}
+      sx={{
+        width: { xs: '98%', md: '95%' },
+        mx: 'auto',
+        py: { xs: 2, md: 3 },
+        // Folga para a barra fixa de decisão não cobrir o fim do conteúdo.
+        pb: { xs: 12, lg: 3 },
+      }}
     >
       <Button
         data-testid="ai-lesson-review-back"
@@ -565,180 +582,135 @@ export const LessonReviewDetailPage: React.FC = () => {
       )}
 
       <Paper
+        component="header"
         elevation={0}
         sx={{
-          p: { xs: 2, sm: 3 },
-          mb: 3,
+          p: { xs: 2, sm: 2.5 },
+          mb: 2,
           borderRadius: 4,
           border: '1px solid',
           borderColor: 'divider',
-          bgcolor: 'background.paper',
+          // Duas colunas no desktop: o título ocupa o que sobra e as ações têm
+          // largura fixa. Antes as ações esticavam e espremiam o título.
+          display: 'grid',
+          gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 280px' },
+          gap: 2,
+          alignItems: 'center',
         }}
       >
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'stretch', md: 'center' }}
-          spacing={2}
-        >
-          <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Stack
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              flexWrap="wrap"
-              sx={{ gap: 1, mb: 1 }}
-            >
-              <Chip
-                label={formatLessonBadgeLabel(lesson)}
-                color={isSpecial ? 'secondary' : 'primary'}
-                size="small"
-                sx={{ fontWeight: 800, borderRadius: 1.5 }}
-              />
-              <Typography
-                variant="h4"
-                component="h1"
-                fontWeight={800}
-                sx={{ fontSize: { xs: '1.3rem', md: '1.8rem' }, overflowWrap: 'anywhere' }}
-              >
-                {lesson.theme}
-              </Typography>
-              <Chip
-                data-testid="ai-lesson-review-status-chip"
-                label={
-                  archived
-                    ? 'ARQUIVADO'
-                    : published
-                    ? 'PUBLICADO NO MATERIAIS SEMANAIS'
-                    : lesson.status === LessonStatus.PUBLISHING
-                      ? 'PUBLICANDO NO MATERIAIS SEMANAIS'
-                      : allApproved
-                        ? 'TODOS OS ITENS APROVADOS'
-                        : `${approvedCount}/${totalStages} ITENS APROVADOS`
-                }
-                color={
-                  published || allApproved
-                    ? 'success'
-                    : lesson.status === LessonStatus.PUBLISHING
-                      ? 'info'
-                      : 'warning'
-                }
-                sx={{ fontWeight: 800, borderRadius: 1.5 }}
-              />
-            </Stack>
+        <Box sx={{ minWidth: 0 }}>
+          <Stack direction="row" flexWrap="wrap" alignItems="center" gap={1} sx={{ mb: 0.75 }}>
+            <Chip
+              label={formatLessonBadgeLabel(lesson)}
+              color={isSpecial ? 'secondary' : 'primary'}
+              size="small"
+              sx={{ fontWeight: 800, borderRadius: 1.5 }}
+            />
+            <Chip
+              data-testid="ai-lesson-review-status-chip"
+              size="small"
+              label={headerStatus.label}
+              color={headerStatus.color}
+              sx={{ fontWeight: 800, borderRadius: 1.5 }}
+            />
+          </Stack>
+          <Typography
+            component="h1"
+            fontWeight={800}
+            color="text.primary"
+            sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' }, lineHeight: 1.25, overflowWrap: 'anywhere' }}
+          >
+            {lesson.theme}
+          </Typography>
+          <Typography
+            color="text.secondary"
+            fontWeight={600}
+            sx={{ mb: 1.25, overflowWrap: 'anywhere' }}
+          >
+            {lesson.biblicalReference}
+          </Typography>
 
+          <Box sx={{ maxWidth: 560 }}>
             <Typography
-              variant="body1"
+              data-testid="ai-lesson-review-progress"
+              variant="caption"
+              fontWeight={700}
               color="text.secondary"
-              fontWeight={600}
-              sx={{ mb: 1.5, overflowWrap: 'anywhere' }}
+              sx={{ display: 'block', mb: 0.5 }}
             >
-              {lesson.biblicalReference}
+              {reviewProgressText(summary)}
             </Typography>
-
-            <Box sx={{ maxWidth: 600 }}>
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                justifyContent="space-between"
-                spacing={0.25}
-                sx={{ mb: 0.5 }}
-              >
-                <Typography variant="caption" fontWeight={700} color="text.secondary">
-                  Progresso de Revisão & Aprovação
-                </Typography>
-                <Typography variant="caption" fontWeight={800} color="primary.main">
-                  {approvedCount} de {totalStages} itens aprovados ({Math.round(progress)}%)
-                </Typography>
-              </Stack>
-              <LinearProgress
-                variant="determinate"
-                value={progress}
-                aria-label="Progresso de revisão e aprovação"
-                sx={{
-                  height: 9,
-                  borderRadius: 4.5,
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  '& .MuiLinearProgress-bar': {
-                    borderRadius: 4.5,
-                    bgcolor: progress === 100 ? 'success.main' : 'primary.main',
-                  },
-                }}
-              />
-            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={summary.percent}
+              color={allApproved ? 'success' : 'primary'}
+              aria-label="Progresso de revisão e aprovação"
+              sx={{ height: 8, borderRadius: 4 }}
+            />
           </Box>
+        </Box>
 
-          <Box sx={{ flexShrink: 0, width: { xs: '100%', md: 'auto' } }}>
-            {canDownloadLessonPackage(lesson) && (
-              <Button
-                data-testid="ai-lesson-review-download-package"
-                variant="outlined"
-                color="secondary"
-                size="large"
-                startIcon={
-                  packageDownload.loading ? <CircularProgress size={18} /> : <DownloadIcon />
-                }
-                disabled={packageDownload.loading}
-                onClick={() => void packageDownload.download()}
-                fullWidth
-                sx={{ borderRadius: 3, mb: 1, fontWeight: 700, minHeight: 44, textTransform: 'none' }}
-              >
-                {packageDownload.loading ? 'Gerando o PDF do pacote…' : 'Baixar pacote completo (PDF)'}
-              </Button>
-            )}
-            {published && (
-              <Button
-                data-testid="ai-lesson-archive"
-                variant="text"
-                size="large"
-                disabled={actionsPending}
-                onClick={() => setArchiveConfirmOpen(true)}
-                fullWidth
-                sx={{ borderRadius: 3, mb: 1, fontWeight: 700, minHeight: 44 }}
-              >
-                {archive.isPending ? 'Arquivando…' : 'Arquivar lição'}
-              </Button>
-            )}
-            {published && !materialMissing ? (
-              <Button
-                data-testid="ai-lesson-review-open-week-materials"
-                variant="outlined"
-                size="large"
-                startIcon={<WeekIcon />}
-                onClick={() => navigate(STUDIO_ROUTES.weekMaterials)}
-                fullWidth
-                sx={{ borderRadius: 3, py: 1.5, px: 3, fontWeight: 800 }}
-              >
-                Abrir Materiais Semanais
-              </Button>
-            ) : archived ? null : (
-              <Button
-                data-testid="ai-lesson-review-publish"
-                variant="contained"
-                color={allApproved ? 'success' : 'primary'}
-                size="large"
-                startIcon={<PublishIcon />}
-                disabled={actionsPending || !canPublishNow}
-                onClick={() => setPublishConfirmOpen(true)}
-                fullWidth
-                sx={{ borderRadius: 3, py: 1.5, px: 3, fontWeight: 800, fontSize: '0.95rem' }}
-              >
-                {publishMutation.isPending || lesson.status === LessonStatus.PUBLISHING
-                  ? 'Publicando…'
-                  : republish
-                    ? 'Publicar novamente'
-                    : isSpecial
-                      ? 'Publicar como Material Especial'
-                      : 'Enviar ao Materiais Semanais'}
-              </Button>
-            )}
-          </Box>
+        <Stack gap={1} sx={{ minWidth: 0 }}>
+          {/* Publicada com o material no ar: as ações do material ficam no painel verde acima. */}
+          {!archived && !(published && !materialMissing) && (
+            <Button
+              data-testid="ai-lesson-review-publish"
+              variant="contained"
+              color={allApproved ? 'success' : 'primary'}
+              startIcon={<PublishIcon />}
+              disabled={actionsPending || !canPublishNow}
+              onClick={() => setPublishConfirmOpen(true)}
+              fullWidth
+              sx={{ borderRadius: 3, minHeight: 48, fontWeight: 800, textTransform: 'none' }}
+            >
+              {publishMutation.isPending || lesson.status === LessonStatus.PUBLISHING
+                ? 'Publicando…'
+                : republish
+                  ? 'Publicar novamente'
+                  : isSpecial
+                    ? 'Publicar como Material Especial'
+                    : 'Enviar ao Materiais Semanais'}
+            </Button>
+          )}
+          {!archived && !(published && !materialMissing) && !canPublishNow && !allApproved && (
+            <Typography variant="caption" color="text.secondary" textAlign="center">
+              Publicar fica disponível quando todos os itens forem aprovados.
+            </Typography>
+          )}
+          {canDownloadLessonPackage(lesson) && (
+            <Button
+              data-testid="ai-lesson-review-download-package"
+              variant="outlined"
+              color="secondary"
+              startIcon={packageDownload.loading ? <CircularProgress size={18} /> : <DownloadIcon />}
+              disabled={packageDownload.loading}
+              onClick={() => void packageDownload.download()}
+              fullWidth
+              sx={{ borderRadius: 3, fontWeight: 700, minHeight: 44, textTransform: 'none' }}
+            >
+              {packageDownload.loading ? 'Gerando o PDF do pacote…' : 'Baixar pacote completo (PDF)'}
+            </Button>
+          )}
+          {published && (
+            <Button
+              data-testid="ai-lesson-archive"
+              variant="text"
+              color="inherit"
+              disabled={actionsPending}
+              onClick={() => setArchiveConfirmOpen(true)}
+              fullWidth
+              sx={{ borderRadius: 3, fontWeight: 600, minHeight: 44, textTransform: 'none', color: 'text.secondary' }}
+            >
+              {archive.isPending ? 'Arquivando…' : 'Arquivar lição'}
+            </Button>
+          )}
         </Stack>
       </Paper>
 
       <Paper
         elevation={0}
         sx={{
-          mb: 3,
+          mb: 2,
           borderRadius: 3,
           border: '1px solid',
           borderColor: 'divider',
@@ -751,9 +723,9 @@ export const LessonReviewDetailPage: React.FC = () => {
           aria-label="Itens da lição"
           variant="scrollable"
           scrollButtons="auto"
+          allowScrollButtonsMobile
           sx={{
-            px: 1,
-            py: 0.5,
+            px: 0.5,
             '& .MuiTab-root': { minHeight: 52, textTransform: 'none', fontWeight: 700 },
           }}
         >
@@ -767,14 +739,23 @@ export const LessonReviewDetailPage: React.FC = () => {
                 label={
                   <Stack direction="row" spacing={1} alignItems="center">
                     <span>{lessonStageLabel(stageType, lesson.category, true)}</span>
-                    {st && (
+                    {st?.status === LessonStageStatus.APPROVED ? (
+                      // Aprovado é o estado comum: um ícone basta e deixa os demais em evidência.
+                      <Tooltip title={REVIEW_TAB_STATUS_LABELS[st.status]}>
+                        <ApproveIcon
+                          color="success"
+                          aria-label={REVIEW_TAB_STATUS_LABELS[st.status]}
+                          sx={{ fontSize: 18 }}
+                        />
+                      </Tooltip>
+                    ) : st ? (
                       <Chip
                         size="small"
                         label={REVIEW_TAB_STATUS_LABELS[st.status]}
                         color={LESSON_STAGE_STATUS_COLORS[st.status]}
                         sx={{ height: 20, fontSize: '0.675rem', fontWeight: 800, borderRadius: 1 }}
                       />
-                    )}
+                    ) : null}
                   </Stack>
                 }
               />
@@ -810,7 +791,7 @@ export const LessonReviewDetailPage: React.FC = () => {
             sx={{ mb: 2 }}
           >
             <Box>
-              <Typography variant="h6" component="h2" fontWeight={800}>
+              <Typography variant="h6" component="h2" fontWeight={800} color="text.primary">
                 {stageLabel}
               </Typography>
               {currentVersion && (
@@ -901,143 +882,194 @@ export const LessonReviewDetailPage: React.FC = () => {
           )}
         </Paper>
 
-        <Stack spacing={2.5}>
+        <Stack
+          spacing={2}
+          sx={{
+            minWidth: 0,
+            // A decisão acompanha a leitura: o revisor não precisa voltar ao topo.
+            position: { lg: 'sticky' },
+            top: { lg: 88 },
+          }}
+        >
           <Card
+            component="section"
+            aria-labelledby="ai-lesson-review-decision-title"
+            data-testid="ai-lesson-review-decision"
             elevation={0}
-            sx={{
-              borderRadius: 4,
-              border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
-            }}
+            sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider' }}
           >
             <CardContent sx={{ p: 2.5 }}>
-              <Typography variant="subtitle1" component="h2" fontWeight={800} gutterBottom>
-                Avaliação do Revisor
+              <Typography
+                id="ai-lesson-review-decision-title"
+                variant="subtitle1"
+                component="h2"
+                fontWeight={800}
+                color="text.primary"
+                gutterBottom
+              >
+                {decisionOpen ? REVIEW_TEXTS.decisionTitle : REVIEW_TEXTS.noDecisionTitle}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Aprove este item ou descreva os ajustes e devolva-o para a produção.
-              </Typography>
 
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="Ajustes necessários (enviado ao devolver o item)"
-                placeholder="Ex: Ajustar o parágrafo inicial para ficar mais claro para as crianças..."
-                value={currentFeedback}
-                onChange={(e) => notes.change(selectedType, e.target.value)}
-                slotProps={{
-                  htmlInput: {
-                    maxLength: LESSON_ACTION_NOTE_MAX_LENGTH,
-                    'data-testid': 'ai-lesson-review-feedback-input',
-                  },
-                }}
-                helperText={`${currentFeedback.length}/${LESSON_ACTION_NOTE_MAX_LENGTH} caracteres${
-                  currentFeedback.trim() ? ' · este texto não é enviado ao aprovar' : ''
-                }`}
-                sx={{ mb: 2 }}
-              />
-
-              <LessonCommentsPanel
-                data-testid="ai-lesson-review-comments-history"
-                title="Histórico de observações desta etapa"
-                comments={stageComments}
-              />
-
-              <Stack spacing={1.5}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="success"
-                  size="large"
-                  startIcon={<ApproveIcon />}
-                  data-testid="ai-lesson-review-approve"
-                  disabled={actionsPending || !canApprove}
-                  onClick={handleApproveStage}
-                  sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.2, minHeight: 44 }}
-                >
-                  {approve.isPending
-                    ? 'Gerando o PDF e aprovando…'
-                    : stage?.status === LessonStageStatus.APPROVED
-                      ? 'Item Aprovado'
-                      : 'Aprovar Este Item'}
-                </Button>
-                {approve.isPending && (
-                  <Typography
-                    data-testid="ai-lesson-review-approve-pending"
-                    role="status"
-                    variant="caption"
-                    color="text.secondary"
-                  >
-                    A aprovação confere se o PDF deste item pode ser gerado; isso pode levar alguns
-                    segundos.
+              {decisionOpen ? (
+                <>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {REVIEW_TEXTS.decisionHint}
                   </Typography>
-                )}
-                {approvePdfFailed && (
-                  <Alert
-                    data-testid="ai-lesson-review-approve-pdf-error"
-                    severity="error"
-                    onClose={() => approve.reset()}
-                    sx={{ '& .MuiAlert-message': { width: '100%' } }}
-                  >
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      {getErrorMessage(
-                        approve.error,
-                        'Não foi possível gerar o PDF deste item, então ele não foi aprovado. Tente novamente.'
-                      )}
-                    </Typography>
-                    <Button
-                      data-testid="ai-lesson-review-approve-pdf-error-preview"
-                      color="inherit"
-                      variant="outlined"
-                      size="small"
-                      startIcon={<PictureAsPdf />}
-                      disabled={!stage?.currentVersionId || preview.loading}
-                      onClick={() => void preview.open()}
-                      sx={{ minHeight: 44, textTransform: 'none' }}
-                    >
-                      Visualizar PDF do item
-                    </Button>
-                  </Alert>
-                )}
 
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  color="error"
-                  startIcon={<ChangesIcon />}
-                  disabled={actionsPending || !currentFeedback.trim() || !canRequestChanges}
-                  data-testid="ai-lesson-review-request-changes"
-                  onClick={handleRequestChanges}
-                  sx={{ borderRadius: 2.5, fontWeight: 700, minHeight: 44 }}
-                >
-                  {changes.isPending ? 'Solicitando…' : 'Solicitar Ajustes neste Item'}
-                </Button>
-                {canReopenStage(lesson.status, stage, remoteBusy) && (
-                  <Button
+                  <TextField
                     fullWidth
-                    variant="outlined"
-                    color="warning"
-                    startIcon={<ChangesIcon />}
-                    disabled={actionsPending || !currentFeedback.trim() || !reopenAllowed}
-                    data-testid="ai-lesson-review-reopen"
-                    onClick={handleReopenStage}
-                    sx={{ borderRadius: 2.5, fontWeight: 700, minHeight: 44 }}
-                  >
-                    {reopen.isPending ? 'Reabrindo…' : 'Reabrir este item para ajustes'}
-                  </Button>
-                )}
-                {blockReason && (
-                  <Typography
-                    data-testid="ai-lesson-review-block-reason"
-                    variant="caption"
-                    color="text.secondary"
-                  >
-                    {blockReason}
-                  </Typography>
-                )}
-              </Stack>
+                    multiline
+                    minRows={3}
+                    maxRows={10}
+                    label={REVIEW_TEXTS.feedbackLabel}
+                    placeholder={REVIEW_TEXTS.feedbackPlaceholder}
+                    value={currentFeedback}
+                    onChange={(e) => notes.change(selectedType, e.target.value)}
+                    inputRef={feedbackInput}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      htmlInput: {
+                        maxLength: LESSON_ACTION_NOTE_MAX_LENGTH,
+                        'data-testid': 'ai-lesson-review-feedback-input',
+                      },
+                    }}
+                    helperText={`${currentFeedback.length}/${LESSON_ACTION_NOTE_MAX_LENGTH} · só é enviado ao devolver o item`}
+                    sx={{ mb: 2 }}
+                  />
+
+                  <Stack spacing={1.25}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="success"
+                      size="large"
+                      startIcon={<ApproveIcon />}
+                      data-testid="ai-lesson-review-approve"
+                      disabled={actionsPending || !canApprove}
+                      onClick={handleApproveStage}
+                      sx={{ borderRadius: 2.5, fontWeight: 800, minHeight: 48, textTransform: 'none' }}
+                    >
+                      {approve.isPending
+                        ? 'Gerando o PDF e aprovando…'
+                        : stage?.status === LessonStageStatus.APPROVED
+                          ? REVIEW_TEXTS.approved
+                          : REVIEW_TEXTS.approve}
+                    </Button>
+                    {approve.isPending && (
+                      <Typography
+                        data-testid="ai-lesson-review-approve-pending"
+                        role="status"
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        A aprovação confere se o PDF deste item pode ser gerado; isso pode levar
+                        alguns segundos.
+                      </Typography>
+                    )}
+                    {approvePdfFailed && (
+                      <Alert
+                        data-testid="ai-lesson-review-approve-pdf-error"
+                        severity="error"
+                        onClose={() => approve.reset()}
+                        sx={{ '& .MuiAlert-message': { width: '100%' } }}
+                      >
+                        <Typography variant="body2" sx={{ mb: 1 }}>
+                          {getErrorMessage(
+                            approve.error,
+                            'Não foi possível gerar o PDF deste item, então ele não foi aprovado. Tente novamente.'
+                          )}
+                        </Typography>
+                        <Button
+                          data-testid="ai-lesson-review-approve-pdf-error-preview"
+                          color="inherit"
+                          variant="outlined"
+                          size="small"
+                          startIcon={<PictureAsPdf />}
+                          disabled={!stage?.currentVersionId || preview.loading}
+                          onClick={() => void preview.open()}
+                          sx={{ minHeight: 44, textTransform: 'none' }}
+                        >
+                          Visualizar PDF do item
+                        </Button>
+                      </Alert>
+                    )}
+
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      color="error"
+                      startIcon={<ChangesIcon />}
+                      disabled={actionsPending || !currentFeedback.trim() || !canRequestChanges}
+                      data-testid="ai-lesson-review-request-changes"
+                      onClick={handleRequestChanges}
+                      sx={{ borderRadius: 2.5, fontWeight: 700, minHeight: 44, textTransform: 'none' }}
+                    >
+                      {changes.isPending ? 'Devolvendo…' : REVIEW_TEXTS.requestChanges}
+                    </Button>
+                    {canRequestChanges && !currentFeedback.trim() && (
+                      <Typography
+                        data-testid="ai-lesson-review-feedback-needed"
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        {REVIEW_TEXTS.feedbackNeeded}
+                      </Typography>
+                    )}
+                    {canReopenStage(lesson.status, stage, remoteBusy) && (
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        color="warning"
+                        startIcon={<ChangesIcon />}
+                        disabled={actionsPending || !currentFeedback.trim() || !reopenAllowed}
+                        data-testid="ai-lesson-review-reopen"
+                        onClick={handleReopenStage}
+                        sx={{ borderRadius: 2.5, fontWeight: 700, minHeight: 44, textTransform: 'none' }}
+                      >
+                        {reopen.isPending ? 'Reabrindo…' : REVIEW_TEXTS.reopen}
+                      </Button>
+                    )}
+                    {blockReason && (
+                      <Typography
+                        data-testid="ai-lesson-review-block-reason"
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        {blockReason}
+                      </Typography>
+                    )}
+                    {nextPending && (
+                      <Button
+                        fullWidth
+                        data-testid="ai-lesson-review-next-pending"
+                        endIcon={<NextIcon />}
+                        onClick={() => selectStage(nextPending)}
+                        sx={{ minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+                      >
+                        {REVIEW_TEXTS.nextPending} ({pendingStages.length})
+                      </Button>
+                    )}
+                  </Stack>
+                </>
+              ) : (
+                // Publicada, arquivada ou ainda em produção: não há o que decidir aqui.
+                <Typography
+                  data-testid="ai-lesson-review-block-reason"
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1.5 }}
+                >
+                  {blockReason}
+                </Typography>
+              )}
+
+              <Box sx={{ mt: decisionOpen ? 2 : 0 }}>
+                <LessonCommentsPanel
+                  data-testid="ai-lesson-review-comments-history"
+                  title="Histórico de observações deste item"
+                  comments={stageComments}
+                />
+              </Box>
             </CardContent>
           </Card>
 
@@ -1070,6 +1102,50 @@ export const LessonReviewDetailPage: React.FC = () => {
           )}
         </Stack>
       </Box>
+
+      {/* No celular a decisão fica no fim da página: a barra a mantém à mão durante a leitura. */}
+      {decisionOpen && (canApprove || canRequestChanges) && (
+        <Paper
+          elevation={6}
+          data-testid="ai-lesson-review-mobile-bar"
+          sx={{
+            display: { xs: 'flex', lg: 'none' },
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1100,
+            gap: 1,
+            p: 1.25,
+            paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="error"
+            disabled={actionsPending || !canRequestChanges}
+            onClick={() => {
+              feedbackInput.current?.scrollIntoView({ block: 'center' });
+              feedbackInput.current?.focus();
+            }}
+            sx={{ flex: 1, minHeight: 44, fontWeight: 700, textTransform: 'none', borderRadius: 2.5 }}
+          >
+            Pedir ajuste
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<ApproveIcon />}
+            disabled={actionsPending || !canApprove}
+            onClick={handleApproveStage}
+            sx={{ flex: 1.4, minHeight: 44, fontWeight: 800, textTransform: 'none', borderRadius: 2.5 }}
+          >
+            {approve.isPending ? 'Aprovando…' : 'Aprovar item'}
+          </Button>
+        </Paper>
+      )}
 
       <LessonPdfPreviewDialog
         data-testid="ai-lesson-pdf-preview-dialog"

@@ -412,3 +412,44 @@ Testes: `e2e/unit/ai-lessons.prompts.spec.ts` (regras) e
 `e2e/flows/studio-guidelines.spec.ts` (tela contra a API real, incluindo que a
 orientação de um administrador não aparece para outro usuário). Salvar uma
 orientação não dispara geração por IA.
+
+## Revisão e aprovação (`/adm/estudio/revisao`) — revisão de 2026-11-11
+
+### Fila (`AiLessonsReviewListPage`)
+
+- **Recortes com contagem** no lugar do filtro de status: Para revisar,
+  Prontas para publicar, Devolvidas à produção, Publicadas e Todas
+  (`REVIEW_QUEUE_VIEWS`). Os dois primeiros ficam em destaque quando têm
+  lição. As contagens vêm do painel (`byStatus`). O `?status=` do painel abre o
+  recorte correspondente (`reviewViewFromStatus`).
+- **Cartão sem repetição**: o título é o tema, a semana virou um selo, e uma
+  linha só diz o que falta — "5 de 8 itens aprovados · 2 aguardam sua decisão ·
+  1 devolvido" (`reviewProgressText`). Antes a mesma fração aparecia três vezes.
+- **Botão que diz o que fazer**: Iniciar revisão, Continuar revisão, Acompanhar
+  ajustes, Publicar ou Ver lição publicada (`reviewCardAction`).
+- Cada recorte tem o próprio texto de lista vazia.
+
+### Detalhe (`LessonReviewDetailPage`)
+
+- **Cabeçalho em duas colunas**: título à esquerda, ações em uma coluna de
+  largura fixa. Antes as ações esticavam e espremiam o título em poucas
+  palavras por linha.
+- **Sem ação duplicada**: com a lição publicada e o material no ar, "Abrir
+  Materiais Semanais" fica só no painel verde; o cabeçalho mantém baixar o
+  pacote e arquivar.
+- **Abas mais leves**: item aprovado mostra um ícone; os demais estados seguem
+  com o selo, e por isso se destacam.
+- **Decisão só quando há decisão**: o formulário (ajuste, aprovar, devolver,
+  reabrir) aparece enquanto o pacote está no ciclo de revisão
+  (`isReviewDecisionOpen`). Publicada, arquivada ou ainda em produção, o cartão
+  mostra só o motivo e o histórico de observações.
+- **Decisão sempre à mão**: no desktop o cartão acompanha a rolagem; no celular
+  há uma barra fixa com "Pedir ajuste" (leva ao campo) e "Aprovar item".
+- **Próximo item pendente**: botão com a quantidade de itens que ainda esperam
+  decisão (`pendingReviewStages`).
+- "Devolver com ajustes" explica que precisa do texto para ser liberado.
+
+Regras puras em `review.utils.ts` e `review.constants.ts`; testes em
+`e2e/unit/ai-lessons.review.spec.ts`. Não há fluxo de navegador novo para esta
+tela: o banco local não tem lição em revisão, e criar uma dispara geração por
+IA.
