@@ -12,7 +12,7 @@ import {
   Alert,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FEATURE } from '@/features/feature-flags';
 import { useFeatureFlags } from '@/hooks';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
@@ -29,7 +29,7 @@ import {
 import { useApiError } from '@/hooks/useApiError';
 import { AuthErrorCode, UserErrorCode } from '@/types/api-error';
 import { logApiError } from '@/utils/apiError';
-import { getAuthenticatedHome } from '@/store/slices/auth/authRoutes';
+import { resolvePostLoginDestination } from '@/store/slices/auth/authRoutes';
 
 const log = (message: string, ...args: unknown[]) => {
   if (import.meta.env.DEV) console.log(message, ...args);
@@ -54,6 +54,9 @@ const Login: React.FC = () => {
 
   const dispatch = useDispatch<AppDispatchType>();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Destino guardado pelo ProtectedRoute; validado em resolvePostLoginDestination.
+  const returnTo: unknown = (location.state as { from?: unknown } | null)?.from;
   const { flags } = useFeatureFlags();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -62,9 +65,9 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(getAuthenticatedHome(user?.role), { replace: true });
+      navigate(resolvePostLoginDestination(user?.role, returnTo), { replace: true });
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, returnTo]);
 
   const isFormValid = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -111,7 +114,7 @@ const Login: React.FC = () => {
 
       dispatch(login({ accessToken, refreshToken, user: responseUser, emailVerification }));
       await bootstrapAfterLogin();
-      navigate(getAuthenticatedHome(responseUser.role), { replace: true });
+      navigate(resolvePostLoginDestination(responseUser.role, returnTo), { replace: true });
     } catch (error) {
       logApiError(error, 'Login');
       const analyzed = handleError(error, 'Login');
@@ -158,7 +161,7 @@ const Login: React.FC = () => {
       const { accessToken, refreshToken, user: responseUser, emailVerification } = res.data;
       dispatch(login({ accessToken, refreshToken, user: responseUser, emailVerification }));
       await bootstrapAfterLogin();
-      navigate(getAuthenticatedHome(responseUser.role), { replace: true });
+      navigate(resolvePostLoginDestination(responseUser.role, returnTo), { replace: true });
     } catch (error) {
       logApiError(error, 'Login Google');
       handleError(error, 'Login Google');

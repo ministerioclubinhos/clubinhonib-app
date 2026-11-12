@@ -33,7 +33,73 @@ activity, ownership and moderation roles. See
 Regression coverage is in `e2e/unit/feed-photo-comments.spec.ts` and
 `e2e/flows/feed-photo-comments.spec.ts` (real local API and browser).
 
-### Private rejection inbox
+### Notification center (bell) — `src/features/notifications/`
+
+With the `notification_center_v2` flag on, `NavbarNotifications` renders the new
+`NotificationBell`; with it off (or while the flag map is unavailable — the
+fallback is `false`), the previous bell described in the next section is used.
+That is the rollout/rollback switch; history and read states are untouched.
+
+- **Provider:** `NotificationProvider` is mounted once in `App.tsx`, inside
+  `BrowserRouter`, above the navbar and the routes. It is inert without an
+  authenticated session, while auth or flags are loading, and when the flag is
+  off. It owns the session cycle and the alert channels; API data lives only in
+  the TanStack Query cache under `['notifications', userId, …]`.
+- **API:** `GET /notifications/me/summary` (counter, opaque revision, up to ten
+  recent unread ids), `GET /notifications/me` (lean list, `status=all|unread`),
+  `GET /notifications/me/:id` (private detail), `PATCH …/:id/read`,
+  `PATCH …/read-all`. See `clubinhonib-api/docs/notifications.md`.
+- **Polling:** the summary every 30 s while visible; when hidden, only the
+  coordinator tab polls (60 s) and only if browser notifications are allowed and
+  granted. Stops on 400/401/403/404; transient errors retry twice with backoff;
+  paused offline; refreshed on focus/reconnect. The list is fetched only with the
+  center open and is invalidated when the summary revision changes.
+- **UI:** desktop `Popover` (420 px) anchored to the bell; below `md` a
+  full-screen `Dialog` with safe areas; route `/notificacoes` (protected,
+  behind the flag) with `?notification=<uuid>` for the detail. Filters “Todas”,
+  “Não lidas”, “Pendências”. Detail opens inside the center; opening/closing
+  never marks as read — “Entendi” does. “Marcar avisos como lidos” asks for
+  confirmation and covers notices not yet loaded; it never retries by itself.
+  The bell's accessible name separates notices from pending items
+  (“Notificações: 3 avisos não lidos e 2 pendências”); on network errors the last
+  count stays.
+- **Pending items:** `adapters/profileAlertsAdapter.ts` maps the six existing
+  sources (e-mail verification — now linking to `/verificar-email` — photo,
+  account info, personal data, preferences and the teacher club link, which
+  opens `LinkClubModal` after closing the center). Bulk read never resolves them.
+- **Novelty, sound and browser notifications:** `detectNovelty` compares unread
+  ids from the summary with the ids already seen; the first response, long
+  absences (> 5 min) and a fully new window are silent. A visible tab plays a
+  short synthesized tone (Web Audio, no file) when `notification_sound` is on and
+  the person enabled it in Settings — off by default, 10 s cooldown, muted
+  immediately and across tabs, no sound while the center is open. A hidden tab
+  shows a generic browser notification (`browser_notifications` flag + preference
+  + granted permission), without comment, reason or personal data; the click
+  opens `/notificacoes?notification=<id>` through `public/notifications-sw.js`,
+  which handles only clicks (no fetch handler, no cache). Permission is requested
+  only from the “Permitir notificações” click.
+- **Tabs:** `BroadcastChannel` asks other tabs to refresh; Web Locks guard the
+  “already alerted” marks in `localStorage` (opaque ids, 100 max, 7-day expiry),
+  so two tabs never alert the same notice. Without Web Locks, only the visible,
+  focused tab alerts and external alerts are suppressed.
+- **Preferences:** `clubinho:notifications:v1:<userId>` stores only
+  `soundEnabled` and `browserNotificationsEnabled` (“neste navegador”). Invalid or
+  unavailable storage falls back to safe defaults in memory.
+- **Session:** account change/logout cancels and removes the previous account's
+  notification queries, stops audio, closes shown notifications and clears that
+  account's marks. Late mutation responses from a previous account are ignored.
+- **Login return:** `resolvePostLoginDestination` (auth routes) sends the person
+  back to `/notificacoes` (optionally with a valid notice id) after password or
+  Google login; any other `state.from` keeps the role's default home.
+- **Limits:** before Web Push (plan phase F7, not implemented), nothing is
+  delivered while the page is closed or suspended by the browser; the center
+  updates when the person returns. Browser timers may slow hidden polling.
+- **Tests:** `e2e/unit/notifications.spec.ts` (pure rules) and
+  `e2e/flows/notifications-center.spec.ts` (real API: desktop, mobile, login
+  return, single tone on a new notice). Manual checks on Firefox, Safari macOS,
+  Android and iOS are still required for audio and browser notifications.
+
+### Private rejection inbox (previous bell)
 
 `NavbarNotifications` preserves profile alerts and club-link invitations and
 renders the bell in desktop navigation and the mobile top bar. Photo notices

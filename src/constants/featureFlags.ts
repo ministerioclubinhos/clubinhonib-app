@@ -69,6 +69,12 @@ export interface FeatureFlags {
   idea_moderation: boolean;
   /** Moderação dos comentários enviados ao site. */
   comment_moderation: boolean;
+  /** Central de notificações nova (sininho). Desligada, volta o sininho anterior. */
+  notification_center_v2: boolean;
+  /** Oferece o som dos avisos no site; cada pessoa ainda precisa ligá-lo. */
+  notification_sound: boolean;
+  /** Oferece as notificações do navegador; cada pessoa ainda precisa permitir. */
+  browser_notifications: boolean;
 }
 
 /**
@@ -112,4 +118,10 @@ export const MOCKED_FEATURE_FLAGS: FeatureFlags = {
   photo_moderation: true,
   idea_moderation: true,
   comment_moderation: true,
+
+  // Liberação controlada: a central e os canais novos nunca ligam pelo
+  // fallback — sem resposta do servidor, vale o sininho anterior.
+  notification_center_v2: false,
+  notification_sound: false,
+  browser_notifications: false,
 };

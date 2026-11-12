@@ -94,6 +94,8 @@ import { ProfilesManager, ProfilePage } from './features/profile';
 import { ObservabilityAuditPage } from './features/observability-audit';
 import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
 import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
+import NotificationsPage from './pages/Notifications/NotificationsPage';
+import { NotificationProvider } from './features/notifications';
 
 const AiProvidersConfigPage = lazy(() =>
   import('./features/ai-providers/AiProvidersConfigPage').then((module) => ({
@@ -226,6 +228,8 @@ function App() {
       <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
         <GlobalErrorHandler />
         <BrowserRouter>
+          {/* Central de notificações: uma instância, acima da navbar e das rotas. */}
+          <NotificationProvider>
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Navbar />
 
@@ -285,6 +289,9 @@ function App() {
                   <Route element={<ProtectedRoute />}>
                     <Route path="/area-do-professor" element={<TeacherArea />} />
                     <Route path="/meu-perfil" element={<ProfilePage />} />
+                    <Route element={<FeatureRoute flag={FEATURE.NOTIFICATION_CENTER_V2} />}>
+                      <Route path="/notificacoes" element={<NotificationsPage />} />
+                    </Route>
 
                     {/*
                       Cada recurso abaixo tem uma flag própria: com ela
@@ -429,6 +436,7 @@ function App() {
             </Box>
             <Footer />
           </Box>
+          </NotificationProvider>
         </BrowserRouter>
       </SnackbarProvider>
     </AppErrorBoundary>

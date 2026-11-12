@@ -79,6 +79,12 @@ export const FEATURE = {
   IDEA_MODERATION: 'idea_moderation',
   /** Moderação dos comentários enviados ao site. */
   COMMENT_MODERATION: 'comment_moderation',
+  /** Central de notificações nova (sininho). */
+  NOTIFICATION_CENTER_V2: 'notification_center_v2',
+  /** Som dos avisos no site. */
+  NOTIFICATION_SOUND: 'notification_sound',
+  /** Notificações do navegador. */
+  BROWSER_NOTIFICATIONS: 'browser_notifications',
 } as const satisfies Record<string, keyof FeatureFlags>;
 
 /** Uma chave de flag conhecida pela aplicação. */

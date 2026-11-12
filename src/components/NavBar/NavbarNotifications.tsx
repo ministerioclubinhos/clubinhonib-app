@@ -7,9 +7,23 @@ import { useProfileAlerts } from '@/features/profile/hooks';
 import { FEATURE } from '@/features/feature-flags';
 import { useFeatureFlags } from '@/hooks';
 import LinkClubModal from '@/features/auth/components/LinkClubModal';
+import { NotificationBell } from '@/features/notifications';
 import CompleteProfileAlert from './CompleteProfileAlert';
+import type { TestIdProps } from './types';
 
+/**
+ * Com `notification_center_v2` ligada, o sino é o da central nova (estado no
+ * `NotificationProvider`). Desligada, volta o sininho anterior — é o rollback
+ * da liberação, sem perder avisos nem leituras.
+ */
 export default function NavbarNotifications() {
+  const { flags } = useFeatureFlags();
+  if (flags[FEATURE.NOTIFICATION_CENTER_V2])
+    return <NotificationBell data-testid="nav-bar-notification-center-bell" />;
+  return <LegacyNavbarNotifications data-testid="nav-bar-legacy-notifications" />;
+}
+
+function LegacyNavbarNotifications(_props: TestIdProps) {
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
   const { flags } = useFeatureFlags();
   const profileAlerts = useProfileAlerts();
