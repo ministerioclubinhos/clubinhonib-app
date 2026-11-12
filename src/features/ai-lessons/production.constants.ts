@@ -1,3 +1,4 @@
+import { DEFAULT_LESSON_VISUAL_STYLE } from './constants';
 import { AiProviderProfile } from '@/features/ai-providers/types';
 import type { ProductionConfirmCopy, VisualConfigForm } from './production.types';
 import { LessonStageStatus, ProductionConfirmationKind, StudioHubAction } from './types';
@@ -30,6 +31,7 @@ export const EMPTY_VISUAL_CONFIG_FORM: VisualConfigForm = {
   visualType: '',
   visualOrientation: '',
   visualQuantity: '',
+  visualStyle: DEFAULT_LESSON_VISUAL_STYLE,
 };
 
 /** Hub actions that are done in this screen; the others happen in the review screen. */

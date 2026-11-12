@@ -33,6 +33,7 @@ import {
   LessonStageType,
   LessonStatus,
   LessonVisualOrientation,
+  LessonVisualStyle,
   LessonVisualType,
   ProductionConfirmationKind,
   type Lesson,
@@ -404,21 +405,37 @@ test.describe('produção: provedor de IA em uso', () => {
 });
 
 test.describe('produção: configuração dos visuais', () => {
-  test('lição semanal sempre usa o kit de recortes', () => {
+  test('lição semanal usa o kit por padrão e mantém as cenas completas salvas', () => {
     expect(
       resolveVisualConfigForm(
         {
           type: LessonVisualType.STORY_SEQUENCE,
           orientation: LessonVisualOrientation.PORTRAIT,
           quantity: 6,
+          style: LessonVisualStyle.CLASSIC_CARTOON,
         },
         false
       )
     ).toEqual({
-      visualType: LessonVisualType.CUTOUT_KIT,
+      visualType: LessonVisualType.STORY_SEQUENCE,
       visualOrientation: LessonVisualOrientation.PORTRAIT,
       visualQuantity: 6,
+      visualStyle: LessonVisualStyle.CLASSIC_CARTOON,
     });
+    expect(resolveVisualConfigForm({}, false).visualType).toBe(LessonVisualType.CUTOUT_KIT);
+    expect(
+      resolveVisualConfigForm({ type: LessonVisualType.CHARACTER_AND_EMOTION }, false).visualType
+    ).toBe(LessonVisualType.CUTOUT_KIT);
+  });
+
+  test('nova geração usa o infantil fofo; versão antiga sem estilo mantém o ilustrado', () => {
+    expect(resolveVisualConfigForm({}, false).visualStyle).toBe(LessonVisualStyle.CUTE_CARTOON);
+    expect(
+      resolveVisualConfigForm({ type: LessonVisualType.CUTOUT_KIT }, false).visualStyle
+    ).toBe(LessonVisualStyle.ILLUSTRATED);
+    expect(resolveVisualConfigForm({ style: 'X' }, true).visualStyle).toBe(
+      LessonVisualStyle.CUTE_CARTOON
+    );
   });
 
   test('material especial mantém o estilo salvo, mas nunca o kit de recortes', () => {
@@ -435,6 +452,7 @@ test.describe('produção: configuração dos visuais', () => {
       visualType: '',
       visualOrientation: '',
       visualQuantity: '',
+      visualStyle: LessonVisualStyle.CUTE_CARTOON,
     });
     expect(resolveVisualConfigForm({ quantity: '6' }, false).visualQuantity).toBe('');
     expect(resolveVisualConfigForm({}, false).visualOrientation).toBe('');
@@ -445,6 +463,7 @@ test.describe('produção: configuração dos visuais', () => {
       visualType: LessonVisualType.CUTOUT_KIT,
       visualOrientation: LessonVisualOrientation.PORTRAIT,
       visualQuantity: 6,
+      visualStyle: LessonVisualStyle.ILLUSTRATED,
     } as const;
     expect(isVisualConfigComplete(complete)).toBe(true);
     expect(isVisualConfigComplete({ ...complete, visualType: '' })).toBe(false);

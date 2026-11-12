@@ -148,6 +148,7 @@ export function useProductionWorkflow({
                   visualType: visual.visualType as LessonVisualType,
                   visualOrientation: visual.visualOrientation as LessonVisualOrientation,
                   visualQuantity: Number(visual.visualQuantity),
+                  visualStyle: visual.visualStyle,
                 }
               : {}),
           },

@@ -2,7 +2,10 @@ import { AI_PROVIDER_LABELS } from '@/features/ai-providers/constants';
 import type { AiProviderSettings } from '@/features/ai-providers/types';
 import { matchingAiProviderProfile } from '@/features/ai-providers/utils';
 import {
+  DEFAULT_LESSON_VISUAL_STYLE,
   FINAL_REVIEW_LESSON_STATUSES,
+  LEGACY_LESSON_VISUAL_STYLE,
+  REGULAR_STORY_VISUAL_TYPES,
   PRODUCTION_COMPLETED_STATUSES,
   STORY_VISUAL_MAX_QUANTITY,
   STORY_VISUAL_MIN_QUANTITY,
@@ -32,6 +35,7 @@ import {
 import {
   LessonStageStatus,
   LessonVisualOrientation,
+  LessonVisualStyle,
   LessonVisualType,
   StudioSnapshotScope,
   type Lesson,
@@ -173,11 +177,18 @@ export function resolveVisualConfigForm(
   const savedType = enumValue(Object.values(LessonVisualType), config.type);
   const quantity = config.quantity;
   return {
+    // Weekly lessons: the kit unless the saved version used complete scenes.
     visualType: !isSpecial
-      ? LessonVisualType.CUTOUT_KIT
+      ? savedType && REGULAR_STORY_VISUAL_TYPES.includes(savedType)
+        ? savedType
+        : LessonVisualType.CUTOUT_KIT
       : savedType === LessonVisualType.CUTOUT_KIT
         ? ''
         : savedType,
+    // A saved version without style was drawn before styles existed.
+    visualStyle:
+      enumValue(Object.values(LessonVisualStyle), config.style) ||
+      (savedType ? LEGACY_LESSON_VISUAL_STYLE : DEFAULT_LESSON_VISUAL_STYLE),
     visualOrientation: enumValue(Object.values(LessonVisualOrientation), config.orientation),
     visualQuantity:
       typeof quantity === 'number' && quantity >= 1 && quantity <= STORY_VISUAL_MAX_QUANTITY

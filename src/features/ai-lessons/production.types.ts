@@ -6,6 +6,7 @@ import type {
   LessonStageType,
   LessonVersion,
   LessonVisualOrientation,
+  LessonVisualStyle,
   LessonVisualType,
   ProductionConfirmation,
   TiptapDocument,
@@ -72,6 +73,7 @@ export interface VisualConfigForm {
   visualType: LessonVisualType | '';
   visualOrientation: LessonVisualOrientation | '';
   visualQuantity: number | '';
+  visualStyle: LessonVisualStyle;
 }
 
 export interface ProductionConfirmCopy {

@@ -7,6 +7,7 @@ import {
   LessonStageType,
   type LessonVersion,
   type LessonVisualOrientation,
+  type LessonVisualStyle,
   type LessonVisualType,
 } from './types';
 import { objectValue } from './utils';
@@ -39,5 +40,7 @@ export function useVisualConfigForm(
       setForm((current) => ({ ...current, visualOrientation })),
     setVisualQuantity: (visualQuantity: number | '') =>
       setForm((current) => ({ ...current, visualQuantity })),
+    setVisualStyle: (visualStyle: LessonVisualStyle) =>
+      setForm((current) => ({ ...current, visualStyle })),
   };
 }

@@ -125,6 +125,7 @@ export function ProductionStageCard({
             isSpecial={lesson.category === LessonCategory.SPECIAL}
             visualOrientation={visual.visualOrientation}
             visualQuantity={visual.visualQuantity}
+            visualStyle={visual.visualStyle}
             instructions={workflow.instructions}
             hasVersion={hasVersion}
             isGenerating={workflow.stageGenerating}
@@ -132,6 +133,7 @@ export function ProductionStageCard({
             onVisualTypeChange={visual.setVisualType}
             onVisualOrientationChange={visual.setVisualOrientation}
             onVisualQuantityChange={visual.setVisualQuantity}
+            onVisualStyleChange={visual.setVisualStyle}
             onInstructionsChange={workflow.setInstructions}
             onGenerate={workflow.runGeneration}
             onRegenerate={imageRegeneration.openDialog}

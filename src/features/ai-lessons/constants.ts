@@ -1,4 +1,11 @@
-import { LessonCategory, LessonStageStatus, LessonStageType, LessonStatus } from './types';
+import {
+  LessonCategory,
+  LessonStageStatus,
+  LessonStageType,
+  LessonStatus,
+  LessonVisualStyle,
+  LessonVisualType,
+} from './types';
 
 export const AI_LESSON_EVENTS_RECONNECT_DELAY_MS = 2000;
 export const AI_LESSON_EVENTS_RECONNECT_MAX_DELAY_MS = 30_000;
@@ -18,7 +25,38 @@ export const STUDIO_STORAGE_DEBOUNCE_MS = 400;
 export const STUDIO_ELAPSED_TICK_MS = 1000;
 export const STUDIO_STAGE_QUERY_PARAM = 'stage';
 
-export const STORY_VISUAL_SETUP_STEPS = ['Quantidade', 'Estilo', 'Formato'] as const;
+export const STORY_VISUAL_SETUP_STEPS = ['Quantidade', 'Tipo e desenho', 'Formato'] as const;
+export const DEFAULT_LESSON_VISUAL_STYLE = LessonVisualStyle.CUTE_CARTOON;
+/** Versions saved before styles existed were drawn in this style. */
+export const LEGACY_LESSON_VISUAL_STYLE = LessonVisualStyle.ILLUSTRATED;
+/** Formats a weekly lesson can choose; the cutout kit stays the default. */
+export const REGULAR_STORY_VISUAL_TYPES: readonly LessonVisualType[] = [
+  LessonVisualType.CUTOUT_KIT,
+  LessonVisualType.STORY_SEQUENCE,
+];
+export const LESSON_VISUAL_STYLE_OPTIONS: readonly {
+  value: LessonVisualStyle;
+  title: string;
+  description: string;
+}[] = [
+  {
+    value: LessonVisualStyle.CUTE_CARTOON,
+    title: 'Infantil fofo (padrão)',
+    description:
+      'Cartoon para crianças: cabeça e olhos grandes, bochechas rosadas, cores vivas e contorno escuro grosso.',
+  },
+  {
+    value: LessonVisualStyle.CLASSIC_CARTOON,
+    title: 'Desenho bíblico clássico',
+    description:
+      'Contorno preto forte, cores chapadas e sombra simples, como os kits feitos à mão do acervo.',
+  },
+  {
+    value: LessonVisualStyle.ILLUSTRATED,
+    title: 'Livro ilustrado',
+    description: 'Pintura suave, cores claras e luminosas. Ainda é desenho, nunca realista.',
+  },
+];
 export const STORY_VISUAL_MIN_QUANTITY = 4;
 export const STORY_VISUAL_MAX_QUANTITY = 10;
 
@@ -50,7 +88,6 @@ export const cutoutKitSummary = (quantity: number): string => {
     ? `${quantity} pranchas: básico completo + ${extras.join(', ')}.`
     : `${quantity} pranchas: o básico completo.`;
 };
-
 
 export const PROMPT_MIN_LENGTH = 10;
 export const PROMPT_MAX_LENGTH = 12_000;

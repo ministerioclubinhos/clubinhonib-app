@@ -46,6 +46,13 @@ export enum LessonVisualType {
   INTERACTIVE_COLORING = 'INTERACTIVE_COLORING',
 }
 
+/** Drawing style of the story visuals, independent of the format (kit or scenes). */
+export enum LessonVisualStyle {
+  CUTE_CARTOON = 'CUTE_CARTOON',
+  ILLUSTRATED = 'ILLUSTRATED',
+  CLASSIC_CARTOON = 'CLASSIC_CARTOON',
+}
+
 export enum CutoutCategory {
   CHARACTERS = 'CHARACTERS',
   ANIMALS = 'ANIMALS',
@@ -99,6 +106,7 @@ export interface StoryVisualConfigurationProps {
   isSpecial?: boolean;
   visualOrientation: LessonVisualOrientation | '';
   visualQuantity: number | '';
+  visualStyle: LessonVisualStyle;
   instructions: string;
   hasVersion: boolean;
   isGenerating: boolean;
@@ -106,6 +114,7 @@ export interface StoryVisualConfigurationProps {
   onVisualTypeChange: (value: LessonVisualType) => void;
   onVisualOrientationChange: (value: LessonVisualOrientation) => void;
   onVisualQuantityChange: (value: number | '') => void;
+  onVisualStyleChange: (value: LessonVisualStyle) => void;
   onInstructionsChange: (value: string) => void;
   onGenerate: () => void;
   /** Opens the one dialog where images are redone (some, all or the whole item). */
@@ -268,6 +277,7 @@ export interface RegenerateSectionPayload {
   visualType?: LessonVisualType;
   visualOrientation?: LessonVisualOrientation;
   visualQuantity?: number;
+  visualStyle?: LessonVisualStyle;
 }
 export interface AdminPromptPreference {
   stage: LessonStageType;
