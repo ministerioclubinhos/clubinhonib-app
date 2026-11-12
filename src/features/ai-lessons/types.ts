@@ -253,6 +253,8 @@ export interface GetLessonDraftsParams {
   status?: LessonStatus;
   category?: LessonCategory;
   statuses?: LessonStatus[];
+  /** Lições planejadas para esta semana; serve ao aviso de semana repetida. */
+  weekNumber?: number;
   search?: string;
   page?: number;
   limit?: number;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Dialog,
   DialogTitle,
@@ -22,6 +23,10 @@ import {
   LESSON_THEME_MIN_LENGTH,
 } from '@/features/ai-lessons/constants';
 import { LessonCategory, type LessonAiGenerateModalProps } from '@/features/ai-lessons/types';
+import { aiLessonsService } from '@/features/ai-lessons/api';
+import { duplicateWeekWarning } from '@/features/ai-lessons/production-list.utils';
+import { aiLessonsKeys } from '@/features/ai-lessons/queryKeys';
+import { useDebouncedValue } from '@/hooks/useListingQuery';
 import { useGenerateLessonDraft } from '../../hooks/api/useAiLessons';
 
 export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
@@ -49,6 +54,21 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
   const isWeekNumberValid =
     weekNumber === '' ? isSpecial : Number.isInteger(Number(weekNumber)) && Number(weekNumber) >= 1;
   const isFormValid = isThemeValid && isReferenceValid && isWeekNumberValid;
+
+  // Semana repetida não impede a criação, mas quase sempre é engano: a tela
+  // avisa antes, em vez de deixar a duplicidade aparecer só na publicação.
+  const weekToCheck = useDebouncedValue(weekNumber, 400);
+  const weekQuery = { weekNumber: Number(weekToCheck), limit: 10 };
+  const sameWeek = useQuery({
+    queryKey: aiLessonsKeys.drafts(weekQuery),
+    queryFn: ({ signal }) => aiLessonsService.getDrafts(weekQuery, signal),
+    enabled: open && weekToCheck !== '' && Number(weekToCheck) >= 1,
+    staleTime: 15_000,
+  });
+  const weekWarning =
+    weekToCheck === weekNumber
+      ? duplicateWeekWarning(weekNumber, category, sameWeek.data?.items)
+      : null;
 
   const handleGenerate = async () => {
     if (!isFormValid || generateMutation.isPending) return;
@@ -200,6 +220,12 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
               }
               InputProps={{ sx: { borderRadius: 2.5 } }}
             />
+
+          {weekWarning && (
+            <Alert data-testid="ai-lessons-week-duplicate-warning" severity="warning" sx={{ borderRadius: 2 }}>
+              {weekWarning}
+            </Alert>
+          )}
 
           <TextField
             label={

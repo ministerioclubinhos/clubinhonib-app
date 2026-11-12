@@ -29,6 +29,13 @@ interface Props extends TestIdProps {
   excerpt?: string;
   footer?: React.ReactNode;
   actions?: React.ReactNode;
+  /**
+   * Rodapé e ações em linhas próprias, na largura toda do cartão.
+   *
+   * O padrão os põe lado a lado, o que serve a ícones pequenos; um cartão cuja
+   * ação é um botão com texto precisa da linha inteira.
+   */
+  stackedFooter?: boolean;
   onClick?: () => void;
 }
 
@@ -52,6 +59,7 @@ export default function ListingCard({
   excerpt,
   footer,
   actions,
+  stackedFooter = false,
   onClick,
 }: Props) {
   const theme = useTheme();
@@ -209,7 +217,12 @@ export default function ListingCard({
               pl: { xs: 1.75, sm: 2.25 },
             }}
           >
-            <Box sx={{ minWidth: 0, flex: { xs: "1 1 100%", sm: "0 1 auto" } }}>
+            <Box
+              sx={{
+                minWidth: 0,
+                flex: stackedFooter ? "1 1 100%" : { xs: "1 1 100%", sm: "0 1 auto" },
+              }}
+            >
               {footer}
             </Box>
             <Stack
@@ -217,6 +230,7 @@ export default function ListingCard({
               spacing={0.25}
               sx={{
                 flexShrink: 0,
+                ...(stackedFooter ? { flex: "1 1 100%", minWidth: 0 } : {}),
                 // O dedo precisa de mais alvo que o mouse; as telas passam os
                 // botões como `size="small"`, que sozinho daria ~34px.
                 "& .MuiIconButton-root": {

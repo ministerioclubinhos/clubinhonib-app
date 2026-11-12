@@ -1,114 +1,102 @@
-import { canDeleteLesson } from '@/features/ai-lessons/workflow';
-import { getErrorMessage } from '@/utils/apiError';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Box, Button, Grid2, Stack } from '@mui/material';
+import { Add as AddIcon, Settings as SettingsIcon } from '@mui/icons-material';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+
+import { ListingLayout, ListingToolbar } from '@/components/common/listing';
+import type { ListingFilter } from '@/components/common/listing';
+import { LessonAiGenerateModal } from '@/components/ai-lessons/LessonAiGenerateModal';
+import { LessonDeleteDialog } from '@/features/ai-lessons/components/production-list/LessonDeleteDialog';
+import { ProductionLessonCard } from '@/features/ai-lessons/components/production-list/ProductionLessonCard';
+import { LESSON_LIST_PAGE_SIZE, LESSON_SEARCH_DEBOUNCE_MS } from '@/features/ai-lessons/constants';
+import { STUDIO_HUB_ROUTES } from '@/features/ai-lessons/hub.constants';
+import {
+  LESSON_CATEGORY_FILTER_OPTIONS,
+  PRODUCTION_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS,
+  PRODUCTION_SORT_OPTIONS as SORT_OPTIONS,
+  PRODUCTION_STATUS_OPTIONS as STATUS_OPTIONS,
+} from '@/features/ai-lessons/listConstants';
 import { downloadLessonPdf, lessonPdfError } from '@/features/ai-lessons/pdf';
-import { LessonCategory, LessonStatus } from '@/features/ai-lessons/types';
 import {
-  LESSON_LIST_PAGE_SIZE,
-  LESSON_SEARCH_DEBOUNCE_MS,
-  PRODUCTION_COMPLETED_STATUSES,
-  getStudioStageOrder,
-} from '@/features/ai-lessons/constants';
+  PRODUCTION_LIST_DEFAULT_SORT,
+  PRODUCTION_LIST_TEXTS,
+} from '@/features/ai-lessons/production-list.constants';
 import {
-  formatLessonBadgeLabel,
+  productionCardItems,
+  productionListStatuses,
+  readProductionListState,
+  writeProductionListState,
+  type ProductionListState,
+} from '@/features/ai-lessons/production-list.utils';
+import { STUDIO_ROUTES } from '@/features/ai-lessons/presentation.constants';
+import {
   parseLessonCategory,
   parseLessonSortOption,
   parseLessonStatus,
 } from '@/features/ai-lessons/utils';
-import {
-  LESSON_CATEGORY_FILTER_OPTIONS,
-  PRODUCTION_STATUS_OPTIONS as STATUS_OPTIONS,
-  PRODUCTION_SORT_OPTIONS as SORT_OPTIONS,
-  PRODUCTION_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS,
-  PRODUCTION_STATUSPRESENTATION as statusPresentation,
-} from '@/features/ai-lessons/listConstants';
-import React, { useCallback, useMemo, useState } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Grid2,
-  IconButton,
-  LinearProgress,
-  Stack,
-  Tooltip,
-  Typography,
-  alpha,
-  useTheme,
-} from '@mui/material';
-import {
-  Add as AddIcon,
-  AutoAwesome as AiIcon,
-  DeleteOutline as DeleteIcon,
-  EditOutlined as EditIcon,
-  PictureAsPdfOutlined as PdfIcon,
-  Settings as SettingsIcon,
-  EventNoteOutlined as WeekIcon,
-} from '@mui/icons-material';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { STUDIO_LIST_STATUS_PARAM } from '@/features/ai-lessons/hub.constants';
-import { parseListStatus } from '@/features/ai-lessons/hub.utils';
-
-import { ListingCard, ListingLayout, ListingToolbar } from '@/components/common/listing';
-import type { ListingBadge, ListingFilter, ListingMeta } from '@/components/common/listing';
-import { useDebouncedValue } from '@/hooks/useListingQuery';
 import { useDeleteLessonDraft, useLessonDrafts } from '@/hooks/api/useAiLessons';
-import { LessonAiGenerateModal } from '@/components/ai-lessons/LessonAiGenerateModal';
-import { aiLessonsService, GetLessonDraftsParams, Lesson } from '@/services/aiLessonsService';
+import { useDebouncedValue } from '@/hooks/useListingQuery';
+import { aiLessonsService, Lesson } from '@/services/aiLessonsService';
+import { getErrorMessage } from '@/utils/apiError';
 
+/**
+ * Produção de lições (`/adm/estudio/licoes`).
+ *
+ * Filtros, busca e página moram na URL: voltar de uma lição devolve a lista
+ * como estava. Sem filtro de status, as arquivadas ficam de fora.
+ */
 export const AiLessonsListPage: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const state = useMemo(() => readProductionListState(searchParams), [searchParams]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Lesson | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(LESSON_LIST_PAGE_SIZE);
-  const [search, setSearch] = useState('');
-  // O painel do estúdio abre a lista já filtrada: `?status=PUBLISHED`.
-  const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<LessonStatus | ''>(() =>
-    parseListStatus(searchParams.get(STUDIO_LIST_STATUS_PARAM))
-  );
-  const [category, setCategory] = useState<LessonCategory | ''>('');
-  const [sortOption, setSortOption] = useState('updatedAt:DESC');
+  const [search, setSearch] = useState(state.search);
   const [errorMsg, setErrorMsg] = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
+  const patch = useCallback(
+    (changes: Partial<ProductionListState>) =>
+      setSearchParams(
+        (current) =>
+          writeProductionListState(current, { ...readProductionListState(current), ...changes }),
+        { replace: true }
+      ),
+    [setSearchParams]
+  );
+
+  // A busca digitada chega à URL já com o atraso, e volta para a página 1.
   const debouncedSearch = useDebouncedValue(search, LESSON_SEARCH_DEBOUNCE_MS);
+  useEffect(() => {
+    if (debouncedSearch.trim() !== state.search) patch({ search: debouncedSearch, page: 1 });
+    // `state.search` só é lido para comparar; reagir a ele desfaria a digitação.
+  }, [debouncedSearch, patch]);
 
-  const queryParams = useMemo<GetLessonDraftsParams>(() => {
-    const { sort, order } = parseLessonSortOption(sortOption);
-    return {
-      status: status || undefined,
-      category: category || undefined,
-      search: debouncedSearch.trim() || undefined,
-      page,
-      limit: pageSize,
-      sort,
-      order,
-    };
-  }, [status, category, debouncedSearch, page, pageSize, sortOption]);
-
-  const { data, isLoading, isError, refetch } = useLessonDrafts(queryParams);
+  const { sort, order } = parseLessonSortOption(state.sort);
+  const { data, isLoading, isError, refetch } = useLessonDrafts({
+    statuses: productionListStatuses(state.status),
+    category: state.category || undefined,
+    search: state.search || undefined,
+    page: state.page,
+    limit: pageSize,
+    sort,
+    order,
+  });
   const deleteMutation = useDeleteLessonDraft();
 
-  const items = data?.items ?? [];
   const total = data?.total ?? 0;
+  const cards = useMemo(() => productionCardItems(data?.items ?? []), [data?.items]);
 
-  const handleExportPdf = async (id: string, themeName: string) => {
+  const handleExportPdf = async (lesson: Lesson) => {
     if (downloadingId) return;
-    setDownloadingId(id);
+    setDownloadingId(lesson.id);
     setErrorMsg('');
     try {
-      const blob = await aiLessonsService.exportPdf(id);
-      downloadLessonPdf(blob, `Licao_${themeName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+      const blob = await aiLessonsService.exportPdf(lesson.id);
+      downloadLessonPdf(blob, `Licao_${lesson.theme.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
     } catch (error) {
       setErrorMsg(await lessonPdfError(error));
     } finally {
@@ -121,83 +109,41 @@ export const AiLessonsListPage: React.FC = () => {
     try {
       await deleteMutation.mutateAsync(deleteTarget.id);
       setDeleteTarget(null);
-      refetch();
+      void refetch();
     } catch (error) {
-      // The request skips the global toast: the reason is shown inside the dialog.
+      // A chamada não usa o aviso global: o motivo aparece dentro do diálogo.
       setDeleteError(getErrorMessage(error, 'Não foi possível excluir a lição.'));
     }
   };
-
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    setPage(1);
-  };
-
-  const handleStatusChange = (value: string) => {
-    setStatus(parseLessonStatus(value));
-    setPage(1);
-  };
-
-  const handleSortChange = (value: string) => {
-    setSortOption(value);
-    setPage(1);
-  };
-
-  const handleClearFilters = useCallback(() => {
-    setSearch('');
-    setStatus('');
-    setCategory('');
-    setSortOption('updatedAt:DESC');
-    setPage(1);
-  }, []);
 
   const listingFilters: ListingFilter[] = [
     {
       id: 'status',
       label: 'Status',
-      value: status,
+      value: state.status,
       options: STATUS_OPTIONS,
-      onChange: handleStatusChange,
+      onChange: (value) => patch({ status: parseLessonStatus(String(value)), page: 1 }),
     },
     {
       id: 'category',
       label: 'Tipo de material',
-      value: category,
+      value: state.category,
       options: LESSON_CATEGORY_FILTER_OPTIONS,
-      onChange: (value) => {
-        setCategory(parseLessonCategory(String(value)));
-        setPage(1);
-      },
+      onChange: (value) => patch({ category: parseLessonCategory(String(value)), page: 1 }),
     },
     {
       id: 'sort',
       label: 'Ordenar por',
-      value: sortOption,
+      value: state.sort,
       options: SORT_OPTIONS,
-      onChange: handleSortChange,
+      onChange: (value) => patch({ sort: String(value), page: 1 }),
     },
   ];
 
-  const createButton = (
-    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: '100%' }}>
-      <Button
-        variant="outlined"
-        startIcon={<SettingsIcon />}
-        onClick={() => navigate('/adm/estudio/orientacoes')}
-        sx={{ minHeight: 44, borderRadius: 2.5, fontWeight: 600, textTransform: 'none' }}
-      >
-        Orientações
-      </Button>
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        onClick={() => setModalOpen(true)}
-        sx={{ minHeight: 44, borderRadius: 2.5, fontWeight: 700, textTransform: 'none' }}
-      >
-        Nova lição
-      </Button>
-    </Stack>
-  );
+  const clearFilters = () => {
+    setSearch('');
+    patch({ status: '', category: '', sort: PRODUCTION_LIST_DEFAULT_SORT, search: '', page: 1 });
+  };
 
   return (
     <Box
@@ -214,33 +160,56 @@ export const AiLessonsListPage: React.FC = () => {
     >
       <ListingLayout
         data-testid="ai-lessons-listing-layout"
-        title="Produção de Lições Bíblicas"
-        summary={`${total} ${total === 1 ? 'lição cadastrada' : 'lições encontradas'} no estúdio`}
+        title={PRODUCTION_LIST_TEXTS.title}
+        summary={`${total} ${total === 1 ? 'lição' : 'lições'} ${
+          state.status ? 'neste status' : 'no estúdio (arquivadas à parte)'
+        }`}
         toolbar={
-          <ListingToolbar
-            searchValue={search}
-            searchPlaceholder="Buscar por tema, referência bíblica..."
-            onSearchChange={handleSearchChange}
-            filters={listingFilters}
-            onRefresh={refetch}
-            action={createButton}
-            onClearFilters={handleClearFilters}
-          />
+          <Stack gap={1.5}>
+            {/* As ações ficam fora da barra de filtros: junto delas a busca ficava com 100 px. */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="flex-end" gap={1}>
+              <Button
+                variant="outlined"
+                startIcon={<SettingsIcon />}
+                onClick={() => navigate(STUDIO_HUB_ROUTES.guidelines)}
+                sx={{ minHeight: 44, borderRadius: 2.5, fontWeight: 600, textTransform: 'none' }}
+              >
+                Orientações
+              </Button>
+              <Button
+                data-testid="ai-lessons-new-lesson"
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setModalOpen(true)}
+                sx={{ minHeight: 44, borderRadius: 2.5, fontWeight: 700, textTransform: 'none' }}
+              >
+                Nova lição
+              </Button>
+            </Stack>
+            <ListingToolbar
+              searchValue={search}
+              searchPlaceholder="Buscar por tema ou referência bíblica..."
+              onSearchChange={setSearch}
+              filters={listingFilters}
+              onRefresh={() => void refetch()}
+              onClearFilters={clearFilters}
+            />
+          </Stack>
         }
         loading={isLoading}
         error={errorMsg || (isError ? 'Erro ao carregar lições.' : undefined)}
         onDismissError={() => setErrorMsg('')}
-        itemCount={items.length}
-        emptyTitle="Nenhuma lição encontrada"
-        emptySubtitle="Ajuste a busca ou o filtro de status para encontrar as produções do estúdio."
+        itemCount={cards.length}
+        emptyTitle={PRODUCTION_LIST_TEXTS.emptyTitle}
+        emptySubtitle={PRODUCTION_LIST_TEXTS.emptySubtitle}
         pagination={{
-          page,
+          page: state.page,
           pageSize,
           total,
-          onPageChange: setPage,
+          onPageChange: (page) => patch({ page }),
           onPageSizeChange: (newSize) => {
             setPageSize(newSize);
-            setPage(1);
+            patch({ page: 1 });
           },
         }}
         pageSizeOptions={PAGE_SIZE_OPTIONS}
@@ -250,194 +219,34 @@ export const AiLessonsListPage: React.FC = () => {
               open={modalOpen}
               onClose={() => setModalOpen(false)}
               onSuccess={(id) => {
-                refetch();
-                navigate(`/adm/estudio/licoes/${id}`);
+                void refetch();
+                navigate(`${STUDIO_ROUTES.production}/${id}`);
               }}
             />
-
-            <Dialog
-              data-testid="ai-lessons-delete-dialog"
-              open={Boolean(deleteTarget)}
-              onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
-              maxWidth="xs"
-              fullWidth
-              slotProps={{ paper: { sx: { borderRadius: 3, p: 1 } } }}
-            >
-              <DialogTitle sx={{ fontWeight: 800 }}>Excluir Lição?</DialogTitle>
-              <DialogContent>
-                <DialogContentText color="text.secondary">
-                  Tem certeza que deseja excluir a lição <strong>{deleteTarget?.theme}</strong>{' '}
-                  ({deleteTarget ? formatLessonBadgeLabel(deleteTarget) : ''})?
-                </DialogContentText>
-                <DialogContentText
-                  color="error.main"
-                  sx={{ mt: 1.5, fontWeight: 600, fontSize: '0.875rem' }}
-                >
-                  Esta ação é irreversível. Todas as {deleteTarget?.stages?.length ?? ''} etapas,
-                  versões geradas, comentários e arquivos de imagem associados serão
-                  permanentemente removidos.
-                </DialogContentText>
-                {deleteError && (
-                  <Alert data-testid="ai-lessons-delete-error" severity="error" sx={{ mt: 2 }}>
-                    {deleteError}
-                  </Alert>
-                )}
-              </DialogContent>
-              <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button
-                  onClick={() => setDeleteTarget(null)}
-                  disabled={deleteMutation.isPending}
-                  sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleDeleteConfirm}
-                  variant="contained"
-                  color="error"
-                  disabled={deleteMutation.isPending}
-                  startIcon={
-                    deleteMutation.isPending ? (
-                      <CircularProgress size={16} color="inherit" />
-                    ) : (
-                      <DeleteIcon />
-                    )
-                  }
-                  sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
-                >
-                  {deleteMutation.isPending ? 'Excluindo...' : 'Excluir tudo'}
-                </Button>
-              </DialogActions>
-            </Dialog>
+            <LessonDeleteDialog
+              lesson={deleteTarget}
+              pending={deleteMutation.isPending}
+              error={deleteError}
+              onCancel={() => setDeleteTarget(null)}
+              onConfirm={() => void handleDeleteConfirm()}
+            />
           </>
         }
       >
-        {items.map((item: Lesson) => {
-          const completed = item.stages.filter((stage) =>
-            PRODUCTION_COMPLETED_STATUSES.includes(stage.status)
-          ).length;
-          const totalStages = item.stages.length || getStudioStageOrder(item.category).length;
-          const progressPercent = Math.round((completed / totalStages) * 100);
-          const presentation = statusPresentation[item.status];
-
-          const badges: ListingBadge[] = [{ label: presentation.label, color: presentation.color }];
-          if (item.category === LessonCategory.SPECIAL) {
-            badges.push({ label: 'Material Especial', color: 'secondary' });
-          }
-
-          const meta: ListingMeta[] = [
-            {
-              icon: <WeekIcon sx={{ fontSize: 16 }} />,
-              label: formatLessonBadgeLabel(item),
-            },
-          ];
-
-          return (
-            <Grid2 key={item.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-              <ListingCard
-                data-testid={`ai-lesson-card-${item.id}`}
-                avatar={<AiIcon fontSize="small" />}
-                title={item.theme}
-                subtitle={item.biblicalReference}
-                accent={presentation.color}
-                badges={badges}
-                meta={meta}
-                onClick={() => navigate(`/adm/estudio/licoes/${item.id}`)}
-                footer={
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Stack
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      sx={{ mb: 0.5 }}
-                    >
-                      <Typography variant="caption" color="text.secondary" noWrap>
-                        Atualizada em {new Date(item.updatedAt).toLocaleDateString('pt-BR')}
-                      </Typography>
-                      <Typography variant="caption" fontWeight={700} color="primary.main">
-                        {completed}/{totalStages} etapas
-                      </Typography>
-                    </Stack>
-                    <LinearProgress
-                      variant="determinate"
-                      value={progressPercent}
-                      sx={{
-                        height: 6,
-                        borderRadius: 3,
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        '& .MuiLinearProgress-bar': { borderRadius: 3 },
-                      }}
-                    />
-                  </Box>
-                }
-                actions={
-                  <>
-                    <Tooltip title="Baixar PDF Oficial">
-                      <span>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          data-testid={`ai-lesson-download-${item.id}`}
-                          disabled={Boolean(downloadingId)}
-                          sx={{ minWidth: 44, minHeight: 44 }}
-                          aria-label={`Baixar PDF de ${item.theme}`}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            void handleExportPdf(item.id, item.theme);
-                          }}
-                        >
-                          <>
-                            {downloadingId === item.id ? (
-                              <CircularProgress
-                                data-testid="ai-lesson-download-loading"
-                                size={20}
-                                aria-label="Baixando PDF"
-                              />
-                            ) : (
-                              <PdfIcon fontSize="small" />
-                            )}
-                          </>
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-
-                    <Tooltip title="Abrir Produção">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        aria-label={`Abrir produção ${item.theme}`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          navigate(`/adm/estudio/licoes/${item.id}`);
-                        }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-
-                    {canDeleteLesson(item) && (
-                      <Tooltip title="Excluir Lição">
-                        <IconButton
-                          data-testid={`ai-lessons-delete-action-${item.id}`}
-                          size="small"
-                          color="error"
-                          aria-label={`Excluir lição ${item.theme}`}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setDeleteError(null);
-                            setDeleteTarget(item);
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </>
-                }
-              />
-            </Grid2>
-          );
-        })}
+        {cards.map((item) => (
+          <Grid2 key={item.lesson.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+            <ProductionLessonCard
+              item={item}
+              downloadingId={downloadingId}
+              onOpen={(href) => navigate(href)}
+              onDownload={() => void handleExportPdf(item.lesson)}
+              onDelete={() => {
+                setDeleteError(null);
+                setDeleteTarget(item.lesson);
+              }}
+            />
+          </Grid2>
+        ))}
       </ListingLayout>
     </Box>
   );

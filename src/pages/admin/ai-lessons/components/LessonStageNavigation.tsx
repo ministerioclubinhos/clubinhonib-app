@@ -5,6 +5,11 @@ import {
 } from '@/features/ai-lessons/presentation.constants';
 import { lessonStageLabel } from '@/features/ai-lessons/presentation.utils';
 import {
+  LESSON_STAGE_STATUS_SHORT_LABELS,
+  LESSON_STAGE_UNSAVED_LABEL,
+  LESSON_STAGE_UNSAVED_SHORT_LABEL,
+} from '@/features/ai-lessons/production.constants';
+import {
   StageNavigationMode,
   type LessonStageNavigationProps,
 } from '@/features/ai-lessons/types';
@@ -54,10 +59,11 @@ export function LessonStageNavigation({
                   <span>{lessonStageLabel(stage.type, category, true)}</span>
                   <Chip
                     size="small"
+                    // Short names here: the full ones push the item name out of the tab.
                     label={
                       draftStages.includes(stage.type)
-                        ? 'Edição não salva'
-                        : LESSON_STAGE_STATUS_LABELS[stage.status]
+                        ? LESSON_STAGE_UNSAVED_SHORT_LABEL
+                        : LESSON_STAGE_STATUS_SHORT_LABELS[stage.status]
                     }
                     color={
                       draftStages.includes(stage.type)
@@ -92,11 +98,11 @@ export function LessonStageNavigation({
         bgcolor: 'background.paper',
       }}
     >
-      <Typography variant="h6" component="h2" fontWeight={800} gutterBottom>
+      <Typography variant="h6" component="h2" color="text.primary" fontWeight={800} gutterBottom>
         Fluxo da produção
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Selecione a etapa para ver, editar e aprovar os materiais.
+        Selecione a etapa para ver, editar e concluir os materiais.
       </Typography>
       <Stack spacing={1}>
         {stages.map((stage) => {
@@ -138,7 +144,7 @@ export function LessonStageNavigation({
                 </Typography>
                 <Chip
                   size="small"
-                  label={hasDraft ? 'Edição não salva' : LESSON_STAGE_STATUS_LABELS[stage.status]}
+                  label={hasDraft ? LESSON_STAGE_UNSAVED_LABEL : LESSON_STAGE_STATUS_LABELS[stage.status]}
                   color={
                     selected
                       ? 'default'
