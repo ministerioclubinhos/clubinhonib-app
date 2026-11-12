@@ -149,6 +149,8 @@ export interface Lesson {
   weekNumber: number | null;
   category?: LessonCategory;
   specialContext?: string | null;
+  /** Purpose set by the admin at creation; steers the lesson generation. */
+  editorialPurpose?: string | null;
   status: LessonStatus;
   weekMaterialId: string | null;
   publicationFailureMessage?: string | null;
@@ -251,6 +253,7 @@ export interface GenerateLessonPayload {
   weekNumber?: number | null;
   category?: LessonCategory;
   specialContext?: string | null;
+  editorialPurpose: string;
 }
 export interface SaveTiptapPayload {
   stage: LessonStageType;
@@ -579,6 +582,9 @@ export interface LessonStageNavigationProps {
   mode: StageNavigationMode;
   draftStages?: LessonStageType[];
   onSelect: (type: LessonStageType) => void;
+  /** Desktop only: the panel shrinks to a numbered rail to give the document more room. */
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
 }
 export enum ProductionConfirmationKind {
   SAVE = 'save',

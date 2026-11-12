@@ -122,3 +122,14 @@ export function pendingReviewStages(lesson: Pick<Lesson, 'stages' | 'category'>)
       lesson.stages.find((stage) => stage.type === type)?.status === LessonStageStatus.IN_REVIEW
   );
 }
+
+/** Rótulo do botão principal de publicação no cabeçalho da revisão. */
+export function reviewPublishButtonLabel(input: {
+  publishing: boolean;
+  republish: boolean;
+  isSpecial: boolean;
+}): string {
+  if (input.publishing) return 'Publicando…';
+  if (input.republish) return 'Publicar novamente';
+  return input.isSpecial ? 'Publicar como Material Especial' : 'Enviar ao Materiais Semanais';
+}

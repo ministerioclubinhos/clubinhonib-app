@@ -7,6 +7,7 @@ import {
   reviewHeaderStatus,
   reviewLessonSummary,
   reviewProgressText,
+  reviewPublishButtonLabel,
   reviewQueueCounts,
   reviewViewFromStatus,
   reviewViewStatuses,
@@ -126,5 +127,25 @@ test.describe('revisão: situação do pacote', () => {
       LessonStageType.LESSON_VISUALS,
       LessonStageType.VERSE_VISUALS,
     ]);
+  });
+});
+
+test.describe('reviewPublishButtonLabel', () => {
+  test('publicação em andamento prevalece sobre os demais rótulos', () => {
+    expect(reviewPublishButtonLabel({ publishing: true, republish: true, isSpecial: true })).toBe(
+      'Publicando…'
+    );
+  });
+
+  test('republicar, especial e regular têm rótulos próprios', () => {
+    expect(reviewPublishButtonLabel({ publishing: false, republish: true, isSpecial: false })).toBe(
+      'Publicar novamente'
+    );
+    expect(reviewPublishButtonLabel({ publishing: false, republish: false, isSpecial: true })).toBe(
+      'Publicar como Material Especial'
+    );
+    expect(reviewPublishButtonLabel({ publishing: false, republish: false, isSpecial: false })).toBe(
+      'Enviar ao Materiais Semanais'
+    );
   });
 });

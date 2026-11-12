@@ -108,6 +108,17 @@ export function ProductionHeader({
           </Typography>
         )}
 
+        {lesson.editorialPurpose && (
+          <Typography
+            data-testid="ai-lesson-editorial-purpose"
+            variant="body2"
+            color="text.secondary"
+            sx={{ overflowWrap: 'anywhere', mt: 0.5, fontStyle: 'italic' }}
+          >
+            {PRODUCTION_TEXTS.editorialPurposePrefix} {lesson.editorialPurpose}
+          </Typography>
+        )}
+
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
           Criada em {new Date(lesson.createdAt).toLocaleString('pt-BR')} · Atualizada em{' '}
           {new Date(lesson.updatedAt).toLocaleString('pt-BR')}

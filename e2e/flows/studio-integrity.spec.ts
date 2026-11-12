@@ -147,6 +147,7 @@ test('fila filtra antes da página: 12 rascunhos recentes não escondem dois rev
         theme: `studio-e2e-${suffix}-${index}`,
         biblicalReference: 'Lucas 15',
         weekNumber: 20,
+        editorialPurpose: 'Mostrar que Deus ama e perdoa.',
       });
       created.push(lesson);
       if (index < 2) prepareStudioFixture(lesson, [], LessonStatus.IN_REVIEW);

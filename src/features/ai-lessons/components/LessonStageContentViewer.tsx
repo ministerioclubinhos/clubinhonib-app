@@ -23,6 +23,7 @@ import {
   type LessonStageContentViewerProps,
 } from '../types';
 import { objectValue, resolveStageAssetIssue, visualAssets } from '../utils';
+import { LessonQualityWarnings } from './LessonQualityWarnings';
 import { StoryVisualCarousel } from './StoryVisualCarousel';
 
 export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> = ({
@@ -67,6 +68,9 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
             ? 'Uma ou mais imagens deste item não carregaram. Gere a etapa novamente ou recarregue a página antes de aprovar.'
             : 'Este item possui ilustrações ou artes obrigatórias ausentes. Gere ou atualize a etapa antes de aprovar.'}
         </Alert>
+      )}
+      {version && stage.type === LessonStageType.LESSON && (
+        <LessonQualityWarnings document={document} />
       )}
       {!version && IMAGE_ONLY_STAGES.includes(stage.type) && (
         <Paper

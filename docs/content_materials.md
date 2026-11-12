@@ -449,6 +449,16 @@ orientação não dispara geração por IA.
   decisão (`pendingReviewStages`).
 - "Devolver com ajustes" explica que precisa do texto para ser liberado.
 
+Organização (2026-11-12): a página só carrega a lição, guarda as observações
+não enviadas e mostra carregando/erro. Com a lição carregada ela monta
+`LessonReviewWorkspace` (com `key` da lição), que só compõe o layout. Estado,
+permissões derivadas e ações (aprovar, devolver, reabrir, publicar, arquivar,
+semana atual) ficam em `useReviewWorkflow`. Componentes em
+`src/features/ai-lessons/components/review/`: `ReviewNotices`, `ReviewHeader`,
+`ReviewStageTabs`, `ReviewStagePanel`, `ReviewDecisionCard`,
+`ReviewReadyNotice`, `ReviewMobileBar` e `ReviewConfirmDialogs`; tipos em
+`review.types.ts`.
+
 Regras puras em `review.utils.ts` e `review.constants.ts`; testes em
 `e2e/unit/ai-lessons.review.spec.ts`. Não há fluxo de navegador novo para esta
 tela: o banco local não tem lição em revisão, e criar uma dispara geração por

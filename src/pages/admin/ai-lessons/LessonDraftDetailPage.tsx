@@ -38,6 +38,7 @@ import { useStageParam } from '@/features/ai-lessons/useStageParam';
 import { useStudioUnsavedChanges } from '@/features/ai-lessons/useStudioUnsavedChanges';
 import { canDeleteLesson } from '@/features/ai-lessons/workflow';
 import { LessonDraftDialogs } from './components/LessonDraftDialogs';
+import { STAGE_NAVIGATION_WIDTH } from '@/features/ai-lessons/production.constants';
 import { LessonStageNavigation } from './components/LessonStageNavigation';
 
 const PAGE_SX = { width: { xs: '98%', md: '95%' }, mx: 'auto' } as const;
@@ -53,6 +54,7 @@ export const LessonDraftDetailPage: React.FC = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [llmErrorOpen, setLlmErrorOpen] = useState(false);
   const [remoteVersionOpen, setRemoteVersionOpen] = useState(false);
+  const [navigationCollapsed, setNavigationCollapsed] = useState(false);
 
   const data = useProductionStage(id, lesson, selectedType);
   const { stage, version, local, edited } = data;
@@ -111,6 +113,8 @@ export const LessonDraftDetailPage: React.FC = () => {
       draftStages={local.draftStages}
       mode={mode}
       onSelect={workflow.openStage}
+      collapsed={navigationCollapsed}
+      onToggleCollapsed={() => setNavigationCollapsed((value) => !value)}
     />
   );
 
@@ -168,7 +172,15 @@ export const LessonDraftDetailPage: React.FC = () => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: '320px minmax(0, 1fr)' },
+          gridTemplateColumns: {
+            xs: 'minmax(0, 1fr)',
+            lg: `${
+              navigationCollapsed
+                ? STAGE_NAVIGATION_WIDTH.collapsed
+                : STAGE_NAVIGATION_WIDTH.expanded
+            }px minmax(0, 1fr)`,
+          },
+          transition: 'grid-template-columns 200ms ease',
           gap: { xs: 2.5, lg: 3 },
           alignItems: 'start',
         }}

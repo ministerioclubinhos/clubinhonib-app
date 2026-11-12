@@ -19,6 +19,8 @@ import {
   LESSON_REFERENCE_MAX_LENGTH,
   LESSON_REFERENCE_MIN_LENGTH,
   LESSON_THEME_MAX_LENGTH,
+  LESSON_EDITORIAL_PURPOSE_MAX_LENGTH,
+  LESSON_EDITORIAL_PURPOSE_MIN_LENGTH,
   LESSON_SPECIAL_CONTEXT_MAX_LENGTH,
   LESSON_THEME_MIN_LENGTH,
 } from '@/features/ai-lessons/constants';
@@ -39,6 +41,7 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
   const [weekNumber, setWeekNumber] = useState<number | ''>('');
   const [category, setCategory] = useState<LessonCategory>(LessonCategory.REGULAR);
   const [specialContext, setSpecialContext] = useState('');
+  const [editorialPurpose, setEditorialPurpose] = useState('');
 
   const generateMutation = useGenerateLessonDraft();
 
@@ -53,7 +56,11 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
   const isSpecial = category === LessonCategory.SPECIAL;
   const isWeekNumberValid =
     weekNumber === '' ? isSpecial : Number.isInteger(Number(weekNumber)) && Number(weekNumber) >= 1;
-  const isFormValid = isThemeValid && isReferenceValid && isWeekNumberValid;
+  const trimmedPurpose = editorialPurpose.trim();
+  const isPurposeValid =
+    trimmedPurpose.length >= LESSON_EDITORIAL_PURPOSE_MIN_LENGTH &&
+    trimmedPurpose.length <= LESSON_EDITORIAL_PURPOSE_MAX_LENGTH;
+  const isFormValid = isThemeValid && isReferenceValid && isWeekNumberValid && isPurposeValid;
 
   // Semana repetida não impede a criação, mas quase sempre é engano: a tela
   // avisa antes, em vez de deixar a duplicidade aparecer só na publicação.
@@ -80,6 +87,7 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
         category,
         weekNumber: weekNumber === '' ? undefined : Number(weekNumber),
         ...(isSpecial && specialContext.trim() ? { specialContext: specialContext.trim() } : {}),
+        editorialPurpose: trimmedPurpose,
       });
 
       onSuccess(result.id);
@@ -96,6 +104,7 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
     setWeekNumber('');
     setCategory(LessonCategory.REGULAR);
     setSpecialContext('');
+    setEditorialPurpose('');
     generateMutation.reset();
     onClose();
   };
@@ -180,6 +189,33 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <TextField
+            data-testid="ai-lessons-week-number-input"
+            label={isSpecial ? 'Número da semana (opcional)' : 'Número da semana *'}
+            type="number"
+            fullWidth
+            value={weekNumber}
+            onChange={(event) => {
+              const value = event.target.value;
+              setWeekNumber(value === '' ? '' : Math.max(1, Math.trunc(Number(value))));
+            }}
+            disabled={generateMutation.isPending}
+            slotProps={{ htmlInput: { min: 1, step: 1 } }}
+            error={weekNumber === '' ? false : !isWeekNumberValid}
+            helperText={
+              isSpecial
+                ? 'Opcional. Vazio gera o cabeçalho "LIÇÃO ESPECIAL"; preenchido gera "LIÇÃO ESPECIAL N".'
+                : 'Use o número editorial que aparecerá no PDF e no material semanal.'
+            }
+            InputProps={{ sx: { borderRadius: 2.5 } }}
+          />
+
+          {weekWarning && (
+            <Alert data-testid="ai-lessons-week-duplicate-warning" severity="warning" sx={{ borderRadius: 2 }}>
+              {weekWarning}
+            </Alert>
+          )}
+
+          <TextField
             label={isSpecial ? 'Tema / Título do Material Especial *' : 'Tema / Título da Lição *'}
             placeholder={
               isSpecial
@@ -200,32 +236,6 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
             InputProps={{ sx: { borderRadius: 2.5 } }}
           />
 
-            <TextField
-              data-testid="ai-lessons-week-number-input"
-              label={isSpecial ? 'Número da semana (opcional)' : 'Número da semana *'}
-              type="number"
-              fullWidth
-              value={weekNumber}
-              onChange={(event) => {
-                const value = event.target.value;
-                setWeekNumber(value === '' ? '' : Math.max(1, Math.trunc(Number(value))));
-              }}
-              disabled={generateMutation.isPending}
-              slotProps={{ htmlInput: { min: 1, step: 1 } }}
-              error={weekNumber === '' ? false : !isWeekNumberValid}
-              helperText={
-                isSpecial
-                  ? 'Opcional. Vazio gera o cabeçalho "LIÇÃO ESPECIAL"; preenchido gera "LIÇÃO ESPECIAL N".'
-                  : 'Use o número editorial que aparecerá no PDF e no material semanal.'
-              }
-              InputProps={{ sx: { borderRadius: 2.5 } }}
-            />
-
-          {weekWarning && (
-            <Alert data-testid="ai-lessons-week-duplicate-warning" severity="warning" sx={{ borderRadius: 2 }}>
-              {weekWarning}
-            </Alert>
-          )}
 
           <TextField
             label={
@@ -251,6 +261,27 @@ export const LessonAiGenerateModal: React.FC<LessonAiGenerateModalProps> = ({
               trimmedReference.length > 0 && !isReferenceValid
                 ? `Informe entre ${LESSON_REFERENCE_MIN_LENGTH} e ${LESSON_REFERENCE_MAX_LENGTH} caracteres.`
                 : 'Suporta múltiplas referências paralelas separadas por barra ( / ), ponto e vírgula ( ; ) ou quebra de linha.'
+            }
+            InputProps={{ sx: { borderRadius: 2.5 } }}
+          />
+
+          <TextField
+            data-testid="ai-lessons-editorial-purpose-input"
+            label="Propósito da lição *"
+            placeholder="Ex: Mostrar que todos vão para um lugar depois da morte, Céu ou Inferno, e que essa decisão é feita nesta vida, crendo em Jesus."
+            multiline
+            minRows={2}
+            maxRows={6}
+            fullWidth
+            value={editorialPurpose}
+            onChange={(e) => setEditorialPurpose(e.target.value)}
+            disabled={generateMutation.isPending}
+            slotProps={{ htmlInput: { maxLength: LESSON_EDITORIAL_PURPOSE_MAX_LENGTH } }}
+            error={trimmedPurpose.length > 0 && !isPurposeValid}
+            helperText={
+              trimmedPurpose.length > 0 && !isPurposeValid
+                ? `Informe entre ${LESSON_EDITORIAL_PURPOSE_MIN_LENGTH} e ${LESSON_EDITORIAL_PURPOSE_MAX_LENGTH} caracteres.`
+                : 'O que a lição precisa ensinar. A IA usa isto como mensagem central: versículo, história, aplicação e perguntas seguem este propósito.'
             }
             InputProps={{ sx: { borderRadius: 2.5 } }}
           />

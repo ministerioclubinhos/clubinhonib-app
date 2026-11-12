@@ -1,4 +1,16 @@
-import { Box, Button, Chip, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  Paper,
+  Stack,
+  Tab,
+  Tabs,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import {
   LESSON_STAGE_STATUS_COLORS,
   LESSON_STAGE_STATUS_LABELS,
@@ -8,6 +20,7 @@ import {
   LESSON_STAGE_STATUS_SHORT_LABELS,
   LESSON_STAGE_UNSAVED_LABEL,
   LESSON_STAGE_UNSAVED_SHORT_LABEL,
+  STAGE_NAVIGATION_TEXTS,
 } from '@/features/ai-lessons/production.constants';
 import {
   StageNavigationMode,
@@ -21,6 +34,8 @@ export function LessonStageNavigation({
   mode,
   draftStages = [],
   onSelect,
+  collapsed = false,
+  onToggleCollapsed,
 }: LessonStageNavigationProps) {
   if (mode === StageNavigationMode.MOBILE) {
     return (
@@ -81,9 +96,101 @@ export function LessonStageNavigation({
     );
   }
 
+  const toggleLabel = collapsed ? STAGE_NAVIGATION_TEXTS.expand : STAGE_NAVIGATION_TEXTS.collapse;
+  const toggle = onToggleCollapsed ? (
+    <Tooltip title={toggleLabel} placement="right">
+      <IconButton
+        data-testid="ai-lesson-stage-navigation-toggle"
+        size="small"
+        aria-label={toggleLabel}
+        aria-expanded={!collapsed}
+        onClick={onToggleCollapsed}
+        sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+      >
+        {collapsed ? <ChevronRight fontSize="small" /> : <ChevronLeft fontSize="small" />}
+      </IconButton>
+    </Tooltip>
+  ) : null;
+
+  if (collapsed) {
+    return (
+      <Paper
+        data-testid="ai-lesson-stage-navigation-desktop"
+        data-collapsed="true"
+        component="nav"
+        aria-label="Etapas da lição"
+        elevation={0}
+        sx={{
+          display: { xs: 'none', lg: 'flex' },
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 1,
+          position: 'sticky',
+          top: 88,
+          py: 1.5,
+          borderRadius: 4,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+        }}
+      >
+        {toggle}
+        {stages.map((stage, index) => {
+          const selected = selectedType === stage.type;
+          const hasDraft = draftStages.includes(stage.type);
+          const statusLabel = hasDraft
+            ? LESSON_STAGE_UNSAVED_LABEL
+            : LESSON_STAGE_STATUS_LABELS[stage.status];
+          const statusColor = hasDraft ? 'warning' : LESSON_STAGE_STATUS_COLORS[stage.status];
+          const label = `${lessonStageLabel(stage.type, category)} — ${statusLabel}`;
+          return (
+            <Tooltip key={stage.id} title={label} placement="right">
+              <Button
+                data-testid={`ai-stage-tab-${stage.type}`}
+                aria-current={selected ? 'step' : undefined}
+                aria-label={label}
+                variant={selected ? 'contained' : 'outlined'}
+                color={selected ? 'primary' : 'inherit'}
+                onClick={() => onSelect(stage.type)}
+                sx={{
+                  position: 'relative',
+                  minWidth: 44,
+                  width: 44,
+                  height: 44,
+                  p: 0,
+                  borderRadius: 2.5,
+                  fontWeight: 800,
+                  borderColor: selected ? 'primary.main' : 'divider',
+                  '&:hover': { borderColor: 'primary.main' },
+                }}
+              >
+                {index + 1}
+                <Box
+                  aria-hidden
+                  sx={{
+                    position: 'absolute',
+                    top: 4,
+                    right: 4,
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    border: '1px solid',
+                    borderColor: 'background.paper',
+                    bgcolor: statusColor === 'default' ? 'action.disabled' : `${statusColor}.main`,
+                  }}
+                />
+              </Button>
+            </Tooltip>
+          );
+        })}
+      </Paper>
+    );
+  }
+
   return (
     <Paper
       data-testid="ai-lesson-stage-navigation-desktop"
+      data-collapsed="false"
       component="nav"
       aria-label="Etapas da lição"
       elevation={0}
@@ -98,11 +205,14 @@ export function LessonStageNavigation({
         bgcolor: 'background.paper',
       }}
     >
-      <Typography variant="h6" component="h2" color="text.primary" fontWeight={800} gutterBottom>
-        Fluxo da produção
-      </Typography>
+      <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={1}>
+        <Typography variant="h6" component="h2" color="text.primary" fontWeight={800} gutterBottom>
+          {STAGE_NAVIGATION_TEXTS.title}
+        </Typography>
+        {toggle}
+      </Stack>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Selecione a etapa para ver, editar e concluir os materiais.
+        {STAGE_NAVIGATION_TEXTS.subtitle}
       </Typography>
       <Stack spacing={1}>
         {stages.map((stage) => {

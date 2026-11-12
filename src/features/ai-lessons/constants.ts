@@ -89,6 +89,9 @@ export function getStudioStageOrder(category?: LessonCategory | null): readonly 
 }
 
 export const LESSON_SPECIAL_CONTEXT_MAX_LENGTH = 2000;
+/** Purpose / central message the admin wants the lesson to teach (API limit). */
+export const LESSON_EDITORIAL_PURPOSE_MIN_LENGTH = 10;
+export const LESSON_EDITORIAL_PURPOSE_MAX_LENGTH = 1000;
 export const EDITABLE_STAGE_STATUSES = [
   LessonStageStatus.DRAFT,
   LessonStageStatus.PRODUCER_APPROVED,

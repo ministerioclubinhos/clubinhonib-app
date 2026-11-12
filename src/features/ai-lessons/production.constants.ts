@@ -57,6 +57,13 @@ export const LESSON_STAGE_STATUS_SHORT_LABELS: Record<LessonStageStatus, string>
 };
 export const LESSON_STAGE_UNSAVED_LABEL = 'Edição não salva';
 export const LESSON_STAGE_UNSAVED_SHORT_LABEL = 'Não salva';
+export const STAGE_NAVIGATION_TEXTS = {
+  title: 'Fluxo da produção',
+  subtitle: 'Selecione a etapa para ver, editar e concluir os materiais.',
+  collapse: 'Recolher fluxo',
+  expand: 'Expandir fluxo',
+} as const;
+export const STAGE_NAVIGATION_WIDTH = { expanded: 320, collapsed: 72 } as const;
 
 export const AI_PROVIDER_PROFILE_CAPTIONS: Record<AiProviderProfile, string> = {
   [AiProviderProfile.TEST]: 'perfil de teste',
@@ -109,6 +116,7 @@ export const PRODUCTION_TEXTS = {
   progressApproved: 'aprovados',
   progressCompleted: 'itens concluídos',
   specialContextPrefix: 'Ideia da história:',
+  editorialPurposePrefix: 'Propósito definido:',
 
   // Avisos da página
   draftRecovered:

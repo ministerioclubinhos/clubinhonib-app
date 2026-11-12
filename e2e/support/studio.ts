@@ -39,6 +39,7 @@ export async function createStudioFixture(
     theme: `studio-e2e-${suffix}`,
     biblicalReference: 'Lucas 15:1-7',
     weekNumber: 20,
+    editorialPurpose: 'Mostrar que Deus ama e perdoa.',
   });
   prepareStudioFixture(lesson, [LessonStageType.LESSON, LessonStageType.STANDARD_GAME]);
   let updated = lesson;
@@ -66,6 +67,7 @@ export async function createStudioReviewPackage(api: ApiClient): Promise<Lesson>
     theme: `studio-e2e-${uniqueSuffix()}`,
     biblicalReference: 'Lucas 15',
     weekNumber: 20,
+    editorialPurpose: 'Mostrar que Deus ama e perdoa.',
   });
   prepareStudioFixture(lesson, Object.values(LessonStageType));
   let updated = lesson;
