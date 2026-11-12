@@ -453,3 +453,95 @@ Regras puras em `review.utils.ts` e `review.constants.ts`; testes em
 `e2e/unit/ai-lessons.review.spec.ts`. Não há fluxo de navegador novo para esta
 tela: o banco local não tem lição em revisão, e criar uma dispara geração por
 IA.
+
+## Produção de lições — detalhe (2026-11-11)
+
+Tela `LessonDraftDetailPage` (`/adm/estudio/licoes/:id`). A página só compõe
+hooks e layout; as regras ficam em `production.utils.ts`, os textos em
+`production.constants.ts`, os tipos em `production.types.ts` e os componentes em
+`src/features/ai-lessons/components/production/`.
+
+### Organização
+
+- `useProductionStage`: o item selecionado (versão do servidor, edição local,
+  observações e versículo).
+- `useProductionWorkflow`: gerar, salvar, concluir e excluir, com confirmações,
+  conflito 409 e a trava contra duplo clique no mesmo quadro.
+- `useProductionInstructions`, `useVisualConfigForm`, `useSaveShortcut`: estado
+  das instruções para a IA, das escolhas dos visuais e o atalho de salvar.
+- Componentes: `ProductionHeader`, `ProductionNotices`, `ProductionStageCard`
+  (`ProductionStageGuidance` + `ProductionStageActions`), `ProductionUnsavedBar`,
+  `ProductionConfirmDialog`, `RemoteVersionDialog`, `ProductionDetailSkeleton`.
+
+### Comportamento
+
+- **Cabeçalho segue o estado da lição** (`productionHeaderStep`, que reusa
+  `hubNextStep`): enquanto há produção a fazer, o botão em destaque é o próximo
+  passo ("Continuar: 3. Brincadeira", "Tentar de novo: 2. Visuais da
+  história"), que abre o item e rola até ele; "Ir para a revisão" fica
+  secundário. Com o pacote completo ou no ciclo de revisão, a revisão vira o
+  destaque.
+- **Uma ação em destaque por item** (`productionStagePrimaryAction`): sem
+  conteúdo → "Gerar com IA"; edição não salva → "Salvar edição"; rascunho salvo
+  → "Concluir item para o pacote"; concluído/aprovado → nenhuma. "Regenerar com
+  IA" é sempre contornado em tom de aviso, porque é pago e substitui o conteúdo.
+- **Item concluído não se conclui de novo** (`canCompleteProductionStage`): o
+  botão fica desabilitado como "Item concluído". Salvar uma edição devolve o
+  item para "Em produção" na API, e então concluir volta a ficar disponível.
+- **Depois de concluir**, a tela abre o primeiro item ainda não concluído na
+  ordem da produção (`nextStageNeedingProduction`) e avisa "“X” concluído.
+  Próximo: “Y”."; no último, avisa que o pacote está pronto e oferece ir para a
+  revisão.
+- **Falha de geração** aparece como alerta dentro do item, com "Tentar de novo"
+  e "Ver detalhes". O diálogo de erro continua existindo, mas só abre a pedido.
+  Nos visuais da história, tentar de novo exige as três escolhas preenchidas.
+- **Erros de salvar e concluir** aparecem junto dos botões do item; o de salvar
+  só no item a que pertence.
+- **Edição não salva**: barra com "Salvar edição" e "Descartar" (fixa no rodapé
+  no celular, presa ao fim da coluna no desktop) e atalho Ctrl/Cmd+S, com as
+  mesmas condições do botão.
+- **Instruções para a IA** são guardadas por lição e item no `sessionStorage`
+  (mesmos utilitários dos rascunhos; chave
+  `clubinho:studio:v1:<usuário>:drafts:<lição>:instructions`). O texto é limpo
+  quando a geração que o usou entrega uma versão nova; se ela falha, o texto
+  fica para a nova tentativa (`instructionsOutcome`).
+- **Provedor em uso**: legenda "IA: OpenAI · gpt-4o-mini — perfil de teste" com
+  link para `/adm/config-provedores-ia` (`aiProviderCaption`). Se as
+  configurações não carregarem, nada é mostrado e a geração não é bloqueada.
+- **"Excluir lição"** fica no menu "Mais ações" (⋮), com as mesmas regras de
+  bloqueio.
+- **Abas do celular** usam nomes curtos de status
+  (`LESSON_STAGE_STATUS_SHORT_LABELS`); as demais telas mantêm os nomes
+  completos. O menu de etapas diz "ver, editar e concluir" — aprovar é na
+  revisão.
+- **Carregamento** usa um esqueleto com a forma da tela.
+
+Testes das regras em `e2e/unit/ai-lessons.production.spec.ts`. Os fluxos de
+navegador existentes (`studio-production-drafts`, `studio-integrity`,
+`studio-resilience`) continuam usando os mesmos `data-testid`.
+
+## Produção de lições — lista (2026-11-11)
+
+`/adm/estudio/licoes` (`AiLessonsListPage`, agora com ~250 linhas; cartão e
+diálogo de exclusão em `components/production-list/`).
+
+- O cartão mostra as etapas como barra de segmentos e um botão com o próximo
+  passo, que abre a lição na etapa certa (`productionCardItems`, sobre a mesma
+  conta do painel). Lição publicada ou arquivada mostra "Ver lição".
+- Lição com geração que falhou ganha o selo "Geração falhou" e a borda vermelha.
+- O PDF do pacote só é oferecido com todas as etapas aprovadas
+  (`canExportLessonPdf`) — é a regra da API; antes o botão aparecia sempre e
+  dava erro.
+- Excluir fica desabilitado enquanto há geração em andamento (a API recusa).
+- Sem filtro de status, as arquivadas ficam de fora
+  (`PRODUCTION_LIST_DEFAULT_STATUSES`).
+- Status, tipo, ordenação, busca e página moram na URL
+  (`readProductionListState` / `writeProductionListState`).
+- As ações "Orientações" e "Nova lição" saíram da barra de filtros, que
+  espremia a busca.
+- O modal de nova lição avisa quando já existe lição do mesmo tipo para a
+  semana (`duplicateWeekWarning`, com o filtro `weekNumber` da listagem). O
+  aviso não impede a criação.
+- `ListingCard` ganhou `stackedFooter`, para rodapé e ações em linhas próprias.
+
+Testes: `e2e/unit/ai-lessons.production-list.spec.ts`.

@@ -4,6 +4,7 @@ import {
   PRODUCTION_SKELETON_STAGE_ROWS,
   PRODUCTION_TEXTS,
 } from '../../production.constants';
+import type { ProductionDetailSkeletonProps } from '../../production.types';
 
 const PANEL_SX = {
   p: { xs: 2, md: 3 },
@@ -13,10 +14,12 @@ const PANEL_SX = {
 } as const;
 
 /** Placeholder with the shape of the loaded screen, so nothing jumps when the lesson arrives. */
-export function ProductionDetailSkeleton() {
+export function ProductionDetailSkeleton({
+  'data-testid': testId,
+}: ProductionDetailSkeletonProps) {
   return (
     <Box
-      data-testid="ai-lessons-detail-loading"
+      data-testid={testId}
       role="status"
       aria-busy="true"
       aria-label={PRODUCTION_TEXTS.loading}

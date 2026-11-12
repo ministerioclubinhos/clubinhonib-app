@@ -128,6 +128,8 @@ export const PRODUCTION_TEXTS = {
   commentsTitle: 'Observações da Revisão',
   generationFailedTitle: 'A geração deste item falhou.',
   retryGeneration: 'Tentar de novo',
+  retryNeedsVisualConfig:
+    'Para tentar de novo, confirme abaixo a quantidade, o estilo e o formato dos visuais.',
   failureDetails: 'Ver detalhes',
   packageReady: 'O pacote está completo e pronto para a revisão.',
   dismissNotice: 'Dispensar aviso',

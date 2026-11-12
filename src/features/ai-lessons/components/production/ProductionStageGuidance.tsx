@@ -5,7 +5,7 @@ import { displayAiFailure, lessonStageLabel } from '../../presentation.utils';
 import { PRODUCTION_TEXTS } from '../../production.constants';
 import type { ProductionStageGuidanceProps } from '../../production.types';
 import { completionNoticeText } from '../../production.utils';
-import { LessonStageStatus } from '../../types';
+import { LessonStageStatus, LessonStageType } from '../../types';
 import { formatElapsedTime } from '../../utils';
 
 const ALERT_SX = { mb: 2, borderRadius: 2.5 } as const;
@@ -69,6 +69,11 @@ export function ProductionStageGuidance({
           <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
             {displayAiFailure(stage.type, stage.failureMessage, category)}
           </Typography>
+          {!canRetry && stage.type === LessonStageType.LESSON_VISUALS && (
+            <Typography variant="body2" sx={{ mt: 0.5 }}>
+              {PRODUCTION_TEXTS.retryNeedsVisualConfig}
+            </Typography>
+          )}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 1 }}>
             <Button
               data-testid="ai-lesson-stage-generation-retry"
@@ -94,7 +99,12 @@ export function ProductionStageGuidance({
       )}
 
       {VERSE_DEPENDENT_STAGES.includes(stage.type) && verse && (
-        <Alert severity="success" icon={<AutoStories />} sx={ALERT_SX}>
+        <Alert
+          data-testid="ai-lesson-stage-memory-verse"
+          severity="success"
+          icon={<AutoStories />}
+          sx={ALERT_SX}
+        >
           <strong>{verse.reference} — NVI:</strong> “{verse.text}”
         </Alert>
       )}

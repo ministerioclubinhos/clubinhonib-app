@@ -100,6 +100,10 @@ export interface ProductionHeaderProps {
   onDelete: () => void;
 }
 
+export interface ProductionDetailSkeletonProps {
+  'data-testid': string;
+}
+
 export interface ProductionNoticesProps {
   recovered: boolean;
   hasDrafts: boolean;

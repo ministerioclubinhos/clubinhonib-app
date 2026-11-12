@@ -77,7 +77,7 @@ export const LessonDraftDetailPage: React.FC = () => {
   const backToList = () => leave.requestLeave(() => navigate(STUDIO_ROUTES.production));
   const goToReview = () => leave.requestLeave(() => navigate(`${STUDIO_ROUTES.review}/${id}`));
 
-  if (isLoading) return <ProductionDetailSkeleton />;
+  if (isLoading) return <ProductionDetailSkeleton data-testid="ai-lessons-detail-loading" />;
 
   if (error || !lesson) {
     return (
