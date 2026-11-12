@@ -58,6 +58,7 @@ export interface RefreshTokenDto {
 
 export interface RefreshTokenResponse {
   accessToken: string;
+  refreshToken: string;
 }
 
 export interface ForgotPasswordDto {

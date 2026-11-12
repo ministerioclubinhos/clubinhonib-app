@@ -33,7 +33,7 @@ import AdminDashboardPage from './components/Adm/AdminDashboardPage';
 import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 
 import { fetchRoutes } from './store/slices/route/routeSlice';
-import { initAuth, logout } from './store/slices/auth/authSlice';
+import { initAuth, signOut } from './store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
 
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
@@ -175,7 +175,7 @@ function App() {
     // An explicit logout discards unsaved Studio work; an expired session keeps it for recovery.
     suppressStudioPersistence(true);
     purgeStudioSnapshots(resolveStudioStorage());
-    dispatch(logout());
+    dispatch(signOut());
     setForceReady(true);
     window.location.href = '/login';
   };

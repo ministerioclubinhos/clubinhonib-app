@@ -21,6 +21,9 @@ const GlobalErrorHandler: React.FC = () => {
     useEffect(() => {
         // Handler para toasts genéricos
         const handleShowToast = (detail: ToastEvent) => {
+            const normalizedMessage = detail.message?.trim().toLowerCase();
+            if (normalizedMessage === 'canceled' || normalizedMessage === 'cancelled') return;
+
             enqueueSnackbar(detail.message, {
                 variant: (detail.variant || 'default') as VariantType,
                 anchorOrigin: {
@@ -33,6 +36,9 @@ const GlobalErrorHandler: React.FC = () => {
 
         // Handler para erros de API (pode ser usado para logging adicional ou ações específicas)
         const handleApiError = (detail: ApiErrorEvent) => {
+            const normalizedMessage = detail.message?.trim().toLowerCase();
+            if (normalizedMessage === 'canceled' || normalizedMessage === 'cancelled') return;
+
             // Logging adicional em desenvolvimento
             if (import.meta.env.DEV) {
                 console.log('[GlobalErrorHandler] API Error:', {

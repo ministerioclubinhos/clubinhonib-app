@@ -100,3 +100,37 @@ test.describe("extractErrorMessage", () => {
     expect(getErrorMessage(tooLarge)).toBe(GENERIC_ERROR_MESSAGES.PAYLOAD_TOO_LARGE);
   });
 });
+
+/**
+ * Casos que vieram da `main` (endurecimento da sessão): o cancelamento é
+ * reconhecido venha de onde vier, e não escreve nada no console.
+ */
+test.describe('requisições canceladas (isRequestCanceled)', () => {
+  test('reconhece o cancelamento do Axios e o do AbortController', async () => {
+    const { AxiosError } = await import('axios');
+    const { isRequestCanceled } = await import('@/utils/apiError');
+    const axiosCancellation = new CanceledError('canceled');
+
+    expect(isRequestCanceled(axiosCancellation)).toBe(true);
+    expect(isRequestCanceled(new AxiosError('canceled', 'ERR_CANCELED'))).toBe(true);
+    expect(isRequestCanceled(new DOMException('aborted', 'AbortError'))).toBe(true);
+    expect(isRequestCanceled(new AxiosError('network', 'ERR_NETWORK'))).toBe(false);
+    expect(axios.isCancel(axiosCancellation)).toBe(true);
+  });
+
+  test('não escreve requisição cancelada no console', async () => {
+    const { logApiError } = await import('@/utils/apiError');
+    const original = { group: console.group, error: console.error };
+    let calls = 0;
+    console.group = () => void (calls += 1);
+    console.error = () => void (calls += 1);
+    try {
+      logApiError(new CanceledError('canceled'), 'Axios Interceptor');
+    } finally {
+      console.group = original.group;
+      console.error = original.error;
+    }
+
+    expect(calls).toBe(0);
+  });
+});

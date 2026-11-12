@@ -1,5 +1,5 @@
 import apiAxios from '@/config/axiosConfig';
-import { User } from './authSlice';
+import type { User } from './authSlice';
 import {
     LoginDto,
     AuthResponse,
@@ -43,6 +43,19 @@ export const authService = {
     refreshToken: async (data: RefreshTokenDto): Promise<RefreshTokenResponse> => {
         const response = await apiAxios.post<RefreshTokenResponse>('/auth/refresh', data);
         return response.data;
+    },
+
+    logout: async (refreshToken?: string, accessToken?: string): Promise<void> => {
+        await apiAxios.post(
+            '/auth/logout',
+            refreshToken ? { refreshToken } : {},
+            {
+                headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+                skipAuthRefresh: true,
+                skipGlobalError: true,
+                timeout: 5_000,
+            } as any,
+        );
     },
 
     getCurrentUser: async (): Promise<User> => {
