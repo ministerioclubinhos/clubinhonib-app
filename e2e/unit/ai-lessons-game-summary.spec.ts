@@ -27,3 +27,11 @@ test.describe('brincadeira divertida com imagem de compilado', () => {
     expect(isGameSummaryAssets([])).toBe(false);
   });
 });
+
+test('a fixação do versículo também reconhece o compilado', () => {
+  const assets = visualAssets(
+    { assets: [{ id: LESSON_GAME_SUMMARY_ASSET_ID, url: 'https://exemplo/fixacao.png' }] },
+    LessonStageType.VERSE_FIXATION
+  );
+  expect(isGameSummaryAssets(assets)).toBe(true);
+});

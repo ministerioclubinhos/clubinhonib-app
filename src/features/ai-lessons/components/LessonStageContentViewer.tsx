@@ -22,12 +22,7 @@ import {
   StageAssetIssue,
   type LessonStageContentViewerProps,
 } from '../types';
-import {
-  isGameSummaryAssets,
-  objectValue,
-  resolveStageAssetIssue,
-  visualAssets,
-} from '../utils';
+import { isGameSummaryAssets, objectValue, resolveStageAssetIssue, visualAssets } from '../utils';
 import { LessonQualityWarnings } from './LessonQualityWarnings';
 import { StoryVisualCarousel } from './StoryVisualCarousel';
 
@@ -169,7 +164,9 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
             }
             title={
               stage.type === LessonStageType.VERSE_FIXATION
-                ? 'Como fixar o versículo — passo a passo visual'
+                ? isGameSummaryAssets(assets)
+                  ? 'Como fixar o versículo — resumo visual'
+                  : 'Como fixar o versículo — passo a passo visual'
                 : isGameSummaryAssets(assets)
                   ? 'Como brincar — resumo visual'
                   : 'Como brincar — passo a passo visual'
@@ -221,7 +218,6 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
           testIdPrefix="ai-verse-visual"
         />
       )}
-
     </Box>
   );
 };

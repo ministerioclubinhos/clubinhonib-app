@@ -8,7 +8,6 @@ import {
   type StudioChipColor,
 } from './types';
 
-
 export const LESSON_STAGE_LABELS: Record<LessonStageType, string> = {
   LESSON: '1. Lição completa',
   LESSON_VISUALS: '2. Visuais da história',
@@ -40,7 +39,7 @@ export const LESSON_STAGE_DESCRIPTIONS: Record<LessonStageType, string> = {
   VERSE_VISUALS:
     'Sequência de imagens mnemônicas baseada na melhor quebra do versículo; a última imagem mostra somente a referência.',
   VERSE_FIXATION:
-    'Dinâmica ou brincadeira divertida para praticar e memorizar o versículo, separada dos visuais mnemônicos.',
+    'Brincadeira divertida para fixar o versículo: documento simples e uma imagem com o compilado de toda a brincadeira, separada dos visuais mnemônicos.',
   MEDITATION_YOUNGER:
     'Folha A4 com duas cópias de atividades visuais simples para crianças de 5 a 7 anos.',
   MEDITATION_OLDER:
