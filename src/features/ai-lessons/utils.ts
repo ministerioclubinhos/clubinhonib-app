@@ -1,3 +1,4 @@
+import { LESSON_GAME_SUMMARY_ASSET_ID } from './constants';
 import { generationSignature } from './generation.utils';
 import {
   LessonCategory,
@@ -52,6 +53,10 @@ export const objectValue = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+
+/** True when the fun game carries the single compiled image instead of one image per step. */
+export const isGameSummaryAssets = (assets: readonly VisualAsset[]): boolean =>
+  assets.length === 1 && assets[0].id === LESSON_GAME_SUMMARY_ASSET_ID;
 
 export const visualAssets = (
   value: Record<string, unknown> | null | undefined,

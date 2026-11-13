@@ -104,6 +104,8 @@ export const LESSON_REFERENCE_MAX_LENGTH = 500;
 export const LESSON_ACTION_NOTE_MAX_LENGTH = 1000;
 
 export const AI_LESSONS_ENDPOINT = '/api/v1/lessons';
+/** Id of the single image that compiles the whole fun game (item 3). */
+export const LESSON_GAME_SUMMARY_ASSET_ID = 'compilado-01';
 /** Production order of the eight items; explicit so it never depends on enum declaration order. */
 export const STUDIO_STAGE_ORDER: readonly LessonStageType[] = [
   LessonStageType.LESSON,

@@ -36,7 +36,7 @@ export const LESSON_STAGE_DESCRIPTIONS: Record<LessonStageType, string> = {
   LESSON_VISUALS:
     'Personagens, ambientes e cenas, em ordem narrativa, para auxiliar o professor a contar a história.',
   STANDARD_GAME:
-    'Brincadeira prática da aula e seus visuais de apoio, separada da atividade de memorização.',
+    'Brincadeira divertida da aula: documento simples e uma imagem com o compilado de toda a brincadeira, separada da atividade de memorização.',
   VERSE_VISUALS:
     'Sequência de imagens mnemônicas baseada na melhor quebra do versículo; a última imagem mostra somente a referência.',
   VERSE_FIXATION:

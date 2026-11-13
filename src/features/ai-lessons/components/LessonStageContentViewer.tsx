@@ -22,7 +22,12 @@ import {
   StageAssetIssue,
   type LessonStageContentViewerProps,
 } from '../types';
-import { objectValue, resolveStageAssetIssue, visualAssets } from '../utils';
+import {
+  isGameSummaryAssets,
+  objectValue,
+  resolveStageAssetIssue,
+  visualAssets,
+} from '../utils';
 import { LessonQualityWarnings } from './LessonQualityWarnings';
 import { StoryVisualCarousel } from './StoryVisualCarousel';
 
@@ -157,11 +162,17 @@ export const LessonStageContentViewer: React.FC<LessonStageContentViewerProps> =
         <Box data-testid="ai-game-instruction-preview-area">
           <StoryVisualCarousel
             assets={assets}
-            orientation={LessonVisualOrientation.LANDSCAPE}
+            orientation={
+              isGameSummaryAssets(assets)
+                ? LessonVisualOrientation.PORTRAIT
+                : LessonVisualOrientation.LANDSCAPE
+            }
             title={
               stage.type === LessonStageType.VERSE_FIXATION
                 ? 'Como fixar o versículo — passo a passo visual'
-                : 'Como brincar — passo a passo visual'
+                : isGameSummaryAssets(assets)
+                  ? 'Como brincar — resumo visual'
+                  : 'Como brincar — passo a passo visual'
             }
             ariaLabel={
               stage.type === LessonStageType.VERSE_FIXATION
