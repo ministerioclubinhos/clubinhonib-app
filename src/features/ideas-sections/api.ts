@@ -7,6 +7,8 @@ import { IDEA_SHARE_UPLOAD_TIMEOUT_MS } from './constants';
 import { buildIdeasSectionsQuery } from './utils';
 import type {
   ApiMessage,
+  IdeaAiEnhancementRequest,
+  IdeasSectionFetchOptions,
   IdeaAiQueued,
   IdeasPage,
   IdeasSectionFilters,
@@ -34,8 +36,14 @@ export async function apiFetchIdeasSections(
   return data;
 }
 
-export async function apiFetchIdeasSection(id: string): Promise<IdeasSectionResponse> {
-  const { data } = await api.get<IdeasSectionResponse>(`${IDEAS_SECTIONS_ENDPOINT}/${id}`);
+/** `silent`: o acompanhamento periódico mostra o erro na própria tela, sem toast. */
+export async function apiFetchIdeasSection(
+  id: string,
+  options?: IdeasSectionFetchOptions
+): Promise<IdeasSectionResponse> {
+  const { data } = await api.get<IdeasSectionResponse>(`${IDEAS_SECTIONS_ENDPOINT}/${id}`, {
+    skipGlobalError: options?.silent,
+  });
   return data;
 }
 
@@ -108,7 +116,31 @@ export async function apiFetchIdeasPages(): Promise<IdeasPage[]> {
   return apiListIdeasPageOptions();
 }
 
-export async function apiRequestIdeaAiEnhancement(id: string): Promise<IdeaAiQueued> {
-  const { data } = await api.post<IdeaAiQueued>(`${IDEAS_SECTIONS_ENDPOINT}/${id}/ai-enhancement`);
+/** Pede uma (re)geração; corpo vazio refaz tudo. */
+export async function apiRequestIdeaAiEnhancement(
+  id: string,
+  request: IdeaAiEnhancementRequest
+): Promise<IdeaAiQueued> {
+  const { data } = await api.post<IdeaAiQueued>(
+    `${IDEAS_SECTIONS_ENDPOINT}/${id}/ai-enhancement`,
+    request,
+    { skipGlobalError: true }
+  );
   return data;
+}
+
+/** Cancela a tentativa em andamento (não consome tentativa). */
+export async function apiCancelIdeaAiEnhancement(id: string): Promise<void> {
+  await api.delete(`${IDEAS_SECTIONS_ENDPOINT}/${id}/ai-enhancement/active`, {
+    skipGlobalError: true,
+  });
+}
+
+/** Volta a usar o resultado de uma tentativa anterior. */
+export async function apiRestoreIdeaAiResult(id: string, attemptId: string): Promise<void> {
+  await api.patch(
+    `${IDEAS_SECTIONS_ENDPOINT}/${id}/ai-enhancement/${attemptId}/current`,
+    undefined,
+    { skipGlobalError: true }
+  );
 }

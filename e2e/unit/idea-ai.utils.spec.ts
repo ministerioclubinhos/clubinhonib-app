@@ -1,12 +1,28 @@
 import { expect, test } from '@playwright/test';
 import { ideaWordDiff, initialIdeaAiDecisions } from '@/features/ideas-sections/ai-utils';
-import { IdeaAiDecision } from '@/features/ideas-sections/types';
+import { IdeaAiDecision, IdeaWordDiffKind } from '@/features/ideas-sections/types';
 import { buildReviewSubmission, toSectionDraft } from '@/features/ideas-sections/utils';
 import { ideaWithAi } from '../support/ideasMocks';
-test('word diff preserves whitespace and marks only new words', () => {
+test('word diff marks insertions and removals and rebuilds both texts', () => {
   const diff = ideaWordDiff('Use 3 bolas.', 'Separe 3 bolas.');
-  expect(diff.filter((d) => d.changed).map((d) => d.text)).toEqual(['Separe']);
-  expect(diff.map((d) => d.text).join('')).toBe('Separe 3 bolas.');
+  expect(diff.filter((d) => d.kind === IdeaWordDiffKind.ADDED).map((d) => d.text)).toEqual([
+    'Separe',
+  ]);
+  expect(diff.filter((d) => d.kind === IdeaWordDiffKind.REMOVED).map((d) => d.text)).toEqual([
+    'Use',
+  ]);
+  const without = (kind: IdeaWordDiffKind) =>
+    diff
+      .filter((d) => d.kind !== kind)
+      .map((d) => d.text)
+      .join('');
+  expect(without(IdeaWordDiffKind.REMOVED)).toBe('Separe 3 bolas.');
+  expect(without(IdeaWordDiffKind.ADDED)).toBe('Use 3 bolas.');
+});
+test('word diff ignores whitespace-only changes and merges adjacent parts', () => {
+  const diff = ideaWordDiff('Uma ideia boa', 'Uma  ideia\nboa');
+  expect(diff).toEqual([{ text: 'Uma  ideia\nboa', kind: IdeaWordDiffKind.SAME }]);
+  expect(ideaWordDiff('', 'Nova')).toEqual([{ text: 'Nova', kind: IdeaWordDiffKind.ADDED }]);
 });
 test('a new result is bound to its attempt; unavailable improvements default to original', () => {
   const idea = ideaWithAi();

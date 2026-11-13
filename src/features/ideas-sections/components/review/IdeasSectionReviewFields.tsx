@@ -2,15 +2,7 @@ import { Stack, TextField } from '@mui/material';
 
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 import { IDEA_REVIEW_MAX_DESCRIPTION, IDEA_REVIEW_MAX_TITLE } from '../../constants';
-
-interface IdeasSectionReviewFieldsProps {
-  title: string;
-  description: string;
-  /** Marca os erros só depois da primeira tentativa de publicar. */
-  submitted: boolean;
-  disabled?: boolean;
-  onChange: (patch: { title?: string; description?: string }) => void;
-}
+import type { IdeasSectionReviewFieldsProps } from '../../types';
 
 /**
  * Título e descrição que irão para a publicação.
@@ -27,7 +19,7 @@ export default function IdeasSectionReviewFields({
   onChange,
 }: IdeasSectionReviewFieldsProps) {
   return (
-    <Stack spacing={2.5}>
+    <Stack data-testid="ideas-section-review-fields" spacing={2.5}>
       <TextField
         label="Título da ideia"
         value={title}
@@ -57,7 +49,12 @@ export default function IdeasSectionReviewFields({
           'data-testid': 'ideas-section-review-description',
         }}
         onChange={(event) => onChange({ description: event.target.value })}
-        helperText={`${description.length}/${IDEA_REVIEW_MAX_DESCRIPTION}`}
+        error={submitted && !description.trim()}
+        helperText={
+          submitted && !description.trim()
+            ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD
+            : `${description.length}/${IDEA_REVIEW_MAX_DESCRIPTION}`
+        }
       />
     </Stack>
   );

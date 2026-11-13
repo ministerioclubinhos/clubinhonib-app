@@ -12,7 +12,9 @@ export default function IdeaAiStatusChip({ status }: IdeaAiStatusProps) {
           ? 'warning'
           : status === IdeaAiStatus.COMPLETED
             ? 'success'
-            : 'default'
+            : status === IdeaAiStatus.PARTIAL
+              ? 'info'
+              : 'default'
       }
     />
   );

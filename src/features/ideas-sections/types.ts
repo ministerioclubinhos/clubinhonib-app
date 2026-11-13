@@ -52,6 +52,7 @@ export type IdeasSectionSortOrder = 'ASC' | 'DESC';
 /** Filtros da fila. */
 export interface IdeasSectionFilters {
   searchString?: string;
+  aiStatus?: IdeaAiQueueFilter;
 }
 
 /** Query string de `GET /ideas-sections` (`QueryIdeasSectionsDto`). */
@@ -59,6 +60,7 @@ export interface IdeasSectionsQueryParams {
   page: number;
   limit: number;
   searchString?: string;
+  aiStatus?: IdeaAiQueueFilter;
   sort: IdeasSectionSortField;
   order: IdeasSectionSortOrder;
 }
@@ -190,6 +192,60 @@ export enum IdeaAiDecision {
   ORIGINAL = 'ORIGINAL',
   ENHANCED = 'ENHANCED',
 }
+/** O que uma (re)geração refaz (`IdeaAiScope` da API). */
+export enum IdeaAiScope {
+  FULL = 'FULL',
+  TEXT = 'TEXT',
+  MEDIA = 'MEDIA',
+  FAILED = 'FAILED',
+}
+/** Recorte da fila pelo estado da IA (`IdeaAiQueueFilter` da API). */
+export enum IdeaAiQueueFilter {
+  READY = 'READY',
+  PROCESSING = 'PROCESSING',
+  FAILED = 'FAILED',
+  NONE = 'NONE',
+}
+/** Códigos técnicos persistidos nas tentativas e nos materiais. */
+export enum IdeaAiErrorCode {
+  PROVIDER_NOT_CONFIGURED = 'PROVIDER_NOT_CONFIGURED',
+  PROVIDER_REQUEST_FAILED = 'PROVIDER_REQUEST_FAILED',
+  INVALID_PROVIDER_RESPONSE = 'INVALID_PROVIDER_RESPONSE',
+  GUARD_REJECTED = 'GUARD_REJECTED',
+  LIMIT_REACHED = 'LIMIT_REACHED',
+  CANCELLED = 'CANCELLED',
+  STALLED = 'STALLED',
+  SNAPSHOT_MISSING = 'SNAPSHOT_MISSING',
+  QUEUE_UNAVAILABLE = 'QUEUE_UNAVAILABLE',
+}
+export enum IdeaAiSkipReason {
+  NOT_SUPPORTED = 'NOT_SUPPORTED',
+  ESSENTIAL_VISUALS = 'ESSENTIAL_VISUALS',
+  TOO_LARGE = 'TOO_LARGE',
+  ALREADY_GOOD = 'ALREADY_GOOD',
+  CONTAINS_PEOPLE = 'CONTAINS_PEOPLE',
+  LIMIT_REACHED = 'LIMIT_REACHED',
+}
+export enum IdeaAiSnapshotSource {
+  SUBMISSION = 'SUBMISSION',
+  LEGACY_CAPTURE = 'LEGACY_CAPTURE',
+}
+export enum IdeaAiPublicationField {
+  TITLE = 'TITLE',
+  DESCRIPTION = 'DESCRIPTION',
+  MEDIA = 'MEDIA',
+}
+/** Trecho do diff de palavras. */
+export enum IdeaWordDiffKind {
+  SAME = 'same',
+  ADDED = 'added',
+  REMOVED = 'removed',
+}
+/** Campos de texto comparados na etapa 2. */
+export enum IdeaAiTextField {
+  TITLE = 'title',
+  DESCRIPTION = 'description',
+}
 export enum IdeaAiMediaStatus {
   PENDING = 'PENDING',
   PROCESSING = 'PROCESSING',
@@ -202,32 +258,49 @@ export interface IdeaAiGuard {
   approved: boolean;
   violations: string[];
 }
+/** Guarda do texto com o veredito de cada campo (tentativas novas). */
+export interface IdeaAiTextGuard extends IdeaAiGuard {
+  fields?: Record<IdeaAiTextField, IdeaAiGuard>;
+}
 export interface IdeaAiSnapshot {
   title: string;
   description: string;
   submittedAt: string;
-  source: 'SUBMISSION' | 'LEGACY_CAPTURE';
+  source: IdeaAiSnapshotSource;
   medias: IdeasSectionMedia[];
 }
 export interface IdeaAiMediaResult {
   sourceMediaId: string;
   status: IdeaAiMediaStatus;
-  skipReason: string | null;
+  skipReason: IdeaAiSkipReason | null;
   guard: IdeaAiGuard | null;
   decision: IdeaAiDecision;
   enhancedMedia: IdeasSectionMedia | null;
   editableMedia: IdeasSectionMedia | null;
+  /** Falha técnica; com `carriedOver`, a versão anterior foi mantida. */
+  errorCode: IdeaAiErrorCode | null;
+  /** Veio da tentativa base, sem nova chamada à IA. */
+  carriedOver: boolean;
 }
 export interface IdeaAiAttempt {
   id: string;
   attempt: number;
   status: IdeaAiStatus;
   requestedAt: string;
+  startedAt: string | null;
   finishedAt: string | null;
-  errorCode: string | null;
+  errorCode: IdeaAiErrorCode | null;
+  scope: IdeaAiScope;
+  includeText: boolean;
+  targetMediaIds: string[] | null;
+  baseAttempt: number | null;
+  instructions: string | null;
+  progressDone: number;
+  progressTotal: number;
+  countsTowardLimit: boolean;
   enhancedTitle: string | null;
   enhancedDescription: string | null;
-  textGuard: IdeaAiGuard | null;
+  textGuard: IdeaAiTextGuard | null;
   titleDecision: IdeaAiDecision;
   descriptionDecision: IdeaAiDecision;
   medias: IdeaAiMediaResult[];
@@ -239,6 +312,10 @@ export interface IdeaAiDetail {
   currentResult: IdeaAiAttempt | null;
   attemptHistory: IdeaAiAttempt[];
   maxAttempts: number;
+  attemptsUsed: number;
+  providerReady: boolean;
+  /** Flag `idea_ai_enhancement`: desligada, nada vai à IA. */
+  enabled: boolean;
 }
 export interface IdeaAiDecisions {
   enhancementId: string;
@@ -253,7 +330,13 @@ export interface IdeaAiQueued {
 }
 export interface IdeaWordDiff {
   text: string;
-  changed: boolean;
+  kind: IdeaWordDiffKind;
+}
+/** Entrada de `POST /ideas-sections/:id/ai-enhancement`. */
+export interface IdeaAiEnhancementRequest {
+  scope: IdeaAiScope;
+  mediaIds?: string[];
+  instructions?: string;
 }
 /** Etapa 2 da revisão: a comparação item a item. */
 export interface IdeaAiCompareProps {
@@ -261,23 +344,56 @@ export interface IdeaAiCompareProps {
   section: IdeasSectionResponse;
   decisions: IdeaAiDecisions | null;
   onChange: (value: IdeaAiDecisions) => void;
+  /** Texto final de título e descrição, já com as edições da revisão. */
+  text: IdeaAiFinalText;
+  onTextChange: (patch: Partial<IdeaAiFinalText>) => void;
   disabled: boolean;
 }
-/** Etapa 1 da revisão: estado da melhoria por IA e o pedido de nova tentativa. */
+export interface IdeaAiFinalText {
+  title: string;
+  description: string;
+}
+/** Etapa 1 da revisão: estado da melhoria por IA e as ações sobre ela. */
 export interface IdeaAiStatusPanelProps {
   section: IdeasSectionResponse;
-  onRetry: () => void;
-  retrying: boolean;
+  onRegenerate: () => void;
+  onCancel: () => void;
+  onRestore: (attemptId: string) => void;
+  busy: boolean;
   disabled: boolean;
   error: string;
 }
 export interface IdeaAiTextCompareProps {
+  field: IdeaAiTextField;
   label: string;
   original: string;
   enhanced: string | null;
   decision: IdeaAiDecision;
   onChange: (value: IdeaAiDecision) => void;
+  /** Texto final, editável, que será publicado. */
+  value: string;
+  maxLength: number;
+  onValueChange: (value: string) => void;
+  guard?: IdeaAiGuard | null;
   disabled: boolean;
+}
+export interface IdeaAiRegenerateDialogProps {
+  open: boolean;
+  section: IdeasSectionResponse;
+  busy: boolean;
+  onClose: () => void;
+  onConfirm: (request: IdeaAiEnhancementRequest) => void;
+}
+export interface IdeaAiAttemptHistoryProps {
+  attempts: IdeaAiAttempt[];
+  currentId: string | null;
+  canRestore: boolean;
+  busy: boolean;
+  onRestore: (attemptId: string) => void;
+}
+export interface IdeaAiMediaNoticeProps {
+  result?: IdeaAiMediaResult;
+  baseAttempt: number | null;
 }
 export interface IdeaAiMediaCompareProps {
   original: IdeasSectionMedia;
@@ -300,8 +416,9 @@ export interface IdeaAiGuardWarningProps {
   guard?: IdeaAiGuard | null;
 }
 export interface IdeaAiSkippedNoticeProps {
-  reason?: string | null;
+  reason?: IdeaAiSkipReason | null;
   failed?: boolean;
+  errorCode?: IdeaAiErrorCode | null;
 }
 
 export interface IdeaShareFormFields extends IdeaShareFormValues {
@@ -315,8 +432,35 @@ export interface IdeaShareMaterialsProps {
   onUndo: () => void;
 }
 export interface IdeaAiPublicationChoice {
-  field: 'TITLE' | 'DESCRIPTION' | 'MEDIA';
+  field: IdeaAiPublicationField;
   sourceMediaId: string | null;
   enhancementId: string | null;
   decision: IdeaAiDecision;
+  edited: boolean;
+}
+
+export interface IdeasSectionFetchOptions {
+  silent?: boolean;
+}
+
+/** Filtros da fila enviados à API. */
+export interface IdeasSectionListFilters {
+  sort: IdeasSectionSortField;
+  order: IdeasSectionSortOrder;
+  aiStatus?: IdeaAiQueueFilter;
+}
+
+export interface IdeasSectionReviewFieldsProps {
+  title: string;
+  description: string;
+  /** Marca os erros só depois da primeira tentativa de publicar. */
+  submitted: boolean;
+  disabled?: boolean;
+  onChange: (patch: { title?: string; description?: string }) => void;
+}
+
+export interface IdeaAiDiffSideProps {
+  parts: IdeaWordDiff[];
+  /** Trechos destacados neste lado; o oposto é omitido. */
+  marked: IdeaWordDiffKind.ADDED | IdeaWordDiffKind.REMOVED;
 }

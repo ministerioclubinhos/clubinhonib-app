@@ -1,12 +1,19 @@
 import { Alert, Box, Button, Divider, Stack, Typography } from '@mui/material';
 
+import { MediaType } from '@/store/slices/types';
 import {
   IdeaAiDecision,
   IdeaAiMediaStatus,
+  IdeaAiSkipReason,
+  IdeaAiSnapshotSource,
+  IdeaAiTextField,
   type IdeaAiCompareProps,
   type IdeaAiDecisions,
 } from '../../types';
-import { initialIdeaAiDecisions } from '../../ai-utils';
+import { ideaAiChosenText, initialIdeaAiDecisions } from '../../ai-utils';
+import { IDEA_AI_TEXT_LABELS } from '../../ai-constants';
+import { IDEA_REVIEW_MAX_DESCRIPTION, IDEA_REVIEW_MAX_TITLE } from '../../constants';
+import IdeaAiMediaNotice from './IdeaAiMediaNotice';
 import IdeaAiTextCompare from './IdeaAiTextCompare';
 import IdeaAiDocumentCompare from './IdeaAiDocumentCompare';
 import IdeaAiImageCompare from './IdeaAiImageCompare';
@@ -25,6 +32,8 @@ export default function IdeaAiComparePanel({
   section,
   decisions,
   onChange,
+  text,
+  onTextChange,
   disabled,
 }: IdeaAiCompareProps) {
   const detail = section.aiEnhancement;
@@ -32,7 +41,7 @@ export default function IdeaAiComparePanel({
     title: section.title,
     description: section.description,
     medias: section.medias,
-    source: 'LEGACY_CAPTURE',
+    source: IdeaAiSnapshotSource.LEGACY_CAPTURE,
   };
   const result = detail?.currentResult;
   const changeMedia = (sourceMediaId: string, decision: IdeaAiDecision) => {
@@ -52,10 +61,20 @@ export default function IdeaAiComparePanel({
       available && decision === IdeaAiDecision.ENHANCED
         ? IdeaAiDecision.ENHANCED
         : IdeaAiDecision.ORIGINAL;
+    const title = enhancedOrOriginal(Boolean(result?.enhancedTitle));
+    const description = enhancedOrOriginal(result?.enhancedDescription != null);
+    onTextChange({
+      title: ideaAiChosenText(title, original.title, result?.enhancedTitle ?? null),
+      description: ideaAiChosenText(
+        description,
+        original.description,
+        result?.enhancedDescription ?? null
+      ),
+    });
     onChange({
       ...base,
-      title: enhancedOrOriginal(Boolean(result?.enhancedTitle)),
-      description: enhancedOrOriginal(result?.enhancedDescription != null),
+      title,
+      description,
       medias: base.medias.map((m) => ({
         ...m,
         decision: enhancedOrOriginal(
@@ -90,25 +109,48 @@ export default function IdeaAiComparePanel({
         </Button>
       </Stack>
 
-      <IdeaAiGuardWarning guard={result?.textGuard} />
+      {/* Tentativas antigas não têm veredito por campo: o aviso vale para os dois. */}
+      {!result?.textGuard?.fields && <IdeaAiGuardWarning guard={result?.textGuard} />}
       <IdeaAiTextCompare
-        label="Título"
+        field={IdeaAiTextField.TITLE}
+        label={IDEA_AI_TEXT_LABELS.title}
         original={original.title}
         enhanced={result?.enhancedTitle ?? null}
         decision={decisions?.title ?? IdeaAiDecision.ORIGINAL}
+        guard={result?.textGuard?.fields?.title}
+        value={text.title}
+        maxLength={IDEA_REVIEW_MAX_TITLE}
+        onValueChange={(title) => onTextChange({ title })}
         disabled={disabled || !decisions}
         onChange={(title) => {
-          if (decisions) onChange({ ...decisions, title });
+          if (!decisions) return;
+          onChange({ ...decisions, title });
+          onTextChange({
+            title: ideaAiChosenText(title, original.title, result?.enhancedTitle ?? null),
+          });
         }}
       />
       <IdeaAiTextCompare
-        label="Descrição"
+        field={IdeaAiTextField.DESCRIPTION}
+        label={IDEA_AI_TEXT_LABELS.description}
         original={original.description}
         enhanced={result?.enhancedDescription ?? null}
         decision={decisions?.description ?? IdeaAiDecision.ORIGINAL}
+        guard={result?.textGuard?.fields?.description}
+        value={text.description}
+        maxLength={IDEA_REVIEW_MAX_DESCRIPTION}
+        onValueChange={(description) => onTextChange({ description })}
         disabled={disabled || !decisions}
         onChange={(description) => {
-          if (decisions) onChange({ ...decisions, description });
+          if (!decisions) return;
+          onChange({ ...decisions, description });
+          onTextChange({
+            description: ideaAiChosenText(
+              description,
+              original.description,
+              result?.enhancedDescription ?? null
+            ),
+          });
         }}
       />
 
@@ -141,7 +183,7 @@ export default function IdeaAiComparePanel({
             >
               {media.originalName || media.title || 'Material'}
             </Typography>
-            {media.mediaType === 'image' ? (
+            {media.mediaType === MediaType.IMAGE ? (
               <IdeaAiImageCompare
                 original={media}
                 result={improved}
@@ -149,7 +191,7 @@ export default function IdeaAiComparePanel({
                 onChange={(value) => changeMedia(media.id, value)}
                 disabled={disabled || !decisions || excluded}
               />
-            ) : media.mediaType === 'document' ? (
+            ) : media.mediaType === MediaType.DOCUMENT ? (
               <IdeaAiDocumentCompare
                 original={media}
                 result={improved}
@@ -159,6 +201,7 @@ export default function IdeaAiComparePanel({
               />
             ) : (
               <Button
+                data-testid="idea-ai-video-link"
                 component="a"
                 href={media.url}
                 target="_blank"
@@ -170,12 +213,14 @@ export default function IdeaAiComparePanel({
             )}
             <Box sx={{ mt: 1 }}>
               <IdeaAiGuardWarning guard={improved?.guard} />
+              <IdeaAiMediaNotice result={improved} baseAttempt={result?.baseAttempt ?? null} />
               {(improved?.status === IdeaAiMediaStatus.SKIPPED ||
                 improved?.status === IdeaAiMediaStatus.FAILED ||
-                media.mediaType === 'video') && (
+                media.mediaType === MediaType.VIDEO) && (
                 <IdeaAiSkippedNotice
-                  reason={improved?.skipReason ?? 'NOT_SUPPORTED'}
+                  reason={improved?.skipReason ?? IdeaAiSkipReason.NOT_SUPPORTED}
                   failed={improved?.status === IdeaAiMediaStatus.FAILED}
+                  errorCode={improved?.errorCode}
                 />
               )}
             </Box>

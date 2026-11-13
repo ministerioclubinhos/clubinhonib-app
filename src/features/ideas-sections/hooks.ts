@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAbortController, useDebouncedValue } from '@/hooks';
-import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
+import { extractErrorMessage, getHttpStatus, isCancelledRequest } from '@/utils/apiError';
 
 import {
+  apiCancelIdeaAiEnhancement,
+  apiRestoreIdeaAiResult,
   apiRequestIdeaAiEnhancement,
   apiAttachIdeasSectionToPage,
   apiCreateIdeasSection,
@@ -12,31 +14,33 @@ import {
   apiFetchIdeasSection,
   apiFetchIdeasSections,
 } from './api';
-import { IDEAS_SECTIONS_DEFAULT_LIMIT, IDEA_AI_POLL_MS } from './constants';
-import { IdeaShareStatus, IdeaAiStatus } from './types';
+import {
+  HTTP_CONFLICT,
+  IDEAS_SECTIONS_DEFAULT_LIMIT,
+  IDEA_AI_POLL_MS,
+  IDEAS_SECTION_INITIAL_FILTERS,
+} from './constants';
+import {
+  IDEA_AI_POLL_BACKOFF_MS,
+  IDEA_AI_POLL_MAX_ERRORS,
+  IDEA_AI_POLL_TERMINAL_STATUSES,
+  IDEA_AI_QUEUE_POLL_MS,
+} from './ai-constants';
+import { isIdeaAiQueueWorking, isIdeaAiWorking } from './ai-utils';
+import { IdeaShareStatus } from './types';
 import type {
+  IdeaAiEnhancementRequest,
+  IdeasSectionListFilters,
   IdeaShareFormValues,
   IdeaShareMaterial,
   IdeasPage,
   IdeasSectionDraft,
   IdeasSectionResponse,
-  IdeasSectionSortField,
-  IdeasSectionSortOrder,
 } from './types';
 import { buildReviewSubmission, buildSectionFormData } from './utils';
 import { buildIdeaShareSubmission } from './share-utils';
 import { GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
-/** Filtros que a tela envia à API. */
-interface IdeasSectionListFilters {
-  sort: IdeasSectionSortField;
-  order: IdeasSectionSortOrder;
-}
-
-const INITIAL_FILTERS: IdeasSectionListFilters = {
-  sort: 'createdAt',
-  order: 'DESC',
-};
 
 export function useShareIdea() {
   const submissionLock = useRef(false);
@@ -89,7 +93,7 @@ export function useIdeasSections() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(IDEAS_SECTIONS_DEFAULT_LIMIT);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<IdeasSectionListFilters>(INITIAL_FILTERS);
+  const [filters, setFilters] = useState<IdeasSectionListFilters>(IDEAS_SECTION_INITIAL_FILTERS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [reloadToken, setReloadToken] = useState(0);
@@ -111,7 +115,10 @@ export function useIdeasSections() {
           {
             page,
             limit: pageSize,
-            filters: { searchString: debouncedSearch.trim() || undefined },
+            filters: {
+              searchString: debouncedSearch.trim() || undefined,
+              aiStatus: filters.aiStatus,
+            },
             sort: filters.sort,
             order: filters.order,
           },
@@ -133,6 +140,16 @@ export function useIdeasSections() {
   }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
 
   const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  // Enquanto alguma ideia da página está na IA, os chips se atualizam sozinhos.
+  const working = items.some((item) => isIdeaAiQueueWorking(item.aiStatus));
+  useEffect(() => {
+    if (!working) return;
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') refresh();
+    }, IDEA_AI_QUEUE_POLL_MS);
+    return () => clearInterval(timer);
+  }, [working, refresh]);
 
   return {
     items,
@@ -201,10 +218,11 @@ export function useIdeasSectionMutations(refresh: () => void) {
 }
 
 /**
- * Carrega a ideia da revisão pelo id da URL.
+ * Carrega a ideia da revisão pelo id da URL e acompanha a IA.
  *
- * Antes a tela dependia do que a fila tinha deixado no store; um F5 na rota de
- * revisão abria a tela vazia e o salvamento falhava por falta de id.
+ * O acompanhamento roda enquanto há tentativa ativa: pausa com a aba oculta,
+ * repete erros transitórios com espera maior e para em erros definitivos
+ * (ideia excluída, sem permissão), em vez de consultar para sempre.
  */
 export function useIdeasSectionById(id: string | undefined) {
   const [section, setSection] = useState<IdeasSectionResponse | null>(null);
@@ -213,8 +231,10 @@ export function useIdeasSectionById(id: string | undefined) {
   const [reload, setReload] = useState(0);
   const loadedId = useRef<string | undefined>(undefined);
   const processing = useRef(false);
+  const failures = useRef(0);
   const refresh = useCallback(() => {
     processing.current = true;
+    failures.current = 0;
     setReload((value) => value + 1);
   }, []);
   useEffect(() => {
@@ -228,75 +248,130 @@ export function useIdeasSectionById(id: string | undefined) {
     if (loadedId.current !== id) {
       setSection(null);
       processing.current = false;
+      failures.current = 0;
     }
+    const schedule = (delay: number) => {
+      if (!active || !processing.current) return;
+      if (document.visibilityState === 'hidden') return;
+      timer = setTimeout(() => void run(), delay);
+    };
     const run = async () => {
       if (loadedId.current !== id) setLoading(true);
+      let delay = IDEA_AI_POLL_MS;
       try {
-        const data = await apiFetchIdeasSection(id);
+        const data = await apiFetchIdeasSection(id, { silent: loadedId.current === id });
         if (!active) return;
         loadedId.current = id;
+        failures.current = 0;
         setSection(data);
         setError('');
-        processing.current = Boolean(
-          data.aiEnhancement?.activeAttempt &&
-          [IdeaAiStatus.PENDING, IdeaAiStatus.PROCESSING].includes(
-            data.aiEnhancement.activeAttempt.status
-          )
-        );
+        processing.current = isIdeaAiWorking(data);
       } catch (caught: unknown) {
         if (!active) return;
         setError(extractErrorMessage(caught, 'Não foi possível atualizar a ideia.'));
+        failures.current += 1;
+        const status = getHttpStatus(caught);
+        if (
+          (status !== null && IDEA_AI_POLL_TERMINAL_STATUSES.includes(status)) ||
+          failures.current >= IDEA_AI_POLL_MAX_ERRORS
+        )
+          processing.current = false;
+        delay = IDEA_AI_POLL_BACKOFF_MS;
       } finally {
         if (active) {
           setLoading(false);
-          if (processing.current) timer = setTimeout(() => void run(), IDEA_AI_POLL_MS);
+          schedule(delay);
         }
       }
     };
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible' || !processing.current) return;
+      if (timer) clearTimeout(timer);
+      void run();
+    };
+    document.addEventListener('visibilitychange', onVisible);
     void run();
     return () => {
       active = false;
       if (timer) clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, [id, reload]);
   return { section, loading, error, refresh };
 }
 
-export function useIdeaAiReprocess(id: string | undefined, refresh: () => void) {
-  const [retrying, setRetrying] = useState(false);
+/**
+ * Ações da administração sobre a IA: pedir (re)geração, cancelar e voltar a
+ * um resultado anterior. Um 409 de "já está trabalhando" passa a acompanhar a
+ * tentativa em vez de só mostrar o erro.
+ */
+export function useIdeaAiActions(id: string | undefined, refresh: () => void) {
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const lock = useRef(false);
-  const reprocess = useCallback(async () => {
-    if (!id || lock.current) return;
-    lock.current = true;
-    setRetrying(true);
-    setError('');
-    try {
-      await apiRequestIdeaAiEnhancement(id);
-      refresh();
-    } catch (caught: unknown) {
-      setError(extractErrorMessage(caught, 'Não foi possível iniciar a melhoria.'));
-    } finally {
-      lock.current = false;
-      setRetrying(false);
-    }
-  }, [id, refresh]);
-  return { retrying, error, reprocess };
+  const run = useCallback(
+    async (action: (sectionId: string) => Promise<unknown>, fallback: string) => {
+      if (!id || lock.current) return false;
+      lock.current = true;
+      setBusy(true);
+      setError('');
+      try {
+        await action(id);
+        refresh();
+        return true;
+      } catch (caught: unknown) {
+        setError(extractErrorMessage(caught, fallback));
+        // O estado mudou do outro lado (outra aba, outro admin, automática).
+        if (getHttpStatus(caught) === HTTP_CONFLICT) refresh();
+        return false;
+      } finally {
+        lock.current = false;
+        setBusy(false);
+      }
+    },
+    [id, refresh]
+  );
+  const request = useCallback(
+    (body: IdeaAiEnhancementRequest) =>
+      run(
+        (sectionId) => apiRequestIdeaAiEnhancement(sectionId, body),
+        'Não foi possível iniciar a melhoria.'
+      ),
+    [run]
+  );
+  const cancel = useCallback(
+    () => run(apiCancelIdeaAiEnhancement, 'Não foi possível cancelar a melhoria.'),
+    [run]
+  );
+  const restore = useCallback(
+    (attemptId: string) =>
+      run(
+        (sectionId) => apiRestoreIdeaAiResult(sectionId, attemptId),
+        'Não foi possível usar este resultado.'
+      ),
+    [run]
+  );
+  return { busy, error, setError, request, cancel, restore };
 }
 
 /** Publica a ideia revisada na página escolhida. */
 export function useIdeasSectionReview() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [saveErrorStatus, setSaveErrorStatus] = useState<number | null>(null);
 
+  const lock = useRef(false);
   const publish = useCallback(
     async (sectionId: string, pageId: string, draft: IdeasSectionDraft): Promise<boolean> => {
+      // Duplo clique antes do novo render não dispara duas publicações.
+      if (lock.current) return false;
+      lock.current = true;
       setSaving(true);
       setSaveError('');
+      setSaveErrorStatus(null);
       try {
-        const { payload, uploads } = buildReviewSubmission(
-          draft.ignoreAiEnhancement ? { ...draft, medias: [] } : draft
-        );
+        // "Publicar original" agora preserva as edições: o rascunho vai inteiro.
+        const { payload, uploads } = buildReviewSubmission(draft);
         await apiAttachIdeasSectionToPage(
           sectionId,
           pageId,
@@ -305,13 +380,15 @@ export function useIdeasSectionReview() {
         return true;
       } catch (err: unknown) {
         setSaveError(extractErrorMessage(err, 'Erro ao publicar a ideia'));
+        setSaveErrorStatus(getHttpStatus(err));
         return false;
       } finally {
+        lock.current = false;
         setSaving(false);
       }
     },
     []
   );
 
-  return { saving, saveError, setSaveError, publish };
+  return { saving, saveError, saveErrorStatus, setSaveError, publish };
 }

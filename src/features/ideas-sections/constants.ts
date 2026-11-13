@@ -1,4 +1,8 @@
-import type { IdeaShareFormFields, IdeasSectionDraft } from './types';
+import type {
+  IdeaShareFormFields,
+  IdeasSectionDraft,
+  IdeasSectionListFilters,
+} from './types';
 /** Caminho base dos endpoints de ideias compartilhadas. */
 export const IDEAS_SECTIONS_ENDPOINT = '/ideas-sections';
 
@@ -90,3 +94,10 @@ export const IDEA_REVIEW_EMPTY_DRAFT: IdeasSectionDraft = {
 /** Limites dos campos de texto na revisão, iguais aos aceitos pela API. */
 export const IDEA_REVIEW_MAX_TITLE = 120;
 export const IDEA_REVIEW_MAX_DESCRIPTION = 2000;
+
+export const IDEAS_SECTION_INITIAL_FILTERS: IdeasSectionListFilters = {
+  sort: 'createdAt',
+  order: 'DESC',
+};
+/** Conflito: outro estado no servidor (IA ativa, decisões desatualizadas). */
+export const HTTP_CONFLICT = 409;

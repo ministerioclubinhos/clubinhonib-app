@@ -91,6 +91,7 @@ export function buildIdeasSectionsQuery(args: {
     page: args.page,
     limit: args.limit,
     searchString: args.filters?.searchString?.trim() || undefined,
+    ...(args.filters?.aiStatus ? { aiStatus: args.filters.aiStatus } : {}),
     sort: args.sort ?? IDEAS_SECTIONS_DEFAULT_SORT,
     order: args.order ?? IDEAS_SECTIONS_DEFAULT_ORDER,
   };

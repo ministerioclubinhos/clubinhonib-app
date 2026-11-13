@@ -1,23 +1,54 @@
-import { Box, Paper, Stack, Typography } from '@mui/material';
-import type { IdeaAiTextCompareProps } from '../../types';
-import { ideaWordDiff } from '../../ai-utils';
-import { IDEA_AI_COMPARE_COLUMNS } from '../../ai-constants';
+import { useMemo } from 'react';
+import { Box, Paper, Stack, TextField, Typography } from '@mui/material';
+import { IdeaAiTextField, IdeaWordDiffKind, type IdeaAiTextCompareProps } from '../../types';
+import {
+  ideaAiChosenText,
+  ideaDiffChangeRatio,
+  ideaWordDiff,
+  isIdeaTextEdited,
+} from '../../ai-utils';
+import IdeaAiDiffSide from './IdeaAiDiffSide';
+import {
+  IDEA_AI_COMPARE_COLUMNS,
+  IDEA_AI_DESCRIPTION_ROWS,
+  IDEA_AI_DIFF_REWRITE_RATIO,
+  IDEA_AI_DIFF_TEXT_SX,
+  IDEA_AI_FINAL_TEXT_LABELS,
+} from '../../ai-constants';
 import IdeaAiChoice from './IdeaAiChoice';
+import IdeaAiGuardWarning from './IdeaAiGuardWarning';
+
+/**
+ * Original × versão da IA de um campo, e o texto final editável.
+ *
+ * O destaque não depende só de cor: inserções usam `<ins>` (sublinhado) e
+ * remoções `<del>` (riscado), que leitores de tela anunciam.
+ */
 export default function IdeaAiTextCompare({
+  field,
   label,
   original,
   enhanced,
   decision,
   onChange,
+  value,
+  maxLength,
+  onValueChange,
+  guard,
   disabled,
 }: IdeaAiTextCompareProps) {
-  /**
-   * Sem versão da IA a comparação vira uma coluna só: no celular, o cartão
-   * vazio empurrava o conteúdo seguinte uma tela inteira para baixo.
-   */
   const hasEnhanced = enhanced !== null;
+  const diff = useMemo(
+    () => (enhanced === null ? [] : ideaWordDiff(original, enhanced)),
+    [original, enhanced]
+  );
+  const rewritten = ideaDiffChangeRatio(diff) > IDEA_AI_DIFF_REWRITE_RATIO;
+  const highlight = hasEnhanced && !rewritten;
+  const base = ideaAiChosenText(decision, original, enhanced);
+  const edited = isIdeaTextEdited(base, value);
+  const tooLong = value.length > maxLength;
   return (
-    <Stack data-testid="idea-ai-text-compare" spacing={1.5}>
+    <Stack data-testid={`idea-ai-text-compare-${field}`} spacing={1.5}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         justifyContent="space-between"
@@ -35,6 +66,7 @@ export default function IdeaAiTextCompare({
           disabled={disabled}
         />
       </Stack>
+      <IdeaAiGuardWarning guard={guard} />
       <Box
         sx={{
           display: 'grid',
@@ -42,33 +74,34 @@ export default function IdeaAiTextCompare({
           gap: 2,
         }}
       >
-        <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover', minWidth: 0 }}>
+        <Paper
+          data-testid={`idea-ai-text-original-${field}`}
+          variant="outlined"
+          sx={{ p: 2, bgcolor: 'action.hover', minWidth: 0 }}
+        >
           <Typography variant="overline" color="text.secondary">
             Original
           </Typography>
-          <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-            {original}
+          <Typography sx={{ ...IDEA_AI_DIFF_TEXT_SX, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+            {highlight ? <IdeaAiDiffSide parts={diff} marked={IdeaWordDiffKind.REMOVED} /> : original}
           </Typography>
         </Paper>
         {hasEnhanced && (
-          <Paper variant="outlined" sx={{ p: 2, minWidth: 0, borderColor: 'success.light' }}>
+          <Paper
+            data-testid={`idea-ai-text-diff-${field}`}
+            variant="outlined"
+            sx={{ p: 2, minWidth: 0, borderColor: 'success.light' }}
+          >
             <Typography variant="overline" color="success.main">
               Melhorada pela IA
             </Typography>
-            <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-              {ideaWordDiff(original, enhanced).map((part, index) => (
-                <Box
-                  component="span"
-                  key={index}
-                  sx={
-                    part.changed
-                      ? { bgcolor: 'success.main', color: 'success.contrastText' }
-                      : undefined
-                  }
-                >
-                  {part.text}
-                </Box>
-              ))}
+            <Typography sx={{ ...IDEA_AI_DIFF_TEXT_SX, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+              {highlight ? <IdeaAiDiffSide parts={diff} marked={IdeaWordDiffKind.ADDED} /> : enhanced}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+              {highlight
+                ? 'Sublinhado aqui: acrescentado pela IA · Riscado no original: removido'
+                : 'A IA reorganizou o texto: compare as duas versões lado a lado.'}
             </Typography>
           </Paper>
         )}
@@ -78,6 +111,26 @@ export default function IdeaAiTextCompare({
           Nenhuma melhoria aprovada para este campo.
         </Typography>
       )}
+      <TextField
+        label={IDEA_AI_FINAL_TEXT_LABELS[field]}
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
+        disabled={disabled}
+        fullWidth
+        multiline={field !== IdeaAiTextField.TITLE}
+        minRows={field === IdeaAiTextField.TITLE ? undefined : IDEA_AI_DESCRIPTION_ROWS}
+        error={tooLong || !value.trim()}
+        helperText={
+          !value.trim()
+            ? 'Este campo não pode ficar vazio.'
+            : tooLong
+              ? `Use no máximo ${maxLength} caracteres.`
+              : edited
+                ? 'Você editou a versão escolhida. Trocar entre Original e Versão IA volta ao texto da versão.'
+                : `Texto da versão escolhida. Você pode ajustar antes de publicar (${value.length}/${maxLength}).`
+        }
+        inputProps={{ 'data-testid': `idea-ai-final-${field}` }}
+      />
     </Stack>
   );
 }

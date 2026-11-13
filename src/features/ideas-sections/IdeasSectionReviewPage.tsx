@@ -23,10 +23,19 @@ import {
   Typography,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 
 import { STICKY_ACTION_BAR_Z_INDEX } from '@/constants/app';
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
-import { IDEAS_SECTION_ROUTES, IDEA_REVIEW_EMPTY_DRAFT } from './constants';
+import { useUnsavedChangesGuard } from '@/hooks';
+import {
+  HTTP_CONFLICT,
+  IDEAS_SECTION_ROUTES,
+  IDEA_REVIEW_EMPTY_DRAFT,
+  IDEA_REVIEW_MAX_DESCRIPTION,
+  IDEA_REVIEW_MAX_TITLE,
+} from './constants';
+import IdeaAiRegenerateDialog from './components/ai/IdeaAiRegenerateDialog';
 import IdeaAiComparePanel from './components/ai/IdeaAiComparePanel';
 import IdeaAiStatusPanel from './components/ai/IdeaAiStatusPanel';
 import IdeasSectionReviewFields from './components/review/IdeasSectionReviewFields';
@@ -36,9 +45,14 @@ import {
   useIdeasPages,
   useIdeasSectionById,
   useIdeasSectionReview,
-  useIdeaAiReprocess,
+  useIdeaAiActions,
 } from './hooks';
-import { ideaAiChoiceSummary, initialIdeaAiDecisions, excludedIdeaSourceIds } from './ai-utils';
+import {
+  ideaAiChoiceSummary,
+  initialIdeaAiDecisions,
+  initialIdeaAiFinalText,
+  excludedIdeaSourceIds,
+} from './ai-utils';
 import type { IdeasSectionDraft, IdeaAiDecisions } from './types';
 import { toSectionDraft } from './utils';
 
@@ -55,9 +69,13 @@ export default function IdeasSectionReviewPage() {
 
   const { section, loading, error, refresh } = useIdeasSectionById(id);
   const { pages, loading: loadingPages, error: pagesError, fetchPages } = useIdeasPages();
-  const { saving, saveError, setSaveError, publish } = useIdeasSectionReview();
+  const { saving, saveError, saveErrorStatus, setSaveError, publish } = useIdeasSectionReview();
+  const { enqueueSnackbar } = useSnackbar();
 
-  const ai = useIdeaAiReprocess(id, refresh);
+  const ai = useIdeaAiActions(id, refresh);
+  const [regenerateOpen, setRegenerateOpen] = useState(false);
+  const [resultNotice, setResultNotice] = useState('');
+  const [dirty, setDirty] = useState(false);
   const [decisions, setDecisions] = useState<IdeaAiDecisions | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmOriginal, setConfirmOriginal] = useState(false);
@@ -73,18 +91,42 @@ export default function IdeasSectionReviewPage() {
   }, [fetchPages]);
 
   useEffect(() => {
-    if (section && initialized.current !== section.id) {
+    if (!section) return;
+    const firstLoad = initialized.current !== section.id;
+    if (firstLoad) {
       initialized.current = section.id;
       setDraft(toSectionDraft(section));
       setSubmitted(false);
+      setDirty(false);
     }
-    const currentId = section?.aiEnhancement?.currentResult?.id ?? null;
+    const currentId = section.aiEnhancement?.currentResult?.id ?? null;
     if (currentId !== resultId.current) {
+      const replaced = !firstLoad;
       resultId.current = currentId;
-      setDecisions(initialIdeaAiDecisions(section?.aiEnhancement));
+      const next = initialIdeaAiDecisions(section.aiEnhancement);
+      setDecisions(next);
       setConfirmed(false);
+      // O texto final parte da versão escolhida de cada campo.
+      if (next)
+        setDraft((previous) => ({
+          ...previous,
+          ...initialIdeaAiFinalText(section.aiEnhancement, next, previous),
+        }));
+      if (replaced && currentId)
+        setResultNotice(
+          'Chegou um novo resultado da IA. As escolhas e o texto da etapa 2 voltaram às versões sugeridas.'
+        );
     }
   }, [section]);
+
+  const published = Boolean(section?.pageId);
+  useUnsavedChangesGuard(dirty && !published && !saving);
+  const edit = () => setDirty(true);
+
+  // Decisões desatualizadas (outro admin regenerou ou trocou o resultado).
+  useEffect(() => {
+    if (saveErrorStatus === HTTP_CONFLICT) refresh();
+  }, [saveErrorStatus, refresh]);
 
   const selectedPage = useMemo(
     () => pages.find((page) => page.id === pageId) ?? null,
@@ -101,9 +143,14 @@ export default function IdeasSectionReviewPage() {
     [decisions, excludedMediaIds]
   );
 
+  const titleInvalid = !draft.title.trim() || draft.title.length > IDEA_REVIEW_MAX_TITLE;
+  const descriptionInvalid =
+    !draft.description.trim() || draft.description.length > IDEA_REVIEW_MAX_DESCRIPTION;
+  const textInvalid = titleInvalid || descriptionInvalid;
+
   const handlePublish = async (ignoreAiEnhancement = false) => {
     setSubmitted(true);
-    if (!section || !pageId) return;
+    if (!section || !pageId || textInvalid || published) return;
 
     if (section.aiEnhancement?.activeAttempt && !ignoreAiEnhancement) {
       setConfirmOriginal(true);
@@ -123,7 +170,14 @@ export default function IdeasSectionReviewPage() {
         : {}),
       ignoreAiEnhancement,
     });
-    if (ok) navigate(IDEAS_SECTION_ROUTES.QUEUE);
+    if (ok) {
+      setDirty(false);
+      enqueueSnackbar(
+        `Ideia publicada${selectedPage ? ` em ${selectedPage.title}` : ''}.`,
+        { variant: 'success' }
+      );
+      navigate(IDEAS_SECTION_ROUTES.QUEUE);
+    }
   };
 
   /**
@@ -132,7 +186,9 @@ export default function IdeasSectionReviewPage() {
    */
   const blockedReason = !pageId
     ? FORM_VALIDATION_MESSAGES.SELECT_DESTINATION_PAGE
-    : decisions && !confirmed
+    : textInvalid
+      ? 'Revise o título e a descrição da etapa 2.'
+      : decisions && !confirmed
       ? 'Confirme as escolhas da etapa 2 antes de publicar.'
       : '';
 
@@ -151,7 +207,7 @@ export default function IdeasSectionReviewPage() {
         data-testid="ideas-sections-ideas-section-review-page"
         sx={{ py: { xs: 4, md: 6 }, display: 'flex', justifyContent: 'center' }}
       >
-        <CircularProgress />
+        <CircularProgress data-testid="idea-review-loading" aria-label="Carregando a ideia" />
       </Box>
     );
   }
@@ -164,25 +220,39 @@ export default function IdeasSectionReviewPage() {
         sx={{ p: { xs: 2, md: 3 } }}
       >
         <Alert
-          severity="info"
+          data-testid="idea-review-not-found"
+          severity={error ? 'error' : 'info'}
           action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => navigate(IDEAS_SECTION_ROUTES.QUEUE)}
-            >
-              Ver a fila
-            </Button>
+            <Stack direction="row" gap={1}>
+              {error && (
+                <Button
+                  data-testid="idea-review-retry"
+                  color="inherit"
+                  onClick={refresh}
+                  sx={{ minHeight: 44 }}
+                >
+                  Tentar novamente
+                </Button>
+              )}
+              <Button
+                data-testid="idea-review-open-queue"
+                color="inherit"
+                onClick={() => navigate(IDEAS_SECTION_ROUTES.QUEUE)}
+                sx={{ minHeight: 44 }}
+              >
+                Ver a fila
+              </Button>
+            </Stack>
           }
         >
-          <AlertTitle>Ideia não encontrada</AlertTitle>
+          <AlertTitle>{error ? 'Não foi possível abrir a ideia' : 'Ideia não encontrada'}</AlertTitle>
           {error || 'Abra pela fila a ideia que você quer revisar.'}
         </Alert>
       </Box>
     );
   }
 
-  const published = Boolean(section.pageId);
+  const readOnly = saving || published;
 
   return (
     <Box
@@ -216,6 +286,7 @@ export default function IdeasSectionReviewPage() {
           <Box sx={{ gridArea: 'header' }}>
             <Button
               type="button"
+              data-testid="idea-review-back-top"
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(IDEAS_SECTION_ROUTES.QUEUE)}
               sx={{ minHeight: 44, mb: 1, textTransform: 'none' }}
@@ -234,13 +305,45 @@ export default function IdeasSectionReviewPage() {
               {section.title || 'Ideia sem título'}
             </Typography>
             {published ? (
-              <Alert severity="success" sx={{ mt: 2 }}>
+              <Alert data-testid="idea-review-published" severity="success" sx={{ mt: 2 }}>
                 Esta ideia já foi publicada. As etapas abaixo ficam disponíveis só para consulta.
               </Alert>
             ) : null}
-            {saveError || pagesError ? (
-              <Alert severity="error" sx={{ mt: 2 }} onClose={() => setSaveError('')}>
-                {saveError || pagesError}
+            {resultNotice ? (
+              <Alert
+                data-testid="idea-ai-new-result"
+                severity="info"
+                sx={{ mt: 2 }}
+                onClose={() => setResultNotice('')}
+              >
+                {resultNotice}
+              </Alert>
+            ) : null}
+            {saveError ? (
+              <Alert
+                data-testid="idea-review-save-error"
+                severity="error"
+                sx={{ mt: 2 }}
+                onClose={() => setSaveError('')}
+              >
+                {saveError}
+                {saveErrorStatus === HTTP_CONFLICT
+                  ? ' A revisão foi atualizada: confira a etapa 2 e confirme de novo.'
+                  : ''}
+              </Alert>
+            ) : null}
+            {pagesError ? (
+              <Alert
+                data-testid="idea-review-pages-error"
+                severity="error"
+                sx={{ mt: 2 }}
+                action={
+                  <Button color="inherit" onClick={() => void fetchPages()} sx={{ minHeight: 44 }}>
+                    Tentar novamente
+                  </Button>
+                }
+              >
+                {pagesError}
               </Alert>
             ) : null}
           </Box>
@@ -248,13 +351,16 @@ export default function IdeasSectionReviewPage() {
           <ReviewStepCard
             step={1}
             title="Melhoria com IA"
-            description="Gere uma versão melhorada quando quiser. O original fica sempre preservado."
+            description="A IA pode ter começado sozinha no envio. Você pode regenerar tudo ou só partes, com orientações. O original fica sempre preservado."
+            testId="idea-review-step-ai"
             sx={{ gridArea: 'status' }}
           >
             <IdeaAiStatusPanel
               section={section}
-              onRetry={() => void ai.reprocess()}
-              retrying={ai.retrying}
+              onRegenerate={() => setRegenerateOpen(true)}
+              onCancel={() => void ai.cancel()}
+              onRestore={(attemptId) => void ai.restore(attemptId)}
+              busy={ai.busy}
               disabled={saving}
               error={ai.error || error}
             />
@@ -268,6 +374,7 @@ export default function IdeasSectionReviewPage() {
                 ? 'Para cada item, compare as duas versões e escolha uma. O que você escolher aqui é o que vai ao ar.'
                 : 'Ajuste o título e a descrição que irão para a página de ideias.'
             }
+            testId="idea-review-step-choices"
             sx={{ gridArea: 'choices' }}
           >
             {decisions ? (
@@ -278,16 +385,26 @@ export default function IdeasSectionReviewPage() {
                 onChange={(value) => {
                   setDecisions(value);
                   setConfirmed(false);
+                  edit();
                 }}
-                disabled={saving}
+                text={{ title: draft.title, description: draft.description }}
+                onTextChange={(patch) => {
+                  setDraft((previous) => ({ ...previous, ...patch }));
+                  setConfirmed(false);
+                  edit();
+                }}
+                disabled={readOnly}
               />
             ) : (
               <IdeasSectionReviewFields
                 title={draft.title}
                 description={draft.description}
                 submitted={submitted}
-                disabled={saving}
-                onChange={(patch) => setDraft((previous) => ({ ...previous, ...patch }))}
+                disabled={readOnly}
+                onChange={(patch) => {
+                  setDraft((previous) => ({ ...previous, ...patch }));
+                  edit();
+                }}
               />
             )}
           </ReviewStepCard>
@@ -296,6 +413,7 @@ export default function IdeasSectionReviewPage() {
             step={3}
             title="Materiais da publicação"
             description="Os arquivos que vão junto com a ideia. Remover aqui tira o material da publicação; o original continua preservado."
+            testId="idea-review-step-materials"
             sx={{ gridArea: 'materials' }}
           >
             <IdeasSectionReviewMaterials
@@ -303,8 +421,9 @@ export default function IdeasSectionReviewPage() {
               onChange={(medias) => {
                 setDraft((previous) => ({ ...previous, medias }));
                 setConfirmed(false);
+                edit();
               }}
-              disabled={saving}
+              disabled={readOnly}
             />
           </ReviewStepCard>
 
@@ -335,11 +454,12 @@ export default function IdeasSectionReviewPage() {
                   >
                     <InputLabel id="ideas-review-page">Página de destino</InputLabel>
                     <Select
+                      data-testid="idea-review-page-select"
                       labelId="ideas-review-page"
                       label="Página de destino"
                       value={pageId}
                       onChange={(event) => setPageId(String(event.target.value))}
-                      disabled={loadingPages || saving}
+                      disabled={loadingPages || readOnly}
                     >
                       {pages.map((page) => (
                         <MenuItem key={page.id} value={page.id}>
@@ -347,21 +467,33 @@ export default function IdeasSectionReviewPage() {
                         </MenuItem>
                       ))}
                     </Select>
+                    {!loadingPages && !pages.length && !pagesError && (
+                      <Typography
+                        data-testid="idea-review-no-pages"
+                        variant="caption"
+                        color="error"
+                        sx={{ mt: 0.5 }}
+                      >
+                        Nenhuma página de ideias cadastrada. Crie uma em Páginas de ideias.
+                      </Typography>
+                    )}
                   </FormControl>
 
                   <FormControl size="small" sx={{ width: '100%', minWidth: 0 }}>
                     <InputLabel id="ideas-review-visibility">Visibilidade</InputLabel>
                     <Select
+                      data-testid="idea-review-visibility-select"
                       labelId="ideas-review-visibility"
                       label="Visibilidade"
                       value={draft.public ? 'true' : 'false'}
-                      onChange={(event) =>
+                      onChange={(event) => {
                         setDraft((previous) => ({
                           ...previous,
                           public: event.target.value === 'true',
-                        }))
-                      }
-                      disabled={saving}
+                        }));
+                        edit();
+                      }}
+                      disabled={readOnly}
                     >
                       <MenuItem value="true">Pública</MenuItem>
                       <MenuItem value="false">Privada</MenuItem>
@@ -394,7 +526,7 @@ export default function IdeasSectionReviewPage() {
                           data-testid="idea-ai-confirm-choices"
                           checked={confirmed}
                           onChange={(event) => setConfirmed(event.target.checked)}
-                          disabled={saving}
+                          disabled={readOnly}
                         />
                       }
                       label="Revisei e confirmo as versões escolhidas"
@@ -403,6 +535,11 @@ export default function IdeasSectionReviewPage() {
                   {submitted && decisions && !confirmed && (
                     <Alert severity="warning">Confirme as escolhas acima antes de publicar.</Alert>
                   )}
+                  {submitted && textInvalid ? (
+                    <Alert data-testid="idea-review-text-invalid" severity="warning">
+                      Revise o título e a descrição da etapa 2.
+                    </Alert>
+                  ) : null}
                   {submitted && !pageId ? (
                     <Alert severity="warning">
                       {FORM_VALIDATION_MESSAGES.SELECT_DESTINATION_PAGE}
@@ -449,6 +586,7 @@ export default function IdeasSectionReviewPage() {
 
           <Box sx={{ gridArea: 'footer' }}>
             <Button
+              data-testid="idea-review-back-bottom"
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(IDEAS_SECTION_ROUTES.QUEUE)}
               sx={{ minHeight: 44, textTransform: 'none' }}
@@ -507,11 +645,16 @@ export default function IdeasSectionReviewPage() {
       >
         <DialogTitle>A IA ainda está trabalhando</DialogTitle>
         <DialogContent>
-          Publicar com o original? A tentativa em andamento será cancelada e nenhum resultado
-          posterior será aplicado.
+          Publicar agora, sem a melhoria em andamento? Ela será cancelada (não conta no limite) e o
+          que você revisou nas etapas 2 e 3 — texto e materiais — é publicado como está.
         </DialogContent>
         <DialogActions>
-          <Button type="button" onClick={() => setConfirmOriginal(false)}>
+          <Button
+            type="button"
+            data-testid="idea-ai-wait"
+            onClick={() => setConfirmOriginal(false)}
+            sx={{ minHeight: 44 }}
+          >
             Aguardar a IA
           </Button>
           <Button
@@ -519,11 +662,24 @@ export default function IdeasSectionReviewPage() {
             data-testid="idea-ai-confirm-publish-original"
             onClick={() => void handlePublish(true)}
             disabled={saving}
+            sx={{ minHeight: 44 }}
           >
-            Publicar original
+            Publicar sem a IA
           </Button>
         </DialogActions>
       </Dialog>
+
+      <IdeaAiRegenerateDialog
+        open={regenerateOpen}
+        section={section}
+        busy={ai.busy}
+        onClose={() => setRegenerateOpen(false)}
+        onConfirm={(request) => {
+          void ai.request(request).then((ok) => {
+            if (ok) setRegenerateOpen(false);
+          });
+        }}
+      />
     </Box>
   );
 }

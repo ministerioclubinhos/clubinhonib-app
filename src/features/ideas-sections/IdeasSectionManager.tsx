@@ -15,6 +15,8 @@ import {
   ideasSectionReviewPath,
 } from "./constants";
 import type { IdeasSectionResponse } from "./types";
+import { IDEA_AI_QUEUE_FILTER_ALL, IDEA_AI_QUEUE_FILTER_OPTIONS } from "./ai-constants";
+import { parseIdeaAiQueueFilter } from "./ai-utils";
 import { parseSortOption } from "./utils";
 
 /**
@@ -75,6 +77,14 @@ export default function IdeasSectionManager() {
       options: [...IDEAS_SECTION_SORT_OPTIONS],
       onChange: (value) =>
         setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
+    },
+    {
+      id: "aiStatus",
+      label: "Melhoria por IA",
+      value: filters.aiStatus ?? IDEA_AI_QUEUE_FILTER_ALL,
+      options: [...IDEA_AI_QUEUE_FILTER_OPTIONS],
+      onChange: (value) =>
+        setFilters((previous) => ({ ...previous, aiStatus: parseIdeaAiQueueFilter(value) })),
     },
   ];
 

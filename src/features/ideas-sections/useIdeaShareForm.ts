@@ -142,6 +142,7 @@ export function useIdeaShareForm() {
   return {
     navigate,
     automaticAi,
+    hasVideo: materials.some((material) => material.kind === IdeaMaterialKind.VIDEO),
     materials,
     removed,
     youtubeUrl,

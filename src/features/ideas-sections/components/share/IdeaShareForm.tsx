@@ -33,6 +33,7 @@ export function IdeaShareForm() {
   const {
     navigate,
     automaticAi,
+    hasVideo,
     materials,
     removed,
     youtubeUrl,
@@ -78,13 +79,14 @@ export function IdeaShareForm() {
                 </Typography>
                 {automaticAi && (
                   <Alert severity="info" data-testid="idea-share-ai-background">
-                    A IA trabalhará na melhoria em segundo plano. Você não precisa aguardar; a
-                    coordenação revisará o resultado.
+                    A IA vai sugerir uma versão revisada em segundo plano. Você não precisa
+                    aguardar: a coordenação compara a sugestão com o seu original e escolhe o que
+                    publicar.
                   </Alert>
                 )}
-                <Typography color="text.secondary">
-                  A equipe poderá preparar o conteúdo para publicação. O vídeo enviado não será
-                  alterado.
+                <Typography color="text.secondary" data-testid="idea-share-success-next">
+                  A equipe poderá preparar o conteúdo para publicação.
+                  {hasVideo ? ' O vídeo enviado não será alterado.' : ''}
                 </Typography>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                   <Button
@@ -352,10 +354,11 @@ export function IdeaShareForm() {
                 {materials.length} de {IDEA_SHARE_MAX_MEDIAS} materiais adicionados
               </Typography>
               <Typography color="text.secondary">{summarizeIdeaMaterials(materials)}</Typography>
-              <Typography color="text.secondary">
-                A coordenação revisará sua ideia antes de publicá-la. Textos, documentos e imagens
-                poderão ser processados pelo provedor de IA configurado para melhorar a
-                apresentação. O original será preservado e vídeos não serão processados.
+              <Typography color="text.secondary" data-testid="idea-share-review-notice">
+                A coordenação revisará sua ideia antes de publicá-la.
+                {automaticAi
+                  ? ' Textos, documentos e imagens poderão ser processados pelo provedor de IA configurado para melhorar a apresentação, sem mudar a essência. O original será preservado e vídeos não serão processados.'
+                  : ''}
               </Typography>
               <Divider sx={{ my: 1, display: { xs: 'none', md: 'block' } }} />
               {apiError && (
