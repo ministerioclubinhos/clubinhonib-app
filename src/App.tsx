@@ -15,22 +15,11 @@ import './styles/Global.css';
 import Navbar from './components/NavBar/Navbar';
 import Footer from './components/Footer/Footer';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
-import PageRenderer from './components/PageRenderer/PageRenderer';
 
 import Home from './pages/Home/Home';
-import About from './pages/About/About';
-import Contact from './pages/Contact/Contact';
-import EventosPage from './pages/Event/EventosPage';
 import Login from './pages/Login/Login';
-import TeacherArea from './pages/TeacherArea/TeacherArea';
-import ClubinhoFeedView from './pages/PageView/ClubinhoFeedView/ClubinhoFeedView';
-import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
-import ResetPassword from './pages/ResetPassword/ResetPassword';
 
-import SelecPageTemplate from './components/Adm/PageCreator/SelectPageTemplate/SelecPageTemplate';
 
-import AdminDashboardPage from './components/Adm/AdminDashboardPage';
-import AdminLayout from './components/Adm/AdminLayout/AdminLayout';
 
 import { fetchRoutes } from './store/slices/route/routeSlice';
 import { initAuth, signOut } from './store/slices/auth/authSlice';
@@ -39,63 +28,73 @@ import { UserRole } from "@/types/shared";
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
 
-import { WeekMaterialsList } from './pages/TeacherArea/components';
-import ImageSectionPage from './pages/TeacherArea/ImageSection/ImageSectionPage';
-import ImageSectionEditorAdmin from './features/image-sections/ImageSectionEditorAdmin';
 
-import { SiteFeedbackForm } from './pages/TeacherArea/components';
 
 import { SnackbarProvider } from 'notistack';
+import { LazyMotion, domAnimation } from 'framer-motion';
 import AppErrorBoundary from './components/AppErrorBoundary';
 import GlobalErrorHandler from './components/GlobalErrorHandler';
 import NotFoundPage from './pages/Error/NotFoundPage';
 import AccessDeniedPage from './pages/Error/AccessDeniedPage';
 
-import CoordinatorProfilesManager from './features/coordinators/CoordinatorProfilesManager';
-import TeacherProfilesManager from './features/teachers/TeacherProfilesManager';
-import ClubsManager from './features/clubs/ClubsManager';
-import ContactsManager from './features/contacts/ContactsManager';
-import MeditationsManager from './features/meditations/MeditationsManager';
-import ChildrenManager from './features/children/ChildrenManager';
-import ChildrenBrowserPage from './features/pagela-teacher/ChildrenBrowserPage';
-import ChildPagelasPage from './features/pagela-teacher/ChildPagelasPage';
-import Register from './pages/Register/Register';
-import PagelaClubsManager from './features/pagela-clubs/PagelaClubsManager';
-import CommentModerationPage from './features/comments/CommentModerationPage';
-import FeedbackManager from './features/feedback/FeedbackManager';
-import UsersManager from './features/users/UsersManager';
-import UnsubscribePage from './features/email-preferences/UnsubscribePage';
-import InformativesManager from './features/informatives/InformativesManager';
-import ImageSectionManager from './features/image-sections/ImageSectionManager';
-import ImagePagesManager from './features/image-pages/ImagePagesManager';
-import IdeasSectionManager from './features/ideas-sections/IdeasSectionManager';
-import IdeasSectionPage from './pages/TeacherArea/IdeasSection/IdeasSectionPage';
-import IdeasSectionReviewPage from './features/ideas-sections/IdeasSectionReviewPage';
-import DocumentsManager from './features/documents/DocumentsManager';
-import { IdeasPagesManager, IdeasPageForm } from './features/ideas-pages';
-import VideoPagesManager from './features/video-pages/VideoPagesManager';
-import {
-  WeekMaterialsManager,
-  WeekMaterialPageForm,
-} from './features/week-materials';
-import { MeditationPageForm } from './features/meditations';
-import { ImagePageForm } from './features/image-pages';
-import { VideoPageForm } from './features/video-pages';
-import StatisticsPage from './features/statistics/StatisticsPage';
-import ClubControlPage from './features/club-control/ClubControlPage';
-import ClubWeeklySummaryPage from './features/club-weekly-summary/ClubWeeklySummaryPage';
-import {
-  FEATURE,
-  FeatureFlagsManager,
-  FeatureRoute,
-  useVisibleRoutes,
-} from './features/feature-flags';
-import { ProfilesManager, ProfilePage } from './features/profile';
-import { ObservabilityAuditPage } from './features/observability-audit';
-import EmailVerificationInstructions from './pages/EmailVerification/EmailVerificationInstructions';
-import SpecialFamilyDayPage from './pages/SpecialFamiliyDay/SpecialFamilyDayPage';
-import NotificationsPage from './pages/Notifications/NotificationsPage';
+import { FEATURE, FeatureRoute, useVisibleRoutes } from './features/feature-flags';
 import { NotificationProvider } from './features/notifications';
+import {
+  About,
+  AdminDashboardPage,
+  AdminLayout,
+  ChildPagelasPage,
+  ChildrenBrowserPage,
+  ChildrenManager,
+  ClubControlPage,
+  ClubinhoFeedView,
+  ClubsManager,
+  ClubWeeklySummaryPage,
+  CommentModerationPage,
+  Contact,
+  ContactsManager,
+  CoordinatorProfilesManager,
+  DocumentsManager,
+  EmailVerificationInstructions,
+  EventosPage,
+  FeatureFlagsManager,
+  FeedbackManager,
+  ForgotPassword,
+  IdeasPageForm,
+  IdeasPagesManager,
+  IdeasSectionManager,
+  IdeasSectionPage,
+  IdeasSectionReviewPage,
+  ImagePageForm,
+  ImagePagesManager,
+  ImageSectionEditorAdmin,
+  ImageSectionManager,
+  ImageSectionPage,
+  InformativesManager,
+  MeditationPageForm,
+  MeditationsManager,
+  NotificationsPage,
+  ObservabilityAuditPage,
+  PageRenderer,
+  PagelaClubsManager,
+  ProfilePage,
+  ProfilesManager,
+  Register,
+  ResetPassword,
+  SelecPageTemplate,
+  SiteFeedbackForm,
+  SpecialFamilyDayPage,
+  StatisticsPage,
+  TeacherArea,
+  TeacherProfilesManager,
+  UnsubscribePage,
+  UsersManager,
+  VideoPageForm,
+  VideoPagesManager,
+  WeekMaterialPageForm,
+  WeekMaterialsList,
+  WeekMaterialsManager,
+} from './routes/lazyPages';
 
 const AiProvidersConfigPage = lazy(() =>
   import('./features/ai-providers/AiProvidersConfigPage').then((module) => ({
@@ -225,6 +224,8 @@ function App() {
 
   return (
     <AppErrorBoundary data-testid="app">
+      {/* Animações enxutas (`m.*`) do bundle inicial; `motion.*` segue funcionando. */}
+      <LazyMotion features={domAnimation}>
       <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
         <GlobalErrorHandler />
         <BrowserRouter>
@@ -439,6 +440,7 @@ function App() {
           </NotificationProvider>
         </BrowserRouter>
       </SnackbarProvider>
+      </LazyMotion>
     </AppErrorBoundary>
   );
 }

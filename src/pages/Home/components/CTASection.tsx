@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Container, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { CTASectionProps } from '../types';
 import { FEATURE } from '@/features/feature-flags';
 import { useFeatureEnabled } from '@/hooks';
@@ -28,7 +28,7 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
           textAlign: 'center',
         }}
       >
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -47,9 +47,9 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
           >
             Faça Parte da Nossa Missão
           </Typography>
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -69,9 +69,9 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
           >
             Junte-se a mais de 20 anos de experiência evangelística. Seja um servo comprometido em levar a Palavra de Deus às crianças de forma alegre e criativa, criando ambientes acolhedores com princípios bíblicos.
           </Typography>
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.8 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -79,7 +79,7 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
         >
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
             {isAuthenticated ? (
-              <motion.div
+              <m.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -107,9 +107,9 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
                 >
                   Explorar Recursos
                 </Button>
-              </motion.div>
+              </m.div>
             ) : showContact ? (
-              <motion.div
+              <m.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -137,10 +137,10 @@ const CTASection: React.FC<CTASectionProps> = ({ isAuthenticated }) => {
                 >
                   Entre em Contato
                 </Button>
-              </motion.div>
+              </m.div>
             ) : null}
           </Box>
-        </motion.div>
+        </m.div>
       </Container>
     </Box>
   );

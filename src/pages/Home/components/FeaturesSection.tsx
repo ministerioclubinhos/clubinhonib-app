@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Container, Grid, Card, CardContent } from '@mui/material';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { FeaturesSectionProps } from '../types';
 
 const FeaturesSection: React.FC<FeaturesSectionProps> = ({ features }) => {
@@ -21,7 +21,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ features }) => {
           px: { xs: 2, sm: 3, md: 4 },
         }}
       >
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -41,12 +41,12 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ features }) => {
           >
             Por que escolher o Clubinhos NIB?
           </Typography>
-        </motion.div>
+        </m.div>
 
         <Grid container spacing={{ xs: 3, md: 4 }}>
           {features.map((feature, index) => (
             <Grid item xs={12} md={4} key={feature.id}>
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -79,7 +79,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ features }) => {
                   }}
                 >
                   <CardContent sx={{ p: { xs: 3, md: 4 }, textAlign: 'center' }}>
-                    <motion.div
+                    <m.div
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ duration: 0.3 }}
                     >
@@ -93,7 +93,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ features }) => {
                       >
                         <feature.icon sx={{ fontSize: 60 }} />
                       </Box>
-                    </motion.div>
+                    </m.div>
 
                     <Typography
                       variant="h5"
@@ -121,7 +121,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ features }) => {
                     </Typography>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </m.div>
             </Grid>
           ))}
         </Grid>

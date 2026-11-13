@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button, Container, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import HomeIcon from '@mui/icons-material/Home';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -25,7 +25,7 @@ const NotFoundPage: React.FC = () => {
             }}
         >
             <Box
-                component={motion.div}
+                component={m.div}
                 animate={{
                     y: [0, -20, 0],
                     rotate: [0, 5, 0],
@@ -47,7 +47,7 @@ const NotFoundPage: React.FC = () => {
                 }}
             />
             <Box
-                component={motion.div}
+                component={m.div}
                 animate={{
                     y: [0, 30, 0],
                     rotate: [0, -5, 0],
@@ -71,7 +71,7 @@ const NotFoundPage: React.FC = () => {
             />
 
             <Container maxWidth="md" sx={{ zIndex: 1, textAlign: 'center' }}>
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
@@ -95,9 +95,9 @@ const NotFoundPage: React.FC = () => {
                     >
                         404
                     </Typography>
-                </motion.div>
+                </m.div>
 
-                <motion.div
+                <m.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
@@ -129,9 +129,9 @@ const NotFoundPage: React.FC = () => {
                         Parece que a página que você está procurando não faz parte do nosso Clubinho.
                         Que tal voltarmos para um lugar seguro?
                     </Typography>
-                </motion.div>
+                </m.div>
 
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
@@ -201,7 +201,7 @@ const NotFoundPage: React.FC = () => {
                             Ir para o Início
                         </Button>
                     </Box>
-                </motion.div>
+                </m.div>
             </Container>
         </Box>
     );

@@ -74,6 +74,14 @@ Mandatory responsibilities:
 
 Do not create hybrid components driven by many flags for unrelated workflows. When business rules, permissions, or state machines diverge, create dedicated components and hooks.
 
+### Route-level code splitting and bundle budget
+
+- Every routed screen MUST be declared in `src/routes/lazyPages.ts` with `lazyWithRetry` (default export) or `lazyNamedWithRetry` (named export from an index file) and imported from there in `App.tsx`. Only the shell (navbar, footer, guards), the home page, login and error pages are imported eagerly.
+- `lazyWithRetry` reloads the page once per session when a chunk from an older deploy is gone; other errors still reach the error boundary.
+- Do not import heavy libraries (charts, date pickers, carousels, editors, `html2canvas`) from eagerly loaded modules. Animations in eagerly loaded components use `m.*` from `framer-motion`; `App.tsx` provides `LazyMotion` with `domAnimation`.
+- `vite.config.ts` keeps React (`vendor-react`) and the MUI styling engine (`vendor-mui`) in long-cached chunks; MUI components stay with the screens that use them.
+- Budget: the initial JavaScript (entry plus preloaded vendor chunks) was 942 KB gzip before splitting and about 314 KB after (November 2026). Check `dist/index.html` and the gzip size of the preloaded files after changing routes or the shell.
+
 ## 4. State, Cache, and API
 
 ### 4.1 Choose One State Owner

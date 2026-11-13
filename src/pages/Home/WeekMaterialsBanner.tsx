@@ -4,7 +4,7 @@ import { RootState } from '@/store/slices';
 import { useVisibleRoutes } from '@/features/feature-flags';
 import { Box, Typography, Button, Container } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { MediaTargetType } from 'store/slices/types';
 
 const WeekMaterialsBanner: React.FC = () => {
@@ -52,7 +52,7 @@ const WeekMaterialsBanner: React.FC = () => {
         }}
       />
       
-      <motion.div
+      <m.div
         style={{
           position: 'absolute',
           top: 0,
@@ -87,7 +87,7 @@ const WeekMaterialsBanner: React.FC = () => {
           textAlign: 'center',
         }}
       >
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -105,9 +105,9 @@ const WeekMaterialsBanner: React.FC = () => {
           >
             Olá {user?.name || 'Professor'}, estamos na:
           </Typography>
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.8 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -127,10 +127,10 @@ const WeekMaterialsBanner: React.FC = () => {
           >
             {currentWeekRoute.title}
           </Typography>
-        </motion.div>
+        </m.div>
 
         {currentWeekRoute.subtitle && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -160,16 +160,16 @@ const WeekMaterialsBanner: React.FC = () => {
             >
               {currentWeekRoute.subtitle}
             </Typography>
-          </motion.div>
+          </m.div>
         )}
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <motion.div
+          <m.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -197,8 +197,8 @@ const WeekMaterialsBanner: React.FC = () => {
             >
               Saber mais
             </Button>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </Container>
 
       <Box
@@ -215,7 +215,7 @@ const WeekMaterialsBanner: React.FC = () => {
         }}
       />
 
-      <motion.div
+      <m.div
         style={{
           position: 'absolute',
           bottom: 0,
