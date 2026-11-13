@@ -213,9 +213,11 @@ test('perfis de custo preenchem os dois provedores sem tocar em chave nem proved
   expect(matchingAiProviderProfile(test)).toBe(AiProviderProfile.CUSTOM);
   const production = applyAiProviderProfile(test, AiProviderProfile.PRODUCTION);
   expect(matchingAiProviderProfile(production)).toBe(AiProviderProfile.PRODUCTION);
-  expect(production.openai).toMatchObject(
-    AI_PROVIDER_PROFILES[AiProviderProfile.PRODUCTION].openai
-  );
+  // Equivale a toMatchObject: os campos do perfil sobrepostos não mudam nada.
+  expect(production.openai).toEqual({
+    ...production.openai,
+    ...AI_PROVIDER_PROFILES[AiProviderProfile.PRODUCTION].openai,
+  });
 });
 
 test('só o catálogo ao vivo acusa modelo ausente para a chave', () => {

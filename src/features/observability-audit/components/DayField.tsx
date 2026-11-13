@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Box } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -41,6 +42,8 @@ export default function DayField({ label, value, onChange, error, minDate, maxDa
   }, [value]);
 
   return (
+    // `display: contents`: o seletor de teste não cria caixa nem muda o layout da barra.
+    <Box data-testid="observability-audit-day-field" sx={{ display: 'contents' }}>
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
       <DatePicker
         label={label}
@@ -57,5 +60,6 @@ export default function DayField({ label, value, onChange, error, minDate, maxDa
         slotProps={{ textField: { fullWidth: true, size: 'small', error, sx: TOOLBAR_FIELD_SX } }}
       />
     </LocalizationProvider>
+    </Box>
   );
 }

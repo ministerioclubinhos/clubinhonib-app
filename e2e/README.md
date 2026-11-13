@@ -20,6 +20,22 @@ npm run test:report     # relatório HTML da última rodada
 A rodada padrão é *headless*: o Chromium abre em segundo plano e nada aparece na tela. Use `test:e2e:headed`
 para vê-lo, `npm run test:e2e -- --ui` para o modo interativo com time-travel, ou `-- --debug` para o Inspector.
 
+## IA simulada: nenhum teste gasta tokens
+
+O projeto `setup` tem a trava `support/ai-provider.setup.ts`: antes de qualquer
+teste de navegador ele lê `GET /health` da API e **aborta a rodada** se
+`aiProviderMode` não for `fake`. Suba a API assim:
+
+```bash
+AI_PROVIDER_MODE=fake ./run.sh local
+```
+
+Nesse modo a API percorre o fluxo inteiro (fila, worker, guardas, banco), mas
+o transporte de IA devolve respostas simuladas e nunca chama OpenAI/Gemini.
+Testes de tela que precisam de um resultado específico de IA continuam podendo
+simular a resposta da API no navegador (`page.route`, ver `ideasMocks.ts`).
+Só para uma rodada intencional com IA real: `E2E_ALLOW_LIVE_AI=1`.
+
 ## Envios de e-mail ficam desligados durante a rodada
 
 A suíte cria usuário, publica informativo, material e evento — e cada uma dessas ações dispara um aviso para toda a

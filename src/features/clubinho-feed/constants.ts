@@ -204,3 +204,9 @@ export const FEED_TEST_IDS = {
   FILTER_EMPTY_STATE: 'clubinho-feed-filter-empty-state',
   LOAD_MORE_BUTTON: 'clubinho-feed-load-more-button',
 } as const;
+
+/**
+ * Autoria exibida no feed público quando a publicação não tem autor (álbuns
+ * antigos). O painel admin continua mostrando "Autor não informado".
+ */
+export const FEED_UNKNOWN_AUTHOR_LABEL = 'Comunidade do Clubinho';

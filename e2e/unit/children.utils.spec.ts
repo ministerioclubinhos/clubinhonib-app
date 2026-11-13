@@ -38,6 +38,8 @@ const child: ChildResponse = {
     complement: null,
   },
   createdAt: "2026-01-01T00:00:00.000Z",
+  createdBy: null,
+  updatedBy: null,
   updatedAt: "2026-01-02T00:00:00.000Z",
 };
 

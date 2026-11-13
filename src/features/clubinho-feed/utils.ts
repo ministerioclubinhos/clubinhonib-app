@@ -5,6 +5,7 @@ import {
   FEED_SECTIONS_PAGE_SIZE,
   PT_BR_MONTH_NAMES,
   PT_BR_SHORT_MONTH_NAMES,
+  FEED_UNKNOWN_AUTHOR_LABEL,
 } from './constants';
 import {
   type ClubinhoFeedMediaItemDto,
@@ -240,7 +241,7 @@ export function toFeedSectionViewModel(
     isPublic: dto.public,
     clubBadge: extractClubBadgeLabel(caption),
     monogram: buildCaptionMonogram(dto.author?.name || caption),
-    authorName: dto.author?.name?.trim() || 'Comunidade do Clubinho',
+    authorName: dto.author?.name?.trim() || FEED_UNKNOWN_AUTHOR_LABEL,
     isVideo: mediaItems.some((item) => item.mediaType === MediaType.VIDEO),
     formattedDate: createdParts.fullDate,
     formattedTime: createdParts.time,

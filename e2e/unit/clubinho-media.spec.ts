@@ -13,6 +13,7 @@ import {
   filterFeedSections,
 } from '@/features/clubinho-feed/utils';
 import type { ClubinhoFeedSectionDto } from '@/features/clubinho-feed/types';
+import { FEED_UNKNOWN_AUTHOR_LABEL } from '@/features/clubinho-feed/constants';
 
 const videoFile = new File(['video'], 'video.mp4', { type: 'video/mp4' });
 
@@ -88,7 +89,9 @@ test('feed keeps video type and author across views and author search', () => {
     authorName: 'Márcia',
   });
   expect(filterFeedSections([section], 'marcia')).toHaveLength(1);
-  expect(toFeedSectionViewModel({ ...dto, author: null }).authorName).toBe('Autor não informado');
+  expect(toFeedSectionViewModel({ ...dto, author: null }).authorName).toBe(
+    FEED_UNKNOWN_AUTHOR_LABEL
+  );
 });
 
 test('legacy photo albums remain viewable and editable without an author', () => {
@@ -110,7 +113,7 @@ test('legacy photo albums remain viewable and editable without an author', () =>
       url: `https://example.com/old-${index}.jpg`,
     })),
   });
-  expect(section.authorName).toBe('Autor não informado');
+  expect(section.authorName).toBe(FEED_UNKNOWN_AUTHOR_LABEL);
   expect(section.mediaCount).toBe(25);
   expect(section.mediaItems[0].originalUrl).toBe('https://example.com/old-0.jpg');
 });
