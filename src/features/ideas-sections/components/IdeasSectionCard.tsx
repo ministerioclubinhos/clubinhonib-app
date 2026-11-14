@@ -34,7 +34,8 @@ export default function IdeasSectionCard({ section, onView, onReview, onDelete, 
       subtitle={mediaSummary(section)}
       // Pendente chama atenção; já publicada descansa em verde.
       accent={pendente ? 'warning' : 'success'}
-      onClick={onView}
+      // O card inteiro leva à revisão; o olho abre só o resumo da ideia.
+      onClick={disabled ? undefined : onReview}
       badges={[
         pendente
           ? { label: 'Aguardando decisão', color: 'warning' }

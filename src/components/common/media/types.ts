@@ -23,3 +23,20 @@ export interface MediaEditorErrors {
   description: boolean;
   url: boolean;
 }
+
+/** Como o visualizador mostra uma mídia. */
+export enum MediaViewKind {
+  IMAGE = 'image',
+  VIDEO_FILE = 'video-file',
+  AUDIO_FILE = 'audio-file',
+  /** Iframe: YouTube, PDF, Drive, OneDrive, Dropbox. */
+  EMBED = 'embed',
+  /** Formato que o navegador não renderiza (ex.: .docx): abrir ou baixar. */
+  DOWNLOAD = 'download',
+}
+
+/** Resultado de `resolveMediaView`: o que renderizar e de onde. */
+export interface MediaView {
+  kind: MediaViewKind;
+  src: string;
+}

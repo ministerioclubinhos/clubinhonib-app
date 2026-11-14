@@ -30,6 +30,7 @@ import {
   validateIdeaShareFile,
 } from '../../share-utils';
 import { IdeaMaterialKind, type IdeaShareMaterial } from '../../types';
+import IdeasMediaPreviewDialog from '../IdeasMediaPreviewDialog';
 import type { IdeasSectionDraft } from '../../types';
 import { MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 
@@ -61,6 +62,7 @@ export default function IdeasSectionReviewMaterials({
   const [selectedKind, setSelectedKind] = useState<IdeaMaterialKind>(IdeaMaterialKind.DOCUMENT);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [error, setError] = useState('');
+  const [previewing, setPreviewing] = useState<IdeasSectionDraft['medias'][number] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const objectUrls = useRef(new Set<string>());
 
@@ -225,10 +227,9 @@ export default function IdeasSectionReviewMaterials({
                           >
                             {media.url && (
                               <Button
-                                component="a"
-                                href={media.url}
-                                target="_blank"
-                                rel="noreferrer"
+                                data-testid="ideas-section-review-media-preview"
+                                type="button"
+                                onClick={() => setPreviewing(media)}
                                 size="small"
                                 sx={{ minHeight: 44 }}
                               >
@@ -326,6 +327,7 @@ export default function IdeasSectionReviewMaterials({
           </Alert>
         )}
       </Stack>
+      <IdeasMediaPreviewDialog media={previewing} onClose={() => setPreviewing(null)} />
     </Box>
   );
 }

@@ -464,3 +464,20 @@ export interface IdeaAiDiffSideProps {
   /** Trechos destacados neste lado; o oposto é omitido. */
   marked: IdeaWordDiffKind.ADDED | IdeaWordDiffKind.REMOVED;
 }
+
+/** Como o visualizador de mídia da ideia desenha o material. */
+export enum IdeasPreviewKind {
+  IMAGE = 'image',
+  VIDEO = 'video',
+  YOUTUBE = 'youtube',
+  PDF = 'pdf',
+  OTHER = 'other',
+}
+
+/** O mínimo que o visualizador precisa de uma mídia; serve a qualquer tela da ideia. */
+export interface IdeasPreviewMedia {
+  url: string;
+  mediaType: string;
+  title?: string | null;
+  originalName?: string | null;
+}

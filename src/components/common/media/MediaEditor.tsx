@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useId, useState } from 'react';
 import {
   Box,
   Button,
@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   FormControl,
   Grid2,
   IconButton,
@@ -21,7 +20,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Add, Close, Delete, Edit, UploadFile, Visibility } from '@mui/icons-material';
+import { Add, Close, UploadFile } from '@mui/icons-material';
 
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 import { MediaItem, MediaPlatform, MediaUploadType } from '@/store/slices/types';
@@ -29,7 +28,8 @@ import { validateMediaURL } from '@/utils/validateMediaURL';
 
 import { MEDIA_PLATFORM_LABELS } from './constants';
 import { MediaEditorConfig, MediaEditorErrors } from './types';
-import MediaPreview from './MediaPreview';
+import MediaItemCard from './MediaItemCard';
+import MediaViewerDialog from './MediaViewerDialog';
 
 interface MediaEditorProps {
   config: MediaEditorConfig;
@@ -61,17 +61,13 @@ const buildEmptyItem = (config: MediaEditorConfig): MediaItem => ({
  * Editor único usado por todas as abas de mídia do formulário: o tipo de mídia
  * muda apenas rótulos, arquivos aceitos, plataformas e a pré-visualização.
  */
-export default function MediaEditor({
-  config,
-  items,
-  onChange,
-  onDraftChange,
-}: MediaEditorProps) {
+export default function MediaEditor({ config, items, onChange, onDraftChange }: MediaEditorProps) {
+  const inputId = useId();
   const [draft, setDraft] = useState<MediaItem>(() => buildEmptyItem(config));
   const [fileName, setFileName] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<MediaItem | null>(null);
   const [errors, setErrors] = useState<MediaEditorErrors>(NO_ERRORS);
 
   const theme = useTheme();
@@ -81,8 +77,7 @@ export default function MediaEditor({
   const isEditing = editingIndex !== null;
   const lowerLabel = config.label.toLowerCase();
 
-  const hasStartedDraft =
-    Boolean(draft.title) || Boolean(draft.description) || Boolean(draft.url);
+  const hasStartedDraft = Boolean(draft.title) || Boolean(draft.description) || Boolean(draft.url);
   const hasDraft = isEditing || hasStartedDraft;
 
   useEffect(() => {
@@ -109,11 +104,10 @@ export default function MediaEditor({
   };
 
   const handleAddOrUpdate = () => {
-    const isValidUrl =
-      !isLink || validateMediaURL(draft.url, draft.platformType);
+    const isValidUrl = !isLink || validateMediaURL(draft.url, draft.platformType);
     const nextErrors: MediaEditorErrors = {
-      title: !draft.title,
-      description: !draft.description,
+      title: !draft.title.trim(),
+      description: !draft.description.trim(),
       url: !draft.url || !isValidUrl,
     };
     setErrors(nextErrors);
@@ -185,18 +179,12 @@ export default function MediaEditor({
           }}
         >
           <Typography variant="subtitle2" fontWeight={700}>
-            {isEditing
-              ? `Editando ${lowerLabel}`
-              : `Adicionar ${lowerLabel}`}
+            {isEditing ? `Editando ${lowerLabel}` : `Adicionar ${lowerLabel}`}
           </Typography>
 
           {isEditing && (
             <Tooltip title="Cancelar edição">
-              <IconButton
-                size="small"
-                aria-label="Cancelar edição"
-                onClick={resetDraft}
-              >
+              <IconButton size="small" aria-label="Cancelar edição" onClick={resetDraft}>
                 <Close fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -231,17 +219,15 @@ export default function MediaEditor({
                 }))
               }
               error={errors.description}
-              helperText={
-                errors.description ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''
-              }
+              helperText={errors.description ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
             />
           </Grid2>
 
           <Grid2 size={{ xs: 12, sm: 6 }}>
             <FormControl fullWidth>
-              <InputLabel id={`upload-type-${config.mediaType}`}>Tipo</InputLabel>
+              <InputLabel id={`${inputId}-upload-type`}>Tipo</InputLabel>
               <Select
-                labelId={`upload-type-${config.mediaType}`}
+                labelId={`${inputId}-upload-type`}
                 label="Tipo"
                 value={draft.uploadType}
                 onChange={(event) => {
@@ -250,10 +236,9 @@ export default function MediaEditor({
                   setDraft((previous) => ({
                     ...previous,
                     uploadType,
+                    isLocalFile: uploadType === MediaUploadType.UPLOAD,
                     platformType:
-                      uploadType === MediaUploadType.LINK
-                        ? config.defaultPlatform
-                        : undefined,
+                      uploadType === MediaUploadType.LINK ? config.defaultPlatform : undefined,
                     url: '',
                     file: undefined,
                   }));
@@ -269,11 +254,9 @@ export default function MediaEditor({
             <Fragment>
               <Grid2 size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth>
-                  <InputLabel id={`platform-${config.mediaType}`}>
-                    Plataforma
-                  </InputLabel>
+                  <InputLabel id={`${inputId}-platform`}>Plataforma</InputLabel>
                   <Select
-                    labelId={`platform-${config.mediaType}`}
+                    labelId={`${inputId}-platform`}
                     label="Plataforma"
                     value={draft.platformType ?? ''}
                     onChange={(event) =>
@@ -323,12 +306,7 @@ export default function MediaEditor({
                   sx={{ minHeight: 44, textTransform: 'none', flexShrink: 0 }}
                 >
                   {config.uploadLabel}
-                  <input
-                    type="file"
-                    hidden
-                    accept={config.accept}
-                    onChange={handleUpload}
-                  />
+                  <input type="file" hidden accept={config.accept} onChange={handleUpload} />
                 </Button>
 
                 <Typography
@@ -343,12 +321,8 @@ export default function MediaEditor({
           )}
 
           <Grid2 size={12}>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={1.5}
-              justifyContent="flex-end"
-            >
-              {isEditing && (
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="flex-end">
+              {hasDraft && (
                 <Button
                   type="button"
                   variant="text"
@@ -356,7 +330,7 @@ export default function MediaEditor({
                   fullWidth={isMobile}
                   sx={{ minHeight: 44, textTransform: 'none' }}
                 >
-                  Cancelar
+                  {isEditing ? 'Cancelar' : 'Descartar rascunho'}
                 </Button>
               )}
               <Button
@@ -406,122 +380,26 @@ export default function MediaEditor({
           </Typography>
         </Paper>
       ) : (
-        <Grid2 container spacing={2}>
+        <Stack spacing={1.5}>
           {items.map((item, index) => (
-            <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={`${item.id ?? 'novo'}-${index}`}>
-              <Paper
-                variant="outlined"
-                sx={{
-                  height: '100%',
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderColor:
-                    editingIndex === index ? 'primary.main' : 'divider',
-                }}
-              >
-                <Box sx={{ p: 2, flexGrow: 1 }}>
-                  <Typography variant="subtitle2" fontWeight={700}>
-                    {item.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mb: 1 }}
-                  >
-                    {item.description}
-                  </Typography>
-
-                  <MediaPreview item={item} mediaType={config.mediaType} />
-                </Box>
-
-                <Divider />
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    gap: 0.5,
-                    px: 1,
-                    py: 0.5,
-                    // Alvos de toque de 44px, o mínimo confortável no celular.
-                    '& .MuiIconButton-root': { width: 44, height: 44 },
-                  }}
-                >
-                  {config.previewInDialog &&
-                    item.uploadType === MediaUploadType.UPLOAD && (
-                      <Tooltip title="Visualizar">
-                        <IconButton
-                          color="primary"
-                          aria-label={`Visualizar ${item.title}`}
-                          onClick={() => setPreviewUrl(item.url)}
-                        >
-                          <Visibility fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  <Tooltip title="Editar">
-                    <IconButton
-                      aria-label={`Editar ${item.title}`}
-                      onClick={() => handleEdit(index)}
-                    >
-                      <Edit fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Remover">
-                    <IconButton
-                      color="error"
-                      aria-label={`Remover ${item.title}`}
-                      onClick={() => setDeleteIndex(index)}
-                    >
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Paper>
-            </Grid2>
+            <MediaItemCard
+              key={`${item.id ?? 'novo'}-${index}`}
+              item={item}
+              editing={editingIndex === index}
+              onView={() => setViewing(item)}
+              onEdit={() => handleEdit(index)}
+              onRemove={() => setDeleteIndex(index)}
+            />
           ))}
-        </Grid2>
+        </Stack>
       )}
 
-      {config.previewInDialog && (
-        <Dialog
-          open={Boolean(previewUrl)}
-          onClose={() => setPreviewUrl(null)}
-          maxWidth="md"
-          fullWidth
-          fullScreen={isMobile}
-        >
-          <DialogTitle>Visualizar {config.label}</DialogTitle>
-          <DialogContent>
-            {previewUrl?.startsWith('data:') || previewUrl?.startsWith('blob:') ? (
-              <iframe
-                src={previewUrl}
-                title={config.label}
-                style={{ width: '100%', height: '80vh', border: 0 }}
-              />
-            ) : (
-              <Typography>
-                Visualização disponível apenas para arquivos enviados. Links devem
-                ser abertos externamente.
-              </Typography>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button type="button" onClick={() => setPreviewUrl(null)}>
-              Fechar
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
+      <MediaViewerDialog media={viewing} onClose={() => setViewing(null)} />
 
       <Dialog open={deleteIndex !== null} onClose={() => setDeleteIndex(null)}>
         <DialogTitle>Confirmar Exclusão</DialogTitle>
         <DialogContent>
-          <Typography>
-            Deseja realmente remover {config.confirmLabel}?
-          </Typography>
+          <Typography>Deseja realmente remover {config.confirmLabel}?</Typography>
         </DialogContent>
         <DialogActions>
           <Button type="button" onClick={() => setDeleteIndex(null)}>

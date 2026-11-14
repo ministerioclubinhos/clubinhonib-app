@@ -1,19 +1,17 @@
 import { expect, test } from '@playwright/test';
 
-import {
-  MediaItem,
-  MediaPlatform,
-  MediaType,
-  MediaUploadType,
-} from '@/store/slices/types';
+import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 
 import { IDEAS_PAGE_PAYLOAD_FIELD } from '@/features/ideas-pages/constants';
 import { IdeasPageResponse, IdeasSectionDraft } from '@/features/ideas-pages/types';
 import {
   buildIdeasPageFormData,
+  validateIdeasPageForm,
+  createIdeasSectionDraft,
   buildIdeasPagePayload,
   buildMediaFieldKey,
   countMedia,
+  pendingIdeasMedia,
   fileExtensionOf,
   isUploadedMedia,
   mediasOfType,
@@ -45,9 +43,7 @@ const uploadedImage = (overrides: Partial<MediaItem> = {}): MediaItem => ({
   ...overrides,
 });
 
-const section = (
-  overrides: Partial<IdeasSectionDraft> = {},
-): IdeasSectionDraft => ({
+const section = (overrides: Partial<IdeasSectionDraft> = {}): IdeasSectionDraft => ({
   title: 'Abertura',
   description: 'Materiais',
   public: false,
@@ -78,11 +74,9 @@ test.describe('utils da página de ideias', () => {
 
   test.describe('buildMediaFieldKey', () => {
     test('inclui tipo, seção e posição para não repetir chave na página', () => {
-      expect(buildMediaFieldKey(MediaType.IMAGE, 1, 2, 'foto.png')).toBe(
-        'image_1_2.png',
-      );
+      expect(buildMediaFieldKey(MediaType.IMAGE, 1, 2, 'foto.png')).toBe('image_1_2.png');
       expect(buildMediaFieldKey(MediaType.IMAGE, 2, 1, 'foto.png')).not.toBe(
-        buildMediaFieldKey(MediaType.IMAGE, 1, 2, 'foto.png'),
+        buildMediaFieldKey(MediaType.IMAGE, 1, 2, 'foto.png')
       );
     });
   });
@@ -103,12 +97,8 @@ test.describe('utils da página de ideias', () => {
     });
 
     test('inclui o id da página apenas na edição', () => {
-      expect(
-        buildIdeasPagePayload(values, [], new FormData()).id,
-      ).toBeUndefined();
-      expect(
-        buildIdeasPagePayload(values, [], new FormData(), 'page-1').id,
-      ).toBe('page-1');
+      expect(buildIdeasPagePayload(values, [], new FormData()).id).toBeUndefined();
+      expect(buildIdeasPagePayload(values, [], new FormData(), 'page-1').id).toBe('page-1');
     });
 
     test('anexa o arquivo e a chave de uma mídia nova', () => {
@@ -116,7 +106,7 @@ test.describe('utils da página de ideias', () => {
       const payload = buildIdeasPagePayload(
         values,
         [section({ medias: [uploadedImage()] })],
-        formData,
+        formData
       );
 
       const media = payload.sections[0].medias[0];
@@ -138,7 +128,7 @@ test.describe('utils da página de ideias', () => {
       const payload = buildIdeasPagePayload(
         values,
         [section({ id: 'section-1', medias: [stored] })],
-        formData,
+        formData
       );
 
       const media = payload.sections[0].medias[0];
@@ -152,11 +142,8 @@ test.describe('utils da página de ideias', () => {
       const formData = new FormData();
       const payload = buildIdeasPagePayload(
         values,
-        [
-          section({ medias: [uploadedImage()] }),
-          section({ medias: [uploadedImage()] }),
-        ],
-        formData,
+        [section({ medias: [uploadedImage()] }), section({ medias: [uploadedImage()] })],
+        formData
       );
 
       expect(payload.sections[0].medias[0].fieldKey).toBe('image_0_0.png');
@@ -168,7 +155,7 @@ test.describe('utils da página de ideias', () => {
       const payload = buildIdeasPagePayload(
         values,
         [section({ id: 'section-1', public: true })],
-        new FormData(),
+        new FormData()
       );
 
       expect(payload.sections[0]).toMatchObject({
@@ -181,12 +168,10 @@ test.describe('utils da página de ideias', () => {
       const payload = buildIdeasPagePayload(
         values,
         [section({ medias: [linkedVideo({ platformType: undefined })] })],
-        new FormData(),
+        new FormData()
       );
 
-      expect(payload.sections[0].medias[0].platformType).toBe(
-        MediaPlatform.ANY,
-      );
+      expect(payload.sections[0].medias[0].platformType).toBe(MediaPlatform.ANY);
     });
   });
 
@@ -249,7 +234,12 @@ test.describe('utils da página de ideias', () => {
     } as unknown as IdeasPageResponse;
 
     test('devolve valores vazios na criação', () => {
-      expect(toFormValues(null)).toEqual({ title: '', description: '' });
+      expect(toFormValues(null)).toEqual({
+        title: '',
+        subtitle: '',
+        public: false,
+        description: '',
+      });
       expect(toSectionDrafts(null)).toEqual([]);
     });
 
@@ -275,11 +265,7 @@ test.describe('utils da página de ideias', () => {
 
     test('troca apenas as mídias do tipo informado', () => {
       const video = linkedVideo();
-      const next = replaceMediasOfType(
-        [video, uploadedImage()],
-        MediaType.IMAGE,
-        [],
-      );
+      const next = replaceMediasOfType([video, uploadedImage()], MediaType.IMAGE, []);
 
       expect(next).toEqual([video]);
     });
@@ -291,8 +277,87 @@ test.describe('utils da página de ideias', () => {
         countMedia([
           section({ medias: [linkedVideo()] }),
           section({ medias: [linkedVideo(), uploadedImage()] }),
-        ]),
+        ])
       ).toBe(3);
     });
+  });
+});
+
+test('preserva o nome original do upload no multipart e não envia a identidade local da seção', () => {
+  const form = new FormData();
+  const draft = createIdeasSectionDraft();
+  const payload = buildIdeasPagePayload(
+    values,
+    [{ ...draft, title: '  Ideia  ', medias: [uploadedImage()] }],
+    form
+  );
+  expect((form.get('image_0_0.png') as File).name).toBe('foto.png');
+  expect(payload.sections[0].title).toBe('Ideia');
+  expect(payload.sections[0]).not.toHaveProperty('clientId');
+  expect(createIdeasSectionDraft().clientId).not.toBe(draft.clientId);
+});
+
+test('valida espaços em branco e o limite de títulos antes do envio', () => {
+  expect(validateIdeasPageForm({ title: ' ', description: ' ' }, [])).toEqual({
+    title: true,
+    subtitle: false,
+    description: true,
+    sections: true,
+    sectionTitles: false,
+  });
+  expect(
+    validateIdeasPageForm({ title: 'x'.repeat(256), description: 'Texto' }, [
+      section({ title: ' ' }),
+    ])
+  ).toMatchObject({ title: true, sectionTitles: true });
+  expect(Object.values(validateIdeasPageForm(values, [section()]))).not.toContain(true);
+  expect(
+    validateIdeasPageForm({ ...values, subtitle: 'x'.repeat(256) }, [section()]).subtitle
+  ).toBe(true);
+});
+
+test('localiza rascunhos por seção e tipo, ignorando seções removidas', () => {
+  const drafts = {
+    first: [MediaType.VIDEO, MediaType.DOCUMENT],
+    second: [MediaType.IMAGE],
+    removed: [MediaType.AUDIO],
+  };
+  const sections = [
+    section({ id: 'first', title: 'Ideia salva' }),
+    section({ clientId: 'second', title: '' }),
+  ];
+  expect(pendingIdeasMedia(sections, drafts)).toEqual([
+    {
+      sectionKey: 'first',
+      sectionLabel: 'Ideia salva',
+      mediaType: MediaType.DOCUMENT,
+      mediaLabel: 'Documentos',
+    },
+    {
+      sectionKey: 'first',
+      sectionLabel: 'Ideia salva',
+      mediaType: MediaType.VIDEO,
+      mediaLabel: 'Vídeos',
+    },
+    {
+      sectionKey: 'second',
+      sectionLabel: 'Seção 2',
+      mediaType: MediaType.IMAGE,
+      mediaLabel: 'Imagens',
+    },
+  ]);
+  expect(pendingIdeasMedia(sections, {})).toEqual([]);
+});
+
+test('envia subtítulo e visibilidade da página sem perder a visibilidade das seções', () => {
+  const payload = buildIdeasPagePayload(
+    { ...values, subtitle: '  Complemento  ', public: true },
+    [section({ public: false })],
+    new FormData()
+  );
+  expect(payload).toMatchObject({
+    subtitle: 'Complemento',
+    public: true,
+    sections: [{ public: false }],
   });
 });

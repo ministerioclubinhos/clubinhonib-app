@@ -1,41 +1,15 @@
-import { useState } from 'react';
-import {
-  Badge,
-  Grid2,
-  Tab,
-  Tabs,
-  TextField,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { Badge, Box, Grid2, Tab, Tabs, TextField, useMediaQuery, useTheme } from '@mui/material';
+import type { MediaType } from '@/store/slices/types';
 
 import { MediaEditor, MEDIA_EDITOR_CONFIG } from '@/components/common/media';
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
-import { MediaItem } from '@/store/slices/types';
 
-import { IDEAS_MEDIA_TABS } from '../constants';
+import { IDEAS_MEDIA_TABS, IDEAS_MEDIA_TAB_ICONS, IDEAS_TITLE_MAX_LENGTH } from '../constants';
 import { mediasOfType, replaceMediasOfType } from '../utils';
 
-/** Parte editável comum a uma seção de ideias, seja rascunho ou já salva. */
-export interface IdeasSectionFieldsValue {
-  title: string;
-  description: string;
-  medias: MediaItem[];
-}
-
-interface IdeasSectionFieldsProps<T extends IdeasSectionFieldsValue> {
-  section: T;
-  onUpdate: (section: T) => void;
-  /** Usa os rótulos do fluxo em que o professor compartilha uma ideia. */
-  isCreationMode?: boolean;
-  /** Marca o título como pendente depois de uma tentativa de salvar. */
-  titleError?: boolean;
-  /**
-   * Informa que há uma mídia em edição, para que o formulário possa avisar
-   * antes de descartá-la.
-   */
-  onDraftChange?: (hasDraft: boolean) => void;
-}
+import type { IdeasSectionFieldsValue, IdeasSectionFieldsProps } from '../types';
+export type { IdeasSectionFieldsValue } from '../types';
 
 /**
  * Título, descrição e as abas de mídia de uma seção. Compartilhado pelo
@@ -47,31 +21,39 @@ export default function IdeasSectionFields<T extends IdeasSectionFieldsValue>({
   isCreationMode = false,
   titleError = false,
   onDraftChange,
+  focusRequest,
 }: IdeasSectionFieldsProps<T>) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [activeTab, setActiveTab] = useState(0);
 
-  const tab = IDEAS_MEDIA_TABS[activeTab];
+  const panelId = useId();
+  const [drafts, setDrafts] = useState<Partial<Record<MediaType, boolean>>>({});
+  const pendingTypes = useMemo(
+    () => IDEAS_MEDIA_TABS.filter((tab) => drafts[tab.mediaType]).map((tab) => tab.mediaType),
+    [drafts]
+  );
+  useEffect(() => {
+    onDraftChange?.(pendingTypes.length > 0, pendingTypes);
+  }, [pendingTypes, onDraftChange]);
+  useEffect(() => {
+    if (focusRequest)
+      setActiveTab(IDEAS_MEDIA_TABS.findIndex((tab) => tab.mediaType === focusRequest.mediaType));
+  }, [focusRequest]);
 
   return (
-    <>
-      <Grid2 data-testid="ideas-pages-ideas-section-fields" container spacing={2}>
+    <Box data-testid="ideas-pages-ideas-section-fields" sx={{ minWidth: 0 }}>
+      <Grid2 container spacing={2}>
         <Grid2 size={{ xs: 12, md: 5 }}>
           <TextField
-            label={
-              isCreationMode ? 'Título da sua ideia' : 'Título da seção'
-            }
+            label={isCreationMode ? 'Título da sua ideia' : 'Título da seção'}
             fullWidth
             required
             value={section.title}
-            onChange={(event) =>
-              onUpdate({ ...section, title: event.target.value })
-            }
+            onChange={(event) => onUpdate({ ...section, title: event.target.value })}
+            inputProps={{ maxLength: IDEAS_TITLE_MAX_LENGTH }}
             error={titleError}
-            helperText={
-              titleError ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''
-            }
+            helperText={titleError ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
           />
         </Grid2>
 
@@ -86,54 +68,89 @@ export default function IdeasSectionFields<T extends IdeasSectionFieldsValue>({
             multiline
             minRows={2}
             value={section.description}
-            onChange={(event) =>
-              onUpdate({ ...section, description: event.target.value })
-            }
+            onChange={(event) => onUpdate({ ...section, description: event.target.value })}
           />
         </Grid2>
       </Grid2>
 
-      <Tabs data-testid="ideas-pages-ideas-section-fields"
+      <Tabs
+        data-testid="ideas-section-media-tabs"
+        aria-label="Tipos de materiais"
         value={activeTab}
         onChange={(_event, value: number) => setActiveTab(value)}
-        variant={isMobile ? 'fullWidth' : 'standard'}
-        sx={{ mt: 2, mb: 2, borderBottom: 1, borderColor: 'divider' }}
+        variant="fullWidth"
+        sx={{ mt: 2, mb: 2, borderBottom: 1, borderColor: 'divider', minHeight: 56 }}
       >
-        {IDEAS_MEDIA_TABS.map((item) => {
+        {IDEAS_MEDIA_TABS.map((item, index) => {
           const total = mediasOfType(section.medias, item.mediaType).length;
+          const TabIcon = IDEAS_MEDIA_TAB_ICONS[item.mediaType];
 
           return (
             <Tab
               key={item.mediaType}
-              sx={{ minHeight: 48, textTransform: 'none' }}
-              label={
+              id={`${panelId}-tab-${item.mediaType}`}
+              aria-controls={`${panelId}-panel-${item.mediaType}`}
+              data-testid={`ideas-section-tab-${item.mediaType}`}
+              value={index}
+              icon={
                 <Badge
                   badgeContent={total}
                   color="primary"
-                  sx={{ '& .MuiBadge-badge': { right: -12, top: 4 } }}
+                  variant={drafts[item.mediaType] && !total ? 'dot' : 'standard'}
+                  invisible={!total && !drafts[item.mediaType]}
                 >
-                  {isMobile ? item.shortLabel : item.label}
+                  <TabIcon fontSize="small" />
                 </Badge>
+              }
+              iconPosition="top"
+              sx={{ minHeight: 56, minWidth: 0, px: 0.5, textTransform: 'none', fontSize: 12 }}
+              label={
+                <Box component="span">
+                  {isMobile ? item.shortLabel : item.label}
+                  {drafts[item.mediaType] && (
+                    <Box
+                      component="span"
+                      data-testid={`ideas-section-draft-${item.mediaType}`}
+                      sx={{ display: 'block', color: 'warning.dark', fontSize: '0.7rem' }}
+                    >
+                      Em edição
+                    </Box>
+                  )}
+                </Box>
               }
             />
           );
         })}
       </Tabs>
 
-      <MediaEditor data-testid="ideas-pages-ideas-section-fields"
-        // A troca de aba precisa remontar o editor: ele guarda o rascunho em
-        // estado local, que não faz sentido no outro tipo de mídia.
-        key={tab.mediaType}
-        config={MEDIA_EDITOR_CONFIG[tab.mediaType]}
-        items={mediasOfType(section.medias, tab.mediaType)}
-        onChange={(items) =>
-          onUpdate({
-            ...section,
-            medias: replaceMediasOfType(section.medias, tab.mediaType, items),
-          })
-        }
-        onDraftChange={onDraftChange}
-      />
-    </>
+      {IDEAS_MEDIA_TABS.map((item, index) => (
+        <Box
+          key={item.mediaType}
+          role="tabpanel"
+          hidden={activeTab !== index}
+          id={`${panelId}-panel-${item.mediaType}`}
+          aria-labelledby={`${panelId}-tab-${item.mediaType}`}
+          data-testid={`ideas-section-panel-${item.mediaType}`}
+        >
+          <MediaEditor
+            config={MEDIA_EDITOR_CONFIG[item.mediaType]}
+            items={mediasOfType(section.medias, item.mediaType)}
+            onChange={(items) =>
+              onUpdate({
+                ...section,
+                medias: replaceMediasOfType(section.medias, item.mediaType, items),
+              })
+            }
+            onDraftChange={(hasDraft) =>
+              setDrafts((previous) =>
+                previous[item.mediaType] === hasDraft
+                  ? previous
+                  : { ...previous, [item.mediaType]: hasDraft }
+              )
+            }
+          />
+        </Box>
+      ))}
+    </Box>
   );
 }

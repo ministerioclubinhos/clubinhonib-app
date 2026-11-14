@@ -1,18 +1,9 @@
 import { useState } from 'react';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Paper,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Paper, Stack, Typography } from '@mui/material';
 import type { IdeaAiMediaCompareProps, IdeasSectionMedia } from '../../types';
 import { IDEA_AI_COMPARE_COLUMNS } from '../../ai-constants';
 import IdeaAiChoice from './IdeaAiChoice';
+import IdeasMediaPreviewDialog from '../IdeasMediaPreviewDialog';
 export default function IdeaAiDocumentCompare({
   original,
   result,
@@ -89,30 +80,7 @@ export default function IdeaAiDocumentCompare({
           Original mantido.
         </Typography>
       )}
-      <Dialog
-        data-testid="idea-ai-document-dialog"
-        open={Boolean(preview)}
-        onClose={() => setPreview(null)}
-        fullWidth
-        maxWidth="lg"
-      >
-        <DialogTitle>{preview?.originalName ?? 'Documento'}</DialogTitle>
-        <DialogContent>
-          {preview && (
-            <Box
-              component="iframe"
-              src={preview.url}
-              title={`PDF: ${preview.originalName ?? 'ideia'}`}
-              sx={{ width: '100%', height: '70vh', border: 0 }}
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button type="button" onClick={() => setPreview(null)}>
-            Fechar
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <IdeasMediaPreviewDialog media={preview} onClose={() => setPreview(null)} />
     </Stack>
   );
 }

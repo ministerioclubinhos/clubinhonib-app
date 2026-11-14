@@ -1,3 +1,10 @@
+import type { IdeasPageFormErrors, IdeasPageListFilters } from './types';
+import {
+  AudiotrackOutlined,
+  DescriptionOutlined,
+  ImageOutlined,
+  MovieOutlined,
+} from '@mui/icons-material';
 import { MediaType } from '@/store/slices/types';
 
 /** Caminho base dos endpoints da página de ideias. */
@@ -26,8 +33,7 @@ export const IDEAS_PAGE_ROUTES = {
 } as const;
 
 /** Caminho da edição de uma página específica. */
-export const ideasPageEditPath = (id: string): string =>
-  `${IDEAS_PAGE_ROUTES.EDIT}/${id}`;
+export const ideasPageEditPath = (id: string): string => `${IDEAS_PAGE_ROUTES.EDIT}/${id}`;
 
 /** Tamanho de página padrão e opções oferecidas na paginação. */
 export const IDEAS_PAGES_DEFAULT_LIMIT = 12;
@@ -71,4 +77,40 @@ export const IDEAS_MEDIA_TABS: ReadonlyArray<{
   { mediaType: MediaType.DOCUMENT, label: 'Documentos', shortLabel: 'Docs' },
   { mediaType: MediaType.IMAGE, label: 'Imagens', shortLabel: 'Fotos' },
   { mediaType: MediaType.VIDEO, label: 'Vídeos', shortLabel: 'Vídeos' },
+  { mediaType: MediaType.AUDIO, label: 'Áudios', shortLabel: 'Áudios' },
 ];
+
+export const IDEAS_TITLE_MAX_LENGTH = 255;
+export const IDEAS_PAGE_SAVE_TIMEOUT_MS = 300_000;
+export const IDEAS_PAGE_NO_ERRORS: IdeasPageFormErrors = {
+  title: false,
+  subtitle: false,
+  description: false,
+  sections: false,
+  sectionTitles: false,
+};
+export const IDEAS_PAGE_INITIAL_FILTERS: IdeasPageListFilters = {
+  visibility: '',
+  sort: 'createdAt',
+  order: 'DESC',
+};
+
+/** Captura `sections.<índice>.…` nos caminhos de erro devolvidos pela API. */
+export const IDEAS_SECTION_ERROR_PATH = /^sections\.(\d+)\./;
+
+/** Acima disto, a página abre com as seções recolhidas. */
+export const IDEAS_AUTO_COLLAPSE_THRESHOLD = 3;
+
+/** A partir disto a busca por seção aparece. */
+export const IDEAS_SECTION_SEARCH_THRESHOLD = 6;
+
+/** Prefixo do id de âncora de cada seção, usado pelo índice lateral. */
+export const IDEAS_SECTION_ANCHOR_PREFIX = 'ideas-section-';
+
+/** Ícone de cada aba de mídia: o ícone reconhece o tipo mais rápido que o rótulo. */
+export const IDEAS_MEDIA_TAB_ICONS = {
+  [MediaType.DOCUMENT]: DescriptionOutlined,
+  [MediaType.IMAGE]: ImageOutlined,
+  [MediaType.VIDEO]: MovieOutlined,
+  [MediaType.AUDIO]: AudiotrackOutlined,
+} as const;

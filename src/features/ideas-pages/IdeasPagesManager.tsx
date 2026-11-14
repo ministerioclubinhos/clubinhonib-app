@@ -39,8 +39,7 @@ export default function IdeasPagesManager() {
     refresh,
   } = useIdeasPages();
 
-  const { saving, actionError, setActionError, remove } =
-    useIdeasPageMutations(refresh);
+  const { saving, actionError, setActionError, remove } = useIdeasPageMutations(refresh);
 
   const [toDelete, setToDelete] = useState<IdeasPageSummary | null>(null);
 
@@ -61,16 +60,14 @@ export default function IdeasPagesManager() {
       label: 'Situação',
       value: filters.visibility,
       options: [...IDEAS_PAGE_VISIBILITY_OPTIONS],
-      onChange: (value) =>
-        setFilters((previous) => ({ ...previous, visibility: value })),
+      onChange: (value) => setFilters((previous) => ({ ...previous, visibility: value })),
     },
     {
       id: 'sort',
       label: 'Ordenar por',
       value: `${filters.sort}:${filters.order}`,
       options: [...IDEAS_PAGE_SORT_OPTIONS],
-      onChange: (value) =>
-        setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
+      onChange: (value) => setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
     },
   ];
 
@@ -87,7 +84,8 @@ export default function IdeasPagesManager() {
   );
 
   return (
-    <ListingLayout data-testid="ideas-pages-ideas-pages-manager"
+    <ListingLayout
+      data-testid="ideas-pages-ideas-pages-manager"
       title="Páginas de ideias"
       summary={`${total} ${total === 1 ? 'página' : 'páginas'}`}
       toolbar={

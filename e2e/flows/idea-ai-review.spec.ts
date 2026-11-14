@@ -25,7 +25,7 @@ test('compares text, documents and images and publishes choices bound to the att
   await expect(page.getByTestId('idea-ai-compare-panel')).toBeVisible();
   await expect(page.locator('[data-testid^="idea-ai-text-compare-"]')).toHaveCount(2);
   await page.getByTestId('idea-ai-document-preview').first().click();
-  await expect(page.getByTestId('idea-ai-document-dialog')).toBeVisible();
+  await expect(page.getByTestId('ideas-media-preview-dialog')).toBeVisible();
   await page.getByRole('button', { name: 'Fechar', exact: true }).click();
   await expect(page.getByTestId('idea-ai-document-docx')).toHaveAttribute(
     'href',
@@ -266,7 +266,9 @@ test('targeted regeneration sends scope and instructions; cancel and restore cal
 
   await page.getByTestId('idea-ai-history').click();
   await page.getByTestId('idea-ai-restore-1').click();
-  await expect.poll(() => requests[1]).toBe(`PATCH /ideas-sections/${IDEA_ID}/ai-enhancement/${previous.id}/current`);
+  await expect
+    .poll(() => requests[1])
+    .toBe(`PATCH /ideas-sections/${IDEA_ID}/ai-enhancement/${previous.id}/current`);
 
   idea.aiEnhancement!.activeAttempt = {
     ...previous,
@@ -308,7 +310,9 @@ test('publishes the admin-edited AI text with the choices', async ({ page }) => 
   await page.getByTestId('idea-ai-confirm-choices').getByRole('checkbox').check();
   await page.getByTestId('idea-review-publish').click();
   await expect.poll(() => published).toContain('"description":"ENHANCED"');
-  expect(published).toContain('"description":"Forme 2 equipes e separe 3 bolas. Leia João 3:16 juntos."');
+  expect(published).toContain(
+    '"description":"Forme 2 equipes e separe 3 bolas. Leia João 3:16 juntos."'
+  );
 });
 
 test('without a configured provider the review explains it and stays publishable', async ({

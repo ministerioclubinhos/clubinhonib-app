@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { AppDispatch } from '@/store/slices';
 import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import {
-  FORM_VALIDATION_MESSAGES,
-  GENERIC_ERROR_MESSAGES,
-} from '@/constants/errorMessages';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 // O guarda de alterações não salvas é o mesmo em todos os formulários.
@@ -16,36 +13,37 @@ export { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { useAbortController, useDebouncedValue } from '@/hooks';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import { apiCreateIdeasPage, apiDeleteIdeasPage, apiGetIdeasPage, apiListIdeasPages, apiUpdateIdeasPage } from './api';
-import { IDEAS_PAGES_DEFAULT_LIMIT } from './constants';
+import {
+  apiCreateIdeasPage,
+  apiDeleteIdeasPage,
+  apiGetIdeasPage,
+  apiListIdeasPages,
+  apiUpdateIdeasPage,
+} from './api';
+import {
+  IDEAS_PAGES_DEFAULT_LIMIT,
+  IDEAS_PAGE_NO_ERRORS as NO_ERRORS,
+  IDEAS_PAGE_INITIAL_FILTERS as INITIAL_FILTERS,
+} from './constants';
 import {
   IdeasPageFormErrors,
+  IdeasPageFeedback,
+  IdeasPageListFilters,
+  UseIdeasPageFormParams,
+  UseIdeasPageFormResult,
   IdeasPageFormValues,
   IdeasPageResponse,
-  IdeasPageSortField,
-  IdeasPageSortOrder,
   IdeasPageSummary,
+  IdeasSectionApiErrors,
   IdeasSectionDraft,
 } from './types';
 import {
   buildIdeasPageFormData,
+  validateIdeasPageForm,
   toFormValues,
   toSectionDrafts,
+  sectionApiErrorsFrom,
 } from './utils';
-
-/** Filtros que a tela envia à API. */
-interface IdeasPageListFilters {
-  /** `''` para todas; `'true'`/`'false'` para o recorte de visibilidade. */
-  visibility: string;
-  sort: IdeasPageSortField;
-  order: IdeasPageSortOrder;
-}
-
-const INITIAL_FILTERS: IdeasPageListFilters = {
-  visibility: '',
-  sort: 'createdAt',
-  order: 'DESC',
-};
 
 /** Página de páginas de ideias, com busca e filtros resolvidos pela API. */
 export function useIdeasPages() {
@@ -78,22 +76,17 @@ export function useIdeasPages() {
             page,
             limit: pageSize,
             searchString: debouncedSearch.trim() || undefined,
-            public:
-              filters.visibility === ''
-                ? undefined
-                : filters.visibility === 'true',
+            public: filters.visibility === '' ? undefined : filters.visibility === 'true',
             sort: filters.sort,
             order: filters.order,
           },
-          { signal: controller.signal },
+          { signal: controller.signal }
         );
         setItems(Array.isArray(data?.data) ? data.data : []);
         setTotal(Number(data?.total ?? 0));
       } catch (err: unknown) {
         if (isCancelledRequest(err)) return;
-        setError(
-          extractErrorMessage(err, 'Erro ao carregar as páginas de ideias'),
-        );
+        setError(extractErrorMessage(err, 'Erro ao carregar as páginas de ideias'));
         setItems([]);
         setTotal(0);
       } finally {
@@ -147,7 +140,7 @@ export function useIdeasPageMutations(refresh: () => void) {
         setSaving(false);
       }
     },
-    [dispatch, refresh],
+    [dispatch, refresh]
   );
 
   return { saving, actionError, setActionError, remove };
@@ -165,6 +158,8 @@ export function useIdeasPageById(id: string | undefined) {
   const [error, setError] = useState('');
 
   const nextController = useAbortController();
+  const [retryToken, setRetryToken] = useState(0);
+  const retry = useCallback(() => setRetryToken((value) => value + 1), []);
 
   useEffect(() => {
     if (!id) {
@@ -178,9 +173,10 @@ export function useIdeasPageById(id: string | undefined) {
     const run = async () => {
       setLoading(true);
       setError('');
+      setPage(null);
       try {
         const data = await apiGetIdeasPage(id, { signal: controller.signal });
-        setPage(data);
+        if (!controller.signal.aborted) setPage(data);
       } catch (err: unknown) {
         if (isCancelledRequest(err)) return;
         setError(extractErrorMessage(err, 'Erro ao carregar a página'));
@@ -191,42 +187,10 @@ export function useIdeasPageById(id: string | undefined) {
     };
 
     void run();
-  }, [id, nextController]);
+    return () => controller.abort();
+  }, [id, nextController, retryToken]);
 
-  return { page, loading, error };
-}
-
-const NO_ERRORS: IdeasPageFormErrors = {
-  title: false,
-  description: false,
-  sections: false,
-  sectionTitles: false,
-};
-
-interface UseIdeasPageFormParams {
-  isCreation: boolean;
-  page: IdeasPageResponse | null;
-}
-
-interface Feedback {
-  message: string;
-  severity: 'success' | 'error';
-}
-
-interface UseIdeasPageFormResult {
-  values: IdeasPageFormValues;
-  setValue: <K extends keyof IdeasPageFormValues>(
-    key: K,
-    value: IdeasPageFormValues[K],
-  ) => void;
-  sections: IdeasSectionDraft[];
-  setSections: (sections: IdeasSectionDraft[]) => void;
-  errors: IdeasPageFormErrors;
-  isDirty: boolean;
-  saving: boolean;
-  feedback: Feedback | null;
-  dismissFeedback: () => void;
-  save: () => Promise<void>;
+  return { page, loading, error, retry };
 }
 
 /** Estado, validação e submissão do formulário de página de ideias. */
@@ -238,48 +202,47 @@ export function useIdeasPageForm({
   const navigate = useNavigate();
 
   const [values, setValues] = useState<IdeasPageFormValues>(() =>
-    toFormValues(isCreation ? null : page),
+    toFormValues(isCreation ? null : page)
   );
   const [sections, setSectionsState] = useState<IdeasSectionDraft[]>(() =>
-    toSectionDrafts(isCreation ? null : page),
+    toSectionDrafts(isCreation ? null : page)
   );
   const [errors, setErrors] = useState<IdeasPageFormErrors>(NO_ERRORS);
+  const [sectionApiErrors, setSectionApiErrors] = useState<IdeasSectionApiErrors>({});
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [feedback, setFeedback] = useState<IdeasPageFeedback | null>(null);
 
   useEffect(() => {
     setValues(toFormValues(isCreation ? null : page));
     setSectionsState(toSectionDrafts(isCreation ? null : page));
     setErrors(NO_ERRORS);
+    setSectionApiErrors({});
     setIsDirty(false);
   }, [isCreation, page]);
 
   const setValue = useCallback(
-    <K extends keyof IdeasPageFormValues>(
-      key: K,
-      value: IdeasPageFormValues[K],
-    ) => {
+    <K extends keyof IdeasPageFormValues>(key: K, value: IdeasPageFormValues[K]) => {
       setValues((previous) => ({ ...previous, [key]: value }));
       setIsDirty(true);
     },
-    [],
+    []
   );
 
   const setSections = useCallback((next: IdeasSectionDraft[]) => {
     setSectionsState(next);
+    // Os índices da API deixam de valer quando a lista muda.
+    setSectionApiErrors({});
     setIsDirty(true);
   }, []);
+
+  const savingRef = useRef(false);
 
   const dismissFeedback = useCallback(() => setFeedback(null), []);
 
   const save = useCallback(async () => {
-    const nextErrors: IdeasPageFormErrors = {
-      title: !values.title.trim(),
-      description: !values.description.trim(),
-      sections: sections.length === 0,
-      sectionTitles: sections.some((section) => !section.title.trim()),
-    };
+    if (savingRef.current) return;
+    const nextErrors = validateIdeasPageForm(values, sections);
     setErrors(nextErrors);
 
     if (Object.values(nextErrors).some(Boolean)) {
@@ -300,13 +263,12 @@ export function useIdeasPageForm({
       return;
     }
 
+    savingRef.current = true;
+    setFeedback(null);
+    setSectionApiErrors({});
     setSaving(true);
     try {
-      const formData = buildIdeasPageFormData(
-        values,
-        sections,
-        isCreation ? undefined : page?.id,
-      );
+      const formData = buildIdeasPageFormData(values, sections, isCreation ? undefined : page?.id);
 
       const saved = isCreation
         ? await apiCreateIdeasPage(formData)
@@ -322,6 +284,7 @@ export function useIdeasPageForm({
       });
       navigate(`/${saved.route.path}`);
     } catch (saveError: unknown) {
+      setSectionApiErrors(sectionApiErrorsFrom(saveError));
       // A API diz o que recusou — arquivo ausente, sessão expirada, payload
       // grande demais, validação. Trocar isso por um texto fixo deixava o
       // administrador sem a única informação capaz de guiar a próxima
@@ -331,6 +294,7 @@ export function useIdeasPageForm({
         severity: 'error',
       });
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }, [values, sections, isCreation, page, dispatch, navigate]);
@@ -341,6 +305,7 @@ export function useIdeasPageForm({
     sections,
     setSections,
     errors,
+    sectionApiErrors,
     isDirty,
     saving,
     feedback,

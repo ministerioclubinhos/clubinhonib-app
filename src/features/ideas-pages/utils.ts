@@ -1,24 +1,26 @@
-import {
-  MediaItem,
-  MediaPlatform,
-  MediaType,
-  MediaUploadType,
-} from '@/store/slices/types';
+import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 import {
   IDEAS_FALLBACK_FILE_EXTENSION,
+  IDEAS_TITLE_MAX_LENGTH,
   IDEAS_MEDIA_FILE_PREFIX,
+  IDEAS_MEDIA_TABS,
   IDEAS_PAGE_CARD_DESCRIPTION_MAX_CHARS,
   IDEAS_PAGE_PAYLOAD_FIELD,
+  IDEAS_SECTION_ERROR_PATH,
 } from './constants';
 import {
   IdeasMediaRequest,
+  IdeasPageFormErrors,
   IdeasPageFormValues,
   IdeasPageRequest,
   IdeasPageResponse,
   IdeasPageSortField,
   IdeasPageSortOrder,
   IdeasSectionDraft,
+  IdeasPendingMedia,
+  IdeasSectionApiErrors,
 } from './types';
+import { getApiErrorDetails } from '@/utils/apiError';
 
 /** Data no formato do Brasil, ou um aviso quando não há data. */
 export const formatPtBrDate = (iso?: string): string =>
@@ -27,7 +29,7 @@ export const formatPtBrDate = (iso?: string): string =>
 /** Recorta um texto para exibição em card. */
 export const truncate = (
   text: string = '',
-  max: number = IDEAS_PAGE_CARD_DESCRIPTION_MAX_CHARS,
+  max: number = IDEAS_PAGE_CARD_DESCRIPTION_MAX_CHARS
 ): string => (text.length > max ? `${text.slice(0, max)}...` : text);
 
 /** Copia um texto para a área de transferência. */
@@ -43,9 +45,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 /** Extensão do arquivo, ou a de reserva quando o nome não tem uma. */
 export const fileExtensionOf = (fileName: string): string => {
   const parts = fileName.split('.');
-  return parts.length > 1
-    ? (parts.pop() as string)
-    : IDEAS_FALLBACK_FILE_EXTENSION;
+  return parts.length > 1 ? (parts.pop() as string) : IDEAS_FALLBACK_FILE_EXTENSION;
 };
 
 /**
@@ -57,7 +57,7 @@ export const buildMediaFieldKey = (
   mediaType: MediaType,
   sectionIndex: number,
   mediaIndex: number,
-  fileName: string,
+  fileName: string
 ): string =>
   `${IDEAS_MEDIA_FILE_PREFIX[mediaType]}_${sectionIndex}_${mediaIndex}.${fileExtensionOf(fileName)}`;
 
@@ -74,26 +74,21 @@ export const toMediaRequest = (
   media: MediaItem,
   sectionIndex: number,
   mediaIndex: number,
-  formData: FormData,
+  formData: FormData
 ): IdeasMediaRequest => {
   const hasNewFile = Boolean(media.file);
   const fieldKey =
     hasNewFile && media.file
-      ? buildMediaFieldKey(
-          media.mediaType,
-          sectionIndex,
-          mediaIndex,
-          media.file.name,
-        )
+      ? buildMediaFieldKey(media.mediaType, sectionIndex, mediaIndex, media.file.name)
       : undefined;
 
   if (fieldKey && media.file) {
-    formData.append(fieldKey, media.file, fieldKey);
+    formData.append(fieldKey, media.file, media.file.name);
   }
 
   return {
     ...(media.id ? { id: media.id } : {}),
-    title: media.title || '',
+    title: media.title.trim(),
     description: media.description || '',
     mediaType: media.mediaType,
     uploadType: media.uploadType,
@@ -112,18 +107,20 @@ export const buildIdeasPagePayload = (
   values: IdeasPageFormValues,
   sections: IdeasSectionDraft[],
   formData: FormData,
-  pageId?: string,
+  pageId?: string
 ): IdeasPageRequest => ({
   ...(pageId ? { id: pageId } : {}),
   title: values.title.trim(),
+  subtitle: values.subtitle?.trim(),
+  public: values.public,
   description: values.description.trim(),
   sections: sections.map((section, sectionIndex) => ({
     ...(section.id ? { id: section.id } : {}),
-    title: section.title,
+    title: section.title.trim(),
     description: section.description,
     public: section.public,
     medias: section.medias.map((media, mediaIndex) =>
-      toMediaRequest(media, sectionIndex, mediaIndex, formData),
+      toMediaRequest(media, sectionIndex, mediaIndex, formData)
     ),
   })),
 });
@@ -132,33 +129,31 @@ export const buildIdeasPagePayload = (
 export const buildIdeasPageFormData = (
   values: IdeasPageFormValues,
   sections: IdeasSectionDraft[],
-  pageId?: string,
+  pageId?: string
 ): FormData => {
   const formData = new FormData();
 
   formData.append(
     IDEAS_PAGE_PAYLOAD_FIELD,
-    JSON.stringify(buildIdeasPagePayload(values, sections, formData, pageId)),
+    JSON.stringify(buildIdeasPagePayload(values, sections, formData, pageId))
   );
 
   return formData;
 };
 
 /** Valores iniciais do formulário a partir da página carregada. */
-export const toFormValues = (
-  page: IdeasPageResponse | null,
-): IdeasPageFormValues => ({
+export const toFormValues = (page: IdeasPageResponse | null): IdeasPageFormValues => ({
   title: page?.title ?? '',
+  subtitle: page?.subtitle ?? '',
+  public: page?.public ?? false,
   description: page?.description ?? '',
 });
 
 /** Seções da página no formato editável do formulário. */
-export const toSectionDrafts = (
-  page: IdeasPageResponse | null,
-): IdeasSectionDraft[] =>
+export const toSectionDrafts = (page: IdeasPageResponse | null): IdeasSectionDraft[] =>
   (page?.sections ?? []).map((section) => ({
     id: section.id,
-    title: section.title,
+    title: section.title.trim(),
     description: section.description,
     public: section.public,
     medias: (section.medias ?? []).map(
@@ -175,15 +170,13 @@ export const toSectionDrafts = (
         size: media.size,
         // O arquivo só existe quando o admin escolhe um novo nesta sessão.
         file: undefined,
-      }),
+      })
     ),
   }));
 
 /** Mídias de uma seção filtradas por tipo, preservando a ordem original. */
-export const mediasOfType = (
-  medias: MediaItem[],
-  mediaType: MediaType,
-): MediaItem[] => medias.filter((media) => media.mediaType === mediaType);
+export const mediasOfType = (medias: MediaItem[], mediaType: MediaType): MediaItem[] =>
+  medias.filter((media) => media.mediaType === mediaType);
 
 /**
  * Substitui as mídias de um tipo preservando as dos demais. A ordem entre
@@ -193,16 +186,12 @@ export const mediasOfType = (
 export const replaceMediasOfType = (
   medias: MediaItem[],
   mediaType: MediaType,
-  next: MediaItem[],
-): MediaItem[] => [
-  ...medias.filter((media) => media.mediaType !== mediaType),
-  ...next,
-];
+  next: MediaItem[]
+): MediaItem[] => [...medias.filter((media) => media.mediaType !== mediaType), ...next];
 
 /** Total de mídias em todas as seções. */
 export const countMedia = (sections: IdeasSectionDraft[]): number =>
   sections.reduce((total, section) => total + section.medias.length, 0);
-
 
 /**
  * Formata a data que a API devolve em ISO.
@@ -227,3 +216,90 @@ export function parseSortOption(value: string): {
     order: order === 'ASC' ? 'ASC' : 'DESC',
   };
 }
+
+export const createIdeasSectionDraft = (): IdeasSectionDraft => ({
+  clientId: crypto.randomUUID(),
+  title: '',
+  description: '',
+  public: false,
+  medias: [],
+});
+
+export const validateIdeasPageForm = (
+  values: IdeasPageFormValues,
+  sections: IdeasSectionDraft[]
+): IdeasPageFormErrors => ({
+  title: !values.title.trim() || values.title.length > IDEAS_TITLE_MAX_LENGTH,
+  subtitle: (values.subtitle?.length ?? 0) > IDEAS_TITLE_MAX_LENGTH,
+  description: !values.description.trim(),
+  sections: sections.length === 0,
+  sectionTitles: sections.some(
+    (section) => !section.title.trim() || section.title.length > IDEAS_TITLE_MAX_LENGTH
+  ),
+});
+
+/** Only drafts in sections still present can block saving. */
+export const pendingIdeasMedia = (
+  sections: IdeasSectionDraft[],
+  drafts: Record<string, MediaType[]>
+): IdeasPendingMedia[] =>
+  sections.flatMap((section, index) => {
+    const sectionKey = section.id ?? section.clientId ?? '';
+    return IDEAS_MEDIA_TABS.filter((tab) => drafts[sectionKey]?.includes(tab.mediaType)).map(
+      (tab) => ({
+        sectionKey,
+        sectionLabel: section.title.trim() || `Seção ${index + 1}`,
+        mediaType: tab.mediaType,
+        mediaLabel: tab.label,
+      })
+    );
+  });
+
+const isFieldError = (value: unknown): value is { field: string; message: string } =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as { field?: unknown }).field === 'string' &&
+  typeof (value as { message?: unknown }).message === 'string';
+
+/**
+ * Agrupa por seção os `fieldErrors` da API, para o editor apontar onde está o
+ * problema. Erros fora de `sections.N.*` ficam só na mensagem geral.
+ */
+export const sectionApiErrorsFrom = (error: unknown): IdeasSectionApiErrors => {
+  const fieldErrors = getApiErrorDetails(error)?.fieldErrors;
+  if (!Array.isArray(fieldErrors)) return {};
+  return fieldErrors.filter(isFieldError).reduce<IdeasSectionApiErrors>((grouped, item) => {
+    const match = IDEAS_SECTION_ERROR_PATH.exec(item.field);
+    if (!match) return grouped;
+    const index = Number(match[1]);
+    const messages = grouped[index] ?? [];
+    return messages.includes(item.message)
+      ? grouped
+      : { ...grouped, [index]: [...messages, item.message] };
+  }, {});
+};
+
+/** Chave estável da seção: o id salvo ou o id local de uma seção nova. */
+export const sectionKeyOf = (section: IdeasSectionDraft): string =>
+  section.id ?? section.clientId ?? '';
+
+/** True quando o título (ou o número) da seção contém a busca. */
+export const sectionMatchesQuery = (
+  section: IdeasSectionDraft,
+  index: number,
+  query: string
+): boolean => {
+  const term = query.trim().toLocaleLowerCase('pt-BR');
+  if (!term) return true;
+  return section.title.toLocaleLowerCase('pt-BR').includes(term) || String(index + 1) === term;
+};
+
+/** Quantas mídias de cada tipo a seção tem, só os tipos presentes. */
+export const mediaCountsOf = (
+  section: IdeasSectionDraft
+): Array<{ mediaType: MediaType; label: string; count: number }> =>
+  IDEAS_MEDIA_TABS.map((tab) => ({
+    mediaType: tab.mediaType,
+    label: tab.shortLabel,
+    count: mediasOfType(section.medias, tab.mediaType).length,
+  })).filter((item) => item.count > 0);

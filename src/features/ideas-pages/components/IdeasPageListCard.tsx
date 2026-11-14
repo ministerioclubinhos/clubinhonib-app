@@ -20,12 +20,7 @@ interface Props {
 }
 
 /** Card de uma página de ideias na listagem do painel. */
-export default function IdeasPageListCard({
-  page,
-  onOpen,
-  onEdit,
-  onDelete,
-}: Props) {
+export default function IdeasPageListCard({ page, onOpen, onEdit, onDelete }: Props) {
   const badges: ListingBadge[] = [
     page.public
       ? { label: 'Publicada', color: 'success' }
@@ -56,7 +51,8 @@ export default function IdeasPageListCard({
   }
 
   return (
-    <ListingCard data-testid={`ideas-pages-ideas-page-list-card-${page.id}`}
+    <ListingCard
+      data-testid={`ideas-pages-ideas-page-list-card-${page.id}`}
       avatar={<LightbulbOutlinedIcon fontSize="small" />}
       title={page.title}
       subtitle={page.subtitle || undefined}

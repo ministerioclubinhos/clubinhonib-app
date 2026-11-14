@@ -8,10 +8,7 @@ interface MediaPreviewProps {
 }
 
 /** Inline preview of a media item inside the admin editor list. */
-export default function MediaPreview({
-  item,
-  mediaType,
-}: MediaPreviewProps) {
+export default function MediaPreview({ item, mediaType }: MediaPreviewProps) {
   if (mediaType === MediaType.VIDEO) {
     return item.uploadType === MediaUploadType.LINK ? (
       <Box data-testid="media-media-preview" sx={{ aspectRatio: '16/9' }}>
@@ -31,7 +28,8 @@ export default function MediaPreview({
 
   if (mediaType === MediaType.IMAGE) {
     return (
-      <Box data-testid="media-media-preview"
+      <Box
+        data-testid="media-media-preview"
         component="img"
         src={item.url}
         alt={item.title}

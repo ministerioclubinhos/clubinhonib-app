@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import StopCircleOutlined from '@mui/icons-material/StopCircleOutlined';
@@ -20,6 +21,7 @@ import {
   IdeaAiSnapshotSource,
   IdeaAiStatus,
   type IdeaAiStatusPanelProps,
+  type IdeasSectionMedia,
 } from '../../types';
 import { formatDateTime } from '../../utils';
 import { IDEA_AI_ERROR_LABELS, IDEA_AI_SCOPE_LABELS } from '../../ai-constants';
@@ -30,6 +32,7 @@ import {
   isIdeaAiInfraError,
 } from '../../ai-utils';
 import IdeaAiStatusChip from './IdeaAiStatusChip';
+import IdeasMediaPreviewDialog from '../IdeasMediaPreviewDialog';
 import IdeaAiAttemptHistory from './IdeaAiAttemptHistory';
 
 /**
@@ -47,6 +50,7 @@ export default function IdeaAiStatusPanel({
   disabled,
   error,
 }: IdeaAiStatusPanelProps) {
+  const [previewMedia, setPreviewMedia] = useState<IdeasSectionMedia | null>(null);
   const detail = section.aiEnhancement;
   const original = detail?.snapshot;
   const result = detail?.currentResult;
@@ -159,17 +163,17 @@ export default function IdeaAiStatusPanel({
       {!published && (detail?.enabled !== false || active) && (
         <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} alignItems={{ sm: 'center' }}>
           {detail?.enabled !== false && (
-          <Button
-            type="button"
-            variant={result ? 'outlined' : 'contained'}
-            data-testid="idea-ai-reprocess"
-            startIcon={<AutoAwesomeOutlined />}
-            onClick={onRegenerate}
-            disabled={disabled || busy || Boolean(block)}
-            sx={{ minHeight: 44, textTransform: 'none' }}
-          >
-            {history.length ? 'Regenerar com IA…' : 'Melhorar ideia com IA…'}
-          </Button>
+            <Button
+              type="button"
+              variant={result ? 'outlined' : 'contained'}
+              data-testid="idea-ai-reprocess"
+              startIcon={<AutoAwesomeOutlined />}
+              onClick={onRegenerate}
+              disabled={disabled || busy || Boolean(block)}
+              sx={{ minHeight: 44, textTransform: 'none' }}
+            >
+              {history.length ? 'Regenerar com IA…' : 'Melhorar ideia com IA…'}
+            </Button>
           )}
           {active && (
             <Button
@@ -217,10 +221,8 @@ export default function IdeaAiStatusPanel({
                 <Button
                   key={media.id}
                   data-testid={`idea-ai-published-media-${media.id}`}
-                  component="a"
-                  href={media.url}
-                  target="_blank"
-                  rel="noreferrer"
+                  type="button"
+                  onClick={() => setPreviewMedia(media)}
                   sx={{ minHeight: 44, justifyContent: 'flex-start', overflowWrap: 'anywhere' }}
                 >
                   {media.originalName || media.title || 'Material publicado'}
@@ -253,6 +255,7 @@ export default function IdeaAiStatusPanel({
         busy={disabled || busy}
         onRestore={onRestore}
       />
+      <IdeasMediaPreviewDialog media={previewMedia} onClose={() => setPreviewMedia(null)} />
     </Stack>
   );
 }

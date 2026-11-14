@@ -1,9 +1,4 @@
-import type {
-  MediaItem,
-  MediaPlatform,
-  MediaType,
-  MediaUploadType,
-} from '@/store/slices/types';
+import type { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 import type { Type as RouteType } from '@/store/slices/route/routeSlice';
 
 /** Mídia de uma seção, como a API devolve. */
@@ -106,6 +101,7 @@ export interface IdeasPageResponse {
 
 /** Seção em edição no formulário. */
 export interface IdeasSectionDraft {
+  clientId?: string;
   /** Presente apenas quando a seção já veio da API. */
   id?: string;
   title: string;
@@ -116,6 +112,8 @@ export interface IdeasSectionDraft {
 
 /** Campos da página editados no formulário. */
 export interface IdeasPageFormValues {
+  subtitle?: string;
+  public?: boolean;
   title: string;
   description: string;
 }
@@ -123,6 +121,7 @@ export interface IdeasPageFormValues {
 /** Quais campos obrigatórios estão pendentes. */
 export interface IdeasPageFormErrors {
   title: boolean;
+  subtitle: boolean;
   description: boolean;
   /** Nenhuma seção foi adicionada. */
   sections: boolean;
@@ -156,8 +155,102 @@ export interface IdeasSectionRequest {
 
 /** JSON enviado no campo multipart `ideasMaterialsPageData`. */
 export interface IdeasPageRequest {
+  subtitle?: string;
+  public?: boolean;
   id?: string;
   title: string;
   description: string;
   sections: IdeasSectionRequest[];
+}
+
+/** Erro de campo devolvido pela API em `error.details.fieldErrors`. */
+export interface IdeasApiFieldError {
+  field: string;
+  message: string;
+}
+
+/** Mensagens da API agrupadas pelo índice (zero-based) da seção afetada. */
+export type IdeasSectionApiErrors = Record<number, string[]>;
+
+export interface IdeasPageFormProps {
+  fromTemplatePage?: boolean;
+}
+export interface IdeasSectionEditorProps {
+  section: IdeasSectionDraft;
+  index: number;
+  onChange: (section: IdeasSectionDraft) => void;
+  onRemove: () => void;
+  titleError?: boolean;
+  /** Mensagens que a API recusou nesta seção no último salvamento. */
+  apiErrors?: string[];
+  /** Estado controlado pela página, que sabe expandir/recolher todas. */
+  expanded: boolean;
+  onExpandedChange: (expanded: boolean) => void;
+  onDraftChange?: (hasDraft: boolean, mediaTypes: MediaType[]) => void;
+  focusRequest?: IdeasMediaFocusRequest;
+}
+/** Item do índice lateral de seções. */
+export interface IdeasSectionOutlineItem {
+  key: string;
+  index: number;
+  title: string;
+  public: boolean;
+  mediaCount: number;
+  hasError: boolean;
+  hasDraft: boolean;
+}
+export interface IdeasSectionOutlineProps {
+  items: IdeasSectionOutlineItem[];
+  onSelect: (key: string) => void;
+}
+export interface IdeasMediaFocusRequest {
+  sectionKey: string;
+  mediaType: MediaType;
+  sequence: number;
+}
+export interface IdeasPendingMedia {
+  sectionKey: string;
+  sectionLabel: string;
+  mediaType: MediaType;
+  mediaLabel: string;
+}
+export interface IdeasSectionFieldsValue {
+  title: string;
+  description: string;
+  medias: MediaItem[];
+}
+export interface IdeasSectionFieldsProps<T extends IdeasSectionFieldsValue> {
+  section: T;
+  onUpdate: (section: T) => void;
+  isCreationMode?: boolean;
+  titleError?: boolean;
+  onDraftChange?: (hasDraft: boolean, mediaTypes: MediaType[]) => void;
+  focusRequest?: IdeasMediaFocusRequest;
+}
+export interface IdeasPageListFilters {
+  visibility: string;
+  sort: IdeasPageSortField;
+  order: IdeasPageSortOrder;
+}
+export interface UseIdeasPageFormParams {
+  isCreation: boolean;
+  page: IdeasPageResponse | null;
+}
+export interface IdeasPageFeedback {
+  message: string;
+  severity: 'success' | 'error';
+}
+export interface UseIdeasPageFormResult {
+  values: IdeasPageFormValues;
+  setValue: <K extends keyof IdeasPageFormValues>(key: K, value: IdeasPageFormValues[K]) => void;
+  sections: IdeasSectionDraft[];
+  setSections: (sections: IdeasSectionDraft[]) => void;
+  errors: IdeasPageFormErrors;
+  /** Erros por seção devolvidos pela API; limpos ao editar ou salvar de novo. */
+  sectionApiErrors: IdeasSectionApiErrors;
+  isDirty: boolean;
+  saving: boolean;
+  feedback: IdeasPageFeedback | null;
+  dismissFeedback: () => void;
+  save: () => Promise<void>;
 }

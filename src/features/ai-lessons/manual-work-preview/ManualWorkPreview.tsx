@@ -1,5 +1,9 @@
 import { Alert, Box, Paper, Typography } from '@mui/material';
-import { MANUAL_WORK_COPY_IDS, MANUAL_WORK_PAGE_WIDTH } from './constants';
+import {
+  MANUAL_WORK_ART_ASPECT_RATIO,
+  MANUAL_WORK_COPY_IDS,
+  MANUAL_WORK_PAGE_WIDTH,
+} from './constants';
 import { ManualWorkPreviewProps } from './types';
 import { manualWorkPreviewData } from './utils';
 
@@ -31,26 +35,39 @@ export function ManualWorkPreview({ structuredData }: ManualWorkPreviewProps) {
           data-testid={`manual-work-copy-${copy}`}
           sx={{ border: '3px solid #000', p: 1, mt: copy === 'lower' ? 2 : 0 }}
         >
-          <Box
-            component="img"
-            data-testid={`manual-work-logo-${copy}`}
-            src="/header_direito.png"
-            alt="Clubinho Bíblico"
-            sx={{ display: 'block', width: 86, height: 43, objectFit: 'contain', mx: 'auto' }}
-          />
-          <Typography
-            data-testid={`manual-work-title-${copy}`}
-            align="center"
-            sx={{ fontSize: '10pt', fontWeight: 700 }}
-          >
-            TRABALHO MANUAL
-          </Typography>
+          {/* As in the PDF: logo on the left, black band at the centre. */}
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+            <Box sx={{ flex: 1 }}>
+              <Box
+                component="img"
+                data-testid={`manual-work-logo-${copy}`}
+                src="/header_direito.png"
+                alt="Clubinho Bíblico"
+                sx={{ display: 'block', width: 70, height: 35, objectFit: 'contain' }}
+              />
+            </Box>
+            <Typography
+              data-testid={`manual-work-title-${copy}`}
+              align="center"
+              sx={{
+                bgcolor: '#000',
+                color: '#fff',
+                fontSize: '10pt',
+                fontWeight: 700,
+                px: { xs: 2, sm: 6 },
+                py: 0.5,
+              }}
+            >
+              TRABALHO MANUAL
+            </Typography>
+            <Box sx={{ flex: 1 }} />
+          </Box>
           <Typography
             data-testid={`manual-work-verse-${copy}`}
             align="center"
-            sx={{ fontSize: '9pt', lineHeight: 1.25, mb: 0.5 }}
+            sx={{ fontSize: '10pt', fontWeight: 700, lineHeight: 1.25, mb: 0.5 }}
           >
-            {verse}
+            {verse.toLocaleUpperCase('pt-BR')}
           </Typography>
           <Box
             component="img"
@@ -60,8 +77,10 @@ export function ManualWorkPreview({ structuredData }: ManualWorkPreviewProps) {
             sx={{
               display: 'block',
               width: '100%',
-              height: { xs: 230, sm: 340 },
-              objectFit: 'contain',
+              // The art spans the whole frame, as in the PDF.
+              aspectRatio: String(MANUAL_WORK_ART_ASPECT_RATIO),
+              objectFit: 'cover',
+              objectPosition: 'center 20%',
             }}
           />
         </Box>

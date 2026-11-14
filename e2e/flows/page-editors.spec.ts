@@ -10,7 +10,13 @@ import { selectMuiOption } from '../support/ui';
  * Nada é salvo: os cenários cobrem o comportamento local dos editores, que
  * antes eram testes de componente. As gravações reais ficam em `e2e/edit`.
  */
-const TEMPLATES = ['Materiais da Semana', 'Meditação da Semana', 'Galeria de Fotos', 'Galeria de Vídeos', 'Página de Ideias'];
+const TEMPLATES = [
+  'Materiais da Semana',
+  'Meditação da Semana',
+  'Galeria de Fotos',
+  'Galeria de Vídeos',
+  'Página de Ideias',
+];
 
 async function openTemplate(page: Page, title: string): Promise<void> {
   await page.goto('/adm/criar-pagina');
@@ -26,12 +32,22 @@ async function confirmRemoval(page: Page): Promise<void> {
   await expect(dialog).toBeHidden();
 }
 
-async function addLinkVideo(editor: Locator, page: Page, title: string, description: string, labelPrefix: string): Promise<void> {
+async function addLinkVideo(
+  editor: Locator,
+  page: Page,
+  title: string,
+  description: string,
+  labelPrefix: string
+): Promise<void> {
   await editor.getByRole('textbox', { name: new RegExp(`^Título do ${labelPrefix}`) }).fill(title);
-  await editor.getByRole('textbox', { name: new RegExp(`^Descrição do ${labelPrefix}`) }).fill(description);
+  await editor
+    .getByRole('textbox', { name: new RegExp(`^Descrição do ${labelPrefix}`) })
+    .fill(description);
   await selectMuiOption(page, editor.getByRole('combobox', { name: 'Tipo' }), 'Link');
   await selectMuiOption(page, editor.getByRole('combobox', { name: 'Plataforma' }), /youtube/i);
-  await editor.getByRole('textbox', { name: new RegExp(`^URL do ${labelPrefix}`) }).fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  await editor
+    .getByRole('textbox', { name: new RegExp(`^URL do ${labelPrefix}`) })
+    .fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
 }
 
 test.describe('Criador de páginas', () => {
@@ -53,7 +69,9 @@ test.describe('Criador de páginas', () => {
 });
 
 test.describe('Materiais da semana: editor de mídias', () => {
-  test('adiciona um link, conta na aba e no resumo, edita mantendo o item e remove após confirmar', async ({ page }) => {
+  test('adiciona um link, conta na aba e no resumo, edita mantendo o item e remove após confirmar', async ({
+    page,
+  }) => {
     await openTemplate(page, 'Materiais da Semana');
     const form = page.getByTestId('week-materials-week-material-page-form');
     const editor = form.getByTestId('media-media-editor');
@@ -106,7 +124,9 @@ test.describe('Materiais da semana: editor de mídias', () => {
     await expect(editor.getByText('Upload de Vídeo')).toBeVisible();
   });
 
-  test('troca de aba: direto sem rascunho, com confirmação quando há item começado', async ({ page }) => {
+  test('troca de aba: direto sem rascunho, com confirmação quando há item começado', async ({
+    page,
+  }) => {
     await openTemplate(page, 'Materiais da Semana');
     const form = page.getByTestId('week-materials-week-material-page-form');
     const editor = form.getByTestId('media-media-editor');
@@ -145,7 +165,9 @@ test.describe('Materiais da semana: editor de mídias', () => {
 });
 
 test.describe('Galeria de vídeos: editor', () => {
-  test('adiciona, recusa vazio, edita, cancela e mantém o certo em edição após remover outro', async ({ page }) => {
+  test('adiciona, recusa vazio, edita, cancela e mantém o certo em edição após remover outro', async ({
+    page,
+  }) => {
     await openTemplate(page, 'Galeria de Vídeos');
     const editor = page.getByTestId('video-pages-video-editor');
     await expect(editor.getByText('Nenhum vídeo adicionado ainda.')).toBeVisible();
@@ -220,7 +242,9 @@ test.describe('Meditação: editor de dias', () => {
 });
 
 test.describe('Galeria de fotos: editor de seção', () => {
-  test('edita legenda e visibilidade, pede as imagens e remove a seção após confirmar', async ({ page }) => {
+  test('edita legenda e visibilidade, pede as imagens e remove a seção após confirmar', async ({
+    page,
+  }) => {
     await openTemplate(page, 'Galeria de Fotos');
     const form = page.getByTestId('image-pages-image-page-form');
     await form.getByRole('button', { name: 'Nova seção' }).click();
@@ -229,7 +253,9 @@ test.describe('Galeria de fotos: editor de seção', () => {
     await expect(section.getByText('Nenhuma imagem nesta seção ainda.')).toBeVisible();
 
     await section.getByRole('textbox', { name: /^Legenda da seção/ }).fill('Abertura');
-    await expect(section.getByRole('textbox', { name: /^Legenda da seção/ })).toHaveValue('Abertura');
+    await expect(section.getByRole('textbox', { name: /^Legenda da seção/ })).toHaveValue(
+      'Abertura'
+    );
 
     const visibility = section.getByRole('checkbox');
     const before = await visibility.isChecked();
@@ -256,27 +282,35 @@ test.describe('Página de ideias: formulário', () => {
     const form = page.getByTestId('ideas-pages-ideas-page-form');
     await expect(form.getByText('Editar Página de Ideias')).toHaveCount(0);
     await expect(form.getByRole('textbox', { name: /^Título da página/ })).toBeVisible();
-    await expect(form.getByText(/Nenhuma seção criada ainda/)).toBeVisible();
+    await expect(form.getByText('Sua primeira ideia começa aqui')).toBeVisible();
 
     await form.getByRole('button', { name: /Salvar Página/ }).click();
-    await expect(form.getByText('Adicione ao menos uma seção antes de salvar.')).toBeVisible();
+    await expect(
+      form.getByText('Adicione ao menos uma seção para organizar os materiais.')
+    ).toBeVisible();
 
     await form.getByRole('button', { name: 'Nova seção' }).click();
     await form.getByRole('button', { name: 'Nova seção' }).click();
     await expect(form.getByTestId('ideas-pages-ideas-section-editor')).toHaveCount(2);
-    await expect(form.getByText('2 seções · 0 mídias')).toBeVisible();
+    await expect(
+      form.getByTestId('ideas-page-summary').getByText('2', { exact: true }).first()
+    ).toBeVisible();
 
     await form.getByRole('button', { name: 'Remover seção 1' }).click();
     await expect(form.getByTestId('ideas-pages-ideas-section-editor')).toHaveCount(2);
     await confirmRemoval(page);
     await expect(form.getByTestId('ideas-pages-ideas-section-editor')).toHaveCount(1);
-    await expect(form.getByText('1 seção · 0 mídias')).toBeVisible();
+    await expect(
+      form.getByTestId('ideas-page-summary').getByText('1', { exact: true }).first()
+    ).toBeVisible();
   });
 
-  test('avisa quando a edição é aberta sem a página, e mostra o título na edição', async ({ page }) => {
+  test('avisa quando a edição é aberta sem a página, e mostra o título na edição', async ({
+    page,
+  }) => {
     await page.goto('/adm/editar-pagina-ideias/00000000-0000-4000-8000-000000000000');
     const form = page.getByTestId('ideas-pages-ideas-page-form');
-    await expect(form.getByText('Página não encontrada')).toBeVisible();
+    await expect(form.getByText('Não foi possível abrir a página')).toBeVisible();
     await expect(form.getByRole('textbox', { name: /^Título da página/ })).toHaveCount(0);
   });
 });

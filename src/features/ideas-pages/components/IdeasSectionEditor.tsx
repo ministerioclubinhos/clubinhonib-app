@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import {
+  Alert,
   Box,
+  Chip,
+  Collapse,
   Button,
   Dialog,
   DialogActions,
@@ -17,24 +20,11 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import { Delete, ExpandMore } from '@mui/icons-material';
 
-import { IdeasSectionDraft } from '../types';
+import type { IdeasSectionEditorProps } from '../types';
+import { mediaCountsOf } from '../utils';
 import IdeasSectionFields from './IdeasSectionFields';
-
-interface IdeasSectionEditorProps {
-  section: IdeasSectionDraft;
-  index: number;
-  onChange: (section: IdeasSectionDraft) => void;
-  onRemove: () => void;
-  /** Marca o título como pendente depois de uma tentativa de salvar. */
-  titleError?: boolean;
-  /**
-   * Informa ao formulário que há uma mídia em edição nesta seção, para que ele
-   * possa avisar antes de descartá-la.
-   */
-  onDraftChange?: (hasDraft: boolean) => void;
-}
 
 /** Uma seção da página de ideias: dados, visibilidade e suas mídias. */
 export default function IdeasSectionEditor({
@@ -43,29 +33,84 @@ export default function IdeasSectionEditor({
   onChange,
   onRemove,
   titleError = false,
+  apiErrors,
+  expanded,
+  onExpandedChange,
   onDraftChange,
+  focusRequest,
 }: IdeasSectionEditorProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const panelId = useId();
+  const hasApiErrors = Boolean(apiErrors?.length);
+  const counts = mediaCountsOf(section);
+  const open = expanded || titleError || hasApiErrors;
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!focusRequest) return;
+    onExpandedChange(true);
+    toggleRef.current?.focus({ preventScroll: true });
+    toggleRef.current?.scrollIntoView({ block: 'start' });
+  }, [focusRequest]);
 
   return (
-    <Paper data-testid="ideas-pages-ideas-section-editor" variant="outlined" sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
+    <Paper
+      data-testid="ideas-pages-ideas-section-editor"
+      variant="outlined"
+      sx={{ p: { xs: 1.5, md: open ? 2.5 : 1 }, borderRadius: 3, overflow: 'hidden' }}
+    >
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 1,
-          mb: 2,
+          mb: open ? 2 : 0,
         }}
       >
-        <Typography variant="subtitle2" fontWeight={700}>
-          {section.title.trim() || `Seção ${index + 1}`}
-        </Typography>
+        <Button
+          data-testid="ideas-section-toggle"
+          ref={toggleRef}
+          type="button"
+          color="inherit"
+          onClick={() => onExpandedChange(!expanded)}
+          aria-expanded={open}
+          aria-controls={panelId}
+          startIcon={<ExpandMore sx={{ transform: open ? 'rotate(180deg)' : undefined }} />}
+          sx={{
+            minHeight: 44,
+            minWidth: 0,
+            flex: 1,
+            justifyContent: 'flex-start',
+            textAlign: 'left',
+            textTransform: 'none',
+            scrollMarginTop: 96,
+          }}
+        >
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              component="h3"
+              variant="subtitle1"
+              fontWeight={700}
+              sx={{ overflowWrap: 'anywhere' }}
+            >
+              {section.title.trim() || `Seção ${index + 1}`}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {section.public ? 'Pública' : 'Restrita'}
+              {counts.length
+                ? ` · ${counts.map((item) => `${item.count} ${item.label.toLowerCase()}`).join(', ')}`
+                : ' · sem materiais'}
+            </Typography>
+          </Box>
+        </Button>
+        {titleError && <Chip size="small" color="error" label="Revise o título" />}
+        {hasApiErrors && <Chip size="small" color="error" label="Recusada ao salvar" />}
 
         <Tooltip title="Remover seção">
           <IconButton
+            data-testid="ideas-section-remove"
             color="error"
             aria-label={`Remover seção ${index + 1}`}
             onClick={() => setConfirmRemove(true)}
@@ -76,28 +121,45 @@ export default function IdeasSectionEditor({
         </Tooltip>
       </Box>
 
-      <IdeasSectionFields
-        section={section}
-        onUpdate={onChange}
-        titleError={titleError}
-        onDraftChange={onDraftChange}
-      />
-
-      <FormControlLabel
-        sx={{ mt: 1 }}
-        control={
-          <Switch
-            checked={section.public}
-            onChange={(event) =>
-              onChange({ ...section, public: event.target.checked })
-            }
+      <Collapse in={open}>
+        <Box id={panelId}>
+          {hasApiErrors && (
+            <Alert data-testid="ideas-section-api-errors" severity="error" sx={{ mb: 2 }}>
+              <Stack component="ul" sx={{ m: 0, pl: 2 }}>
+                {apiErrors?.map((message) => (
+                  <li key={message}>{message}</li>
+                ))}
+              </Stack>
+            </Alert>
+          )}
+          <IdeasSectionFields
+            section={section}
+            onUpdate={onChange}
+            titleError={titleError}
+            onDraftChange={onDraftChange}
+            focusRequest={focusRequest}
           />
-        }
-        label={section.public ? 'Seção pública' : 'Seção restrita'}
-      />
 
-      <Dialog open={confirmRemove} onClose={() => setConfirmRemove(false)}>
-        <DialogTitle>Remover seção</DialogTitle>
+          <FormControlLabel
+            sx={{ mt: 1 }}
+            control={
+              <Switch
+                checked={section.public}
+                onChange={(event) => onChange({ ...section, public: event.target.checked })}
+              />
+            }
+            label={section.public ? 'Seção pública' : 'Seção restrita'}
+          />
+        </Box>
+      </Collapse>
+
+      <Dialog
+        data-testid="ideas-section-remove-dialog"
+        aria-labelledby={`${panelId}-remove-title`}
+        open={confirmRemove}
+        onClose={() => setConfirmRemove(false)}
+      >
+        <DialogTitle id={`${panelId}-remove-title`}>Remover seção</DialogTitle>
         <DialogContent>
           <DialogContentText>
             A seção e todas as mídias dela saem da página quando você salvar.

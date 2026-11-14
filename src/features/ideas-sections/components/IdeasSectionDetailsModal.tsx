@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -9,7 +9,6 @@ import {
   DialogTitle,
   Divider,
   IconButton,
-  Link,
   Stack,
   Typography,
   useMediaQuery,
@@ -19,12 +18,13 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DescriptionIcon from "@mui/icons-material/Description";
 import ImageIcon from "@mui/icons-material/Image";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import VideocamIcon from "@mui/icons-material/Videocam";
 
 import { EMPTY_VALUE } from "../constants";
+import IdeasMediaPreviewDialog from "./IdeasMediaPreviewDialog";
 import {
   formatDateTime,
   formatFileSize,
@@ -49,7 +49,13 @@ function MediaIcon({ mediaType }: { mediaType: string }) {
 }
 
 /** Uma mídia da ideia, com o link para abri-la. */
-function MediaRow({ media }: { media: IdeasSectionMedia }) {
+function MediaRow({
+  media,
+  onPreview,
+}: {
+  media: IdeasSectionMedia;
+  onPreview: (media: IdeasSectionMedia) => void;
+}) {
   return (
     <Stack data-testid="ideas-sections-ideas-section-details-modal-media-row"
       direction="row"
@@ -72,15 +78,15 @@ function MediaRow({ media }: { media: IdeasSectionMedia }) {
       </Box>
 
       {media.url ? (
-        <Link
-          href={media.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Abrir mídia"
-          sx={{ display: "inline-flex", flexShrink: 0 }}
+        <IconButton
+          data-testid="ideas-sections-ideas-section-details-modal-media-preview"
+          size="small"
+          aria-label="Visualizar mídia"
+          onClick={() => onPreview(media)}
+          sx={{ flexShrink: 0 }}
         >
-          <OpenInNewIcon fontSize="small" />
-        </Link>
+          <VisibilityIcon fontSize="small" />
+        </IconButton>
       ) : null}
     </Stack>
   );
@@ -95,12 +101,14 @@ export default function IdeasSectionDetailsModal({
 }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [previewing, setPreviewing] = useState<IdeasSectionMedia | null>(null);
 
   if (!section) return null;
 
   const pendente = isPending(section);
 
   return (
+    <>
     <Dialog data-testid="ideas-sections-ideas-section-details-modal"
       open={open}
       onClose={onClose}
@@ -162,7 +170,7 @@ export default function IdeasSectionDetailsModal({
             {section.medias.length ? (
               <Stack divider={<Divider flexItem />}>
                 {section.medias.map((media) => (
-                  <MediaRow key={media.id} media={media} />
+                  <MediaRow key={media.id} media={media} onPreview={setPreviewing} />
                 ))}
               </Stack>
             ) : (
@@ -207,5 +215,7 @@ export default function IdeasSectionDetailsModal({
         </Button>
       </DialogActions>
     </Dialog>
+    <IdeasMediaPreviewDialog media={previewing} onClose={() => setPreviewing(null)} />
+    </>
   );
 }

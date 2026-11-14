@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Alert, Box, Button, Divider, Stack, Typography } from '@mui/material';
 
 import { MediaType } from '@/store/slices/types';
@@ -9,11 +10,13 @@ import {
   IdeaAiTextField,
   type IdeaAiCompareProps,
   type IdeaAiDecisions,
+  type IdeasSectionMedia,
 } from '../../types';
 import { ideaAiChosenText, initialIdeaAiDecisions } from '../../ai-utils';
 import { IDEA_AI_TEXT_LABELS } from '../../ai-constants';
 import { IDEA_REVIEW_MAX_DESCRIPTION, IDEA_REVIEW_MAX_TITLE } from '../../constants';
 import IdeaAiMediaNotice from './IdeaAiMediaNotice';
+import IdeasMediaPreviewDialog from '../IdeasMediaPreviewDialog';
 import IdeaAiTextCompare from './IdeaAiTextCompare';
 import IdeaAiDocumentCompare from './IdeaAiDocumentCompare';
 import IdeaAiImageCompare from './IdeaAiImageCompare';
@@ -36,6 +39,7 @@ export default function IdeaAiComparePanel({
   onTextChange,
   disabled,
 }: IdeaAiCompareProps) {
+  const [previewMedia, setPreviewMedia] = useState<IdeasSectionMedia | null>(null);
   const detail = section.aiEnhancement;
   const original = detail?.snapshot ?? {
     title: section.title,
@@ -202,10 +206,8 @@ export default function IdeaAiComparePanel({
             ) : (
               <Button
                 data-testid="idea-ai-video-link"
-                component="a"
-                href={media.url}
-                target="_blank"
-                rel="noreferrer"
+                type="button"
+                onClick={() => setPreviewMedia(media)}
                 sx={{ minHeight: 44 }}
               >
                 Assistir vídeo original
@@ -227,6 +229,7 @@ export default function IdeaAiComparePanel({
           </Box>
         );
       })}
+      <IdeasMediaPreviewDialog media={previewMedia} onClose={() => setPreviewMedia(null)} />
     </Stack>
   );
 }

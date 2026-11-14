@@ -117,6 +117,33 @@ src/features/ideas-pages/
   a section is a decision of the shared-ideas screens, not a side effect of
   saving the page.
 
+### Ideas page editor reliability
+
+The editor loads from the route ID and offers retry after a failed load. Page
+information includes title (255 characters), optional subtitle, description and
+publication state. The responsive layout separates page information, collapsible
+sections and a content summary, with a sticky save bar and a link to the saved page.
+
+Section identity is stable across insertions/removals. Each media tab (documents,
+images, videos and audio) retains its own draft while hidden; collapsing a section
+also retains its editors. Saving the page is blocked until every started media
+item is added, updated or explicitly discarded. Controls are disabled during save,
+and duplicate submission is guarded in the hook. Failed saves retain values and
+show one persistent inline API error. Requests use the shared Axios client with
+`skipGlobalError` because the form owns the complete error feedback.
+
+Multipart parts retain their original filenames while unique field keys identify
+the section and media position. Existing uploads are sent without file contents.
+Regression coverage: `e2e/edit/ideas-page-editor.spec.ts` and
+`e2e/unit/ideas-pages.utils.spec.ts`.
+
+Pending materials are listed by section and media type in the save bar. Each
+"Continuar" action expands its section, selects the correct media tab and focuses
+the section heading without clearing any draft. Tabs identify unfinished edits;
+removed sections no longer block saving. Subtitle length is also validated locally.
+API validation failures identify the section/material position and field in
+Portuguese. Creation sends the FormData body with timeout in the request options.
+
 ### Public ideas page
 
 `src/pages/PageView/IdeasMaterialViewpage/` renders the page a teacher opens

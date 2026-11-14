@@ -1,4 +1,5 @@
-import type { MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
+import { MediaType } from '@/store/slices/types';
+import type { MediaPlatform, MediaUploadType } from '@/store/slices/types';
 
 import {
   EMPTY_VALUE,
@@ -7,7 +8,10 @@ import {
   IDEAS_SECTION_PAYLOAD_FIELD,
   MEDIA_TYPE_LABELS,
 } from './constants';
+import { parseYoutubeVideoId } from './share-utils';
+import { IdeasPreviewKind } from './types';
 import type {
+  IdeasPreviewMedia,
   IdeasSectionDraft,
   IdeasSectionFilters,
   IdeasSectionMediaInput,
@@ -253,4 +257,14 @@ export function parseSortOption(value: string): {
     sort: sort === 'title' ? 'title' : 'createdAt',
     order: order === 'ASC' ? 'ASC' : 'DESC',
   };
+}
+
+/** Escolhe como mostrar a mídia no visualizador, pelo tipo e, para documentos, pela extensão. */
+export function previewKindFor(media: IdeasPreviewMedia): IdeasPreviewKind {
+  if (media.mediaType === MediaType.IMAGE) return IdeasPreviewKind.IMAGE;
+  if (media.mediaType === MediaType.VIDEO) {
+    return parseYoutubeVideoId(media.url) ? IdeasPreviewKind.YOUTUBE : IdeasPreviewKind.VIDEO;
+  }
+  const name = (media.originalName ?? media.url).split('?')[0].toLowerCase();
+  return name.endsWith('.pdf') ? IdeasPreviewKind.PDF : IdeasPreviewKind.OTHER;
 }
