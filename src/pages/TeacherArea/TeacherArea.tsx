@@ -10,11 +10,11 @@ import {
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { useFeatureFlags } from '@/hooks';
+import { FEATURE } from '@/features/feature-flags';
 import {
   InformativeBanner,
   FofinhoButton,
   SpecialFamilyCallout,
-  IdeasSharingBanner,
   BannerSection,
   MotivationSection,
   TeacherContent,
@@ -29,28 +29,30 @@ const TeacherArea: React.FC = () => {
   const { flags } = useFeatureFlags();
 
   return (
-    <Container maxWidth={false} sx={CONTAINER_STYLES.main}>
+    <Container data-testid="teacher-area" maxWidth={false} sx={CONTAINER_STYLES.main}>
 
-      <InformativeBanner />
+      {flags[FEATURE.INFORMATIVE_BANNERS] && <InformativeBanner />}
 
       <BannerSection
         showWeekBanner={showWeek}
         showMeditationBanner={showMeditation}
       />
 
-      <SpecialFamilyCallout />
+      {flags[FEATURE.SPECIAL_FAMILY_DAY] && <SpecialFamilyCallout />}
 
       <FofinhoButton
         references={[
-          ...(flags.teacher_children_access ? ['childrenArea'] : []),
-          'photos',
-          'rate',
-          'events',
-          'help',
+          ...(flags[FEATURE.CHILDREN_AREA] ? ['childrenArea'] : []),
+          // Cada atalho some junto com o recurso que ele abre: sem isso o
+          // professor clicaria e cairia num redirecionamento.
+          ...(flags[FEATURE.CLUB_PHOTO_UPLOAD] ? ['photos'] : []),
+          ...(flags[FEATURE.SITE_FEEDBACK] ? ['rate'] : []),
+          ...(flags[FEATURE.EVENTS_SECTION] ? ['events'] : []),
+          ...(flags[FEATURE.CONTACT_FORM] ? ['help'] : []),
         ]}
       />
 
-      <VerseOfWeekSection />
+      {flags[FEATURE.VERSE_OF_WEEK] && <VerseOfWeekSection />}
 
       <MotivationSection motivationText={MOTIVATION_TEXT} />
 

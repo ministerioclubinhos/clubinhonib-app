@@ -15,7 +15,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import VideoCard from "./VideoCard";
-import { useAuthRole } from "@/utils/useAuthRole";
 import { useVideoPage } from "./hooks";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
@@ -25,18 +24,12 @@ interface VideoPageViewProps {
 
 export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
   const navigate = useNavigate();
-  const { isAdmin } = useAuthRole();
   const { videoData, loading, error, isDeleting, deletePage } = useVideoPage(idToFetch);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const handleEditPage = () => {
-    navigate('/adm/editar-pagina-videos', { state: { fromTemplatePage: false } });
-  };
-
   const handleBack = () => {
-    console.log('handleBack called in PageVideoView');
     navigate(-1);
   };
 
@@ -48,7 +41,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-video-view-page-page-video-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -85,7 +78,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
 
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-video-view-page-page-video-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -109,7 +102,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
 
   if (!videoData) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-video-view-page-page-video-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -145,7 +138,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
   const totalVideos = videoData.videos?.length || 0;
 
   return (
-    <Box
+    <Box data-testid="page-view-video-view-page-page-video-view"
       sx={{
         minHeight: '100vh',
         pt: 0,
@@ -204,7 +197,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
                   },
                   transition: 'all 0.3s ease',
                 }}
-              >
+               aria-label="Voltar">
                 <ArrowBackIcon />
               </IconButton>
             </Box>
@@ -406,7 +399,7 @@ export default function PageVideoView({ idToFetch }: VideoPageViewProps) {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <Grid container spacing={{ xs: 2, md: 3 }}>
-                  {videoData.videos.map((video: any, index: number) => (
+                  {videoData.videos.map((video, index) => (
                     <Grid item xs={12} sm={6} md={4} key={video.id}>
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}

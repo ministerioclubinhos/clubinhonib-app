@@ -15,9 +15,6 @@ import {
   InputAdornment,
   IconButton,
   Tooltip,
-  Chip,
-  Avatar,
-  LinearProgress,
   Skeleton,
   useTheme,
   alpha,
@@ -29,28 +26,17 @@ import {
   ListItemText,
   Divider,
   useMediaQuery,
-  Card,
-  CardContent,
   Stack,
   Badge,
 } from '@mui/material';
 import {
   Search,
   Clear,
-  FilterList,
   Download,
   ViewColumn,
-  MoreVert,
-  ArrowUpward,
-  ArrowDownward,
   Refresh,
-  CheckCircle,
-  Cancel,
-  Star,
-  StarBorder,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { visuallyHidden } from '@mui/utils';
 
 export interface Column<T> {
   id: keyof T | string;
@@ -62,10 +48,17 @@ export interface Column<T> {
   filterable?: boolean;
   hidden?: boolean;
   sticky?: boolean;
-  format?: (value: any, row: T) => React.ReactNode;
+  /**
+   * Formata o valor da célula.
+   *
+   * Declarado como método de propósito: cada coluna formata só o campo dela, e
+   * a checagem bivariante do TypeScript para métodos é o que permite isso sem
+   * cair num `any`.
+   */
+  format?(value: T[keyof T], row: T): React.ReactNode;
   renderCell?: (row: T, index: number) => React.ReactNode;
   headerRender?: () => React.ReactNode;
-  getValue?: (row: T) => any;
+  getValue?: (row: T) => T[keyof T];
 }
 
 export interface DataTableProps<T> {
@@ -114,7 +107,7 @@ export interface DataTableProps<T> {
 
 const MotionTableRow = motion.create(TableRow);
 
-function DataTableComponent<T extends Record<string, any>>({
+function DataTableComponent<T extends object>({
   columns,
   data,
   loading = false,
@@ -217,7 +210,7 @@ function DataTableComponent<T extends Record<string, any>>({
   // Loading skeleton
   if (loading) {
     return (
-      <Paper elevation={0} sx={{ borderRadius: 3, border: `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
+      <Paper data-testid="statistics-ui-data-table-data-table-component" elevation={0} sx={{ borderRadius: 3, border: `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
         {title && (
           <Box sx={{ p: { xs: 2, md: 3 }, borderBottom: `1px solid ${theme.palette.divider}` }}>
             <Skeleton variant="text" width="30%" height={28} />
@@ -236,7 +229,7 @@ function DataTableComponent<T extends Record<string, any>>({
   // Error state
   if (error) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-data-table-data-table-component"
         elevation={0}
         sx={{
           p: 4,
@@ -264,7 +257,7 @@ function DataTableComponent<T extends Record<string, any>>({
   // Mobile card view
   if (isMobile && mobileCardRender) {
     return (
-      <Box>
+      <Box data-testid="statistics-ui-data-table-data-table-component">
         {/* Mobile Header */}
         <Paper
           elevation={0}
@@ -295,7 +288,7 @@ function DataTableComponent<T extends Record<string, any>>({
                 ),
                 endAdornment: localSearch && (
                   <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => handleSearch('')}>
+                    <IconButton size="small" onClick={() => handleSearch('')} aria-label="Limpar">
                       <Clear />
                     </IconButton>
                   </InputAdornment>
@@ -356,7 +349,7 @@ function DataTableComponent<T extends Record<string, any>>({
 
   // Desktop table view
   return (
-    <Paper
+    <Paper data-testid="statistics-ui-data-table-data-table-component"
       elevation={0}
       sx={{
         borderRadius: 3,
@@ -407,7 +400,7 @@ function DataTableComponent<T extends Record<string, any>>({
                   ),
                   endAdornment: localSearch && (
                     <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => handleSearch('')}>
+                      <IconButton size="small" onClick={() => handleSearch('')} aria-label="Limpar">
                         <Clear />
                       </IconButton>
                     </InputAdornment>
@@ -419,7 +412,7 @@ function DataTableComponent<T extends Record<string, any>>({
             {actions}
 
             <Tooltip title="Colunas visiveis">
-              <IconButton size="small" onClick={(e) => setColumnMenuAnchor(e.currentTarget)}>
+              <IconButton size="small" onClick={(e) => setColumnMenuAnchor(e.currentTarget)} aria-label="Colunas visiveis">
                 <Badge badgeContent={columns.length - visibleColumnsList.length} color="primary">
                   <ViewColumn />
                 </Badge>
@@ -428,7 +421,7 @@ function DataTableComponent<T extends Record<string, any>>({
 
             {onRefresh && (
               <Tooltip title="Atualizar">
-                <IconButton size="small" onClick={onRefresh}>
+                <IconButton size="small" onClick={onRefresh} aria-label="Atualizar">
                   <Refresh />
                 </IconButton>
               </Tooltip>
@@ -437,7 +430,7 @@ function DataTableComponent<T extends Record<string, any>>({
             {exportable && (
               <>
                 <Tooltip title="Exportar">
-                  <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)}>
+                  <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)} aria-label="Exportar">
                     <Download />
                   </IconButton>
                 </Tooltip>

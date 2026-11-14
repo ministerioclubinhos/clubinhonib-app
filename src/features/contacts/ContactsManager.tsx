@@ -1,112 +1,149 @@
-import React from "react";
-import { Box, Snackbar, Alert } from "@mui/material";
-import { useTheme, useMediaQuery } from "@mui/material";
-import { useContacts, useContactMutations, useContactSearch } from "./hooks";
-import ContactToolbar from "./components/ContactToolbar";
-import ContactGrid from "./components/ContactGrid";
-import ContactDetailsModal from "./components/ContactDetailsModal";
+import React, { useMemo, useState } from "react";
+import { Grid2 } from "@mui/material";
+
+import {
+  ListingLayout,
+  ListingToolbar,
+  type ListingFilter,
+} from "@/components/common/listing";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
-import BackHeader from "@/components/common/header/BackHeader";
-import { Contact, SnackbarKind } from "./types";
+
+import ContactCard from "./components/ContactCard";
+import ContactDetailsModal from "./components/ContactDetailsModal";
+import { useContactMutations, useContacts } from "./hooks";
+import { CONTACTS_PAGE_SIZE_OPTIONS } from "./constants";
+import type { ContactResponse } from "./types";
+
+/** Valor usado quando o filtro está sem seleção. */
+const ANY = "";
 
 export default function ContactsManager() {
-  const theme = useTheme();
-  const { contacts, loading, error, setError, fetchContacts } = useContacts();
-  const { searchTerm, setSearchTerm, filtered } = useContactSearch(contacts);
-  const { busy, error: mError, setError: setMError, remove, markAsRead } =
-    useContactMutations(fetchContacts);
+  const {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  } = useContacts();
 
-  const [selected, setSelected] = React.useState<Contact | null>(null);
-  const [toDelete, setToDelete] = React.useState<Contact | null>(null);
-  const [snackbar, setSnackbar] = React.useState({
-    open: false,
-    message: "",
-    severity: "success" as SnackbarKind,
-  });
+  const { actionLoading, actionError, setActionError, setRead, remove } =
+    useContactMutations(refresh);
 
-  const showSnackbar = (message: string, severity: SnackbarKind) =>
-    setSnackbar({ open: true, message, severity });
+  const [viewing, setViewing] = useState<ContactResponse | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<ContactResponse | null>(
+    null,
+  );
 
-  const handleDelete = async () => {
-    if (!toDelete) return;
-    try {
-      await remove(toDelete.id);
-      showSnackbar("Contato excluído com sucesso", "success");
-    } catch {
-      showSnackbar(mError || "Erro ao excluir contato", "error");
-    } finally {
-      setToDelete(null);
-    }
+  const toolbarFilters = useMemo<ListingFilter[]>(
+    () => [
+      {
+        id: "read",
+        label: "Situação",
+        value: filters.read === undefined ? ANY : String(filters.read),
+        options: [
+          { value: ANY, label: "Todos" },
+          { value: "false", label: "Não lidos" },
+          { value: "true", label: "Lidos" },
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            read: value === ANY ? undefined : value === "true",
+          })),
+      },
+    ],
+    [filters, setFilters],
+  );
+
+  const handleToggleRead = async (contact: ContactResponse) => {
+    const ok = await setRead(contact.id, !contact.read);
+    if (ok && viewing?.id === contact.id) setViewing(null);
   };
 
-  const handleMarkAsRead = async () => {
-    if (!selected) return;
-    try {
-      await markAsRead(selected.id);
-      showSnackbar("Contato marcado como lido", "success");
-    } catch {
-      showSnackbar(mError || "Erro ao marcar como lido", "error");
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+
+    const ok = await remove(confirmDelete.id);
+    if (ok) {
+      setConfirmDelete(null);
+      setViewing(null);
     }
   };
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 2, md: 4 } }}>
-      <BackHeader title="Gerenciar Contatos" />
+    <ListingLayout data-testid="contacts-contacts-manager"
+      title="Mensagens de contato"
+      summary={
+        total > 0
+          ? `${total} mensagem(ns) encontrada(s)`
+          : "Nenhuma mensagem para os filtros atuais"
+      }
+      toolbar={
+        <ListingToolbar
+          searchValue={search}
+          searchPlaceholder="Buscar por nome, e-mail, telefone ou mensagem…"
+          onSearchChange={setSearch}
+          filters={toolbarFilters}
+          onRefresh={refresh}
+        />
+      }
+      loading={loading}
+      error={error || actionError}
+      onDismissError={() => {
+        setError("");
+        setActionError("");
+      }}
+      itemCount={items.length}
+      emptyTitle="Nenhuma mensagem encontrada"
+      emptySubtitle="Ajuste a busca ou os filtros para ver outros resultados."
+      pagination={{
+        page,
+        pageSize,
+        total,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+      }}
+      pageSizeOptions={CONTACTS_PAGE_SIZE_OPTIONS}
+      overlays={
+        <>
+          <ContactDetailsModal
+            contact={viewing}
+            onClose={() => setViewing(null)}
+            onToggleRead={() => viewing && void handleToggleRead(viewing)}
+            onDelete={() => {
+              if (viewing) setConfirmDelete(viewing);
+            }}
+          />
 
-      <ContactToolbar
-        search={searchTerm}
-        onSearchChange={setSearchTerm}
-        onRefresh={fetchContacts}
-      />
-
-      <ContactGrid
-        items={filtered}
-        loading={loading}
-        onView={(c) => setSelected(c)}
-        onDeleteAsk={(c) => setToDelete(c)}
-      />
-
-      <ContactDetailsModal
-        contact={selected}
-        onClose={() => setSelected(null)}
-        onMarkAsRead={handleMarkAsRead}
-        onDelete={() => {
-          if (selected) setToDelete(selected);
-          setSelected(null);
-        }}
-      />
-
-      <DeleteConfirmDialog
-        open={!!toDelete}
-        title={toDelete?.name || ""}
-        onClose={() => setToDelete(null)}
-        onConfirm={handleDelete}
-      />
-
-      {!loading && error && (
-        <Snackbar open autoHideDuration={4000} onClose={() => setError("")}>
-          <Alert severity="error" variant="filled">
-            {error}
-          </Alert>
-        </Snackbar>
-      )}
-      {mError && (
-        <Snackbar open autoHideDuration={4000} onClose={() => setMError("")}>
-          <Alert severity="error" variant="filled">
-            {mError}
-          </Alert>
-        </Snackbar>
-      )}
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar((p) => ({ ...p, open: false }))}
-      >
-        <Alert severity={snackbar.severity} variant="filled">
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <DeleteConfirmDialog
+            open={!!confirmDelete}
+            title={confirmDelete ? `mensagem de ${confirmDelete.name}` : ""}
+            onClose={() => setConfirmDelete(null)}
+            onConfirm={handleDelete}
+          />
+        </>
+      }
+    >
+      {items.map((contact) => (
+        <Grid2 key={contact.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+          <ContactCard
+            contact={contact}
+            disabled={actionLoading}
+            onView={() => setViewing(contact)}
+            onToggleRead={() => void handleToggleRead(contact)}
+            onDelete={() => setConfirmDelete(contact)}
+          />
+        </Grid2>
+      ))}
+    </ListingLayout>
   );
 }

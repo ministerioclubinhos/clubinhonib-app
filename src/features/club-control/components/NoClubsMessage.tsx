@@ -10,7 +10,7 @@ import {
   Info,
   CalendarToday,
 } from '@mui/icons-material';
-import { WeekCheckResult } from '../api';
+import type { WeekCheckResult } from '../types';
 
 interface NoClubsMessageProps {
   data: WeekCheckResult;
@@ -20,7 +20,7 @@ export const NoClubsMessage: React.FC<NoClubsMessageProps> = ({ data }) => {
   const theme = useTheme();
 
   return (
-    <Paper
+    <Paper data-testid="club-control-no-clubs-message"
       elevation={0}
       sx={{
         p: 4,

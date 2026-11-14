@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, Paper, Typography, CircularProgress, Grid, useTheme } from '@mui/material';
+import { Box, Paper, Typography, CircularProgress, Grid2, useTheme } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface DemographicChartsProps {
   filters?: PagelasStatsQueryDto;
@@ -10,11 +11,11 @@ interface DemographicChartsProps {
 
 export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters }) => {
   const theme = useTheme();
-  const { data, isLoading, error } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+      <Box data-testid="statistics-demographic-charts" sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -22,8 +23,12 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
 
   if (error || !data || !data.byGender || !data.byAgeGroup || !data.byParticipationTime) {
     return (
-      <Box sx={{ py: 4, textAlign: 'center' }}>
-        <Typography color="error">Erro ao carregar dados demográficos</Typography>
+      <Box data-testid="statistics-demographic-charts" sx={{ py: 4, textAlign: 'center' }}>
+        <ChartError
+          subject="os dados demográficos"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Box>
     );
   }
@@ -38,17 +43,10 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
     genderLabel: item.gender === 'M' ? 'Masculino' : 'Feminino',
   }));
 
-  const ageGroupColors = [
-    theme.palette.primary.main,
-    theme.palette.success.main,
-    theme.palette.warning.main,
-    theme.palette.error.main,
-  ];
-
   return (
-    <Grid container spacing={3}>
+    <Grid2 data-testid="statistics-demographic-charts" container spacing={3}>
 
-      <Grid item xs={12} md={6}>
+      <Grid2 size={{ xs: 12, md: 6 }}>
         <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2, height: '100%' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             👥 Distribuição por Gênero
@@ -84,9 +82,9 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
             </PieChart>
           </ResponsiveContainer>
         </Paper>
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} md={6}>
+      <Grid2 size={{ xs: 12, md: 6 }}>
         <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2, height: '100%' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             🎂 Distribuição por Faixa Etária
@@ -117,9 +115,9 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
             </BarChart>
           </ResponsiveContainer>
         </Paper>
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12}>
+      <Grid2 size={12}>
         <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             ⏱️ Análise por Tempo de Participação
@@ -155,8 +153,8 @@ export const DemographicCharts: React.FC<DemographicChartsProps> = ({ filters })
             </BarChart>
           </ResponsiveContainer>
         </Paper>
-      </Grid>
-    </Grid>
+      </Grid2>
+    </Grid2>
   );
 };
 

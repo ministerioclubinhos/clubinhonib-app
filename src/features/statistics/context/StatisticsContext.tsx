@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
-import { PagelasStatsQueryDto, PeriodShortcut } from '../api';
+import { PeriodShortcut } from '../types';
+import type { PagelasStatsQueryDto } from '../types';
+import { StatisticsTab } from '../constants';
+import { resolveRangeOnPeriodChange } from '../utils/periodRange';
 import dayjs from 'dayjs';
 
 export interface DateRange {
@@ -7,36 +10,54 @@ export interface DateRange {
   endDate: string;
 }
 
+/** Como as listagens do painel se apresentam. */
+export type StatisticsViewMode = 'cards' | 'table' | 'charts';
+
+/**
+ * Um recorte de filtros guardado pela pessoa.
+ *
+ * Guarda os **valores**, e não só um rótulo. O painel tinha um botão "Filtros
+ * Salvos" cuja lista era de `string`: mesmo que algo a preenchesse, clicar num
+ * item não teria o que reaplicar. E `search` fica de fora de propósito — é o
+ * único campo que pode carregar o nome de uma criança, e nada disso vai para o
+ * navegador.
+ */
+export interface SavedFilter {
+  id: string;
+  label: string;
+  filters: Omit<StatisticsContextFilters, 'search'>;
+}
+
 export type StatisticsContextFilters = PagelasStatsQueryDto & {
   period?: PeriodShortcut;
   search?: string;
 };
 
+/**
+ * O estado do painel.
+ *
+ * Enxuto de propósito. O reducer tinha dezessete ações e sete delas nunca
+ * eram despachadas: `recentSearches`, `isFilterPanelOpen`, `notifications` e
+ * `compareFilters` eram guardados, hidratados e persistidos sem que nada os
+ * preenchesse ou lesse. `recentSearches` ainda ia para o `localStorage` — e o
+ * dia em que alguém ligasse a busca das abas de crianças àquele campo, nomes
+ * de criança passariam a ficar gravados no navegador, contra a regra de
+ * privacidade do repositório. Estado que ninguém alimenta não guarda nada:
+ * guarda uma promessa.
+ */
 export interface StatisticsState {
   filters: StatisticsContextFilters;
-  activeTab: number;
+  activeTab: StatisticsTab;
   compareMode: boolean;
-  compareFilters: StatisticsContextFilters | null;
-  viewMode: 'cards' | 'table' | 'charts';
-  favorites: string[];
-  recentSearches: string[];
+  viewMode: StatisticsViewMode;
+  savedFilters: SavedFilter[];
   customDateRange: DateRange | null;
-  isFilterPanelOpen: boolean;
   selectedEntities: {
     childId?: string;
     clubId?: string;
     teacherId?: string;
     city?: string;
   };
-  notifications: Notification[];
-}
-
-export interface Notification {
-  id: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  message: string;
-  timestamp: Date;
-  read: boolean;
 }
 
 type StatisticsAction =
@@ -44,19 +65,13 @@ type StatisticsAction =
   | { type: 'RESET_FILTERS' }
   | { type: 'SET_PERIOD'; payload: PeriodShortcut }
   | { type: 'SET_DATE_RANGE'; payload: DateRange }
-  | { type: 'SET_TAB'; payload: number }
+  | { type: 'SET_TAB'; payload: StatisticsTab }
   | { type: 'TOGGLE_COMPARE_MODE' }
-  | { type: 'SET_COMPARE_FILTERS'; payload: StatisticsContextFilters | null }
-  | { type: 'SET_VIEW_MODE'; payload: 'cards' | 'table' | 'charts' }
-  | { type: 'ADD_FAVORITE'; payload: string }
-  | { type: 'REMOVE_FAVORITE'; payload: string }
-  | { type: 'ADD_RECENT_SEARCH'; payload: string }
-  | { type: 'TOGGLE_FILTER_PANEL' }
+  | { type: 'SET_VIEW_MODE'; payload: StatisticsViewMode }
+  | { type: 'SAVE_CURRENT_FILTERS'; payload: { id: string; label: string } }
+  | { type: 'APPLY_SAVED_FILTER'; payload: string }
+  | { type: 'REMOVE_SAVED_FILTER'; payload: string }
   | { type: 'SELECT_ENTITY'; payload: Partial<StatisticsState['selectedEntities']> }
-  | { type: 'CLEAR_ENTITY_SELECTION' }
-  | { type: 'ADD_NOTIFICATION'; payload: Omit<Notification, 'id' | 'timestamp' | 'read'> }
-  | { type: 'MARK_NOTIFICATION_READ'; payload: string }
-  | { type: 'CLEAR_NOTIFICATIONS' }
   | { type: 'HYDRATE'; payload: Partial<StatisticsState> };
 
 // Helpers
@@ -78,10 +93,14 @@ const getPeriodDateRange = (period: PeriodShortcut): DateRange | null => {
         endDate: now.format('YYYY-MM-DD'),
       };
     case PeriodShortcut.THIS_WEEK:
+      {
+        const daysSinceMonday = now.day() === 0 ? 6 : now.day() - 1;
+        const monday = now.subtract(daysSinceMonday, 'day');
       return {
-        startDate: now.startOf('week').format('YYYY-MM-DD'),
-        endDate: now.endOf('week').format('YYYY-MM-DD'),
+          startDate: monday.format('YYYY-MM-DD'),
+          endDate: monday.add(5, 'day').format('YYYY-MM-DD'),
       };
+      }
     case PeriodShortcut.THIS_MONTH:
       return {
         startDate: now.startOf('month').format('YYYY-MM-DD'),
@@ -134,16 +153,12 @@ const getInitialState = (): StatisticsState => {
       groupBy: 'week',
       period: PeriodShortcut.THIS_MONTH,
     },
-    activeTab: 0,
+    activeTab: StatisticsTab.Overview,
     compareMode: false,
-    compareFilters: null,
     viewMode: 'cards',
-    favorites: [],
-    recentSearches: [],
+    savedFilters: [],
     customDateRange: null,
-    isFilterPanelOpen: false,
     selectedEntities: {},
-    notifications: [],
   };
 };
 
@@ -171,19 +186,30 @@ const statisticsReducer = (state: StatisticsState, action: StatisticsAction): St
     }
 
     case 'SET_PERIOD': {
-      const dateRange = getPeriodDateRange(action.payload);
-      const groupBy = getGroupByForPeriod(action.payload);
+      // "Personalizado" mantém as datas em uso até a pessoa escolher outras;
+      // antes as duas eram apagadas e `period=custom` saía sozinho.
+      const dateRange = resolveRangeOnPeriodChange(
+        action.payload,
+        getPeriodDateRange(action.payload),
+        state.filters,
+      );
+      const isCustom = action.payload === PeriodShortcut.CUSTOM;
+      const keptRange =
+        isCustom && dateRange.startDate && dateRange.endDate
+          ? { startDate: dateRange.startDate, endDate: dateRange.endDate }
+          : null;
       return {
         ...state,
         filters: {
           ...state.filters,
           period: action.payload,
-          startDate: dateRange?.startDate,
-          endDate: dateRange?.endDate,
-          groupBy,
-          year: action.payload === 'this_year' ? dayjs().year() : undefined,
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          // O agrupamento também fica como estava: a janela não mudou.
+          groupBy: isCustom ? state.filters.groupBy : getGroupByForPeriod(action.payload),
+          year: action.payload === PeriodShortcut.THIS_YEAR ? dayjs().year() : undefined,
         },
-        customDateRange: action.payload === 'custom' ? state.customDateRange : null,
+        customDateRange: isCustom ? (state.customDateRange ?? keptRange) : null,
       };
     }
 
@@ -203,77 +229,52 @@ const statisticsReducer = (state: StatisticsState, action: StatisticsAction): St
       return { ...state, activeTab: action.payload };
 
     case 'TOGGLE_COMPARE_MODE':
-      return {
-        ...state,
-        compareMode: !state.compareMode,
-        compareFilters: state.compareMode ? null : state.compareFilters,
-      };
-
-    case 'SET_COMPARE_FILTERS':
-      return { ...state, compareFilters: action.payload };
+      return { ...state, compareMode: !state.compareMode };
 
     case 'SET_VIEW_MODE':
       return { ...state, viewMode: action.payload };
 
-    case 'ADD_FAVORITE':
+    case 'SAVE_CURRENT_FILTERS': {
+      const { search: _ignored, ...persistable } = state.filters;
+
       return {
         ...state,
-        favorites: state.favorites.includes(action.payload)
-          ? state.favorites
-          : [...state.favorites, action.payload],
+        savedFilters: [
+          ...state.savedFilters.filter((item) => item.label !== action.payload.label),
+          { ...action.payload, filters: persistable },
+        ].slice(-MAX_SAVED_FILTERS),
       };
+    }
 
-    case 'REMOVE_FAVORITE':
+    case 'APPLY_SAVED_FILTER': {
+      const chosen = state.savedFilters.find((item) => item.id === action.payload);
+      if (!chosen) return state;
+
+      // A busca em curso é preservada: o recorte salvo não a contém, e apagá-la
+      // ao aplicar um filtro seria uma perda silenciosa do que se digitou.
       return {
         ...state,
-        favorites: state.favorites.filter((f) => f !== action.payload),
+        filters: { ...chosen.filters, search: state.filters.search },
+        customDateRange:
+          chosen.filters.period === PeriodShortcut.CUSTOM &&
+          chosen.filters.startDate &&
+          chosen.filters.endDate
+            ? { startDate: chosen.filters.startDate, endDate: chosen.filters.endDate }
+            : null,
       };
+    }
 
-    case 'ADD_RECENT_SEARCH':
+    case 'REMOVE_SAVED_FILTER':
       return {
         ...state,
-        recentSearches: [
-          action.payload,
-          ...state.recentSearches.filter((s) => s !== action.payload),
-        ].slice(0, 10),
+        savedFilters: state.savedFilters.filter((item) => item.id !== action.payload),
       };
-
-    case 'TOGGLE_FILTER_PANEL':
-      return { ...state, isFilterPanelOpen: !state.isFilterPanelOpen };
 
     case 'SELECT_ENTITY':
       return {
         ...state,
         selectedEntities: { ...state.selectedEntities, ...action.payload },
       };
-
-    case 'CLEAR_ENTITY_SELECTION':
-      return { ...state, selectedEntities: {} };
-
-    case 'ADD_NOTIFICATION':
-      return {
-        ...state,
-        notifications: [
-          {
-            ...action.payload,
-            id: crypto.randomUUID(),
-            timestamp: new Date(),
-            read: false,
-          },
-          ...state.notifications,
-        ].slice(0, 50),
-      };
-
-    case 'MARK_NOTIFICATION_READ':
-      return {
-        ...state,
-        notifications: state.notifications.map((n) =>
-          n.id === action.payload ? { ...n, read: true } : n
-        ),
-      };
-
-    case 'CLEAR_NOTIFICATIONS':
-      return { ...state, notifications: [] };
 
     case 'HYDRATE':
       return { ...state, ...action.payload };
@@ -292,16 +293,17 @@ interface StatisticsContextValue {
   resetFilters: () => void;
   setPeriod: (period: PeriodShortcut) => void;
   setDateRange: (range: DateRange) => void;
-  setTab: (tab: number) => void;
+  setTab: (tab: StatisticsTab) => void;
+  saveCurrentFilters: (label: string) => void;
+  applySavedFilter: (id: string) => void;
+  removeSavedFilter: (id: string) => void;
   toggleCompareMode: () => void;
   setViewMode: (mode: 'cards' | 'table' | 'charts') => void;
   selectEntity: (entity: Partial<StatisticsState['selectedEntities']>) => void;
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
   // Computed values
   formattedPeriod: string;
   isCustomPeriod: boolean;
   hasActiveFilters: boolean;
-  unreadNotifications: number;
 }
 
 const StatisticsContext = createContext<StatisticsContextValue | null>(null);
@@ -309,44 +311,91 @@ const StatisticsContext = createContext<StatisticsContextValue | null>(null);
 // Storage key
 const STORAGE_KEY = 'clubinho-statistics-state';
 
+/** Quantos recortes o painel guarda; os mais antigos saem. */
+const MAX_SAVED_FILTERS = 10;
+
+/** As preferências que sobrevivem à visita. */
+interface StoredPreferences {
+  savedFilters: SavedFilter[];
+  viewMode: StatisticsViewMode;
+}
+
+const VIEW_MODES: StatisticsViewMode[] = ['cards', 'table', 'charts'];
+
+/**
+ * Lê as preferências guardadas, estreitando o `unknown` na fronteira.
+ *
+ * `JSON.parse` devolve `any`, e o código anterior lia `parsed.favorites` sem
+ * conferir nada: bastava um valor estranho no storage para o estado do painel
+ * nascer inválido. Qualquer falha — storage bloqueado, JSON corrompido — cai
+ * no padrão, que é o mesmo estado inicial.
+ */
+function readStoredPreferences(): Partial<StoredPreferences> {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return {};
+
+    const parsed: unknown = JSON.parse(saved);
+    if (typeof parsed !== 'object' || parsed === null) return {};
+
+    const record = parsed as Record<string, unknown>;
+    const savedFilters = Array.isArray(record.savedFilters)
+      ? record.savedFilters.filter(isSavedFilter).slice(-MAX_SAVED_FILTERS)
+      : undefined;
+    const viewMode = VIEW_MODES.find((mode) => mode === record.viewMode);
+
+    return {
+      ...(savedFilters ? { savedFilters } : {}),
+      ...(viewMode ? { viewMode } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+
+/** Reconhece um recorte salvo vindo do storage, campo a campo. */
+function isSavedFilter(value: unknown): value is SavedFilter {
+  if (typeof value !== 'object' || value === null) return false;
+
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.id === 'string' &&
+    typeof record.label === 'string' &&
+    typeof record.filters === 'object' &&
+    record.filters !== null
+  );
+}
+
+/** Guarda as preferências; um storage indisponível não derruba a tela. */
+function writeStoredPreferences(preferences: StoredPreferences): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+  } catch {
+    // Navegador em modo privado ou storage cheio: a tela segue sem lembrar.
+  }
+}
+
 // Provider
 export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(statisticsReducer, getInitialState());
 
-  // Hydrate from localStorage on mount
+  /**
+   * O que o navegador guarda entre visitas.
+   *
+   * Só preferência de apresentação. Nada que identifique criança, professor
+   * ou família entra aqui — as buscas recentes, que entravam, saíram junto com
+   * o estado que ninguém preenchia.
+   */
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Only hydrate certain fields
-        dispatch({
-          type: 'HYDRATE',
-          payload: {
-            favorites: parsed.favorites || [],
-            recentSearches: parsed.recentSearches || [],
-            viewMode: parsed.viewMode || 'cards',
-          },
-        });
-      }
-    } catch {
-      // Ignore errors
-    }
+    dispatch({ type: 'HYDRATE', payload: readStoredPreferences() });
   }, []);
 
-  // Persist to localStorage
   useEffect(() => {
-    try {
-      const toSave = {
-        favorites: state.favorites,
-        recentSearches: state.recentSearches,
-        viewMode: state.viewMode,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-    } catch {
-      // Ignore errors
-    }
-  }, [state.favorites, state.recentSearches, state.viewMode]);
+    writeStoredPreferences({
+      savedFilters: state.savedFilters,
+      viewMode: state.viewMode,
+    });
+  }, [state.savedFilters, state.viewMode]);
 
   // Convenience methods
   const setFilters = useCallback((filters: Partial<StatisticsContextFilters>) => {
@@ -365,7 +414,7 @@ export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     dispatch({ type: 'SET_DATE_RANGE', payload: range });
   }, []);
 
-  const setTab = useCallback((tab: number) => {
+  const setTab = useCallback((tab: StatisticsTab) => {
     dispatch({ type: 'SET_TAB', payload: tab });
   }, []);
 
@@ -373,7 +422,7 @@ export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     dispatch({ type: 'TOGGLE_COMPARE_MODE' });
   }, []);
 
-  const setViewMode = useCallback((mode: 'cards' | 'table' | 'charts') => {
+  const setViewMode = useCallback((mode: StatisticsViewMode) => {
     dispatch({ type: 'SET_VIEW_MODE', payload: mode });
   }, []);
 
@@ -381,8 +430,19 @@ export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     dispatch({ type: 'SELECT_ENTITY', payload: entity });
   }, []);
 
-  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-    dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
+  const saveCurrentFilters = useCallback((label: string) => {
+    dispatch({
+      type: 'SAVE_CURRENT_FILTERS',
+      payload: { id: crypto.randomUUID(), label },
+    });
+  }, []);
+
+  const applySavedFilter = useCallback((id: string) => {
+    dispatch({ type: 'APPLY_SAVED_FILTER', payload: id });
+  }, []);
+
+  const removeSavedFilter = useCallback((id: string) => {
+    dispatch({ type: 'REMOVE_SAVED_FILTER', payload: id });
   }, []);
 
   // Computed values
@@ -420,8 +480,6 @@ export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     );
   }, [state.filters]);
 
-  const unreadNotifications = state.notifications.filter((n) => !n.read).length;
-
   // Split context into state and actions to prevent unnecessary re-renders
   const actionsValue = useMemo(
     () => ({
@@ -434,7 +492,9 @@ export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       toggleCompareMode,
       setViewMode,
       selectEntity,
-      addNotification,
+      saveCurrentFilters,
+      applySavedFilter,
+      removeSavedFilter,
     }),
     [
       setFilters,
@@ -445,7 +505,9 @@ export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       toggleCompareMode,
       setViewMode,
       selectEntity,
-      addNotification,
+      saveCurrentFilters,
+      applySavedFilter,
+      removeSavedFilter,
     ]
   );
 
@@ -454,9 +516,8 @@ export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       formattedPeriod,
       isCustomPeriod,
       hasActiveFilters,
-      unreadNotifications,
     }),
-    [formattedPeriod, isCustomPeriod, hasActiveFilters, unreadNotifications]
+    [formattedPeriod, isCustomPeriod, hasActiveFilters]
   );
 
   const value = useMemo(
@@ -468,7 +529,7 @@ export const StatisticsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     [state, actionsValue, computedValue]
   );
 
-  return <StatisticsContext.Provider value={value}>{children}</StatisticsContext.Provider>;
+  return <StatisticsContext.Provider data-testid="statistics-context-statistics-context-statistics-provider" value={value}>{children}</StatisticsContext.Provider>;
 };
 
 // Hook

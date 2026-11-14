@@ -1,19 +1,21 @@
+import { hasAcceptedChrist } from "@/features/children/utils";
 import * as React from "react";
 import {
   Card, CardActionArea, CardContent, Stack, Typography,
-  Box, Avatar, Tooltip, IconButton, useTheme, Divider, Button
+  Box, Avatar, Tooltip, IconButton, useTheme, Divider,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import ToggleOnIcon from "@mui/icons-material/ToggleOn";
-import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 
-import { ChildSimpleResponseDto } from "@/features/children/types";
+import { ChildListItem } from "@/features/children/types";
 import DecisionModal from "./DecisionModal";
+import { FEATURE } from "@/features/feature-flags";
+import { useFeatureEnabled } from "@/hooks";
 
 function genderPastel(seed: string, gender: string | undefined) {
   const hash = Array.from(seed).reduce((acc, ch) => (acc * 33 + ch.charCodeAt(0)) % 1000, 7);
@@ -31,14 +33,16 @@ export default function ChildCard({
   child,
   onClick,
   onEdit,
+  onDelete,
   onRefresh,
   onToggleActive
 }: {
-  child: ChildSimpleResponseDto;
-  onClick: (c: ChildSimpleResponseDto) => void;
-  onEdit?: (c: ChildSimpleResponseDto) => void;
+  child: ChildListItem;
+  onClick: (c: ChildListItem) => void;
+  onEdit?: (c: ChildListItem) => void;
+  onDelete?: (c: ChildListItem) => void;
   onRefresh?: () => void;
-  onToggleActive?: (c: ChildSimpleResponseDto) => void;
+  onToggleActive?: (c: ChildListItem) => void;
 }) {
   const theme = useTheme();
   const colors = genderPastel(child.name || child.id, child.gender);
@@ -47,8 +51,9 @@ export default function ChildCard({
     return parts.map((p) => p[0]?.toUpperCase() || "").join("");
   }, [child.name]);
 
-  const alreadyAccepted = child.acceptedChrists?.length > 0;
+  const alreadyAccepted = hasAcceptedChrist(child.acceptedChrists);
   const [modalOpen, setModalOpen] = React.useState(false);
+  const canRegisterDecision = useFeatureEnabled(FEATURE.ACCEPTED_CHRISTS);
 
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -56,7 +61,7 @@ export default function ChildCard({
 
   return (
     <>
-      <Card
+      <Card data-testid="pagela-teacher-child-card"
         variant="outlined"
         sx={{
           borderRadius: 4,
@@ -72,6 +77,8 @@ export default function ChildCard({
               : "linear-gradient(180deg, #1e1e1e 0%, #161616 100%)",
         }}
       >
+        {/* O registro da decisão só aparece enquanto o recurso está no ar. */}
+        {canRegisterDecision && (
         <Tooltip title={alreadyAccepted ? "Registrar reconciliação" : "Registrar decisão por Jesus"}>
           <IconButton
             onClick={(e) => { e.stopPropagation(); setModalOpen(true); }}
@@ -85,31 +92,57 @@ export default function ChildCard({
               zIndex: 3,
               "&:hover": { bgcolor: "background.paper" },
             }}
-          >
+           aria-label="Registrar decisão">
             <FavoriteIcon sx={{ color: alreadyAccepted ? theme.palette.error.main : "#ccc" }} />
           </IconButton>
         </Tooltip>
-
-        {!!onEdit && (
-          <Tooltip title="Editar criança">
-            <IconButton
-              size="small"
-              onClick={(e) => { e.stopPropagation(); onEdit(child); }}
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                bgcolor: "background.paper",
-                border: "1px solid",
-                borderColor: "divider",
-                zIndex: 3,
-                "&:hover": { bgcolor: "background.paper" },
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
         )}
+
+        <Stack
+          direction="row"
+          spacing={0.5}
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            zIndex: 3,
+          }}
+        >
+          {!!onEdit && (
+            <Tooltip title="Editar criança">
+              <IconButton
+                size="small"
+                onClick={(e) => { e.stopPropagation(); onEdit(child); }}
+                sx={{
+                  bgcolor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  "&:hover": { bgcolor: "background.paper" },
+                }}
+               aria-label="Editar criança">
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          {!!onDelete && (
+            <Tooltip title="Excluir criança">
+              <IconButton
+                size="small"
+                onClick={(e) => { e.stopPropagation(); onDelete(child); }}
+                sx={{
+                  bgcolor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  color: "error.main",
+                  "&:hover": { bgcolor: "error.50" },
+                }}
+               aria-label="Excluir criança">
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
 
         <Box
           sx={{
@@ -213,6 +246,10 @@ export default function ChildCard({
               <Tooltip title={child.isActive ? "Desativar criança" : "Ativar criança"}>
                 <Box
                   component="button"
+                  type="button"
+                  role="switch"
+                  aria-checked={child.isActive}
+                  aria-label={child.isActive ? "Desativar criança" : "Ativar criança"}
                   onClick={(e) => { e.stopPropagation(); onToggleActive(child); }}
                   sx={{
                     position: "relative",
@@ -281,13 +318,14 @@ export default function ChildCard({
           </>
         )}
       </Card>
-      <DecisionModal
-        open={modalOpen}
+      <DecisionModal data-testid="pagela-teacher-child-card"
+        open={modalOpen && canRegisterDecision}
         onClose={handleCloseModal}
         child={child}
         onSuccess={async () => {
+          // Quem fecha é o modal: depois de excluir um registro ele segue
+          // aberto, com o histórico já atualizado.
           if (onRefresh) await onRefresh();
-          handleCloseModal();
         }}
       />
 

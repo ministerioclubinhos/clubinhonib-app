@@ -53,7 +53,10 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
         link.click();
         document.body.removeChild(link);
         setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      } catch {
+      } catch (error: unknown) {
+        // O download é uma conveniência: sem ele o modal ainda fecha, mas o
+        // erro precisa aparecer em algum lugar em vez de sumir.
+        console.error('Falha ao baixar o documento:', error);
       }
     })();
 
@@ -68,7 +71,7 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
   const displayTitle = title || media.title || 'Visualizar documento';
 
   return (
-    <Dialog
+    <Dialog data-testid="utils-media-document-preview-modal"
       open={open}
       onClose={onClose}
       fullWidth
@@ -99,7 +102,7 @@ export default function MediaDocumentPreviewModal({ open, onClose, media, title 
           <DescriptionOutlinedIcon />
           {displayTitle}
         </Box>
-        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }} aria-label="Fechar">
           <CloseIcon />
         </IconButton>
       </DialogTitle>

@@ -1,7 +1,7 @@
 import React from 'react';
-import { TextField, MenuItem, Grid, Box, Typography } from '@mui/material';
+import { TextField, MenuItem, Grid2, Box, Typography } from '@mui/material';
 import { CalendarToday, Info } from '@mui/icons-material';
-import { PeriodShortcut } from '../api';
+import { PeriodShortcut } from '../types';
 import { getPeriodDescription } from '../utils/periodHelpers';
 import { SimpleDatePicker } from '@/components/common/inputs';
 
@@ -28,9 +28,9 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
   const description = showDescription ? getPeriodDescription(period, startDate, endDate) : null;
 
   return (
-    <Box>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={4}>
+    <Box data-testid="statistics-period-filter">
+      <Grid2 container spacing={2}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
           <TextField
             fullWidth
             select
@@ -59,10 +59,10 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
             <MenuItem value={PeriodShortcut.THIS_YEAR}>Este Ano</MenuItem>
             <MenuItem value={PeriodShortcut.CUSTOM}>Personalizado...</MenuItem>
           </TextField>
-        </Grid>
+        </Grid2>
 
         {isCustomPeriod && (
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
             <SimpleDatePicker
               value={startDate || ''}
               onChange={(value) => onStartDateChange(value || undefined)}
@@ -70,11 +70,11 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
               size="small"
               margin="none"
             />
-          </Grid>
+          </Grid2>
         )}
 
         {isCustomPeriod && (
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
             <SimpleDatePicker
               value={endDate || ''}
               onChange={(value) => onEndDateChange(value || undefined)}
@@ -82,9 +82,9 @@ export const PeriodFilter: React.FC<PeriodFilterProps> = ({
               size="small"
               margin="none"
             />
-          </Grid>
+          </Grid2>
         )}
-      </Grid>
+      </Grid2>
 
       {showDescription && description && (
         <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>

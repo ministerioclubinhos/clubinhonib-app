@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme, useMediaQuery, IconButton, Tooltip, Dialog, DialogContent, Slide } from '@mui/material';
+import { Box, Typography, useTheme, useMediaQuery, IconButton, Dialog, DialogContent, Slide } from '@mui/material';
 import { motion } from 'framer-motion';
 import ImageIcon from '@mui/icons-material/Image';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
@@ -15,11 +15,11 @@ interface Props {
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
-    children: React.ReactElement<any, any>;
+    children: React.ReactElement;
   },
   ref: React.Ref<unknown>,
 ) {
-  return <Slide direction="up" ref={ref} {...props} />;
+  return <Slide data-testid="page-view-ideas-material-viewpage-ideas-image-gallery-view-transition" direction="up" ref={ref} {...props} />;
 });
 
 export default function IdeasImageGalleryView({ image }: Props) {
@@ -47,7 +47,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
 
   return (
     <>
-      <Box sx={{
+      <Box data-testid="page-view-ideas-material-viewpage-ideas-image-gallery-view" sx={{
         width: '100%',
         p: { xs: 1.5, sm: 2, md: 3 },
         height: '100%',
@@ -67,10 +67,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
               variant="subtitle1"
               fontWeight="bold"
               color={theme.palette.warning.main}
-              sx={{
-                fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-                lineHeight: 1.3,
-              }}
+              sx={{ lineHeight: 1.3 }}
             >
               {image.title}
             </Typography>
@@ -109,18 +106,16 @@ export default function IdeasImageGalleryView({ image }: Props) {
                   onError={() => setImageError(true)}
                 />
                 <Box
+                  // A dica de ampliar aparecia só no hover, que não existe no
+                  // toque: no celular nada indicava que a foto abria.
                   sx={{
                     position: 'absolute',
                     top: 8,
                     right: 8,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    backgroundColor: 'rgba(0,0,0,0.55)',
                     borderRadius: '50%',
-                    p: 0.5,
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
-                    '&:hover': {
-                      opacity: 1,
-                    },
+                    p: 0.75,
+                    display: 'flex',
                   }}
                 >
                   <ZoomInIcon sx={{ color: 'white', fontSize: '1.2rem' }} />
@@ -149,10 +144,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
               variant="body2"
               color="text.secondary"
               mb={{ xs: 1.5, sm: 2 }}
-              sx={{
-                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
-                lineHeight: 1.4,
-              }}
+              sx={{ lineHeight: 1.5 }}
             >
               {image.description}
             </Typography>
@@ -169,7 +161,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
         </motion.div>
       </Box>
 
-      <Dialog
+      <Dialog data-testid="page-view-ideas-material-viewpage-ideas-image-gallery-view"
         open={openModal}
         slots={{ transition: Transition }}
         keepMounted
@@ -200,7 +192,7 @@ export default function IdeasImageGalleryView({ image }: Props) {
               bgcolor: 'rgba(0,0,0,0.8)',
             }
           }}
-        >
+         aria-label="Fechar">
           <CloseIcon />
         </IconButton>
 

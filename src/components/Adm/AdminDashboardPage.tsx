@@ -39,6 +39,7 @@ import {
   ArrowUpward,
   ChevronRight,
   BarChart,
+  CalendarMonth,
   Checklist,
 } from "@mui/icons-material";
 
@@ -46,6 +47,9 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from "@/hooks";
+import { FEATURE } from "@/features/feature-flags";
+import { coordinatorAllowedRoutes } from "@/constants/adminAccess";
+import type { FeatureKey } from "@/features/feature-flags";
 
 type SectionId = "all" | "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "interacoes" | "operacional";
 
@@ -55,6 +59,11 @@ interface CardData {
   icon: ReactElement;
   path: string;
   section: Exclude<SectionId, "all">;
+  /**
+   * Feature flag que libera o recurso. Com ela desligada o card some para
+   * todos, inclusive para o administrador, porque a rota também some.
+   */
+  flag?: FeatureKey;
 }
 
 const cardData: CardData[] = [
@@ -70,22 +79,25 @@ const cardData: CardData[] = [
   { title: "Crianças", description: "Gerencie crianças do clubinho.", icon: <Group fontSize="large" color="primary" />, path: "/adm/criancas", section: "pessoas" },
 
   { title: "Clubinhos", description: "Gerencie clubinhos.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/clubinhos", section: "clubinhos" },
-  { title: "Pagelas", description: "Gerencie pagelas.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/pagelas", section: "clubinhos" },
+  { title: "Pagelas", description: "Gerencie pagelas.", icon: <Groups fontSize="large" color="primary" />, path: "/adm/pagelas", section: "clubinhos", flag: FEATURE.PAGELAS },
+  { title: "Resumo Semanal", description: "O desenho de todas as semanas letivas dos seus clubinhos.", icon: <CalendarMonth fontSize="large" color="primary" />, path: "/adm/resumo-semanal", section: "clubinhos", flag: FEATURE.CLUB_WEEKLY_SUMMARY },
 
   { title: "Galerias de Fotos", description: "Organize e edite galerias de imagens do site.", icon: <PhotoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-fotos", section: "midias" },
-  { title: "Fotos dos Clubinhos", description: "Organize e edite galerias de fotos dos Clubinhos.", icon: <Collections fontSize="large" color="primary" />, path: "/adm/fotos-clubinhos", section: "midias" },
+  { title: "Fotos e vídeos dos Clubinhos", description: "Revise e publique fotos e vídeos dos Clubinhos.", icon: <Collections fontSize="large" color="primary" />, path: "/adm/fotos-clubinhos", section: "midias", flag: FEATURE.PHOTO_MODERATION },
   { title: "Vídeos", description: "Adicione vídeos ou links do YouTube para o site.", icon: <VideoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-videos", section: "midias" },
 
   { title: "Materiais de Visita", description: "Gerencie conteúdos semanais.", icon: <EventNote fontSize="large" color="primary" />, path: "/adm/paginas-materiais-semanais", section: "materiais" },
   { title: "Páginas de Ideias", description: "Gerencie páginas de ideias para professores.", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/paginas-ideias", section: "materiais" },
-  { title: "Ideias Compartilhadas", description: "Gerencie Ideias compartilhadas pelos Clubinhos", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/ideias-compartilhadas", section: "materiais" },
+  { title: "Ideias Compartilhadas", description: "Gerencie Ideias compartilhadas pelos Clubinhos", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/ideias-compartilhadas", section: "materiais", flag: FEATURE.IDEA_MODERATION },
 
-  { title: "Comentários", description: "Gerencie comentários dos usuários.", icon: <Comment fontSize="large" color="primary" />, path: "/adm/comentarios", section: "interacoes" },
+  { title: "Comentários", description: "Gerencie comentários dos usuários.", icon: <Comment fontSize="large" color="primary" />, path: "/adm/comentarios", section: "interacoes", flag: FEATURE.COMMENT_MODERATION },
   { title: "Contatos", description: "Gerencie contatos enviados para o Clubinho.", icon: <ContactPhone fontSize="large" color="primary" />, path: "/adm/contatos", section: "interacoes" },
   { title: "Feedbacks", description: "Gerencie feedbacks enviados para o Clubinho.", icon: <RateReview fontSize="large" color="primary" />, path: "/adm/feedbacks", section: "interacoes" },
 
-  { title: "Controle de Clubinhos", description: "Verificação em tempo real de pagelas por clube.", icon: <Checklist fontSize="large" color="primary" />, path: "/adm/controle-clubinhos", section: "operacional" },
-  { title: "Estatísticas", description: "Visualize estatísticas e análises completas.", icon: <BarChart fontSize="large" color="primary" />, path: "/adm/estatisticas", section: "operacional" },
+  { title: "Controle de Clubinhos", description: "Verificação em tempo real de pagelas por clube.", icon: <Checklist fontSize="large" color="primary" />, path: "/adm/controle-clubinhos", section: "operacional", flag: FEATURE.CLUB_CONTROL },
+  { title: "Estatísticas", description: "Visualize estatísticas e análises completas.", icon: <BarChart fontSize="large" color="primary" />, path: "/adm/estatisticas", section: "operacional", flag: FEATURE.STATISTICS },
+  // Feature flags não entram no painel: o acesso é pelo rodapé, e só para
+  // administradores.
 ];
 
 const sectionLabels: Record<SectionId, string> = {
@@ -124,24 +136,29 @@ export default function AdminDashboardPage() {
   }, [isMobile]);
 
   const normalizedQuery = query.trim().toLowerCase();
-  const coordinatorAllowed = new Set<string>([
-    ...(flags.coordinator_children_access ? ["/adm/criancas"] : []),
-    "/adm/professores",
-    "/adm/clubinhos",
-    "/adm/pagelas",
-    "/adm/usuarios",
-    "/adm/perfis",
-  ]);
+  const coordinatorAllowed = React.useMemo(
+    () => coordinatorAllowedRoutes(flags),
+    [flags],
+  );
 
-  const canSeeCard = (card: CardData): boolean => {
-    if (isAdmin) return true;
-    if (isCoordinator) return coordinatorAllowed.has(card.path);
-    return false;
-  };
+  /**
+   * Um card aparece quando as duas condições passam: a flag do recurso está
+   * ligada e o perfil tem acesso. O admin passa pelo perfil, mas não por cima
+   * de um recurso desligado.
+   */
+  const canSeeCard = React.useCallback(
+    (card: CardData): boolean => {
+      if (card.flag && !flags[card.flag]) return false;
+      if (isAdmin) return true;
+      if (isCoordinator) return coordinatorAllowed.has(card.path);
+      return false;
+    },
+    [flags, isAdmin, isCoordinator, coordinatorAllowed]
+  );
 
   const visibleCards = React.useMemo(
     () => cardData.filter(canSeeCard),
-    [isAdmin, isCoordinator]
+    [canSeeCard]
   );
 
   const grouped = React.useMemo(() => {
@@ -174,7 +191,7 @@ export default function AdminDashboardPage() {
     const allFiltered = order.flatMap((sec) => grouped[sec]);
 
     return (
-      <Box sx={{ width: "100%", px: 2, pb: 8, mt: 0, pt: 0 }}>
+      <Box data-testid="adm-admin-dashboard-page-mobile-list" sx={{ width: "100%", px: 2, pb: 8, mt: 0, pt: 0 }}>
         {!isSimpleMode && (
           <Box
             sx={{
@@ -346,7 +363,7 @@ export default function AdminDashboardPage() {
     const greetName =
       (user?.name && user.name.split(" ")[0]) || (isAdmin ? "Admin" : isCoordinator ? "Coordenador(a)" : "Usuário");
     return (
-      <Box sx={{ width: "100%", px: { xs: 2, md: 6 }, pt: { xs: 4, md: 0 } }}>
+      <Box data-testid="adm-admin-dashboard-page-desktop-grid" sx={{ width: "100%", px: { xs: 2, md: 6 }, pt: { xs: 4, md: 0 } }}>
         <Typography
           variant="h4"
           fontWeight="bold"
@@ -440,5 +457,5 @@ export default function AdminDashboardPage() {
     );
   };
 
-  return isMobile ? <MobileList /> : <DesktopGrid />;
+  return isMobile ? <MobileList data-testid="adm-admin-dashboard-page" /> : <DesktopGrid data-testid="adm-admin-dashboard-page" />;
 }

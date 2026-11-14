@@ -21,8 +21,9 @@ import api from '@/config/axiosConfig';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { PhoneInput, extractPhoneDigits } from '@/components/common/inputs';
-import { FORM_VALIDATION_MESSAGES, AUTH_ERROR_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
+import type { Resolver } from 'react-hook-form';
 
 interface RegisterProps {
   commonUser: boolean;
@@ -80,7 +81,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
     setValue,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: yupResolver(getSchema(commonUser)) as any,
+    resolver: yupResolver(getSchema(commonUser)) as Resolver<FormData>,
     defaultValues: {
       name: '',
       email: '',
@@ -130,7 +131,7 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box data-testid="register" sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Box component="main" sx={{ flex: '1 0 auto' }}>
         <Container
           maxWidth="sm"

@@ -19,7 +19,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ open, onClose, im
     if (!imageUrl) return null;
 
     return (
-        <Dialog
+        <Dialog data-testid="profile-image-preview-modal"
             open={open}
             onClose={onClose}
             maxWidth="md"
@@ -55,7 +55,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ open, onClose, im
                         bgcolor: 'rgba(0,0,0,0.5)',
                         '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
                     }}
-                >
+                 aria-label="Fechar">
                     <CloseIcon />
                 </IconButton>
                 <Box

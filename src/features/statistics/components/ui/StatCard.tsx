@@ -7,7 +7,6 @@ import {
   useTheme,
   alpha,
   Tooltip,
-  IconButton,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -17,6 +16,8 @@ import {
   OpenInNew,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RATE_DECIMAL_PLACES } from '../../constants';
+import { percentChange } from '../../utils/rates';
 
 export interface StatCardProps {
   title: string;
@@ -52,13 +53,19 @@ const formatNumber = (value: number | string, formatter?: (v: number | string) =
   if (value >= 1000) {
     return `${(value / 1000).toFixed(1)}K`;
   }
-  return value.toLocaleString('pt-BR');
+  // Uma casa decimal, como o back arredonda as taxas: sem o limite, uma taxa
+  // com três casas aparecia como "93,478".
+  return value.toLocaleString('pt-BR', { maximumFractionDigits: RATE_DECIMAL_PLACES });
 };
 
 const getTrend = (current: number | string, previous?: number, invert = false) => {
   if (previous === undefined || typeof current === 'string') return null;
 
-  const change = ((current - previous) / previous) * 100;
+  // Sem base de comparação (anterior zero) não há tendência a mostrar: a
+  // divisão dava "Infinity%"/"NaN%".
+  const change = percentChange(current, previous);
+  if (change === null) return null;
+
   const isPositive = invert ? change < 0 : change > 0;
 
   if (Math.abs(change) < 1) {
@@ -83,13 +90,13 @@ const MiniSparkline: React.FC<{ data: number[]; color: string }> = memo(({ data,
   const width = 60;
 
   const points = data.map((value, index) => {
-    const x = (index / (data.length - 1)) * width;
+    const x = data.length > 1 ? (index / (data.length - 1)) * width : width / 2;
     const y = height - ((value - min) / range) * height;
     return `${x},${y}`;
   }).join(' ');
 
   return (
-    <svg width={width} height={height} style={{ overflow: 'visible' }}>
+    <svg data-testid="statistics-ui-stat-card-mini-sparkline" width={width} height={height} style={{ overflow: 'visible' }}>
       <polyline
         points={points}
         fill="none"
@@ -160,7 +167,7 @@ export const StatCard: React.FC<StatCardProps> = memo(({
 
   if (loading) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-stat-card"
         elevation={0}
         sx={{
           p: compact ? { xs: 0.75, sm: 1.25 } : 2.5,
@@ -177,7 +184,7 @@ export const StatCard: React.FC<StatCardProps> = memo(({
   }
 
   return (
-    <MotionPaper
+    <MotionPaper data-testid="statistics-ui-stat-card"
       elevation={0}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}

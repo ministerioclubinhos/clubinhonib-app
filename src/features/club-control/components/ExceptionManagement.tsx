@@ -5,7 +5,7 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
+  Grid2,
   Table,
   TableBody,
   TableCell,
@@ -17,10 +17,6 @@ import {
   Alert,
   CircularProgress,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   useTheme,
   FormControlLabel,
   Checkbox,
@@ -48,6 +44,9 @@ import {
 } from '@mui/icons-material';
 import { useCreateException, useWeekdayExceptions, useDeleteException } from '../hooks';
 import dayjs from 'dayjs';
+import { getClubControlErrorMessage } from '../errorMessage';
+import ExceptionDeleteDialog from './ExceptionDeleteDialog';
+import { SUGGESTED_HOLIDAYS } from '../constants';
 
 const EXCEPTION_TYPES = [
   { value: 'holiday', label: 'Feriado', icon: <EventBusy />, color: '#ff9800' },
@@ -65,7 +64,7 @@ export const ExceptionManagement: React.FC = () => {
     exceptionDate: '',
     reason: '',
     type: 'holiday' as 'holiday' | 'event' | 'maintenance' | 'vacation' | 'other',
-    isRecurrent: true,
+    isRecurrent: false,
     notes: '',
   });
   const [deleteDialog, setDeleteDialog] = React.useState<{
@@ -89,7 +88,7 @@ export const ExceptionManagement: React.FC = () => {
     severity: 'success',
   });
 
-  const { data: exceptionsData, isLoading } = useWeekdayExceptions({ page, limit });
+  const { data: exceptionsData, isLoading, isError, refetch } = useWeekdayExceptions({ page, limit });
   const exceptions = exceptionsData?.items || [];
   const createException = useCreateException();
   const deleteException = useDeleteException();
@@ -113,7 +112,7 @@ export const ExceptionManagement: React.FC = () => {
         exceptionDate: '',
         reason: '',
         type: 'holiday',
-        isRecurrent: true,
+        isRecurrent: false,
         notes: '',
       });
 
@@ -122,10 +121,10 @@ export const ExceptionManagement: React.FC = () => {
         message: `Exceção cadastrada com sucesso! A data ${dateFormatted} (${weekday}) não terá funcionamento para TODOS os clubinhos deste dia.`,
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao cadastrar exceção: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível cadastrar a exceção.'),
         severity: 'error',
       });
     }
@@ -140,10 +139,10 @@ export const ExceptionManagement: React.FC = () => {
         message: 'Exceção excluída com sucesso! A data voltará a ser considerada como dia normal de funcionamento.',
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao excluir exceção: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível excluir a exceção.'),
         severity: 'error',
       });
     }
@@ -158,7 +157,7 @@ export const ExceptionManagement: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box data-testid="club-control-exception-management">
 
       <Paper
         elevation={0}
@@ -219,9 +218,9 @@ export const ExceptionManagement: React.FC = () => {
         </Typography>
       </Alert>
 
-      <Grid container spacing={{ xs: 2, sm: 3 }}>
+      <Grid2 container spacing={{ xs: 2, sm: 3 }}>
 
-        <Grid item xs={12} md={5}>
+        <Grid2 size={{ xs: 12, md: 5 }}>
           <Paper
             elevation={0}
             sx={{
@@ -257,8 +256,8 @@ export const ExceptionManagement: React.FC = () => {
             </Box>
 
             <form onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={12}>
                   <SimpleDatePicker
                     value={formData.exceptionDate}
                     onChange={(value) => setFormData({ ...formData, exceptionDate: value })}
@@ -267,9 +266,9 @@ export const ExceptionManagement: React.FC = () => {
                     margin="none"
                     helperText="Data em que NENHUM clube funcionará"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     select
@@ -292,9 +291,9 @@ export const ExceptionManagement: React.FC = () => {
                       </MenuItem>
                     ))}
                   </TextField>
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     label="Motivo"
@@ -304,9 +303,9 @@ export const ExceptionManagement: React.FC = () => {
                     placeholder="Ex: Feriado - Proclamação da República"
                     helperText="Descreva o motivo da exceção"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -322,14 +321,15 @@ export const ExceptionManagement: React.FC = () => {
                           Exceção Recorrente
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Repetir esta data todo ano (ex: feriados nacionais)
+                          Repetir esta data todo ano (ex: feriados nacionais).
+                          Deixe desmarcado para uma data única
                         </Typography>
                       </Box>
                     }
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     label="Observações"
@@ -339,9 +339,9 @@ export const ExceptionManagement: React.FC = () => {
                     rows={3}
                     placeholder="Informações adicionais (opcional)"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <Button
                     type="submit"
                     variant="contained"
@@ -353,8 +353,8 @@ export const ExceptionManagement: React.FC = () => {
                   >
                     {createException.isPending ? 'Cadastrando...' : 'Cadastrar Exceção Global'}
                   </Button>
-                </Grid>
-              </Grid>
+                </Grid2>
+              </Grid2>
             </form>
 
             <Alert severity="warning" sx={{ mt: 2 }} icon={<Warning />}>
@@ -363,9 +363,9 @@ export const ExceptionManagement: React.FC = () => {
               </Typography>
             </Alert>
           </Paper>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={7}>
+        <Grid2 size={{ xs: 12, md: 7 }}>
           <Paper
             elevation={0}
             sx={{
@@ -400,6 +400,13 @@ export const ExceptionManagement: React.FC = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress />
                 </Box>
+              ) : isError ? (
+                <Alert
+                  severity="error"
+                  action={<Button onClick={() => refetch()}>Tentar novamente</Button>}
+                >
+                  Não foi possível carregar as exceções.
+                </Alert>
               ) : !exceptions || exceptions.length === 0 ? (
                 <Alert severity="info" sx={{ borderRadius: 2 }}>
                   <Typography variant="body2" fontWeight="bold" gutterBottom>
@@ -573,7 +580,7 @@ export const ExceptionManagement: React.FC = () => {
                                       description: `${dayjs(exception.exceptionDate).format('DD/MM/YYYY')} - ${exception.reason}`,
                                     })
                                   }
-                                >
+                                 aria-label="Excluir">
                                   <Delete />
                                 </IconButton>
                               </TableCell>
@@ -635,17 +642,7 @@ export const ExceptionManagement: React.FC = () => {
               Clique para preencher automaticamente o formulário
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {[
-                { date: '2024-12-25', label: 'Natal', recurrent: true },
-                { date: '2025-01-01', label: 'Ano Novo', recurrent: true },
-                { date: '2025-04-21', label: 'Tiradentes', recurrent: true },
-                { date: '2025-05-01', label: 'Trabalho', recurrent: true },
-                { date: '2025-09-07', label: 'Independência', recurrent: true },
-                { date: '2025-10-12', label: 'N. Sra. Aparecida', recurrent: true },
-                { date: '2025-11-02', label: 'Finados', recurrent: true },
-                { date: '2025-11-15', label: 'Proclamação', recurrent: true },
-                { date: '2025-11-20', label: 'Consciência Negra', recurrent: true },
-              ].map((holiday) => (
+              {SUGGESTED_HOLIDAYS.map((holiday) => (
                 <Chip
                   key={holiday.date}
                   label={`${holiday.label} (${dayjs(holiday.date).format('DD/MM')})`}
@@ -665,52 +662,18 @@ export const ExceptionManagement: React.FC = () => {
               ))}
             </Box>
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
-      <Dialog
+      <ExceptionDeleteDialog
         open={deleteDialog.open}
-        onClose={() => setDeleteDialog({ open: false, exceptionId: '', description: '' })}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Warning sx={{ color: theme.palette.warning.main, fontSize: 28 }} />
-          Confirmar Exclusão
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" gutterBottom>
-            Tem certeza que deseja excluir a exceção <strong>{deleteDialog.description}</strong>?
-          </Typography>
-          <Alert severity="info" sx={{ mt: 2 }} icon={<Info />}>
-            <Typography variant="body2" fontWeight="bold" gutterBottom>
-              ℹ️ O que acontece após a exclusão:
-            </Typography>
-            <Typography variant="caption" display="block">
-              A data voltará a ser considerada como <strong>dia normal de funcionamento</strong> para
-              <strong> TODOS os clubinhos</strong> que funcionam neste dia da semana.
-              As pagelas desta data voltarão a ser cobradas normalmente.
-            </Typography>
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => setDeleteDialog({ open: false, exceptionId: '', description: '' })}
-            variant="outlined"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleDelete}
-            color="error"
-            variant="contained"
-            disabled={deleteException.isPending}
-            startIcon={deleteException.isPending ? <CircularProgress size={16} /> : <Delete />}
-          >
-            {deleteException.isPending ? 'Excluindo...' : 'Excluir Exceção'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        description={deleteDialog.description}
+        loading={deleteException.isPending}
+        onConfirm={handleDelete}
+        onCancel={() =>
+          setDeleteDialog({ open: false, exceptionId: '', description: '' })
+        }
+      />
 
       <Snackbar
         open={snackbar.open}

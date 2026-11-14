@@ -6,29 +6,34 @@ import {
 } from "@mui/material";
 import { Search, PersonAdd, ArrowBack, FilterAltOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/slices";
-import { UserRole } from "@/types/shared";
+import { useSnackbar } from "notistack";
 
 import { useChildrenBrowser } from "./hooks";
 import ChildCard from "./components/ChildCard";
-import { CreateChildForm, EditChildForm, ChildResponseDto } from "../children/types";
+import type { ChildFormValues, ChildResponse, ChildListItem } from "../children/types";
+import { childToForm, emptyChildForm } from "../children/utils";
 import { useChildMutations } from "../children/hooks";
 import ChildFormDialog from "../children/components/ChildFormDialog";
 import { apiFetchChild } from "../children/api";
 import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
-import { ChildSimpleResponseDto } from "../children/types";
-import { extractErrorMessage } from "@/utils/apiError";
+import { ToggleActiveSubject } from "@/components/common/modal/types";
+import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import { useAuthRole } from "@/utils/useAuthRole";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { CHILDREN_BROWSER_PAGE_TITLE } from "./constants";
 
 export default function ChildrenBrowserPage() {
+  // Professor e coordenador não excluem criança: desativar é a operação deles.
+  const { isAdmin } = useAuthRole();
+
   const nav = useNavigate();
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  // `noSsr` dá a resposta certa já na primeira renderização: sem ele a tela
+  // buscava 10 crianças e, logo em seguida, 5.
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"), { noSsr: true });
   const pageSize = isMobile ? 5 : 10;
-
-  const user = useSelector((state: RootState) => (state.auth as any).user);
-  const isAdmin = user?.role === UserRole.ADMIN;
 
   const {
     searchString,
@@ -37,6 +42,7 @@ export default function ChildrenBrowserPage() {
     setIsActiveFilter,
     acceptedChristFilter,
     setAcceptedChristFilter,
+    clearFilters,
     items,
     loading,
     error,
@@ -48,96 +54,83 @@ export default function ChildrenBrowserPage() {
     handlePageChange,
   } = useChildrenBrowser(pageSize);
 
-  const [creating, setCreating] = React.useState<CreateChildForm | null>(null);
-  const [editing, setEditing] = React.useState<EditChildForm | null>(null);
-  const [confirmToggleActive, setConfirmToggleActive] = React.useState<ChildSimpleResponseDto | null>(null);
+  const [creating, setCreating] = React.useState<ChildFormValues | null>(null);
+  const [editing, setEditing] = React.useState<ChildFormValues | null>(null);
+  const [confirmToggleActive, setConfirmToggleActive] = React.useState<ChildListItem | null>(null);
+  const [confirmDelete, setConfirmDelete] = React.useState<ChildListItem | null>(null);
 
   const {
-    dialogLoading,
-    dialogError,
-    setDialogError,
+    actionLoading: dialogLoading,
+    actionError: dialogError,
+    setActionError: setDialogError,
     createChild,
     updateChild,
+    deleteChild,
     toggleActive,
-  } = useChildMutations(async () => {
-    await refetch();
+  } = useChildMutations(() => {
+    void refetch();
   });
 
-  const openCreate = () =>
-    setCreating({
-      name: "",
-      gender: "M",
-      guardianName: "",
-      guardianPhone: "",
-      birthDate: "",
-      joinedAt: null,
-      clubId: null,
-      address: { street: "", district: "", city: "", state: "", postalCode: "" } as any,
-    });
+  // O aviso global do cliente HTTP já mostra a falha de excluir, ativar e
+  // desativar. O erro guardado aqui é o do formulário, e é limpo ao abrir um
+  // novo para a mensagem de uma ação anterior não reaparecer nele.
+  const openCreate = () => {
+    setDialogError("");
+    setCreating(emptyChildForm());
+  };
 
   const submitCreate = async () => {
     if (!creating) return;
-    const payload = { ...creating };
-    if (!payload.joinedAt) payload.joinedAt = null;
-    if (!payload.clubId) payload.clubId = null as any;
 
-    try {
-      await createChild(payload, 1, 12);
+    const ok = await createChild(creating);
+    if (ok) {
+      enqueueSnackbar("Criança cadastrada com sucesso!", { variant: "success" });
       setCreating(null);
       setDialogError("");
-    } catch { }
+    }
   };
 
   const openEdit = async (childId: string) => {
     try {
-      const full: ChildResponseDto = await apiFetchChild(childId);
-      setEditing({
-        id: full.id,
-        name: full.name ?? "",
-        gender: (full.gender as any) ?? "M",
-        guardianName: full.guardianName ?? "",
-        guardianPhone: full.guardianPhone ?? "",
-        birthDate: full.birthDate ?? "",
-        joinedAt: (full as any).joinedAt ?? null,
-        clubId: (full as any)?.club?.id ?? null,
-        address: full.address
-          ? {
-            street: full.address.street ?? "",
-            number: (full.address as any).number ?? "",
-            district: full.address.district ?? "",
-            city: full.address.city ?? "",
-            state: full.address.state ?? "",
-            postalCode: full.address.postalCode ?? "",
-            complement: (full.address as any).complement ?? "",
-          }
-          : { street: "", number: "", district: "", city: "", state: "", postalCode: "", complement: "" } as any,
-      });
+      const full: ChildResponse = await apiFetchChild(childId);
+      setEditing(childToForm(full));
       setDialogError("");
-    } catch (e: any) {
-      setDialogError(e?.response?.data?.message || e?.message || "Não foi possível abrir a criança para edição");
+    } catch (err: unknown) {
+      // O aviso global já mostrou a falha; o formulário não chega a abrir.
+      void err;
     }
   };
 
   const submitEdit = async () => {
-    if (!editing) return;
-    const { id, ...rest } = editing;
-    try {
-      await updateChild(id, rest, 1, 12);
+    if (!editing?.id) return;
+
+    const ok = await updateChild(editing.id, editing);
+    if (ok) {
+      enqueueSnackbar("Criança atualizada com sucesso!", { variant: "success" });
       setEditing(null);
       setDialogError("");
-    } catch { }
+    }
   };
 
-  React.useEffect(() => {
-    document.title = "Lançar Pagela • Selecionar Criança";
-  }, []);
+  const submitDelete = async () => {
+    if (!confirmDelete) return;
+    const ok = await deleteChild(confirmDelete.id);
+    if (ok) {
+      enqueueSnackbar("Criança excluída com sucesso!", { variant: "success" });
+      setConfirmDelete(null);
+      setDialogError("");
+    }
+  };
+
+  useDocumentTitle(CHILDREN_BROWSER_PAGE_TITLE);
 
   return (
-    <Box
+    <Box data-testid="pagela-teacher-children-browser-page"
       sx={{
         px: { xs: 2, md: 4 },
         pt: { xs: 2, md: 4 },
-        pb: { xs: 2, md: 4 },
+        // Folga para o botão flutuante não cobrir a paginação no celular.
+        pb: { xs: 12, md: 4 },
         minHeight: "100vh",
         bgcolor: "#f6f7f9"
       }}
@@ -245,8 +238,9 @@ export default function ChildrenBrowserPage() {
           />
 
           <FormControl size="small" sx={{ minWidth: { xs: '100%', md: 180 } }}>
-            <InputLabel>Status</InputLabel>
+            <InputLabel id="children-status-label">Status</InputLabel>
             <Select
+              labelId="children-status-label"
               value={isActiveFilter === undefined ? 'all' : isActiveFilter ? 'active' : 'inactive'}
               onChange={(e) => {
                 const val = e.target.value;
@@ -261,8 +255,9 @@ export default function ChildrenBrowserPage() {
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: { xs: '100%', md: 200 } }}>
-            <InputLabel>Decisão</InputLabel>
+            <InputLabel id="children-decision-label">Decisão</InputLabel>
             <Select
+              labelId="children-decision-label"
               value={acceptedChristFilter === undefined ? 'all' : acceptedChristFilter ? 'accepted' : 'not_accepted'}
               onChange={(e) => {
                 const val = e.target.value;
@@ -277,11 +272,7 @@ export default function ChildrenBrowserPage() {
           </FormControl>
 
           <Button
-            onClick={() => {
-              setSearchString("");
-              setIsActiveFilter(undefined);
-              setAcceptedChristFilter(undefined);
-            }}
+            onClick={clearFilters}
             disabled={!searchString && isActiveFilter === undefined && acceptedChristFilter === undefined}
             startIcon={<FilterAltOff />}
             variant="outlined"
@@ -303,15 +294,35 @@ export default function ChildrenBrowserPage() {
         <Box textAlign="center" my={6}>
           <CircularProgress />
         </Box>
+      ) : items.length === 0 ? (
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            textAlign: "center",
+            borderRadius: 3,
+            border: "1px dashed",
+            borderColor: "divider",
+            bgcolor: "white",
+          }}
+        >
+          <Typography variant="h6" color="text.secondary" fontWeight={700}>
+            Nenhuma criança encontrada
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Tente alterar os termos da busca ou ajustar os filtros selecionados.
+          </Typography>
+        </Paper>
       ) : (
         <>
           <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
             {items.map((child) => (
-              <Grid key={child.id} item xs={12} sm={6} md={4} lg={3} xl={2.4 as any}>
+              <Grid key={child.id} item xs={12} sm={6} md={4} lg={3} xl={2.4}>
                 <ChildCard
                   child={child}
                   onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
                   onEdit={(c) => openEdit(c.id)}
+                  onDelete={isAdmin ? (c) => setConfirmDelete(c) : undefined}
                   onRefresh={refetch}
                   onToggleActive={(c) => {
                     setConfirmToggleActive(c);
@@ -329,8 +340,9 @@ export default function ChildrenBrowserPage() {
                 onChange={(_, newPage) => handlePageChange(newPage)}
                 color="primary"
                 size={isMobile ? "small" : "medium"}
-                showFirstButton
-                showLastButton
+                siblingCount={isMobile ? 0 : 1}
+                showFirstButton={!isMobile}
+                showLastButton={!isMobile}
               />
             </Box>
           )}
@@ -341,7 +353,7 @@ export default function ChildrenBrowserPage() {
         mode="create"
         open={!!creating}
         value={creating}
-        onChange={(v) => setCreating(v as CreateChildForm)}
+        onChange={setCreating}
         onCancel={() => {
           setCreating(null);
           setDialogError("");
@@ -355,7 +367,7 @@ export default function ChildrenBrowserPage() {
         mode="edit"
         open={!!editing}
         value={editing}
-        onChange={(v) => setEditing(v as EditChildForm)}
+        onChange={setEditing}
         onCancel={() => {
           setEditing(null);
           setDialogError("");
@@ -365,7 +377,19 @@ export default function ChildrenBrowserPage() {
         loading={dialogLoading}
       />
 
+      <DeleteConfirmDialog
+        open={!!confirmDelete}
+        title={confirmDelete?.name || ""}
+        onClose={() => {
+          setConfirmDelete(null);
+          setDialogError("");
+        }}
+        onConfirm={submitDelete}
+        loading={dialogLoading}
+      />
+
       <ToggleActiveConfirmDialog
+            subject={ToggleActiveSubject.Child}
         open={!!confirmToggleActive}
         title={confirmToggleActive?.name || ""}
         isActive={confirmToggleActive?.isActive ?? false}
@@ -376,17 +400,24 @@ export default function ChildrenBrowserPage() {
         onConfirm={async () => {
           if (!confirmToggleActive) return;
 
-          try {
-            const fullChild = await apiFetchChild(confirmToggleActive.id);
-            await toggleActive(fullChild.id, 1, 20, undefined, undefined);
-            await refetch();
+          // A rota inverte a situação no servidor: um segundo toque enquanto
+          // a primeira chamada anda desfaria a troca.
+          if (dialogLoading) return;
+          const wasActive = confirmToggleActive.isActive;
+          const ok = await toggleActive(confirmToggleActive.id);
+          if (ok) {
+            enqueueSnackbar(
+              wasActive
+                ? "Criança desativada com sucesso"
+                : "Criança ativada com sucesso",
+              { variant: "info" }
+            );
             setConfirmToggleActive(null);
-          } catch (err: unknown) {
-            setDialogError(extractErrorMessage(err, "Erro ao alterar status da criança"));
+            setDialogError("");
           }
         }}
         loading={dialogLoading}
       />
-    </Box >
+    </Box>
   );
 }

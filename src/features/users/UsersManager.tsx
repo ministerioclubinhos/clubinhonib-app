@@ -1,195 +1,229 @@
-import React from "react";
-import { Box, Alert, CircularProgress } from "@mui/material";
-import { useTheme, useMediaQuery } from "@mui/material";
-
-import UsersToolbar from "./components/UsersToolbar";
-import UsersTable from "./components/UsersTable";
-import UserViewDialog from "./components/UserViewDialog";
-import UserCreateDialog from "./components/UserCreateDialog";
-import UserEditDialog from "./components/UserEditDialog";
+import React, { useMemo, useState } from "react";
+import { Button, Grid2 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 
 import {
-  CreateUserForm,
-  SortParam,
-  UserFilters,
-  UserRow,
-  UpdateUserForm,
-} from "./types";
-
-import { useUserMutations, useUsers } from "./hooks";
-import { UserRole } from "@/types/shared";
-import BackHeader from "@/components/common/header/BackHeader";
+  ListingLayout,
+  ListingToolbar,
+  type ListingFilter,
+} from "@/components/common/listing";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import { UserRole } from "@/types/shared";
+
+import UserCard from "./components/UserCard";
+import UserFormDialog from "./components/UserFormDialog";
+import UserViewDialog from "./components/UserViewDialog";
+import { useUserMutations, useUsers } from "./hooks";
+import {
+  ANY_FILTER,
+  USERS_PAGE_SIZE_OPTIONS,
+  USER_ASSIGNABLE_ROLES,
+  USER_ROLE_LABELS,
+} from "./constants";
+import { emptyUserForm, userToForm } from "./utils";
+import type { UserFormValues, UserResponse } from "./types";
 
 export default function UsersManager() {
-  const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  } = useUsers();
 
-  const [pageSize, setPageSize] = React.useState(12);
-  const [pageIndex, setPageIndex] = React.useState(0);
-  const [sorting, setSorting] = React.useState<SortParam>({ id: "updatedAt", desc: true });
-  const [filters, setFilters] = React.useState<UserFilters>({
-    q: "",
-    role: "all",
-    active: null,
-    completed: null,
-  });
+  const {
+    actionLoading,
+    actionError,
+    setActionError,
+    createUser,
+    updateUser,
+    deleteUser,
+  } = useUserMutations(refresh);
 
-  const { rows, total, loading, error, setError, fetchPage } =
-    useUsers(pageIndex, pageSize, sorting, filters);
+  const [viewing, setViewing] = useState<UserResponse | null>(null);
+  const [form, setForm] = useState<UserFormValues | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<UserResponse | null>(null);
 
-  const doRefresh = React.useCallback(() => { fetchPage(); }, [fetchPage]);
+  const formMode = form?.id ? "edit" : "create";
 
-  const { dialogLoading, dialogError, setDialogError, createUser, updateUser, deleteUser } =
-    useUserMutations(fetchPage);
+  const toolbarFilters = useMemo<ListingFilter[]>(
+    () => [
+      {
+        id: "role",
+        label: "Papel",
+        value: filters.role ?? ANY_FILTER,
+        options: [
+          { value: ANY_FILTER, label: "Todos os papéis" },
+          ...USER_ASSIGNABLE_ROLES.map((role) => ({
+            value: role,
+            label: USER_ROLE_LABELS[role],
+          })),
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            role: value === ANY_FILTER ? undefined : (value as UserRole),
+          })),
+      },
+      {
+        id: "active",
+        label: "Situação",
+        value: filters.active === undefined ? ANY_FILTER : String(filters.active),
+        options: [
+          { value: ANY_FILTER, label: "Ativos e inativos" },
+          { value: "true", label: "Ativos" },
+          { value: "false", label: "Inativos" },
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            active: value === ANY_FILTER ? undefined : value === "true",
+          })),
+      },
+      {
+        id: "completed",
+        label: "Cadastro",
+        value:
+          filters.completed === undefined ? ANY_FILTER : String(filters.completed),
+        options: [
+          { value: ANY_FILTER, label: "Qualquer cadastro" },
+          { value: "true", label: "Completos" },
+          { value: "false", label: "Incompletos" },
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            completed: value === ANY_FILTER ? undefined : value === "true",
+          })),
+      },
+    ],
+    [filters, setFilters],
+  );
 
-  const [viewing, setViewing] = React.useState<UserRow | null>(null);
-
-  const [editing, setEditing] = React.useState<
-    (UpdateUserForm & { id: string; confirmPassword?: string; editPassword?: boolean }) | null
-  >(null);
-
-  const [creating, setCreating] = React.useState<CreateUserForm | null>(null);
-  const [confirmDelete, setConfirmDelete] = React.useState<UserRow | null>(null);
-
-  const onCreateConfirm = async () => {
-    if (!creating) return;
-    if (creating.password !== (creating.confirmPassword || "")) {
-      setDialogError("As senhas não coincidem.");
-      return;
-    }
-    await createUser(creating);
-    setCreating(null);
+  const closeForm = () => {
+    setForm(null);
+    setActionError("");
   };
 
-  const onEditConfirm = async () => {
-    if (!editing?.id) return;
+  const handleSubmit = async () => {
+    if (!form) return;
 
-    const wantsPassword = !!editing.editPassword;
+    const ok = form.id
+      ? await updateUser(form.id, form)
+      : await createUser(form);
 
-    if (wantsPassword) {
-      if (!editing.password) {
-        setDialogError("Informe a nova senha.");
-        return;
-      }
-      if (editing.password !== editing.confirmPassword) {
-        setDialogError("As senhas não coincidem.");
-        return;
-      }
+    if (ok) {
+      closeForm();
+      setViewing(null);
     }
-
-    const { id, confirmPassword, editPassword, ...payload } = editing;
-
-    if (!wantsPassword) {
-      delete (payload as any).password;
-    } else if (!payload.password) {
-      delete (payload as any).password;
-    }
-
-    await updateUser(id, payload);
-    setEditing(null);
   };
 
-  const onDeleteConfirm = async () => {
-    if (!confirmDelete?.id) return;
-    await deleteUser(confirmDelete.id);
-    setConfirmDelete(null);
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+
+    const ok = await deleteUser(confirmDelete.id);
+    if (ok) {
+      setConfirmDelete(null);
+      setViewing(null);
+    }
   };
 
   return (
-    <Box sx={{ px: { xs: 2, md: 0 }, py: { xs: 0, md: 0 }, minHeight: "100vh", bgcolor: "#f9fafb" }}>
-      <BackHeader title="Gerenciador de Usuários" />
+    <ListingLayout data-testid="users-users-manager"
+      title="Usuários"
+      summary={
+        total > 0
+          ? `${total} usuário(s) encontrado(s)`
+          : "Nenhum usuário para os filtros atuais"
+      }
+      toolbar={
+        <ListingToolbar
+          searchValue={search}
+          searchPlaceholder="Buscar por nome, e-mail, telefone ou papel…"
+          onSearchChange={setSearch}
+          filters={toolbarFilters}
+          onRefresh={refresh}
+          action={
+            <Button
+              type="button"
+              variant="contained"
+              startIcon={<AddIcon />}
+              fullWidth
+              onClick={() => setForm(emptyUserForm())}
+            >
+              Novo usuário
+            </Button>
+          }
+        />
+      }
+      loading={loading}
+      error={error || actionError}
+      onDismissError={() => {
+        setError("");
+        setActionError("");
+      }}
+      itemCount={items.length}
+      emptyTitle="Nenhum usuário encontrado"
+      emptySubtitle="Ajuste a busca ou os filtros para ver outros resultados."
+      pagination={{
+        page,
+        pageSize,
+        total,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+      }}
+      pageSizeOptions={USERS_PAGE_SIZE_OPTIONS}
+      overlays={
+        <>
+          <UserViewDialog
+            user={viewing}
+            onClose={() => setViewing(null)}
+            onEdit={() => {
+              if (viewing) setForm(userToForm(viewing));
+            }}
+          />
 
-      <UsersToolbar
-        filters={filters}
-        onChange={(next) => { setFilters(next); setPageIndex(0); }}
-        onCreate={() =>
-          setCreating({
-            name: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-            phone: "",
-            role: UserRole.TEACHER,
-            active: true,
-          })
-        }
-        onRefresh={doRefresh}
-        onClearFilters={() =>
-          setFilters({
-            q: "",
-            role: "all",
-            active: null,
-            completed: null,
-          })
-        }
-        isXs={isXs}
-      />
+          <UserFormDialog
+            mode={formMode}
+            open={!!form}
+            value={form}
+            onChange={setForm}
+            onCancel={closeForm}
+            onSubmit={() => void handleSubmit()}
+            loading={actionLoading}
+            error={actionError}
+          />
 
-      {loading && !rows.length && (
-        <Box textAlign="center" my={6}><CircularProgress /></Box>
-      )}
-
-      {error && !loading && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>{error}</Alert>
-      )}
-
-      <UsersTable
-        rows={rows}
-        total={total}
-        pageIndex={pageIndex}
-        pageSize={pageSize}
-        setPageIndex={setPageIndex}
-        setPageSize={setPageSize}
-        sorting={sorting ? ([sorting] as any) : []}
-        setSorting={(s) => setSorting(Array.isArray(s) ? s[0] ?? null : (s as any))}
-        onView={(user) => setViewing(user)}
-        onEdit={(user) =>
-          setEditing({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            role: user.role,
-            active: user.active,
-            completed: user.completed,
-            commonUser: user.commonUser,
-            password: "",
-            confirmPassword: "",
-            editPassword: false,
-          })
-        }
-        onDelete={(user) => setConfirmDelete(user)}
-      />
-
-      <UserViewDialog open={!!viewing} user={viewing} onClose={() => setViewing(null)} />
-
-      <UserCreateDialog
-        open={!!creating}
-        value={creating}
-        onChange={(v) => setCreating(v)}
-        loading={dialogLoading}
-        error={dialogError}
-        onCancel={() => { setCreating(null); setDialogError(""); }}
-        onConfirm={onCreateConfirm}
-      />
-
-      <UserEditDialog
-        open={!!editing}
-        value={editing as any}
-        onChange={(v) => setEditing((prev) => (prev ? { ...prev, ...v } : null))}
-        loading={dialogLoading}
-        error={dialogError}
-        onCancel={() => { setEditing(null); setDialogError(""); }}
-        onConfirm={onEditConfirm}
-      />
-
-      <DeleteConfirmDialog
-        open={!!confirmDelete}
-        title={confirmDelete?.name || "Usuário"}
-        onClose={() => setConfirmDelete(null)}
-        onConfirm={onDeleteConfirm}
-      />
-    </Box>
+          <DeleteConfirmDialog
+            open={!!confirmDelete}
+            title={confirmDelete?.name ?? ""}
+            onClose={() => setConfirmDelete(null)}
+            onConfirm={handleDelete}
+          />
+        </>
+      }
+    >
+      {items.map((user) => (
+        <Grid2 key={user.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+          <UserCard
+            user={user}
+            disabled={actionLoading}
+            onView={() => setViewing(user)}
+            onEdit={() => setForm(userToForm(user))}
+            onDelete={() => setConfirmDelete(user)}
+          />
+        </Grid2>
+      ))}
+    </ListingLayout>
   );
 }

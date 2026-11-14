@@ -3,17 +3,14 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
 import FormHelperText from "@mui/material/FormHelperText";
-import { apiFetchSimpleClubs } from "@/features/clubs/api";
+import { extractErrorMessage } from "@/utils/apiError";
 
-export type SimpleClubResponseDto = {
-  id: string;
-  detalhe: string;
-  coordinator: boolean;
-};
+import { apiFetchClubOptions } from "../../api";
+import type { ClubSelectOption } from "../../types";
 
 type Props = {
   value: string | null;
-  onChange: (id: string | null, option?: SimpleClubResponseDto | null) => void;
+  onChange: (id: string | null, option?: ClubSelectOption | null) => void;
   label?: string;
   placeholder?: string;
   helperText?: string;
@@ -38,7 +35,7 @@ export default function ClubAutocomplete({
   size = "small",
   fetchOnMount = false,
 }: Props) {
-  const [options, setOptions] = React.useState<SimpleClubResponseDto[]>([]);
+  const [options, setOptions] = React.useState<ClubSelectOption[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string>("");
 
@@ -49,15 +46,15 @@ export default function ClubAutocomplete({
     setLoading(true);
     setLoadError("");
     try {
-      const items = await apiFetchSimpleClubs();
+      const items = await apiFetchClubOptions();
       const safe = Array.isArray(items) ? items : [];
       setOptions(safe);
 
       if (safe.length === 1 && !value) {
         onChange(safe[0].id, safe[0]);
       }
-    } catch (e: any) {
-      setLoadError(e?.response?.data?.message || e?.message || "Falha ao carregar clubinhos");
+    } catch (err: unknown) {
+      setLoadError(extractErrorMessage(err, "Falha ao carregar clubinhos"));
     } finally {
       setLoading(false);
     }
@@ -69,7 +66,7 @@ export default function ClubAutocomplete({
 
   return (
     <>
-      <Autocomplete
+      <Autocomplete data-testid="clubs-form-club-autocomplete"
         options={options}
         value={selected}
         disabled={disabled}
@@ -77,7 +74,7 @@ export default function ClubAutocomplete({
         onOpen={load}
         onChange={(_, opt) => onChange(opt ? opt.id : null, opt ?? null)}
         isOptionEqualToValue={(o, v) => o.id === v.id}
-        getOptionLabel={(o) => o?.detalhe ?? ""}
+        getOptionLabel={(option) => option?.label ?? ""}
         clearOnEscape
         disableClearable={false}
         fullWidth={fullWidth}
@@ -90,20 +87,22 @@ export default function ClubAutocomplete({
             placeholder={placeholder}
             error={!!errorText}
             helperText={errorText}
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <>
-                  {loading ? <CircularProgress color="inherit" size={18} /> : null}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
+            slotProps={{
+              input: {
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loading ? <CircularProgress color="inherit" size={18} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              },
             }}
           />
         )}
       />
       {(helperText || loadError) && (
-        <FormHelperText error={!!loadError}>
+        <FormHelperText data-testid="clubs-form-club-autocomplete" error={!!loadError}>
           {loadError ? loadError : helperText}
         </FormHelperText>
       )}

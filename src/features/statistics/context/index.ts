@@ -1,2 +1,7 @@
 export { StatisticsProvider, useStatistics } from './StatisticsContext';
-export type { DateRange, StatisticsState, Notification } from './StatisticsContext';
+export type {
+  DateRange,
+  StatisticsState,
+  StatisticsContextFilters,
+  StatisticsViewMode,
+} from './StatisticsContext';

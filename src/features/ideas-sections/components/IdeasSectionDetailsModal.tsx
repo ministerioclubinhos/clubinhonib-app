@@ -1,241 +1,211 @@
+import React from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography,
-  Stack, Paper, Grid, Box, useMediaQuery, Chip, Divider, IconButton, Tooltip
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { Close, Download, PlayArrow, Image as ImageIcon, AudioFile, VideoFile, PictureAsPdf } from '@mui/icons-material';
-import { IdeasSection } from '../types';
-import { formatDatePtBr, getMediaTypeIcon, getMediaTypeLabel, formatFileSize } from '../utils';
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  Link,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DescriptionIcon from "@mui/icons-material/Description";
+import ImageIcon from "@mui/icons-material/Image";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import VideocamIcon from "@mui/icons-material/Videocam";
 
-interface Props {
-  section: IdeasSection | null;
+import { EMPTY_VALUE } from "../constants";
+import {
+  formatDateTime,
+  formatFileSize,
+  isPending,
+  mediaTypeLabel,
+} from "../utils";
+import type { IdeasSectionMedia, IdeasSectionResponse } from "../types";
+
+type Props = {
+  section: IdeasSectionResponse | null;
   open: boolean;
   onClose: () => void;
+  onReview: () => void;
+  onDelete: () => void;
+};
+
+/** Ícone que representa o tipo da mídia. */
+function MediaIcon({ mediaType }: { mediaType: string }) {
+  if (mediaType === "video") return <VideocamIcon data-testid="ideas-sections-ideas-section-details-modal-media-icon" fontSize="small" />;
+  if (mediaType === "document") return <DescriptionIcon data-testid="ideas-sections-ideas-section-details-modal-media-icon" fontSize="small" />;
+  return <ImageIcon data-testid="ideas-sections-ideas-section-details-modal-media-icon" fontSize="small" />;
 }
 
-export default function IdeasSectionDetailsModal({ section, open, onClose }: Props) {
+/** Uma mídia da ideia, com o link para abri-la. */
+function MediaRow({ media }: { media: IdeasSectionMedia }) {
+  return (
+    <Stack data-testid="ideas-sections-ideas-section-details-modal-media-row"
+      direction="row"
+      spacing={1.25}
+      alignItems="center"
+      sx={{ py: 0.75, minWidth: 0 }}
+    >
+      <Box sx={{ color: "text.secondary", display: "flex" }}>
+        <MediaIcon mediaType={media.mediaType} />
+      </Box>
+
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Typography variant="body2" noWrap title={media.title ?? undefined}>
+          {media.title?.trim() || media.originalName || EMPTY_VALUE}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          {mediaTypeLabel(media.mediaType)}
+          {media.size ? ` · ${formatFileSize(media.size)}` : ""}
+        </Typography>
+      </Box>
+
+      {media.url ? (
+        <Link
+          href={media.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Abrir mídia"
+          sx={{ display: "inline-flex", flexShrink: 0 }}
+        >
+          <OpenInNewIcon fontSize="small" />
+        </Link>
+      ) : null}
+    </Stack>
+  );
+}
+
+export default function IdeasSectionDetailsModal({
+  section,
+  open,
+  onClose,
+  onReview,
+  onDelete,
+}: Props) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const getMediaIcon = (mediaType: string) => {
-    switch (mediaType) {
-      case 'image':
-        return <ImageIcon />;
-      case 'video':
-        return <VideoFile />;
-      case 'audio':
-        return <AudioFile />;
-      case 'document':
-        return <PictureAsPdf />;
-      default:
-        return <Download />;
-    }
-  };
+  if (!section) return null;
 
-  const renderMediaPreview = (media: any) => {
-    if (media.mediaType === 'image') {
-      return (
-        <img
-          src={media.url}
-          alt={media.title}
-          style={{
-            width: '100%',
-            height: '200px',
-            objectFit: 'cover',
-            borderRadius: 8,
-          }}
-        />
-      );
-    } else if (media.mediaType === 'video') {
-      return (
-        <Box
-          sx={{
-            width: '100%',
-            height: '200px',
-            bgcolor: 'grey.900',
-            borderRadius: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-          }}
-        >
-          <PlayArrow fontSize="large" />
-        </Box>
-      );
-    } else {
-      return (
-        <Box
-          sx={{
-            width: '100%',
-            height: '200px',
-            bgcolor: 'grey.100',
-            borderRadius: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            gap: 1,
-          }}
-        >
-          {getMediaIcon(media.mediaType)}
-          <Typography variant="body2" color="text.secondary">
-            {media.originalName || media.title}
-          </Typography>
-        </Box>
-      );
-    }
-  };
+  const pendente = isPending(section);
 
   return (
-    <Dialog
+    <Dialog data-testid="ideas-sections-ideas-section-details-modal"
       open={open}
       onClose={onClose}
+      maxWidth="sm"
       fullWidth
-      maxWidth="lg"
-      aria-labelledby="dialog-title"
-      sx={{ '& .MuiDialog-paper': { borderRadius: 3 } }}
+      fullScreen={isMobile}
+      PaperProps={{ sx: { borderRadius: { xs: 0, sm: 3 } } }}
     >
-      <DialogTitle 
-        id="dialog-title"
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          pr: 1 
-        }}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ p: 2, pb: 1 }}
       >
-        Detalhes da Seção de Ideias
-        <Tooltip title="Fechar">
-          <IconButton onClick={onClose} size="small">
-            <Close />
-          </IconButton>
-        </Tooltip>
-      </DialogTitle>
-      
-      <DialogContent sx={{ pb: 1 }}>
-        {section ? (
-          <Stack spacing={3} mt={0.5}>
-            <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-              <Typography variant="h6" gutterBottom color="primary">Informações Gerais</Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <Typography variant="body1"><strong>Título:</strong> {section.title || 'Não informado'}</Typography>
-                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                      <strong>Descrição:</strong> {section.description || 'Não informado'}
-                    </Typography>
-                    <Box>
-                      <Typography variant="body1" component="span"><strong>Status:</strong> </Typography>
-                      <Chip 
-                        label={section.public ? 'Público' : 'Privado'} 
-                        color={section.public ? 'success' : 'default'}
-                        size="small"
-                      />
-                    </Box>
-                  </Stack>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <Typography variant="body1"><strong>Criado em:</strong> {formatDatePtBr(section.createdAt)}</Typography>
-                    <Typography variant="body1"><strong>Atualizado em:</strong> {formatDatePtBr(section.updatedAt)}</Typography>
-                  </Stack>
-                </Grid>
-              </Grid>
-            </Paper>
+        <DialogTitle sx={{ p: 0, fontSize: { xs: "1rem", md: "1.15rem" } }}>
+          Detalhes da ideia
+        </DialogTitle>
+        <IconButton onClick={onClose} aria-label="Fechar">
+          <CloseIcon />
+        </IconButton>
+      </Stack>
 
-            <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-              <Typography variant="h6" gutterBottom color="primary">
-                Mídias ({section.medias?.length || 0})
-              </Typography>
-              
-              {(section.medias?.length ?? 0) > 0 ? (
-                <Grid container spacing={2}>
-                  {section.medias.map((media, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={media.id}>
-                      <Paper 
-                        elevation={1} 
-                        sx={{ 
-                          p: 2, 
-                          borderRadius: 2,
-                          border: '1px solid',
-                          borderColor: 'divider'
-                        }}
-                      >
-                        {renderMediaPreview(media)}
-                        
-                        <Box mt={2}>
-                          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                            {media.title}
-                          </Typography>
-                          
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                            {media.description}
-                          </Typography>
-                          
-                          <Stack direction="row" spacing={1} flexWrap="wrap" gap={0.5}>
-                            <Chip
-                              size="small"
-                              label={`${getMediaTypeIcon(media.mediaType)} ${getMediaTypeLabel(media.mediaType)}`}
-                              variant="outlined"
-                              color="primary"
-                            />
-                            <Chip
-                              size="small"
-                              label={media.uploadType === 'upload' ? 'Upload' : 'Link'}
-                              variant="filled"
-                              color={media.uploadType === 'upload' ? 'success' : 'info'}
-                            />
-                            {media.isLocalFile && media.size && (
-                              <Chip
-                                size="small"
-                                label={formatFileSize(media.size)}
-                                variant="outlined"
-                              />
-                            )}
-                          </Stack>
-                          
-                          {media.platformType && media.platformType !== 'ANY' && (
-                            <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-                              Plataforma: {media.platformType}
-                            </Typography>
-                          )}
-                        </Box>
-                      </Paper>
-                    </Grid>
-                  ))}
-                </Grid>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  Nenhuma mídia disponível.
+      <DialogContent dividers>
+        <Stack spacing={2}>
+          <Box>
+            <Typography variant="h6" fontWeight={700}>
+              {section.title}
+            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+              <Chip
+                size="small"
+                label={pendente ? "Aguardando decisão" : "Publicada"}
+                color={pendente ? "warning" : "success"}
+              />
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <ScheduleIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                <Typography variant="caption" color="text.secondary">
+                  {formatDateTime(section.createdAt)}
                 </Typography>
-              )}
-            </Paper>
-          </Stack>
-        ) : (
-          <Typography variant="body2" color="text.secondary">Nenhuma seção selecionada.</Typography>
-        )}
+              </Stack>
+            </Stack>
+          </Box>
+
+          <Box>
+            <Typography variant="caption" color="text.secondary">
+              Descrição
+            </Typography>
+            <Typography sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              {section.description}
+            </Typography>
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Typography variant="caption" color="text.secondary">
+              Mídias ({section.medias.length})
+            </Typography>
+            {section.medias.length ? (
+              <Stack divider={<Divider flexItem />}>
+                {section.medias.map((media) => (
+                  <MediaRow key={media.id} media={media} />
+                ))}
+              </Stack>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                Esta ideia não tem mídias.
+              </Typography>
+            )}
+          </Box>
+        </Stack>
       </DialogContent>
 
       <DialogActions
         sx={{
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: isMobile ? 1 : 1.5,
-          alignItems: isMobile ? 'stretch' : 'center',
-          p: { xs: 2, sm: 2.5 },
+          p: 2,
+          gap: 1,
+          flexDirection: { xs: "column-reverse", sm: "row" },
+          alignItems: { xs: "stretch", sm: "center" },
         }}
       >
-        <Button
-          onClick={onClose}
-          variant="outlined"
-          color="primary"
-          aria-label="Fechar modal"
-          sx={{ width: isMobile ? '100%' : 'auto' }}
-        >
+        <Button onClick={onClose} fullWidth={isMobile}>
           Fechar
+        </Button>
+
+        <Button
+          onClick={onReview}
+          variant="contained"
+          color="success"
+          fullWidth={isMobile}
+          startIcon={<PlaylistAddCheckIcon />}
+        >
+          {pendente ? "Revisar e publicar" : "Revisar"}
+        </Button>
+
+        <Button
+          onClick={onDelete}
+          variant="outlined"
+          color="error"
+          fullWidth={isMobile}
+          startIcon={<DeleteIcon />}
+        >
+          Excluir
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
-

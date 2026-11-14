@@ -3,11 +3,11 @@ import { Paper, Box, Typography, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
 import { MotivationSectionProps } from '../../types';
 
-const MotivationSection: React.FC<MotivationSectionProps> = ({ motivationText }) => {
+const MotivationSection: React.FC<MotivationSectionProps> = () => {
   const theme = useTheme();
 
   return (
-    <motion.div
+    <motion.div data-testid="teacher-area-sections-motivation-section"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}

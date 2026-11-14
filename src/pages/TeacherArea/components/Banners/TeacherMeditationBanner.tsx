@@ -8,13 +8,13 @@ import {
 } from '@mui/material';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
 import { AppDispatch, RootState } from 'store/slices';
+import { useVisibleRoutes } from '@/features/feature-flags';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   setMeditationData,
-  MeditationData,
   WeekDayLabel,
 } from '@/store/slices/meditation/meditationSlice';
-import api from '@/config/axiosConfig';
+import { getMeditation } from '@/features/meditations';
 import { motion } from 'framer-motion';
 import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 
@@ -28,7 +28,7 @@ export default function TeacherMeditationBanner() {
     (state: RootState) => state.meditation.meditationData
   );
 
-  const routes = useSelector((state: RootState) => state.routes.routes);
+  const routes = useVisibleRoutes();
 
   const today = new Date();
   const weekdayName = today.toLocaleDateString('en-US', { weekday: 'long' });
@@ -49,9 +49,9 @@ export default function TeacherMeditationBanner() {
   const handleOpenPreview = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/meditations/${meditationDay?.idToFetch}`);
-      if (response.data?.meditation) {
-        dispatch(setMeditationData(response.data.meditation as MeditationData));
+      const meditation = await getMeditation(meditationDay?.idToFetch ?? '');
+      if (meditation) {
+        dispatch(setMeditationData(meditation));
         setOpenModal(true);
       }
     } catch (error) {
@@ -62,7 +62,7 @@ export default function TeacherMeditationBanner() {
   };
 
   return (
-    <motion.div
+    <motion.div data-testid="teacher-area-banners-teacher-meditation-banner"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}

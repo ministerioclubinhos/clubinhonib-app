@@ -27,7 +27,7 @@ const TeachingStepsSection: React.FC = () => {
   };
 
   return (
-    <Paper
+    <Paper data-testid="teacher-area-sections-teaching-steps-section"
       elevation={2}
       sx={{
         p: { xs: 2, md: 3 },

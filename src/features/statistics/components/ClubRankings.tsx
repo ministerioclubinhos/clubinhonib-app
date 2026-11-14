@@ -17,11 +17,12 @@ import {
   useMediaQuery,
   Stack,
   Divider,
-  Grid,
+  Grid2,
 } from '@mui/material';
 import { EmojiEvents, TrendingUp } from '@mui/icons-material';
 import { useInsights } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface ClubRankingsProps {
   filters?: PagelasStatsQueryDto;
@@ -30,11 +31,11 @@ interface ClubRankingsProps {
 export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading, error } = useInsights(filters);
+  const { data, isLoading, error, refetch } = useInsights(filters);
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper data-testid="statistics-club-rankings" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -44,8 +45,12 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
 
   if (error || !data) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
-        <Typography color="error">Erro ao carregar rankings</Typography>
+      <Paper data-testid="statistics-club-rankings" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
+        <ChartError
+          subject="os rankings"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }
@@ -71,7 +76,7 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+    <Paper data-testid="statistics-club-rankings" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 2, sm: 3 } }}>
         <EmojiEvents sx={{ color: theme.palette.warning.main, fontSize: { xs: 24, sm: 28 } }} />
         <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
@@ -118,8 +123,8 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
 
                   <Divider />
 
-                  <Grid container spacing={1.5}>
-                    <Grid item xs={6}>
+                  <Grid2 container spacing={1.5}>
+                    <Grid2 size={6}>
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Crianças
@@ -128,8 +133,8 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
                           {club.totalChildren}
                         </Typography>
                       </Box>
-                    </Grid>
-                    <Grid item xs={6}>
+                    </Grid2>
+                    <Grid2 size={6}>
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Presença
@@ -138,8 +143,8 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
                           {club.avgPresenceRate.toFixed(1)}%
                         </Typography>
                       </Box>
-                    </Grid>
-                    <Grid item xs={6}>
+                    </Grid2>
+                    <Grid2 size={6}>
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Decisões
@@ -148,8 +153,8 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
                           {club.totalDecisions}
                         </Typography>
                       </Box>
-                    </Grid>
-                    <Grid item xs={6}>
+                    </Grid2>
+                    <Grid2 size={6}>
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Performance
@@ -162,8 +167,8 @@ export const ClubRankings: React.FC<ClubRankingsProps> = ({ filters }) => {
                           sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                         />
                       </Box>
-                    </Grid>
-                  </Grid>
+                    </Grid2>
+                  </Grid2>
                 </Stack>
               </CardContent>
             </Card>

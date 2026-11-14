@@ -32,7 +32,7 @@ export const YearSelector: React.FC<YearSelectorProps> = ({
   };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box data-testid="statistics-year-selector" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       {showLabel && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <CalendarToday fontSize="small" color="action" />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, useTheme, Fade, Box, Card, CardContent, Icon } from '@mui/material';
+import { Typography, Fade, Box, Card, CardContent } from '@mui/material';
 import { AboutSection as AboutSectionType } from '../types';
 
 interface AboutSectionProps {
@@ -8,7 +8,6 @@ interface AboutSectionProps {
 }
 
 const AboutSection: React.FC<AboutSectionProps> = ({ section, index }) => {
-  const theme = useTheme();
 
   const getSectionIcon = (sectionId: string) => {
     switch (sectionId) {
@@ -37,7 +36,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section, index }) => {
   };
 
   return (
-    <Fade in timeout={800 + index * 200}>
+    <Fade data-testid="about-about-section" in timeout={800 + index * 200}>
       <Card
         sx={{
           background: getCardGradient(section.id),

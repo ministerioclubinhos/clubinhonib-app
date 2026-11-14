@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Container, Card, CardContent, IconButton } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { ChevronLeft, ChevronRight, FormatQuote } from '@mui/icons-material';
 import { TestimonialsSectionProps } from '../types';
 
@@ -28,7 +28,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
   if (!testimonials || testimonials.length === 0) return null;
 
   return (
-    <Box
+    <Box data-testid="home-testimonials-section"
       sx={{
         py: { xs: 6, md: 10 },
         background: 'linear-gradient(135deg, #81d742 0%, #67bf1b 50%, #5aa814 100%)',
@@ -64,7 +64,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
       />
       
       {/* Ondas Decorativas Superiores */}
-      <motion.div
+      <m.div
         style={{
           position: 'absolute',
           top: 0,
@@ -98,7 +98,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           px: { xs: 2, sm: 3, md: 4 },
         }}
       >
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -119,7 +119,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           >
             O que dizem sobre o Clubinho
           </Typography>
-        </motion.div>
+        </m.div>
 
         <Box
           sx={{
@@ -129,7 +129,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
           }}
         >
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={currentIndex}
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -157,7 +157,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                 }}
               >
                 <CardContent sx={{ p: { xs: 3, md: 4 }, textAlign: 'center' }}>
-                  <motion.div
+                  <m.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.2, duration: 0.3 }}
@@ -170,7 +170,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                         opacity: 0.4,
                       }}
                     />
-                  </motion.div>
+                  </m.div>
 
                   <Typography
                     variant="h6"
@@ -183,7 +183,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                       fontWeight: 400,
                     }}
                   >
-                    "{testimonials[currentIndex].comment}"
+                    &ldquo;{testimonials[currentIndex].comment}&rdquo;
                   </Typography>
 
                   <Typography
@@ -210,7 +210,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
                   </Typography>
                 </CardContent>
               </Card>
-            </motion.div>
+            </m.div>
           </AnimatePresence>
 
           {/* Navigation Buttons */}
@@ -230,7 +230,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
               },
               transition: 'all 0.3s ease',
             }}
-          >
+           aria-label="Depoimento anterior">
             <ChevronLeft />
           </IconButton>
 
@@ -250,7 +250,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
               },
               transition: 'all 0.3s ease',
             }}
-          >
+           aria-label="Próximo depoimento">
             <ChevronRight />
           </IconButton>
 
@@ -264,7 +264,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
             }}
           >
             {testimonials.map((_, index) => (
-              <motion.div
+              <m.div
                 key={index}
                 onClick={() => setCurrentIndex(index)}
                 style={{
@@ -299,7 +299,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials 
       />
       
       {/* Ondas Decorativas Inferiores */}
-      <motion.div
+      <m.div
         style={{
           position: 'absolute',
           bottom: 0,

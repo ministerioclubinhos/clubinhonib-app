@@ -7,7 +7,7 @@ const EmailVerificationInstructions: React.FC = () => {
   const [showImageModal, setShowImageModal] = useState(false);
 
   return (
-    <div className="email-verification-fullscreen-bg">
+    <div data-testid="email-verification-email-verification-instructions" className="email-verification-fullscreen-bg">
       <div className="email-verification-instructions-container">
         <div className="email-verification-header">
           <h1>Verifique seu e-mail</h1>
@@ -16,7 +16,7 @@ const EmailVerificationInstructions: React.FC = () => {
           </p>
           <ol>
             <li>Acesse seu e-mail pessoal (verifique também a caixa de spam).</li>
-            <li>Procure por um e-mail com o título <b>"Amazon Web Services – Email Address Verification Request"</b>.</li>
+            <li>Procure por um e-mail com o título <b>&ldquo;Amazon Web Services – Email Address Verification Request&rdquo;</b>.</li>
             <li>Abra o e-mail e clique no link destacado conforme a imagem abaixo:</li>
           </ol>
         </div>

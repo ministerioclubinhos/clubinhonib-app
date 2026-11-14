@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Box, Grid, Paper, Typography, Tabs, Tab, useTheme, alpha } from '@mui/material';
+import { Box, Grid2, Paper, Typography, Tabs, Tab, useTheme, alpha } from '@mui/material';
 import { KPICategory } from './useKPIData';
 
 interface KPICategorySelectorProps {
@@ -21,13 +21,13 @@ export const KPICategorySelector: React.FC<KPICategorySelectorProps> = ({
     const theme = useTheme();
 
     return (
-        <Box sx={{ px: { xs: 0, md: 2 }, pt: { xs: 0, md: 2 } }}>
+        <Box data-testid="statistics-dashboard-kpicategory-selector" sx={{ px: { xs: 0, md: 2 }, pt: { xs: 0, md: 2 } }}>
             {isMobile ? (
-                <Grid container spacing={1} sx={{ px: 1.5, pb: 0.5, mt: 1 }}>
+                <Grid2 container spacing={1} sx={{ px: 1.5, pb: 0.5, mt: 1 }}>
                     {categories.map((cat) => {
                         const isActive = activeCategory === cat.id;
                         return (
-                            <Grid item xs={6} key={cat.id}>
+                            <Grid2 size={6} key={cat.id}>
                                 <Paper
                                     elevation={0}
                                     onClick={() => onCategoryChange(cat.id)}
@@ -63,10 +63,10 @@ export const KPICategorySelector: React.FC<KPICategorySelectorProps> = ({
                                         {cat.label}
                                     </Typography>
                                 </Paper>
-                            </Grid>
+                            </Grid2>
                         );
                     })}
-                </Grid>
+                </Grid2>
             ) : (
                 <Tabs
                     value={activeCategory}

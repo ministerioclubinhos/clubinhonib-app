@@ -4,6 +4,7 @@ import {
     LoginDto,
     AuthResponse,
     RegisterUserDto,
+    RegisterResponse,
     CompleteUserDto,
     GoogleLoginDto,
     RefreshTokenDto,
@@ -21,8 +22,11 @@ export const authService = {
         return response.data;
     },
 
-    register: async (data: RegisterUserDto): Promise<any> => {
-        const response = await apiAxios.post<any>('/auth/register', data);
+    register: async (data: RegisterUserDto): Promise<RegisterResponse> => {
+        const response = await apiAxios.post<RegisterResponse>(
+            '/auth/register',
+            data,
+        );
         return response.data;
     },
 

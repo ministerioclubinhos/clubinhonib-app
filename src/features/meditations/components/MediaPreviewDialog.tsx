@@ -7,7 +7,7 @@ interface Props {
 
 export default function MediaPreviewDialog({ mediaUrl, onClose }: Props) {
   return (
-    <Dialog open={!!mediaUrl} onClose={onClose} fullWidth maxWidth="xl">
+    <Dialog data-testid="meditations-media-preview-dialog" open={!!mediaUrl} onClose={onClose} fullWidth maxWidth="xl">
       <DialogTitle>Meditação da Semana</DialogTitle>
       <DialogContent>
         <Box sx={{ width: '70vw', height: '70vh', mx: 'auto' }}>

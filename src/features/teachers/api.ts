@@ -1,25 +1,69 @@
 import api from "@/config/axiosConfig";
-import { TeacherProfile, ClubSimple, Page, TeacherQuery } from "./types";
 
-export async function apiListTeachers(params: TeacherQuery) {
-  const { data } = await api.get<Page<TeacherProfile>>("/teacher-profiles", { params });
+import { TEACHERS_ENDPOINT } from "./constants";
+import { buildTeachersQuery } from "./utils";
+import type {
+  ApiMessage,
+  PageResponse,
+  TeacherFilters,
+  TeacherResponse,
+  TeacherSimpleOption,
+  TeacherSortField,
+  TeacherSortOrder,
+} from "./types";
+
+/** Página de professores, com busca e filtros aplicados pela API. */
+export async function apiFetchTeachers(
+  args: {
+    page: number;
+    limit: number;
+    filters?: TeacherFilters;
+    sort?: TeacherSortField;
+    order?: TeacherSortOrder;
+  },
+  options?: { signal?: AbortSignal },
+): Promise<PageResponse<TeacherResponse>> {
+  const { data } = await api.get<PageResponse<TeacherResponse>>(
+    TEACHERS_ENDPOINT,
+    { params: buildTeachersQuery(args), signal: options?.signal },
+  );
+
   return data;
 }
 
-export async function apiGetTeacher(teacherId: string) {
-  const { data } = await api.get<TeacherProfile>(`/teacher-profiles/${teacherId}`);
+export async function apiFetchTeacher(id: string): Promise<TeacherResponse> {
+  const { data } = await api.get<TeacherResponse>(
+    `${TEACHERS_ENDPOINT}/${id}`,
+  );
   return data;
 }
 
-export async function apiAssignTeacherToClub(teacherId: string, clubId: string) {
-  await api.patch(`/teacher-profiles/${teacherId}/assign-club`, { clubId });
+/** Professores no formato usado pelos seletores de formulário. */
+export async function apiListTeachersSimple(): Promise<TeacherSimpleOption[]> {
+  const { data } = await api.get<TeacherSimpleOption[]>(
+    `${TEACHERS_ENDPOINT}/simple`,
+  );
+  return data;
 }
 
-export async function apiUnassignTeacherFromClub(teacherId: string, clubId: string) {
-  await api.patch(`/teacher-profiles/${teacherId}/unassign-club`, { clubId });
+export async function apiAssignTeacherToClub(
+  teacherId: string,
+  clubId: string,
+): Promise<ApiMessage> {
+  const { data } = await api.patch<ApiMessage>(
+    `${TEACHERS_ENDPOINT}/${teacherId}/assign-club`,
+    { clubId },
+  );
+  return data;
 }
 
-export async function apiListClubsSimple() {
-  const { data } = await api.get<ClubSimple[]>("/clubs/all");
+export async function apiUnassignTeacherFromClub(
+  teacherId: string,
+  clubId?: string,
+): Promise<ApiMessage> {
+  const { data } = await api.patch<ApiMessage>(
+    `${TEACHERS_ENDPOINT}/${teacherId}/unassign-club`,
+    clubId ? { clubId } : {},
+  );
   return data;
 }

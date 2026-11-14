@@ -8,7 +8,7 @@ const SpecialFamilyCallout: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <Box
+    <Box data-testid="teacher-area-banners-special-family-callout"
       component="section"
       sx={{
         display: 'flex',

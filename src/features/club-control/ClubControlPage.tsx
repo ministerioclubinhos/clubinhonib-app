@@ -1,17 +1,9 @@
 import React from 'react';
 import { Box, Container, Typography, Paper, Tabs, Tab, useTheme, useMediaQuery } from '@mui/material';
 import { Dashboard, CalendarMonth, EventBusy, Assessment } from '@mui/icons-material';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ControlDashboard, PeriodManagement, ExceptionManagement } from './components';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: true,
-      retry: 1,
-    },
-  },
-});
+import { queryClient } from '../../config/queryClient';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -21,7 +13,7 @@ interface TabPanelProps {
 
 const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
   return (
-    <div role="tabpanel" hidden={value !== index}>
+    <div data-testid="club-control-club-control-page-tab-panel" role="tabpanel" hidden={value !== index}>
       {value === index && <Box sx={{ py: { xs: 2, sm: 3 } }}>{children}</Box>}
     </div>
   );
@@ -37,7 +29,7 @@ const ClubControlPageContent: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>
+    <Container data-testid="club-control-club-control-page-club-control-page-content" maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>
       
       <Paper
         elevation={0}
@@ -162,11 +154,10 @@ const ClubControlPageContent: React.FC = () => {
 
 const ClubControlPage: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider data-testid="club-control-club-control-page" client={queryClient}>
       <ClubControlPageContent />
     </QueryClientProvider>
   );
 };
 
 export default ClubControlPage;
-

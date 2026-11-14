@@ -15,7 +15,7 @@ export default function SetCurrentWeekConfirmDialog({
   open, materialTitle, onClose, onConfirm,
 }: Props) {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog data-testid="week-materials-set-current-week-confirm-dialog" open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ pr: 6 }}>
         Confirmar alteração
         <IconButton

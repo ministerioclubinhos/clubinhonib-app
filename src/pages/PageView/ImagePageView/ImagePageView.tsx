@@ -6,8 +6,6 @@ import {
   Container,
   Typography,
   Alert,
-  Tooltip,
-  Fab,
   Skeleton,
   Paper,
   Grid,
@@ -15,18 +13,16 @@ import {
   useTheme,
   useMediaQuery,
   Chip,
-  Stack,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '@/config/axiosConfig';
 import { RootState, AppDispatch } from '@/store/slices';
-import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import { UserRole } from '@/types/shared';
 import SectionImagePageView from './SectionImagePageView';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import { FofinhoButton } from './../../TeacherArea/components';
+import { isCancelledRequest } from '@/utils/apiError';
 import {
   setSectionData,
   appendSections,
@@ -44,7 +40,7 @@ function SectionSkeleton() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-image-page-view-section-skeleton"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -135,11 +131,9 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const section = useSelector((state: RootState) => state.imageSectionPagination.section);
 
-  const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
   const defaultSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID;
 
   const observer = useRef<IntersectionObserver | null>(null);
@@ -182,8 +176,8 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
         }
 
         setHasMore(data.page * data.limit < data.total);
-      } catch (err: any) {
-        if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+      } catch (err: unknown) {
+        if (!isCancelledRequest(err)) {
           console.error('Erro ao carregar a seção:', err);
           setError('Erro ao carregar a seção. Tente novamente mais tarde.');
         }
@@ -204,7 +198,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -220,7 +214,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -244,7 +238,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   if (!section) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -278,7 +272,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+    <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
 
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -329,7 +323,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
                       bgcolor: 'rgba(255,255,255,0.3)',
                     },
                   }}
-                >
+                 aria-label="Voltar">
                   <ArrowBackIcon />
                 </IconButton>
                 <PhotoLibraryIcon sx={{ fontSize: { xs: '2rem', md: '2.5rem' } }} />
@@ -349,7 +343,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
               📸 {section.title}
             </Typography>
 
-            {(section as any).subtitle && (
+            {section.subtitle && (
               <Typography
                 variant="h5"
                 fontWeight="600"
@@ -360,7 +354,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
                   textShadow: '0 1px 2px rgba(0,0,0,0.2)',
                 }}
               >
-                {(section as any).subtitle}
+                {section.subtitle}
               </Typography>
             )}
 

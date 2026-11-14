@@ -4,11 +4,15 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import HomeIcon from '@mui/icons-material/Home';
 
 interface ErrorPageProps {
-    error: any;
-    resetErrorBoundary: (...args: any[]) => void;
+    /** O boundary entrega `unknown`: nem tudo que sobe é um `Error`. */
+    error: unknown;
+    resetErrorBoundary: (...args: unknown[]) => void;
 }
 
 const ErrorPage: React.FC<ErrorPageProps> = ({ error, resetErrorBoundary }) => {
+    // Só o texto interessa aqui, e só em desenvolvimento.
+    const errorMessage = error instanceof Error ? error.message : '';
+
     const handleReload = () => {
         if (resetErrorBoundary) {
             resetErrorBoundary();
@@ -26,7 +30,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({ error, resetErrorBoundary }) => {
     };
 
     return (
-        <Box
+        <Box data-testid="error-error-page"
             sx={{
                 display: 'flex',
                 justifyContent: 'center',
@@ -59,10 +63,10 @@ const ErrorPage: React.FC<ErrorPageProps> = ({ error, resetErrorBoundary }) => {
                         Encontramos um erro inesperado. Tente recarregar a página ou voltar para o início.
                     </Typography>
 
-                    {import.meta.env.DEV && error && (
+                    {import.meta.env.DEV && errorMessage && (
                         <Box sx={{ mt: 2, p: 2, bgcolor: '#ffeeee', borderRadius: 1, width: '100%', textAlign: 'left', overflow: 'auto' }}>
                             <Typography variant="caption" component="pre" sx={{ fontFamily: 'monospace' }}>
-                                {error.message}
+                                {errorMessage}
                             </Typography>
                         </Box>
                     )}

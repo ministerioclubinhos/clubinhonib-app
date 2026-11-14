@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, type ReactNode } from "react";
+import React, { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
@@ -22,7 +22,11 @@ import {
 } from "@mui/material";
 import {
   Menu as MenuIcon,
+  Assignment,
+  Badge as BadgeIcon,
+  ChildCare,
   EventNote,
+  TipsAndUpdates,
   PhotoLibrary,
   Collections,
   VideoLibrary,
@@ -41,19 +45,39 @@ import {
   ExpandMore,
   Checklist,
   BarChart,
+  CalendarMonth,
   ChevronLeft,
   ChevronRight,
+  SmartToy,
+  AutoAwesome,
+  Tune,
+  FactCheck,
 } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/slices";
 import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from "@/hooks";
+import { FEATURE } from "@/features/feature-flags";
+import { coordinatorAllowedRoutes } from "@/constants/adminAccess";
+import UnsavedChangesDialog from "@/components/common/modal/UnsavedChangesDialog";
+import { hasUnsavedChanges } from "@/utils/unsavedChanges";
+import type { FeatureKey } from "@/features/feature-flags";
 
 const drawerWidth = 240;
 
-type NavItem = { label: string; to: string; icon: ReactNode };
-type SectionId = "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "interacoes" | "operacional";
+/**
+ * Um item do menu. `flag` amarra o item a uma feature flag: com ela desligada
+ * o item some para todo mundo, inclusive para o administrador, porque a rota
+ * correspondente também deixa de existir.
+ */
+type NavItem = {
+  label: string;
+  to: string;
+  icon: ReactNode;
+  flag?: FeatureKey;
+};
+type SectionId = "pessoas" | "clubinhos" | "conteudos" | "midias" | "materiais" | "inteligencia_artificial" | "interacoes" | "operacional";
 type Section = { id: SectionId; title: string; items: NavItem[] };
 type MobileTab = "tudo" | SectionId;
 
@@ -79,17 +103,19 @@ function AdminLayout() {
     "--app-footer-h": `${FOOTER_H}px`,
   } as React.CSSProperties;
 
+  // O agrupamento espelha o do AdminDashboardPage: o mesmo item precisa morar
+  // na mesma seção nas duas telas.
   const allSections = useMemo<Section[]>(
     () => [
       {
         id: "pessoas",
         title: "Pessoas",
         items: [
-          { label: "Perfis", to: "/adm/perfis", icon: <Group /> },
+          { label: "Perfis", to: "/adm/perfis", icon: <BadgeIcon /> },
           { label: "Usuários", to: "/adm/usuarios", icon: <Group /> },
           { label: "Professores", to: "/adm/professores", icon: <School /> },
           { label: "Coordenadores", to: "/adm/coordenadores", icon: <SupervisorAccount /> },
-          { label: "Crianças", to: "/adm/criancas", icon: <Groups /> },
+          { label: "Crianças", to: "/adm/criancas", icon: <ChildCare /> },
         ],
       },
       {
@@ -97,20 +123,18 @@ function AdminLayout() {
         title: "Clubinhos",
         items: [
           { label: "Clubinhos", to: "/adm/clubinhos", icon: <Groups /> },
-          { label: "Pagelas", to: "/adm/pagelas", icon: <Groups /> },
-
+          { label: "Pagelas", to: "/adm/pagelas", icon: <Assignment />, flag: FEATURE.PAGELAS },
+          { label: "Resumo Semanal", to: "/adm/resumo-semanal", icon: <CalendarMonth />, flag: FEATURE.CLUB_WEEKLY_SUMMARY },
         ],
       },
       {
         id: "conteudos",
         title: "Conteúdo",
         items: [
+          { label: "Criar Página", to: "/adm/criar-pagina", icon: <NoteAdd /> },
           { label: "Meditações", to: "/adm/meditacoes", icon: <MenuBook /> },
           { label: "Documentos", to: "/adm/documentos", icon: <Description /> },
           { label: "Informativos", to: "/adm/informativos", icon: <Campaign /> },
-          { label: "Criar Página", to: "/adm/criar-pagina", icon: <NoteAdd /> },
-          { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
-          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <Lightbulb /> },
         ],
       },
       {
@@ -118,7 +142,7 @@ function AdminLayout() {
         title: "Mídias",
         items: [
           { label: "Páginas de fotos", to: "/adm/paginas-fotos", icon: <PhotoLibrary /> },
-          { label: "Fotos dos clubinhos", to: "/adm/fotos-clubinhos", icon: <Collections /> },
+          { label: "Fotos e vídeos", to: "/adm/fotos-clubinhos", icon: <Collections />, flag: FEATURE.PHOTO_MODERATION },
           { label: "Páginas de vídeos", to: "/adm/paginas-videos", icon: <VideoLibrary /> },
         ],
       },
@@ -127,106 +151,128 @@ function AdminLayout() {
         title: "Materiais",
         items: [
           { label: "Materiais semanais", to: "/adm/paginas-materiais-semanais", icon: <EventNote /> },
+          { label: "Páginas de ideias", to: "/adm/paginas-ideias", icon: <Lightbulb /> },
+          { label: "Ideias compartilhadas", to: "/adm/ideias-compartilhadas", icon: <TipsAndUpdates />, flag: FEATURE.IDEA_MODERATION },
+        ],
+      },
+      {
+        id: "inteligencia_artificial",
+        title: "Estúdio Clubinho",
+        items: [
+          { label: "Visão geral", to: "/adm/estudio", icon: <SmartToy /> },
+          { label: "Produção de lições", to: "/adm/estudio/licoes", icon: <AutoAwesome /> },
+          { label: "Revisão e aprovação", to: "/adm/estudio/revisao", icon: <FactCheck /> },
+          { label: "Orientações de criação", to: "/adm/estudio/orientacoes", icon: <Tune /> },
         ],
       },
       {
         id: "interacoes",
         title: "Interações",
         items: [
-          { label: "Comentários", to: "/adm/comentarios", icon: <Comment /> },
+          { label: "Comentários", to: "/adm/comentarios", icon: <Comment />, flag: FEATURE.COMMENT_MODERATION },
           { label: "Contatos", to: "/adm/contatos", icon: <ContactMail /> },
           { label: "Feedbacks", to: "/adm/feedbacks", icon: <RateReview /> },
-
         ],
       },
       {
         id: "operacional",
         title: "Operacional",
         items: [
-          { label: "Controle de Clubinhos", to: "/adm/controle-clubinhos", icon: <Checklist /> },
-          { label: "Estatísticas", to: "/adm/estatisticas", icon: <BarChart /> },
+          { label: "Controle de Clubinhos", to: "/adm/controle-clubinhos", icon: <Checklist />, flag: FEATURE.CLUB_CONTROL },
+          { label: "Estatísticas", to: "/adm/estatisticas", icon: <BarChart />, flag: FEATURE.STATISTICS },
+          // Feature flags não entram no menu: o acesso é pelo rodapé, e só
+          // para administradores.
         ],
       },
     ],
     []
   );
 
-  const coordinatorAllowed = new Set<string>([
-    ...(flags.coordinator_children_access ? ["/adm/criancas"] : []),
-    "/adm/professores",
-    "/adm/clubinhos",
-    "/adm/pagelas",
-    "/adm/perfis",
-  ]);
+  /** As rotas que um coordenador enxerga; a lista é a mesma do painel. */
+  const coordinatorAllowed = useMemo(
+    () => coordinatorAllowedRoutes(flags),
+    [flags],
+  );
 
-  const canSeeItem = (item: NavItem): boolean => {
-    if (isAdmin) return true;
-    if (isCoordinator) return coordinatorAllowed.has(item.to);
-    return false;
-  };
+  /**
+   * Um item aparece quando as duas condições passam: a flag do recurso está
+   * ligada e o perfil tem acesso. São dimensões independentes — o admin passa
+   * pelo perfil, mas não por cima de um recurso desligado.
+   */
+  const canSeeItem = useCallback(
+    (item: NavItem): boolean => {
+      if (item.flag && !flags[item.flag]) return false;
+      if (isAdmin) return true;
+      if (isCoordinator) return coordinatorAllowed.has(item.to);
+      return false;
+    },
+    [flags, isAdmin, isCoordinator, coordinatorAllowed],
+  );
 
-  const sections = useMemo<Section[]>(() => {
-    const filtered = allSections
-      .map((sec) => ({ ...sec, items: sec.items.filter(canSeeItem) }))
-      .filter((sec) => sec.items.length > 0);
-    return filtered;
-  }, [allSections, isAdmin, isCoordinator]);
+  const sections = useMemo<Section[]>(
+    () =>
+      allSections
+        .map((sec) => ({ ...sec, items: sec.items.filter(canSeeItem) }))
+        .filter((sec) => sec.items.length > 0),
+    [allSections, canSeeItem],
+  );
 
-  const sectionOfPath = (path: string): SectionId => {
-    if (
-      path.startsWith("/adm/usuarios") ||
-      path.startsWith("/adm/professores") ||
-      path.startsWith("/adm/coordenadores") ||
-      path.startsWith("/adm/coordenadores") ||
-      path.startsWith("/adm/criancas") ||
-      path.startsWith("/adm/perfis")
-    ) {
-      return "pessoas";
-    }
+  /**
+   * Descobre a seção a partir do próprio menu, casando o prefixo mais longo.
+   * Manter uma lista paralela de `startsWith` fazia o destaque divergir do
+   * agrupamento — era assim que "Operacional" nunca abria.
+   */
+  const sectionOfPath = React.useCallback(
+    (path: string): SectionId | null => {
+      const match = allSections
+        .flatMap((section) =>
+          section.items.map((item) => ({ to: item.to, id: section.id })),
+        )
+        .filter(({ to }) => path === to || path.startsWith(`${to}/`))
+        .sort((a, b) => b.to.length - a.to.length)[0];
 
-    if (
-      path.startsWith("/adm/clubinhos") ||
-      path.startsWith("/adm/pagelas") ||
-      path.startsWith("/adm/controle-clubinhos")
-    ) {
-      return "clubinhos";
-    }
-
-    if (
-      path.startsWith("/adm/meditacoes") ||
-      path.startsWith("/adm/documentos") ||
-      path.startsWith("/adm/informativos") ||
-      path.startsWith("/adm/criar-pagina") ||
-      path.startsWith("/adm/paginas-ideias") ||
-      path.startsWith("/adm/ideias-compartilhadas")
-    ) {
-      return "conteudos";
-    }
-
-    if (path.startsWith("/adm/paginas-fotos") || path.startsWith("/adm/fotos-") || path.startsWith("/adm/paginas-videos")) return "midias";
-
-    if (path.startsWith("/adm/paginas-materiais-semanais")) return "materiais";
-
-    return "interacoes";
-  };
+      return match?.id ?? null;
+    },
+    [allSections],
+  );
 
   const [expanded, setExpanded] = useState<SectionId | null>(sectionOfPath(location.pathname));
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  /** Destino escolhido no menu enquanto havia edição pendente. */
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
 
   useEffect(() => {
     const target = sectionOfPath(location.pathname);
+    if (!target) return;
     setExpanded((prev) => (prev === target ? prev : target));
-  }, [location.pathname]);
+  }, [location.pathname, sectionOfPath]);
 
   const handleAccordion =
     (panel: SectionId) => (_: React.SyntheticEvent, isExpanding: boolean) => {
       setExpanded((prev) => (isExpanding ? panel : prev === panel ? null : prev));
     };
 
+  const goTo = useCallback(
+    (to: string) => {
+      navigate(to);
+      if (isMobile) setMobileOpen(false);
+    },
+    [navigate, isMobile],
+  );
+
+  /**
+   * Trocar de tela pelo menu descarta o formulário aberto sem passar pelo
+   * navegador, então o `beforeunload` não vê nada. O registro de alterações
+   * pendentes é consultado aqui, no único ponto por onde toda a navegação do
+   * painel passa.
+   */
   const handleNavigate = (to: string) => {
-    navigate(to);
-    if (isMobile) setMobileOpen(false);
+    if (hasUnsavedChanges()) {
+      setPendingPath(to);
+      return;
+    }
+    goTo(to);
   };
 
   const visibleSections =
@@ -239,12 +285,13 @@ function AdminLayout() {
     conteudos: "conteúdo",
     midias: "mídias",
     materiais: "materiais",
+    inteligencia_artificial: "estúdio clubinho",
     interacoes: "interações",
     operacional: "operacional",
   };
 
   const drawerContent = (
-    <>
+    <Box data-testid="adm-admin-sidebar">
       <Toolbar />
       <Box sx={{ pb: 1, pt: 1, px: 2, display: 'flex', alignItems: 'center', justifyContent: sidebarCollapsed ? 'center' : 'space-between' }}>
         {!sidebarCollapsed && (
@@ -257,7 +304,7 @@ function AdminLayout() {
             size="small"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             sx={{ color: "text.secondary", "&:hover": { color: "primary.main" } }}
-          >
+           aria-label="Recolher menu">
             {sidebarCollapsed ? (
               <ChevronRight fontSize="small" />
             ) : (
@@ -402,17 +449,21 @@ function AdminLayout() {
           <Divider />
         </Accordion>
       ))}
-    </>
+    </Box>
   );
 
   return (
-    <Box
+    <Box data-testid="adm-admin-layout"
       style={cssVars}
       sx={{
         display: "flex",
         width: "100%",
         maxWidth: "100vw",
-        overflowX: "hidden",
+        // `clip` corta o transbordo horizontal sem virar um contêiner de
+        // rolagem: com `hidden`, este Box passava a ser o scrollport mais
+        // próximo e qualquer `position: sticky` das telas internas parava de
+        // grudar, porque ele mesmo nunca rola.
+        overflowX: "clip",
         minHeight: "100vh",
         m: 0,
         p: 0,
@@ -421,7 +472,7 @@ function AdminLayout() {
       {isMobile && (
         <AppBar position="fixed" color="inherit" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
           <Toolbar>
-            <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{ mr: 2 }}>
+            <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{ mr: 2 }} aria-label="Abrir menu">
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" noWrap sx={{ fontSize: 18 }}>
@@ -431,6 +482,11 @@ function AdminLayout() {
         </AppBar>
       )}
 
+      {/*
+        A barra lateral ganha um seletor próprio: os rótulos do menu se repetem
+        nos cards do painel (`AdminDashboardPage`), e um teste que buscasse o
+        nome dentro do layout inteiro achava os dois.
+      */}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         open={isMobile ? mobileOpen : true}
@@ -469,6 +525,7 @@ function AdminLayout() {
         component="main"
         sx={{
           flexGrow: 1,
+          minWidth: 0,
           width: "100%",
           px: { xs: 0, md: 4 },
           py: { xs: 0, md: 6 },
@@ -481,6 +538,16 @@ function AdminLayout() {
         {isMobile && <Toolbar sx={{ minHeight: 0, p: 0 }} />}
         <Outlet />
       </Box>
+
+      <UnsavedChangesDialog
+        open={pendingPath !== null}
+        onStay={() => setPendingPath(null)}
+        onLeave={() => {
+          const destino = pendingPath;
+          setPendingPath(null);
+          if (destino) goTo(destino);
+        }}
+      />
     </Box>
   );
 }

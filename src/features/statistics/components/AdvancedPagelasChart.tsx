@@ -1,3 +1,4 @@
+import type { ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,
@@ -25,7 +26,8 @@ import {
 } from 'recharts';
 import { ShowChart, BarChart as BarChartIcon, Timeline } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface AdvancedPagelasChartProps {
   filters?: PagelasStatsQueryDto;
@@ -36,13 +38,13 @@ type ChartType = 'line' | 'bar' | 'area' | 'composed';
 export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
   const [chartType, setChartType] = React.useState<ChartType>('composed');
   const [selectedMetrics, setSelectedMetrics] = React.useState<string[]>(['total', 'presence']);
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-advanced-pagelas-chart" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -52,15 +54,19 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
 
   if (!data) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
-        <Typography color="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Erro ao carregar dados</Typography>
+      <Paper data-testid="statistics-advanced-pagelas-chart" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+        <ChartError
+          subject="os dados de pagelas"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }
 
   if (!data.timeSeries || !data.timeSeries.total || data.timeSeries.total.length === 0) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-advanced-pagelas-chart" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
         <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Nenhum dado disponível para o período selecionado</Typography>
       </Paper>
     );
@@ -88,10 +94,10 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
     }
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
-        <Paper
+        <Paper data-testid="statistics-advanced-pagelas-chart-custom-tooltip"
           elevation={8}
           sx={{
             p: 2,
@@ -103,7 +109,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             {label}
           </Typography>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
               <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: entry.color }} />
               <Typography variant="body2">
@@ -292,7 +298,7 @@ export const AdvancedPagelasChart: React.FC<AdvancedPagelasChartProps> = ({ filt
   };
 
   return (
-    <Paper
+    <Paper data-testid="statistics-advanced-pagelas-chart"
       elevation={0}
       sx={{
         p: { xs: 2, sm: 3 },

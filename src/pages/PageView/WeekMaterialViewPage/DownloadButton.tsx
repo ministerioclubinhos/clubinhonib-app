@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Button, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
+import { Button, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import DownloadIcon from '@mui/icons-material/Download';
 
@@ -18,8 +18,6 @@ export default function DownloadButton({
   size = 'medium',
   fullWidth = false 
 }: DownloadButtonProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [loading, setLoading] = useState(false);
   const mountedRef = useRef(true);
   const controllerRef = useRef<AbortController | null>(null);
@@ -56,7 +54,13 @@ export default function DownloadButton({
       document.body.removeChild(link);
 
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-    } catch {
+    } catch (error) {
+      // The file was already opened in a new tab, so the blob download is a
+      // best-effort enhancement: keep the failure silent for the user, visible
+      // for debugging, and never swallowed without a trace.
+      if (!controller.signal.aborted) {
+        console.error('Erro ao baixar o arquivo:', error);
+      }
     } finally {
       if (mountedRef.current && !controller.signal.aborted) setLoading(false);
     }
@@ -89,7 +93,7 @@ export default function DownloadButton({
   };
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-week-material-view-page-download-button"
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
     >

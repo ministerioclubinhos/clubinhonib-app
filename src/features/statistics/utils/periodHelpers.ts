@@ -1,4 +1,4 @@
-import { PeriodShortcut } from '../api';
+import { PeriodShortcut } from '../types';
 
 export interface PeriodDates {
   startDate: string;

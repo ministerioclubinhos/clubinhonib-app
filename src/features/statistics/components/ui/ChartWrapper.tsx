@@ -19,10 +19,8 @@ import {
 } from '@mui/material';
 import {
   MoreVert,
-  Download,
   Fullscreen,
   FullscreenExit,
-  Share,
   Refresh,
   PictureAsPdf,
   Image,
@@ -33,7 +31,6 @@ import {
   Timeline,
   PieChart,
   InfoOutlined,
-  OpenInNew,
   ZoomIn,
   ZoomOut,
   FitScreen,
@@ -163,7 +160,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
   // Loading state
   if (loading) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-chart-wrapper"
         elevation={0}
         sx={{
           p: { xs: 2, md: 3 },
@@ -188,7 +185,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
   // Error state
   if (error) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-chart-wrapper"
         elevation={0}
         sx={{
           p: { xs: 2, md: 3 },
@@ -221,7 +218,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
   // Empty state
   if (isEmpty) {
     return (
-      <Paper
+      <Paper data-testid="statistics-ui-chart-wrapper"
         elevation={0}
         sx={{
           p: { xs: 2, md: 3 },
@@ -262,7 +259,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
   }
 
   return (
-    <MotionBox
+    <MotionBox data-testid="statistics-ui-chart-wrapper"
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -387,7 +384,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
 
             {onRefresh && (
               <Tooltip title="Atualizar">
-                <IconButton size="small" onClick={onRefresh}>
+                <IconButton size="small" onClick={onRefresh} aria-label="Atualizar">
                   <Refresh />
                 </IconButton>
               </Tooltip>
@@ -395,7 +392,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
 
             {fullscreenable && (
               <Tooltip title={isFullscreen ? 'Sair da tela cheia' : 'Tela cheia'}>
-                <IconButton size="small" onClick={toggleFullscreen}>
+                <IconButton size="small" onClick={toggleFullscreen} aria-label="Atualizar">
                   {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
                 </IconButton>
               </Tooltip>
@@ -404,7 +401,7 @@ export const ChartWrapper: React.FC<ChartWrapperProps> = memo(({
             {exportable && (
               <>
                 <Tooltip title="Opcoes">
-                  <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)}>
+                  <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)} aria-label="Opcoes">
                     <MoreVert />
                   </IconButton>
                 </Tooltip>

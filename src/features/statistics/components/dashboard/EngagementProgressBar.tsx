@@ -18,7 +18,7 @@ export const EngagementProgressBar: React.FC<EngagementProgressBarProps> = ({
     const theme = useTheme();
 
     return (
-        <Box sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
+        <Box data-testid="statistics-dashboard-engagement-progress-bar" sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
             <Paper
                 elevation={0}
                 sx={{
@@ -34,7 +34,7 @@ export const EngagementProgressBar: React.FC<EngagementProgressBarProps> = ({
                             Taxa de Engajamento Mensal
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                            {activeChildren} de {totalChildren} criancas ativas
+                            {activeChildren} de {totalChildren} crianças ativas
                         </Typography>
                     </Box>
                     <Chip

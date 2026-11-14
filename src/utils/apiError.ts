@@ -79,12 +79,18 @@ export const getApiErrorData = (error: unknown): ApiErrorData | null => {
     return null;
 };
 
-export const getErrorMessage = (error: unknown, defaultMessage = GENERIC_ERROR_MESSAGES.UNEXPECTED): string => {
+export const getErrorMessage = (
+    error: unknown,
+    defaultMessage: string = GENERIC_ERROR_MESSAGES.UNEXPECTED,
+): string => {
     if (isApiError(error)) {
         return error.response?.data.error.message || defaultMessage;
     }
 
     if (axios.isAxiosError(error)) {
+        // O 413 vem da camada de transporte, sem o envelope da API: sem este
+        // caso o aviso global mostrava "Request failed with status code 413".
+        if (error.response?.status === 413) return GENERIC_ERROR_MESSAGES.PAYLOAD_TOO_LARGE;
         if (error.response?.status === 500) return GENERIC_ERROR_MESSAGES.INTERNAL_SERVER;
         if (error.response?.status === 503) return GENERIC_ERROR_MESSAGES.SERVICE_UNAVAILABLE;
         if (error.code === 'ERR_NETWORK') return GENERIC_ERROR_MESSAGES.NETWORK_ERROR;
@@ -267,6 +273,19 @@ export const isInternalError = (error: unknown): boolean => {
     return code !== null && Object.values(InternalErrorCode).includes(code as InternalErrorCode);
 };
 
+/**
+ * A requisição foi cancelada, e não falhou.
+ *
+ * As telas com busca digitada abortam a busca anterior a cada tecla; o
+ * cancelamento chega ao `catch` como qualquer erro, mas não é um.
+ */
+export const isCancelledRequest = (error: unknown): boolean => {
+    if (axios.isCancel(error)) return true;
+
+    // Um `AbortController` disparado fora do axios chega como DOMException.
+    return (error as { name?: string })?.name === 'AbortError';
+};
+
 export const logApiError = (error: unknown, context?: string): void => {
     if (isRequestCanceled(error)) return;
 
@@ -301,6 +320,11 @@ export const extractErrorMessage = (error: unknown, defaultMessage: string): str
 
         if (error.code === 'ERR_NETWORK') return GENERIC_ERROR_MESSAGES.NETWORK_ERROR;
         if (error.code === 'ECONNABORTED') return GENERIC_ERROR_MESSAGES.TIMEOUT;
+        // 413 não passa pelo envelope de erro da API: quem recusa é a camada de
+        // transporte. Sem este caso, um upload grande demais chegava ao
+        // administrador como "erro ao salvar", sem dizer que o problema era o
+        // tamanho do arquivo.
+        if (error.response?.status === 413) return GENERIC_ERROR_MESSAGES.PAYLOAD_TOO_LARGE;
         if (error.response?.status === 500) return GENERIC_ERROR_MESSAGES.INTERNAL_SERVER;
         if (error.response?.status === 503) return GENERIC_ERROR_MESSAGES.SERVICE_UNAVAILABLE;
         if (error.response?.status === 404) return 'Recurso não encontrado.';

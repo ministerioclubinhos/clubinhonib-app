@@ -16,11 +16,12 @@ import {
   useMediaQuery,
   Stack,
   Divider,
-  Grid,
+  Grid2,
 } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface GeographicChartProps {
   filters?: PagelasStatsQueryDto;
@@ -29,11 +30,11 @@ interface GeographicChartProps {
 export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading, error } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper data-testid="statistics-geographic-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -43,8 +44,12 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
 
   if (error || !data || !data.byCity) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
-        <Typography color="error">Erro ao carregar dados geográficos</Typography>
+      <Paper data-testid="statistics-geographic-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 2 }}>
+        <ChartError
+          subject="os dados geográficos"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }
@@ -54,7 +59,7 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
     .slice(0, 10);
 
   return (
-    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+    <Paper data-testid="statistics-geographic-chart" elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
       <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
         🗺️ Análise Geográfica - Top 10 Cidades
       </Typography>
@@ -110,8 +115,8 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
 
                     <Divider />
 
-                    <Grid container spacing={1.5}>
-                      <Grid item xs={6}>
+                    <Grid2 container spacing={1.5}>
+                      <Grid2 size={6}>
                         <Box>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                             Total
@@ -120,8 +125,8 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
                             {city.total}
                           </Typography>
                         </Box>
-                      </Grid>
-                      <Grid item xs={6}>
+                      </Grid2>
+                      <Grid2 size={6}>
                         <Box>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                             Crianças
@@ -130,8 +135,8 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
                             {city.uniqueChildren}
                           </Typography>
                         </Box>
-                      </Grid>
-                      <Grid item xs={12}>
+                      </Grid2>
+                      <Grid2 size={12}>
                         <Box>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                             Presença
@@ -140,8 +145,8 @@ export const GeographicChart: React.FC<GeographicChartProps> = ({ filters }) => 
                             {city.presenceRate.toFixed(1)}%
                           </Typography>
                         </Box>
-                      </Grid>
-                    </Grid>
+                      </Grid2>
+                    </Grid2>
                   </Stack>
                 </CardContent>
               </Card>

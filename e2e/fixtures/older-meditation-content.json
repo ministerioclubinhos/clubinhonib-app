@@ -1,0 +1,121 @@
+{
+  "title": "O bom samaritano",
+  "ageGroup": "8 a 12 anos",
+  "verseText": "Ame o seu próximo como a si mesmo.",
+  "verseReference": "Lucas 10:27",
+  "verseVersion": "NVI",
+  "biblicalText": "O bom samaritano",
+  "introduction": "",
+  "prayer": "Senhor, ajuda-me a perceber quem precisa de cuidado e agir com amor.",
+  "activities": [
+    {
+      "number": 1,
+      "mechanic": "FILL_BLANK",
+      "goal": "NARRATIVE",
+      "sourceExcerpt": "Um samaritano cuidou do homem ferido.",
+      "context": "Recorde os acontecimentos da história.",
+      "command": "Complete usando o banco de palavras.",
+      "supportText": "Palavras: caminho, ferido, samaritano, hospedaria.",
+      "visualRequired": false,
+      "subitems": [
+        {
+          "prompt": "O homem viajava por um ______.",
+          "options": [],
+          "answer": "caminho"
+        },
+        {
+          "prompt": "Depois do ataque, ele ficou ______.",
+          "options": [],
+          "answer": "ferido"
+        },
+        {
+          "prompt": "Quem parou para ajudar foi um ______.",
+          "options": [],
+          "answer": "samaritano"
+        },
+        {
+          "prompt": "Para continuar o cuidado, levou-o a uma ______.",
+          "options": [],
+          "answer": "hospedaria"
+        }
+      ],
+      "instruction": "Recorde os acontecimentos da história. Complete usando o banco de palavras.\nPalavras: caminho, ferido, samaritano, hospedaria.\na) O homem viajava por um ______.\nb) Depois do ataque, ele ficou ______.\nc) Quem parou para ajudar foi um ______.\nd) Para continuar o cuidado, levou-o a uma ______.",
+      "answer": "a) caminho\nb) ferido\nc) samaritano\nd) hospedaria"
+    },
+    {
+      "number": 2,
+      "mechanic": "MULTIPLE_CHOICE",
+      "goal": "COMPREHENSION",
+      "sourceExcerpt": "Um samaritano cuidou do homem ferido.",
+      "context": "Considere as decisões das pessoas do relato.",
+      "command": "Marque uma resposta para cada pergunta.",
+      "supportText": "",
+      "visualRequired": false,
+      "subitems": [
+        {
+          "prompt": "Qual atitude tornou o viajante um próximo do homem ferido?",
+          "options": [
+            "Observar a situação de longe",
+            "Parar e cuidar de suas necessidades",
+            "Avisar que outras pessoas passariam"
+          ],
+          "answer": "Parar e cuidar de suas necessidades"
+        },
+        {
+          "prompt": "Por que levar o homem a um lugar seguro também foi importante?",
+          "options": [
+            "O cuidado precisava continuar",
+            "O viajante queria terminar uma tarefa rapidamente",
+            "Era preciso descobrir quem atacou"
+          ],
+          "answer": "O cuidado precisava continuar"
+        },
+        {
+          "prompt": "O que a ajuda do samaritano mostra sobre o amor?",
+          "options": [
+            "Depende de conhecer bem a pessoa",
+            "Pode ser demonstrado em ações concretas",
+            "Consiste somente em sentir tristeza"
+          ],
+          "answer": "Pode ser demonstrado em ações concretas"
+        },
+        {
+          "prompt": "Qual decisão mostra atenção à necessidade de alguém?",
+          "options": [
+            "Esperar a pessoa pedir várias vezes",
+            "Deixar tudo para quem chegar depois",
+            "Perceber a dificuldade e oferecer ajuda possível"
+          ],
+          "answer": "Perceber a dificuldade e oferecer ajuda possível"
+        }
+      ],
+      "instruction": "Considere as decisões das pessoas do relato. Marque uma resposta para cada pergunta.\na) Qual atitude tornou o viajante um próximo do homem ferido?\n   (1) Observar a situação de longe\n   (2) Parar e cuidar de suas necessidades\n   (3) Avisar que outras pessoas passariam\nb) Por que levar o homem a um lugar seguro também foi importante?\n   (1) O cuidado precisava continuar\n   (2) O viajante queria terminar uma tarefa rapidamente\n   (3) Era preciso descobrir quem atacou\nc) O que a ajuda do samaritano mostra sobre o amor?\n   (1) Depende de conhecer bem a pessoa\n   (2) Pode ser demonstrado em ações concretas\n   (3) Consiste somente em sentir tristeza\nd) Qual decisão mostra atenção à necessidade de alguém?\n   (1) Esperar a pessoa pedir várias vezes\n   (2) Deixar tudo para quem chegar depois\n   (3) Perceber a dificuldade e oferecer ajuda possível",
+      "answer": "a) Parar e cuidar de suas necessidades\nb) O cuidado precisava continuar\nc) Pode ser demonstrado em ações concretas\nd) Perceber a dificuldade e oferecer ajuda possível"
+    },
+    {
+      "number": 3,
+      "mechanic": "SHORT_ANSWER",
+      "goal": "APPLICATION",
+      "sourceExcerpt": "Um samaritano cuidou do homem ferido.",
+      "context": "No recreio, um colega está sozinho porque perdeu seu lanche. Você percebe que ele está triste.",
+      "command": "Pense numa atitude possível e escreva respostas curtas.",
+      "supportText": "",
+      "visualRequired": false,
+      "subitems": [
+        {
+          "prompt": "Como você poderia ajudá-lo com respeito? ____________________",
+          "options": [],
+          "answer": "Aceitar atitudes concretas e respeitosas: conversar, compartilhar quando possível ou procurar um adulto responsável."
+        },
+        {
+          "prompt": "Como essa atitude se relaciona com o cuidado mostrado na história? ____________________",
+          "options": [],
+          "answer": "Relacionar perceber uma necessidade e agir para cuidar do próximo, sem exigir experiência pessoal específica."
+        }
+      ],
+      "instruction": "No recreio, um colega está sozinho porque perdeu seu lanche. Você percebe que ele está triste. Pense numa atitude possível e escreva respostas curtas.\na) Como você poderia ajudá-lo com respeito? ____________________\nb) Como essa atitude se relaciona com o cuidado mostrado na história? ____________________",
+      "answer": "a) Aceitar atitudes concretas e respeitosas: conversar, compartilhar quando possível ou procurar um adulto responsável.\nb) Relacionar perceber uma necessidade e agir para cuidar do próximo, sem exigir experiência pessoal específica."
+    }
+  ],
+  "printableAssets": []
+}

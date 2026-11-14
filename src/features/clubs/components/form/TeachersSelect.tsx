@@ -16,13 +16,17 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { TeacherOption } from "../../types";
+import type { SelectChangeEvent } from "@mui/material";
+
+import type { TeacherOption } from "../../types";
 
 type Props = {
   value: string[];
   options: TeacherOption[];
   onChange: (ids: string[]) => void;
   name?: string;
+  /** O clubinho sendo editado; nulo na criação. */
+  currentClubId?: string | null;
 };
 
 function normalize(s?: string | null) {
@@ -37,20 +41,13 @@ export default function TeachersSelect({
   options,
   onChange,
   name = "Selecionar professores",
+  currentClubId = null,
 }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-
-  const fingerprint = useMemo(
-    () =>
-      (options ?? [])
-        .map((o) => `${o.teacherProfileId}:${o.vinculado ? 1 : 0}`)
-        .join("|"),
-    [options]
-  );
 
   const safeValue = useMemo(
     () =>
@@ -64,13 +61,12 @@ export default function TeachersSelect({
     [value]
   );
 
-  const baseVisible = useMemo(
-    () =>
-      (options ?? []).filter(
-        (opt) => !opt.vinculado || safeValue.includes(opt.teacherProfileId)
-      ),
-    [fingerprint, safeValue]
-  );
+  /**
+   * Todo mundo aparece. Antes, quem já tinha turma sumia da lista, e não havia
+   * como descobrir por que aquele professor não estava lá — nem trazê-lo, que
+   * é uma operação legítima e que a API aceita.
+   */
+  const baseVisible = options ?? [];
 
   const q = normalize(query);
   const visibleOptions = useMemo(() => {
@@ -83,12 +79,17 @@ export default function TeachersSelect({
   }, [baseVisible, q]);
 
   const selectedSet = useMemo(() => new Set(safeValue), [safeValue]);
-  const isDisabled = (opt: TeacherOption) =>
-    !!opt.vinculado && !selectedSet.has(opt.teacherProfileId);
+
+  /** De onde o professor viria, quando vem de outro clubinho. */
+  const movingFrom = useCallback(
+    (opt: TeacherOption): number | null =>
+      opt.clubId && opt.clubId !== currentClubId ? opt.clubNumber : null,
+    [currentClubId]
+  );
 
   const handleChange = useCallback(
-    (e: any) => {
-      const raw = (e.target.value ?? []) as Array<string | null | undefined>;
+    (event: SelectChangeEvent<string[]>) => {
+      const raw = (event.target.value ?? []) as Array<string | null | undefined>;
       const cleaned = Array.from(
         new Set(
           raw.filter(
@@ -104,7 +105,7 @@ export default function TeachersSelect({
   const selectVisible = useCallback(() => {
     const next = new Set(safeValue);
     for (const o of visibleOptions) {
-      if (!isDisabled(o)) next.add(o.teacherProfileId);
+      next.add(o.teacherProfileId);
     }
     onChange(Array.from(next));
   }, [safeValue, visibleOptions, onChange]);
@@ -115,8 +116,8 @@ export default function TeachersSelect({
     onChange(next);
   }, [safeValue, visibleOptions, onChange]);
 
-  const stopPropagation = (e: React.KeyboardEvent | React.MouseEvent) => {
-    e.stopPropagation();
+  const stopPropagation = (event: React.SyntheticEvent) => {
+    event.stopPropagation();
   };
 
   const renderSelected = useCallback(
@@ -149,14 +150,15 @@ export default function TeachersSelect({
     [isXs, options]
   );
 
-  const menuWidth = isXs ? "96vw" : 560;
-  const menuMaxHeight = isXs ? "75vh" : 480;
+  // Mesma conta do seletor de coordenador: largura útil menos a margem.
+  const menuWidth = isXs ? "calc(100vw - 32px)" : 560;
+  const menuMaxHeight = isXs ? "75dvh" : 480;
 
   const actionsDirection = isXs ? "column" : "row";
   const actionsButtonProps = isXs ? { fullWidth: true, size: "medium" as const } : { size: "small" as const };
 
   return (
-    <FormControl fullWidth>
+    <FormControl data-testid="clubs-form-teachers-select" fullWidth>
       <InputLabel>{name}</InputLabel>
       <Select
         multiple
@@ -183,8 +185,8 @@ export default function TeachersSelect({
             borderColor: "divider",
             py: 1,
           }}
-          onKeyDown={stopPropagation as any}
-          onClick={stopPropagation as any}
+          onKeyDown={stopPropagation}
+          onClick={stopPropagation}
         >
           <Box sx={{ px: 2, pb: 1 }}>
             <TextField
@@ -195,7 +197,7 @@ export default function TeachersSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={stopPropagation}
-              inputProps={{ "aria-label": "Buscar professor" }}
+              slotProps={{ htmlInput: { "aria-label": "Buscar professor" } }}
             />
           </Box>
 
@@ -238,16 +240,25 @@ export default function TeachersSelect({
           </MenuItem>
         )}
 
+        {/*
+          Nenhuma opção fica desabilitada: o coordenador monta a equipe do
+          clubinho dele com qualquer professor. O que a linha avisa é a
+          consequência — vincular move o professor, tirando-o do clubinho onde
+          ele está hoje.
+        */}
         {visibleOptions.map((t) => {
           const isSelected = selectedSet.has(t.teacherProfileId);
-          const disabled = isDisabled(t);
           return (
-            <MenuItem key={t.teacherProfileId} value={t.teacherProfileId} disabled={disabled} dense>
+            <MenuItem key={t.teacherProfileId} value={t.teacherProfileId} dense>
               <Checkbox checked={isSelected} />
               <ListItemText
                 primaryTypographyProps={{ noWrap: true }}
                 primary={t.name}
-                secondary={t.vinculado && !isSelected ? "vinculado" : undefined}
+                secondary={
+                  movingFrom(t) !== null && !isSelected
+                    ? `No Clubinho ${movingFrom(t)} — será movido`
+                    : undefined
+                }
                 secondaryTypographyProps={{ color: "text.secondary" }}
               />
             </MenuItem>

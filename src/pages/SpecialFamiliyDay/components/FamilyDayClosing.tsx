@@ -4,7 +4,7 @@ import FamilyRestroomRoundedIcon from "@mui/icons-material/FamilyRestroomRounded
 import { FAMILY_COLORS, sectionWidthSx } from "./familyDayTheme";
 
 export const FamilyDayClosing = () => (
-  <Box
+  <Box data-testid="special-familiy-day-family-day-closing"
     component="section"
     sx={{
       px: 2,

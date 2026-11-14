@@ -1,7 +1,7 @@
-import React, { memo, Suspense } from 'react';
+import React, { memo } from 'react';
 import {
   Box,
-  Grid,
+  Grid2,
   Paper,
   Typography,
   Skeleton,
@@ -20,10 +20,10 @@ import {
   Favorite,
   CalendarMonth,
   ArrowForward,
-  AutoAwesome,
   EmojiEvents,
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import type { ChartTooltipProps } from '../types/chart.types';
+import { motion } from 'framer-motion';
 import {
   ComposedChart,
   Line,
@@ -43,15 +43,14 @@ import { useStatistics } from '../context';
 import { useOverview, usePagelasChartData, useInsights } from '../hooks';
 import { StatCard, ChartWrapper } from '../components/ui';
 
-const MotionBox = motion.create(Box);
 
 // Custom tooltip for charts
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   const theme = useTheme();
 
   if (active && payload && payload.length) {
     return (
-      <Paper
+      <Paper data-testid="statistics-tabs-overview-tab-custom-tooltip"
         elevation={8}
         sx={{
           p: 2,
@@ -63,7 +62,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <Typography variant="subtitle2" fontWeight={700} gutterBottom>
           {label}
         </Typography>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index) => (
           <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
             <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: entry.color }} />
             <Typography variant="body2">
@@ -85,7 +84,7 @@ const TopChildrenList: React.FC = memo(() => {
 
   if (isLoading) {
     return (
-      <Box>
+      <Box data-testid="statistics-tabs-overview-tab-top-children-list">
         {[1, 2, 3, 4, 5].map((i) => (
           <Skeleton key={i} height={60} sx={{ mb: 1, borderRadius: 2 }} />
         ))}
@@ -97,14 +96,14 @@ const TopChildrenList: React.FC = memo(() => {
 
   if (topChildren.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 4 }}>
+      <Box data-testid="statistics-tabs-overview-tab-top-children-list" sx={{ textAlign: 'center', py: 4 }}>
         <Typography color="text.secondary">Nenhum dado disponivel</Typography>
       </Box>
     );
   }
 
   return (
-    <Box>
+    <Box data-testid="statistics-tabs-overview-tab-top-children-list">
       {topChildren.map((child, index) => (
         <motion.div
           key={child.childId}
@@ -213,10 +212,10 @@ export const OverviewTab: React.FC = memo(() => {
   }, [chartData, theme]);
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box data-testid="statistics-tabs-overview-tab" sx={{ width: '100%' }}>
       {/* Quick Stats Row */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} sm={6} md={3}>
+      <Grid2 container spacing={2} sx={{ mb: 3 }}>
+        <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>
           <StatCard
             title="Total Criancas"
             value={overview?.summary.totalChildren || 0}
@@ -225,8 +224,8 @@ export const OverviewTab: React.FC = memo(() => {
             loading={overviewLoading}
             subtitle={`${overview?.summary.activeChildrenThisMonth || 0} ativos`}
           />
-        </Grid>
-        <Grid item xs={6} sm={6} md={3}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>
           <StatCard
             title="Clubinhos"
             value={overview?.summary.totalClubs || 0}
@@ -234,8 +233,8 @@ export const OverviewTab: React.FC = memo(() => {
             color={theme.palette.secondary.main}
             loading={overviewLoading}
           />
-        </Grid>
-        <Grid item xs={6} sm={6} md={3}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>
           <StatCard
             title="Professores"
             value={overview?.summary.totalTeachers || 0}
@@ -243,8 +242,8 @@ export const OverviewTab: React.FC = memo(() => {
             color={theme.palette.success.main}
             loading={overviewLoading}
           />
-        </Grid>
-        <Grid item xs={6} sm={6} md={3}>
+        </Grid2>
+        <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>
           <StatCard
             title="Decisoes Ano"
             value={overview?.acceptedChrists.thisYear || 0}
@@ -253,12 +252,12 @@ export const OverviewTab: React.FC = memo(() => {
             variant="gradient"
             loading={overviewLoading}
           />
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       {/* Weekly Summary Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
+      <Grid2 container spacing={2} sx={{ mb: 3 }}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
           <Paper
             elevation={0}
             sx={{
@@ -274,28 +273,28 @@ export const OverviewTab: React.FC = memo(() => {
                 Esta Semana
               </Typography>
             </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
+            <Grid2 container spacing={2}>
+              <Grid2 size={6}>
                 <Typography variant="caption" color="text.secondary">
                   Pagelas
                 </Typography>
                 <Typography variant="h4" fontWeight={700} color="success.main">
                   {overview?.pagelas.thisWeek.total.toLocaleString('pt-BR') || 0}
                 </Typography>
-              </Grid>
-              <Grid item xs={6}>
+              </Grid2>
+              <Grid2 size={6}>
                 <Typography variant="caption" color="text.secondary">
                   Taxa Presenca
                 </Typography>
                 <Typography variant="h4" fontWeight={700} color="primary">
                   {overview?.pagelas.thisWeek.presenceRate.toFixed(1) || 0}%
                 </Typography>
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
           </Paper>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={6}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
           <Paper
             elevation={0}
             sx={{
@@ -311,32 +310,32 @@ export const OverviewTab: React.FC = memo(() => {
                 Este Mes
               </Typography>
             </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
+            <Grid2 container spacing={2}>
+              <Grid2 size={6}>
                 <Typography variant="caption" color="text.secondary">
                   Pagelas
                 </Typography>
                 <Typography variant="h4" fontWeight={700} color="primary">
                   {overview?.pagelas.thisMonth.total.toLocaleString('pt-BR') || 0}
                 </Typography>
-              </Grid>
-              <Grid item xs={6}>
+              </Grid2>
+              <Grid2 size={6}>
                 <Typography variant="caption" color="text.secondary">
                   Taxa Presenca
                 </Typography>
                 <Typography variant="h4" fontWeight={700} color="success.main">
                   {overview?.pagelas.thisMonth.presenceRate.toFixed(1) || 0}%
                 </Typography>
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       {/* Charts Row */}
-      <Grid container spacing={3}>
+      <Grid2 container spacing={3}>
         {/* Main Time Series Chart */}
-        <Grid item xs={12} lg={8}>
+        <Grid2 size={{ xs: 12, lg: 8 }}>
           <ChartWrapper
             title={isMobile ? 'Pagelas' : 'Evolucao de Pagelas'}
             subtitle={isMobile ? '' : 'Analise temporal das atividades'}
@@ -414,10 +413,10 @@ export const OverviewTab: React.FC = memo(() => {
               </ComposedChart>
             </ResponsiveContainer>
           </ChartWrapper>
-        </Grid>
+        </Grid2>
 
         {/* Side Panel - Top Children */}
-        <Grid item xs={12} lg={4}>
+        <Grid2 size={{ xs: 12, lg: 4 }}>
           <Paper
             elevation={0}
             sx={{
@@ -435,13 +434,13 @@ export const OverviewTab: React.FC = memo(() => {
             </Box>
             <TopChildrenList />
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       {/* Gender Distribution & Decisions */}
-      <Grid container spacing={3} sx={{ mt: 1 }}>
+      <Grid2 container spacing={3} sx={{ mt: 1 }}>
         {/* Gender Pie Chart */}
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <ChartWrapper
             title={isMobile ? 'Genero' : 'Distribuicao por Genero'}
             icon={<People />}
@@ -470,10 +469,10 @@ export const OverviewTab: React.FC = memo(() => {
               </PieChart>
             </ResponsiveContainer>
           </ChartWrapper>
-        </Grid>
+        </Grid2>
 
         {/* Decisions Summary */}
-        <Grid item xs={12} md={8}>
+        <Grid2 size={{ xs: 12, md: 8 }}>
           <Paper
             elevation={0}
             sx={{
@@ -491,8 +490,8 @@ export const OverviewTab: React.FC = memo(() => {
               </Typography>
             </Box>
 
-            <Grid container spacing={isMobile ? 1 : 3}>
-              <Grid item xs={4}>
+            <Grid2 container spacing={isMobile ? 1 : 3}>
+              <Grid2 size={4}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="caption" color="text.secondary">
                     Esta Semana
@@ -501,8 +500,8 @@ export const OverviewTab: React.FC = memo(() => {
                     {overview?.acceptedChrists.thisWeek || 0}
                   </Typography>
                 </Box>
-              </Grid>
-              <Grid item xs={4}>
+              </Grid2>
+              <Grid2 size={4}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="caption" color="text.secondary">
                     Este Mes
@@ -511,8 +510,8 @@ export const OverviewTab: React.FC = memo(() => {
                     {overview?.acceptedChrists.thisMonth || 0}
                   </Typography>
                 </Box>
-              </Grid>
-              <Grid item xs={4}>
+              </Grid2>
+              <Grid2 size={4}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="caption" color="text.secondary">
                     Este Ano
@@ -521,13 +520,13 @@ export const OverviewTab: React.FC = memo(() => {
                     {overview?.acceptedChrists.thisYear || 0}
                   </Typography>
                 </Box>
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
 
             <Divider sx={{ my: 3 }} />
 
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
+            <Grid2 container spacing={2}>
+              <Grid2 size={6}>
                 <Box
                   sx={{
                     p: 2,
@@ -543,8 +542,8 @@ export const OverviewTab: React.FC = memo(() => {
                     {overview?.acceptedChrists.byDecisionType?.ACCEPTED || 0}
                   </Typography>
                 </Box>
-              </Grid>
-              <Grid item xs={6}>
+              </Grid2>
+              <Grid2 size={6}>
                 <Box
                   sx={{
                     p: 2,
@@ -560,11 +559,11 @@ export const OverviewTab: React.FC = memo(() => {
                     {overview?.acceptedChrists.byDecisionType?.RECONCILED || 0}
                   </Typography>
                 </Box>
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Box>
   );
 });

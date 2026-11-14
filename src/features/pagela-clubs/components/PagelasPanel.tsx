@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import {
   Box, Stack, Typography, Chip, Skeleton, Alert, Card, CardContent, Avatar,
-  Divider, Pagination, IconButton, Tooltip, TextField, InputAdornment
+  Pagination, IconButton, Tooltip, TextField, InputAdornment
 } from "@mui/material";
 import PaginationItem from "@mui/material/PaginationItem";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -12,134 +12,84 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { useTheme, alpha } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-import type { ChildResponseDto } from "@/features/children/types";
-import { apiListPagelasPaginated } from "@/features/pagela-teacher/api";
-import type { Pagela } from "@/features/pagela-teacher/types";
+import type { ChildResponse } from "@/features/children/types";
+import type { PagelaResponse, PagelaStatus } from "@/features/pagelas/types";
+import { EMPTY_VALUE } from "@/features/pagelas/constants";
+import { pagelaStatus, weekSearchIsMeaningful } from "@/features/pagelas/utils";
 import { EmptyState } from "./common/EmptyState";
 import { PlaceholderCard } from "./common/PlaceholderCard";
-import { fmtDate, useDebounced } from "../utils";
+import { TOUCH_TARGET_DESKTOP, TOUCH_TARGET_MOBILE } from "../constants";
+import { usePagelasBrowser } from "../hooks";
+import { formatDate } from "../utils";
 
-export function PagelasPanel({ child }: { child: ChildResponseDto | null }) {
+type Props = {
+  child: ChildResponse | null;
+};
+
+export function PagelasPanel({ child }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const touchMin = isMobile ? 56 : 48;
+  const touchMin = isMobile ? TOUCH_TARGET_MOBILE : TOUCH_TARGET_DESKTOP;
 
-  const [rows, setRows] = useState<Pagela[]>([]);
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(9);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
-  const [search, setSearch] = useState("");
+  const {
+    rows,
+    total,
+    page,
+    setPage,
+    limit,
+    stepLimit,
+    search,
+    setSearch,
+    loading,
+    error,
+    loaded,
+  } = usePagelasBrowser(child);
 
-  const hasFetchedRef = useRef<Record<string, boolean>>({});
-  const lastKeyRef = useRef<string>("");
-  const abortRef = useRef<AbortController | null>(null);
+  /** Cores de cada situação da semana. */
+  const statusColors = (status: PagelaStatus) => {
+    const palette =
+      status === "complete"
+        ? theme.palette.success
+        : status === "partial"
+          ? theme.palette.warning
+          : theme.palette.error;
 
-  const childId = child?.id ?? null;
-  const dq = useDebounced(search);
-
-  const query = useMemo(() => {
-    if (!childId) return null;
-    return { 
-      childId, 
-      page, 
-      limit,
-      searchString: dq || undefined,
+    return {
+      border: palette.main,
+      bg: alpha(palette.main, 0.08),
+      avatar: alpha(palette.main, 0.15),
+      avatarColor: palette.main,
     };
-  }, [childId, page, limit, dq]);
+  };
 
-  const fetchPagelas = useCallback(async () => {
-    if (!query) return;
-
-    const key = JSON.stringify(query);
-    if (key === lastKeyRef.current) return;
-    lastKeyRef.current = key;
-
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
-
-    setLoading(true);
-    setError("");
-    try {
-      const data = await apiListPagelasPaginated(query, { signal: ctrl.signal });
-      setRows(Array.isArray(data?.items) ? data.items : []);
-      setTotal(Number(data?.total ?? 0));
-      hasFetchedRef.current[query.childId] = true;
-    } catch (e: any) {
-      if (e?.name !== "CanceledError" && e?.name !== "AbortError") {
-        setError(e?.response?.data?.message || e?.message || "Erro ao listar pagelas");
-      }
-    } finally {
-      if (abortRef.current === ctrl) abortRef.current = null;
-      setLoading(false);
-    }
-  }, [query]);
-
-  useEffect(() => {
-    setPage(1);
-    lastKeyRef.current = "";
-  }, [childId, dq]);
-
-  useEffect(() => {
-    fetchPagelas();
-    return () => abortRef.current?.abort();
-  }, [fetchPagelas]);
-
-  if (!childId) {
-    return <PlaceholderCard title="Escolha uma criança" subtitle="Clique em uma criança para ver suas pagelas." />;
+  if (!child) {
+    return <PlaceholderCard data-testid="pagela-clubs-pagelas-panel" title="Escolha uma criança" subtitle="Clique em uma criança para ver suas pagelas." />;
   }
 
-  const hasFetched = !!hasFetchedRef.current[childId];
-
-  const getPagelaStatus = (p: Pagela) => {
-    if (!p.present) return "absent";
-    if (p.present && p.didMeditation && p.recitedVerse) return "complete";
-    return "partial";
-  };
-
-  const getStatusColor = (status: "complete" | "partial" | "absent") => {
-    switch (status) {
-      case "complete":
-        return {
-          border: theme.palette.success.main,
-          bg: alpha(theme.palette.success.main, 0.08),
-          avatar: alpha(theme.palette.success.main, 0.15),
-          avatarColor: theme.palette.success.main,
-        };
-      case "partial":
-        return {
-          border: theme.palette.warning.main,
-          bg: alpha(theme.palette.warning.main, 0.08),
-          avatar: alpha(theme.palette.warning.main, 0.15),
-          avatarColor: theme.palette.warning.main,
-        };
-      default:
-        return {
-          border: "#d32f2f",
-          bg: alpha("#d32f2f", 0.1),
-          avatar: alpha("#d32f2f", 0.2),
-          avatarColor: "#d32f2f",
-        };
-    }
-  };
+  // A API só entende `2026-48`, `2026` ou `48`; qualquer outra coisa não
+  // filtra nada, e a tela avisa em vez de devolver a lista inteira calada.
+  const searchIsUseful = weekSearchIsMeaningful(search);
 
   return (
-    <Stack sx={{ height: "100%" }} spacing={2}>
+    <Stack data-testid="pagela-clubs-pagelas-panel" sx={{ height: "100%" }} spacing={2}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
         <Chip label={`Total: ${total}`} color="info" variant="outlined" />
-        <Chip label={`Clubinho #${child?.club?.number ?? "-"}`} color="secondary" variant="outlined" />
+        <Chip
+          label={`Clubinho #${child.club?.number ?? EMPTY_VALUE}`}
+          color="secondary"
+          variant="outlined"
+        />
       </Box>
 
       <TextField
         size="small"
         placeholder="Semana e ano (ex: 2025, 48 ou 2025-48)"
         value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setPage(1);
-        }}
+        onChange={(e) => setSearch(e.target.value)}
+        error={!searchIsUseful}
+        helperText={
+          searchIsUseful ? undefined : "Use o ano, a semana ou ano-semana."
+        }
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -163,13 +113,12 @@ export function PagelasPanel({ child }: { child: ChildResponseDto | null }) {
           {loading && Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} variant="rounded" height={touchMin + 16} />)}
           {!loading && error && <Alert severity="error">{error}</Alert>}
 
-          {!loading && !error && hasFetched && rows.length === 0 && (
+          {!loading && !error && loaded && rows.length === 0 && (
             <EmptyState title="Sem pagelas" subtitle="Crie a primeira pagela desta criança." />
           )}
 
-          {!loading && !error && rows.length > 0 && rows.map((p) => {
-            const status = getPagelaStatus(p);
-            const colors = getStatusColor(status);
+          {!loading && !error && rows.length > 0 && rows.map((p: PagelaResponse) => {
+            const colors = statusColors(pagelaStatus(p));
             return (
             <Card
               key={p.id}
@@ -243,7 +192,7 @@ export function PagelasPanel({ child }: { child: ChildResponseDto | null }) {
                           Semana {p.week} · {p.year}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" noWrap>
-                          Ref.: {fmtDate(p.referenceDate)}
+                          Ref.: {formatDate(p.referenceDate)}
                         </Typography>
                       </Box>
                     </Stack>
@@ -304,13 +253,13 @@ export function PagelasPanel({ child }: { child: ChildResponseDto | null }) {
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flexWrap: "wrap", gap: 1 }}>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
           <Tooltip title="- por página">
-            <IconButton onClick={() => setLimit((l) => Math.max(6, l - 6))} size={isMobile ? "small" : "medium"}>
+            <IconButton onClick={() => stepLimit(-1)} size={isMobile ? "small" : "medium"} aria-label="- por página">
               <ChevronLeftIcon />
             </IconButton>
           </Tooltip>
           <Typography variant="body2" sx={{ fontSize: isMobile ? "0.75rem" : "0.875rem" }}>{limit}/pág.</Typography>
           <Tooltip title="+ por página">
-            <IconButton onClick={() => setLimit((l) => Math.min(48, l + 6))} size={isMobile ? "small" : "medium"}>
+            <IconButton onClick={() => stepLimit(1)} size={isMobile ? "small" : "medium"} aria-label="+ por página">
               <ChevronRightIcon />
             </IconButton>
           </Tooltip>

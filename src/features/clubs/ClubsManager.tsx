@@ -1,53 +1,80 @@
-import React, { useCallback, useState } from "react";
-import { Alert, Box, CircularProgress } from "@mui/material";
-import { useTheme, useMediaQuery } from "@mui/material";
-import ClubsToolbar from "./components/ClubsToolbar";
-import ClubsTable from "./components/ClubsTable";
-import ClubViewDialog from "./components/ClubViewDialog";
-import ClubFormDialog from "./components/ClubFormDialog";
-import { useClubDetails, useClubMutations, useClubs, useOptions } from "./hooks";
+import React, { useCallback, useMemo, useState } from "react";
+import { Button, Grid2 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import { useSelector } from "react-redux";
+
 import {
-  ClubResponseDto,
-  CreateClubForm,
-  EditClubForm,
-  Weekday,
-  ClubFilters,
-  ClubSort,
-} from "./types";
-import { apiFetchClubs } from "./api";
-import BackHeader from "@/components/common/header/BackHeader";
+  ListingLayout,
+  ListingToolbar,
+  type ListingFilter,
+} from "@/components/common/listing";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
-import { useSelector } from "react-redux";
-import { selectIsAdmin } from "@/store/selectors/routeSelectors";
+import { ToggleActiveSubject } from "@/components/common/modal/types";
+import type { RootState } from "@/store/slices";
+import { clubLinkPermissionsOf } from "@/utils/clubLinkPermissions";
 
+import ClubCard from "./components/ClubCard";
+import ClubCoordinatorDialog from "./components/ClubCoordinatorDialog";
+import ClubFormDialog from "./components/ClubFormDialog";
+import ClubTeachersDialog from "./components/ClubTeachersDialog";
+import ClubViewDialog from "./components/ClubViewDialog";
+import {
+  useClubDetails,
+  useClubFormOptions,
+  useClubMutations,
+  useClubs,
+} from "./hooks";
+import {
+  ANY_FILTER,
+  DEFAULT_CLUB_SORT,
+  DEFAULT_PAGE_SIZE,
+  EMPTY_CLUB_FORM,
+  PAGE_SIZE_OPTIONS,
+} from "./constants";
+import {
+  buildCreateClubRequest,
+  buildUpdateClubRequest,
+  toClubFormValues,
+} from "./utils";
+import type { ClubFilters, ClubFormValues, ClubResponse } from "./types";
+
+/**
+ * A tela de clubinhos, sobre a casca compartilhada.
+ *
+ * Era a última listagem do painel com casca própria: `ClubsCards`,
+ * `ClubsTable` e `ClubsToolbar` somavam 1.051 linhas repetindo vazio, erro,
+ * esqueleto, busca com atraso e paginação que as outras 18 telas já resolvem
+ * uma vez só em `ListingLayout`.
+ */
 export default function ClubsManager() {
-  const isAdmin = useSelector(selectIsAdmin);
-  const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const role = useSelector((state: RootState) => state.auth.user?.role);
+  const permissoes = clubLinkPermissionsOf(role);
 
-  const [filters, setFilters] = useState<ClubFilters>({
-    searchString: "",
-  });
+  const [filters, setFilters] = useState<ClubFilters>({ searchString: "" });
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageIndex, setPageIndex] = useState(0);
 
-  const [pageSize, setPageSize] = useState<number>(12);
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [sorting, setSorting] = useState<ClubSort>({ id: "updatedAt", desc: true });
+  const { rows, total, loading, error, setError, fetchPage } = useClubs(
+    pageIndex,
+    pageSize,
+    DEFAULT_CLUB_SORT,
+    filters,
+  );
 
-  const { rows, total, loading, error, setError, fetchPage } =
-    useClubs(pageIndex, pageSize, sorting, filters);
+  const {
+    viewing,
+    setViewing,
+    loading: viewingLoading,
+    fetchClub,
+  } = useClubDetails();
+  const { coordinators, teachers, reloadOptions } =
+    useClubFormOptions();
 
-  const doRefresh = useCallback(() => {
-    fetchPage();
-  }, [fetchPage]);
-
-  const { viewing, setViewing, loading: viewingLoading, fetchClub } = useClubDetails();
-  const handleOpenView = (club: ClubResponseDto) => {
-    setViewing(club);
-    fetchClub(club.id);
-  };
-
-  const { coordinators, teachers, reloadOptions } = useOptions();
+  const refresh = useCallback(async () => {
+    await fetchPage();
+    await reloadOptions();
+  }, [fetchPage, reloadOptions]);
 
   const {
     dialogLoading,
@@ -57,251 +84,327 @@ export default function ClubsManager() {
     updateClub,
     deleteClub,
     toggleActive,
-  } = useClubMutations(async (page, limit) => {
-    await apiFetchClubs({ page, limit, filters, sort: sorting });
-    await fetchPage();
-  });
+  } = useClubMutations(refresh);
 
-  const sanitizeIds = (arr?: Array<string | null | undefined>) =>
-    Array.from(
-      new Set(
-        (arr ?? []).filter(
-          (v): v is string => typeof v === "string" && v.trim() !== ""
-        )
-      )
-    );
+  const [creating, setCreating] = useState<ClubFormValues | null>(null);
+  const [editing, setEditing] = useState<{
+    id: string;
+    values: ClubFormValues;
+    /** Coordenador que o clubinho tinha ao abrir o formulário. */
+    initialCoordinatorProfileId: string | null;
+  } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<ClubResponse | null>(null);
+  const [confirmToggleActive, setConfirmToggleActive] =
+    useState<ClubResponse | null>(null);
+  const [managingTeachers, setManagingTeachers] =
+    useState<ClubResponse | null>(null);
+  const [managingCoordinator, setManagingCoordinator] =
+    useState<ClubResponse | null>(null);
 
-  const [creating, setCreating] = useState<CreateClubForm | null>(null);
-  const openCreate = () =>
-    setCreating({
-      number: 0,
-      weekday: "saturday" as Weekday,
-      time: null,
-      isActive: true,
-      address: {
-        street: "",
-        district: "",
-        city: "",
-        state: "",
-        postalCode: "",
-      } as any,
-      coordinatorProfileId: null,
-      teacherProfileIds: [],
-    });
+  const toolbarFilters = useMemo<ListingFilter[]>(
+    () => [
+      {
+        id: "isActive",
+        label: "Situação",
+        value:
+          filters.isActive === undefined ? ANY_FILTER : String(filters.isActive),
+        options: [
+          { value: ANY_FILTER, label: "Ativos e inativos" },
+          { value: "true", label: "Ativos" },
+          { value: "false", label: "Inativos" },
+        ],
+        onChange: (value) => {
+          setFilters((atual) => ({
+            ...atual,
+            isActive: value === ANY_FILTER ? undefined : value === "true",
+          }));
+          setPageIndex(0);
+        },
+      },
+    ],
+    [filters],
+  );
 
-  const submitCreate = async () => {
-    if (!creating) return;
-
-    const addressPayload = creating.address ? { ...creating.address } : undefined;
-    if (addressPayload) {
-      delete (addressPayload as any).id;
-      delete (addressPayload as any).createdAt;
-      delete (addressPayload as any).updatedAt;
-    }
-
-    const payload: CreateClubForm = {
-      ...creating,
-      address: addressPayload as CreateClubForm['address'],
-      teacherProfileIds: sanitizeIds(creating.teacherProfileIds),
-    };
-
-    if (!payload.teacherProfileIds?.length) delete (payload as any).teacherProfileIds;
-
-    if (
-      payload.coordinatorProfileId === undefined ||
-      payload.coordinatorProfileId === null
-    ) {
-      delete (payload as any).coordinatorProfileId;
-    }
-
-    if (payload.time === "") delete (payload as any).time;
-
-    await createClub(payload, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions();
-    setCreating(null);
+  const openCreate = () => {
+    setDialogError("");
+    setCreating({ ...EMPTY_CLUB_FORM, address: { ...EMPTY_CLUB_FORM.address } });
   };
 
-  const [editing, setEditing] = useState<EditClubForm | null>(null);
-
-  const startEdit = (c: ClubResponseDto) => {
+  const startEdit = (club: ClubResponse) => {
+    setDialogError("");
+    const values = toClubFormValues(club);
     setEditing({
-      id: c.id,
-      number: c.number,
-      weekday: c.weekday,
-      time: c.time ?? null,
-      isActive: c.isActive,
-      address: c.address,
-      coordinatorProfileId: c.coordinator?.id ?? null,
-      teacherProfileIds: (c.teachers ?? []).map((t) => t.id),
+      id: club.id,
+      values,
+      initialCoordinatorProfileId: values.coordinatorProfileId,
     });
+  };
+
+  // O formulário só fecha quando a API aceita: se fechasse antes, o erro
+  // devolvido não teria onde aparecer.
+  const submitCreate = async () => {
+    if (!creating) return;
+    const ok = await createClub(buildCreateClubRequest(creating));
+    if (ok) setCreating(null);
   };
 
   const submitEdit = async () => {
     if (!editing) return;
-
-    const { id, ...rest } = editing;
-    const teacherIds = sanitizeIds(rest.teacherProfileIds) ?? [];
-
-    const addressPayload = rest.address ? { ...rest.address } : undefined;
-    if (addressPayload) {
-      delete (addressPayload as any).id;
-      delete (addressPayload as any).createdAt;
-      delete (addressPayload as any).updatedAt;
-    }
-
-    const payload: Omit<EditClubForm, "id"> & { teacherProfileIds: string[] } = {
-      ...rest,
-      address: addressPayload as EditClubForm['address'],
-      teacherProfileIds: teacherIds,
-    };
-
-    if ((payload as any).time === "") {
-      (payload as any).time = null;
-    }
-
-    if (rest.coordinatorProfileId === undefined) {
-      delete (payload as any).coordinatorProfileId;
-    }
-
-    await updateClub(id, payload, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions();
-    setEditing(null);
+    const ok = await updateClub(
+      editing.id,
+      buildUpdateClubRequest(editing.values),
+    );
+    if (ok) setEditing(null);
   };
-
-  const [confirmDelete, setConfirmDelete] = useState<ClubResponseDto | null>(null);
-  const askDelete = (c: ClubResponseDto) => setConfirmDelete(c);
 
   const submitDelete = async () => {
     if (!confirmDelete) return;
-    await deleteClub(confirmDelete.id, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions();
-    setConfirmDelete(null);
+    const ok = await deleteClub(confirmDelete.id);
+    if (ok) setConfirmDelete(null);
   };
 
-  const [confirmToggleActive, setConfirmToggleActive] = useState<ClubResponseDto | null>(null);
-  const askToggleActive = (club: ClubResponseDto) => setConfirmToggleActive(club);
   const submitToggleActive = async () => {
     if (!confirmToggleActive) return;
-    await toggleActive(confirmToggleActive.id, pageIndex + 1, pageSize, filters, sorting);
-    await reloadOptions();
-    setConfirmToggleActive(null);
+    const ok = await toggleActive(confirmToggleActive.id);
+    if (ok) setConfirmToggleActive(null);
   };
 
-  React.useEffect(() => {
-    doRefresh();
-  }, [doRefresh]);
+  /**
+   * Vínculo alterado pelo card.
+   *
+   * Reaproveita `updateClub`: a API grava clubinho e vínculos numa requisição
+   * só, então mandar o clubinho inteiro com a lista nova evita uma segunda
+   * rota que faria a mesma coisa pela metade.
+   */
+  const salvarVinculos = async (
+    club: ClubResponse,
+    mudanca: Partial<ClubFormValues>,
+  ) => {
+    const values = { ...toClubFormValues(club), ...mudanca };
+    return updateClub(club.id, buildUpdateClubRequest(values));
+  };
+
+  const vincularProfessor = async (teacherProfileId: string) => {
+    if (!managingTeachers) return;
+
+    const atuais = managingTeachers.teachers.map((teacher) => teacher.id);
+    const ok = await salvarVinculos(managingTeachers, {
+      teacherProfileIds: [...atuais, teacherProfileId],
+    });
+    if (ok) setManagingTeachers(null);
+  };
+
+  const desvincularProfessor = async (teacher: { id: string }) => {
+    if (!managingTeachers) return;
+
+    const restantes = managingTeachers.teachers
+      .map((atual) => atual.id)
+      .filter((id) => id !== teacher.id);
+    const ok = await salvarVinculos(managingTeachers, {
+      teacherProfileIds: restantes,
+    });
+    if (ok) setManagingTeachers(null);
+  };
+
+  const vincularCoordenador = async (coordinatorProfileId: string) => {
+    if (!managingCoordinator) return;
+
+    const ok = await salvarVinculos(managingCoordinator, {
+      coordinatorProfileId,
+    });
+    if (ok) setManagingCoordinator(null);
+  };
+
+  const desvincularCoordenador = async () => {
+    if (!managingCoordinator) return;
+
+    const ok = await salvarVinculos(managingCoordinator, {
+      coordinatorProfileId: null,
+    });
+    if (ok) setManagingCoordinator(null);
+  };
 
   return (
-    <Box
-      sx={{
-        px: { xs: 2, md: 0 },
-        py: { xs: 0, md: 0 },
-        minHeight: "100vh",
-        bgcolor: "#f9fafb",
+    <ListingLayout data-testid="clubs-clubs-manager"
+      title="Clubinhos"
+      summary={
+        total > 0
+          ? `${total} clubinho(s) encontrado(s)`
+          : "Nenhum clubinho para os filtros atuais"
+      }
+      toolbar={
+        <ListingToolbar
+          searchValue={filters.searchString ?? ""}
+          searchPlaceholder="Buscar por número, cidade ou bairro…"
+          onSearchChange={(value) => {
+            setFilters((atual) => ({ ...atual, searchString: value }));
+            setPageIndex(0);
+          }}
+          filters={toolbarFilters}
+          onClearFilters={() => {
+            setFilters({ searchString: "" });
+            setPageIndex(0);
+          }}
+          onRefresh={() => void fetchPage()}
+          action={
+            <Button
+              type="button"
+              variant="contained"
+              startIcon={<AddIcon />}
+              fullWidth
+              onClick={openCreate}
+            >
+              Novo clubinho
+            </Button>
+          }
+        />
+      }
+      loading={loading}
+      error={error || dialogError}
+      onDismissError={() => {
+        setError("");
+        setDialogError("");
       }}
-    >
-      <BackHeader title="Gerenciar Clubinhos" />
-
-      <ClubsToolbar
-        filters={filters}
-        onChange={(updater) => {
-          setFilters(updater);
+      itemCount={rows.length}
+      emptyTitle="Nenhum clubinho encontrado"
+      emptySubtitle="Ajuste a busca ou os filtros para ver outros resultados."
+      pagination={{
+        page: pageIndex + 1,
+        pageSize,
+        total,
+        onPageChange: (page) => setPageIndex(page - 1),
+        onPageSizeChange: (size) => {
+          setPageSize(size);
           setPageIndex(0);
-        }}
-        onCreateClick={openCreate}
-        onRefreshClick={doRefresh}
-        isXs={isXs}
-      />
+        },
+      }}
+      pageSizeOptions={PAGE_SIZE_OPTIONS}
+      overlays={
+        <>
+          <ClubViewDialog
+            open={!!viewing}
+            loading={viewingLoading}
+            club={viewing}
+            onClose={() => setViewing(null)}
+          />
 
-      {loading && !rows.length && (
-        <Box textAlign="center" my={6}>
-          <CircularProgress />
-        </Box>
-      )}
-      {error && !loading && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
-          {error}
-        </Alert>
-      )}
+          <ClubFormDialog
+            mode="create"
+            open={!!creating}
+            value={creating}
+            onChange={setCreating}
+            onCancel={() => {
+              setCreating(null);
+              setDialogError("");
+            }}
+            onSubmit={submitCreate}
+            error={dialogError}
+            loading={dialogLoading}
+            coordinatorOptions={coordinators}
+            teacherOptions={teachers}
+          />
 
-      <ClubsTable
-        isAdmin={isAdmin}
-        rows={rows}
-        total={total}
-        pageIndex={pageIndex}
-        pageSize={pageSize}
-        setPageIndex={setPageIndex}
-        setPageSize={setPageSize}
-        sorting={sorting ? ([sorting] as any) : []}
-        setSorting={(s) =>
-          setSorting(Array.isArray(s) ? (s[0] ?? null) : (s as any))
-        }
-        onOpenView={handleOpenView}
-        onStartEdit={startEdit}
-        onAskDelete={askDelete}
-        onToggleActive={askToggleActive}
-      />
+          <ClubFormDialog
+            mode="edit"
+            open={!!editing}
+            value={editing?.values ?? null}
+            onChange={(values) =>
+              setEditing((atual) => (atual ? { ...atual, values } : atual))
+            }
+            onCancel={() => {
+              setEditing(null);
+              setDialogError("");
+            }}
+            onSubmit={submitEdit}
+            error={dialogError}
+            loading={dialogLoading}
+            coordinatorOptions={coordinators}
+            teacherOptions={teachers}
+            clubId={editing?.id ?? null}
+            initialCoordinatorProfileId={
+              editing?.initialCoordinatorProfileId ?? null
+            }
+          />
 
-      <ClubViewDialog
-        open={!!viewing}
-        loading={viewingLoading}
-        club={viewing}
-        onClose={() => setViewing(null)}
-      />
+          <ClubTeachersDialog
+            open={!!managingTeachers}
+            club={managingTeachers}
+            teachers={teachers}
+            teachersLoading={false}
+            loading={dialogLoading}
+            error={dialogError}
+            canManage={permissoes.canManageTeacherLinks}
+            onLink={(id) => void vincularProfessor(id)}
+            onUnlink={(teacher) => void desvincularProfessor(teacher)}
+            onClose={() => {
+              setManagingTeachers(null);
+              setDialogError("");
+            }}
+          />
 
-      <ClubFormDialog
-        mode="create"
-        open={!!creating}
-        value={creating}
-        onChange={(v) => setCreating(v as CreateClubForm)}
-        onCancel={() => {
-          setCreating(null);
-          setDialogError("");
-        }}
-        onSubmit={submitCreate}
-        error={dialogError}
-        loading={dialogLoading}
-        coordinatorOptions={coordinators}
-        teacherOptions={teachers}
-      />
+          <ClubCoordinatorDialog
+            open={!!managingCoordinator}
+            club={managingCoordinator}
+            coordinators={coordinators}
+            coordinatorsLoading={false}
+            loading={dialogLoading}
+            error={dialogError}
+            canManage={permissoes.canManageCoordinatorLinks}
+            onLink={(id) => void vincularCoordenador(id)}
+            onUnlink={() => void desvincularCoordenador()}
+            onClose={() => {
+              setManagingCoordinator(null);
+              setDialogError("");
+            }}
+          />
 
-      <ClubFormDialog
-        mode="edit"
-        open={!!editing}
-        value={editing}
-        onChange={(v) => setEditing(v as EditClubForm)}
-        onCancel={() => {
-          setEditing(null);
-          setDialogError("");
-        }}
-        onSubmit={submitEdit}
-        error={dialogError}
-        loading={dialogLoading}
-        coordinatorOptions={coordinators}
-        teacherOptions={teachers}
-      />
+          <DeleteConfirmDialog
+            open={!!confirmDelete}
+            title={confirmDelete ? `Clubinho ${confirmDelete.number}` : ""}
+            loading={dialogLoading}
+            onClose={() => setConfirmDelete(null)}
+            onConfirm={submitDelete}
+          />
 
-      <DeleteConfirmDialog
-        open={!!confirmDelete}
-        title={confirmDelete ? `#${confirmDelete.number}` : ""}
-        onClose={() => {
-          setConfirmDelete(null);
-          setDialogError("");
-        }}
-        onConfirm={submitDelete}
-      />
-
-      <ToggleActiveConfirmDialog
-        open={!!confirmToggleActive}
-        title={confirmToggleActive ? `Clubinho #${confirmToggleActive.number}` : ""}
-        isActive={confirmToggleActive?.isActive ?? false}
-        onClose={() => {
-          setConfirmToggleActive(null);
-          setDialogError("");
-        }}
-        onConfirm={submitToggleActive}
-        loading={dialogLoading}
-      />
-    </Box>
+          <ToggleActiveConfirmDialog
+            subject={ToggleActiveSubject.Club}
+            open={!!confirmToggleActive}
+            title={
+              confirmToggleActive ? `Clubinho ${confirmToggleActive.number}` : ""
+            }
+            isActive={confirmToggleActive?.isActive ?? false}
+            loading={dialogLoading}
+            onClose={() => setConfirmToggleActive(null)}
+            onConfirm={submitToggleActive}
+          />
+        </>
+      }
+    >
+      {rows.map((club) => (
+        <Grid2 key={club.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+          <ClubCard
+            club={club}
+            disabled={dialogLoading}
+            canManageCoordinator={permissoes.canManageCoordinatorLinks}
+            canDelete={permissoes.canDeleteClub}
+            onView={() => {
+              setViewing(club);
+              void fetchClub(club.id);
+            }}
+            onEdit={() => startEdit(club)}
+            onToggleActive={() => setConfirmToggleActive(club)}
+            onDelete={() => setConfirmDelete(club)}
+            onManageTeachers={() => {
+              setDialogError("");
+              setManagingTeachers(club);
+            }}
+            onManageCoordinator={() => {
+              setDialogError("");
+              setManagingCoordinator(club);
+            }}
+          />
+        </Grid2>
+      ))}
+    </ListingLayout>
   );
 }

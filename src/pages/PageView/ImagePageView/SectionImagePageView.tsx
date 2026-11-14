@@ -2,14 +2,11 @@ import React, { useState } from 'react';
 import { 
   Box, 
   Typography, 
-  Paper, 
   Grid, 
   Modal, 
   IconButton, 
-  Tooltip, 
   Skeleton,
   useTheme,
-  useMediaQuery,
   Chip,
   Stack,
   Avatar,
@@ -33,10 +30,20 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
-import type { SectionData } from 'store/slices/image/imageSlice';
 import { motion } from 'framer-motion';
+import type { SxProps, Theme } from '@mui/material';
 
-export interface SectionItemProps extends Omit<SectionData, 'id' | 'public'> {}
+/**
+ * As props declaram o que o componente consome, em vez de derivarem do tipo da
+ * seção: aqui as datas chegam já convertidas e as mídias vêm do estado local.
+ */
+export interface SectionItemProps {
+  caption: string;
+  description: string;
+  mediaItems: MediaItem[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
 
 const formatDateTime = (value: string | Date) => {
   const date = new Date(value);
@@ -69,7 +76,7 @@ const getPlatformIcon = (platform?: MediaPlatform | string) => {
   }
 };
 
-const ImageWithSkeleton: React.FC<{ src: string; alt: string; sx?: any; onClick?: () => void }> = ({
+const ImageWithSkeleton: React.FC<{ src: string; alt: string; sx?: SxProps<Theme>; onClick?: () => void }> = ({
   src,
   alt,
   sx,
@@ -77,7 +84,7 @@ const ImageWithSkeleton: React.FC<{ src: string; alt: string; sx?: any; onClick?
 }) => {
   const [loaded, setLoaded] = useState(false);
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box data-testid="page-view-image-page-view-section-image-page-view-image-with-skeleton" sx={{ position: 'relative' }}>
       {!loaded && (
         <Skeleton
           variant="rectangular"
@@ -116,7 +123,6 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
   const [showAll, setShowAll] = useState(false);
   const [hoveredImage, setHoveredImage] = useState<number | null>(null);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   if (!mediaItems || mediaItems.length === 0) return null;
 
@@ -132,7 +138,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
   const heroSrc = getMediaPreviewUrl(mediaItems[0] as MediaItem);
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-image-page-view-section-image-page-view"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -8 }}
@@ -369,7 +375,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
                               backdropFilter: 'blur(4px)',
                             }}
                           >
-                            {getPlatformIcon((item as any).platformType)}
+                            {getPlatformIcon(item.platformType)}
                           </Box>
                         </motion.div>
 
@@ -472,7 +478,7 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
                     bgcolor: 'rgba(255,255,255,0.2)',
                   },
                 }}
-              >
+               aria-label="Fechar">
                 <CloseIcon />
               </IconButton>
 

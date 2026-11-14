@@ -1,3 +1,5 @@
+import { toChartNumber } from '../types/chart.types';
+import type { ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,
@@ -5,7 +7,7 @@ import {
   Typography,
   CircularProgress,
   useTheme,
-  Grid,
+  Grid2,
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
@@ -26,7 +28,15 @@ import {
 } from 'recharts';
 import { CompareArrows } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
+import { weightedAverageRate } from '../utils/rates';
+import { NO_DATA_PLACEHOLDER } from '../constants';
+
+/** Barra de atividade exibida no tooltip. */
+interface ActivitiesTooltipPayload {
+  category: string;
+}
 
 interface ActivitiesComparisonChartProps {
   filters?: PagelasStatsQueryDto;
@@ -36,12 +46,12 @@ type ViewMode = 'radar' | 'bar';
 
 export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps> = ({ filters }) => {
   const theme = useTheme();
-  const { data, isLoading } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
   const [viewMode, setViewMode] = React.useState<ViewMode>('radar');
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-activities-comparison-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -51,8 +61,12 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
 
   if (!data || !data.byGender || !data.byAgeGroup || !data.byParticipationTime) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-        <Typography color="error">Erro ao carregar dados</Typography>
+      <Paper data-testid="statistics-activities-comparison-chart" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+        <ChartError
+          subject="a comparação de atividades"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }
@@ -78,25 +92,21 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
     })),
   };
 
-  const radarData = [
-    {
-      metric: 'Presença',
-      value: data.byGender.reduce((sum, g) => sum + g.presenceRate, 0) / data.byGender.length,
-    },
-    {
-      metric: 'Meditação',
-      value: data.byGender.reduce((sum, g) => sum + g.meditationRate, 0) / data.byGender.length,
-    },
-    {
-      metric: 'Recitação',
-      value: data.byGender.reduce((sum, g) => sum + g.verseRecitationRate, 0) / data.byGender.length,
-    },
+  // Ponderado pelo total de pagelas de cada gênero: a média simples das linhas
+  // tratava um grupo de 10 e um de 90 como iguais. `null` = sem pagela no
+  // recorte, que não é o mesmo que 0%.
+  const overallRates = [
+    { metric: 'Presença', rate: weightedAverageRate(data.byGender, (g) => g.presenceRate) },
+    { metric: 'Meditação', rate: weightedAverageRate(data.byGender, (g) => g.meditationRate) },
+    { metric: 'Recitação', rate: weightedAverageRate(data.byGender, (g) => g.verseRecitationRate) },
   ];
+  const hasOverallData = overallRates.some((item) => item.rate !== null);
+  const radarData = overallRates.map((item) => ({ metric: item.metric, value: item.rate ?? 0 }));
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: ChartTooltipProps<ActivitiesTooltipPayload>) => {
     if (active && payload && payload.length) {
       return (
-        <Paper
+        <Paper data-testid="statistics-activities-comparison-chart-custom-tooltip"
           elevation={8}
           sx={{
             p: 2,
@@ -108,11 +118,11 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             {payload[0].payload.category}
           </Typography>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
               <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: entry.color }} />
               <Typography variant="body2">
-                {entry.name}: <strong>{entry.value.toFixed(1)}%</strong>
+                {entry.name}: <strong>{toChartNumber(entry.value).toFixed(1)}%</strong>
               </Typography>
             </Box>
           ))}
@@ -123,7 +133,7 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
   };
 
   return (
-    <Paper
+    <Paper data-testid="statistics-activities-comparison-chart"
       elevation={0}
       sx={{
         p: { xs: 1.5, sm: 3 },
@@ -162,20 +172,25 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           Taxas Médias Gerais
         </Typography>
-        <Grid container spacing={2}>
-          {radarData.map((item) => (
-            <Grid item xs={12} sm={4} key={item.metric}>
+        <Grid2 container spacing={2}>
+          {overallRates.map((item) => (
+            <Grid2 size={{ xs: 12, sm: 4 }} key={item.metric}>
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   {item.metric}
                 </Typography>
-                <Typography variant="h5" fontWeight="bold" color="secondary">
-                  {item.value.toFixed(1)}%
+                <Typography
+                  data-testid="statistics-activities-overall-rate"
+                  variant="h5"
+                  fontWeight="bold"
+                  color="secondary"
+                >
+                  {item.rate === null ? NO_DATA_PLACEHOLDER : `${item.rate.toFixed(1)}%`}
                 </Typography>
               </Box>
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
       </Box>
 
       {viewMode === 'radar' && (
@@ -198,9 +213,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
         </ResponsiveContainer>
       )}
 
-      <Grid container spacing={3} sx={{ mt: 2 }}>
+      <Grid2 container spacing={3} sx={{ mt: 2 }}>
 
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Gênero
           </Typography>
@@ -215,9 +230,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               <Bar dataKey="Recitação" fill={theme.palette.secondary.main} />
             </BarChart>
           </ResponsiveContainer>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Faixa Etária
           </Typography>
@@ -232,9 +247,9 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               <Bar dataKey="Recitação" fill={theme.palette.secondary.main} />
             </BarChart>
           </ResponsiveContainer>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
             Por Tempo de Participação
           </Typography>
@@ -256,39 +271,45 @@ export const ActivitiesComparisonChart: React.FC<ActivitiesComparisonChartProps>
               <Bar dataKey="Recitação" fill={theme.palette.secondary.main} />
             </BarChart>
           </ResponsiveContainer>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       <Box sx={{ mt: 3, p: { xs: 1.5, sm: 2 }, bgcolor: 'rgba(76, 175, 80, 0.08)', borderRadius: 2 }}>
         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
           💡 Insights
         </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
+        <Grid2 container spacing={2}>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Typography variant="caption" color="text.secondary">
               Atividade Mais Alta
             </Typography>
             <Typography variant="body1" fontWeight="bold">
-              {radarData.reduce((max, item) => (item.value > max.value ? item : max)).metric}
+              {hasOverallData
+                ? radarData.reduce((max, item) => (item.value > max.value ? item : max)).metric
+                : NO_DATA_PLACEHOLDER}
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Typography variant="caption" color="text.secondary">
               Atividade Mais Baixa
             </Typography>
             <Typography variant="body1" fontWeight="bold">
-              {radarData.reduce((min, item) => (item.value < min.value ? item : min)).metric}
+              {hasOverallData
+                ? radarData.reduce((min, item) => (item.value < min.value ? item : min)).metric
+                : NO_DATA_PLACEHOLDER}
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Typography variant="caption" color="text.secondary">
               Diferença Máxima
             </Typography>
             <Typography variant="body1" fontWeight="bold">
-              {(Math.max(...radarData.map((d) => d.value)) - Math.min(...radarData.map((d) => d.value))).toFixed(1)}%
+              {hasOverallData
+                ? `${(Math.max(...radarData.map((d) => d.value)) - Math.min(...radarData.map((d) => d.value))).toFixed(1)}%`
+                : NO_DATA_PLACEHOLDER}
             </Typography>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Box>
     </Paper>
   );

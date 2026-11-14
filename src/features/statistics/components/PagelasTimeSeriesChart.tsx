@@ -19,7 +19,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
 
 interface PagelasTimeSeriesChartProps {
   filters?: PagelasStatsQueryDto;
@@ -27,12 +28,12 @@ interface PagelasTimeSeriesChartProps {
 
 export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ filters }) => {
   const theme = useTheme();
-  const { data, isLoading, error } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
   const [selectedSeries, setSelectedSeries] = React.useState<string[]>(['total', 'presence']);
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper data-testid="statistics-pagelas-time-series-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -42,8 +43,12 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
 
   if (error || !data || !data.timeSeries) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        <Typography color="error">Erro ao carregar dados de pagelas</Typography>
+      <Paper data-testid="statistics-pagelas-time-series-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+        <ChartError
+          subject="os dados de pagelas"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }
@@ -86,7 +91,7 @@ export const PagelasTimeSeriesChart: React.FC<PagelasTimeSeriesChartProps> = ({ 
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+    <Paper data-testid="statistics-pagelas-time-series-chart" elevation={3} sx={{ p: 3, borderRadius: 2 }}>
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h6" fontWeight="bold">
           📊 Evolução de Pagelas ao Longo do Tempo

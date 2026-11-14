@@ -1,13 +1,13 @@
 import React from 'react';
 import { Box, Typography, Button, Container } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { HeroSectionProps } from '../types';
 import banner from '@/assets/banner.jpg';
 
 const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
   return (
-    <Box
+    <Box data-testid="home-hero-section"
       sx={{
         position: 'relative',
         width: '100%',
@@ -50,7 +50,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
       />
 
       {[...Array(20)].map((_, i) => (
-        <motion.div
+        <m.div
           key={i}
           style={{
             position: 'absolute',
@@ -82,7 +82,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
           px: { xs: 2, sm: 3, md: 4 },
         }}
       >
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: 'easeOut' }}
@@ -106,9 +106,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
           >
             Bem-vindo ao Clubinhos NIB
           </Typography>
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
@@ -130,16 +130,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
           >
             Ministério de evangelismo que leva a palavra de Deus para as crianças que precisam conhecer o amor de Jesus
           </Typography>
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
         >
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
             {isAuthenticated && (
-              <motion.div
+              <m.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -167,10 +167,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isAuthenticated }) => {
                 >
                   Área do Professor
                 </Button>
-              </motion.div>
+              </m.div>
             )}
           </Box>
-        </motion.div>
+        </m.div>
       </Container>
     </Box>
   );

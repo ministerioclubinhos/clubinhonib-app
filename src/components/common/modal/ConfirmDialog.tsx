@@ -4,6 +4,7 @@ import {
   Button, Typography, IconButton, Box, CircularProgress
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import type { SxProps, Theme } from "@mui/material";
 
 export type ConfirmDialogProps = {
   open: boolean;
@@ -25,9 +26,15 @@ export type ConfirmDialogProps = {
   maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
   showCloseIcon?: boolean;
   startAdornment?: React.ReactNode;
-  titleSx?: any;
-  contentSx?: any;
-  actionsSx?: any;
+  titleSx?: SxProps<Theme>;
+  contentSx?: SxProps<Theme>;
+  actionsSx?: SxProps<Theme>;
+  /**
+   * Seletor do diálogo. O padrão serve às confirmações comuns; quem reusa este
+   * componente para um caso com texto próprio informa o seu, para o teste
+   * distinguir um diálogo do outro na tela.
+   */
+  "data-testid"?: string;
 };
 
 export default function ConfirmDialog({
@@ -53,12 +60,16 @@ export default function ConfirmDialog({
   titleSx,
   contentSx,
   actionsSx,
+  "data-testid": dataTestId = "modal-confirm-dialog",
 }: ConfirmDialogProps) {
   const [internalLoading, setInternalLoading] = React.useState(false);
 
   const isLoading = loading ?? internalLoading;
 
-  const handleClose = (_: any, reason?: "backdropClick" | "escapeKeyDown") => {
+  const handleClose = (
+    _evento: object,
+    reason?: "backdropClick" | "escapeKeyDown",
+  ) => {
     if (isLoading) return; 
     if (disableBackdropClose && reason === "backdropClick") return;
     if (disableEscapeKeyDown && reason === "escapeKeyDown") return;
@@ -68,7 +79,11 @@ export default function ConfirmDialog({
   const handleConfirm = async () => {
     try {
       const result = onConfirm?.();
-      const isPromise = result && typeof (result as any).then === "function";
+      // `onConfirm` pode devolver algo síncrono; só esperamos quando é
+      // "thenable", que é o que o `await` de fato aguarda.
+      const isPromise =
+        typeof (result as PromiseLike<unknown> | undefined)?.then ===
+        "function";
       if (loading === undefined && isPromise) {
         setInternalLoading(true);
         await (result as Promise<unknown>);
@@ -83,7 +98,7 @@ export default function ConfirmDialog({
   };
 
   return (
-    <Dialog
+    <Dialog data-testid={dataTestId}
       open={open}
       onClose={handleClose}
       fullWidth={fullWidth}

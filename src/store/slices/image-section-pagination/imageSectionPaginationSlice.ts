@@ -4,6 +4,8 @@ import { SectionData } from '../image-section/imageSectionSlice';
 export interface PaginatedSectionResponse {
   id: string;
   title: string;
+  /** A API envia; o tipo não declarava, e a tela lia com `as any`. */
+  subtitle?: string;
   description: string;
   public: boolean;
   createdAt: string;

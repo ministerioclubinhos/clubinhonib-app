@@ -1,17 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RouteData } from '@/store/slices/route/routeSlice';
-import { MediaItem } from '@/store/slices/types';
+import type { VideoPageResponse } from '@/features/video-pages/types';
 
-export interface VideoPageData {
-  id?: string;
-  public: boolean;
-  title: string;
-  description: string;
-  createdAt?: string;
-  updatedAt?: string;
-  videos: MediaItem[];
-  route?: RouteData;
-}
+/**
+ * Galeria selecionada para edição. O tipo espelha a resposta da API: o `route`
+ * devolvido é um recorte, sem `id`, `current` nem as datas.
+ */
+export type VideoPageData = VideoPageResponse;
 
 interface VideoState {
   videoData: VideoPageData | null;

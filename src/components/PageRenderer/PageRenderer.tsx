@@ -13,15 +13,15 @@ interface PageRendererProps {
 const PageRenderer: React.FC<PageRendererProps> = ({ entityType, idToFetch }) => {
   switch (entityType) {
     case MediaTargetType.ImagesPage:
-      return <PageGalleryView idToFetch={idToFetch} />;
+      return <PageGalleryView data-testid="page-renderer" idToFetch={idToFetch} />;
     case MediaTargetType.VideosPage:
-      return <PageVideoView idToFetch={idToFetch} />;
+      return <PageVideoView data-testid="page-renderer" idToFetch={idToFetch} />;
     case MediaTargetType.WeekMaterialsPage:
-      return <WeekMaterialsPageView idToFetch={idToFetch} />;
+      return <WeekMaterialsPageView data-testid="page-renderer" idToFetch={idToFetch} />;
     case MediaTargetType.IdeasPage:
-      return <IdeasPageView idToFetch={idToFetch} />;
+      return <IdeasPageView data-testid="page-renderer" idToFetch={idToFetch} />;
     default:
-      return <div>Tipo de página desconhecido: {entityType}</div>;
+      return <div data-testid="page-renderer">Tipo de página desconhecido: {entityType}</div>;
   }
 };
 

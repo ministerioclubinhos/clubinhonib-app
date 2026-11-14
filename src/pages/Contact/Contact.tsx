@@ -6,7 +6,7 @@ const Contact: React.FC = () => {
   const { loading, submitted, globalError, onSubmit } = useContactForm();
 
   return (
-    <ContactLayout>
+    <ContactLayout data-testid="contact">
       <ContactForm
         onSubmit={onSubmit}
         loading={loading}

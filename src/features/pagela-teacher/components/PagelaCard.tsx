@@ -18,6 +18,7 @@ import SpaIcon from "@mui/icons-material/Spa";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import type { Pagela } from "../types";
 import { toLabelWeek } from "../utils";
+import { authorshipLine } from "@/features/children/utils";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 
 function formatPtBrDate(iso: string | null | undefined) {
@@ -46,6 +47,13 @@ export default function PagelaCard({
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  // Quem lançou e, se outra pessoa mexeu depois, quem alterou.
+  const authorship = authorshipLine({
+    createdBy: row.createdBy,
+    updatedBy: row.updatedBy,
+    createdVerb: "Lançada",
+    updatedVerb: "alterada",
+  });
   const [busy, setBusy] = React.useState(false);
 
   const chipMobileSx = {
@@ -66,7 +74,7 @@ export default function PagelaCard({
 
   const Chips = () =>
     isXs ? (
-      <Box
+      <Box data-testid="pagela-teacher-pagela-card-chips"
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
@@ -103,7 +111,7 @@ export default function PagelaCard({
         </Tooltip>
       </Box>
     ) : (
-      <Stack direction="row" spacing={0.75} flexWrap="wrap">
+      <Stack data-testid="pagela-teacher-pagela-card-chips" direction="row" spacing={0.75} flexWrap="wrap">
         <Chip
           size="small"
           color={row.present ? "success" : "default"}
@@ -132,7 +140,7 @@ export default function PagelaCard({
 
   return (
     <>
-      <Card
+      <Card data-testid="pagela-teacher-pagela-card"
         variant="outlined"
         sx={{
           borderRadius: 4,
@@ -199,6 +207,16 @@ export default function PagelaCard({
               </Typography>
             </Stack>
 
+            {authorship && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                data-testid="pagela-authorship"
+              >
+                {authorship}
+              </Typography>
+            )}
+
             <Divider />
 
             <Chips />
@@ -212,7 +230,7 @@ export default function PagelaCard({
         </CardContent>
       </Card>
 
-      <DeleteConfirmDialog
+      <DeleteConfirmDialog data-testid="pagela-teacher-pagela-card"
         open={confirmOpen}
         title={weekTitle}
         onClose={() => (busy ? null : setConfirmOpen(false))}

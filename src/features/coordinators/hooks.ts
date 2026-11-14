@@ -1,174 +1,191 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+import { apiFetchClubOptions } from "@/features/clubs/api";
+import type { ClubSelectOption } from "@/features/clubs/types";
+import { useAbortController, useDebouncedValue } from "@/hooks";
+import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
+
 import {
   apiAssignClub,
-  apiGetCoordinator,
-  apiListClubsSimple,
-  apiListCoordinators,
+  apiFetchCoordinator,
+  apiFetchCoordinators,
   apiUnassignClub,
-  type ListCoordinatorsParams,
 } from "./api";
-import type {
-  ClubSimple,
-  CoordinatorFilters,
-  CoordinatorProfile,
-} from "./types";
-import type { SortingState } from "@tanstack/react-table";
-import { extractErrorMessage } from "@/utils/apiError";
+import { COORDINATORS_DEFAULT_LIMIT } from "./constants";
+import type { CoordinatorFilters, CoordinatorResponse } from "./types";
 
-function mapSortingToServer(sorting: SortingState) {
-  const first = sorting?.[0];
-  const sortId =
-    first?.id === "user" ? "name"
-      : first?.id === "createdAt" ? "createdAt"
-        : "updatedAt";
-  const order: "asc" | "desc" = first?.desc ? "desc" : "asc";
-  return { sort: sortId as ListCoordinatorsParams["sort"], order };
-}
+/** Página de coordenadores, com busca e filtros resolvidos pela API. */
+export function useCoordinators() {
+  const [items, setItems] = useState<CoordinatorResponse[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(COORDINATORS_DEFAULT_LIMIT);
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<
+    Omit<CoordinatorFilters, "searchString">
+  >({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-function mapFiltersToServer(filters: CoordinatorFilters) {
-  const active =
-    filters.active === "all" ? undefined
-      : filters.active === "active" ? true
-        : false;
-  const hasClubs =
-    filters.hasClubs === "all" ? undefined
-      : filters.hasClubs === "yes" ? true
-        : false;
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
+
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
+
+  useEffect(() => {
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiFetchCoordinators(
+          {
+            page,
+            limit: pageSize,
+            filters: { ...filters, searchString: debouncedSearch || undefined },
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.items) ? data.items : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, "Erro ao carregar os coordenadores"));
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
 
   return {
-    searchString: filters.searchString?.trim() || undefined,
-    active,
-    hasClubs,
-    clubNumber:
-      filters.clubNumber !== "" && filters.clubNumber != null
-        ? Number(filters.clubNumber)
-        : undefined,
-  } as Omit<ListCoordinatorsParams, "page" | "limit" | "sort" | "order">;
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  };
 }
 
-export function useCoordinatorProfiles(
-  pageIndex: number,
-  pageSize: number,
-  sorting: SortingState,
-  filters: CoordinatorFilters
-) {
-  const [rows, setRows] = useState<CoordinatorProfile[]>([]);
-  const [total, setTotal] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+/** Vínculo entre clubinho e coordenador. Cada operação devolve se deu certo. */
+export function useCoordinatorMutations(refresh: () => void) {
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState("");
 
-  const fetchPage = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const { sort, order } = mapSortingToServer(sorting);
-      const qFilters = mapFiltersToServer(filters);
-      const data = await apiListCoordinators({
-        page: pageIndex + 1,
-        limit: pageSize,
-        sort,
-        order,
-        ...qFilters,
-      });
-      setRows(data.items || []);
-      setTotal(data.total || 0);
-    } catch (err: unknown) {
-      setError(extractErrorMessage(err, "Erro ao listar coordenadores"));
-    } finally {
-      setLoading(false);
-    }
-  }, [pageIndex, pageSize, sorting, filters]);
-
-  useEffect(() => { fetchPage(); }, [fetchPage]);
-
-  const refreshOne = useCallback(async (coordinatorId: string) => {
-    try {
-      const updated = await apiGetCoordinator(coordinatorId);
-      setRows((prev) => {
-        const i = prev.findIndex((p) => p.id === coordinatorId);
-        if (i === -1) return prev;
-        const next = [...prev];
-        next[i] = updated;
-        return next;
-      });
-    } catch {
-      setRows((prev) => prev.filter((p) => p.id !== coordinatorId));
-    }
-  }, []);
-
-  return { rows, total, loading, error, setError, fetchPage, refreshOne };
-}
-
-export function useCoordinatorMutations(
-  refreshPage: () => Promise<void> | void,
-  refreshOne: (coordinatorId: string) => Promise<void> | void
-) {
-  const [dialogLoading, setDialogLoading] = useState(false);
-  const [dialogError, setDialogError] = useState("");
-
-  const assignClub = useCallback(
-    async (coordinatorId: string, clubId: string): Promise<string> => {
-      setDialogLoading(true); setDialogError("");
+  const run = useCallback(
+    async (action: () => Promise<void>, fallbackMessage: string) => {
+      setActionLoading(true);
+      setActionError("");
       try {
-        const res: any = await apiAssignClub(coordinatorId, clubId);
-        await refreshOne(coordinatorId);
-        await refreshPage();
-        return res?.message || "Club atribuído ao coordenador com sucesso";
+        await action();
+        refresh();
+        return true;
       } catch (err: unknown) {
-        const msg = extractErrorMessage(err, "Erro ao vincular clubinho");
-        setDialogError(msg);
-        throw err;
+        setActionError(extractErrorMessage(err, fallbackMessage));
+        return false;
       } finally {
-        setDialogLoading(false);
+        setActionLoading(false);
       }
     },
-    [refreshOne, refreshPage]
+    [refresh],
+  );
+
+  const assignClub = useCallback(
+    (coordinatorId: string, clubId: string) =>
+      run(async () => {
+        await apiAssignClub(coordinatorId, clubId);
+      }, "Erro ao vincular o clubinho"),
+    [run],
   );
 
   const unassignClub = useCallback(
-    async (coordinatorId: string, clubId: string): Promise<string> => {
-      setDialogLoading(true); setDialogError("");
-      try {
-        const res: any = await apiUnassignClub(coordinatorId, clubId);
-        await refreshOne(coordinatorId);
-        await refreshPage();
-        return res?.message || "Club removido do coordenador com sucesso";
-      } catch (err: unknown) {
-        const msg = extractErrorMessage(err, "Erro ao desvincular clubinho");
-        setDialogError(msg);
-        throw err;
-      } finally {
-        setDialogLoading(false);
-      }
-    },
-    [refreshOne, refreshPage]
+    (coordinatorId: string, clubId: string) =>
+      run(async () => {
+        await apiUnassignClub(coordinatorId, clubId);
+      }, "Erro ao desvincular o clubinho"),
+    [run],
   );
 
-  return { dialogLoading, dialogError, setDialogError, assignClub, unassignClub };
+  return {
+    actionLoading,
+    actionError,
+    setActionError,
+    assignClub,
+    unassignClub,
+  };
 }
 
-export function useClubsIndex() {
-  const [clubs, setClubs] = useState<ClubSimple[]>([]);
+/**
+ * Clubinhos disponíveis para o vínculo.
+ *
+ * Antes o número do clubinho era digitado à mão e um número inexistente só
+ * falhava na hora de salvar.
+ */
+export function useClubOptions() {
+  const [clubs, setClubs] = useState<ClubSelectOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const refresh = useCallback(async () => {
-    setLoading(true); setError("");
+    setLoading(true);
+    setError("");
     try {
-      const list = await apiListClubsSimple();
-      setClubs(list || []);
+      setClubs(await apiFetchClubOptions());
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, "Erro ao listar clubinhos"));
+      setError(extractErrorMessage(err, "Erro ao carregar os clubinhos"));
+      setClubs([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const byNumber = useMemo(() => {
-    const map = new Map<number, ClubSimple>();
-    for (const c of clubs) if (typeof c.number === "number") map.set(c.number, c);
-    return map;
-  }, [clubs]);
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
-  return { clubs, byNumber, loading, error, refresh };
+  return { clubs, loading, error, refresh };
+}
+
+/**
+ * Um coordenador recarregado da API.
+ *
+ * A tela mantém o diálogo de clubinhos aberto durante as escritas, e adivinhar
+ * o novo estado dava números errados — um clubinho recém-vinculado aparecia com
+ * zero professores mesmo tendo turma.
+ */
+export function useCoordinatorDetails() {
+  const [loading, setLoading] = useState(false);
+
+  const fetchOne = useCallback(
+    async (coordinatorId: string): Promise<CoordinatorResponse | null> => {
+      setLoading(true);
+      try {
+        return await apiFetchCoordinator(coordinatorId);
+      } catch {
+        // A recarga é acessória: a listagem já foi atualizada pela mutação.
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  return { loading, fetchOne };
 }

@@ -1,199 +1,223 @@
-import React from "react";
-import { Box, Alert, CircularProgress } from "@mui/material";
-import { useTheme, useMediaQuery } from "@mui/material";
+import React, { useMemo, useState } from "react";
+import { Grid2 } from "@mui/material";
 
-import TeacherToolbar from "./components/TeacherToolbar";
-import TeacherTable from "./components/TeacherTable";
-import TeacherCards from "./components/TeacherCards";
+import { useSelector } from "react-redux";
+
+import {
+  ListingLayout,
+  ListingToolbar,
+  type ListingFilter,
+} from "@/components/common/listing";
+import ConfirmDialog from "@/components/common/modal/ConfirmDialog";
+import type { RootState } from "@/store/slices";
+import { clubLinkPermissionsOf } from "@/utils/clubLinkPermissions";
+
+import TeacherCard from "./components/TeacherCard";
+import TeacherClubDialog from "./components/TeacherClubDialog";
 import TeacherViewDialog from "./components/TeacherViewDialog";
-import TeacherEditDialog from "./components/TeacherEditDialog";
-
-import { useClubsIndex, useTeacherMutations, useTeacherProfiles } from "./hooks";
-import { TeacherProfile } from "./types";
-import BackHeader from "@/components/common/header/BackHeader";
-
-export type TeacherFilters = {
-  q?: string;
-  active?: boolean;
-  hasClub?: boolean;
-  clubNumber?: number;
-};
+import { useClubOptions, useTeacherMutations, useTeachers } from "./hooks";
+import { ANY_FILTER, TEACHERS_PAGE_SIZE_OPTIONS } from "./constants";
+import { clubLabel, teacherName } from "./utils";
+import type { TeacherResponse } from "./types";
 
 export default function TeacherProfilesManager() {
-  const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const [pageSize, setPageSize] = React.useState<number>(12);
-  const [pageIndex, setPageIndex] = React.useState<number>(0);
-  const [sorting, setSorting] = React.useState([{ id: "updatedAt", desc: true }]);
-
-  const [filters, setFilters] = React.useState<TeacherFilters>({
-    q: "",
-    active: undefined,
-    hasClub: undefined,
-    clubNumber: undefined,
-  });
-
-  const { rows, total, loading, error, setError, fetchPage, refreshOne } =
-    useTeacherProfiles(pageIndex, pageSize, sorting as any, {
-      q: filters.q || undefined,
-      searchString: undefined,
-      active: filters.active,
-      hasClub: filters.hasClub,
-      clubNumber: filters.clubNumber,
-    });
-
-  const doRefresh = React.useCallback(() => {
-    fetchPage();
-  }, [fetchPage]);
+  const role = useSelector((state: RootState) => state.auth.user?.role);
+  const permissions = clubLinkPermissionsOf(role);
 
   const {
-    byNumber,
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  } = useTeachers();
+
+  const {
+    clubs,
     loading: clubsLoading,
     error: clubsError,
     refresh: refreshClubs,
-  } = useClubsIndex();
+  } = useClubOptions();
 
-  const { dialogLoading, dialogError, setDialogError, setClub, clearClub } =
-    useTeacherMutations(fetchPage, refreshOne);
+  const { actionLoading, actionError, setActionError, assignClub, unassignClub } =
+    useTeacherMutations(refresh);
 
-  const [viewing, setViewing] = React.useState<TeacherProfile | null>(null);
-  const [editing, setEditing] = React.useState<TeacherProfile | null>(null);
+  const [viewing, setViewing] = useState<TeacherResponse | null>(null);
+  const [editing, setEditing] = useState<TeacherResponse | null>(null);
+  const [confirmUnassign, setConfirmUnassign] =
+    useState<TeacherResponse | null>(null);
 
-  const onSetClub = React.useCallback(
-    async (teacher: TeacherProfile | null, clubNumberInput: number) => {
-      if (!teacher || !clubNumberInput) return;
-      const club = byNumber.get(clubNumberInput);
-      if (!club) {
-        setDialogError("Clubinho não encontrado pelo número informado.");
-        return;
-      }
-      try {
-        await setClub(teacher.id, club.id);
-        setEditing(null);
-        setDialogError("");
-        await Promise.all([fetchPage(), refreshClubs()]);
-      } catch {
-      }
-    },
-    [byNumber, setClub, fetchPage, refreshClubs, setDialogError]
+  const toolbarFilters = useMemo<ListingFilter[]>(
+    () => [
+      {
+        id: "active",
+        label: "Situação",
+        value: filters.active === undefined ? ANY_FILTER : String(filters.active),
+        options: [
+          { value: ANY_FILTER, label: "Ativos e inativos" },
+          { value: "true", label: "Ativos" },
+          { value: "false", label: "Inativos" },
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            active: value === ANY_FILTER ? undefined : value === "true",
+          })),
+      },
+      {
+        id: "hasClub",
+        label: "Vínculo",
+        value:
+          filters.hasClub === undefined ? ANY_FILTER : String(filters.hasClub),
+        options: [
+          { value: ANY_FILTER, label: "Com e sem clubinho" },
+          { value: "true", label: "Com clubinho" },
+          { value: "false", label: "Sem clubinho" },
+        ],
+        onChange: (value) =>
+          setFilters((current) => ({
+            ...current,
+            hasClub: value === ANY_FILTER ? undefined : value === "true",
+          })),
+      },
+    ],
+    [filters, setFilters],
   );
 
-  const onClearClub = React.useCallback(
-    async (teacherId: string) => {
-      try {
-        await clearClub(teacherId);
-        setEditing((e) => (e?.id === teacherId ? null : e));
-        setDialogError("");
-        await Promise.all([fetchPage(), refreshClubs()]);
-      } catch {
-      }
-    },
-    [clearClub, fetchPage, refreshClubs, setDialogError]
-  );
+  const reloadAll = () => {
+    refresh();
+    void refreshClubs();
+  };
 
-  const handleFiltersChange = React.useCallback(
-    (updater: (prev: TeacherFilters) => TeacherFilters) => {
-      setFilters((prev) => updater(prev));
-      setPageIndex(0);
-    },
-    []
-  );
+  const handleAssign = async (clubId: string) => {
+    if (!editing) return;
 
-  React.useEffect(() => {
-    const lastPage = Math.max(0, Math.ceil(total / pageSize) - 1);
-    if (pageIndex > lastPage) setPageIndex(lastPage);
-  }, [total, pageSize, pageIndex]);
+    const ok = await assignClub(editing.id, clubId);
+    if (ok) {
+      setEditing(null);
+      setViewing(null);
+      void refreshClubs();
+    }
+  };
 
-  React.useEffect(() => {
-    refreshClubs();
-  }, [refreshClubs]);
+  /**
+   * Desvincular sempre passa pela confirmação — inclusive quando o pedido vem
+   * de dentro do diálogo de vínculo. Sem isso, o mesmo gesto perguntava no card
+   * e não perguntava no diálogo, e o professor perdia o acesso às crianças da
+   * turma sem aviso.
+   */
+  const handleUnassign = async () => {
+    if (!confirmUnassign) return;
+
+    const ok = await unassignClub(confirmUnassign.id, confirmUnassign.club?.id);
+    if (ok) {
+      setConfirmUnassign(null);
+      setEditing(null);
+      setViewing(null);
+      void refreshClubs();
+    }
+  };
 
   return (
-    <Box
-      sx={{
-        px: { xs: 2, md: 0 },
-        py: { xs: 0, md: 0 },
-        minHeight: "100vh",
-        bgcolor: "#f9fafb"
+    <ListingLayout data-testid="teachers-teacher-profiles-manager"
+      title="Professores"
+      summary={
+        total > 0
+          ? `${total} professor(es) encontrado(s)`
+          : "Nenhum professor para os filtros atuais"
+      }
+      toolbar={
+        <ListingToolbar
+          searchValue={search}
+          searchPlaceholder="Buscar por professor, e-mail, telefone ou coordenador…"
+          onSearchChange={setSearch}
+          filters={toolbarFilters}
+          onRefresh={reloadAll}
+        />
+      }
+      loading={loading}
+      error={error || clubsError || actionError}
+      onDismissError={() => {
+        setError("");
+        setActionError("");
       }}
+      itemCount={items.length}
+      emptyTitle="Nenhum professor encontrado"
+      emptySubtitle="Ajuste a busca ou os filtros para ver outros resultados."
+      pagination={{
+        page,
+        pageSize,
+        total,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+      }}
+      pageSizeOptions={TEACHERS_PAGE_SIZE_OPTIONS}
+      overlays={
+        <>
+          <TeacherViewDialog
+            teacher={viewing}
+            onClose={() => setViewing(null)}
+            onEditClub={() => {
+              if (viewing) setEditing(viewing);
+            }}
+          />
+
+          <TeacherClubDialog
+            open={!!editing}
+            teacher={editing}
+            clubs={clubs}
+            clubsLoading={clubsLoading}
+            loading={actionLoading}
+            error={actionError}
+            canManage={permissions.canManageTeacherLinks}
+            onAssign={(clubId) => void handleAssign(clubId)}
+            onUnassign={() => setConfirmUnassign(editing)}
+            onClose={() => {
+              setEditing(null);
+              setActionError("");
+            }}
+          />
+
+          <ConfirmDialog
+            open={!!confirmUnassign}
+            title="Desvincular clubinho"
+            content={
+              confirmUnassign
+                ? `Remover ${teacherName(confirmUnassign)} de ${clubLabel(
+                    confirmUnassign.club,
+                  )}?`
+                : ""
+            }
+            confirmText="Desvincular"
+            confirmColor="warning"
+            loading={actionLoading}
+            onClose={() => setConfirmUnassign(null)}
+            onConfirm={() => void handleUnassign()}
+          />
+        </>
+      }
     >
-      <BackHeader title="Gerenciador de Professores" />
-
-      <TeacherToolbar
-        filters={filters}
-        onChange={handleFiltersChange}
-        onRefreshClick={doRefresh}
-        isXs={isXs}
-      />
-
-      {(loading && !rows.length) || clubsLoading ? (
-        <Box textAlign="center" my={6}>
-          <CircularProgress />
-        </Box>
-      ) : null}
-
-      {(error || clubsError) && !(loading || clubsLoading) && (
-        <Alert
-          severity="error"
-          sx={{ mb: 2 }}
-          onClose={() => {
-            setError("");
-            setDialogError("");
-          }}
-        >
-          {error || clubsError}
-        </Alert>
-      )}
-
-      {isXs ? (
-        <TeacherCards
-          rows={rows}
-          total={total}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          setPageIndex={setPageIndex}
-          setPageSize={setPageSize}
-          sorting={sorting as any}
-          setSorting={setSorting as any}
-          onView={(t) => setViewing(t)}
-          onEditLinks={(t) => setEditing(t)}
-          onClearClub={(teacherId) => onClearClub(teacherId)}
-        />
-      ) : (
-        <TeacherTable
-          rows={rows}
-          total={total}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          setPageIndex={setPageIndex}
-          setPageSize={setPageSize}
-          sorting={sorting as any}
-          setSorting={setSorting as any}
-          onView={(t) => setViewing(t)}
-          onEditLinks={(t) => setEditing(t)}
-          onClearClub={(teacherId) => onClearClub(teacherId)}
-        />
-      )}
-
-      <TeacherViewDialog
-        open={!!viewing}
-        teacher={viewing}
-        onClose={() => setViewing(null)}
-      />
-
-      <TeacherEditDialog
-        open={!!editing}
-        teacher={editing}
-        loading={dialogLoading}
-        error={dialogError}
-        onSetClub={(num) => onSetClub(editing, num)}
-        onClearClub={() => editing && onClearClub(editing.id)}
-        onClose={() => {
-          setEditing(null);
-          setDialogError("");
-        }}
-      />
-    </Box>
+      {items.map((teacher) => (
+        <Grid2 key={teacher.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+          <TeacherCard
+            teacher={teacher}
+            disabled={actionLoading}
+            onView={() => setViewing(teacher)}
+            onEditClub={() => setEditing(teacher)}
+            canManage={permissions.canManageTeacherLinks}
+            onUnassignClub={() => setConfirmUnassign(teacher)}
+          />
+        </Grid2>
+      ))}
+    </ListingLayout>
   );
 }

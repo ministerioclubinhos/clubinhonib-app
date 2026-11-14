@@ -37,7 +37,7 @@ export function DatePickerInput<T extends FieldValues>({
   maxDate,
 }: DatePickerInputProps<T>) {
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
+    <LocalizationProvider data-testid="inputs-date-picker-input" dateAdapter={AdapterDayjs} adapterLocale="pt-br">
       <Controller
         name={name}
         control={control}
@@ -97,7 +97,7 @@ export function SimpleDatePicker({
   maxDate,
 }: SimpleDatePickerProps) {
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
+    <LocalizationProvider data-testid="inputs-date-picker-input-simple-date-picker" dateAdapter={AdapterDayjs} adapterLocale="pt-br">
       <DatePicker
         label={label}
         value={value ? dayjs(value) : null}

@@ -1,15 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Container, Grid, Card, CardContent, CardMedia } from '@mui/material';
-import { motion } from 'framer-motion';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/slices';
+import { m } from 'framer-motion';
 import { MediaTargetType } from 'store/slices/types';
-import { CardsSectionProps } from './types';
+import { useVisibleRoutes } from '@/features/feature-flags';
+import type { RouteData } from '@/store/slices/route/routeSlice';
 
 const CardsSection: React.FC = () => {
-  const routes = useSelector((state: RootState) => state.routes.routes);
-  const [cards, setCards] = useState<any[]>([]);
+  const routes = useVisibleRoutes();
+  const [cards, setCards] = useState<RouteData[]>([]);
 
   useEffect(() => {
     const feedImageGalleryId = import.meta.env.VITE_FEED_MINISTERIO_ID;
@@ -28,7 +27,7 @@ const CardsSection: React.FC = () => {
   if (!cards.length) return null;
 
   return (
-    <Box
+    <Box data-testid="home-cards-section"
       sx={{
         py: { xs: 6, md: 10 },
         background: '#f9f9f9',
@@ -44,7 +43,7 @@ const CardsSection: React.FC = () => {
           px: { xs: 2, sm: 3, md: 4 },
         }}
       >
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -64,12 +63,12 @@ const CardsSection: React.FC = () => {
           >
             Explore Nossos Recursos
           </Typography>
-        </motion.div>
+        </m.div>
 
         <Grid container spacing={{ xs: 3, md: 4 }}>
         {cards.map((card, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={card.id}>
-            <motion.div
+            <m.div
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -149,7 +148,7 @@ const CardsSection: React.FC = () => {
                   </CardContent>
                   </Card>
               </a>
-            </motion.div>
+            </m.div>
           </Grid>
         ))}
       </Grid>

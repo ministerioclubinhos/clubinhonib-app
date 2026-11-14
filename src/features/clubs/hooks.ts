@@ -1,35 +1,64 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { extractErrorMessage } from "@/utils/apiError";
+
+import { SEARCH_DEBOUNCE_MS } from "./constants";
+import { apiListCoordinatorsSimple } from "@/features/coordinators/api";
+import { apiListTeachersSimple } from "@/features/teachers/api";
+
 import {
   apiCreateClub,
   apiDeleteClub,
   apiFetchClub,
   apiFetchClubs,
-  apiListCoordinatorsSimple,
-  apiListTeachersSimple,
-  apiUpdateClub,
   apiToggleClubActive,
+  apiUpdateClub,
 } from "./api";
-import {
-  ClubResponseDto,
-  CreateClubForm,
-  EditClubForm,
-  TeacherOption,
+import type {
   ClubFilters,
+  ClubResponse,
   ClubSort,
   CoordinatorOption,
+  CreateClubRequest,
+  TeacherOption,
+  UpdateClubRequest,
 } from "./types";
-import { extractErrorMessage } from "@/utils/apiError";
 
+/**
+ * Segura o valor por um tempo antes de deixá-lo passar.
+ *
+ * A busca por texto é digitada; sem a espera, cada tecla dispara um GET.
+ */
+export function useDebouncedValue<T>(value: T, delay = SEARCH_DEBOUNCE_MS): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debounced;
+}
+
+/** Página atual da listagem, recarregada sempre que filtro ou ordem mudam. */
 export function useClubs(
   pageIndex: number,
   pageSize: number,
   sorting: ClubSort,
-  filters: ClubFilters
+  filters: ClubFilters,
 ) {
-  const [rows, setRows] = useState<ClubResponseDto[]>([]);
+  const [rows, setRows] = useState<ClubResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Só o texto espera: mudar status ou ordem tem de responder na hora.
+  const { isActive } = filters;
+  const searchString = useDebouncedValue(filters.searchString ?? "");
+  const appliedFilters = useMemo<ClubFilters>(
+    () => ({ isActive, searchString }),
+    [isActive, searchString],
+  );
 
   const fetchPage = useCallback(async () => {
     setLoading(true);
@@ -38,149 +67,163 @@ export function useClubs(
       const data = await apiFetchClubs({
         page: pageIndex + 1,
         limit: pageSize,
-        filters,
+        filters: appliedFilters,
         sort: sorting,
       });
       setRows(Array.isArray(data?.data) ? data.data : []);
       setTotal(Number(data?.total ?? 0));
     } catch (err: unknown) {
       setError(extractErrorMessage(err, "Erro ao listar clubinhos"));
+      setRows([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, filters, sorting]);
+  }, [pageIndex, pageSize, appliedFilters, sorting]);
 
   useEffect(() => {
-    fetchPage();
+    void fetchPage();
   }, [fetchPage]);
 
-  return { rows, total, loading, error, setRows, setTotal, fetchPage, setError };
+  return { rows, total, loading, error, setError, fetchPage };
 }
 
+/** Detalhe de um clubinho, buscado ao abrir a visualização. */
 export function useClubDetails() {
-  const [viewing, setViewing] = useState<ClubResponseDto | null>(null);
+  const [viewing, setViewing] = useState<ClubResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const fetchClub = useCallback(async (id: string) => {
     setLoading(true);
+    setError("");
     try {
       setViewing(await apiFetchClub(id));
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Erro ao carregar o clubinho"));
     } finally {
       setLoading(false);
     }
   }, []);
 
-  return { viewing, setViewing, loading, fetchClub };
+  return { viewing, setViewing, loading, error, fetchClub };
 }
 
-export function useClubMutations(
-  fetchClubs: (page: number, limit: number, filters?: ClubFilters, sort?: ClubSort) => Promise<void> | void
-) {
+/**
+ * Escritas da tela.
+ *
+ * Cada operação devolve se deu certo: sem isso a tela fechava o formulário
+ * mesmo quando a API recusava, e a mensagem de erro nunca chegava a aparecer.
+ */
+export function useClubMutations(refresh: () => Promise<void> | void) {
   const [dialogLoading, setDialogLoading] = useState(false);
   const [dialogError, setDialogError] = useState("");
 
-  const createClub = useCallback(
-    async (payload: CreateClubForm, page: number, limit: number, filters?: ClubFilters, sort?: ClubSort) => {
+  const run = useCallback(
+    async (action: () => Promise<void>, fallbackMessage: string) => {
       setDialogLoading(true);
       setDialogError("");
       try {
-        await apiCreateClub(payload);
-        await fetchClubs(page, limit, filters, sort);
+        await action();
+        await refresh();
+        return true;
       } catch (err: unknown) {
-        setDialogError(extractErrorMessage(err, "Erro ao criar clubinho"));
+        setDialogError(extractErrorMessage(err, fallbackMessage));
+        return false;
       } finally {
         setDialogLoading(false);
       }
     },
-    [fetchClubs]
+    [refresh],
+  );
+
+  const createClub = useCallback(
+    (payload: CreateClubRequest) =>
+      run(async () => {
+        await apiCreateClub(payload);
+      }, "Erro ao criar clubinho"),
+    [run],
   );
 
   const updateClub = useCallback(
-    async (
-      id: string,
-      payload: Omit<EditClubForm, "id">,
-      page: number,
-      limit: number,
-      filters?: ClubFilters,
-      sort?: ClubSort
-    ) => {
-      setDialogLoading(true);
-      setDialogError("");
-      try {
+    (id: string, payload: UpdateClubRequest) =>
+      run(async () => {
         await apiUpdateClub(id, payload);
-        await fetchClubs(page, limit, filters, sort);
-      } catch (err: unknown) {
-        setDialogError(extractErrorMessage(err, "Erro ao atualizar clubinho"));
-      } finally {
-        setDialogLoading(false);
-      }
-    },
-    [fetchClubs]
+      }, "Erro ao atualizar clubinho"),
+    [run],
   );
 
   const deleteClub = useCallback(
-    async (id: string, page: number, limit: number, filters?: ClubFilters, sort?: ClubSort) => {
-      setDialogLoading(true);
-      setDialogError("");
-      try {
+    (id: string) =>
+      run(async () => {
         await apiDeleteClub(id);
-        await fetchClubs(page, limit, filters, sort);
-      } catch (err: unknown) {
-        setDialogError(extractErrorMessage(err, "Erro ao remover clubinho"));
-      } finally {
-        setDialogLoading(false);
-      }
-    },
-    [fetchClubs]
+      }, "Erro ao remover clubinho"),
+    [run],
   );
 
   const toggleActive = useCallback(
-    async (id: string, page: number, limit: number, filters?: ClubFilters, sort?: ClubSort) => {
-      setDialogLoading(true);
-      setDialogError("");
-      try {
+    (id: string) =>
+      run(async () => {
         await apiToggleClubActive(id);
-        await fetchClubs(page, limit, filters, sort);
-      } catch (err: unknown) {
-        setDialogError(extractErrorMessage(err, "Erro ao alterar status do clubinho"));
-      } finally {
-        setDialogLoading(false);
-      }
-    },
-    [fetchClubs]
+      }, "Erro ao alterar status do clubinho"),
+    [run],
   );
 
-  return { dialogLoading, dialogError, setDialogError, createClub, updateClub, deleteClub, toggleActive };
+  return {
+    dialogLoading,
+    dialogError,
+    setDialogError,
+    createClub,
+    updateClub,
+    deleteClub,
+    toggleActive,
+  };
 }
 
-export function useOptions() {
+/** Coordenadores e professores disponíveis para vincular no formulário. */
+export function useClubFormOptions() {
   const [coordinators, setCoordinators] = useState<CoordinatorOption[]>([]);
   const [teachers, setTeachers] = useState<TeacherOption[]>([]);
+  const [error, setError] = useState("");
 
-  const loadRefs = useCallback(async () => {
-    const [coordsApi, teachersApi] = await Promise.all([
-      apiListCoordinatorsSimple(),
-      apiListTeachersSimple(),
-    ]);
+  const loadOptions = useCallback(async () => {
+    try {
+      // Os clubinhos alcançáveis não são mais carregados: o seletor deixou de
+      // desabilitar professor de outra coordenação, porque o coordenador monta
+      // a equipe do clubinho dele com quem quiser.
+      const [coordinatorList, teacherList] = await Promise.all([
+        apiListCoordinatorsSimple(),
+        apiListTeachersSimple(),
+      ]);
 
-    const mappedCoords: CoordinatorOption[] = (coordsApi ?? []).map((c) => ({
-      coordinatorProfileId: c.coordinatorProfileId,
-      name: c.name,
-    }));
-
-    const mappedTeachers: TeacherOption[] = (teachersApi ?? []).map((t) => ({
-      teacherProfileId: t.teacherProfileId,
-      name: t.name,
-      vinculado: !!t.vinculado,
-    }));
-
-    setCoordinators(mappedCoords);
-    setTeachers(mappedTeachers);
+      setCoordinators(
+        (coordinatorList ?? []).map((item) => ({
+          coordinatorProfileId: item.coordinatorProfileId,
+          name: item.name,
+        })),
+      );
+      setTeachers(
+        (teacherList ?? []).map((item) => ({
+          teacherProfileId: item.teacherProfileId,
+          name: item.name,
+          vinculado: Boolean(item.vinculado),
+          clubId: item.clubId ?? null,
+          clubNumber: item.clubNumber ?? null,
+        })),
+      );
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err, "Erro ao carregar as opções do formulário"));
+    }
   }, []);
 
   useEffect(() => {
-    loadRefs();
-  }, [loadRefs]);
+    void loadOptions();
+  }, [loadOptions]);
 
-  return { coordinators, teachers, reloadOptions: loadRefs };
+  return {
+    coordinators,
+    teachers,
+    error,
+    reloadOptions: loadOptions,
+  };
 }

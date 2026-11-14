@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({ open }: LoadingSpinnerProps) {
   return (
-    <Backdrop open={open} sx={{ zIndex: 9999, color: '#fff' }}>
+    <Backdrop data-testid="teacher-area-modals-loading-spinner" open={open} sx={{ zIndex: 9999, color: '#fff' }}>
       <CircularProgress color="inherit" />
     </Backdrop>
   );

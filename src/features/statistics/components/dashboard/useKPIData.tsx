@@ -11,7 +11,9 @@ import {
     Timeline,
     AutoAwesome,
 } from '@mui/icons-material';
-import { useOverview, useInsights } from '../../hooks';
+import { useOverview } from '../../hooks';
+import { ATTENDANCE_EMPTY_MESSAGES, NO_DATA_PLACEHOLDER } from '../../constants';
+import { sortWeeksAscending } from '../../utils/attendance';
 
 export interface KPICategory {
     id: string;
@@ -21,9 +23,9 @@ export interface KPICategory {
 }
 
 export const categories: KPICategory[] = [
-    { id: 'overview', label: 'Visao Geral', icon: <Timeline />, color: '#6366f1' },
+    { id: 'overview', label: 'Visão Geral', icon: <Timeline />, color: '#6366f1' },
     { id: 'engagement', label: 'Engajamento', icon: <TrendingUp />, color: '#10b981' },
-    { id: 'decisions', label: 'Decisoes', icon: <Favorite />, color: '#f43f5e' },
+    { id: 'decisions', label: 'Decisões', icon: <Favorite />, color: '#f43f5e' },
     { id: 'performance', label: 'Performance', icon: <EmojiEvents />, color: '#f59e0b' },
 ];
 
@@ -31,10 +33,11 @@ export const useKPIData = () => {
     const theme = useTheme();
     const [activeCategory, setActiveCategory] = useState('overview');
 
-    const { data: overview, isLoading: overviewLoading, refetch: refetchOverview } = useOverview();
-    const { data: insights, isLoading: insightsLoading } = useInsights();
-
-    const isLoading = overviewLoading || insightsLoading;
+    // Só `/statistics/overview`, que não recebe filtro: todos os números daqui
+    // são de janelas fixas. A consulta de insights (filtrada) saiu junto com o
+    // cartão "Top Performers", que mostrava o tamanho de uma lista limitada a
+    // 20 pelo back como se fosse uma contagem.
+    const { data: overview, isLoading, refetch: refetchOverview } = useOverview();
 
     const kpis = useMemo(() => {
         if (!overview) return { overview: [], engagement: [], decisions: [], performance: [] };
@@ -42,19 +45,19 @@ export const useKPIData = () => {
         return {
             overview: [
                 {
-                    title: 'Total Criancas',
+                    title: 'Total Crianças',
                     value: overview.summary.totalChildren,
                     icon: <People />,
           color: theme.palette.primary.main,
-                    tooltip: 'Numero total de criancas cadastradas no sistema',
-                    subtitle: `${overview.summary.activeChildrenThisMonth} ativos este mes`,
+                    tooltip: 'Número total de crianças cadastradas no sistema',
+                    subtitle: `${overview.summary.activeChildrenThisMonth} ativos este mês`,
                 },
                 {
                     title: 'Clubinhos Ativos',
                     value: overview.summary.totalClubs,
                     icon: <Groups />,
           color: theme.palette.secondary.main,
-                    tooltip: 'Numero de clubinhos em funcionamento',
+                    tooltip: 'Número de clubinhos em funcionamento',
                     subtitle: overview.summary.inactiveClubs ? `${overview.summary.inactiveClubs} inativos` : undefined,
                 },
                 {
@@ -65,32 +68,44 @@ export const useKPIData = () => {
                     tooltip: 'Total de professores cadastrados',
                 },
                 {
-                    title: 'Ativos Este Mes',
+                    // Sem `previousValue`: o total cadastrado não é o "mês
+                    // anterior", e usá-lo desenhava uma queda que não existe.
+                    title: 'Ativos Este Mês',
                     value: overview.summary.activeChildrenThisMonth,
-                    previousValue: overview.summary.totalChildren,
                     icon: <TrendingUp />,
           color: theme.palette.info.main,
-                    suffix: 'criancas',
-                    tooltip: 'Criancas que participaram este mes',
+                    suffix: 'crianças',
+                    tooltip: 'Crianças que participaram este mês',
                 },
             ],
             engagement: [
                 {
-                    title: 'Taxa Presenca Semana',
-                    value: overview.pagelas.thisWeek.presenceRate,
-                    suffix: '%',
+                    title: 'Taxa Presença Semana',
+                    // Sem pagela na janela (recesso, semana ainda não lançada)
+                    // não existe taxa: "0%" seria lido como frequência ruim.
+                    ...(overview.pagelas.thisWeek.total > 0
+                        ? { value: overview.pagelas.thisWeek.presenceRate, suffix: '%' }
+                        : {
+                            value: NO_DATA_PLACEHOLDER,
+                            subtitle: ATTENDANCE_EMPTY_MESSAGES.noPagelasThisWeek,
+                        }),
                     icon: <Timeline />,
           color: '#10b981',
-                    tooltip: 'Taxa de presenca na semana atual',
-                    sparkline: overview.pagelas.lastSixWeeks.map(w => w.presenceRate),
+                    tooltip: 'Taxa de presença na semana atual',
+                    // O back manda da mais nova para a mais antiga.
+                    sparkline: sortWeeksAscending(overview.pagelas.lastSixWeeks).map(w => w.presenceRate),
                 },
                 {
-                    title: 'Taxa Presenca Mes',
-                    value: overview.pagelas.thisMonth.presenceRate,
-                    suffix: '%',
+                    title: 'Taxa Presença Mês',
+                    ...(overview.pagelas.thisMonth.total > 0
+                        ? { value: overview.pagelas.thisMonth.presenceRate, suffix: '%' }
+                        : {
+                            value: NO_DATA_PLACEHOLDER,
+                            subtitle: ATTENDANCE_EMPTY_MESSAGES.noPagelasThisMonth,
+                        }),
                     icon: <Timeline />,
           color: '#6366f1',
-                    tooltip: 'Taxa de presenca no mes atual',
+                    tooltip: 'Taxa de presença no mês atual',
                 },
                 {
                     title: 'Pagelas Semana',
@@ -100,28 +115,28 @@ export const useKPIData = () => {
                     tooltip: 'Total de pagelas registradas esta semana',
                 },
                 {
-                    title: 'Pagelas Mes',
+                    title: 'Pagelas Mês',
                     value: overview.pagelas.thisMonth.total,
                     icon: <AutoAwesome />,
           color: '#ec4899',
-                    tooltip: 'Total de pagelas registradas este mes',
+                    tooltip: 'Total de pagelas registradas este mês',
                 },
             ],
             decisions: [
                 {
-                    title: 'Decisoes Este Ano',
+                    title: 'Decisões Este Ano',
                     value: overview.acceptedChrists.thisYear,
                     icon: <Favorite />,
           color: '#f43f5e',
                     variant: 'gradient' as const,
-                    tooltip: 'Total de decisoes por Cristo no ano',
+                    tooltip: 'Total de decisões por Cristo no ano',
                 },
                 {
-                    title: 'Decisoes Este Mes',
+                    title: 'Decisões Este Mês',
                     value: overview.acceptedChrists.thisMonth,
                     icon: <Favorite />,
           color: '#f43f5e',
-                    tooltip: 'Decisoes por Cristo este mes',
+                    tooltip: 'Decisões por Cristo este mês',
                 },
                 {
                     title: 'Aceitos',
@@ -138,46 +153,43 @@ export const useKPIData = () => {
             ],
             performance: [
                 {
-                    title: 'Taxa Meditacao',
+                    title: 'Taxa Meditação',
                     value: overview.pagelas.thisMonth.meditationRate || 0,
                     suffix: '%',
                     icon: <EmojiEvents />,
           color: '#f59e0b',
-                    tooltip: 'Percentual de criancas que fizeram meditacao',
+                    tooltip: 'Percentual de crianças que fizeram meditação',
                 },
                 {
-                    title: 'Taxa Versiculo',
+                    title: 'Taxa Versículo',
                     value: overview.pagelas.thisMonth.verseRecitationRate || 0,
                     suffix: '%',
                     icon: <EmojiEvents />,
           color: '#84cc16',
-                    tooltip: 'Percentual de criancas que recitaram versiculo',
+                    tooltip: 'Percentual de crianças que recitaram versículo',
                 },
                 {
-                    title: 'Engajamento Medio',
+                    title: 'Engajamento Médio',
                     value: overview.engagement?.avgEngagementScore || 0,
                     suffix: '%',
                     icon: <TrendingUp />,
           color: '#06b6d4',
-                    tooltip: 'Score medio de engajamento das criancas',
-                },
-                {
-                    title: 'Top Performers',
-                    value: insights?.topEngagedChildren?.length || 0,
-                    icon: <EmojiEvents />,
-          color: '#a855f7',
-                    subtitle: 'criancas com alto engajamento',
+                    tooltip: 'Score médio de engajamento das crianças',
                 },
             ],
         };
-    }, [overview, insights, theme]);
+    }, [overview, theme]);
 
     const activeKPIs = kpis[activeCategory as keyof typeof kpis] || [];
     const activeColor = categories.find(c => c.id === activeCategory)?.color || theme.palette.primary.main;
 
     const engagementRate = overview
-        ? (overview.summary.activeChildrenThisMonth / overview.summary.totalChildren) * 100
+        ? overview.summary.totalChildren > 0
+          ? (overview.summary.activeChildrenThisMonth / overview.summary.totalChildren) * 100
+          : 0
         : 0;
+
+    const refetchAll = () => refetchOverview();
 
     return {
         categories,
@@ -186,7 +198,7 @@ export const useKPIData = () => {
         activeKPIs,
         activeColor,
         isLoading,
-        refetchOverview,
+        refetchAll,
         engagementRate,
         overview,
     };

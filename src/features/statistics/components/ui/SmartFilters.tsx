@@ -8,7 +8,7 @@ import {
   Tooltip,
   Button,
   Collapse,
-  Grid,
+  Grid2,
   TextField,
   MenuItem,
   Divider,
@@ -23,7 +23,6 @@ import {
   ListItemButton,
   useMediaQuery,
   InputAdornment,
-  Autocomplete,
 } from '@mui/material';
 import {
   FilterList,
@@ -37,19 +36,28 @@ import {
   History,
   BookmarkBorder,
   Bookmark,
+  DeleteOutline,
   Clear,
   Search,
   TuneOutlined,
-  CheckCircle,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/pt-br';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useStatistics } from '../../context';
-import { PeriodShortcut } from '../../api';
+import {
+  FILTER_NOT_APPLIED_HINT,
+  StatisticsFilterField,
+  TAB_FILTER_FIELDS,
+} from '../../constants';
+import { PeriodShortcut } from '../../types';
+import {
+  PERIOD_SHORTCUT_LABELS,
+  QUICK_PERIOD_ORDER,
+} from '../../constants';
 
 dayjs.locale('pt-br');
 
@@ -60,16 +68,23 @@ interface QuickPeriod {
   color: string;
 }
 
-const quickPeriods: QuickPeriod[] = [
-  { id: PeriodShortcut.TODAY, label: 'Hoje', icon: <Today />, color: '#6366f1' },
-  { id: PeriodShortcut.THIS_WEEK, label: 'Esta Semana', icon: <DateRange />, color: '#10b981' },
-  { id: PeriodShortcut.THIS_MONTH, label: 'Este Mes', icon: <CalendarMonth />, color: '#f59e0b' },
-  { id: PeriodShortcut.LAST_7_DAYS, label: '7 Dias', icon: <History />, color: '#8b5cf6' },
-  { id: PeriodShortcut.LAST_30_DAYS, label: '30 Dias', icon: <History />, color: '#ec4899' },
-  { id: PeriodShortcut.THIS_YEAR, label: 'Este Ano', icon: <Event />, color: '#ef4444' },
-];
+/** Ícone e cor de cada atalho; o rótulo vem de `constants.ts`. */
+const PERIOD_STYLE: Record<PeriodShortcut, { icon: React.ReactNode; color: string }> = {
+  [PeriodShortcut.TODAY]: { icon: <Today />, color: '#6366f1' },
+  [PeriodShortcut.THIS_WEEK]: { icon: <DateRange />, color: '#10b981' },
+  [PeriodShortcut.THIS_MONTH]: { icon: <CalendarMonth />, color: '#f59e0b' },
+  [PeriodShortcut.LAST_7_DAYS]: { icon: <History />, color: '#8b5cf6' },
+  [PeriodShortcut.LAST_30_DAYS]: { icon: <History />, color: '#ec4899' },
+  [PeriodShortcut.THIS_YEAR]: { icon: <Event />, color: '#ef4444' },
+  [PeriodShortcut.CUSTOM]: { icon: <DateRange />, color: '#64748b' },
+};
 
-const MotionBox = motion.create(Box);
+const quickPeriods: QuickPeriod[] = QUICK_PERIOD_ORDER.map((id) => ({
+  id,
+  label: PERIOD_SHORTCUT_LABELS[id],
+  ...PERIOD_STYLE[id],
+}));
+
 
 export const SmartFilters: React.FC = memo(() => {
   const theme = useTheme();
@@ -82,11 +97,29 @@ export const SmartFilters: React.FC = memo(() => {
     resetFilters,
     formattedPeriod,
     hasActiveFilters,
+    saveCurrentFilters,
+    applySavedFilter,
+    removeSavedFilter,
   } = useStatistics();
 
   const [expanded, setExpanded] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [savedFiltersAnchor, setSavedFiltersAnchor] = useState<null | HTMLElement>(null);
+
+  /**
+   * Os filtros que a aba aberta de fato usa.
+   *
+   * Os endpoints por trás das onze abas aceitam conjuntos diferentes. Um campo
+   * que a aba ignora fica desabilitado e explica o motivo — antes ele
+   * continuava editável e simplesmente não fazia nada, o que é pior do que o
+   * erro que existia antes: pelo menos o erro aparecia.
+   */
+  const camposDaAba = TAB_FILTER_FIELDS[state.activeTab] ?? [];
+  const aplica = useCallback(
+    (campo: StatisticsFilterField) => camposDaAba.includes(campo),
+    [camposDaAba],
+  );
+
 
   React.useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -111,6 +144,17 @@ export const SmartFilters: React.FC = memo(() => {
     if (f.search) count++;
     return count;
   }, [state.filters]);
+  /**
+   * Guarda o recorte atual sob o nome do período e dos filtros ativos.
+   *
+   * Sem pedir um nome: o rótulo que a barra já mostra é o que a pessoa
+   * reconhece, e uma caixa de texto a mais entre o clique e o resultado é
+   * atrito sem ganho.
+   */
+  const handleSaveCurrentFilters = useCallback(() => {
+    const extras = activeFiltersCount > 0 ? ` · ${activeFiltersCount} filtro(s)` : '';
+    saveCurrentFilters(`${formattedPeriod}${extras}`);
+  }, [activeFiltersCount, formattedPeriod, saveCurrentFilters]);
 
   const handlePeriodSelect = useCallback((period: PeriodShortcut) => {
     setPeriod(period);
@@ -138,16 +182,32 @@ export const SmartFilters: React.FC = memo(() => {
   const activePeriodData = quickPeriods.find(p => p.id === activePeriod);
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 3,
-          overflow: 'hidden',
-          border: `1px solid ${theme.palette.divider}`,
-          background: `linear-gradient(180deg, ${alpha(activePeriodData?.color || theme.palette.primary.main, 0.02)} 0%, ${theme.palette.background.paper} 100%)`,
-        }}
-      >
+    /*
+      A barra abre a tela, acima dos números. A borda e a faixa superior na cor
+      do período em uso são o que a fazem ler como painel de controle, e não
+      como mais um cartão de conteúdo: tudo abaixo responde ao que se escolhe
+      aqui.
+
+      O `Paper` é a raiz e o `LocalizationProvider` fica dentro. Invertido —
+      como estava —, o seletor ia parar num provedor de contexto, que não
+      renderiza nó nenhum: o atributo se perdia e nenhum teste alcançava a
+      barra.
+    */
+    <Paper
+      data-testid="statistics-ui-smart-filters"
+      elevation={0}
+      sx={{
+        borderRadius: 3,
+        overflow: 'hidden',
+        border: `1px solid ${alpha(
+          activePeriodData?.color || theme.palette.primary.main,
+          0.35,
+        )}`,
+        borderTop: `3px solid ${activePeriodData?.color || theme.palette.primary.main}`,
+        background: `linear-gradient(180deg, ${alpha(activePeriodData?.color || theme.palette.primary.main, 0.06)} 0%, ${theme.palette.background.paper} 100%)`,
+      }}
+    >
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
         {/* Header */}
         <Box
           sx={{
@@ -195,26 +255,35 @@ export const SmartFilters: React.FC = memo(() => {
               <IconButton
                 size="small"
                 onClick={(e) => setSavedFiltersAnchor(e.currentTarget)}
-              >
-                <Badge badgeContent={state.favorites.length} color="primary">
+               aria-label="Filtros salvos">
+                <Badge badgeContent={state.savedFilters.length} color="primary">
                   <BookmarkBorder />
                 </Badge>
               </IconButton>
             </Tooltip>
             <Tooltip title="Limpar filtros">
-              <IconButton size="small" onClick={resetFilters}>
+              <IconButton size="small" onClick={resetFilters} aria-label="Limpar filtros">
                 <Refresh />
               </IconButton>
             </Tooltip>
+            {/*
+              No celular o rótulo somia e sobrava um botão só de ícone, sem
+              nome nenhum para leitor de tela. O `aria-label` fica sempre, e o
+              alvo respeita os 44 px.
+            */}
             <Button
+              type="button"
               variant={expanded ? 'contained' : 'outlined'}
               size="small"
               startIcon={<TuneOutlined />}
               endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
               onClick={() => setExpanded(!expanded)}
-              sx={{ textTransform: 'none' }}
+              aria-label="Filtros avançados"
+              aria-expanded={expanded}
+              data-testid="statistics-advanced-filters-toggle"
+              sx={{ textTransform: 'none', minHeight: 44, minWidth: 44 }}
             >
-              {isMobile ? '' : 'Avancados'}
+              {isMobile ? '' : 'Avançados'}
             </Button>
           </Box>
         </Box>
@@ -292,16 +361,20 @@ export const SmartFilters: React.FC = memo(() => {
         <Collapse in={expanded}>
           <Divider />
           <Box sx={{ p: { xs: 2, md: 3 } }}>
-            <Grid container spacing={2}>
+            <Grid2 container spacing={2}>
               {/* Search */}
-              <Grid item xs={12} md={4}>
+              <Grid2 size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   size="small"
                   label="Buscar"
-                  placeholder="Nome, cidade, clubinho..."
+                  placeholder="Nome da criança ou do professor"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
+                  disabled={!aplica(StatisticsFilterField.Search)}
+                  helperText={
+                    aplica(StatisticsFilterField.Search) ? ' ' : FILTER_NOT_APPLIED_HINT
+                  }
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -310,73 +383,85 @@ export const SmartFilters: React.FC = memo(() => {
                     ),
                     endAdornment: searchValue && (
                       <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => setSearchValue('')}>
+                        <IconButton size="small" onClick={() => setSearchValue('')} aria-label="Limpar">
                           <Clear sx={{ fontSize: 18 }} />
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
                 />
-              </Grid>
+              </Grid2>
 
               {/* Gender */}
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   select
                   size="small"
-                  label="Genero"
+                  label="Gênero"
                   value={state.filters.gender || ''}
                   onChange={(e) => setFilters({ gender: e.target.value as 'M' | 'F' || undefined })}
+                  disabled={!aplica(StatisticsFilterField.Gender)}
+                  helperText={
+                    aplica(StatisticsFilterField.Gender) ? ' ' : FILTER_NOT_APPLIED_HINT
+                  }
                 >
                   <MenuItem value="">Todos</MenuItem>
                   <MenuItem value="M">Masculino</MenuItem>
                   <MenuItem value="F">Feminino</MenuItem>
                 </TextField>
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   size="small"
                   type="number"
-                  label="Idade Min"
+                  label="Idade mín."
                   value={state.filters.minAge || ''}
                   onChange={(e) => setFilters({ minAge: e.target.value ? Number(e.target.value) : undefined })}
                   inputProps={{ min: 0, max: 100 }}
+                  disabled={!aplica(StatisticsFilterField.Age)}
+                  helperText={aplica(StatisticsFilterField.Age) ? ' ' : FILTER_NOT_APPLIED_HINT}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   size="small"
                   type="number"
-                  label="Idade Max"
+                  label="Idade máx."
                   value={state.filters.maxAge || ''}
                   onChange={(e) => setFilters({ maxAge: e.target.value ? Number(e.target.value) : undefined })}
                   inputProps={{ min: 0, max: 100 }}
+                  disabled={!aplica(StatisticsFilterField.Age)}
+                  helperText={aplica(StatisticsFilterField.Age) ? ' ' : FILTER_NOT_APPLIED_HINT}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   select
                   size="small"
-                  label="Agrupar Por"
+                  label="Agrupar por"
                   value={state.filters.groupBy || 'week'}
                   onChange={(e) => setFilters({ groupBy: e.target.value as 'day' | 'week' | 'month' | 'year' })}
+                  disabled={!aplica(StatisticsFilterField.GroupBy)}
+                  helperText={
+                    aplica(StatisticsFilterField.GroupBy) ? ' ' : FILTER_NOT_APPLIED_HINT
+                  }
                 >
                   <MenuItem value="day">Dia</MenuItem>
                   <MenuItem value="week">Semana</MenuItem>
-                  <MenuItem value="month">Mes</MenuItem>
+                  <MenuItem value="month">Mês</MenuItem>
                   <MenuItem value="year">Ano</MenuItem>
                 </TextField>
-              </Grid>
+              </Grid2>
 
               {/* City */}
-              <Grid item xs={12} md={3}>
+              <Grid2 size={{ xs: 12, md: 3 }}>
                 <TextField
                   fullWidth
                   size="small"
@@ -384,9 +469,9 @@ export const SmartFilters: React.FC = memo(() => {
                   value={state.filters.city || ''}
                   onChange={(e) => setFilters({ city: e.target.value || undefined })}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   size="small"
@@ -394,9 +479,9 @@ export const SmartFilters: React.FC = memo(() => {
                   value={state.filters.state || ''}
                   onChange={(e) => setFilters({ state: e.target.value || undefined })}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={6} md={2}>
+              <Grid2 size={{ xs: 6, md: 2 }}>
                 <TextField
                   fullWidth
                   size="small"
@@ -404,8 +489,8 @@ export const SmartFilters: React.FC = memo(() => {
                   value={state.filters.district || ''}
                   onChange={(e) => setFilters({ district: e.target.value || undefined })}
                 />
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
 
             {hasActiveFilters && (
               <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -451,30 +536,65 @@ export const SmartFilters: React.FC = memo(() => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <Box sx={{ width: 280, p: 2 }}>
+          <Box sx={{ width: 300, p: 2 }}>
             <Typography variant="subtitle2" fontWeight={700} gutterBottom>
-              Filtros Salvos
+              Filtros salvos
             </Typography>
-            {state.favorites.length === 0 ? (
+
+            <Button
+              type="button"
+              fullWidth
+              size="small"
+              variant="outlined"
+              startIcon={<BookmarkBorder />}
+              onClick={handleSaveCurrentFilters}
+              data-testid="statistics-save-current-filters"
+              sx={{ mb: 1, minHeight: 44 }}
+            >
+              Salvar o recorte atual
+            </Button>
+
+            {state.savedFilters.length === 0 ? (
               <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
                 Nenhum filtro salvo ainda
               </Typography>
             ) : (
-              <List dense>
-                {state.favorites.map((fav, index) => (
-                  <ListItemButton key={index} sx={{ borderRadius: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Bookmark color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary={fav} />
-                  </ListItemButton>
+              <List dense data-testid="statistics-saved-filters-list">
+                {state.savedFilters.map((saved) => (
+                  <ListItem
+                    key={saved.id}
+                    disablePadding
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        size="small"
+                        aria-label={`Remover ${saved.label}`}
+                        onClick={() => removeSavedFilter(saved.id)}
+                      >
+                        <DeleteOutline fontSize="small" />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemButton
+                      sx={{ borderRadius: 1, minHeight: 44 }}
+                      onClick={() => {
+                        applySavedFilter(saved.id);
+                        setSavedFiltersAnchor(null);
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <Bookmark color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary={saved.label} />
+                    </ListItemButton>
+                  </ListItem>
                 ))}
               </List>
             )}
           </Box>
         </Popover>
-      </Paper>
-    </LocalizationProvider>
+      </LocalizationProvider>
+    </Paper>
   );
 });
 

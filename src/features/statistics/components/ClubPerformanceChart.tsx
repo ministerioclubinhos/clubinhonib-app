@@ -1,3 +1,4 @@
+import type { ChartTooltipProps } from '../types/chart.types';
 import React from 'react';
 import {
   Box,
@@ -23,7 +24,16 @@ import {
 } from 'recharts';
 import { EmojiEvents, TrendingUp, Group } from '@mui/icons-material';
 import { usePagelasChartData } from '../hooks';
-import { PagelasStatsQueryDto } from '../api';
+import type { PagelasStatsQueryDto } from '../types';
+import { ChartError } from './ui';
+
+/** Clubinho exibido no tooltip. */
+interface ClubTooltipPayload {
+  clubNumber: number;
+  total: number;
+  presenceRate: number;
+  meditationRate?: number;
+}
 
 interface ClubPerformanceChartProps {
   filters?: PagelasStatsQueryDto;
@@ -32,7 +42,7 @@ interface ClubPerformanceChartProps {
 export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filters }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, isLoading } = usePagelasChartData(filters);
+  const { data, isLoading, error, refetch } = usePagelasChartData(filters);
 
   const topClubs = React.useMemo(() => {
     if (!data?.byClub || data.byClub.length === 0) return [];
@@ -43,7 +53,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
       })
       .sort((a, b) => b.presenceRate - a.presenceRate)
       .slice(0, 10)
-      .map((club, index) => ({
+      .map((club) => ({
         ...club,
         presenceRate: Number(club.presenceRate) || 0,
         clubNumber: Number(club.clubNumber) || 0,
@@ -54,7 +64,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
 
   if (isLoading) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-club-performance-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
@@ -64,15 +74,19 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
 
   if (!data) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
-        <Typography color="error">Erro ao carregar dados dos clubinhos</Typography>
+      <Paper data-testid="statistics-club-performance-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+        <ChartError
+          subject="os dados dos clubinhos"
+          error={error}
+          onRetry={() => void refetch()}
+        />
       </Paper>
     );
   }
 
   if (!data.byClub || data.byClub.length === 0) {
     return (
-      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
+      <Paper data-testid="statistics-club-performance-chart" elevation={3} sx={{ p: { xs: 1.5, sm: 3 }, borderRadius: 3 }}>
         <Typography color="text.secondary">Nenhum dado de clubinho disponível para o período selecionado</Typography>
       </Paper>
     );
@@ -98,11 +112,11 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
     }
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: ChartTooltipProps<ClubTooltipPayload>) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <Paper
+        <Paper data-testid="statistics-club-performance-chart-custom-tooltip"
           elevation={8}
           sx={{
             p: 2,
@@ -135,7 +149,7 @@ export const ClubPerformanceChart: React.FC<ClubPerformanceChartProps> = ({ filt
   };
 
   return (
-    <Paper
+    <Paper data-testid="statistics-club-performance-chart"
       elevation={0}
       sx={{
         p: { xs: 2, sm: 3 },

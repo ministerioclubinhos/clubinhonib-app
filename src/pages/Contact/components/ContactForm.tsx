@@ -44,7 +44,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
   };
 
   return (
-    <Box>
+    <Box data-testid="contact-contact-form">
       {globalError && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {globalError}

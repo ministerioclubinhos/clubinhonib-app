@@ -170,7 +170,7 @@ export default function WeekVideoPlayer({ video, compact = false, onExpand }: Pr
   const fileSize = video.size ? `${(video.size / 1024 / 1024).toFixed(1)} MB` : null;
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-week-material-view-page-week-video-player-view-week-video-player"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={compact ? undefined : { y: -2 }}

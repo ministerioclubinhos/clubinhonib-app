@@ -74,7 +74,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
   };
 
   return (
-    <Dialog 
+    <Dialog data-testid="teacher-area-modals-add-image-modal"
       open={isOpen} 
       onClose={onClose} 
       fullWidth 
@@ -285,7 +285,7 @@ export function AddImageModal({ isOpen, onClose, onSubmit }: AddImageModalProps)
                                 transition: 'all 0.2s ease',
                               }}
                               size="small"
-                            >
+                             aria-label="Excluir">
                               <DeleteIcon color="error" fontSize="small" />
                             </IconButton>
 

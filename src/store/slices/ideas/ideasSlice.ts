@@ -1,37 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RouteData } from '@/store/slices/route/routeSlice';
-import { MediaItem } from '@/store/slices/types';
+import type { IdeasPageResponse } from '@/features/ideas-pages/types';
 
-export interface IdeasSection {
-  id?: string;
-  public?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  title: string;
-  description: string;
-  medias: MediaItem[];
-}
-
-export interface IdeasPageData {
-  id?: string;
-  public?: boolean;
-  title: string;
-  subtitle?: string;
-  description: string;
-  createdAt?: string;
-  updatedAt?: string;
-  sections: IdeasSection[];
-  route?: RouteData;
-}
+/**
+ * Página de ideias selecionada para edição. O tipo espelha a resposta da API:
+ * o `route` devolvido é um recorte, sem id nem datas.
+ */
+export type IdeasPageData = IdeasPageResponse;
 
 interface IdeasState {
   ideasData: IdeasPageData | null;
-  ideasSectionData: IdeasSection | null;
 }
 
 const initialState: IdeasState = {
   ideasData: null,
-  ideasSectionData: null,
 };
 
 const ideasSlice = createSlice({
@@ -44,14 +25,11 @@ const ideasSlice = createSlice({
     clearIdeasData: (state) => {
       state.ideasData = null;
     },
-    setIdeasSectionData: (state, action: PayloadAction<IdeasSection>) => {
-      state.ideasSectionData = action.payload;
-    },
-    clearIdeasSectionData: (state) => {
-      state.ideasSectionData = null;
-    },
   },
 });
 
-export const { setIdeasData, clearIdeasData, setIdeasSectionData, clearIdeasSectionData } = ideasSlice.actions;
+export const {
+  setIdeasData,
+  clearIdeasData,
+} = ideasSlice.actions;
 export default ideasSlice.reducer;

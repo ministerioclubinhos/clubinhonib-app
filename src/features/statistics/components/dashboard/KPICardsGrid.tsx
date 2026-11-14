@@ -1,13 +1,15 @@
 
 import React from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, Grid2 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatCard } from '../ui/StatCard';
+import type { StatCardProps } from '../ui/StatCard';
 
-const MotionGrid = motion.create(Grid);
+const MotionGrid = motion.create(Grid2);
 
 interface KPICardsGridProps {
-    activeKPIs: any[];
+    /** Um KPI é o que o `StatCard` recebe, menos o que a grade controla. */
+    activeKPIs: Omit<StatCardProps, 'loading' | 'compact'>[];
     isLoading: boolean;
     isMobile: boolean;
     activeCategory: string;
@@ -20,7 +22,7 @@ export const KPICardsGrid: React.FC<KPICardsGridProps> = ({
     activeCategory,
 }) => {
     return (
-        <Box sx={{ p: { xs: 2, md: 3 } }}>
+        <Box data-testid="statistics-dashboard-kpicards-grid" sx={{ p: { xs: 2, md: 3 } }}>
             <AnimatePresence mode="wait">
                 <MotionGrid
                     key={activeCategory}
@@ -32,7 +34,7 @@ export const KPICardsGrid: React.FC<KPICardsGridProps> = ({
                     transition={{ duration: 0.3 }}
                 >
                     {activeKPIs.map((kpi, index) => (
-                        <Grid item xs={6} sm={6} md={3} key={kpi.title}>
+                        <Grid2 size={{ xs: 6, sm: 6, md: 3 }} key={kpi.title}>
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -44,7 +46,7 @@ export const KPICardsGrid: React.FC<KPICardsGridProps> = ({
                                     compact={isMobile}
                                 />
                             </motion.div>
-                        </Grid>
+                        </Grid2>
                     ))}
                 </MotionGrid>
             </AnimatePresence>

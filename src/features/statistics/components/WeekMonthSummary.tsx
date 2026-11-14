@@ -5,14 +5,12 @@ import {
   Typography,
   CircularProgress,
   useTheme,
-  Grid,
+  Grid2,
   LinearProgress,
   Chip,
   useMediaQuery,
 } from '@mui/material';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -23,6 +21,7 @@ import {
 } from 'recharts';
 import { CalendarToday, TrendingUp, TrendingDown } from '@mui/icons-material';
 import { useOverview } from '../hooks';
+import { sortWeeksAscending } from '../utils/attendance';
 
 export const WeekMonthSummary: React.FC = () => {
   const theme = useTheme();
@@ -31,7 +30,9 @@ export const WeekMonthSummary: React.FC = () => {
 
   const lastSixWeeksData = React.useMemo(() => {
     if (!data?.pagelas?.lastSixWeeks || data.pagelas.lastSixWeeks.length === 0) return [];
-    return data.pagelas.lastSixWeeks.map((item) => ({
+    // O back manda da semana mais nova para a mais antiga; o gráfico lê da
+    // esquerda para a direita.
+    return sortWeeksAscending(data.pagelas.lastSixWeeks).map((item) => ({
       date: `S${item.week}/${item.year}`,
       value: item.total,
       presenceRate: item.presenceRate,
@@ -48,28 +49,13 @@ export const WeekMonthSummary: React.FC = () => {
 
   if (isLoading || !data) {
     return (
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+      <Paper data-testid="statistics-week-month-summary" elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
       </Paper>
     );
   }
-
-  const weekVsMonth = [
-    {
-      period: 'Esta Semana',
-      total: data.pagelas.thisWeek.total,
-      presenceRate: data.pagelas.thisWeek.presenceRate,
-      decisions: data.acceptedChrists.thisWeek,
-    },
-    {
-      period: 'Este Mês',
-      total: data.pagelas.thisMonth.total,
-      presenceRate: data.pagelas.thisMonth.presenceRate,
-      decisions: data.acceptedChrists.thisMonth,
-    },
-  ];
 
   const getTrend = (weekValue: number, monthValue: number) => {
     const weeklyAvg = monthValue / 4;
@@ -86,9 +72,9 @@ export const WeekMonthSummary: React.FC = () => {
   const decisionTrend = getTrend(data.acceptedChrists.thisWeek, data.acceptedChrists.thisMonth);
 
   return (
-    <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
+    <Grid2 data-testid="statistics-week-month-summary" container spacing={{ xs: 2, sm: 3 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
 
-      <Grid item xs={12} md={6} sx={{ width: '100%', maxWidth: '100%' }}>
+      <Grid2 size={{ xs: 12, md: 6 }} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
           sx={{
@@ -194,8 +180,8 @@ export const WeekMonthSummary: React.FC = () => {
             <Typography variant="caption" color="text.secondary" gutterBottom display="block">
               Distribuição de Decisões (Ano Todo)
             </Typography>
-            <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
-              <Grid item xs={6} sx={{ width: '100%', maxWidth: '100%' }}>
+            <Grid2 container spacing={{ xs: 1.5, sm: 2 }} sx={{ width: '100%', maxWidth: '100%', margin: 0 }}>
+              <Grid2 size={6} sx={{ width: '100%', maxWidth: '100%' }}>
                 <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Aceitaram</Typography>
                 <Typography variant="h6" fontWeight="bold" color="success.main" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, wordBreak: 'break-word' }}>
                   {data.acceptedChrists.byDecisionType.ACCEPTED}
@@ -216,8 +202,8 @@ export const WeekMonthSummary: React.FC = () => {
                     },
                   }}
                 />
-              </Grid>
-              <Grid item xs={6} sx={{ width: '100%', maxWidth: '100%' }}>
+              </Grid2>
+              <Grid2 size={6} sx={{ width: '100%', maxWidth: '100%' }}>
                 <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Reconciliados</Typography>
                 <Typography variant="h6" fontWeight="bold" color="info.main" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, wordBreak: 'break-word' }}>
                   {data.acceptedChrists.byDecisionType.RECONCILED}
@@ -238,13 +224,13 @@ export const WeekMonthSummary: React.FC = () => {
                     },
                   }}
                 />
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
           </Box>
         </Paper>
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} md={6} sx={{ width: '100%', maxWidth: '100%' }}>
+      <Grid2 size={{ xs: 12, md: 6 }} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
           sx={{
@@ -291,9 +277,9 @@ export const WeekMonthSummary: React.FC = () => {
             </ResponsiveContainer>
           </Box>
         </Paper>
-      </Grid>
+      </Grid2>
 
-      <Grid item xs={12} sx={{ width: '100%', maxWidth: '100%' }}>
+      <Grid2 size={12} sx={{ width: '100%', maxWidth: '100%' }}>
         <Paper
           elevation={0}
           sx={{
@@ -340,8 +326,8 @@ export const WeekMonthSummary: React.FC = () => {
             </ResponsiveContainer>
           </Box>
 
-          <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mt: 2, width: '100%', maxWidth: '100%', margin: 0 }}>
-            <Grid item xs={6} sm={3} sx={{ width: '100%', maxWidth: '100%' }}>
+          <Grid2 container spacing={{ xs: 1.5, sm: 2 }} sx={{ mt: 2, width: '100%', maxWidth: '100%', margin: 0 }}>
+            <Grid2 size={{ xs: 6, sm: 3 }} sx={{ width: '100%', maxWidth: '100%' }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Média Mensal
               </Typography>
@@ -352,8 +338,8 @@ export const WeekMonthSummary: React.FC = () => {
                   return isNaN(avg) ? '0' : avg.toFixed(0);
                 })()}
               </Typography>
-            </Grid>
-            <Grid item xs={6} sm={3} sx={{ width: '100%', maxWidth: '100%' }}>
+            </Grid2>
+            <Grid2 size={{ xs: 6, sm: 3 }} sx={{ width: '100%', maxWidth: '100%' }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Melhor Mês
               </Typography>
@@ -364,8 +350,8 @@ export const WeekMonthSummary: React.FC = () => {
                   return isNaN(max) || max === -Infinity ? '0' : max.toString();
                 })()}
               </Typography>
-            </Grid>
-            <Grid item xs={6} sm={3} sx={{ width: '100%', maxWidth: '100%' }}>
+            </Grid2>
+            <Grid2 size={{ xs: 6, sm: 3 }} sx={{ width: '100%', maxWidth: '100%' }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Total (6 meses)
               </Typography>
@@ -376,8 +362,8 @@ export const WeekMonthSummary: React.FC = () => {
                   return isNaN(total) ? '0' : total.toString();
                 })()}
               </Typography>
-            </Grid>
-            <Grid item xs={6} sm={3} sx={{ width: '100%', maxWidth: '100%' }}>
+            </Grid2>
+            <Grid2 size={{ xs: 6, sm: 3 }} sx={{ width: '100%', maxWidth: '100%' }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Projeção Anual
               </Typography>
@@ -389,11 +375,11 @@ export const WeekMonthSummary: React.FC = () => {
                   return isNaN(projection) ? '0' : projection.toFixed(0);
                 })()}
               </Typography>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </Paper>
-      </Grid>
-    </Grid>
+      </Grid2>
+    </Grid2>
   );
 };
 

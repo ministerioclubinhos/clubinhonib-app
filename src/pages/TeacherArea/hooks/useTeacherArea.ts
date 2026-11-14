@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/slices';
-import { MediaTargetType } from 'store/slices/types';
+import { useVisibleRoutes } from '@/features/feature-flags';
 
 export const useTeacherArea = () => {
   const [loading, setLoading] = useState<boolean>(true);
-  const routes = useSelector((state: RootState) => state.routes.routes);
+  const routes = useVisibleRoutes();
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 500);

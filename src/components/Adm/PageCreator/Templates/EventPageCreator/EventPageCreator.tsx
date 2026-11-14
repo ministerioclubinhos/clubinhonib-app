@@ -72,7 +72,7 @@ export default function EventPageCreator() {
   };
 
   return (
-    <Box sx={{ width: { xs: '95%', md: '100%' }, maxWidth: 1000, mx: 'auto', p: 0 }}>
+    <Box data-testid="adm-page-creator-templates-event-page-creator" sx={{ width: { xs: '95%', md: '100%' }, maxWidth: 1000, mx: 'auto', p: 0 }}>
       <Typography
         variant="h4"
         mb={3}
@@ -163,7 +163,7 @@ export default function EventPageCreator() {
                 color="error"
                 onClick={() => handleRemoveEvent(index)}
                 sx={{ position: 'absolute', top: 8, right: 8 }}
-              >
+               aria-label="Excluir">
                 <Delete fontSize="small" />
               </IconButton>
             </Box>

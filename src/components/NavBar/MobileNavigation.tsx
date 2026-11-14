@@ -3,18 +3,23 @@ import { Drawer, IconButton, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import NavLinks from './NavLinks';
+import NavbarNotifications from './NavbarNotifications';
 
 const MobileNavigation: React.FC = () => {
   const [open, setOpen] = useState(false);
 
-  const toggleDrawer = () => setOpen(s => !s);
+  const toggleDrawer = () => setOpen((s) => !s);
   const closeDrawer = () => setOpen(false);
 
   return (
-    <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+    <Box
+      data-testid="nav-bar-mobile-navigation"
+      sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}
+    >
+      <NavbarNotifications />
       <IconButton
         onClick={toggleDrawer}
-        sx={{ color: '#fff' }}
+        sx={{ color: '#fff', minWidth: 44, minHeight: 44 }}
         aria-label={open ? 'Fechar menu' : 'Abrir menu'}
       >
         {open ? <CloseIcon fontSize="large" /> : <MenuIcon fontSize="large" />}

@@ -5,11 +5,14 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InfoIcon from '@mui/icons-material/Info';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { FEATURE } from '@/features/feature-flags';
+import { useFeatureFlags } from '@/hooks';
 import { TeacherContentProps } from '../../types';
 import { SECTION_DATA } from '../../constants';
 import { DocumentsSection, IdeasGallerySection, TrainingVideosSection, CommentsSection, TeachingStepsSection } from './';
 
 const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
+  const { flags } = useFeatureFlags();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
@@ -21,7 +24,7 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
   };
 
   return (
-    <Box>
+    <Box data-testid="teacher-area-sections-teacher-content">
       <Box
         textAlign="center"
         mb={5}
@@ -201,7 +204,7 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
                             transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                             transition: 'transform 0.3s ease',
                           }}
-                        >
+                         aria-label="Mostrar ou esconder a seção">
                           <ExpandMoreIcon />
                         </IconButton>
                       )}
@@ -296,18 +299,26 @@ const TeacherContent: React.FC<TeacherContentProps> = ({ userName }) => {
         })}
       </Grid>
 
-      <Box mt={6}>
-        <TeachingStepsSection />
-      </Box>
-      <Box mt={6}>
-        <DocumentsSection />
-      </Box>
-      <Box mt={6}>
-        <IdeasGallerySection />
-      </Box>
-      <Box mt={6}>
-        <TrainingVideosSection />
-      </Box>
+      {flags[FEATURE.TEACHING_STEPS] && (
+        <Box mt={6}>
+          <TeachingStepsSection />
+        </Box>
+      )}
+      {flags[FEATURE.DOCUMENTS_LIBRARY] && (
+        <Box mt={6}>
+          <DocumentsSection />
+        </Box>
+      )}
+      {flags[FEATURE.IDEAS_SHARING] && (
+        <Box mt={6}>
+          <IdeasGallerySection />
+        </Box>
+      )}
+      {flags[FEATURE.TRAINING_VIDEOS] && (
+        <Box mt={6}>
+          <TrainingVideosSection />
+        </Box>
+      )}
       <Box mt={6}>
         <CommentsSection />
       </Box>
