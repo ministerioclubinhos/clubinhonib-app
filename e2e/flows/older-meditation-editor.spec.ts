@@ -7,7 +7,9 @@ for (const width of [375, 1440]) {
   }, testInfo) => {
     test.setTimeout(120_000);
     await page.setViewportSize({ width, height: 1000 });
-    await page.goto('/e2e/fixtures/older-meditation-editor.html', { waitUntil: 'domcontentloaded' });
+    await page.goto('/e2e/fixtures/older-meditation-editor.html', {
+      waitUntil: 'domcontentloaded',
+    });
     await expect(page.getByTestId('older-meditation-editor')).toBeVisible();
     await expect(page.getByTestId('older-meditation-overflow')).toHaveCount(0);
     const sheet = page.getByTestId('older-meditation-a4-page');
@@ -18,6 +20,16 @@ for (const width of [375, 1440]) {
     await expect(second).toContainText('Marque uma resposta');
     await expect(third).toContainText('No recreio');
     await expect(sheet).not.toContainText('Aceitar atitudes concretas');
+    // Modelo das folhas: relatos entre parênteses sob o tema, sem quadro "TEXTO BÍBLICO".
+    await expect(page.getByTestId('older-meditation-subtitle')).toHaveText('(O bom samaritano)');
+    await expect(sheet).not.toContainText('TEXTO BÍBLICO');
+    await expect(page.getByTestId('older-meditation-fourth-activity')).toHaveCount(0);
+    // As questões ocupam a folha inteira: a oração fecha a página, sem sobra no meio.
+    const thirdBox = await page
+      .getByTestId('older-meditation-third-activity-activity')
+      .boundingBox();
+    const prayerBox = await page.getByTestId('older-meditation-prayer').boundingBox();
+    expect(prayerBox!.y - (thirdBox!.y + thirdBox!.height)).toBeLessThan(40);
     await sheet.screenshot({ path: testInfo.outputPath('older-meditation-sheet.png') });
     await third.fill(
       'Situação revisada pela equipe. Escreva como você pode ajudar. ____________________'

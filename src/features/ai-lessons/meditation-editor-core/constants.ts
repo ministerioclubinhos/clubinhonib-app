@@ -5,6 +5,7 @@ export enum MeditationTextField {
   FIRST_ACTIVITY = 'firstActivity',
   SECOND_ACTIVITY = 'secondActivity',
   THIRD_ACTIVITY = 'thirdActivity',
+  FOURTH_ACTIVITY = 'fourthActivity',
   PRAYER = 'prayer',
   BIBLICAL_TEXT = 'biblicalText',
   INTRODUCTION = 'introduction',

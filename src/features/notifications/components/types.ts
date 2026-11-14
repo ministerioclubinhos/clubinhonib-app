@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type {
   NotificationCenterFilter,
   NotificationDetailDto,
@@ -53,4 +54,25 @@ export interface NotificationBellProps {
   'data-testid'?: string;
   /** Cor do ícone na barra. */
   color?: string;
+}
+
+export interface NotificationSettingRowProps {
+  /** Ícone decorativo à esquerda. */
+  icon: ReactNode;
+  /** Id do título, ligado à chave pelo `aria-labelledby`. */
+  titleId: string;
+  title: string;
+  description: string;
+  /** A chave (ou outro controle) à direita. */
+  control: ReactNode;
+  /** Avisos e ações extras abaixo da linha. */
+  children?: ReactNode;
+  'data-testid'?: string;
+}
+
+export interface NotificationSettingsSectionProps {
+  title: string;
+  help?: string;
+  children: ReactNode;
+  'data-testid'?: string;
 }

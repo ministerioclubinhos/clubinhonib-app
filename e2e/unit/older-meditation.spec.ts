@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+  olderMeditationActivityFields,
   olderMeditationDisplayFit,
   olderMeditationFieldDocument,
   readOlderMeditation,
@@ -36,7 +37,8 @@ test('preserva três desafios, três imagens e campos apagados no core dos maior
     firstActivity: 'Circule.',
     secondActivity: 'Decifre.',
     thirdActivity: 'Numere os acontecimentos.',
-    images: ['/first.png', '/second.png', '/third.png'],
+    activityCount: 3,
+    images: ['/first.png', '/second.png', '/third.png', ''],
   });
   const cleared = updateOlderMeditation(edited, data, OlderMeditationField.INTRODUCTION, '');
   expect(readOlderMeditation(cleared, data).introduction).toBe('');
@@ -77,4 +79,45 @@ test('não reduz texto longo a uma fonte ilegível nem força três faixas iguai
   const fit = olderMeditationDisplayFit(content);
   expect(fit.fontSize).toBeGreaterThanOrEqual(13.33);
   expect(fit.activityWeights[0]).toBeGreaterThan(fit.activityWeights[1]);
+});
+
+test('mostra de 2 a 4 questões, conforme a folha gerada, com arte só onde houver', () => {
+  const data = (count: number) => ({
+    activities: Array.from({ length: count }, (_, index) => ({
+      instruction: `Questão ${index + 1}.`,
+    })),
+    printableAssets: [{ id: '4', url: '/fourth.png' }],
+  });
+  const four = readOlderMeditation({ type: 'doc', content: [] }, data(4));
+  expect(four.activityCount).toBe(4);
+  expect(four.fourthActivity).toBe('Questão 4.');
+  expect(four.images).toEqual(['', '', '', '/fourth.png']);
+  expect(olderMeditationActivityFields(four)).toEqual([
+    OlderMeditationField.FIRST_ACTIVITY,
+    OlderMeditationField.SECOND_ACTIVITY,
+    OlderMeditationField.THIRD_ACTIVITY,
+    OlderMeditationField.FOURTH_ACTIVITY,
+  ]);
+  expect(olderMeditationDisplayFit(four).activityWeights).toHaveLength(4);
+  const edited = updateOlderMeditation(
+    { type: 'doc', content: [] },
+    data(4),
+    OlderMeditationField.FOURTH_ACTIVITY,
+    'Quarta revisada.'
+  );
+  expect(readOlderMeditation(edited, data(4)).fourthActivity).toBe('Quarta revisada.');
+
+  const two = readOlderMeditation({ type: 'doc', content: [] }, data(2));
+  expect(two.activityCount).toBe(2);
+  expect(olderMeditationActivityFields(two)).toHaveLength(2);
+  expect(
+    JSON.stringify(
+      updateOlderMeditation(
+        { type: 'doc', content: [] },
+        data(2),
+        OlderMeditationField.TITLE,
+        'Tema'
+      )
+    )
+  ).not.toContain('ATIVIDADE 3');
 });

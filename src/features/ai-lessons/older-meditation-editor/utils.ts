@@ -1,4 +1,10 @@
-import { OLDER_MEDITATION_DISPLAY as D } from './constants';
+import {
+  OLDER_MEDITATION_ACTIVITY_FIELDS,
+  OLDER_MEDITATION_DISPLAY as D,
+  OLDER_MEDITATION_LEGACY_ACTIVITIES,
+  OLDER_MEDITATION_MAX_ACTIVITIES,
+  OLDER_MEDITATION_MIN_ACTIVITIES,
+} from './constants';
 import { meditationFieldDocument } from '../meditation-editor-core/rich-document';
 import type { TiptapDocument } from '@/services/aiLessonsService';
 import { OlderMeditationField, type OlderMeditationContent } from './types';
@@ -47,6 +53,13 @@ export function readOlderMeditation(
   const hasHeading = (heading: string) =>
     nodes.some((node) => node.type === 'heading' && text(node).trim().toUpperCase() === heading);
   const activities = Array.isArray(data.activities) ? data.activities : [];
+  const activityCount = Math.min(
+    OLDER_MEDITATION_MAX_ACTIVITIES,
+    Math.max(
+      OLDER_MEDITATION_MIN_ACTIVITIES,
+      instructions.length || activities.length || OLDER_MEDITATION_LEGACY_ACTIVITIES
+    )
+  );
   return {
     title: title ? text(title) : string(data.title),
     verseText: verse[0]?.replace(/^[“"]|[”"]$/g, '') ?? string(data.verseText),
@@ -55,6 +68,8 @@ export function readOlderMeditation(
     firstActivity: instructions[0] ?? string(object(activities[0]).instruction),
     secondActivity: instructions[1] ?? string(object(activities[1]).instruction),
     thirdActivity: instructions[2] ?? string(object(activities[2]).instruction),
+    fourthActivity: instructions[3] ?? string(object(activities[3]).instruction),
+    activityCount,
     biblicalText: hasHeading('TEXTO BÍBLICO')
       ? section(document, 'TEXTO BÍBLICO').join('\n')
       : string(data.biblicalText),
@@ -64,7 +79,7 @@ export function readOlderMeditation(
         ? section(document, 'INTRODUÇÃO').join('\n')
         : string(data.introduction),
     prayer: hasPrayer ? section(document, 'FALANDO COM DEUS').join('\n') : string(data.prayer),
-    images: meditationActivityImages(data, 3),
+    images: meditationActivityImages(data, OLDER_MEDITATION_MAX_ACTIVITIES),
   };
 }
 
@@ -78,29 +93,34 @@ export function updateOlderMeditation(
   const content = { ...readOlderMeditation(document, data), [field]: value };
   return buildMeditationDocument({
     ...content,
-    instructions: [content.firstActivity, content.secondActivity, content.thirdActivity],
+    instructions: olderMeditationInstructions(content),
   });
 }
 
+/** Campos das questões que a folha imprime, na ordem. */
+export function olderMeditationActivityFields(content: OlderMeditationContent) {
+  return OLDER_MEDITATION_ACTIVITY_FIELDS.slice(0, content.activityCount);
+}
+
+export function olderMeditationInstructions(content: OlderMeditationContent): string[] {
+  return olderMeditationActivityFields(content).map((field) => content[field]);
+}
+
 export function olderMeditationDisplayFit(content: OlderMeditationContent) {
+  const instructions = olderMeditationInstructions(content);
   const length =
-    content.introduction.length +
-    content.firstActivity.length +
-    content.secondActivity.length +
-    content.thirdActivity.length;
-  const imageCount = content.images.filter(Boolean).length;
+    content.introduction.length + instructions.reduce((sum, item) => sum + item.length, 0);
+  const imageCount = content.images.slice(0, instructions.length).filter(Boolean).length;
   return {
     fontSize: length > 3000 || (imageCount >= 2 && length > 2300) ? D.minimumFontSize : D.fontSize,
     imageHeight: D.imageHeight,
-    activityWeights: [content.firstActivity, content.secondActivity, content.thirdActivity].map(
-      (instruction, index) => {
-        const columns = content.images[index] ? 58 : 100;
-        const lines = instruction
-          .split(/\r?\n/)
-          .reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / columns)), 0);
-        return Math.max(lines * 18 + 24, content.images[index] ? D.imageHeight : 80);
-      }
-    ),
+    activityWeights: instructions.map((instruction, index) => {
+      const columns = content.images[index] ? 58 : 100;
+      const lines = instruction
+        .split(/\r?\n/)
+        .reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / columns)), 0);
+      return Math.max(lines * 18 + 24, content.images[index] ? D.imageHeight : 80);
+    }),
   };
 }
 

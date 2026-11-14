@@ -10,7 +10,11 @@ import { FEATURE } from '@/features/feature-flags/features';
 import { useFeatureFlags } from '@/hooks';
 import LinkClubModal from '@/features/auth/components/LinkClubModal';
 import { usePendingItems } from '../adapters/profileAlertsAdapter';
-import { NOTIFICATION_COPY, NOTIFICATIONS_NEW_PULSE_MS } from '../constants';
+import {
+  NOTIFICATION_COPY,
+  NOTIFICATIONS_NEW_PULSE_MS,
+  NOTIFICATIONS_VISUALLY_HIDDEN,
+} from '../constants';
 import { notificationKeys } from '../queryKeys';
 import { useNotificationDelivery } from '../hooks/useNotificationDelivery';
 import { useNotificationPreferences } from '../hooks/useNotificationPreferences';
@@ -20,7 +24,6 @@ import { notificationAudioService } from '../services/notificationAudioService';
 import { clearProcessedMarks } from '../services/notificationTabCoordinator';
 import {
   BrowserPermissionState,
-  SoundPlayResult,
   type NotificationContextValue,
   type PendingItem,
 } from '../types';
@@ -193,12 +196,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     [update, setDeliverySoundBlocked]
   );
 
-  const testSound = useCallback(async () => {
-    const result = await notificationAudioService.play(true);
-    setDeliverySoundBlocked(result === SoundPlayResult.BLOCKED);
-    return result;
-  }, [setDeliverySoundBlocked]);
-
   const unlockSound = useCallback(async () => {
     setDeliverySoundBlocked(!(await notificationAudioService.unlock()));
   }, [setDeliverySoundBlocked]);
@@ -243,7 +240,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       permission,
       soundBlocked: delivery.soundBlocked,
       setSoundEnabled,
-      testSound,
       unlockSound,
       setBrowserEnabled,
       testBrowser,
@@ -269,7 +265,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       permission,
       delivery.soundBlocked,
       setSoundEnabled,
-      testSound,
       unlockSound,
       setBrowserEnabled,
       testBrowser,
@@ -284,14 +279,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           data-testid="notifications-live-region"
           aria-live="polite"
           role="status"
-          sx={{
-            position: 'absolute',
-            width: 1,
-            height: 1,
-            overflow: 'hidden',
-            clip: 'rect(0 0 0 0)',
-            whiteSpace: 'nowrap',
-          }}
+          // Medidas em px explícito: no `sx`, `width: 1` e `height: 1` valem
+          // 100%, e a região "invisível" tinha a altura da tela, esticando a
+          // página uma tela inteira abaixo do footer.
+          style={NOTIFICATIONS_VISUALLY_HIDDEN}
         >
           {announcement}
         </Box>

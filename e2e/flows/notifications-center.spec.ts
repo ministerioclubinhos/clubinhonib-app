@@ -179,6 +179,11 @@ test.describe('Central de notificações (sininho)', () => {
       await expect(page.getByTestId(`notifications-item-${noticeIds[0]}`)).toBeVisible();
       await expect(page.getByTestId('notifications-list')).not.toContainText(REASON);
       await page.screenshot({ path: '/tmp/notifications-desktop.png' });
+      // Com poucos avisos o painel encolhe: a área da lista não sobra em branco.
+      const gap = await page
+        .getByTestId('notifications-body')
+        .evaluate((el) => el.clientHeight - (el.firstElementChild?.scrollHeight ?? 0));
+      expect(gap).toBeLessThanOrEqual(1);
 
       // Abrir o detalhe mostra o motivo, mas não marca como lido.
       await page.getByTestId(`notifications-item-open-${noticeIds[0]}`).click();
@@ -209,6 +214,21 @@ test.describe('Central de notificações (sininho)', () => {
         notificationPreferencesKey(user.id)
       );
       expect(JSON.parse(stored ?? '{}')).toMatchObject({ version: 1, soundEnabled: true });
+      // Sem botão de testar som.
+      await expect(page.getByTestId('notifications-sound-test')).toHaveCount(0);
+
+      // E-mail: a escolha vale para a conta, gravada na API (mesmo campo do descadastro).
+      const email = page.getByTestId('notifications-email-toggle').locator('input');
+      await expect(email).toBeEnabled();
+      await expect(email).toBeChecked();
+      await email.uncheck();
+      await expect
+        .poll(async () => (await author.get<{ noticesEnabled: boolean }>('/email-preferences/me')).noticesEnabled)
+        .toBe(false);
+      await email.check();
+      await expect
+        .poll(async () => (await author.get<{ noticesEnabled: boolean }>('/email-preferences/me')).noticesEnabled)
+        .toBe(true);
       await page.getByTestId('notifications-back').click();
 
       // Leitura em lote, com confirmação explícita.
@@ -228,7 +248,7 @@ test.describe('Central de notificações (sininho)', () => {
     }
   });
 
-  test('celular: tela cheia sem corte horizontal e página de histórico', async ({ browser }) => {
+  test('celular: gaveta inferior do tamanho do conteúdo e página de histórico', async ({ browser }) => {
     test.setTimeout(90_000);
     const context = await newContext(browser, 390, 844);
     const page = await context.newPage();
@@ -245,9 +265,19 @@ test.describe('Central de notificações (sininho)', () => {
       const bellBox = await page.getByTestId('notifications-close').boundingBox();
       expect(bellBox?.height ?? 0).toBeGreaterThanOrEqual(44);
       await page.screenshot({ path: '/tmp/notifications-mobile.png' });
+      // Mobile first: gaveta presa ao rodapé, sem vão branco e sem ocupar a tela toda.
+      const sheet = await page
+        .locator('[role="dialog"][aria-labelledby="notifications-center-title"]')
+        .boundingBox();
+      expect(Math.round((sheet?.y ?? 0) + (sheet?.height ?? 0))).toBe(844);
+      expect(sheet?.height ?? 0).toBeLessThanOrEqual(844 * 0.85 + 1);
+      const mobileGap = await page
+        .getByTestId('notifications-body')
+        .evaluate((el) => el.clientHeight - (el.firstElementChild?.scrollHeight ?? 0));
+      expect(mobileGap).toBeLessThanOrEqual(1);
       await page.getByTestId('notifications-see-all').click();
       await expect(page).toHaveURL(/\/notificacoes$/);
-      // O painel em tela cheia fecha antes de a página assumir a lista.
+      // A gaveta fecha antes de a página assumir a lista.
       await expect(dialog).toBeHidden();
       await page.getByTestId(`notifications-item-open-${noticeIds[1]}`).click();
       await expect(page).toHaveURL(new RegExp(`notification=${noticeIds[1]}`));

@@ -17,7 +17,8 @@ export const OLDER_MEDITATION_FIELD_LABELS: Record<OlderMeditationField, string>
   secondActivity: 'Instrução da segunda questão',
   prayer: 'Oração',
   thirdActivity: 'Instrução da terceira questão',
-  biblicalText: 'Texto bíblico',
+  fourthActivity: 'Instrução da quarta questão',
+  biblicalText: 'Relatos estudados (subtítulo)',
   introduction: 'Entendendo a lição',
 };
 
@@ -29,9 +30,22 @@ export const OLDER_MEDITATION_FIELD_IDS: Record<OlderMeditationField, string> = 
   secondActivity: 'second-activity',
   prayer: 'prayer',
   thirdActivity: 'third-activity',
+  fourthActivity: 'fourth-activity',
   biblicalText: 'biblical-text',
   introduction: 'introduction',
 };
+
+/** Questões da folha, na ordem impressa (de 2 a 4, como nas folhas feitas à mão). */
+export const OLDER_MEDITATION_ACTIVITY_FIELDS = [
+  OlderMeditationField.FIRST_ACTIVITY,
+  OlderMeditationField.SECOND_ACTIVITY,
+  OlderMeditationField.THIRD_ACTIVITY,
+  OlderMeditationField.FOURTH_ACTIVITY,
+] as const;
+export const OLDER_MEDITATION_MIN_ACTIVITIES = 2;
+export const OLDER_MEDITATION_MAX_ACTIVITIES = 4;
+/** Folhas salvas antes da regra de 2 a 4 questões tinham sempre três. */
+export const OLDER_MEDITATION_LEGACY_ACTIVITIES = 3;
 
 export const OLDER_MEDITATION_DISPLAY = {
   fontSize: 14.67,

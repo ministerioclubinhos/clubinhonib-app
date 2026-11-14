@@ -19,8 +19,10 @@ import {
 } from './constants';
 import {
   readOlderMeditation,
+  olderMeditationActivityFields,
   olderMeditationDisplayFit,
   olderMeditationFieldDocument,
+  olderMeditationInstructions,
 } from './utils';
 
 export function OlderMeditationEditor({
@@ -37,10 +39,7 @@ export function OlderMeditationEditor({
   const overflow = useSheetOverflow(paperRef, null, onOverflowChange);
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
   const canonical = preserveMeditationFormatting(
-    buildMeditationDocument({
-      ...content,
-      instructions: [content.firstActivity, content.secondActivity, content.thirdActivity],
-    }),
+    buildMeditationDocument({ ...content, instructions: olderMeditationInstructions(content) }),
     initialJson
   );
   const input = (field: Field, centered = false) => (
@@ -137,6 +136,21 @@ export function OlderMeditationEditor({
                   MEDITAÇÃO PARA CRIANÇAS MAIORES
                 </Box>
                 <Box sx={{ textTransform: 'uppercase', mt: '3px' }}>{input(Field.TITLE, true)}</Box>
+                {/* Os relatos estudados ficam entre parênteses abaixo do tema, como nos modelos. */}
+                <Box
+                  data-testid="older-meditation-subtitle"
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'baseline',
+                    fontWeight: 400,
+                    fontSize: 14.67,
+                  }}
+                >
+                  <span aria-hidden="true">(</span>
+                  {input(Field.BIBLICAL_TEXT, true)}
+                  <span aria-hidden="true">)</span>
+                </Box>
               </Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1, whiteSpace: 'nowrap' }}>
@@ -169,71 +183,60 @@ export function OlderMeditationEditor({
                 {input(Field.VERSE_REFERENCE, true)}
               </Box>
             </Box>
-            <Box
-              sx={{
-                border: '1px solid black',
-                display: 'flex',
-                gap: 1,
-                alignItems: 'baseline',
-                px: '5px',
-              }}
-            >
-              <strong style={{ whiteSpace: 'nowrap' }}>TEXTO BÍBLICO:</strong>
-              {input(Field.BIBLICAL_TEXT)}
-            </Box>
             <Box>
               <strong>Entendendo a lição:</strong>
-              {input(Field.INTRODUCTION)}
+              {/* O contexto vai dentro de cada questão; a introdução só aparece quando escrita. */}
+              {content.introduction.trim() && input(Field.INTRODUCTION)}
             </Box>
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateRows: fit.activityWeights.map(() => 'auto').join(' '),
-                alignContent: 'start',
+                // As questões dividem toda a altura livre, proporcionalmente ao tamanho.
+                gridTemplateRows: fit.activityWeights
+                  .map((weight) => `minmax(min-content, ${weight}fr)`)
+                  .join(' '),
                 flex: 1,
                 minHeight: 0,
                 gap: `${D.rowGap}px`,
               }}
             >
-              {[Field.FIRST_ACTIVITY, Field.SECOND_ACTIVITY, Field.THIRD_ACTIVITY].map(
-                (field, index) => (
-                  <Box
-                    key={field}
-                    data-testid={`older-meditation-${OLDER_MEDITATION_FIELD_IDS[field]}-activity`}
-                    sx={{
-                      minHeight: 0,
-                      borderBottom: index < 2 ? '1px solid #777' : undefined,
-                      display: 'grid',
-                      gridTemplateColumns: content.images[index] ? '58% 42%' : '1fr',
-                      gap: '8px',
-                      alignItems: 'start',
-                    }}
-                  >
-                    <Box>
-                      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                        <span>{index + 1}.</span>
-                        {input(field)}
-                      </Box>
+              {olderMeditationActivityFields(content).map((field, index, fields) => (
+                <Box
+                  key={field}
+                  data-testid={`older-meditation-${OLDER_MEDITATION_FIELD_IDS[field]}-activity`}
+                  sx={{
+                    minHeight: 0,
+                    borderBottom: index < fields.length - 1 ? '1px solid #777' : undefined,
+                    display: 'grid',
+                    gridTemplateColumns: content.images[index] ? '58% 42%' : '1fr',
+                    gap: '8px',
+                    alignItems: 'start',
+                  }}
+                >
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                      <span>{index + 1}.</span>
+                      {input(field)}
                     </Box>
-                    {content.images[index] && (
-                      <Box
-                        component="img"
-                        data-testid={`older-meditation-${OLDER_MEDITATION_FIELD_IDS[field]}-image`}
-                        src={content.images[index]}
-                        alt={`Enigma do desafio ${index + 1}`}
-                        sx={{
-                          display: 'block',
-                          mx: 'auto',
-                          maxWidth: '100%',
-                          width: '100%',
-                          maxHeight: fit.imageHeight,
-                          objectFit: 'contain',
-                        }}
-                      />
-                    )}
                   </Box>
-                )
-              )}
+                  {content.images[index] && (
+                    <Box
+                      component="img"
+                      data-testid={`older-meditation-${OLDER_MEDITATION_FIELD_IDS[field]}-image`}
+                      src={content.images[index]}
+                      alt={`Arte da questão ${index + 1}`}
+                      sx={{
+                        display: 'block',
+                        mx: 'auto',
+                        maxWidth: '100%',
+                        width: '100%',
+                        maxHeight: fit.imageHeight,
+                        objectFit: 'contain',
+                      }}
+                    />
+                  )}
+                </Box>
+              ))}
             </Box>
             <Box
               sx={{

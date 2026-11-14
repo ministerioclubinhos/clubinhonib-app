@@ -10,4 +10,5 @@ export const notificationKeys = {
     ['notifications', userId, 'list', status] as const,
   details: (userId: string) => ['notifications', userId, 'detail'] as const,
   detail: (userId: string, id: string) => ['notifications', userId, 'detail', id] as const,
+  emailPreferences: (userId: string) => ['notifications', userId, 'email-preferences'] as const,
 };

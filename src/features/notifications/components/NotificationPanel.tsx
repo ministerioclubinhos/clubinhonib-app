@@ -144,7 +144,9 @@ export function NotificationPanel({ variant, onClose, selectedId, onSelect }: No
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
-        height: isPage ? 'auto' : '100%',
+        // A gaveta do celular, o painel do desktop e a página crescem com o
+        // conteúdo; o contêiner limita a altura e a lista rola por dentro.
+        height: 'auto',
         maxHeight: '100%',
       }}
     >

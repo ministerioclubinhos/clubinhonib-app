@@ -14,12 +14,23 @@
   box-sizing: border-box;
 }
 
+/*
+ * Uma única rolagem: a do documento. Altura fixa + overflow em html, body e
+ * #root criava três áreas de rolagem empilhadas; no celular, ao chegar ao fim
+ * do #root o gesto passava para o body e sobrava uma faixa branca abaixo do
+ * footer. O corte horizontal fica só no body (o navegador o aplica à janela)
+ * e usa `clip`, que não cria área de rolagem.
+ */
 html,
 body,
 #root {
-  height: 100%;
   width: 100%;
+  min-height: 100%;
+}
+
+body {
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {

@@ -51,6 +51,8 @@ export function NotificationList(props: NotificationListProps) {
 
   const showPending = filter !== NotificationCenterFilter.UNREAD && pendingItems.length > 0;
   const noticesVisible = filter !== NotificationCenterFilter.PENDING && showNotices;
+  // Sem avisos, a seção some inteira: nada de título "Avisos" sobre um vazio.
+  const noticesHaveContent = loading || error || items.length > 0 || hasNextPage;
   const isEmpty =
     !showPending &&
     (filter === NotificationCenterFilter.PENDING ||
@@ -112,7 +114,7 @@ export function NotificationList(props: NotificationListProps) {
         </Box>
       )}
 
-      {noticesVisible && (
+      {noticesVisible && noticesHaveContent && (
         <Box component="section" aria-labelledby="notifications-notices-title">
           {(showPending || items.length > 0) && (
             <Typography id="notifications-notices-title" component="h3" sx={sectionTitleSx}>

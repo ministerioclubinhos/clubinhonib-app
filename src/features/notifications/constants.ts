@@ -1,6 +1,8 @@
 import { BrowserPermissionState, NotificationCenterFilter, NotificationStatusFilter } from './types';
 
 export const NOTIFICATIONS_ENDPOINT = '/notifications/me';
+/** Preferência de avisos por e-mail da pessoa logada (mesma do link de descadastro). */
+export const EMAIL_PREFERENCES_ENDPOINT = '/email-preferences/me';
 export const NOTIFICATIONS_PAGE_SIZE = 10;
 export const NOTIFICATIONS_INITIAL_PAGE = 1;
 
@@ -62,6 +64,9 @@ export const NOTIFICATIONS_POPOVER_WIDTH = 420;
 export const NOTIFICATIONS_TOUCH_TARGET = 44;
 export const NOTIFICATIONS_BADGE_MAX = 99;
 export const NOTIFICATIONS_PANEL_MAX_HEIGHT = '75dvh';
+/** Celular: gaveta que sobe de baixo, do tamanho do conteúdo, até este limite. */
+export const NOTIFICATIONS_SHEET_MAX_HEIGHT = '85dvh';
+export const NOTIFICATIONS_SHEET_RADIUS = 16;
 export const NOTIFICATIONS_NEW_PULSE_MS = 1_600;
 export const NOTIFICATIONS_LOCALE = 'pt-BR';
 export const NOTIFICATIONS_SKELETON_ROWS = 3;
@@ -120,16 +125,21 @@ export const NOTIFICATION_COPY = {
   commentLabel: 'Comentário no feed',
   reasonLabel: 'Motivo da reprovação',
   newNotice: 'Você tem um novo aviso.',
-  settingsScope: 'Estas escolhas valem só neste navegador, para a sua conta.',
-  soundLabel: 'Som dos avisos no site',
-  soundHelp: 'Um toque curto quando chega um aviso novo com o site aberto.',
-  soundTest: 'Testar som',
-  soundBlocked: 'O navegador bloqueou o som. Toque em “Ativar som nesta sessão”.',
-  soundUnlock: 'Ativar som nesta sessão',
-  soundUnsupported: 'Este navegador não permite tocar o som.',
-  browserLabel: 'Notificações neste navegador',
-  browserHelp:
-    'Mostra um aviso do navegador enquanto o site estiver aberto em segundo plano. O texto não mostra o conteúdo do aviso.',
+  emailSection: 'Por e-mail',
+  emailLabel: 'Receber avisos por e-mail',
+  emailHelp:
+    'Material da semana, eventos, informativos e lembretes do clubinho. E-mails da sua conta e de segurança chegam sempre.',
+  emailLoading: 'Carregando sua preferência de e-mail...',
+  emailLoadError: 'Não foi possível carregar sua preferência de e-mail.',
+  emailSaveError: 'Não foi possível salvar. Tente novamente.',
+  deviceSection: 'Neste aparelho',
+  deviceHelp: 'Estas opções valem só neste navegador.',
+  soundLabel: 'Som de novo aviso',
+  soundHelp: 'Um toque curto quando chega um aviso com o site aberto.',
+  soundBlocked: 'O navegador bloqueou o som. Toque em “Ativar som”.',
+  soundUnlock: 'Ativar som',
+  browserLabel: 'Alertas do navegador',
+  browserHelp: 'Um alerta discreto quando o site está aberto em outra aba.',
   browserAllow: 'Permitir notificações',
   browserTest: 'Testar notificação',
   browserAsk: 'Receba um aviso neste navegador quando houver uma novidade.',
@@ -141,8 +151,6 @@ export const NOTIFICATION_COPY = {
   browserFailed: 'Não foi possível ativar as notificações. Tente novamente.',
   browserLimit:
     'Com o site fechado ou suspenso pelo navegador, o aviso aparece quando você voltar.',
-  settingsEmpty:
-    'Nenhuma opção de alerta disponível no momento. Os avisos continuam aparecendo aqui.',
   bellLabel: (unread: number, pending: number) => {
     const parts: string[] = [];
     if (unread) parts.push(`${unread} ${unread === 1 ? 'aviso não lido' : 'avisos não lidos'}`);
@@ -162,3 +170,16 @@ export const PERMISSION_LABELS: Record<BrowserPermissionState, string> = {
   [BrowserPermissionState.DEFAULT]: 'Aguardando sua escolha',
   [BrowserPermissionState.UNSUPPORTED]: 'Indisponível',
 };
+
+/** Oculto na tela e lido pelo leitor de tela (região `aria-live`). */
+export const NOTIFICATIONS_VISUALLY_HIDDEN = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  margin: '-1px',
+  padding: 0,
+  border: 0,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+} as const;

@@ -1,6 +1,8 @@
 import api from '@/config/axiosConfig';
-import { NOTIFICATIONS_ENDPOINT } from './constants';
+import { EMAIL_PREFERENCES_ENDPOINT, NOTIFICATIONS_ENDPOINT } from './constants';
 import type {
+  MyEmailPreferencesDto,
+  UpdateMyEmailPreferencesDto,
   NotificationDetailDto,
   NotificationItemDto,
   NotificationsListQuery,
@@ -63,5 +65,22 @@ export async function markAllNotificationsRead(): Promise<NotificationsReadAllDt
     undefined,
     { skipGlobalError: true }
   );
+  return data;
+}
+
+export async function fetchMyEmailPreferences(signal?: AbortSignal): Promise<MyEmailPreferencesDto> {
+  const { data } = await api.get<MyEmailPreferencesDto>(EMAIL_PREFERENCES_ENDPOINT, {
+    signal,
+    skipGlobalError: true,
+  });
+  return data;
+}
+
+export async function updateMyEmailPreferences(
+  input: UpdateMyEmailPreferencesDto
+): Promise<MyEmailPreferencesDto> {
+  const { data } = await api.put<MyEmailPreferencesDto>(EMAIL_PREFERENCES_ENDPOINT, input, {
+    skipGlobalError: true,
+  });
   return data;
 }

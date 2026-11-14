@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import { DEFAULT_NOTIFICATION_PREFERENCES } from '../constants';
-import { BrowserPermissionState, SoundPlayResult, type NotificationContextValue } from '../types';
+import { BrowserPermissionState, type NotificationContextValue } from '../types';
 
 const noop = () => undefined;
 
@@ -26,7 +26,6 @@ export const INERT_NOTIFICATION_CONTEXT: NotificationContextValue = {
   permission: BrowserPermissionState.UNSUPPORTED,
   soundBlocked: false,
   setSoundEnabled: async () => undefined,
-  testSound: async () => SoundPlayResult.UNSUPPORTED,
   unlockSound: async () => undefined,
   setBrowserEnabled: async () => BrowserPermissionState.UNSUPPORTED,
   testBrowser: async () => false,

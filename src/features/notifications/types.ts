@@ -115,6 +115,16 @@ export interface NotificationRecentDto {
   createdAt: string;
 }
 
+/** Saída: preferência de avisos por e-mail da pessoa logada. */
+export interface MyEmailPreferencesDto {
+  noticesEnabled: boolean;
+}
+
+/** Entrada: liga ou desliga os avisos por e-mail. */
+export interface UpdateMyEmailPreferencesDto {
+  noticesEnabled: boolean;
+}
+
 /** Saída: resumo para contador e detecção de novidades. */
 export interface NotificationSummaryDto {
   unreadCount: number;
@@ -223,7 +233,6 @@ export interface NotificationContextValue {
   permission: BrowserPermissionState;
   soundBlocked: boolean;
   setSoundEnabled: (enabled: boolean) => Promise<void>;
-  testSound: () => Promise<SoundPlayResult>;
   unlockSound: () => Promise<void>;
   setBrowserEnabled: (enabled: boolean) => Promise<BrowserPermissionState>;
   testBrowser: () => Promise<boolean>;

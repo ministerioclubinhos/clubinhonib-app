@@ -7,6 +7,7 @@ export enum OlderMeditationField {
   FIRST_ACTIVITY = 'firstActivity',
   SECOND_ACTIVITY = 'secondActivity',
   THIRD_ACTIVITY = 'thirdActivity',
+  FOURTH_ACTIVITY = 'fourthActivity',
   BIBLICAL_TEXT = 'biblicalText',
   INTRODUCTION = 'introduction',
   PRAYER = 'prayer',
@@ -19,6 +20,9 @@ export interface OlderMeditationContent {
   firstActivity: string;
   secondActivity: string;
   thirdActivity: string;
+  fourthActivity: string;
+  /** Questões impressas na folha: de 2 a 4, conforme o tamanho dos exercícios. */
+  activityCount: number;
   biblicalText: string;
   introduction: string;
   prayer: string;

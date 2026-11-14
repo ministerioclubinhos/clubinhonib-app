@@ -1,11 +1,11 @@
 {
   "title": "O bom samaritano",
-  "ageGroup": "8 a 11 anos",
+  "ageGroup": "8 a 12 anos",
   "verseText": "Ame o seu próximo como a si mesmo.",
   "verseReference": "Lucas 10:27",
   "verseVersion": "NVI",
-  "biblicalText": "Lucas 10:25-37",
-  "introduction": "Na história estudada, pessoas tomaram decisões diferentes diante de alguém que precisava de ajuda. Observe suas atitudes e pense em como cuidar do próximo.",
+  "biblicalText": "O bom samaritano",
+  "introduction": "",
   "prayer": "Senhor, ajuda-me a perceber quem precisa de cuidado e agir com amor.",
   "activities": [
     {
@@ -18,8 +18,16 @@
       "supportText": "Palavras: caminho, ferido, samaritano, hospedaria.",
       "visualRequired": false,
       "subitems": [
-        { "prompt": "O homem viajava por um ______.", "options": [], "answer": "caminho" },
-        { "prompt": "Depois do ataque, ele ficou ______.", "options": [], "answer": "ferido" },
+        {
+          "prompt": "O homem viajava por um ______.",
+          "options": [],
+          "answer": "caminho"
+        },
+        {
+          "prompt": "Depois do ataque, ele ficou ______.",
+          "options": [],
+          "answer": "ferido"
+        },
         {
           "prompt": "Quem parou para ajudar foi um ______.",
           "options": [],
@@ -31,7 +39,7 @@
           "answer": "hospedaria"
         }
       ],
-      "instruction": "Recorde os acontecimentos da história.\nComplete usando o banco de palavras.\nPalavras: caminho, ferido, samaritano, hospedaria.\na) O homem viajava por um ______.\nb) Depois do ataque, ele ficou ______.\nc) Quem parou para ajudar foi um ______.\nd) Para continuar o cuidado, levou-o a uma ______.",
+      "instruction": "Recorde os acontecimentos da história. Complete usando o banco de palavras.\nPalavras: caminho, ferido, samaritano, hospedaria.\na) O homem viajava por um ______.\nb) Depois do ataque, ele ficou ______.\nc) Quem parou para ajudar foi um ______.\nd) Para continuar o cuidado, levou-o a uma ______.",
       "answer": "a) caminho\nb) ferido\nc) samaritano\nd) hospedaria"
     },
     {
@@ -81,7 +89,7 @@
           "answer": "Perceber a dificuldade e oferecer ajuda possível"
         }
       ],
-      "instruction": "Considere as decisões das pessoas do relato.\nMarque uma resposta para cada pergunta.\na) Qual atitude tornou o viajante um próximo do homem ferido?\n   (1) Observar a situação de longe\n   (2) Parar e cuidar de suas necessidades\n   (3) Avisar que outras pessoas passariam\nb) Por que levar o homem a um lugar seguro também foi importante?\n   (1) O cuidado precisava continuar\n   (2) O viajante queria terminar uma tarefa rapidamente\n   (3) Era preciso descobrir quem atacou\nc) O que a ajuda do samaritano mostra sobre o amor?\n   (1) Depende de conhecer bem a pessoa\n   (2) Pode ser demonstrado em ações concretas\n   (3) Consiste somente em sentir tristeza\nd) Qual decisão mostra atenção à necessidade de alguém?\n   (1) Esperar a pessoa pedir várias vezes\n   (2) Deixar tudo para quem chegar depois\n   (3) Perceber a dificuldade e oferecer ajuda possível",
+      "instruction": "Considere as decisões das pessoas do relato. Marque uma resposta para cada pergunta.\na) Qual atitude tornou o viajante um próximo do homem ferido?\n   (1) Observar a situação de longe\n   (2) Parar e cuidar de suas necessidades\n   (3) Avisar que outras pessoas passariam\nb) Por que levar o homem a um lugar seguro também foi importante?\n   (1) O cuidado precisava continuar\n   (2) O viajante queria terminar uma tarefa rapidamente\n   (3) Era preciso descobrir quem atacou\nc) O que a ajuda do samaritano mostra sobre o amor?\n   (1) Depende de conhecer bem a pessoa\n   (2) Pode ser demonstrado em ações concretas\n   (3) Consiste somente em sentir tristeza\nd) Qual decisão mostra atenção à necessidade de alguém?\n   (1) Esperar a pessoa pedir várias vezes\n   (2) Deixar tudo para quem chegar depois\n   (3) Perceber a dificuldade e oferecer ajuda possível",
       "answer": "a) Parar e cuidar de suas necessidades\nb) O cuidado precisava continuar\nc) Pode ser demonstrado em ações concretas\nd) Perceber a dificuldade e oferecer ajuda possível"
     },
     {
@@ -105,7 +113,7 @@
           "answer": "Relacionar perceber uma necessidade e agir para cuidar do próximo, sem exigir experiência pessoal específica."
         }
       ],
-      "instruction": "No recreio, um colega está sozinho porque perdeu seu lanche. Você percebe que ele está triste.\nPense numa atitude possível e escreva respostas curtas.\na) Como você poderia ajudá-lo com respeito? ____________________\nb) Como essa atitude se relaciona com o cuidado mostrado na história? ____________________",
+      "instruction": "No recreio, um colega está sozinho porque perdeu seu lanche. Você percebe que ele está triste. Pense numa atitude possível e escreva respostas curtas.\na) Como você poderia ajudá-lo com respeito? ____________________\nb) Como essa atitude se relaciona com o cuidado mostrado na história? ____________________",
       "answer": "a) Aceitar atitudes concretas e respeitosas: conversar, compartilhar quando possível ou procurar um adulto responsável.\nb) Relacionar perceber uma necessidade e agir para cuidar do próximo, sem exigir experiência pessoal específica."
     }
   ],

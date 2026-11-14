@@ -76,7 +76,7 @@ export function meditationActivityImages(data: Record<string, unknown>, count: n
   return Array.from({ length: count }, (_, index) => {
     const asset =
       assets.find(
-        (item) => Number(string(object(item).id).match(/(?:^|[-_])([1-3])$/)?.[1]) === index + 1
+        (item) => Number(string(object(item).id).match(/(?:^|[-_])([1-4])$/)?.[1]) === index + 1
       ) ?? (assets.length === count ? assets[index] : undefined);
     return string(object(asset).url);
   });

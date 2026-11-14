@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Alert, Box, Button, Chip, FormControlLabel, Switch, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, Switch, Typography } from '@mui/material';
+import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import { NOTIFICATION_COPY, NOTIFICATIONS_TOUCH_TARGET, PERMISSION_LABELS } from '../constants';
 import { BrowserPermissionState } from '../types';
 import { useNotificationCenter } from './NotificationContext';
+import { NotificationSettingRow } from './NotificationSettingRow';
 
 /** Permissão do navegador: pedida só no clique, com todos os estados tratados. */
 export function NotificationPermissionCard() {
@@ -24,35 +26,35 @@ export function NotificationPermissionCard() {
   };
 
   return (
-    <Box data-testid="notifications-browser-card" sx={{ mt: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-        <FormControlLabel
-          sx={{ mr: 'auto', minHeight: NOTIFICATIONS_TOUCH_TARGET }}
-          control={
-            <Switch
-              data-testid="notifications-browser-toggle"
-              checked={enabled}
-              disabled={
-                permission === BrowserPermissionState.DENIED ||
-                permission === BrowserPermissionState.UNSUPPORTED
-              }
-              onChange={(event) => {
-                void toggle(event.target.checked);
-              }}
-            />
+    <NotificationSettingRow
+      data-testid="notifications-browser-card"
+      icon={<NotificationsActiveOutlinedIcon />}
+      titleId="notifications-browser-label"
+      title={NOTIFICATION_COPY.browserLabel}
+      description={NOTIFICATION_COPY.browserHelp}
+      control={
+        <Switch
+          data-testid="notifications-browser-toggle"
+          checked={enabled}
+          disabled={
+            permission === BrowserPermissionState.DENIED ||
+            permission === BrowserPermissionState.UNSUPPORTED
           }
-          label={NOTIFICATION_COPY.browserLabel}
+          onChange={(event) => {
+            void toggle(event.target.checked);
+          }}
+          slotProps={{ input: { 'aria-labelledby': 'notifications-browser-label' } }}
         />
-        <Chip
-          data-testid="notifications-browser-permission"
-          size="small"
-          label={PERMISSION_LABELS[permission]}
-          color={permission === BrowserPermissionState.GRANTED ? 'success' : 'default'}
-        />
-      </Box>
-      <Typography variant="body2" color="text.secondary">
-        {NOTIFICATION_COPY.browserHelp}
-      </Typography>
+      }
+    >
+      <Chip
+        data-testid="notifications-browser-permission"
+        size="small"
+        variant="outlined"
+        label={PERMISSION_LABELS[permission]}
+        color={permission === BrowserPermissionState.GRANTED ? 'success' : 'default'}
+        sx={{ mt: 1, ml: 4.5 }}
+      />
 
       {permission === BrowserPermissionState.DEFAULT && !dismissed && !enabled && (
         <Alert
@@ -104,7 +106,7 @@ export function NotificationPermissionCard() {
         <>
           <Button
             data-testid="notifications-browser-test"
-            variant="outlined"
+            size="small"
             onClick={() => {
               void testBrowser().then((shown) => setFailed(!shown));
             }}
@@ -117,6 +119,6 @@ export function NotificationPermissionCard() {
           </Typography>
         </>
       )}
-    </Box>
+    </NotificationSettingRow>
   );
 }

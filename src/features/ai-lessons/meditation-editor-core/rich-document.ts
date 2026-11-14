@@ -20,9 +20,12 @@ export function meditationFieldRange(
     );
     return index < 0 ? null : [index, index + 1];
   }
-  const activity = [Field.FIRST_ACTIVITY, Field.SECOND_ACTIVITY, Field.THIRD_ACTIVITY].indexOf(
-    field as Field
-  );
+  const activity = [
+    Field.FIRST_ACTIVITY,
+    Field.SECOND_ACTIVITY,
+    Field.THIRD_ACTIVITY,
+    Field.FOURTH_ACTIVITY,
+  ].indexOf(field as Field);
   const headings = nodes.flatMap((node, index) =>
     node.type === 'heading' && text(node).trim().toUpperCase() === 'INSTRUÇÃO' ? [index] : []
   );

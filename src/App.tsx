@@ -231,7 +231,16 @@ function App() {
         <BrowserRouter>
           {/* Central de notificações: uma instância, acima da navbar e das rotas. */}
           <NotificationProvider>
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          {/* `dvh` acompanha a barra do navegador no celular; `vh` fica de reserva. */}
+          <Box
+            sx={{
+              minHeight: '100vh',
+              '@supports (min-height: 100dvh)': { minHeight: '100dvh' },
+              display: 'flex',
+              flexDirection: 'column',
+              flex: '1 0 auto',
+            }}
+          >
             <Navbar />
 
             <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
