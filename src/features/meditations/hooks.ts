@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -166,6 +166,8 @@ export function useMeditationById(id: string | undefined) {
   const [error, setError] = useState('');
 
   const nextController = useAbortController();
+  const [retryToken, setRetryToken] = useState(0);
+  const retry = useCallback(() => setRetryToken((value) => value + 1), []);
 
   useEffect(() => {
     if (!id) {
@@ -179,6 +181,8 @@ export function useMeditationById(id: string | undefined) {
     const run = async () => {
       setLoading(true);
       setError('');
+      // Trocar de meditação não pode mostrar a anterior enquanto carrega.
+      setMeditation(null);
       try {
         const data = await getMeditation(id, { signal: controller.signal });
         setMeditation(data);
@@ -192,9 +196,10 @@ export function useMeditationById(id: string | undefined) {
     };
 
     void run();
-  }, [id, nextController]);
+    return () => controller.abort();
+  }, [id, nextController, retryToken]);
 
-  return { meditation, loading, error };
+  return { meditation, loading, error, retry };
 }
 
 
@@ -206,6 +211,10 @@ const NO_ERRORS: MeditationFormErrors = {
   topic: false,
   startDate: false,
   endDate: false,
+  startDateMessage: '',
+  endDateMessage: '',
+  days: false,
+  media: false,
 };
 
 interface UseMeditationFormParams {
@@ -252,6 +261,7 @@ export function useMeditationForm({
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     setValues(toFormValues(isCreation ? null : meditation));
@@ -267,6 +277,16 @@ export function useMeditationForm({
     ) => {
       setValues((previous) => ({ ...previous, [key]: value }));
       setIsDirty(true);
+      // O aviso do campo some assim que a pessoa mexe nele.
+      setErrors((previous) => {
+        if (key === 'topic') return { ...previous, topic: false };
+        if (key === 'startDate') return { ...previous, startDate: false, startDateMessage: '' };
+        if (key === 'endDate') return { ...previous, endDate: false, endDateMessage: '' };
+        if (key === 'url' || key === 'file' || key === 'uploadType') {
+          return { ...previous, media: false };
+        }
+        return previous;
+      });
     },
     [],
   );
@@ -274,15 +294,34 @@ export function useMeditationForm({
   const setDays = useCallback((next: MeditationDayDraft[]) => {
     setDaysState(next);
     setIsDirty(true);
+    setErrors((previous) => ({ ...previous, days: false }));
   }, []);
 
   const dismissFeedback = useCallback(() => setFeedback(null), []);
 
   const save = useCallback(async () => {
+    if (savingRef.current) return;
+
+    const missingMedia =
+      values.uploadType === MediaUploadType.LINK
+        ? !values.url.trim()
+        : !values.file && !meditation?.media;
+
+    // Todos os problemas aparecem de uma vez, cada um no seu campo.
     const nextErrors: MeditationFormErrors = {
       topic: !values.topic.trim(),
       startDate: !values.startDate,
       endDate: !values.endDate,
+      startDateMessage:
+        values.startDate && !isMonday(values.startDate)
+          ? FORM_VALIDATION_MESSAGES.MEDITATION_DATE_MONDAY
+          : '',
+      endDateMessage:
+        values.endDate && !isFriday(values.endDate)
+          ? FORM_VALIDATION_MESSAGES.MEDITATION_DATE_FRIDAY
+          : '',
+      days: days.length !== MEDITATION_DAYS_COUNT,
+      media: missingMedia,
     };
     setErrors(nextErrors);
 
@@ -294,23 +333,15 @@ export function useMeditationForm({
       return;
     }
 
-    if (!isMonday(values.startDate)) {
+    if (nextErrors.startDateMessage || nextErrors.endDateMessage) {
       setFeedback({
-        message: FORM_VALIDATION_MESSAGES.MEDITATION_DATE_MONDAY,
+        message: nextErrors.startDateMessage || nextErrors.endDateMessage,
         severity: 'error',
       });
       return;
     }
 
-    if (!isFriday(values.endDate)) {
-      setFeedback({
-        message: FORM_VALIDATION_MESSAGES.MEDITATION_DATE_FRIDAY,
-        severity: 'error',
-      });
-      return;
-    }
-
-    if (days.length !== MEDITATION_DAYS_COUNT) {
+    if (nextErrors.days) {
       setFeedback({
         message: FORM_VALIDATION_MESSAGES.MEDITATION_DAYS_COUNT,
         severity: 'error',
@@ -318,12 +349,7 @@ export function useMeditationForm({
       return;
     }
 
-    const missingMedia =
-      values.uploadType === MediaUploadType.LINK
-        ? !values.url.trim()
-        : !values.file && !meditation?.media;
-
-    if (missingMedia) {
+    if (nextErrors.media) {
       setFeedback({
         message: FORM_VALIDATION_MESSAGES.MEDITATION_MEDIA_REQUIRED,
         severity: 'error',
@@ -339,6 +365,8 @@ export function useMeditationForm({
       return;
     }
 
+    savingRef.current = true;
+    setFeedback(null);
     setSaving(true);
     try {
       const formData = buildMeditationFormData(
@@ -370,6 +398,7 @@ export function useMeditationForm({
         severity: 'error',
       });
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }, [values, days, isCreation, meditation, dispatch, navigate]);

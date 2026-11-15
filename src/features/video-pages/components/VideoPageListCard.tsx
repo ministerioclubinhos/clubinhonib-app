@@ -20,12 +20,7 @@ interface Props {
 }
 
 /** Card de uma página de vídeos na listagem do painel. */
-export default function VideoPageListCard({
-  page,
-  onOpen,
-  onEdit,
-  onDelete,
-}: Props) {
+export default function VideoPageListCard({ page, onOpen, onEdit, onDelete }: Props) {
   const badges: ListingBadge[] = [
     page.public
       ? { label: 'Publicada', color: 'success' }
@@ -56,7 +51,8 @@ export default function VideoPageListCard({
   }
 
   return (
-    <ListingCard data-testid={`video-pages-video-page-list-card-${page.id}`}
+    <ListingCard
+      data-testid={`video-pages-video-page-list-card-${page.id}`}
       avatar={<VideoLibraryOutlinedIcon fontSize="small" />}
       title={page.title}
       accent={page.public ? 'success' : 'default'}

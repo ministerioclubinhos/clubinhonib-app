@@ -1,10 +1,4 @@
 import type { IdeasPageFormErrors, IdeasPageListFilters } from './types';
-import {
-  AudiotrackOutlined,
-  DescriptionOutlined,
-  ImageOutlined,
-  MovieOutlined,
-} from '@mui/icons-material';
 import { MediaType } from '@/store/slices/types';
 
 /** Caminho base dos endpoints da página de ideias. */
@@ -95,9 +89,6 @@ export const IDEAS_PAGE_INITIAL_FILTERS: IdeasPageListFilters = {
   order: 'DESC',
 };
 
-/** Captura `sections.<índice>.…` nos caminhos de erro devolvidos pela API. */
-export const IDEAS_SECTION_ERROR_PATH = /^sections\.(\d+)\./;
-
 /** Acima disto, a página abre com as seções recolhidas. */
 export const IDEAS_AUTO_COLLAPSE_THRESHOLD = 3;
 
@@ -106,11 +97,3 @@ export const IDEAS_SECTION_SEARCH_THRESHOLD = 6;
 
 /** Prefixo do id de âncora de cada seção, usado pelo índice lateral. */
 export const IDEAS_SECTION_ANCHOR_PREFIX = 'ideas-section-';
-
-/** Ícone de cada aba de mídia: o ícone reconhece o tipo mais rápido que o rótulo. */
-export const IDEAS_MEDIA_TAB_ICONS = {
-  [MediaType.DOCUMENT]: DescriptionOutlined,
-  [MediaType.IMAGE]: ImageOutlined,
-  [MediaType.VIDEO]: MovieOutlined,
-  [MediaType.AUDIO]: AudiotrackOutlined,
-} as const;

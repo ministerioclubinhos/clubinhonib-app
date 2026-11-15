@@ -20,12 +20,7 @@ interface Props {
 }
 
 /** Card de uma galeria de fotos na listagem do painel. */
-export default function ImagePageListCard({
-  page,
-  onOpen,
-  onEdit,
-  onDelete,
-}: Props) {
+export default function ImagePageListCard({ page, onOpen, onEdit, onDelete }: Props) {
   const badges: ListingBadge[] = [
     page.public
       ? { label: 'Publicada', color: 'success' }
@@ -56,7 +51,8 @@ export default function ImagePageListCard({
   }
 
   return (
-    <ListingCard data-testid={`image-pages-image-page-list-card-${page.id}`}
+    <ListingCard
+      data-testid={`image-pages-image-page-list-card-${page.id}`}
       avatar={<CollectionsOutlinedIcon fontSize="small" />}
       title={page.title}
       accent={page.public ? 'success' : 'default'}

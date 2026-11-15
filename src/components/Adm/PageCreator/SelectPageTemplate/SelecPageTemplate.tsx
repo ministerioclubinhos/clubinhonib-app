@@ -31,7 +31,7 @@ export default function SelecPageTemplate() {
 
   const selectedTemplate = useMemo(
     () => PAGE_TEMPLATES.find((template) => template.id === selectedId) ?? null,
-    [selectedId],
+    [selectedId]
   );
 
   const handleSelect = useCallback(
@@ -42,109 +42,107 @@ export default function SelecPageTemplate() {
       }
       setSelectedId(id);
     },
-    [dispatch],
+    [dispatch]
   );
 
   const handleChangeTemplate = useCallback(() => setSelectedId(null), []);
 
   return (
-    <Box data-testid="adm-page-creator-select-page-template-selec-page-template"
+    <Box
+      data-testid="adm-page-creator-select-page-template-selec-page-template"
       component="main"
       sx={{
         minHeight: '100vh',
-        px: { xs: 2, md: 4 },
+        // O AdminLayout deixa 32px de cada lado no desktop; anulá-los aqui faz
+        // a largura abaixo valer sobre a área inteira do conteúdo.
+        mx: { xs: 0, md: -4 },
         pb: { xs: 4, md: 6 },
         bgcolor: 'background.default',
       }}
     >
-      <BackHeader title="Criador de Páginas" />
+      {/* 95% da área de conteúdo no desktop e 98% no celular. */}
+      <Box sx={{ width: { xs: '98%', md: '95%' }, mx: 'auto', minWidth: 0 }}>
+        <BackHeader title="Criador de Páginas" />
 
-      {!selectedTemplate ? (
-        <Fade in appear>
-          <Box sx={{ maxWidth: 1100, mx: 'auto' }}>
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{ mb: { xs: 2.5, md: 3.5 } }}
-            >
-              Escolha o modelo da página que você quer criar.
-            </Typography>
+        {!selectedTemplate ? (
+          <Fade in appear>
+            <Box sx={{ width: '100%' }}>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: { xs: 2.5, md: 3.5 } }}>
+                Escolha o modelo da página que você quer criar.
+              </Typography>
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  sm: 'repeat(2, 1fr)',
-                  md: 'repeat(3, 1fr)',
-                },
-                gap: { xs: 2, md: 2.5 },
-              }}
-            >
-              {PAGE_TEMPLATES.map((template) => (
-                <PageTemplateCard
-                  key={template.id}
-                  template={template}
-                  onSelect={handleSelect}
-                />
-              ))}
-            </Box>
-          </Box>
-        </Fade>
-      ) : (
-        <Fade in appear>
-          <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
-            <Paper
-              variant="outlined"
-              sx={{
-                position: 'sticky',
-                // O AdminLayout só monta a AppBar fixa abaixo de `md`; sem esse
-                // deslocamento o cabeçalho gruda atrás dela no celular.
-                top: { xs: 56, sm: 64, md: 0 },
-                zIndex: 2,
-                px: { xs: 2, md: 2.5 },
-                py: { xs: 1.25, md: 1.5 },
-                mb: { xs: 2, md: 3 },
-                borderRadius: 2,
-                bgcolor: 'background.paper',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 2,
-                flexWrap: 'wrap',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                {selectedTemplate.icon}
-                <Box>
-                  <Typography variant="overline" color="text.secondary">
-                    Novo conteúdo
-                  </Typography>
-                  <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
-                    {selectedTemplate.title}
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Button
-                type="button"
-                variant="outlined"
-                size="medium"
-                startIcon={<ArrowBack />}
-                onClick={handleChangeTemplate}
-                fullWidth={isMobile}
-                sx={{ minHeight: 44, textTransform: 'none' }}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: 'repeat(2, 1fr)',
+                    md: 'repeat(3, 1fr)',
+                  },
+                  gap: { xs: 2, md: 2.5 },
+                }}
               >
-                Trocar modelo
-              </Button>
-            </Paper>
+                {PAGE_TEMPLATES.map((template) => (
+                  <PageTemplateCard key={template.id} template={template} onSelect={handleSelect} />
+                ))}
+              </Box>
+            </Box>
+          </Fade>
+        ) : (
+          <Fade in appear>
+            <Box sx={{ width: '100%', minWidth: 0 }}>
+              <Paper
+                variant="outlined"
+                sx={{
+                  position: 'sticky',
+                  // O AdminLayout só monta a AppBar fixa abaixo de `md`; sem esse
+                  // deslocamento o cabeçalho gruda atrás dela no celular.
+                  top: { xs: 56, sm: 64, md: 0 },
+                  zIndex: 2,
+                  px: { xs: 2, md: 2.5 },
+                  py: { xs: 1.25, md: 1.5 },
+                  mb: { xs: 2, md: 3 },
+                  borderRadius: 2,
+                  bgcolor: 'background.paper',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  {selectedTemplate.icon}
+                  <Box>
+                    <Typography variant="overline" color="text.secondary">
+                      Novo conteúdo
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
+                      {selectedTemplate.title}
+                    </Typography>
+                  </Box>
+                </Box>
 
-            <Divider sx={{ mb: { xs: 2, md: 3 } }} />
+                <Button
+                  type="button"
+                  variant="outlined"
+                  size="medium"
+                  startIcon={<ArrowBack />}
+                  onClick={handleChangeTemplate}
+                  fullWidth={isMobile}
+                  sx={{ minHeight: 44, textTransform: 'none' }}
+                >
+                  Trocar modelo
+                </Button>
+              </Paper>
 
-            {selectedTemplate.render()}
-          </Box>
-        </Fade>
-      )}
+              <Divider sx={{ mb: { xs: 2, md: 3 } }} />
+
+              {selectedTemplate.render()}
+            </Box>
+          </Fade>
+        )}
+      </Box>
     </Box>
   );
 }

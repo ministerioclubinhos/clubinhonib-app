@@ -47,6 +47,15 @@ interface CreatedPage {
   id: string;
 }
 
+/** A edição de galeria abre com as seções recolhidas: abre todas para mexer no conteúdo. */
+async function expandImageSections(page: Page): Promise<void> {
+  const toggles = page.getByTestId('image-section-toggle');
+  await expect(toggles.first()).toBeVisible();
+  for (const toggle of await toggles.all()) {
+    if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+  }
+}
+
 /** Confirma a remoção de um item ou de uma seção dentro do formulário. */
 async function confirmRemoval(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog').last();
@@ -306,6 +315,7 @@ test.describe('Edição de páginas: só o arquivo removido sai do S3', () => {
     expect(mantida?.url && removida?.url, 'o seed precisava ter as duas fotos').toBeTruthy();
 
     await page.goto(`${EDIT_ROUTES.imagePage}/${gallery.id}`);
+    await expandImageSections(page);
     const form = page.getByTestId('image-pages-image-page-form');
     await expect(form).toBeVisible();
 
@@ -341,6 +351,7 @@ test.describe('Edição de páginas: só o arquivo removido sai do S3', () => {
     const removida = onlyUploadedUrl(antes.sections.flatMap((section) => (section.caption === 'Seção que sai' ? section.mediaItems : [])));
 
     await page.goto(`${EDIT_ROUTES.imagePage}/${gallery.id}`);
+    await expandImageSections(page);
     const form = page.getByTestId('image-pages-image-page-form');
     await expect(form.getByTestId('image-pages-image-section-editor')).toHaveCount(2);
 
@@ -369,6 +380,7 @@ test.describe('Edição de páginas: só o arquivo removido sai do S3', () => {
     const antiga = onlyUploadedUrl(gallery.sections[0].mediaItems);
 
     await page.goto(`${EDIT_ROUTES.imagePage}/${gallery.id}`);
+    await expandImageSections(page);
     const form = page.getByTestId('image-pages-image-page-form');
     const section = form.getByTestId('image-pages-image-section-editor').first();
     await section.getByRole('button', { name: 'Adicionar imagens' }).click();

@@ -32,7 +32,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import UnsavedChangesDialog from '@/components/common/modal/UnsavedChangesDialog';
 import { useGuardedExit } from '@/hooks';
 import IdeasSectionEditor from './components/IdeasSectionEditor';
-import IdeasSectionOutline from './components/IdeasSectionOutline';
+import SectionOutline from '@/components/common/section-outline/SectionOutline';
 import {
   IDEAS_AUTO_COLLAPSE_THRESHOLD,
   IDEAS_PAGE_ROUTES,
@@ -471,7 +471,7 @@ export default function IdeasPageForm({ fromTemplatePage = false }: IdeasPageFor
                 <Typography component="h3" variant="subtitle2" sx={{ mb: 0.5 }}>
                   Ir para a seção
                 </Typography>
-                <IdeasSectionOutline items={outlineItems} onSelect={goToSection} />
+                <SectionOutline items={outlineItems} onSelect={goToSection} />
               </>
             )}
             <Divider sx={{ my: 2 }} />

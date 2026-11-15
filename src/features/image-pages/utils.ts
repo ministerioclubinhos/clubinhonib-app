@@ -1,7 +1,9 @@
 import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
-import { IMAGE_PAGE_PAYLOAD_FIELD } from './constants';
+import { getMediaPreviewUrl } from '@/utils/getMediaPreviewUrl';
+import { IMAGE_PAGE_PAYLOAD_FIELD, IMAGE_TITLE_MAX_LENGTH } from './constants';
 import {
   GalleryMediaRequest,
+  ImagePageFormErrors,
   ImagePageFormValues,
   ImagePageRequest,
   ImagePageResponse,
@@ -25,10 +27,8 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 /** Nome do campo multipart de uma imagem enviada. */
-export const buildMediaFieldKey = (
-  sectionIndex: number,
-  mediaIndex: number,
-): string => `file_sec${sectionIndex}_mid${mediaIndex}`;
+export const buildMediaFieldKey = (sectionIndex: number, mediaIndex: number): string =>
+  `file_sec${sectionIndex}_mid${mediaIndex}`;
 
 /** True quando a imagem é um arquivo enviado, e não um link. */
 export const isUploadedMedia = (media: MediaItem): boolean =>
@@ -43,12 +43,10 @@ export const toMediaRequest = (
   media: MediaItem,
   sectionIndex: number,
   mediaIndex: number,
-  formData: FormData,
+  formData: FormData
 ): GalleryMediaRequest => {
   const hasNewFile = Boolean(media.file);
-  const fieldKey = hasNewFile
-    ? buildMediaFieldKey(sectionIndex, mediaIndex)
-    : undefined;
+  const fieldKey = hasNewFile ? buildMediaFieldKey(sectionIndex, mediaIndex) : undefined;
 
   if (hasNewFile && fieldKey && media.file) {
     formData.append(fieldKey, media.file);
@@ -75,7 +73,7 @@ export const buildImagePagePayload = (
   values: ImagePageFormValues,
   sections: ImageSectionDraft[],
   formData: FormData,
-  pageId?: string,
+  pageId?: string
 ): ImagePageRequest => ({
   ...(pageId ? { id: pageId } : {}),
   title: values.title.trim(),
@@ -87,7 +85,7 @@ export const buildImagePagePayload = (
     description: section.description,
     public: section.public,
     mediaItems: section.mediaItems.map((media, mediaIndex) =>
-      toMediaRequest(media, sectionIndex, mediaIndex, formData),
+      toMediaRequest(media, sectionIndex, mediaIndex, formData)
     ),
   })),
 });
@@ -96,31 +94,27 @@ export const buildImagePagePayload = (
 export const buildImagePageFormData = (
   values: ImagePageFormValues,
   sections: ImageSectionDraft[],
-  pageId?: string,
+  pageId?: string
 ): FormData => {
   const formData = new FormData();
 
   formData.append(
     IMAGE_PAGE_PAYLOAD_FIELD,
-    JSON.stringify(buildImagePagePayload(values, sections, formData, pageId)),
+    JSON.stringify(buildImagePagePayload(values, sections, formData, pageId))
   );
 
   return formData;
 };
 
 /** Valores iniciais do formulário a partir da galeria carregada. */
-export const toFormValues = (
-  page: ImagePageResponse | null,
-): ImagePageFormValues => ({
+export const toFormValues = (page: ImagePageResponse | null): ImagePageFormValues => ({
   title: page?.title ?? '',
   description: page?.description ?? '',
   public: page?.public ?? true,
 });
 
 /** Seções da galeria no formato editável do formulário. */
-export const toSectionDrafts = (
-  page: ImagePageResponse | null,
-): ImageSectionDraft[] =>
+export const toSectionDrafts = (page: ImagePageResponse | null): ImageSectionDraft[] =>
   (page?.sections ?? []).map((section) => ({
     id: section.id,
     caption: section.caption,
@@ -170,3 +164,49 @@ export function parseSortOption(value: string): {
     order: order === 'ASC' ? 'ASC' : 'DESC',
   };
 }
+
+/** Chave estável da seção: o id salvo ou o id local de uma seção nova. */
+export const sectionKeyOf = (section: ImageSectionDraft): string =>
+  section.id ?? section.clientId ?? '';
+
+/** Seção nova e vazia. Nasce pública, como sempre nasceu. */
+export const createImageSectionDraft = (): ImageSectionDraft => ({
+  clientId: crypto.randomUUID(),
+  caption: '',
+  description: '',
+  public: true,
+  mediaItems: [],
+});
+
+/** Texto que identifica a seção na tela: a legenda ou "Seção N". */
+export const sectionLabelOf = (section: ImageSectionDraft, index: number): string =>
+  section.caption.trim() || `Seção ${index + 1}`;
+
+/** True quando a legenda (ou o número) da seção contém a busca. */
+export const sectionMatchesQuery = (
+  section: ImageSectionDraft,
+  index: number,
+  query: string
+): boolean => {
+  const term = query.trim().toLocaleLowerCase('pt-BR');
+  if (!term) return true;
+  return section.caption.toLocaleLowerCase('pt-BR').includes(term) || String(index + 1) === term;
+};
+
+/** Valida o que a API também cobra, para o erro aparecer antes do envio. */
+export const validateImagePageForm = (
+  values: ImagePageFormValues,
+  sections: ImageSectionDraft[]
+): ImagePageFormErrors => ({
+  title: !values.title.trim() || values.title.length > IMAGE_TITLE_MAX_LENGTH,
+  description: !values.description.trim(),
+  sections: sections.length === 0,
+  captions: sections.some((section) => section.caption.length > IMAGE_TITLE_MAX_LENGTH),
+});
+
+/** URL que a miniatura mostra: a local de um arquivo novo ou a da prévia. */
+export const imageThumbnailUrl = (media: MediaItem): string => getMediaPreviewUrl(media);
+
+/** Rótulo da imagem para leitores de tela e botões: título, arquivo ou posição. */
+export const imageLabelOf = (media: MediaItem, mediaIndex: number): string =>
+  media.title?.trim() || media.originalName || `Imagem ${mediaIndex + 1}`;

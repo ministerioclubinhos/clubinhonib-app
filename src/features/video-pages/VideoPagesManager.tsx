@@ -39,8 +39,7 @@ export default function VideoPagesManager() {
     refresh,
   } = useVideoPages();
 
-  const { saving, actionError, setActionError, remove } =
-    useVideoPageMutations(refresh);
+  const { saving, actionError, setActionError, remove } = useVideoPageMutations(refresh);
 
   const [toDelete, setToDelete] = useState<VideoPageSummary | null>(null);
 
@@ -61,16 +60,14 @@ export default function VideoPagesManager() {
       label: 'Situação',
       value: filters.visibility,
       options: [...VIDEO_PAGE_VISIBILITY_OPTIONS],
-      onChange: (value) =>
-        setFilters((previous) => ({ ...previous, visibility: value })),
+      onChange: (value) => setFilters((previous) => ({ ...previous, visibility: value })),
     },
     {
       id: 'sort',
       label: 'Ordenar por',
       value: `${filters.sort}:${filters.order}`,
       options: [...VIDEO_PAGE_SORT_OPTIONS],
-      onChange: (value) =>
-        setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
+      onChange: (value) => setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
     },
   ];
 
@@ -87,7 +84,8 @@ export default function VideoPagesManager() {
   );
 
   return (
-    <ListingLayout data-testid="video-pages-video-pages-manager"
+    <ListingLayout
+      data-testid="video-pages-video-pages-manager"
       title="Páginas de vídeos"
       summary={`${total} ${total === 1 ? 'página' : 'páginas'}`}
       toolbar={

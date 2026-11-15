@@ -11,6 +11,7 @@ import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 export { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 
 import { useAbortController, useDebouncedValue } from '@/hooks';
+import type { SectionApiErrors } from '@/components/common/section-outline/types';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
 import {
@@ -34,7 +35,6 @@ import {
   IdeasPageFormValues,
   IdeasPageResponse,
   IdeasPageSummary,
-  IdeasSectionApiErrors,
   IdeasSectionDraft,
 } from './types';
 import {
@@ -208,7 +208,7 @@ export function useIdeasPageForm({
     toSectionDrafts(isCreation ? null : page)
   );
   const [errors, setErrors] = useState<IdeasPageFormErrors>(NO_ERRORS);
-  const [sectionApiErrors, setSectionApiErrors] = useState<IdeasSectionApiErrors>({});
+  const [sectionApiErrors, setSectionApiErrors] = useState<SectionApiErrors>({});
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<IdeasPageFeedback | null>(null);

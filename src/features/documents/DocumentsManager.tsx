@@ -148,6 +148,10 @@ export default function DocumentsManager() {
             open={Boolean(details)}
             document={details}
             onClose={() => setDetails(null)}
+            onEdit={(item) => {
+              setDetails(null);
+              openEdit(item);
+            }}
           />
 
           <MediaDocumentPreviewModal

@@ -127,12 +127,14 @@ export default function MeditationsManager() {
           <MeditationDaysDialog
             meditation={daysOf}
             onSelectDay={setSelectedDay}
+            onEdit={(item) => navigate(meditationEditPath(item.id))}
             onClose={() => setDaysOf(null)}
           />
 
           <DayDetailsDialog
             day={selectedDay}
             onClose={() => setSelectedDay(null)}
+            onEdit={daysOf ? () => navigate(meditationEditPath(daysOf.id)) : undefined}
           />
 
           <MediaDocumentPreviewModal

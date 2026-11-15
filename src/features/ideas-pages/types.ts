@@ -1,3 +1,4 @@
+import type { SectionApiErrors } from '@/components/common/section-outline/types';
 import type { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 import type { Type as RouteType } from '@/store/slices/route/routeSlice';
 
@@ -169,9 +170,6 @@ export interface IdeasApiFieldError {
   message: string;
 }
 
-/** Mensagens da API agrupadas pelo índice (zero-based) da seção afetada. */
-export type IdeasSectionApiErrors = Record<number, string[]>;
-
 export interface IdeasPageFormProps {
   fromTemplatePage?: boolean;
 }
@@ -188,20 +186,6 @@ export interface IdeasSectionEditorProps {
   onExpandedChange: (expanded: boolean) => void;
   onDraftChange?: (hasDraft: boolean, mediaTypes: MediaType[]) => void;
   focusRequest?: IdeasMediaFocusRequest;
-}
-/** Item do índice lateral de seções. */
-export interface IdeasSectionOutlineItem {
-  key: string;
-  index: number;
-  title: string;
-  public: boolean;
-  mediaCount: number;
-  hasError: boolean;
-  hasDraft: boolean;
-}
-export interface IdeasSectionOutlineProps {
-  items: IdeasSectionOutlineItem[];
-  onSelect: (key: string) => void;
 }
 export interface IdeasMediaFocusRequest {
   sectionKey: string;
@@ -247,7 +231,7 @@ export interface UseIdeasPageFormResult {
   setSections: (sections: IdeasSectionDraft[]) => void;
   errors: IdeasPageFormErrors;
   /** Erros por seção devolvidos pela API; limpos ao editar ou salvar de novo. */
-  sectionApiErrors: IdeasSectionApiErrors;
+  sectionApiErrors: SectionApiErrors;
   isDirty: boolean;
   saving: boolean;
   feedback: IdeasPageFeedback | null;

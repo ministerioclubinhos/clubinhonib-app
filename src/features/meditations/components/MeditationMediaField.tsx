@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { UploadFile } from '@mui/icons-material';
 
+import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 import { MediaPlatform, MediaUploadType } from '@/store/slices/types';
 
 import { MeditationFormValues } from '../types';
@@ -26,6 +27,8 @@ interface MeditationMediaFieldProps {
   ) => void;
   /** Nome do arquivo já salvo, exibido quando nenhum novo foi escolhido. */
   savedFileName?: string;
+  /** Falta o link ou o arquivo: marca o campo e mostra o motivo. */
+  error?: boolean;
 }
 
 const PLATFORM_LABELS: Record<MediaPlatform, string> = {
@@ -48,6 +51,7 @@ export default function MeditationMediaField({
   values,
   onChange,
   savedFileName,
+  error = false,
 }: MeditationMediaFieldProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -106,7 +110,12 @@ export default function MeditationMediaField({
               required
               value={values.url}
               onChange={(event) => onChange('url', event.target.value)}
-              helperText="Endereço do PDF ou documento da meditação"
+              error={error}
+              helperText={
+                error
+                  ? FORM_VALIDATION_MESSAGES.MEDITATION_MEDIA_REQUIRED
+                  : 'Endereço do PDF ou documento da meditação'
+              }
             />
           </Grid2>
         </>
@@ -140,10 +149,13 @@ export default function MeditationMediaField({
             <Box>
               <Typography
                 variant="body2"
-                color="text.secondary"
+                color={error ? 'error' : 'text.secondary'}
+                role={error ? 'alert' : undefined}
                 sx={{ wordBreak: 'break-all' }}
               >
-                {fileName || 'Nenhum arquivo selecionado'}
+                {error
+                  ? FORM_VALIDATION_MESSAGES.MEDITATION_MEDIA_REQUIRED
+                  : fileName || 'Nenhum arquivo selecionado'}
               </Typography>
               {!values.file && savedFileName && (
                 <Typography variant="caption" color="text.secondary">

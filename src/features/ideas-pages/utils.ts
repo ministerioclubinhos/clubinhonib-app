@@ -6,7 +6,6 @@ import {
   IDEAS_MEDIA_TABS,
   IDEAS_PAGE_CARD_DESCRIPTION_MAX_CHARS,
   IDEAS_PAGE_PAYLOAD_FIELD,
-  IDEAS_SECTION_ERROR_PATH,
 } from './constants';
 import {
   IdeasMediaRequest,
@@ -18,9 +17,7 @@ import {
   IdeasPageSortOrder,
   IdeasSectionDraft,
   IdeasPendingMedia,
-  IdeasSectionApiErrors,
 } from './types';
-import { getApiErrorDetails } from '@/utils/apiError';
 
 /** Data no formato do Brasil, ou um aviso quando não há data. */
 export const formatPtBrDate = (iso?: string): string =>
@@ -255,29 +252,7 @@ export const pendingIdeasMedia = (
     );
   });
 
-const isFieldError = (value: unknown): value is { field: string; message: string } =>
-  typeof value === 'object' &&
-  value !== null &&
-  typeof (value as { field?: unknown }).field === 'string' &&
-  typeof (value as { message?: unknown }).message === 'string';
-
-/**
- * Agrupa por seção os `fieldErrors` da API, para o editor apontar onde está o
- * problema. Erros fora de `sections.N.*` ficam só na mensagem geral.
- */
-export const sectionApiErrorsFrom = (error: unknown): IdeasSectionApiErrors => {
-  const fieldErrors = getApiErrorDetails(error)?.fieldErrors;
-  if (!Array.isArray(fieldErrors)) return {};
-  return fieldErrors.filter(isFieldError).reduce<IdeasSectionApiErrors>((grouped, item) => {
-    const match = IDEAS_SECTION_ERROR_PATH.exec(item.field);
-    if (!match) return grouped;
-    const index = Number(match[1]);
-    const messages = grouped[index] ?? [];
-    return messages.includes(item.message)
-      ? grouped
-      : { ...grouped, [index]: [...messages, item.message] };
-  }, {});
-};
+export { sectionApiErrorsFrom } from '@/utils/sectionFieldErrors';
 
 /** Chave estável da seção: o id salvo ou o id local de uma seção nova. */
 export const sectionKeyOf = (section: IdeasSectionDraft): string =>

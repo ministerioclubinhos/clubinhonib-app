@@ -39,8 +39,7 @@ export default function ImagePagesManager() {
     refresh,
   } = useImagePages();
 
-  const { saving, actionError, setActionError, remove } =
-    useImagePageMutations(refresh);
+  const { saving, actionError, setActionError, remove } = useImagePageMutations(refresh);
 
   const [toDelete, setToDelete] = useState<ImagePageSummary | null>(null);
 
@@ -61,16 +60,14 @@ export default function ImagePagesManager() {
       label: 'Situação',
       value: filters.visibility,
       options: [...IMAGE_PAGE_VISIBILITY_OPTIONS],
-      onChange: (value) =>
-        setFilters((previous) => ({ ...previous, visibility: value })),
+      onChange: (value) => setFilters((previous) => ({ ...previous, visibility: value })),
     },
     {
       id: 'sort',
       label: 'Ordenar por',
       value: `${filters.sort}:${filters.order}`,
       options: [...IMAGE_PAGE_SORT_OPTIONS],
-      onChange: (value) =>
-        setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
+      onChange: (value) => setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
     },
   ];
 
@@ -87,7 +84,8 @@ export default function ImagePagesManager() {
   );
 
   return (
-    <ListingLayout data-testid="image-pages-image-pages-manager"
+    <ListingLayout
+      data-testid="image-pages-image-pages-manager"
       title="Páginas de fotos"
       summary={`${total} ${total === 1 ? 'galeria' : 'galerias'}`}
       toolbar={

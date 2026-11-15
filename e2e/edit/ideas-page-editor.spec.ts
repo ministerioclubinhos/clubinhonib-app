@@ -167,69 +167,55 @@ test.describe('Editor de páginas de ideias', () => {
     expect(patchCount).toBe(1);
   });
 
-  test('mantém os valores e uma única mensagem quando a API recusa o salvamento', async ({
+  test('edição obsoleta: a API recusa de verdade, aponta a seção e preserva o que foi digitado', async ({
     page,
   }) => {
     const idea = await seed();
-    await page.route(`**${ENDPOINT}/${idea.id}`, async (route) => {
-      if (route.request().method() !== 'PATCH') return route.fallback();
-      await route.fulfill({
-        status: 422,
-        json: {
-          success: false,
-          error: { code: 'VAL_4002', message: 'Arquivo de substituição ausente.' },
-        },
-      });
-    });
+    const before = await api.get<IdeasPageResponse>(`${ENDPOINT}/${idea.id}`);
+    const stale = before.sections.findIndex((section) => section.title === 'Segunda ideia');
     await page.goto(`/adm/editar-pagina-ideias/${idea.id}`);
+    await expect(page.getByTestId(EDITOR)).toHaveCount(2);
+
+    // Outra pessoa remove a segunda seção enquanto este editor está aberto.
+    const kept = before.sections.filter((section) => section.title !== 'Segunda ideia');
+    const removal = await api.sendMultipart('PATCH', `${ENDPOINT}/${idea.id}`, {
+      ideasMaterialsPageData: JSON.stringify({
+        id: idea.id,
+        title: before.title,
+        description: before.description,
+        public: before.public,
+        sections: kept.map((section) => ({
+          id: section.id,
+          title: section.title,
+          description: section.description,
+          public: section.public,
+          medias: [],
+        })),
+      }),
+    });
+    expect(removal.status).toBeLessThan(300);
+
     await page.getByRole('textbox', { name: 'Título da página' }).fill('Meu título preservado');
     await page.getByTestId('ideas-page-save').click();
+
     await expect(page.getByTestId('ideas-page-feedback')).toContainText(
-      'Arquivo de substituição ausente.'
+      `Seção ${stale + 1}: Identificador de seção inválido`
     );
+    const alert = page.getByTestId(EDITOR).nth(stale).getByTestId('ideas-section-api-errors');
+    await expect(alert).toContainText('Recarregue a página');
     await expect(
-      page.getByRole('alert').filter({ hasText: 'Arquivo de substituição ausente.' })
-    ).toHaveCount(1);
+      page
+        .getByTestId(EDITOR)
+        .nth(1 - stale)
+        .getByTestId('ideas-section-api-errors')
+    ).toHaveCount(0);
     await expect(page.getByRole('textbox', { name: 'Título da página' })).toHaveValue(
       'Meu título preservado'
     );
     await expect(page.getByTestId('ideas-page-save')).toBeEnabled();
-    expect((await api.get<IdeasPageResponse>(`${ENDPOINT}/${idea.id}`)).title).toBe(idea.title);
-  });
+    expect((await api.get<IdeasPageResponse>(`${ENDPOINT}/${idea.id}`)).title).toBe(before.title);
 
-  test('aponta a seção recusada pela API e abre a seção recolhida', async ({ page }) => {
-    const idea = await seed();
-    await page.route(`**${ENDPOINT}/${idea.id}`, async (route) => {
-      if (route.request().method() !== 'PATCH') return route.fallback();
-      await route.fulfill({
-        status: 422,
-        json: {
-          success: false,
-          error: {
-            code: 'VAL_4002',
-            message: 'Seção 2, material 1: tipo inválido.',
-            details: {
-              fieldErrors: [
-                {
-                  field: 'sections.1.medias.0.mediaType',
-                  message: 'Seção 2, material 1: tipo inválido.',
-                },
-              ],
-            },
-          },
-        },
-      });
-    });
-    await page.goto(`/adm/editar-pagina-ideias/${idea.id}`);
-    const sections = page.getByTestId(EDITOR);
-    await sections.nth(1).getByTestId('ideas-section-toggle').click();
-    await page.getByRole('textbox', { name: 'Título da página' }).fill('Título alterado');
-    await page.getByTestId('ideas-page-save').click();
-    const apiErrors = sections.nth(1).getByTestId('ideas-section-api-errors');
-    await expect(apiErrors).toBeVisible();
-    await expect(apiErrors).toContainText('tipo inválido');
-    await expect(sections.nth(0).getByTestId('ideas-section-api-errors')).toHaveCount(0);
-    // Editar a lista invalida os índices: o aviso some.
+    // Editar a lista invalida as posições: o aviso da seção some.
     await page.getByTestId('ideas-page-add-section').click();
     await expect(page.getByTestId('ideas-section-api-errors')).toHaveCount(0);
   });
@@ -261,7 +247,7 @@ test.describe('Editor de páginas de ideias', () => {
     await expect(page.getByTestId('ideas-section-search-result')).toContainText('1 de 8');
     await expect(page.locator(`[data-testid="${EDITOR}"]:visible`)).toHaveCount(1);
     await page.getByTestId('ideas-section-search').fill('');
-    await page.getByTestId('ideas-section-outline-item').nth(5).click();
+    await page.getByTestId('section-outline-item').nth(5).click();
     await expect(toggles.nth(5)).toHaveAttribute('aria-expanded', 'true');
     await expect(toggles.nth(4)).toHaveAttribute('aria-expanded', 'false');
     await page.getByTestId('ideas-sections-expand-all').click();
@@ -328,22 +314,17 @@ test.describe('Editor de páginas de ideias', () => {
     await close();
   });
 
-  test('recupera falha de carregamento e funciona em tela estreita', async ({ page }) => {
+  test('página inexistente mostra o erro real da API, oferece tentar de novo e funciona em tela estreita', async ({
+    page,
+  }) => {
     const idea = await seed();
-    let shouldFail = true;
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.route(`**${ENDPOINT}/${idea.id}`, async (route) => {
-      if (shouldFail && route.request().method() === 'GET')
-        return route.fulfill({
-          status: 503,
-          json: { success: false, error: { message: 'Indisponível temporariamente' } },
-        });
-      return route.fallback();
-    });
-    await page.goto(`/adm/editar-pagina-ideias/${idea.id}`);
+    await page.goto('/adm/editar-pagina-ideias/00000000-0000-4000-8000-000000000000');
     await expect(page.getByTestId('ideas-page-load-error')).toBeVisible();
-    shouldFail = false;
     await page.getByRole('button', { name: 'Tentar novamente' }).click();
+    await expect(page.getByTestId('ideas-page-load-error')).toBeVisible();
+
+    await page.goto(`/adm/editar-pagina-ideias/${idea.id}`);
     await expect(page.getByRole('textbox', { name: 'Título da página' })).toHaveValue(idea.title);
     await expect(page.getByTestId('ideas-page-summary')).toBeVisible();
     expect(

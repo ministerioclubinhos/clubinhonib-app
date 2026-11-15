@@ -3,6 +3,7 @@ import type { AxiosRequestConfig } from 'axios';
 import api from '@/config/axiosConfig';
 import {
   IMAGE_PAGES_ENDPOINT,
+  IMAGE_PAGE_SAVE_TIMEOUT_MS,
   IMAGE_SECTIONS_PAGE_SIZE,
   MULTIPART_HEADERS,
 } from './constants';
@@ -21,7 +22,7 @@ import {
  */
 export async function apiListImagePages(
   query: ImagePageQuery,
-  config?: AxiosRequestConfig,
+  config?: AxiosRequestConfig
 ): Promise<PaginatedImagePages> {
   const { data } = await api.get<PaginatedImagePages>(IMAGE_PAGES_ENDPOINT, {
     ...config,
@@ -33,12 +34,9 @@ export async function apiListImagePages(
 /** Carrega uma galeria pelo id, com suas seções. */
 export async function apiGetImagePage(
   id: string,
-  config?: AxiosRequestConfig,
+  config?: AxiosRequestConfig
 ): Promise<ImagePageResponse> {
-  const { data } = await api.get<ImagePageResponse>(
-    `${IMAGE_PAGES_ENDPOINT}/${id}`,
-    config,
-  );
+  const { data } = await api.get<ImagePageResponse>(`${IMAGE_PAGES_ENDPOINT}/${id}`, config);
   return data;
 }
 
@@ -46,37 +44,36 @@ export async function apiGetImagePage(
 export async function apiGetImageSections(
   pageId: string,
   page: number,
-  limit: number = IMAGE_SECTIONS_PAGE_SIZE,
+  limit: number = IMAGE_SECTIONS_PAGE_SIZE
 ): Promise<PaginatedImageSectionsResponse> {
   const { data } = await api.get<PaginatedImageSectionsResponse>(
     `${IMAGE_PAGES_ENDPOINT}/${pageId}/sections`,
-    { params: { page, limit } },
+    { params: { page, limit } }
   );
   return data;
 }
 
+/** O formulário mostra o erro de salvamento por conta própria: sem toast global. */
 /** Cria uma galeria a partir do corpo multipart. */
-export async function apiCreateImagePage(
-  formData: FormData,
-): Promise<ImagePageResponse> {
-  const { data } = await api.post<ImagePageResponse>(
-    IMAGE_PAGES_ENDPOINT,
-    formData,
-    { headers: MULTIPART_HEADERS },
-  );
+export async function apiCreateImagePage(formData: FormData): Promise<ImagePageResponse> {
+  const { data } = await api.post<ImagePageResponse>(IMAGE_PAGES_ENDPOINT, formData, {
+    headers: MULTIPART_HEADERS,
+    timeout: IMAGE_PAGE_SAVE_TIMEOUT_MS,
+    skipGlobalError: true,
+  });
   return data;
 }
 
 /** Atualiza uma galeria a partir do corpo multipart. */
 export async function apiUpdateImagePage(
   id: string,
-  formData: FormData,
+  formData: FormData
 ): Promise<ImagePageResponse> {
-  const { data } = await api.patch<ImagePageResponse>(
-    `${IMAGE_PAGES_ENDPOINT}/${id}`,
-    formData,
-    { headers: MULTIPART_HEADERS },
-  );
+  const { data } = await api.patch<ImagePageResponse>(`${IMAGE_PAGES_ENDPOINT}/${id}`, formData, {
+    headers: MULTIPART_HEADERS,
+    timeout: IMAGE_PAGE_SAVE_TIMEOUT_MS,
+    skipGlobalError: true,
+  });
   return data;
 }
 

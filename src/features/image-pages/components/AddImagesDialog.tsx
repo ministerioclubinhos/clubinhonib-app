@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { DragEvent, useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid2,
   IconButton,
   Paper,
   Stack,
@@ -18,12 +18,9 @@ import {
 } from '@mui/material';
 import { Delete, UploadFile } from '@mui/icons-material';
 
-import {
-  MediaItem,
-  MediaPlatform,
-  MediaType,
-  MediaUploadType,
-} from '@/store/slices/types';
+import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
+
+import { IMAGE_ACCEPT } from '../constants';
 
 interface AddImagesDialogProps {
   open: boolean;
@@ -44,32 +41,68 @@ const toDraft = (file: File): MediaItem => ({
   file,
 });
 
+const isImageFile = (file: File): boolean => file.type.startsWith('image/');
+
 /** Seleção de imagens que serão acrescentadas a uma seção. */
-export default function AddImagesDialog({
-  open,
-  onClose,
-  onConfirm,
-}: AddImagesDialogProps) {
+export default function AddImagesDialog({ open, onClose, onConfirm }: AddImagesDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [images, setImages] = useState<MediaItem[]>([]);
+  const [rejected, setRejected] = useState<string[]>([]);
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // As URLs locais só devem ser liberadas quando a imagem é descartada, e não
+  // quando é confirmada: a seção continua usando-as como miniatura.
+  const discardable = useRef(new Set<string>());
+
+  const release = (items: MediaItem[]) =>
+    items.forEach((item) => {
+      if (!discardable.current.has(item.url)) return;
+      URL.revokeObjectURL(item.url);
+      discardable.current.delete(item.url);
+    });
+
+  useEffect(() => {
+    const pending = discardable.current;
+    return () => pending.forEach((url) => URL.revokeObjectURL(url));
+  }, []);
+
+  const addFiles = (files: File[]) => {
+    const accepted = files.filter(isImageFile);
+    setRejected(files.filter((file) => !isImageFile(file)).map((file) => file.name));
+    if (!accepted.length) return;
+    const drafts = accepted.map(toDraft);
+    drafts.forEach((draft) => discardable.current.add(draft.url));
+    setImages((previous) => [...previous, ...drafts]);
+  };
 
   const handleSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? []);
-    if (files.length === 0) return;
-
-    setImages((previous) => [...previous, ...files.map(toDraft)]);
+    addFiles(Array.from(event.target.files ?? []));
     // Permite escolher o mesmo arquivo de novo depois de removê-lo.
     event.target.value = '';
   };
 
+  const handleDrop = (event: DragEvent<HTMLElement>) => {
+    event.preventDefault();
+    setDragging(false);
+    addFiles(Array.from(event.dataTransfer.files));
+  };
+
   const close = () => {
+    release(images);
     setImages([]);
+    setRejected([]);
     onClose();
   };
 
+  const update = (index: number, patch: Partial<MediaItem>) =>
+    setImages((previous) =>
+      previous.map((item, i) => (i === index ? { ...item, ...patch } : item))
+    );
+
   return (
-    <Dialog data-testid="image-pages-add-images-dialog"
+    <Dialog
+      data-testid="image-pages-add-images-dialog"
       open={open}
       onClose={close}
       fullWidth
@@ -79,109 +112,111 @@ export default function AddImagesDialog({
       <DialogTitle>Adicionar imagens</DialogTitle>
 
       <DialogContent dividers>
-        <Button
+        <Paper
           variant="outlined"
-          component="label"
-          startIcon={<UploadFile />}
-          fullWidth={isMobile}
-          sx={{ minHeight: 44, textTransform: 'none', mb: 2 }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={handleDrop}
+          sx={{
+            p: { xs: 2, md: 3 },
+            mb: 2,
+            borderRadius: 2,
+            borderStyle: 'dashed',
+            textAlign: 'center',
+            borderColor: dragging ? 'primary.main' : 'divider',
+            bgcolor: dragging ? 'action.hover' : undefined,
+          }}
         >
-          Escolher arquivos
-          <input
-            type="file"
-            hidden
-            multiple
-            accept="image/*"
-            onChange={handleSelect}
-          />
-        </Button>
+          <Button
+            variant="outlined"
+            component="label"
+            startIcon={<UploadFile />}
+            fullWidth={isMobile}
+            sx={{ minHeight: 44, textTransform: 'none' }}
+          >
+            Escolher arquivos
+            <input
+              ref={inputRef}
+              type="file"
+              hidden
+              multiple
+              accept={IMAGE_ACCEPT}
+              onChange={handleSelect}
+            />
+          </Button>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {isMobile ? 'Escolha da galeria ou da câmera.' : 'Ou arraste as fotos para cá.'}
+          </Typography>
+        </Paper>
+
+        {rejected.length > 0 && (
+          <Alert data-testid="image-pages-add-images-rejected" severity="warning" sx={{ mb: 2 }}>
+            Só imagens são aceitas. Ignorado: {rejected.join(', ')}.
+          </Alert>
+        )}
 
         {images.length === 0 ? (
-          <Paper
-            variant="outlined"
-            sx={{
-              p: { xs: 3, md: 4 },
-              borderRadius: 2,
-              textAlign: 'center',
-              borderStyle: 'dashed',
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              Nenhuma imagem escolhida ainda.
-            </Typography>
-          </Paper>
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
+            Nenhuma imagem escolhida ainda.
+          </Typography>
         ) : (
-          <Grid2 container spacing={2}>
+          <Stack spacing={1.5}>
             {images.map((image, index) => (
-              <Grid2 size={{ xs: 12, sm: 6 }} key={`${image.originalName}-${index}`}>
-                <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-                  <Stack direction="row" spacing={1.5} alignItems="flex-start">
-                    <Box
-                      component="img"
-                      src={image.url}
-                      alt={image.title}
-                      sx={{
-                        width: 72,
-                        height: 72,
-                        objectFit: 'cover',
-                        borderRadius: 1,
-                        flexShrink: 0,
-                      }}
+              <Paper
+                key={`${image.originalName}-${index}`}
+                variant="outlined"
+                sx={{ p: 1.5, borderRadius: 2 }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                  <Box
+                    component="img"
+                    src={image.url}
+                    alt={image.title}
+                    sx={{
+                      width: { xs: 64, sm: 88 },
+                      height: { xs: 64, sm: 88 },
+                      objectFit: 'cover',
+                      borderRadius: 1,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <TextField
+                      label="Título"
+                      fullWidth
+                      size="small"
+                      value={image.title}
+                      onChange={(event) => update(index, { title: event.target.value })}
+                      sx={{ mb: 1 }}
                     />
-
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <TextField
-                        label="Título"
-                        fullWidth
-                        size="small"
-                        value={image.title}
-                        onChange={(event) =>
-                          setImages((previous) =>
-                            previous.map((item, i) =>
-                              i === index
-                                ? { ...item, title: event.target.value }
-                                : item,
-                            ),
-                          )
-                        }
-                        sx={{ mb: 1 }}
-                      />
-                      <TextField
-                        label="Descrição"
-                        fullWidth
-                        size="small"
-                        value={image.description}
-                        onChange={(event) =>
-                          setImages((previous) =>
-                            previous.map((item, i) =>
-                              i === index
-                                ? { ...item, description: event.target.value }
-                                : item,
-                            ),
-                          )
-                        }
-                      />
-                    </Box>
-
-                    <Tooltip title="Remover">
-                      <IconButton
-                        color="error"
-                        aria-label={`Remover ${image.title}`}
-                        onClick={() =>
-                          setImages((previous) =>
-                            previous.filter((_, i) => i !== index),
-                          )
-                        }
-                        sx={{ width: 44, height: 44 }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Stack>
-                </Paper>
-              </Grid2>
+                    <TextField
+                      label="Descrição"
+                      fullWidth
+                      size="small"
+                      value={image.description}
+                      onChange={(event) => update(index, { description: event.target.value })}
+                    />
+                  </Box>
+                  <Tooltip title="Remover">
+                    <IconButton
+                      color="error"
+                      aria-label={`Remover ${image.title}`}
+                      onClick={() => {
+                        release([image]);
+                        setImages((previous) => previous.filter((_, i) => i !== index));
+                      }}
+                      sx={{ width: 44, height: 44 }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Paper>
             ))}
-          </Grid2>
+          </Stack>
         )}
       </DialogContent>
 
@@ -195,7 +230,10 @@ export default function AddImagesDialog({
           disabled={images.length === 0}
           onClick={() => {
             onConfirm(images);
+            // Mantém as URLs: agora pertencem à seção.
+            images.forEach((image) => discardable.current.delete(image.url));
             setImages([]);
+            setRejected([]);
             onClose();
           }}
           sx={{ minHeight: 44, textTransform: 'none' }}

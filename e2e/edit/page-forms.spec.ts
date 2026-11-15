@@ -44,7 +44,7 @@ test.describe('Formulários de página: edição', () => {
     await expect(form.getByLabel('Título da galeria')).toHaveValue(`E2E Galeria ${suffix}`);
     await replaceText(form.getByLabel('Título da galeria'), `E2E Galeria Editada ${suffix}`);
     await replaceText(form.getByRole('textbox', { name: /^Descrição( \*)?$/ }), 'Descrição editada');
-    await form.getByRole('checkbox').first().check();
+    await form.getByTestId('image-page-summary').getByRole('checkbox', { name: /Página/ }).check();
     await form.getByRole('button', { name: 'Salvar Galeria' }).click();
 
     await expect.poll(async () => api.get<Page>(`/image-pages/${gallery.id}`)).toMatchObject({ title: `E2E Galeria Editada ${suffix}`, description: 'Descrição editada', public: true });
@@ -69,7 +69,8 @@ test.describe('Formulários de página: edição', () => {
     await form.getByRole('button', { name: 'Salvar Galeria' }).click();
 
     await expect.poll(async () => (await api.get<VideoPage>(`/video-pages/${videos.id}`)).videos.map((v) => v.title)).toContain('Vídeo novo E2E');
-    expect((await api.get<VideoPage>(`/video-pages/${videos.id}`)).title).toBe(`E2E Vídeos Editados ${suffix}`);
+    // O título é gravado depois dos vídeos: sem esperar, a leitura corre atrás do salvamento.
+    await expect.poll(async () => (await api.get<VideoPage>(`/video-pages/${videos.id}`)).title).toBe(`E2E Vídeos Editados ${suffix}`);
   });
 
   test('materiais da semana: título, subtítulo e descrição', async ({ page }) => {

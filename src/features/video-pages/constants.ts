@@ -1,3 +1,5 @@
+import type { VideoPageFormErrors } from './types';
+
 /** Caminho base dos endpoints da galeria de vídeos. */
 export const VIDEO_PAGES_ENDPOINT = '/video-pages';
 
@@ -24,8 +26,7 @@ export const VIDEO_PAGE_ROUTES = {
 } as const;
 
 /** Caminho da edição de uma página específica. */
-export const videoPageEditPath = (id: string): string =>
-  `${VIDEO_PAGE_ROUTES.EDIT}/${id}`;
+export const videoPageEditPath = (id: string): string => `${VIDEO_PAGE_ROUTES.EDIT}/${id}`;
 
 /** Tamanho de página padrão e opções oferecidas na paginação. */
 export const VIDEO_PAGES_DEFAULT_LIMIT = 12;
@@ -45,3 +46,17 @@ export const VIDEO_PAGE_SORT_OPTIONS = [
   { value: 'title:ASC', label: 'Título (A–Z)' },
   { value: 'title:DESC', label: 'Título (Z–A)' },
 ] as const;
+
+/** Limite de caracteres do título da galeria. */
+export const VIDEO_TITLE_MAX_LENGTH = 255;
+
+/** A partir disto a busca por vídeo aparece na lista. */
+export const VIDEO_SEARCH_THRESHOLD = 6;
+
+/** Subir vídeos para o S3 demora mais que o timeout padrão. */
+export const VIDEO_PAGE_SAVE_TIMEOUT_MS = 300_000;
+
+export const VIDEO_PAGE_NO_ERRORS: VideoPageFormErrors = {
+  title: false,
+  description: false,
+};

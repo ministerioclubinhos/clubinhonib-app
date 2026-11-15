@@ -5,11 +5,26 @@ import type { MediaType } from '@/store/slices/types';
 import { MediaEditor, MEDIA_EDITOR_CONFIG } from '@/components/common/media';
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 
-import { IDEAS_MEDIA_TABS, IDEAS_MEDIA_TAB_ICONS, IDEAS_TITLE_MAX_LENGTH } from '../constants';
+import { IDEAS_MEDIA_TABS, IDEAS_TITLE_MAX_LENGTH } from '../constants';
+import {
+  AudiotrackOutlined,
+  DescriptionOutlined,
+  ImageOutlined,
+  MovieOutlined,
+} from '@mui/icons-material';
+import { MediaType as MediaTypeValue } from '@/store/slices/types';
 import { mediasOfType, replaceMediasOfType } from '../utils';
 
 import type { IdeasSectionFieldsValue, IdeasSectionFieldsProps } from '../types';
 export type { IdeasSectionFieldsValue } from '../types';
+
+/** Ícone de cada aba de mídia: o ícone reconhece o tipo mais rápido que o rótulo. */
+const IDEAS_MEDIA_TAB_ICONS = {
+  [MediaTypeValue.DOCUMENT]: DescriptionOutlined,
+  [MediaTypeValue.IMAGE]: ImageOutlined,
+  [MediaTypeValue.VIDEO]: MovieOutlined,
+  [MediaTypeValue.AUDIO]: AudiotrackOutlined,
+} as const;
 
 /**
  * Título, descrição e as abas de mídia de uma seção. Compartilhado pelo

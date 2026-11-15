@@ -1,9 +1,5 @@
-import type {
-  MediaItem,
-  MediaPlatform,
-  MediaType,
-  MediaUploadType,
-} from '@/store/slices/types';
+import type { SectionApiErrors } from '@/components/common/section-outline/types';
+import type { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 import type { Type as RouteType } from '@/store/slices/route/routeSlice';
 
 /** Imagem de uma seção, como a API devolve. */
@@ -118,6 +114,8 @@ export interface PaginatedImageSectionsResponse {
 export interface ImageSectionDraft {
   /** Presente apenas quando a seção já veio da API. */
   id?: string;
+  /** Identifica a seção nova enquanto ela ainda não tem id. */
+  clientId?: string;
   caption: string;
   description: string;
   public: boolean;
@@ -135,6 +133,10 @@ export interface ImagePageFormValues {
 export interface ImagePageFormErrors {
   title: boolean;
   description: boolean;
+  /** Nenhuma seção foi adicionada. */
+  sections: boolean;
+  /** Ao menos uma legenda passou do limite de caracteres. */
+  captions: boolean;
 }
 
 /** Imagem enviada no corpo da requisição. */
@@ -168,4 +170,49 @@ export interface ImagePageRequest {
   description: string;
   public: boolean;
   sections: ImageSectionRequest[];
+}
+
+/** Props do editor de uma seção da galeria. */
+export interface ImageSectionEditorProps {
+  section: ImageSectionDraft;
+  index: number;
+  onChange: (section: ImageSectionDraft) => void;
+  onRemove: () => void;
+  onAddImages: () => void;
+  expanded: boolean;
+  onExpandedChange: (expanded: boolean) => void;
+  /** A legenda passou do limite e precisa de revisão. */
+  captionError?: boolean;
+  /** Mensagens que a API recusou nesta seção no último salvamento. */
+  apiErrors?: string[];
+}
+
+export interface ImagePageFormProps {
+  /** True quando o admin cria a galeria a partir da galeria de modelos. */
+  fromTemplatePage?: boolean;
+}
+
+export interface ImagePageFeedback {
+  message: string;
+  severity: 'success' | 'error';
+}
+
+export interface UseImagePageFormParams {
+  isCreation: boolean;
+  page: ImagePageResponse | null;
+}
+
+export interface UseImagePageFormResult {
+  values: ImagePageFormValues;
+  setValue: <K extends keyof ImagePageFormValues>(key: K, value: ImagePageFormValues[K]) => void;
+  sections: ImageSectionDraft[];
+  setSections: (sections: ImageSectionDraft[]) => void;
+  errors: ImagePageFormErrors;
+  /** Erros por seção devolvidos pela API; limpos ao editar ou salvar de novo. */
+  sectionApiErrors: SectionApiErrors;
+  isDirty: boolean;
+  saving: boolean;
+  feedback: ImagePageFeedback | null;
+  dismissFeedback: () => void;
+  save: () => Promise<void>;
 }

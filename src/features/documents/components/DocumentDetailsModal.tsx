@@ -12,6 +12,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import LinkIcon from '@mui/icons-material/Link';
@@ -28,6 +29,8 @@ interface Props {
   open: boolean;
   onClose: () => void;
   document: DocumentResponse | null;
+  /** Abre a edição do documento mostrado. */
+  onEdit?: (document: DocumentResponse) => void;
 }
 
 const DetailField = ({ label, value }: { label: string; value?: string | number | null }) => (
@@ -41,7 +44,7 @@ const DetailField = ({ label, value }: { label: string; value?: string | number 
   </Box>
 );
 
-const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
+const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document, onEdit }) => {
   const url = document?.media?.url;
 
   const handleCopyUrl = () => {
@@ -134,6 +137,18 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        {onEdit && document && (
+          <Button
+            data-testid="document-details-edit"
+            type="button"
+            variant="outlined"
+            startIcon={<EditOutlinedIcon />}
+            onClick={() => onEdit(document)}
+            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, minHeight: 44 }}
+          >
+            Editar documento
+          </Button>
+        )}
         <Button onClick={onClose} variant="contained" sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, bgcolor: '#81d742', '&:hover': { bgcolor: '#6bb83a' } }}>
           Fechar
         </Button>

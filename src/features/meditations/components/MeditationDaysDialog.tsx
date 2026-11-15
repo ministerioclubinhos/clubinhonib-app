@@ -1,6 +1,9 @@
 import CloseIcon from '@mui/icons-material/Close';
+import EditOutlined from '@mui/icons-material/EditOutlined';
 import {
+  Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -18,6 +21,8 @@ interface Props {
   /** `null` mantém o diálogo fechado. */
   meditation: MeditationResponse | null;
   onSelectDay: (day: MeditationDayResponse) => void;
+  /** Abre a edição desta meditação. */
+  onEdit: (meditation: MeditationResponse) => void;
   onClose: () => void;
 }
 
@@ -25,6 +30,7 @@ interface Props {
 export default function MeditationDaysDialog({
   meditation,
   onSelectDay,
+  onEdit,
   onClose,
 }: Props) {
   // A API não garante a ordem dos dias; a semana é lida de segunda a sexta.
@@ -83,6 +89,23 @@ export default function MeditationDaysDialog({
           </List>
         )}
       </DialogContent>
+
+      <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+        <Button type="button" onClick={onClose} sx={{ minHeight: 44 }}>
+          Fechar
+        </Button>
+        <Button
+          data-testid="meditation-days-dialog-edit"
+          type="button"
+          variant="contained"
+          startIcon={<EditOutlined />}
+          disabled={!meditation}
+          onClick={() => meditation && onEdit(meditation)}
+          sx={{ minHeight: 44 }}
+        >
+          Editar meditação
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }

@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
   Dialog,
@@ -10,6 +11,7 @@ import {
   FormControl,
   Grid2,
   IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
@@ -21,25 +23,18 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Add, Close, Delete, Edit, UploadFile } from '@mui/icons-material';
+import { Add, Close, Search, UploadFile } from '@mui/icons-material';
 
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
-import {
-  MediaItem,
-  MediaPlatform,
-  MediaType,
-  MediaUploadType,
-} from '@/store/slices/types';
+import { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 import { validateMediaURL } from '@/utils/validateMediaURL';
 
-import { VideoDraft } from '../types';
+import MediaItemCard from '@/components/common/media/MediaItemCard';
+import MediaViewerDialog from '@/components/common/media/MediaViewerDialog';
 
-interface VideoEditorProps {
-  videos: VideoDraft[];
-  onChange: (videos: VideoDraft[]) => void;
-  /** Informa ao formulário que há um vídeo em edição ou começado. */
-  onDraftChange?: (hasDraft: boolean) => void;
-}
+import { VIDEO_SEARCH_THRESHOLD } from '../constants';
+import { VideoDraft, VideoEditorProps } from '../types';
+import { videoMatchesQuery } from '../utils';
 
 interface EditorErrors {
   title: boolean;
@@ -83,6 +78,7 @@ export default function VideoEditor({
   videos,
   onChange,
   onDraftChange,
+  apiErrors,
 }: VideoEditorProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -92,12 +88,16 @@ export default function VideoEditor({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [errors, setErrors] = useState<EditorErrors>(NO_ERRORS);
+  const [viewing, setViewing] = useState<VideoDraft | null>(null);
+  const [query, setQuery] = useState('');
 
   const isLink = draft.uploadType === MediaUploadType.LINK;
   const isEditing = editingIndex !== null;
+  const hasApiErrors = Object.keys(apiErrors ?? {}).length > 0;
+  const showSearch = videos.length >= VIDEO_SEARCH_THRESHOLD;
+  const visibleCount = videos.filter((video) => videoMatchesQuery(video, query)).length;
 
-  const hasStartedDraft =
-    Boolean(draft.title) || Boolean(draft.description) || Boolean(draft.url);
+  const hasStartedDraft = Boolean(draft.title) || Boolean(draft.description) || Boolean(draft.url);
   const hasDraft = isEditing || hasStartedDraft;
 
   useEffect(() => {
@@ -127,8 +127,7 @@ export default function VideoEditor({
     // Um upload já salvo continua válido sem arquivo novo: o objeto no S3 é
     // preservado pela API.
     const hasStoredFile = Boolean(draft.id) || Boolean(draft.file);
-    const isValidUrl =
-      !isLink || validateMediaURL(draft.url, draft.platformType);
+    const isValidUrl = !isLink || validateMediaURL(draft.url, draft.platformType);
 
     const nextErrors: EditorErrors = {
       title: !draft.title,
@@ -206,11 +205,7 @@ export default function VideoEditor({
 
           {isEditing && (
             <Tooltip title="Cancelar edição">
-              <IconButton
-                size="small"
-                aria-label="Cancelar edição"
-                onClick={resetDraft}
-              >
+              <IconButton size="small" aria-label="Cancelar edição" onClick={resetDraft}>
                 <Close fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -231,9 +226,7 @@ export default function VideoEditor({
                 }))
               }
               error={errors.title}
-              helperText={
-                errors.title ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''
-              }
+              helperText={errors.title ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
             />
           </Grid2>
 
@@ -250,9 +243,7 @@ export default function VideoEditor({
                 }))
               }
               error={errors.description}
-              helperText={
-                errors.description ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''
-              }
+              helperText={errors.description ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD : ''}
             />
           </Grid2>
 
@@ -270,9 +261,7 @@ export default function VideoEditor({
                     ...previous,
                     uploadType,
                     platformType:
-                      uploadType === MediaUploadType.LINK
-                        ? MediaPlatform.YOUTUBE
-                        : undefined,
+                      uploadType === MediaUploadType.LINK ? MediaPlatform.YOUTUBE : undefined,
                     url: '',
                     file: undefined,
                   }));
@@ -322,9 +311,7 @@ export default function VideoEditor({
                     }))
                   }
                   error={errors.source}
-                  helperText={
-                    errors.source ? FORM_VALIDATION_MESSAGES.INVALID_URL : ''
-                  }
+                  helperText={errors.source ? FORM_VALIDATION_MESSAGES.INVALID_URL : ''}
                 />
               </Grid2>
             </Fragment>
@@ -345,12 +332,7 @@ export default function VideoEditor({
                   sx={{ minHeight: 44, textTransform: 'none', flexShrink: 0 }}
                 >
                   Enviar vídeo
-                  <input
-                    type="file"
-                    hidden
-                    accept="video/*"
-                    onChange={handleUpload}
-                  />
+                  <input type="file" hidden accept="video/*" onChange={handleUpload} />
                 </Button>
 
                 <Box>
@@ -372,12 +354,8 @@ export default function VideoEditor({
           )}
 
           <Grid2 size={12}>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={1.5}
-              justifyContent="flex-end"
-            >
-              {isEditing && (
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="flex-end">
+              {hasDraft && (
                 <Button
                   type="button"
                   variant="text"
@@ -385,7 +363,7 @@ export default function VideoEditor({
                   fullWidth={isMobile}
                   sx={{ minHeight: 44, textTransform: 'none' }}
                 >
-                  Cancelar
+                  {isEditing ? 'Cancelar' : 'Descartar rascunho'}
                 </Button>
               )}
               <Button
@@ -420,6 +398,50 @@ export default function VideoEditor({
         </Typography>
       </Box>
 
+      {hasApiErrors && (
+        <Alert data-testid="video-api-errors" severity="error" sx={{ mb: 1.5 }}>
+          <Stack component="ul" sx={{ m: 0, pl: 2 }}>
+            {Object.values(apiErrors ?? {})
+              .flat()
+              .map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+          </Stack>
+        </Alert>
+      )}
+
+      {showSearch && (
+        <TextField
+          size="small"
+          fullWidth
+          placeholder="Buscar vídeo pelo título ou descrição"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          inputProps={{ 'aria-label': 'Buscar vídeo', 'data-testid': 'video-search' }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mb: 1.5 }}
+        />
+      )}
+      {query.trim() && (
+        <Typography
+          data-testid="video-search-result"
+          role="status"
+          variant="body2"
+          color="text.secondary"
+          sx={{ mb: 1.5 }}
+        >
+          {visibleCount
+            ? `${visibleCount} de ${videos.length} vídeos`
+            : 'Nenhum vídeo encontrado para essa busca.'}
+        </Typography>
+      )}
+
       {videos.length === 0 ? (
         <Paper
           variant="outlined"
@@ -435,93 +457,29 @@ export default function VideoEditor({
           </Typography>
         </Paper>
       ) : (
-        <Grid2 container spacing={2}>
-          {videos.map((video, index) => (
-            <Grid2
-              size={{ xs: 12, sm: 6, md: 4 }}
-              key={`${video.id ?? 'novo'}-${index}`}
-            >
-              <Paper
-                variant="outlined"
-                sx={{
-                  height: '100%',
-                  borderRadius: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderColor:
-                    editingIndex === index ? 'primary.main' : 'divider',
-                }}
-              >
-                <Box sx={{ p: 2, flexGrow: 1 }}>
-                  <Typography variant="subtitle2" fontWeight={700}>
-                    {video.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mb: 1 }}
-                  >
-                    {video.description}
-                  </Typography>
-
-                  {video.uploadType === MediaUploadType.LINK ? (
-                    <Box sx={{ aspectRatio: '16/9' }}>
-                      <iframe
-                        src={video.url}
-                        title={video.title}
-                        allowFullScreen
-                        style={{ width: '100%', height: '100%', border: 0 }}
-                      />
-                    </Box>
-                  ) : (
-                    <video controls style={{ width: '100%', marginTop: 8 }}>
-                      <source src={video.url} />
-                    </video>
-                  )}
-                </Box>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    gap: 0.5,
-                    px: 1,
-                    py: 0.5,
-                    borderTop: 1,
-                    borderColor: 'divider',
-                    '& .MuiIconButton-root': { width: 44, height: 44 },
-                  }}
-                >
-                  <Tooltip title="Editar">
-                    <IconButton
-                      aria-label={`Editar ${video.title}`}
-                      onClick={() => handleEdit(index)}
-                    >
-                      <Edit fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Remover">
-                    <IconButton
-                      color="error"
-                      aria-label={`Remover ${video.title}`}
-                      onClick={() => setDeleteIndex(index)}
-                    >
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Paper>
-            </Grid2>
-          ))}
+        <Grid2 container spacing={1.5}>
+          {videos.map((video, index) =>
+            videoMatchesQuery(video, query) ? (
+              <Grid2 size={{ xs: 12, md: 6 }} key={`${video.id ?? 'novo'}-${index}`}>
+                <MediaItemCard
+                  item={video}
+                  editing={editingIndex === index}
+                  onView={() => setViewing(video)}
+                  onEdit={() => handleEdit(index)}
+                  onRemove={() => setDeleteIndex(index)}
+                />
+              </Grid2>
+            ) : null
+          )}
         </Grid2>
       )}
+
+      <MediaViewerDialog media={viewing} onClose={() => setViewing(null)} />
 
       <Dialog open={deleteIndex !== null} onClose={() => setDeleteIndex(null)}>
         <DialogTitle>Remover vídeo</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Deseja remover este vídeo da galeria?
-          </DialogContentText>
+          <DialogContentText>Deseja remover este vídeo da galeria?</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button type="button" onClick={() => setDeleteIndex(null)}>

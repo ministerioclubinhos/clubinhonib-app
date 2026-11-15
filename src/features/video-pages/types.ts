@@ -1,9 +1,5 @@
-import type {
-  MediaItem,
-  MediaPlatform,
-  MediaType,
-  MediaUploadType,
-} from '@/store/slices/types';
+import type { SectionApiErrors } from '@/components/common/section-outline/types';
+import type { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
 import type { Type as RouteType } from '@/store/slices/route/routeSlice';
 
 /** Vídeo exatamente como a API devolve. */
@@ -126,3 +122,42 @@ export interface VideoPageRequest {
 
 /** Vídeo em edição no formulário. */
 export type VideoDraft = MediaItem;
+
+export interface VideoPageFormProps {
+  /** True quando o admin cria a galeria a partir da galeria de modelos. */
+  fromTemplatePage?: boolean;
+}
+
+export interface VideoPageFeedback {
+  message: string;
+  severity: 'success' | 'error';
+}
+
+export interface UseVideoPageFormParams {
+  isCreation: boolean;
+  page: VideoPageResponse | null;
+}
+
+export interface UseVideoPageFormResult {
+  values: VideoPageFormValues;
+  setValue: <K extends keyof VideoPageFormValues>(key: K, value: VideoPageFormValues[K]) => void;
+  videos: VideoDraft[];
+  setVideos: (videos: VideoDraft[]) => void;
+  errors: VideoPageFormErrors;
+  /** Erros por vídeo devolvidos pela API; limpos ao editar ou salvar de novo. */
+  videoApiErrors: SectionApiErrors;
+  isDirty: boolean;
+  saving: boolean;
+  feedback: VideoPageFeedback | null;
+  dismissFeedback: () => void;
+  save: () => Promise<void>;
+}
+
+export interface VideoEditorProps {
+  videos: VideoDraft[];
+  onChange: (videos: VideoDraft[]) => void;
+  /** Informa ao formulário que há um vídeo em edição ou começado. */
+  onDraftChange?: (hasDraft: boolean) => void;
+  /** Mensagens que a API recusou, agrupadas pela posição do vídeo. */
+  apiErrors?: SectionApiErrors;
+}

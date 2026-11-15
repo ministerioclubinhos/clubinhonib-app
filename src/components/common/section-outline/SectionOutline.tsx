@@ -1,15 +1,18 @@
 import { Box, ButtonBase, Chip, Stack, Typography } from '@mui/material';
 import { LockOutlined, Public } from '@mui/icons-material';
 
-import type { IdeasSectionOutlineProps } from '../types';
+import type { SectionOutlineProps } from './types';
 
-/** Índice das seções: leva direto a uma delas sem rolar a página inteira. */
-export default function IdeasSectionOutline({ items, onSelect }: IdeasSectionOutlineProps) {
+/**
+ * Índice das seções de uma página de conteúdo: leva direto a uma delas sem
+ * rolar a página inteira. Compartilhado pelos editores de ideias e galeria.
+ */
+export default function SectionOutline({ items, onSelect }: SectionOutlineProps) {
   if (!items.length) return null;
   return (
     <Box
       component="nav"
-      data-testid="ideas-section-outline"
+      data-testid="section-outline"
       aria-label="Índice das seções"
       sx={{ maxHeight: { lg: 'calc(100vh - 360px)' }, overflowY: 'auto', mx: -0.5 }}
     >
@@ -17,7 +20,7 @@ export default function IdeasSectionOutline({ items, onSelect }: IdeasSectionOut
         {items.map((item) => (
           <li key={item.key}>
             <ButtonBase
-              data-testid="ideas-section-outline-item"
+              data-testid="section-outline-item"
               onClick={() => onSelect(item.key)}
               sx={{
                 width: '100%',

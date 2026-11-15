@@ -12,8 +12,7 @@ import {
 import { MediaItem, MediaType } from '@/store/slices/types';
 
 import { MEDIA_PLATFORM_LABELS } from './constants';
-import { formatMediaSize, isFileMedia, mediaExtensionLabel, resolveMediaView } from './utils';
-import { MediaViewKind } from './types';
+import { formatMediaSize, isFileMedia, mediaExtensionLabel, mediaThumbnailUrl } from './utils';
 
 interface MediaItemCardProps {
   item: MediaItem;
@@ -42,8 +41,8 @@ export default function MediaItemCard({
   onRemove,
 }: MediaItemCardProps) {
   const Icon = TYPE_ICON[item.mediaType] ?? DescriptionOutlined;
-  const view = resolveMediaView(item);
-  const showThumb = item.mediaType === MediaType.IMAGE && view.kind === MediaViewKind.IMAGE;
+  const thumbnail = mediaThumbnailUrl(item);
+  const showThumb = thumbnail !== null;
   const origin = isFileMedia(item)
     ? [mediaExtensionLabel(item), formatMediaSize(item.size ?? item.file?.size)]
         .filter(Boolean)
@@ -65,7 +64,7 @@ export default function MediaItemCard({
           component={showThumb ? 'button' : 'div'}
           type={showThumb ? 'button' : undefined}
           onClick={showThumb ? onView : undefined}
-          aria-label={showThumb ? `Ampliar ${item.title}` : undefined}
+          aria-label={showThumb ? `Visualizar prévia de ${item.title}` : undefined}
           sx={{
             width: 72,
             height: 72,
@@ -85,7 +84,7 @@ export default function MediaItemCard({
           {showThumb ? (
             <Box
               component="img"
-              src={view.src}
+              src={thumbnail ?? undefined}
               alt=""
               loading="lazy"
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}

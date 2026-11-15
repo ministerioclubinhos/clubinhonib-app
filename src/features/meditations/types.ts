@@ -135,4 +135,11 @@ export interface MeditationFormErrors {
   topic: boolean;
   startDate: boolean;
   endDate: boolean;
+  /** Mensagem de segunda/sexta-feira, quando a data foi escolhida errada. */
+  startDateMessage: string;
+  endDateMessage: string;
+  /** A semana não tem os cinco dias. */
+  days: boolean;
+  /** Falta o link ou o arquivo do documento. */
+  media: boolean;
 }

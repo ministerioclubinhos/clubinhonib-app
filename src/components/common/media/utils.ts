@@ -57,3 +57,16 @@ export const resolveMediaView = (item: MediaItem): MediaView => {
         : { kind: MediaViewKind.DOWNLOAD, src: item.url };
   }
 };
+
+/**
+ * Miniatura do material, quando existe uma: a própria imagem ou a capa do
+ * vídeo do YouTube. Outros tipos usam um ícone no cartão.
+ */
+export const mediaThumbnailUrl = (item: MediaItem): string | null => {
+  if (item.mediaType === MediaType.IMAGE) return resolveMediaView(item).src || null;
+  if (item.mediaType === MediaType.VIDEO && !isFileMedia(item)) {
+    const youtubeId = parseYoutubeVideoId(item.url);
+    return youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg` : null;
+  }
+  return null;
+};

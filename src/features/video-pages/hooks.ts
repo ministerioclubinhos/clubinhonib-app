@@ -1,23 +1,32 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { AppDispatch } from '@/store/slices';
 import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import {
-  FORM_VALIDATION_MESSAGES,
-  GENERIC_ERROR_MESSAGES,
-} from '@/constants/errorMessages';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 import { useAbortController, useDebouncedValue } from '@/hooks';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import { apiCreateVideoPage, apiDeleteVideoPage, apiGetVideoPage, apiListVideoPages, apiUpdateVideoPage } from './api';
 import {
+  apiCreateVideoPage,
+  apiDeleteVideoPage,
+  apiGetVideoPage,
+  apiListVideoPages,
+  apiUpdateVideoPage,
+} from './api';
+import type { SectionApiErrors } from '@/components/common/section-outline/types';
+import { collectionApiErrorsFrom } from '@/utils/sectionFieldErrors';
+import {
+  UseVideoPageFormParams,
+  UseVideoPageFormResult,
   VideoDraft,
+  VideoPageFeedback,
   VideoPageFormErrors,
   VideoPageFormValues,
+  VideoPageResponse,
   VideoPageSortField,
   VideoPageSortOrder,
   VideoPageSummary,
@@ -26,9 +35,9 @@ import {
   buildVideoPageFormData,
   toFormValues,
   toVideoDrafts,
+  validateVideoPageForm,
 } from './utils';
-import { VIDEO_PAGES_DEFAULT_LIMIT } from './constants';
-import { VideoPageResponse } from './types';
+import { VIDEO_PAGES_DEFAULT_LIMIT, VIDEO_PAGE_NO_ERRORS as NO_ERRORS } from './constants';
 
 /** Filtros que a tela envia à API. */
 interface VideoPageListFilters {
@@ -75,22 +84,17 @@ export function useVideoPages() {
             page,
             limit: pageSize,
             searchString: debouncedSearch.trim() || undefined,
-            public:
-              filters.visibility === ''
-                ? undefined
-                : filters.visibility === 'true',
+            public: filters.visibility === '' ? undefined : filters.visibility === 'true',
             sort: filters.sort,
             order: filters.order,
           },
-          { signal: controller.signal },
+          { signal: controller.signal }
         );
         setItems(Array.isArray(data?.data) ? data.data : []);
         setTotal(Number(data?.total ?? 0));
       } catch (err: unknown) {
         if (isCancelledRequest(err)) return;
-        setError(
-          extractErrorMessage(err, 'Erro ao carregar as páginas de vídeos'),
-        );
+        setError(extractErrorMessage(err, 'Erro ao carregar as páginas de vídeos'));
         setItems([]);
         setTotal(0);
       } finally {
@@ -144,7 +148,7 @@ export function useVideoPageMutations(refresh: () => void) {
         setSaving(false);
       }
     },
-    [dispatch, refresh],
+    [dispatch, refresh]
   );
 
   return { saving, actionError, setActionError, remove };
@@ -162,6 +166,8 @@ export function useVideoPageById(id: string | undefined) {
   const [error, setError] = useState('');
 
   const nextController = useAbortController();
+  const [retryToken, setRetryToken] = useState(0);
+  const retry = useCallback(() => setRetryToken((value) => value + 1), []);
 
   useEffect(() => {
     if (!id) {
@@ -175,6 +181,7 @@ export function useVideoPageById(id: string | undefined) {
     const run = async () => {
       setLoading(true);
       setError('');
+      setPage(null);
       try {
         const data = await apiGetVideoPage(id, { signal: controller.signal });
         setPage(data);
@@ -188,41 +195,14 @@ export function useVideoPageById(id: string | undefined) {
     };
 
     void run();
-  }, [id, nextController]);
+    return () => controller.abort();
+  }, [id, nextController, retryToken]);
 
-  return { page, loading, error };
+  return { page, loading, error, retry };
 }
 
 // O guarda de alterações não salvas é o mesmo em todos os formulários.
 export { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
-
-const NO_ERRORS: VideoPageFormErrors = { title: false, description: false };
-
-interface UseVideoPageFormParams {
-  isCreation: boolean;
-  page: VideoPageResponse | null;
-}
-
-interface Feedback {
-  message: string;
-  severity: 'success' | 'error';
-}
-
-interface UseVideoPageFormResult {
-  values: VideoPageFormValues;
-  setValue: <K extends keyof VideoPageFormValues>(
-    key: K,
-    value: VideoPageFormValues[K],
-  ) => void;
-  videos: VideoDraft[];
-  setVideos: (videos: VideoDraft[]) => void;
-  errors: VideoPageFormErrors;
-  isDirty: boolean;
-  saving: boolean;
-  feedback: Feedback | null;
-  dismissFeedback: () => void;
-  save: () => Promise<void>;
-}
 
 /** Estado, validação e submissão do formulário de galeria de vídeos. */
 export function useVideoPageForm({
@@ -233,46 +213,46 @@ export function useVideoPageForm({
   const navigate = useNavigate();
 
   const [values, setValues] = useState<VideoPageFormValues>(() =>
-    toFormValues(isCreation ? null : page),
+    toFormValues(isCreation ? null : page)
   );
   const [videos, setVideosState] = useState<VideoDraft[]>(() =>
-    toVideoDrafts(isCreation ? null : page),
+    toVideoDrafts(isCreation ? null : page)
   );
   const [errors, setErrors] = useState<VideoPageFormErrors>(NO_ERRORS);
+  const [videoApiErrors, setVideoApiErrors] = useState<SectionApiErrors>({});
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [feedback, setFeedback] = useState<VideoPageFeedback | null>(null);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     setValues(toFormValues(isCreation ? null : page));
     setVideosState(toVideoDrafts(isCreation ? null : page));
     setErrors(NO_ERRORS);
+    setVideoApiErrors({});
     setIsDirty(false);
   }, [isCreation, page]);
 
   const setValue = useCallback(
-    <K extends keyof VideoPageFormValues>(
-      key: K,
-      value: VideoPageFormValues[K],
-    ) => {
+    <K extends keyof VideoPageFormValues>(key: K, value: VideoPageFormValues[K]) => {
       setValues((previous) => ({ ...previous, [key]: value }));
       setIsDirty(true);
     },
-    [],
+    []
   );
 
   const setVideos = useCallback((next: VideoDraft[]) => {
     setVideosState(next);
+    // As posições da API deixam de valer quando a lista muda.
+    setVideoApiErrors({});
     setIsDirty(true);
   }, []);
 
   const dismissFeedback = useCallback(() => setFeedback(null), []);
 
   const save = useCallback(async () => {
-    const nextErrors: VideoPageFormErrors = {
-      title: !values.title.trim(),
-      description: !values.description.trim(),
-    };
+    if (savingRef.current) return;
+    const nextErrors = validateVideoPageForm(values);
     setErrors(nextErrors);
 
     if (nextErrors.title || nextErrors.description) {
@@ -291,13 +271,12 @@ export function useVideoPageForm({
       return;
     }
 
+    savingRef.current = true;
+    setFeedback(null);
+    setVideoApiErrors({});
     setSaving(true);
     try {
-      const formData = buildVideoPageFormData(
-        values,
-        videos,
-        isCreation ? undefined : page?.id,
-      );
+      const formData = buildVideoPageFormData(values, videos, isCreation ? undefined : page?.id);
 
       const saved = isCreation
         ? await apiCreateVideoPage(formData)
@@ -317,11 +296,13 @@ export function useVideoPageForm({
       // grande demais, validação. Trocar isso por um texto fixo deixava o
       // administrador sem a única informação capaz de guiar a próxima
       // tentativa.
+      setVideoApiErrors(collectionApiErrorsFrom(saveError, 'videos'));
       setFeedback({
         message: extractErrorMessage(saveError, GENERIC_ERROR_MESSAGES.SAVE_ERROR),
         severity: 'error',
       });
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }, [values, videos, isCreation, page, dispatch, navigate]);
@@ -332,6 +313,7 @@ export function useVideoPageForm({
     videos,
     setVideos,
     errors,
+    videoApiErrors,
     isDirty,
     saving,
     feedback,

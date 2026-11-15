@@ -1,21 +1,27 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { AppDispatch } from '@/store/slices';
 import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import {
-  FORM_VALIDATION_MESSAGES,
-  GENERIC_ERROR_MESSAGES,
-} from '@/constants/errorMessages';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 
 import { useAbortController, useDebouncedValue } from '@/hooks';
 import { extractErrorMessage, isCancelledRequest } from '@/utils/apiError';
 
-import { apiCreateImagePage, apiDeleteImagePage, apiGetImagePage, apiListImagePages, apiUpdateImagePage } from './api';
-import { IMAGE_PAGES_DEFAULT_LIMIT } from './constants';
 import {
+  apiCreateImagePage,
+  apiDeleteImagePage,
+  apiGetImagePage,
+  apiListImagePages,
+  apiUpdateImagePage,
+} from './api';
+import { IMAGE_PAGES_DEFAULT_LIMIT, IMAGE_PAGE_NO_ERRORS as NO_ERRORS } from './constants';
+import type { SectionApiErrors } from '@/components/common/section-outline/types';
+import { sectionApiErrorsFrom } from '@/utils/sectionFieldErrors';
+import {
+  ImagePageFeedback,
   ImagePageFormErrors,
   ImagePageFormValues,
   ImagePageResponse,
@@ -23,11 +29,14 @@ import {
   ImagePageSortOrder,
   ImagePageSummary,
   ImageSectionDraft,
+  UseImagePageFormParams,
+  UseImagePageFormResult,
 } from './types';
 import {
   buildImagePageFormData,
   toFormValues,
   toSectionDrafts,
+  validateImagePageForm,
 } from './utils';
 
 /** Filtros que a tela envia à API. */
@@ -75,14 +84,11 @@ export function useImagePages() {
             page,
             limit: pageSize,
             searchString: debouncedSearch.trim() || undefined,
-            public:
-              filters.visibility === ''
-                ? undefined
-                : filters.visibility === 'true',
+            public: filters.visibility === '' ? undefined : filters.visibility === 'true',
             sort: filters.sort,
             order: filters.order,
           },
-          { signal: controller.signal },
+          { signal: controller.signal }
         );
         setItems(Array.isArray(data?.data) ? data.data : []);
         setTotal(Number(data?.total ?? 0));
@@ -142,7 +148,7 @@ export function useImagePageMutations(refresh: () => void) {
         setSaving(false);
       }
     },
-    [dispatch, refresh],
+    [dispatch, refresh]
   );
 
   return { saving, actionError, setActionError, remove };
@@ -160,6 +166,8 @@ export function useImagePageById(id: string | undefined) {
   const [error, setError] = useState('');
 
   const nextController = useAbortController();
+  const [retryToken, setRetryToken] = useState(0);
+  const retry = useCallback(() => setRetryToken((value) => value + 1), []);
 
   useEffect(() => {
     if (!id) {
@@ -173,6 +181,7 @@ export function useImagePageById(id: string | undefined) {
     const run = async () => {
       setLoading(true);
       setError('');
+      setPage(null);
       try {
         const data = await apiGetImagePage(id, { signal: controller.signal });
         setPage(data);
@@ -186,41 +195,14 @@ export function useImagePageById(id: string | undefined) {
     };
 
     void run();
-  }, [id, nextController]);
+    return () => controller.abort();
+  }, [id, nextController, retryToken]);
 
-  return { page, loading, error };
+  return { page, loading, error, retry };
 }
 
 // O guarda de alterações não salvas é o mesmo em todos os formulários.
 export { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
-
-const NO_ERRORS: ImagePageFormErrors = { title: false, description: false };
-
-interface UseImagePageFormParams {
-  isCreation: boolean;
-  page: ImagePageResponse | null;
-}
-
-interface Feedback {
-  message: string;
-  severity: 'success' | 'error';
-}
-
-interface UseImagePageFormResult {
-  values: ImagePageFormValues;
-  setValue: <K extends keyof ImagePageFormValues>(
-    key: K,
-    value: ImagePageFormValues[K],
-  ) => void;
-  sections: ImageSectionDraft[];
-  setSections: (sections: ImageSectionDraft[]) => void;
-  errors: ImagePageFormErrors;
-  isDirty: boolean;
-  saving: boolean;
-  feedback: Feedback | null;
-  dismissFeedback: () => void;
-  save: () => Promise<void>;
-}
 
 /** Estado, validação e submissão do formulário de galeria de fotos. */
 export function useImagePageForm({
@@ -231,49 +213,49 @@ export function useImagePageForm({
   const navigate = useNavigate();
 
   const [values, setValues] = useState<ImagePageFormValues>(() =>
-    toFormValues(isCreation ? null : page),
+    toFormValues(isCreation ? null : page)
   );
   const [sections, setSectionsState] = useState<ImageSectionDraft[]>(() =>
-    toSectionDrafts(isCreation ? null : page),
+    toSectionDrafts(isCreation ? null : page)
   );
   const [errors, setErrors] = useState<ImagePageFormErrors>(NO_ERRORS);
+  const [sectionApiErrors, setSectionApiErrors] = useState<SectionApiErrors>({});
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [feedback, setFeedback] = useState<ImagePageFeedback | null>(null);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     setValues(toFormValues(isCreation ? null : page));
     setSectionsState(toSectionDrafts(isCreation ? null : page));
     setErrors(NO_ERRORS);
+    setSectionApiErrors({});
     setIsDirty(false);
   }, [isCreation, page]);
 
   const setValue = useCallback(
-    <K extends keyof ImagePageFormValues>(
-      key: K,
-      value: ImagePageFormValues[K],
-    ) => {
+    <K extends keyof ImagePageFormValues>(key: K, value: ImagePageFormValues[K]) => {
       setValues((previous) => ({ ...previous, [key]: value }));
       setIsDirty(true);
     },
-    [],
+    []
   );
 
   const setSections = useCallback((next: ImageSectionDraft[]) => {
     setSectionsState(next);
+    // Os índices da API deixam de valer quando a lista muda.
+    setSectionApiErrors({});
     setIsDirty(true);
   }, []);
 
   const dismissFeedback = useCallback(() => setFeedback(null), []);
 
   const save = useCallback(async () => {
-    const nextErrors: ImagePageFormErrors = {
-      title: !values.title.trim(),
-      description: !values.description.trim(),
-    };
+    if (savingRef.current) return;
+    const nextErrors = validateImagePageForm(values, sections);
     setErrors(nextErrors);
 
-    if (nextErrors.title || nextErrors.description) {
+    if (Object.values(nextErrors).some(Boolean)) {
       setFeedback({
         message: FORM_VALIDATION_MESSAGES.REQUIRED_GENERIC,
         severity: 'error',
@@ -289,13 +271,12 @@ export function useImagePageForm({
       return;
     }
 
+    savingRef.current = true;
+    setFeedback(null);
+    setSectionApiErrors({});
     setSaving(true);
     try {
-      const formData = buildImagePageFormData(
-        values,
-        sections,
-        isCreation ? undefined : page?.id,
-      );
+      const formData = buildImagePageFormData(values, sections, isCreation ? undefined : page?.id);
 
       const saved = isCreation
         ? await apiCreateImagePage(formData)
@@ -315,11 +296,13 @@ export function useImagePageForm({
       // grande demais, validação. Trocar isso por um texto fixo deixava o
       // administrador sem a única informação capaz de guiar a próxima
       // tentativa.
+      setSectionApiErrors(sectionApiErrorsFrom(saveError));
       setFeedback({
         message: extractErrorMessage(saveError, GENERIC_ERROR_MESSAGES.SAVE_ERROR),
         severity: 'error',
       });
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }, [values, sections, isCreation, page, dispatch, navigate]);
@@ -330,6 +313,7 @@ export function useImagePageForm({
     sections,
     setSections,
     errors,
+    sectionApiErrors,
     isDirty,
     saving,
     feedback,

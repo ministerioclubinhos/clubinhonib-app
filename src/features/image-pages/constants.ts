@@ -1,3 +1,5 @@
+import type { ImagePageFormErrors } from './types';
+
 /** Caminho base dos endpoints da galeria de fotos. */
 export const IMAGE_PAGES_ENDPOINT = '/image-pages';
 
@@ -24,8 +26,7 @@ export const IMAGE_PAGE_ROUTES = {
 } as const;
 
 /** Caminho da edição de uma galeria específica. */
-export const imagePageEditPath = (id: string): string =>
-  `${IMAGE_PAGE_ROUTES.EDIT}/${id}`;
+export const imagePageEditPath = (id: string): string => `${IMAGE_PAGE_ROUTES.EDIT}/${id}`;
 
 /** Tamanho de página padrão e opções oferecidas na paginação. */
 export const IMAGE_PAGES_DEFAULT_LIMIT = 12;
@@ -45,3 +46,26 @@ export const IMAGE_PAGE_SORT_OPTIONS = [
   { value: 'title:ASC', label: 'Título (A–Z)' },
   { value: 'title:DESC', label: 'Título (Z–A)' },
 ] as const;
+
+/** Limite de caracteres do título da galeria e da legenda da seção. */
+export const IMAGE_TITLE_MAX_LENGTH = 255;
+
+
+/** A partir disto a busca por seção aparece. */
+export const IMAGE_SECTION_SEARCH_THRESHOLD = 6;
+
+/** Prefixo do id de âncora de cada seção, usado pelo índice lateral. */
+export const IMAGE_SECTION_ANCHOR_PREFIX = 'image-section-';
+
+/** Formatos aceitos no envio de fotos. */
+export const IMAGE_ACCEPT = 'image/*';
+
+export const IMAGE_PAGE_NO_ERRORS: ImagePageFormErrors = {
+  title: false,
+  description: false,
+  sections: false,
+  captions: false,
+};
+
+/** Subir várias fotos para o S3 demora mais que o timeout padrão. */
+export const IMAGE_PAGE_SAVE_TIMEOUT_MS = 300_000;

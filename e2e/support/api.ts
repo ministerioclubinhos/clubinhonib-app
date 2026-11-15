@@ -12,7 +12,7 @@ import { ADMIN_EMAIL, ADMIN_PASSWORD, API_URL } from './env';
 export class ApiClient {
   private constructor(
     private readonly ctx: APIRequestContext,
-    readonly token: string,
+    readonly token: string
   ) {}
 
   static async login(email = ADMIN_EMAIL, password = ADMIN_PASSWORD): Promise<ApiClient> {
@@ -59,11 +59,58 @@ export class ApiClient {
   async postMultipart<T>(
     path: string,
     fields: Record<string, string>,
-    files: Record<string, { name: string; mimeType: string; buffer: Buffer }> = {},
+    files: Record<string, { name: string; mimeType: string; buffer: Buffer }> = {}
   ): Promise<T> {
-    const res = await this.ctx.post(path, { headers: this.headers(), multipart: { ...fields, ...files } });
+    const res = await this.ctx.post(path, {
+      headers: this.headers(),
+      multipart: { ...fields, ...files },
+    });
     expect(res.ok(), `POST ${path} -> ${res.status()} ${await res.text()}`).toBeTruthy();
     return (await res.json()) as T;
+  }
+
+  /**
+   * Multipart sem exigir sucesso: devolve status e código de erro, para provar
+   * que a API recusa um corpo inválido (e o que diz ao recusar).
+   */
+  async sendMultipart(
+    method: 'POST' | 'PATCH',
+    path: string,
+    fields: Record<string, string>,
+    files: Record<string, { name: string; mimeType: string; buffer: Buffer }> = {}
+  ): Promise<{
+    status: number;
+    code: string | null;
+    message: string | null;
+    fieldErrors: { field: string; message: string }[];
+  }> {
+    const res = await this.ctx.fetch(path, {
+      method,
+      headers: this.headers(),
+      multipart: { ...fields, ...files },
+    });
+    const text = await res.text();
+    let body: unknown = null;
+    try {
+      body = text ? JSON.parse(text) : null;
+    } catch {
+      body = text;
+    }
+    const error = (
+      body as {
+        error?: {
+          code?: string;
+          message?: string;
+          details?: { fieldErrors?: { field: string; message: string }[] };
+        };
+      } | null
+    )?.error;
+    return {
+      status: res.status(),
+      code: error?.code ?? null,
+      message: error?.message ?? null,
+      fieldErrors: error?.details?.fieldErrors ?? [],
+    };
   }
 
   async patch<T>(path: string, data?: unknown): Promise<T> {
@@ -87,7 +134,7 @@ export class ApiClient {
   async send(
     method: 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'GET',
     path: string,
-    data?: unknown,
+    data?: unknown
   ): Promise<{ status: number; code: string | null; message: string | null; body: unknown }> {
     const res = await this.ctx.fetch(path, { method, headers: this.headers(), data });
     const text = await res.text();
@@ -98,7 +145,12 @@ export class ApiClient {
       body = text;
     }
     const error = (body as { error?: { code?: string; message?: string } } | null)?.error;
-    return { status: res.status(), code: error?.code ?? null, message: error?.message ?? null, body };
+    return {
+      status: res.status(),
+      code: error?.code ?? null,
+      message: error?.message ?? null,
+      body,
+    };
   }
 
   /** Remoção tolerante: o que já sumiu não derruba a limpeza do teste. */
@@ -119,5 +171,5 @@ export function uniqueSuffix(): string {
 /** PNG 1x1 real, para os campos de upload. */
 export const PNG_1X1 = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-  'base64',
+  'base64'
 );

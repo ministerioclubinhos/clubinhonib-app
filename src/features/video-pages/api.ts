@@ -1,12 +1,8 @@
 import type { AxiosRequestConfig } from 'axios';
 
 import api from '@/config/axiosConfig';
-import { MULTIPART_HEADERS, VIDEO_PAGES_ENDPOINT } from './constants';
-import {
-  PaginatedVideoPages,
-  VideoPageQuery,
-  VideoPageResponse,
-} from './types';
+import { MULTIPART_HEADERS, VIDEO_PAGE_SAVE_TIMEOUT_MS, VIDEO_PAGES_ENDPOINT } from './constants';
+import { PaginatedVideoPages, VideoPageQuery, VideoPageResponse } from './types';
 
 /**
  * Lista as galerias de vídeo, em resumo.
@@ -17,7 +13,7 @@ import {
  */
 export async function apiListVideoPages(
   query: VideoPageQuery,
-  config?: AxiosRequestConfig,
+  config?: AxiosRequestConfig
 ): Promise<PaginatedVideoPages> {
   const { data } = await api.get<PaginatedVideoPages>(VIDEO_PAGES_ENDPOINT, {
     ...config,
@@ -29,37 +25,32 @@ export async function apiListVideoPages(
 /** Carrega uma galeria de vídeos pelo id, com seus vídeos. */
 export async function apiGetVideoPage(
   id: string,
-  config?: AxiosRequestConfig,
+  config?: AxiosRequestConfig
 ): Promise<VideoPageResponse> {
-  const { data } = await api.get<VideoPageResponse>(
-    `${VIDEO_PAGES_ENDPOINT}/${id}`,
-    config,
-  );
+  const { data } = await api.get<VideoPageResponse>(`${VIDEO_PAGES_ENDPOINT}/${id}`, config);
   return data;
 }
 
 /** Cria uma galeria de vídeos a partir do corpo multipart. */
-export async function apiCreateVideoPage(
-  formData: FormData,
-): Promise<VideoPageResponse> {
-  const { data } = await api.post<VideoPageResponse>(
-    VIDEO_PAGES_ENDPOINT,
-    formData,
-    { headers: MULTIPART_HEADERS },
-  );
+export async function apiCreateVideoPage(formData: FormData): Promise<VideoPageResponse> {
+  const { data } = await api.post<VideoPageResponse>(VIDEO_PAGES_ENDPOINT, formData, {
+    headers: MULTIPART_HEADERS,
+    timeout: VIDEO_PAGE_SAVE_TIMEOUT_MS,
+    skipGlobalError: true,
+  });
   return data;
 }
 
 /** Atualiza uma galeria de vídeos a partir do corpo multipart. */
 export async function apiUpdateVideoPage(
   id: string,
-  formData: FormData,
+  formData: FormData
 ): Promise<VideoPageResponse> {
-  const { data } = await api.patch<VideoPageResponse>(
-    `${VIDEO_PAGES_ENDPOINT}/${id}`,
-    formData,
-    { headers: MULTIPART_HEADERS },
-  );
+  const { data } = await api.patch<VideoPageResponse>(`${VIDEO_PAGES_ENDPOINT}/${id}`, formData, {
+    headers: MULTIPART_HEADERS,
+    timeout: VIDEO_PAGE_SAVE_TIMEOUT_MS,
+    skipGlobalError: true,
+  });
   return data;
 }
 

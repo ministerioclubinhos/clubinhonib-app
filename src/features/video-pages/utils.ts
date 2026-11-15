@@ -2,10 +2,12 @@ import { MediaItem, MediaType, MediaUploadType } from '@/store/slices/types';
 import {
   VIDEO_FILE_FIELD_PREFIX,
   VIDEO_PAGE_PAYLOAD_FIELD,
+  VIDEO_TITLE_MAX_LENGTH,
 } from './constants';
 import {
   VideoDraft,
   VideoItemRequest,
+  VideoPageFormErrors,
   VideoPageFormValues,
   VideoPageRequest,
   VideoPageResponse,
@@ -32,8 +34,7 @@ export const isUploadedVideo = (video: MediaItem): boolean =>
   video.uploadType === MediaUploadType.UPLOAD;
 
 /** Nome do campo multipart de um vídeo enviado. */
-export const buildVideoFieldKey = (index: number): string =>
-  `${VIDEO_FILE_FIELD_PREFIX}-${index}`;
+export const buildVideoFieldKey = (index: number): string => `${VIDEO_FILE_FIELD_PREFIX}-${index}`;
 
 /**
  * Mapeia um vídeo para o contrato de requisição, anexando o arquivo apenas
@@ -43,10 +44,13 @@ export const buildVideoFieldKey = (index: number): string =>
 export const toVideoRequest = (
   video: VideoDraft,
   index: number,
-  formData: FormData,
+  formData: FormData
 ): VideoItemRequest => {
   const isUpload = isUploadedVideo(video);
-  const isNewUpload = isUpload && Boolean(video.file) && !video.id;
+  // Um arquivo escolhido nesta sessão sempre viaja, inclusive para um vídeo já
+  // salvo (troca de arquivo ou link virando upload). Sem isso a URL local de
+  // pré-visualização (`blob:`) era gravada como se fosse o vídeo.
+  const isNewUpload = isUpload && Boolean(video.file);
   const fieldKey = isNewUpload ? buildVideoFieldKey(index) : undefined;
 
   if (isNewUpload && fieldKey && video.file) {
@@ -73,7 +77,7 @@ export const buildVideoPagePayload = (
   values: VideoPageFormValues,
   videos: VideoDraft[],
   formData: FormData,
-  pageId?: string,
+  pageId?: string
 ): VideoPageRequest => ({
   ...(pageId ? { id: pageId } : {}),
   title: values.title.trim(),
@@ -86,31 +90,27 @@ export const buildVideoPagePayload = (
 export const buildVideoPageFormData = (
   values: VideoPageFormValues,
   videos: VideoDraft[],
-  pageId?: string,
+  pageId?: string
 ): FormData => {
   const formData = new FormData();
 
   formData.append(
     VIDEO_PAGE_PAYLOAD_FIELD,
-    JSON.stringify(buildVideoPagePayload(values, videos, formData, pageId)),
+    JSON.stringify(buildVideoPagePayload(values, videos, formData, pageId))
   );
 
   return formData;
 };
 
 /** Valores iniciais do formulário a partir da página carregada. */
-export const toFormValues = (
-  page: VideoPageResponse | null,
-): VideoPageFormValues => ({
+export const toFormValues = (page: VideoPageResponse | null): VideoPageFormValues => ({
   title: page?.title ?? '',
   description: page?.description ?? '',
   public: page?.public ?? true,
 });
 
 /** Vídeos da página no formato editável do formulário. */
-export const toVideoDrafts = (
-  page: VideoPageResponse | null,
-): VideoDraft[] =>
+export const toVideoDrafts = (page: VideoPageResponse | null): VideoDraft[] =>
   (page?.videos ?? []).map((video) => ({ ...video, file: undefined }));
 
 /**
@@ -144,3 +144,19 @@ export function parseSortOption(value: string): {
     order: order === 'ASC' ? 'ASC' : 'DESC',
   };
 }
+
+/** Valida o que a API também cobra, para o erro aparecer antes do envio. */
+export const validateVideoPageForm = (values: VideoPageFormValues): VideoPageFormErrors => ({
+  title: !values.title.trim() || values.title.length > VIDEO_TITLE_MAX_LENGTH,
+  description: !values.description.trim(),
+});
+
+/** True quando o título (ou a descrição) do vídeo contém a busca. */
+export const videoMatchesQuery = (video: VideoDraft, query: string): boolean => {
+  const term = query.trim().toLocaleLowerCase('pt-BR');
+  if (!term) return true;
+  return (
+    video.title.toLocaleLowerCase('pt-BR').includes(term) ||
+    video.description.toLocaleLowerCase('pt-BR').includes(term)
+  );
+};
