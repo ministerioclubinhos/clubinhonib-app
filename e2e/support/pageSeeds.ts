@@ -52,6 +52,8 @@ export interface SeedMediaItem {
   url: string;
   isLocalFile: boolean;
   mediaType: MediaType;
+  uploadType: MediaUploadType;
+  description?: string;
 }
 
 export interface WeekMaterialSeed {
@@ -97,7 +99,7 @@ export function pngFile(name: string): SeedFile {
 export function uploadMedia(
   fieldKey: string,
   title: string,
-  mediaType: MediaType = MediaType.IMAGE,
+  mediaType: MediaType = MediaType.IMAGE
 ): SeedMediaInput {
   return {
     title,
@@ -132,7 +134,7 @@ export async function seedWeekMaterial(
   api: ApiClient,
   title: string,
   media: { videos?: SeedMediaInput[]; documents?: SeedMediaInput[]; images?: SeedMediaInput[] },
-  files: Record<string, SeedFile>,
+  files: Record<string, SeedFile>
 ): Promise<WeekMaterialSeed> {
   return api.postMultipart<WeekMaterialSeed>(
     PAGE_ENDPOINTS.weekMaterial,
@@ -146,7 +148,7 @@ export async function seedWeekMaterial(
         images: media.images ?? [],
       }),
     },
-    files,
+    files
   );
 }
 
@@ -155,7 +157,7 @@ export async function seedVideoPage(
   api: ApiClient,
   title: string,
   videos: SeedMediaInput[],
-  files: Record<string, SeedFile>,
+  files: Record<string, SeedFile>
 ): Promise<VideoPageSeed> {
   return api.postMultipart<VideoPageSeed>(
     PAGE_ENDPOINTS.videoPage,
@@ -167,7 +169,7 @@ export async function seedVideoPage(
         videos,
       }),
     },
-    files,
+    files
   );
 }
 
@@ -176,7 +178,7 @@ export async function seedIdeasPage(
   api: ApiClient,
   title: string,
   sections: { title: string; medias: SeedMediaInput[] }[],
-  files: Record<string, SeedFile>,
+  files: Record<string, SeedFile>
 ): Promise<IdeasPageSeed> {
   return api.postMultipart<IdeasPageSeed>(
     PAGE_ENDPOINTS.ideasPage,
@@ -193,7 +195,7 @@ export async function seedIdeasPage(
         })),
       }),
     },
-    files,
+    files
   );
 }
 
@@ -202,7 +204,7 @@ export async function seedImagePage(
   api: ApiClient,
   title: string,
   sections: { caption: string; mediaItems: SeedMediaInput[] }[],
-  files: Record<string, SeedFile>,
+  files: Record<string, SeedFile>
 ): Promise<ImagePageSeed> {
   return api.postMultipart<ImagePageSeed>(
     PAGE_ENDPOINTS.imagePage,
@@ -219,6 +221,6 @@ export async function seedImagePage(
         })),
       }),
     },
-    files,
+    files
   );
 }
