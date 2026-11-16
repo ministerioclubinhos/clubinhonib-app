@@ -5,9 +5,9 @@ export const CHILDREN_ENDPOINT = "/children";
 export const CHILDREN_DEFAULT_LIMIT = 12;
 export const CHILDREN_PAGE_SIZE_OPTIONS = [12, 24, 48];
 
-/** Ordenação inicial: em ordem alfabética, como a API também assume. */
-export const CHILDREN_DEFAULT_SORT = "name" as const;
-export const CHILDREN_DEFAULT_ORDER = "ASC" as const;
+/** Ordenação inicial: as crianças mais assíduas primeiro, como a API também assume. */
+export const CHILDREN_DEFAULT_SORT = "attendance" as const;
+export const CHILDREN_DEFAULT_ORDER = "DESC" as const;
 
 /** Sexo da criança. Espelha o enum `Gender` da API. */
 export enum Gender {

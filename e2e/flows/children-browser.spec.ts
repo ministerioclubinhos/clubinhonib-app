@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { ApiClient, uniqueSuffix } from '../support/api';
-import { childInList, removeChild, seedChild, type SeededChild } from '../support/children';
+import { childInList, launchWindow, pagelaBody, removeChild, seedChild, type SeededChild } from '../support/children';
 
 /**
  * Lista da área das crianças (`/area-das-criancas`), contra a API real.
@@ -207,6 +207,52 @@ test.describe('Área das crianças: computador', () => {
       await expect(page.getByTestId('children-browser-add-button')).toContainText('Adicionar criança');
       await expect(page.getByTestId('children-browser-add-fab')).toHaveCount(0);
       await expect(page.getByRole('combobox', { name: 'Status' })).toBeVisible();
+    } finally {
+      await removeGroup(kids);
+    }
+  });
+});
+
+test.describe('Área das crianças: ordem por assiduidade', () => {
+  test('as mais assíduas vêm primeiro, quem nunca veio por último e o empate segue o nome', async ({ page }) => {
+    const launch = await launchWindow(api);
+    test.skip(!launch.open || (launch.currentWeek ?? 0) < 3, 'precisa de período aberto com 3 semanas');
+    const week = launch.currentWeek ?? 3;
+
+    // Nomes em ordem alfabética contrária à assiduidade: A nunca veio, D veio 3 vezes.
+    const { prefix, kids } = await seedGroup(4);
+    try {
+      const [never, absent, once, often] = kids;
+      for (const w of [week, week - 1, week - 2]) await api.post('/pagelas', pagelaBody(often.id, launch, { week: w }));
+      await api.post('/pagelas', pagelaBody(once.id, launch));
+      // Pagela com falta não conta como presença.
+      await api.post('/pagelas', pagelaBody(absent.id, launch, { present: false }));
+      await api.post('/pagelas', pagelaBody(absent.id, launch, { week: week - 1, present: false }));
+
+      const apiPage = await api.get<{ data: { id: string }[] }>('/children/simple', { searchString: prefix, page: 1, limit: 10 });
+      expect(apiPage.data.map((row) => row.id)).toEqual([often.id, once.id, never.id, absent.id]);
+
+      await page.goto(`/area-das-criancas?busca=${encodeURIComponent(prefix)}`);
+      const names = page.getByTestId('pagela-teacher-child-card');
+      await expect(names).toHaveCount(4);
+      await expect(names.nth(0)).toContainText(often.name);
+      await expect(names.nth(1)).toContainText(once.name);
+      await expect(names.nth(2)).toContainText(never.name);
+      await expect(names.nth(3)).toContainText(absent.name);
+    } finally {
+      await removeGroup(kids);
+    }
+  });
+
+  test('a paginação mantém a ordem entre as páginas', async () => {
+    const launch = await launchWindow(api);
+    test.skip(!launch.open, 'período letivo fechado');
+    const { prefix, kids } = await seedGroup(3);
+    try {
+      await api.post('/pagelas', pagelaBody(kids[2].id, launch));
+      const first = await api.get<{ data: { id: string }[] }>('/children/simple', { searchString: prefix, page: 1, limit: 2 });
+      const second = await api.get<{ data: { id: string }[] }>('/children/simple', { searchString: prefix, page: 2, limit: 2 });
+      expect([...first.data, ...second.data].map((row) => row.id)).toEqual([kids[2].id, kids[0].id, kids[1].id]);
     } finally {
       await removeGroup(kids);
     }

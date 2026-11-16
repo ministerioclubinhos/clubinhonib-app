@@ -107,6 +107,7 @@ export type ChildListItem = {
 
 /** Campo de ordenação aceito pela API (`ChildSortField`). */
 export type ChildSortField =
+  | "attendance"
   | "name"
   | "birthDate"
   | "joinedAt"
