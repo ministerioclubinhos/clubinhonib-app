@@ -15,13 +15,16 @@ export default function IdeaAiImageCompare({
   const enhancedMedia = result?.enhancedMedia ?? null;
   return (
     <Stack data-testid="idea-ai-image-compare" spacing={1.5}>
-      <IdeaAiChoice
-        label={name}
-        decision={decision}
-        enhanced={Boolean(enhancedMedia)}
-        onChange={onChange}
-        disabled={disabled}
-      />
+      {/* Sem versão da IA não há o que escolher: o seletor só confundia. */}
+      {enhancedMedia && (
+        <IdeaAiChoice
+          label={name}
+          decision={decision}
+          enhanced={Boolean(enhancedMedia)}
+          onChange={onChange}
+          disabled={disabled}
+        />
+      )}
       {enhancedMedia ? (
         <Stack direction="row" justifyContent="space-between">
           <Typography variant="overline">Original</Typography>

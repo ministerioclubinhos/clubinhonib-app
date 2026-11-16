@@ -1,3 +1,5 @@
+import type { PagelaResponse } from "@/features/pagelas/types";
+
 /**
  * Tipos da área do professor.
  *
@@ -11,3 +13,17 @@ export type {
   Paginated as PageDto,
   PagelaLaunchWindow,
 } from "@/features/pagelas/types";
+
+/** Modos do editor de pagela: lançar uma nova ou corrigir uma existente. */
+export enum PagelaEditorMode {
+  CREATE = "create",
+  EDIT = "edit",
+}
+
+/** O que o editor está fazendo agora; `null` quando está fechado. */
+export type PagelaEditorState =
+  | { mode: PagelaEditorMode.CREATE }
+  | {
+      mode: PagelaEditorMode.EDIT;
+      pagela: PagelaResponse;
+    };

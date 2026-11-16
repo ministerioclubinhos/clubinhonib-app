@@ -14,6 +14,9 @@ export const MAX_ISO_WEEK = 53;
 export const PAGELAS_DEFAULT_PAGE = 1;
 export const PAGELAS_DEFAULT_LIMIT = 10;
 
+/** Pagelas por página na tela da criança: curta no celular, onde cada cartão pesa. */
+export const PAGELAS_PAGE_SIZE = { mobile: 6, desktop: 12 } as const;
+
 /** Rótulos das situações de uma pagela na semana. */
 export const PAGELA_STATUS_LABELS = {
   complete: "Completa",
@@ -72,3 +75,50 @@ export const DECISION_TEXTS = {
 /** Aviso da tela de pagelas quando a criança está desativada. */
 export const INACTIVE_CHILD_PAGELA_TEXT =
   "Esta criança está desativada. Reative-a na lista de crianças para lançar ou editar pagelas.";
+
+/** Limites dos filtros de ano e semana da lista de pagelas. */
+export const PAGELA_FILTER_YEAR_DIGITS = 4;
+export const PAGELA_FILTER_WEEK_DIGITS = 2;
+export const PAGELA_FILTER_MIN_YEAR = 2000;
+
+/** Textos do editor de pagela. */
+export const PAGELA_EDITOR_TEXTS = {
+  createTitle: "Nova pagela",
+  editTitle: "Editar pagela",
+  checking: "Conferindo a semana...",
+  weekTaken: "Já existe uma pagela desta criança nesta semana.",
+  editExisting: "Editar a pagela desta semana",
+  save: "Salvar",
+  saving: "Salvando...",
+  cancel: "Cancelar",
+  created: "Pagela salva!",
+  updated: "Pagela atualizada!",
+  deleted: "Pagela excluída.",
+  deleteError: "Não foi possível excluir a pagela.",
+  newButton: "Nova pagela",
+  filters: "Filtros",
+  clearFilters: "Limpar filtros",
+  empty: "Nenhuma pagela encontrada.",
+  emptyFiltered: "Nenhuma pagela com esses filtros.",
+} as const;
+
+/**
+ * Crianças por página na lista da área do professor.
+ *
+ * No celular a página é curta de propósito: cada cartão é alto e rolar muito
+ * para chegar à paginação cansa.
+ */
+export const CHILDREN_PAGE_SIZE = { mobile: 6, desktop: 10 } as const;
+
+/** Textos da lista de crianças da área do professor. */
+export const CHILDREN_BROWSER_TEXTS = {
+  title: "Área das crianças",
+  hint: "Toque em uma criança para abrir suas pagelas",
+  filters: "Filtros",
+  clearFilters: "Limpar filtros",
+  search: "Buscar por nome ou telefone do responsável…",
+  empty: "Nenhuma criança encontrada",
+  emptyHint: "Tente alterar os termos da busca ou ajustar os filtros selecionados.",
+  addChild: "Adicionar criança",
+  addChildShort: "Adicionar",
+} as const;

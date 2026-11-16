@@ -1,10 +1,10 @@
 import * as React from "react";
 import {
-  Box, Alert, Grid, Paper, TextField, InputAdornment,
-  Typography, CircularProgress, Button, Fab, IconButton, Tooltip,
+  Badge, Box, Alert, Collapse, Grid, Paper, TextField, InputAdornment,
+  Typography, CircularProgress, Button, IconButton,
   useMediaQuery, useTheme, Pagination, Select, MenuItem, FormControl, InputLabel
 } from "@mui/material";
-import { Search, PersonAdd, ArrowBack, FilterAltOff } from "@mui/icons-material";
+import { Search, PersonAdd, ArrowBack, FilterAltOff, FilterList } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 
@@ -20,7 +20,11 @@ import { ToggleActiveSubject } from "@/components/common/modal/types";
 import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
 import { useAuthRole } from "@/utils/useAuthRole";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { CHILDREN_BROWSER_PAGE_TITLE } from "./constants";
+import {
+  CHILDREN_BROWSER_PAGE_TITLE,
+  CHILDREN_BROWSER_TEXTS,
+  CHILDREN_PAGE_SIZE,
+} from "./constants";
 
 export default function ChildrenBrowserPage() {
   // Professor e coordenador não excluem criança: desativar é a operação deles.
@@ -29,11 +33,11 @@ export default function ChildrenBrowserPage() {
   const nav = useNavigate();
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   // `noSsr` dá a resposta certa já na primeira renderização: sem ele a tela
-  // buscava 10 crianças e, logo em seguida, 5.
+  // buscava a página do computador e, logo em seguida, a do celular.
   const isMobile = useMediaQuery(theme.breakpoints.down("md"), { noSsr: true });
-  const pageSize = isMobile ? 5 : 10;
+  const pageSize = isMobile ? CHILDREN_PAGE_SIZE.mobile : CHILDREN_PAGE_SIZE.desktop;
+  const [showFilters, setShowFilters] = React.useState(false);
 
   const {
     searchString,
@@ -124,6 +128,12 @@ export default function ChildrenBrowserPage() {
 
   useDocumentTitle(CHILDREN_BROWSER_PAGE_TITLE);
 
+  // Quantos filtros estão valendo, incluindo a busca digitada.
+  const activeFilters =
+    (searchString ? 1 : 0) +
+    (isActiveFilter !== undefined ? 1 : 0) +
+    (acceptedChristFilter !== undefined ? 1 : 0);
+
   return (
     <Box data-testid="pagela-teacher-children-browser-page"
       sx={{
@@ -142,91 +152,79 @@ export default function ChildrenBrowserPage() {
           alignItems: "center",
           justifyContent: "space-between",
           gap: 1,
-          flexWrap: "wrap",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-          {isXs && (
-            <Tooltip title="Voltar">
-              <IconButton
-                onClick={() => nav(-1)}
-                aria-label="Voltar para a página anterior"
-                sx={{
-                  mr: 0.5,
-                  bgcolor: "white",
-                  boxShadow: 1,
-                  "&:hover": { bgcolor: "grey.100" },
-                }}
-              >
-                <ArrowBack />
-              </IconButton>
-            </Tooltip>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+          {isMobile && (
+            <IconButton
+              onClick={() => nav(-1)}
+              aria-label="Voltar para a página anterior"
+              sx={{
+                width: 44,
+                height: 44,
+                bgcolor: "white",
+                boxShadow: 1,
+                "&:hover": { bgcolor: "grey.100" },
+              }}
+            >
+              <ArrowBack />
+            </IconButton>
           )}
 
-          <Typography
-            component="h1"
-            variant="h5"
-            fontWeight={900}
-            sx={{ color: "#143a2b", fontSize: { xs: "1.25rem", md: "1.75rem" } }}
-          >
-            Área das crianças
-          </Typography>
-
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: { xs: "none", md: "block" } }}
-          >
-            Toque em uma criança para abrir suas pagelas
-          </Typography>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              component="h1"
+              variant="h5"
+              fontWeight={900}
+              noWrap
+              sx={{ color: "#143a2b", fontSize: { xs: "1.1rem", md: "1.75rem" } }}
+            >
+              {CHILDREN_BROWSER_TEXTS.title}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ display: { xs: "none", md: "block" } }}
+            >
+              {CHILDREN_BROWSER_TEXTS.hint}
+            </Typography>
+          </Box>
         </Box>
 
         <Button
           onClick={openCreate}
           startIcon={<PersonAdd />}
           variant="contained"
-          sx={{ display: { xs: "none", md: "inline-flex" } }}
+          aria-label={CHILDREN_BROWSER_TEXTS.addChild}
+          data-testid="children-browser-add-button"
+          sx={{ minHeight: 44, fontWeight: 800, flexShrink: 0 }}
         >
-          Adicionar criança
+          {isMobile ? CHILDREN_BROWSER_TEXTS.addChildShort : CHILDREN_BROWSER_TEXTS.addChild}
         </Button>
       </Box>
-
-      <Fab
-        color="primary"
-        aria-label="Adicionar criança"
-        onClick={openCreate}
-        sx={{
-          position: "fixed",
-          bottom: 24,
-          right: 24,
-          display: { xs: "flex", md: "none" },
-          zIndex: 1300,
-        }}
-      >
-        <PersonAdd />
-      </Fab>
 
       <Paper
         elevation={0}
         sx={{ p: 2, mb: 2, borderRadius: 3, border: "1px solid", borderColor: "divider" }}
       >
-        <Typography variant="h6" fontWeight={900} sx={{ mb: 2, color: "#143a2b" }}>
-          Selecionar Criança {totalItems > 0 && `(${totalItems})`}
+        <Typography variant="subtitle1" fontWeight={900} sx={{ mb: 1.5, color: "#143a2b" }}>
+          Selecionar criança {totalItems > 0 && `(${totalItems})`}
         </Typography>
 
-        <Box sx={{
-          display: 'flex',
-          gap: 2,
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: { xs: 'stretch', md: 'center' },
-          mb: 2
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            alignItems: "center",
+            mb: { xs: showFilters ? 1.5 : 0, md: 2 },
+          }}
+        >
           <TextField
             value={searchString}
             onChange={(e) => setSearchString(e.target.value)}
             size="small"
             fullWidth
-            placeholder="Buscar por nome ou telefone do responsável…"
+            placeholder={CHILDREN_BROWSER_TEXTS.search}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -234,54 +232,77 @@ export default function ChildrenBrowserPage() {
                 </InputAdornment>
               ),
             }}
-            sx={{ flex: { md: 1 } }}
           />
-
-          <FormControl size="small" sx={{ minWidth: { xs: '100%', md: 180 } }}>
-            <InputLabel id="children-status-label">Status</InputLabel>
-            <Select
-              labelId="children-status-label"
-              value={isActiveFilter === undefined ? 'all' : isActiveFilter ? 'active' : 'inactive'}
-              onChange={(e) => {
-                const val = e.target.value;
-                setIsActiveFilter(val === 'all' ? undefined : val === 'active');
-              }}
-              label="Status"
+          {isMobile && (
+            <IconButton
+              onClick={() => setShowFilters((v) => !v)}
+              aria-label={CHILDREN_BROWSER_TEXTS.filters}
+              aria-expanded={showFilters}
+              data-testid="children-browser-filters-toggle"
+              sx={{ width: 44, height: 44, border: "1px solid", borderColor: "divider" }}
             >
-              <MenuItem value="all">Todas</MenuItem>
-              <MenuItem value="active">Ativas</MenuItem>
-              <MenuItem value="inactive">Desativadas</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl size="small" sx={{ minWidth: { xs: '100%', md: 200 } }}>
-            <InputLabel id="children-decision-label">Decisão</InputLabel>
-            <Select
-              labelId="children-decision-label"
-              value={acceptedChristFilter === undefined ? 'all' : acceptedChristFilter ? 'accepted' : 'not_accepted'}
-              onChange={(e) => {
-                const val = e.target.value;
-                setAcceptedChristFilter(val === 'all' ? undefined : val === 'accepted');
-              }}
-              label="Decisão"
-            >
-              <MenuItem value="all">Todas</MenuItem>
-              <MenuItem value="accepted">Aceitaram Cristo</MenuItem>
-              <MenuItem value="not_accepted">Não Aceitaram</MenuItem>
-            </Select>
-          </FormControl>
-
-          <Button
-            onClick={clearFilters}
-            disabled={!searchString && isActiveFilter === undefined && acceptedChristFilter === undefined}
-            startIcon={<FilterAltOff />}
-            variant="outlined"
-            size="small"
-            sx={{ minWidth: { xs: '100%', md: 'auto' } }}
-          >
-            Limpar Filtros
-          </Button>
+              <Badge color="primary" badgeContent={activeFilters} invisible={!activeFilters}>
+                <FilterList />
+              </Badge>
+            </IconButton>
+          )}
         </Box>
+
+        <Collapse in={!isMobile || showFilters}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1.5,
+              flexDirection: { xs: "column", md: "row" },
+              alignItems: { xs: "stretch", md: "center" },
+            }}
+          >
+            <FormControl size="small" sx={{ minWidth: { xs: "100%", md: 180 } }}>
+              <InputLabel id="children-status-label">Status</InputLabel>
+              <Select
+                labelId="children-status-label"
+                value={isActiveFilter === undefined ? "all" : isActiveFilter ? "active" : "inactive"}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setIsActiveFilter(val === "all" ? undefined : val === "active");
+                }}
+                label="Status"
+              >
+                <MenuItem value="all" sx={{ minHeight: 44 }}>Todas</MenuItem>
+                <MenuItem value="active" sx={{ minHeight: 44 }}>Ativas</MenuItem>
+                <MenuItem value="inactive" sx={{ minHeight: 44 }}>Desativadas</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: { xs: "100%", md: 200 } }}>
+              <InputLabel id="children-decision-label">Decisão</InputLabel>
+              <Select
+                labelId="children-decision-label"
+                value={acceptedChristFilter === undefined ? "all" : acceptedChristFilter ? "accepted" : "not_accepted"}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setAcceptedChristFilter(val === "all" ? undefined : val === "accepted");
+                }}
+                label="Decisão"
+              >
+                <MenuItem value="all" sx={{ minHeight: 44 }}>Todas</MenuItem>
+                <MenuItem value="accepted" sx={{ minHeight: 44 }}>Aceitaram Cristo</MenuItem>
+                <MenuItem value="not_accepted" sx={{ minHeight: 44 }}>Não Aceitaram</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Button
+              onClick={clearFilters}
+              disabled={activeFilters === 0}
+              startIcon={<FilterAltOff />}
+              variant="outlined"
+              data-testid="children-browser-clear-filters"
+              sx={{ minHeight: 44, minWidth: { xs: "100%", md: "auto" } }}
+            >
+              {CHILDREN_BROWSER_TEXTS.clearFilters}
+            </Button>
+          </Box>
+        </Collapse>
       </Paper>
 
       {error && (
@@ -291,12 +312,13 @@ export default function ChildrenBrowserPage() {
       )}
 
       {loading && !items.length ? (
-        <Box textAlign="center" my={6}>
+        <Box textAlign="center" my={6} data-testid="children-browser-loading">
           <CircularProgress />
         </Box>
       ) : items.length === 0 ? (
         <Paper
           elevation={0}
+          data-testid="children-browser-empty"
           sx={{
             p: 4,
             textAlign: "center",
@@ -307,10 +329,10 @@ export default function ChildrenBrowserPage() {
           }}
         >
           <Typography variant="h6" color="text.secondary" fontWeight={700}>
-            Nenhuma criança encontrada
+            {CHILDREN_BROWSER_TEXTS.empty}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Tente alterar os termos da busca ou ajustar os filtros selecionados.
+            {CHILDREN_BROWSER_TEXTS.emptyHint}
           </Typography>
         </Paper>
       ) : (
@@ -333,7 +355,7 @@ export default function ChildrenBrowserPage() {
           </Grid>
 
           {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 2, md: 4 } }}>
               <Pagination
                 count={totalPages}
                 page={page}

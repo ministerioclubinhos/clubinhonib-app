@@ -1,6 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
 
 import { ApiClient } from '../support/api';
+import { openCreateForm, openEditForm, saveButton } from '../support/pagela-ui';
 import {
   childInList,
   launchWindow,
@@ -126,10 +127,11 @@ for (const role of ROLES) {
       test.skip(!window.open, `período letivo fechado hoje (${window.reason})`);
       const child = await seedOwn();
       await page.goto(`/area-das-criancas/${child.id}`);
+      const form = await openCreateForm(page);
 
       await expect(page.getByTestId('pagela-week-select')).toHaveValue(String(window.currentWeek));
-      await page.getByRole('checkbox', { name: /Presença/ }).check();
-      await page.getByRole('button', { name: /Salvar/ }).click();
+      await form.getByRole('checkbox', { name: /Presença/ }).check();
+      await saveButton(page).click();
       await expect(page.getByText('Pagela salva!')).toBeVisible();
       await expect(page.getByTestId('pagela-authorship')).toContainText(`Lançada por ${me.name}`);
 
@@ -151,9 +153,9 @@ for (const role of ROLES) {
       await admin.patch(`/pagelas/${created.id}`, { notes: 'Corrigida pela administração' });
 
       await page.goto(`/area-das-criancas/${child.id}`);
-      await expect(page.getByText(/Editando/)).toBeVisible();
-      await page.getByRole('checkbox', { name: /Fez meditação/ }).check();
-      await page.getByRole('button', { name: /Salvar/ }).click();
+      const form = await openEditForm(page, window.currentWeek ?? 1);
+      await form.getByRole('checkbox', { name: /Fez meditação/ }).check();
+      await saveButton(page).click();
       await expect(page.getByText('Pagela atualizada!')).toBeVisible();
 
       const [saved] = await pagelasOf(admin, child.id);

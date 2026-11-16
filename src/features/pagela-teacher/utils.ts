@@ -1,4 +1,9 @@
-import { MAX_ISO_WEEK, MIN_ISO_WEEK } from "./constants";
+import {
+  MAX_ISO_WEEK,
+  MIN_ISO_WEEK,
+  PAGELA_FILTER_MIN_YEAR,
+  PAGELA_FILTER_YEAR_DIGITS,
+} from "./constants";
 
 /**
  * Regras puras da área do professor.
@@ -69,4 +74,29 @@ export function launchableWeeks(window: {
     { length: window.currentWeek },
     (_, index) => window.currentWeek! - index,
   );
+}
+
+/**
+ * Lê o texto digitado no filtro de ano.
+ *
+ * `undefined` limpa o filtro; `null` significa "ainda incompleto" e não muda
+ * nada, para a lista não recarregar a cada dígito.
+ */
+export function parseYearFilter(text: string): number | undefined | null {
+  const digits = text.replace(/\D+/g, "");
+  if (digits === "") return undefined;
+  if (digits.length !== PAGELA_FILTER_YEAR_DIGITS) return null;
+
+  return Math.max(PAGELA_FILTER_MIN_YEAR, Number(digits));
+}
+
+/** Igual a `parseYearFilter`, para a semana; zero ainda é incompleto. */
+export function parseWeekFilter(text: string): number | undefined | null {
+  const digits = text.replace(/\D+/g, "");
+  if (digits === "") return undefined;
+
+  const week = Number(digits);
+  if (week < MIN_ISO_WEEK) return null;
+
+  return clampWeek(week);
 }

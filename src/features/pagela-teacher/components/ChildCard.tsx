@@ -2,8 +2,9 @@ import { hasAcceptedChrist } from "@/features/children/utils";
 import * as React from "react";
 import {
   Card, CardActionArea, CardContent, Stack, Typography,
-  Box, Avatar, Tooltip, IconButton, useTheme, Divider,
+  Box, Avatar, Tooltip, IconButton, useTheme, useMediaQuery, Divider,
 } from "@mui/material";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
@@ -45,6 +46,7 @@ export default function ChildCard({
   onToggleActive?: (c: ChildListItem) => void;
 }) {
   const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
   const colors = genderPastel(child.name || child.id, child.gender);
   const initials = React.useMemo(() => {
     const parts = (child.name || "").trim().split(/\s+/).slice(0, 2);
@@ -58,6 +60,131 @@ export default function ChildCard({
   const handleCloseModal = () => {
     setModalOpen(false);
   };
+
+
+  if (isXs) {
+    const ACTION_SX = { width: 44, height: 44 } as const;
+    return (
+      <>
+        <Card
+          data-testid="pagela-teacher-child-card"
+          variant="outlined"
+          sx={{ borderRadius: 3, overflow: "hidden", borderColor: "divider" }}
+        >
+          <CardActionArea
+            onClick={() => onClick(child)}
+            sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 1.5, p: 1.5 }}
+          >
+            <Avatar
+              sx={{ width: 48, height: 48, bgcolor: colors.solid, fontWeight: 900, flexShrink: 0 }}
+            >
+              {initials || <ChildCareIcon />}
+            </Avatar>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography fontWeight={900} noWrap title={child.name}>
+                {child.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" noWrap title={child.guardianName}>
+                Resp.: {child.guardianName || "—"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" noWrap>
+                Tel.: {child.guardianPhone || "—"}
+              </Typography>
+            </Box>
+            <ChevronRightIcon sx={{ color: "text.disabled", flexShrink: 0 }} />
+          </CardActionArea>
+
+          <Divider />
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ px: 0.5, bgcolor: theme.palette.mode === "light" ? "grey.50" : "grey.900" }}
+          >
+            <Stack direction="row">
+              {canRegisterDecision && (
+                <IconButton
+                  onClick={(e) => { e.stopPropagation(); setModalOpen(true); }}
+                  aria-label="Registrar decisão"
+                  sx={ACTION_SX}
+                >
+                  <FavoriteIcon sx={{ color: alreadyAccepted ? theme.palette.error.main : "#bbb" }} />
+                </IconButton>
+              )}
+              {!!onEdit && (
+                <IconButton
+                  onClick={(e) => { e.stopPropagation(); onEdit(child); }}
+                  aria-label="Editar criança"
+                  sx={ACTION_SX}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              )}
+              {!!onDelete && (
+                <IconButton
+                  onClick={(e) => { e.stopPropagation(); onDelete(child); }}
+                  aria-label="Excluir criança"
+                  sx={{ ...ACTION_SX, color: "error.main" }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              )}
+            </Stack>
+
+            {!!onToggleActive && (
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ pr: 1 }}>
+                <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                  {child.isActive ? "Ativa" : "Desativada"}
+                </Typography>
+                <Box
+                  component="button"
+                  type="button"
+                  role="switch"
+                  aria-checked={child.isActive}
+                  aria-label={child.isActive ? "Desativar criança" : "Ativar criança"}
+                  onClick={(e: React.MouseEvent) => { e.stopPropagation(); onToggleActive(child); }}
+                  sx={{
+                    position: "relative",
+                    "&::before": { content: '""', position: "absolute", inset: "-6px -4px" },
+                    width: 48,
+                    height: 28,
+                    borderRadius: 14,
+                    border: "none",
+                    cursor: "pointer",
+                    bgcolor: child.isActive ? theme.palette.success.main : theme.palette.grey[400],
+                    display: "flex",
+                    alignItems: "center",
+                    px: 0.5,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: "50%",
+                      bgcolor: "white",
+                      transition: "transform .2s",
+                      transform: child.isActive ? "translateX(20px)" : "translateX(0)",
+                      boxShadow: "0 2px 6px rgba(0,0,0,.25)",
+                    }}
+                  />
+                </Box>
+              </Stack>
+            )}
+          </Stack>
+        </Card>
+        <DecisionModal
+          data-testid="pagela-teacher-child-card-decision"
+          open={modalOpen && canRegisterDecision}
+          onClose={handleCloseModal}
+          child={child}
+          onSuccess={async () => {
+            if (onRefresh) await onRefresh();
+          }}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -86,6 +213,8 @@ export default function ChildCard({
               position: "absolute",
               top: 8,
               left: 8,
+              width: 44,
+              height: 44,
               bgcolor: "background.paper",
               border: "2px solid",
               borderColor: "divider",
@@ -111,9 +240,10 @@ export default function ChildCard({
           {!!onEdit && (
             <Tooltip title="Editar criança">
               <IconButton
-                size="small"
                 onClick={(e) => { e.stopPropagation(); onEdit(child); }}
                 sx={{
+                  width: 44,
+                  height: 44,
                   bgcolor: "background.paper",
                   border: "1px solid",
                   borderColor: "divider",
@@ -128,9 +258,10 @@ export default function ChildCard({
           {!!onDelete && (
             <Tooltip title="Excluir criança">
               <IconButton
-                size="small"
                 onClick={(e) => { e.stopPropagation(); onDelete(child); }}
                 sx={{
+                  width: 44,
+                  height: 44,
                   bgcolor: "background.paper",
                   border: "1px solid",
                   borderColor: "divider",
@@ -146,7 +277,7 @@ export default function ChildCard({
 
         <Box
           sx={{
-            height: { xs: 80, sm: 90 },
+            height: { xs: 64, sm: 90 },
             background: `linear-gradient(135deg, ${colors.soft} 0%, ${colors.solid} 100%)`,
             position: "relative",
           }}
@@ -205,7 +336,7 @@ export default function ChildCard({
               </Typography>
             </Stack>
 
-            <Stack direction="row" spacing={0.5} sx={{ mt: 1.25 }} alignItems="center" flexWrap="wrap">
+            <Stack direction="row" spacing={0.5} sx={{ mt: 1.25, display: { xs: "none", sm: "flex" } }} alignItems="center" flexWrap="wrap">
               <EmojiEmotionsIcon fontSize="small" sx={{ opacity: 0.65 }} />
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, letterSpacing: 0.15 }}>
                 toque para abrir a caderneta
@@ -253,6 +384,8 @@ export default function ChildCard({
                   onClick={(e) => { e.stopPropagation(); onToggleActive(child); }}
                   sx={{
                     position: "relative",
+                    // Área de toque de 44 px sem engordar o interruptor.
+                    "&::before": { content: '""', position: "absolute", inset: "-6px -4px" },
                     width: 56,
                     height: 32,
                     borderRadius: 16,

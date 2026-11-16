@@ -3,10 +3,12 @@ import api from '@/config/axiosConfig';
 import { apiListIdeasPageOptions } from '@/features/ideas-pages/api';
 
 import { IDEAS_SECTIONS_ENDPOINT } from './constants';
-import { IDEA_SHARE_UPLOAD_TIMEOUT_MS } from './constants';
+import { IDEA_AI_DOCUMENT_SAVE_TIMEOUT_MS, IDEA_SHARE_UPLOAD_TIMEOUT_MS } from './constants';
 import { buildIdeasSectionsQuery } from './utils';
+import type { IdeaTiptapDocument } from './document-editor/editor.types';
 import type {
   ApiMessage,
+  IdeaAiDocument,
   IdeaAiEnhancementRequest,
   IdeasSectionFetchOptions,
   IdeaAiQueued,
@@ -143,4 +145,33 @@ export async function apiRestoreIdeaAiResult(id: string, attemptId: string): Pro
     undefined,
     { skipGlobalError: true }
   );
+}
+
+const ideaAiDocumentPath = (id: string, sourceMediaId: string): string =>
+  `${IDEAS_SECTIONS_ENDPOINT}/${id}/ai-enhancement/medias/${sourceMediaId}/document`;
+
+/** Documento melhorado, no formato do editor, para edição manual. */
+export async function apiFetchIdeaAiDocument(
+  id: string,
+  sourceMediaId: string,
+  options?: { signal?: AbortSignal }
+): Promise<IdeaAiDocument> {
+  const { data } = await api.get<IdeaAiDocument>(ideaAiDocumentPath(id, sourceMediaId), {
+    signal: options?.signal,
+    skipGlobalError: true,
+  });
+  return data;
+}
+
+/** Salva a edição e gera o DOCX e o PDF novos a partir do conteúdo do editor. */
+export async function apiSaveIdeaAiDocument(
+  id: string,
+  sourceMediaId: string,
+  body: { enhancementId: string; document: IdeaTiptapDocument }
+): Promise<IdeaAiDocument> {
+  const { data } = await api.put<IdeaAiDocument>(ideaAiDocumentPath(id, sourceMediaId), body, {
+    skipGlobalError: true,
+    timeout: IDEA_AI_DOCUMENT_SAVE_TIMEOUT_MS,
+  });
+  return data;
 }

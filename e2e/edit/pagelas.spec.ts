@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { ApiClient, uniqueSuffix } from '../support/api';
+import { openEditForm, saveButton } from '../support/pagela-ui';
 
 type Club = { id: string; number: number; weekday: string };
 type Child = { id: string; name: string };
@@ -38,17 +39,12 @@ test.describe('Pagelas: edição', () => {
   test('edita presença, meditação, versículo e observação', async ({ page }) => {
     await page.goto(`/area-das-criancas/${child.id}`);
     await expect(page.getByTestId('pagela-teacher-child-pagelas-page')).toBeVisible();
-    const card = page.getByTestId('pagela-teacher-pagela-card').filter({ hasText: `${pagela.week}` }).first();
-    await expect(card).toBeVisible();
-    await card.getByRole('button', { name: 'Editar pagela' }).click();
-
-    const form = page.getByTestId('pagela-teacher-pagela-quick-form');
-    await expect(form).toBeVisible();
+    const form = await openEditForm(page, pagela.week);
     await form.getByLabel('Presença').check();
     await form.getByLabel('Fez meditação').check();
     await form.getByLabel('Recitou o versículo').check();
     await form.getByLabel('Observações').fill('Editada pelo Playwright');
-    await form.getByRole('button', { name: 'Salvar' }).click();
+    await saveButton(page).click();
 
     await expect.poll(async () => api.get<Pagela>(`/pagelas/${pagela.id}`)).toMatchObject({ present: true, didMeditation: true, recitedVerse: true, notes: 'Editada pelo Playwright' });
   });

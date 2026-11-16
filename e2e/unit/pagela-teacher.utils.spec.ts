@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { clampWeek, getISOWeekYear, launchableWeeks, toLabelWeek, todayISO } from "@/features/pagela-teacher/utils";
+import { clampWeek, getISOWeekYear, launchableWeeks, parseWeekFilter, parseYearFilter, toLabelWeek, todayISO } from "@/features/pagela-teacher/utils";
 
 test.describe("clampWeek", () => {
   test("mantém a semana dentro dos limites ISO", () => {
@@ -69,5 +69,21 @@ test.describe("launchableWeeks", () => {
   test("fora do período letivo não há semana que aceite lançamento", () => {
     expect(launchableWeeks({ open: false, currentWeek: null })).toEqual([]);
     expect(launchableWeeks(null)).toEqual([]);
+  });
+});
+
+test.describe("filtros de ano e semana", () => {
+  test("ano só vale com quatro dígitos; vazio limpa o filtro", () => {
+    expect(parseYearFilter("")).toBeUndefined();
+    expect(parseYearFilter("20")).toBeNull();
+    expect(parseYearFilter("2026")).toBe(2026);
+    expect(parseYearFilter("1999")).toBe(2000);
+  });
+
+  test("semana ignora zero incompleto e limita ao teto ISO", () => {
+    expect(parseWeekFilter("")).toBeUndefined();
+    expect(parseWeekFilter("0")).toBeNull();
+    expect(parseWeekFilter("7")).toBe(7);
+    expect(parseWeekFilter("99")).toBe(53);
   });
 });

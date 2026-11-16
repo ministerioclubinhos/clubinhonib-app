@@ -34,12 +34,18 @@ function formatPtBrDate(iso: string | null | undefined) {
   }).format(dt);
 }
 
+/** Alvo de toque de 44 × 44 px nas ações do card. */
+const TOUCH_SX = { width: 44, height: 44 } as const;
+
 export default function PagelaCard({
   row,
   onEdit,
   onDelete,
+  canEdit = true,
 }: {
   row: Pagela;
+  /** Falso para criança desativada: a API recusa editar a pagela dela. */
+  canEdit?: boolean;
   onEdit: (r: Pagela) => void;
   onDelete: (r: Pagela) => Promise<void>;
 }) {
@@ -153,12 +159,13 @@ export default function PagelaCard({
         <Box
           sx={{
             height: 6,
+            display: { xs: "none", sm: "block" },
             background:
               "linear-gradient(90deg, #a0e3a2 0%, #b8d6ff 50%, #ffb8e6 100%)",
           }}
         />
-        <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
-          <Stack spacing={1.25}>
+        <CardContent sx={{ p: { xs: 1.5, md: 2 }, "&:last-child": { pb: { xs: 1.5, md: 2 } } }}>
+          <Stack spacing={{ xs: 0.75, sm: 1.25 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography
                 fontWeight={900}
@@ -173,23 +180,26 @@ export default function PagelaCard({
                 {weekTitle}
               </Typography>
 
-              <Stack direction="row" spacing={0.5}>
+              <Stack direction="row" spacing={0} sx={{ mr: -1, mt: -1 }}>
                 <Tooltip title="Editar">
+                  <span>
                   <IconButton
-                    size="small"
+                    disabled={!canEdit}
                     onClick={() => onEdit(row)}
                     aria-label="Editar pagela"
+                    sx={TOUCH_SX}
                   >
-                    <Edit fontSize="inherit" />
+                    <Edit fontSize="small" />
                   </IconButton>
+                  </span>
                 </Tooltip>
                 <Tooltip title="Excluir">
                   <IconButton
-                    size="small"
                     onClick={() => setConfirmOpen(true)}
                     aria-label="Excluir pagela"
+                    sx={TOUCH_SX}
                   >
-                    <Delete fontSize="inherit" />
+                    <Delete fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </Stack>
@@ -217,7 +227,7 @@ export default function PagelaCard({
               </Typography>
             )}
 
-            <Divider />
+            <Divider sx={{ display: { xs: "none", sm: "block" } }} />
 
             <Chips />
 
@@ -230,7 +240,7 @@ export default function PagelaCard({
         </CardContent>
       </Card>
 
-      <DeleteConfirmDialog data-testid="pagela-teacher-pagela-card"
+      <DeleteConfirmDialog data-testid="pagela-teacher-delete-dialog"
         open={confirmOpen}
         title={weekTitle}
         onClose={() => (busy ? null : setConfirmOpen(false))}

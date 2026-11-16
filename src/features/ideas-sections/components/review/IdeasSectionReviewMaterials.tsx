@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   Chip,
+  Divider,
   IconButton,
   Stack,
   TextField,
@@ -29,7 +30,17 @@ import {
   toIdeaYoutubeMedia,
   validateIdeaShareFile,
 } from '../../share-utils';
-import { IdeaMaterialKind, type IdeaShareMaterial } from '../../types';
+import {
+  IdeaAiDecision,
+  IdeaAiMediaStatus,
+  IdeaMaterialKind,
+  type IdeaAiDecisions,
+  type IdeaShareMaterial,
+  type IdeasSectionResponse,
+} from '../../types';
+import { IDEA_AI_SKIP_LABELS } from '../../ai-constants';
+import { ideaAiSourceForMedia } from '../../ai-utils';
+import IdeaAiMaterialCompare from '../ai/IdeaAiMaterialCompare';
 import IdeasMediaPreviewDialog from '../IdeasMediaPreviewDialog';
 import type { IdeasSectionDraft } from '../../types';
 import { MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
@@ -38,6 +49,17 @@ interface IdeasSectionReviewMaterialsProps {
   medias: IdeasSectionDraft['medias'];
   onChange: (medias: IdeasSectionDraft['medias']) => void;
   disabled?: boolean;
+  /** Com a melhoria da IA: cada arquivo mostra a comparação dentro do próprio cartão. */
+  ai?: {
+    section: IdeasSectionResponse;
+    decisions: IdeaAiDecisions | null;
+    onDecisionChange: (sourceMediaId: string, decision: IdeaAiDecision) => void;
+    onDocumentSaved?: () => void;
+    /** Originais que saíram da publicação. */
+    removedSources: IdeasSectionResponse['medias'];
+    /** Bloqueia a comparação (IA trabalhando, publicada). */
+    disabled: boolean;
+  };
 }
 
 const kinds = [IdeaMaterialKind.DOCUMENT, IdeaMaterialKind.IMAGE, IdeaMaterialKind.VIDEO] as const;
@@ -58,6 +80,7 @@ export default function IdeasSectionReviewMaterials({
   medias,
   onChange,
   disabled = false,
+  ai,
 }: IdeasSectionReviewMaterialsProps) {
   const [selectedKind, setSelectedKind] = useState<IdeaMaterialKind>(IdeaMaterialKind.DOCUMENT);
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -166,9 +189,34 @@ export default function IdeasSectionReviewMaterials({
                       media.platformType === MediaPlatform.YOUTUBE
                         ? 'Vídeo do YouTube'
                         : 'Arquivo');
+                    const source = ai ? ideaAiSourceForMedia(ai.section, media) : null;
+                    const improved = source
+                      ? ai?.section.aiEnhancement?.currentResult?.medias.find(
+                          (m) => m.sourceMediaId === source.id
+                        )
+                      : undefined;
+                    const decision =
+                      ai?.decisions?.medias.find((m) => m.sourceMediaId === source?.id)?.decision ??
+                      IdeaAiDecision.ORIGINAL;
+                    const aiState = !ai?.decisions
+                      ? null
+                      : !source
+                        ? { label: 'Adicionado na revisão', color: 'info' as const }
+                        : improved?.status === IdeaAiMediaStatus.ENHANCED && improved.enhancedMedia
+                          ? decision === IdeaAiDecision.ENHANCED
+                            ? { label: 'Versão da IA escolhida', color: 'success' as const }
+                            : { label: 'Original escolhido', color: 'default' as const }
+                          : {
+                              label: 'Mantido como enviado',
+                              color: 'default' as const,
+                              hint: improved?.skipReason
+                                ? IDEA_AI_SKIP_LABELS[improved.skipReason]
+                                : undefined,
+                            };
                     return (
                       <Card
                         variant="outlined"
+                        sx={{ borderLeft: 5, borderLeftColor: 'warning.main' }}
                         key={media.id ?? `${media.mediaType}-${index}`}
                         data-testid="ideas-section-review-media-item"
                       >
@@ -217,6 +265,16 @@ export default function IdeasSectionReviewMaterials({
                                   variant="outlined"
                                 />
                               )}
+                              {aiState && (
+                                <Chip
+                                  size="small"
+                                  data-testid="ideas-section-review-media-ai-state"
+                                  label={aiState.label}
+                                  title={aiState.hint}
+                                  color={aiState.color}
+                                  variant={aiState.color === 'default' ? 'outlined' : 'filled'}
+                                />
+                              )}
                             </Stack>
                           </Box>
                           <Stack
@@ -249,6 +307,21 @@ export default function IdeasSectionReviewMaterials({
                             </Tooltip>
                           </Stack>
                         </CardContent>
+                        {ai?.decisions && source && kind !== IdeaMaterialKind.VIDEO && (
+                          <>
+                            <Divider />
+                            <Box sx={{ p: { xs: 1.5, md: 2 }, bgcolor: 'grey.50' }}>
+                              <IdeaAiMaterialCompare
+                                section={ai.section}
+                                source={source}
+                                decision={decision}
+                                onDecisionChange={(value) => ai.onDecisionChange(source.id, value)}
+                                onDocumentSaved={ai.onDocumentSaved}
+                                disabled={ai.disabled}
+                              />
+                            </Box>
+                          </>
+                        )}
                       </Card>
                     );
                   })}
@@ -257,6 +330,13 @@ export default function IdeasSectionReviewMaterials({
             );
           })
         )}
+
+        {ai?.removedSources.map((source) => (
+          <Alert key={source.id} severity="info" data-testid="ideas-section-review-media-removed">
+            {source.originalName || source.title || 'Material'} foi removido da publicação. O
+            arquivo original continua preservado.
+          </Alert>
+        ))}
 
         <Box>
           <Typography component="h3" variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>

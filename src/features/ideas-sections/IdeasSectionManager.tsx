@@ -1,23 +1,24 @@
-import React, { useState } from "react";
-import { Grid2 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { FEATURE, useFeatureFlagsContext } from '@/features/feature-flags';
+import React, { useState } from 'react';
+import { Grid2 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
-import { ListingLayout, ListingToolbar } from "@/components/common/listing";
-import type { ListingFilter } from "@/components/common/listing";
-import DeleteConfirmDialog from "@/components/common/modal/DeleteConfirmDialog";
+import { ListingLayout, ListingToolbar } from '@/components/common/listing';
+import type { ListingFilter } from '@/components/common/listing';
+import DeleteConfirmDialog from '@/components/common/modal/DeleteConfirmDialog';
 
-import IdeasSectionCard from "./components/IdeasSectionCard";
-import IdeasSectionDetailsModal from "./components/IdeasSectionDetailsModal";
-import { useIdeasSectionMutations, useIdeasSections } from "./hooks";
+import IdeasSectionCard from './components/IdeasSectionCard';
+import IdeasSectionDetailsModal from './components/IdeasSectionDetailsModal';
+import { useIdeasSectionMutations, useIdeasSections } from './hooks';
 import {
   IDEAS_SECTIONS_PAGE_SIZE_OPTIONS,
   IDEAS_SECTION_SORT_OPTIONS,
   ideasSectionReviewPath,
-} from "./constants";
-import type { IdeasSectionResponse } from "./types";
-import { IDEA_AI_QUEUE_FILTER_ALL, IDEA_AI_QUEUE_FILTER_OPTIONS } from "./ai-constants";
-import { parseIdeaAiQueueFilter } from "./ai-utils";
-import { parseSortOption } from "./utils";
+} from './constants';
+import type { IdeasSectionResponse } from './types';
+import { IDEA_AI_QUEUE_FILTER_ALL, IDEA_AI_QUEUE_FILTER_OPTIONS } from './ai-constants';
+import { parseIdeaAiQueueFilter } from './ai-utils';
+import { parseSortOption } from './utils';
 
 /**
  * Fila de ideias compartilhadas pela base.
@@ -26,6 +27,7 @@ import { parseSortOption } from "./utils";
  * se e em qual página ela entra.
  */
 export default function IdeasSectionManager() {
+  const aiEnabled = useFeatureFlagsContext().isEnabled(FEATURE.IDEA_AI_ENHANCEMENT);
   const navigate = useNavigate();
 
   const {
@@ -45,12 +47,10 @@ export default function IdeasSectionManager() {
     refresh,
   } = useIdeasSections();
 
-  const { actionLoading, actionError, setActionError, remove } =
-    useIdeasSectionMutations(refresh);
+  const { actionLoading, actionError, setActionError, remove } = useIdeasSectionMutations(refresh);
 
   const [viewing, setViewing] = useState<IdeasSectionResponse | null>(null);
-  const [confirmDelete, setConfirmDelete] =
-    useState<IdeasSectionResponse | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<IdeasSectionResponse | null>(null);
 
   /** Leva a ideia para a tela de revisão, onde a página é escolhida. */
   const handleReview = (section: IdeasSectionResponse) => {
@@ -71,30 +71,35 @@ export default function IdeasSectionManager() {
 
   const listingFilters: ListingFilter[] = [
     {
-      id: "sort",
-      label: "Ordenar por",
+      id: 'sort',
+      label: 'Ordenar por',
       value: `${filters.sort}:${filters.order}`,
       options: [...IDEAS_SECTION_SORT_OPTIONS],
-      onChange: (value) =>
-        setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
+      onChange: (value) => setFilters((previous) => ({ ...previous, ...parseSortOption(value) })),
     },
-    {
-      id: "aiStatus",
-      label: "Melhoria por IA",
-      value: filters.aiStatus ?? IDEA_AI_QUEUE_FILTER_ALL,
-      options: [...IDEA_AI_QUEUE_FILTER_OPTIONS],
-      onChange: (value) =>
-        setFilters((previous) => ({ ...previous, aiStatus: parseIdeaAiQueueFilter(value) })),
-    },
+    ...(aiEnabled
+      ? [
+          {
+            id: 'aiStatus',
+            label: 'Melhoria por IA',
+            value: filters.aiStatus ?? IDEA_AI_QUEUE_FILTER_ALL,
+            options: [...IDEA_AI_QUEUE_FILTER_OPTIONS],
+            onChange: (value: string) =>
+              setFilters((previous) => ({
+                ...previous,
+                aiStatus: parseIdeaAiQueueFilter(value),
+              })),
+          },
+        ]
+      : []),
   ];
 
   return (
-    <ListingLayout data-testid="ideas-sections-ideas-section-manager"
+    <ListingLayout
+      data-testid="ideas-sections-ideas-section-manager"
       title="Ideias compartilhadas"
       summary={
-        total > 0
-          ? `${total} ideia(s) aguardando decisão`
-          : "Nenhuma ideia para os filtros atuais"
+        total > 0 ? `${total} ideia(s) aguardando decisão` : 'Nenhuma ideia para os filtros atuais'
       }
       toolbar={
         <ListingToolbar
@@ -108,8 +113,8 @@ export default function IdeasSectionManager() {
       loading={loading}
       error={error || actionError}
       onDismissError={() => {
-        setError("");
-        setActionError("");
+        setError('');
+        setActionError('');
       }}
       itemCount={items.length}
       emptyTitle="Nenhuma ideia na fila"
@@ -138,7 +143,7 @@ export default function IdeasSectionManager() {
 
           <DeleteConfirmDialog
             open={!!confirmDelete}
-            title={confirmDelete ? `ideia "${confirmDelete.title}"` : ""}
+            title={confirmDelete ? `ideia "${confirmDelete.title}"` : ''}
             onClose={() => setConfirmDelete(null)}
             onConfirm={handleDelete}
           />

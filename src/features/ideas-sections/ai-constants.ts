@@ -1,4 +1,5 @@
 import {
+  IdeaAiTextField,
   IdeaAiErrorCode,
   IdeaAiQueueFilter,
   IdeaAiScope,
@@ -14,12 +15,14 @@ export const IDEA_AI_STATUS_LABELS: Record<IdeaAiStatus, string> = {
   [IdeaAiStatus.SKIPPED]: 'Original mantido',
 };
 export const IDEA_AI_SKIP_LABELS: Record<IdeaAiSkipReason, string> = {
-  [IdeaAiSkipReason.NOT_SUPPORTED]: 'Este formato é preservado como foi enviado. Vídeos não passam por melhoria.',
+  [IdeaAiSkipReason.NOT_SUPPORTED]:
+    'Este formato é preservado como foi enviado. Vídeos não passam por melhoria.',
   [IdeaAiSkipReason.ESSENTIAL_VISUALS]:
-    'O documento contém desenhos, moldes ou outros elementos essenciais. Mantivemos o original.',
+    'Este documento é visual (imagens, moldes ou desenhos) e não pôde receber a limpeza automática. Ele é publicado exatamente como o professor enviou.',
   [IdeaAiSkipReason.TOO_LARGE]: 'O documento ultrapassa 30 páginas ou 60 mil caracteres.',
   [IdeaAiSkipReason.ALREADY_GOOD]: 'O material já apresenta boa qualidade.',
-  [IdeaAiSkipReason.CONTAINS_PEOPLE]: 'Há pessoas na foto. Não fazemos edição generativa de rostos.',
+  [IdeaAiSkipReason.CONTAINS_PEOPLE]:
+    'Há pessoas na foto. Não fazemos edição generativa de rostos.',
   [IdeaAiSkipReason.LIMIT_REACHED]: 'Limite de 10 imagens por tentativa atingido.',
 };
 export const IDEA_AI_COMPARE_COLUMNS = { xs: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))' };
@@ -53,7 +56,8 @@ export const IDEA_AI_SCOPE_HELP: Record<IdeaAiScope, string> = {
 export const IDEA_AI_ERROR_LABELS: Record<IdeaAiErrorCode, string> = {
   [IdeaAiErrorCode.PROVIDER_NOT_CONFIGURED]:
     'O provedor de IA não está configurado. Esta tentativa não conta no limite.',
-  [IdeaAiErrorCode.PROVIDER_REQUEST_FAILED]: 'O provedor de IA não respondeu a tempo.',
+  [IdeaAiErrorCode.PROVIDER_REQUEST_FAILED]:
+    'O provedor de IA falhou ou não respondeu a tempo. A causa foi registrada na observabilidade.',
   [IdeaAiErrorCode.INVALID_PROVIDER_RESPONSE]: 'O provedor de IA devolveu uma resposta inválida.',
   [IdeaAiErrorCode.GUARD_REJECTED]:
     'A revisão de essência reprovou a nova versão. O original foi preservado.',
@@ -61,8 +65,7 @@ export const IDEA_AI_ERROR_LABELS: Record<IdeaAiErrorCode, string> = {
   [IdeaAiErrorCode.CANCELLED]: 'Cancelada. Não conta no limite.',
   [IdeaAiErrorCode.STALLED]:
     'O processamento travou repetidas vezes e foi encerrado. Não conta no limite.',
-  [IdeaAiErrorCode.SNAPSHOT_MISSING]:
-    'O envio original não foi encontrado. Não conta no limite.',
+  [IdeaAiErrorCode.SNAPSHOT_MISSING]: 'O envio original não foi encontrado. Não conta no limite.',
   [IdeaAiErrorCode.QUEUE_UNAVAILABLE]:
     'A fila de IA estava indisponível. Não conta no limite; tente mais tarde.',
 };
@@ -85,7 +88,7 @@ export const IDEA_AI_WORKING_STATUSES: readonly IdeaAiStatus[] = [
   IdeaAiStatus.PROCESSING,
 ];
 
-export const IDEA_AI_DESCRIPTION_ROWS = 3;
+export const IDEA_AI_DESCRIPTION_ROWS = 7;
 
 /** Ordem das opções no diálogo de regeneração. */
 export const IDEA_AI_SCOPE_ORDER: readonly IdeaAiScope[] = [
@@ -115,4 +118,20 @@ export const IDEA_AI_DIFF_REWRITE_RATIO = 0.6;
 export const IDEA_AI_FINAL_TEXT_LABELS = {
   title: 'Título que será publicado',
   description: 'Descrição que será publicada',
+} as const;
+
+/** Cada campo e seção tem a sua cor: título, descrição e materiais não se misturam. */
+export const IDEA_AI_FIELD_ACCENTS: Record<IdeaAiTextField, 'primary' | 'secondary'> = {
+  [IdeaAiTextField.TITLE]: 'primary',
+  [IdeaAiTextField.DESCRIPTION]: 'secondary',
+};
+
+/** Fica só para leitores de tela (o texto já aparece em outro lugar da faixa). */
+export const IDEA_AI_VISUALLY_HIDDEN_SX = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
 } as const;

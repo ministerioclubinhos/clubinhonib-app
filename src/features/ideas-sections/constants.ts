@@ -1,8 +1,4 @@
-import type {
-  IdeaShareFormFields,
-  IdeasSectionDraft,
-  IdeasSectionListFilters,
-} from './types';
+import type { IdeaShareFormFields, IdeasSectionDraft, IdeasSectionListFilters } from './types';
 /** Caminho base dos endpoints de ideias compartilhadas. */
 export const IDEAS_SECTIONS_ENDPOINT = '/ideas-sections';
 
@@ -101,3 +97,6 @@ export const IDEAS_SECTION_INITIAL_FILTERS: IdeasSectionListFilters = {
 };
 /** Conflito: outro estado no servidor (IA ativa, decisões desatualizadas). */
 export const HTTP_CONFLICT = 409;
+
+/** Gerar o DOCX e o PDF (LibreOffice) leva alguns segundos; o padrão do cliente é curto demais. */
+export const IDEA_AI_DOCUMENT_SAVE_TIMEOUT_MS = 120_000;

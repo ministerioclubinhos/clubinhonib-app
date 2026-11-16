@@ -2,9 +2,9 @@ import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Box,
+  Button,
   Alert,
   Snackbar,
-  Grid,
   Paper,
   Typography,
   IconButton,
@@ -12,20 +12,22 @@ import {
   useMediaQuery,
   useTheme,
   Avatar,
-  Chip,
   Stack,
-  Fab,
-  SwipeableDrawer,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import { ArrowBack, FamilyRestroom, Phone, Add } from "@mui/icons-material";
 import { useChildPagelas, usePagelaLaunchWindow } from "./hooks";
 import PagelaList from "./components/PagelaList";
-import PagelaQuickForm from "./components/PagelaQuickForm";
+import PagelaEditorDialog from "./components/PagelaEditorDialog";
 import { apiFetchChild } from "../children/api";
 import type { ChildListItem, ChildResponse } from "../children/types";
-import type { Pagela } from "./types";
-import { INACTIVE_CHILD_PAGELA_TEXT, PAGELA_PERIOD_TEXTS } from "./constants";
+import { PagelaEditorMode, type Pagela, type PagelaEditorState } from "./types";
+import {
+  INACTIVE_CHILD_PAGELA_TEXT,
+  PAGELA_EDITOR_TEXTS,
+  PAGELA_PERIOD_TEXTS,
+  PAGELAS_PAGE_SIZE,
+} from "./constants";
 import { getErrorMessage } from "@/utils/apiError";
 
 function genderPastel(seed: string, gender?: string) {
@@ -40,14 +42,12 @@ function genderPastel(seed: string, gender?: string) {
   };
 }
 
-const TEACHER_PROFILE_ID: string | null = null;
-
 export default function ChildPagelasPage() {
   const { childId = "" } = useParams();
   const nav = useNavigate();
   const loc = useLocation() as { state?: { child?: ChildListItem } };
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
 
   // A criança vem da navegação ou de uma busca só dela. Antes a tela carregava
   // a lista inteira de crianças apenas para procurar esta.
@@ -92,7 +92,9 @@ export default function ChildPagelasPage() {
     [child, childId]
   );
 
-  const { filters, list, actions } = useChildPagelas(childId);
+  const { filters, list, actions } = useChildPagelas(childId, {
+    limit: isXs ? PAGELAS_PAGE_SIZE.mobile : PAGELAS_PAGE_SIZE.desktop,
+  });
   const launch = usePagelaLaunchWindow();
   const launchClosed = !!launch.window && !launch.window.open;
   // Criança desativada saiu do clubinho: não recebe nem tem pagela editada.
@@ -110,8 +112,11 @@ export default function ChildPagelasPage() {
     setSnack((s) => ({ ...s, open: false }));
   };
 
-  const [sheetOpen, setSheetOpen] = React.useState(false);
-  const [formInitial, setFormInitial] = React.useState<Pagela | null>(null);
+  const [editor, setEditor] = React.useState<PagelaEditorState | null>(null);
+  const openCreate = () => setEditor({ mode: PagelaEditorMode.CREATE });
+  const openEdit = (pagela: Pagela) =>
+    setEditor({ mode: PagelaEditorMode.EDIT, pagela });
+  const closeEditor = () => setEditor(null);
 
   const findPagela = React.useCallback(
     async (y: number, w: number) =>
@@ -120,27 +125,20 @@ export default function ChildPagelasPage() {
     [list.rows, childId, actions.findByWeek]
   );
 
-  const openCreate = () => {
-    setFormInitial(null);
-    setSheetOpen(true);
-  };
-  const openEdit = (p: Pagela) => {
-    setFormInitial(p);
-    setSheetOpen(true);
-  };
-  const closeSheet = () => setSheetOpen(false);
-
   const initials = React.useMemo(() => {
     const parts = (child?.name || "").trim().split(/\s+/).slice(0, 2);
     return parts.map((p: string) => p?.[0]?.toUpperCase() || "").join("");
   }, [child?.name]);
 
+  const canCreate = !childInactive && !launchClosed;
+
   return (
-    <Box data-testid="pagela-teacher-child-pagelas-page"
+    <Box
+      data-testid="pagela-teacher-child-pagelas-page"
       sx={{
         px: { xs: 2, md: 4 },
-        pt: { xs: 3, md: 5 },
-        pb: 6,
+        pt: { xs: 2, md: 4 },
+        pb: { xs: 4, md: 6 },
         minHeight: "100vh",
         bgcolor: "#f6f7f9",
       }}
@@ -148,192 +146,106 @@ export default function ChildPagelasPage() {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 2, md: 2 },
+          p: 2,
           mb: 2,
           borderRadius: 4,
           border: "1px solid",
           borderColor: "divider",
-          overflow: "hidden",
-          position: "relative",
           background: `linear-gradient(135deg, ${colors.soft} 0%, ${colors.solid} 100%)`,
         }}
       >
-        <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-          <Box sx={{ position: "absolute", top: -24, left: -24, width: 130, height: 130, borderRadius: "50%", bgcolor: "rgba(255,255,255,.28)", filter: "blur(3px)" }} />
-          <Box sx={{ position: "absolute", bottom: -28, right: -28, width: 160, height: 160, borderRadius: "50%", bgcolor: "rgba(255,255,255,.18)", filter: "blur(2px)" }} />
-        </Box>
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <IconButton
+            onClick={() => nav(-1)}
+            aria-label="Voltar"
+            sx={{
+              width: 44,
+              height: 44,
+              flexShrink: 0,
+              bgcolor: "background.paper",
+              boxShadow: 2,
+              "&:hover": { bgcolor: "background.paper" },
+            }}
+          >
+            <ArrowBack />
+          </IconButton>
 
-        {isXs ? (
-          <Box sx={{ position: "relative", zIndex: 1 }}>
-            <Stack spacing={0.75}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <IconButton
-                  size="small"
-                  onClick={() => nav(-1)}
-                  aria-label="Voltar"
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    bgcolor: "background.paper",
-                    boxShadow: 2,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    "&:hover": { bgcolor: "background.paper" },
-                  }}
-                >
-                  <ArrowBack />
-                </IconButton>
+          <Avatar
+            sx={{
+              width: 52,
+              height: 52,
+              border: "3px solid",
+              borderColor: "background.paper",
+              bgcolor: colors.solid,
+              fontWeight: 900,
+              flexShrink: 0,
+            }}
+          >
+            {initials || "?"}
+          </Avatar>
 
-                <Avatar
-                  sx={{
-                    width: 52,
-                    height: 52,
-                    border: "3px solid",
-                    borderColor: "background.paper",
-                    bgcolor: colors.solid,
-                    fontWeight: 900,
-                    flex: "0 0 auto",
-                  }}
-                >
-                  {initials || "?"}
-                </Avatar>
-              </Box>
-
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: 900,
-                  lineHeight: 1.15,
-                  color: "#143a2b",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 1,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-                title={child?.name}
-              >
-                {child?.name || "Criança"}
-              </Typography>
-
-              <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.75)" }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography
+              variant="h6"
+              noWrap
+              title={child?.name}
+              sx={{ color: "#143a2b", lineHeight: 1.2, fontWeight: 900 }}
+            >
+              {child?.name || "Criança"}
+            </Typography>
+            <Stack
+              direction="row"
+              columnGap={1.5}
+              flexWrap="wrap"
+              alignItems="center"
+              sx={{ color: "rgba(0,0,0,.75)" }}
+            >
+              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minWidth: 0 }}>
                 <FamilyRestroom fontSize="small" />
-                <Typography variant="body2" noWrap title={child?.guardianName || "—"}>
+                <Typography variant="body2" noWrap>
                   {child?.guardianName || "—"}
                 </Typography>
               </Stack>
-
-              <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "rgba(0,0,0,.75)" }}>
-                <Phone fontSize="small" />
-                <Typography variant="body2" noWrap title={child?.guardianPhone || "—"}>
-                  {child?.guardianPhone || "—"}
-                </Typography>
-              </Stack>
-
-              {child?.clubId && (
-                <Chip
-                  size="small"
-                  color="success"
-                  label="Clubinho"
-                  sx={{ fontWeight: 800, height: 22, alignSelf: "flex-start", "& .MuiChip-label": { px: 0.75 } }}
-                />
+              {child?.guardianPhone && (
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Phone fontSize="small" />
+                  <Typography variant="body2" noWrap>
+                    {child.guardianPhone}
+                  </Typography>
+                </Stack>
               )}
             </Stack>
           </Box>
-        ) : (
-          <Grid
-            container
-            spacing={{ xs: 1.5, md: 2 }}
-            alignItems="center"
-            sx={{ position: "relative", zIndex: 1 }}
-          >
-            <Grid item>
-              <IconButton
-                size="small"
-                onClick={() => nav(-1)}
-                aria-label="Voltar"
-                sx={{
-                  width: 40,
-                  height: 40,
-                  bgcolor: "background.paper",
-                  boxShadow: 2,
-                  border: "1px solid",
-                  borderColor: "divider",
-                  "&:hover": { bgcolor: "background.paper" },
-                }}
-              >
-                <ArrowBack />
-              </IconButton>
-            </Grid>
 
-            <Grid item xs>
-              <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
-                <Avatar
-                  sx={{
-                    width: 52,
-                    height: 52,
-                    border: "3px solid",
-                    borderColor: "background.paper",
-                    bgcolor: colors.solid,
-                    fontWeight: 900,
-                    flexShrink: 0,
-                  }}
-                >
-                  {initials || "?"}
-                </Avatar>
-
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: "#143a2b",
-                      lineHeight: 1.1,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 1,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      fontWeight: 700,
-                    }}
-                  >
-                    Pagela {(child?.gender === "F" ? "da" : "do")}{" "}
-                    <Box component="span" sx={{ fontWeight: 900 }}>
-                      {child?.name || "Criança"}
-                    </Box>
-                  </Typography>
-
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    alignItems="center"
-                    sx={{ color: "rgba(0,0,0,.72)", flexWrap: "wrap" }}
-                  >
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <FamilyRestroom fontSize="small" />
-                      <Typography variant="body2" noWrap>
-                        {child?.guardianName || "—"}
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <Phone fontSize="small" />
-                      <Typography variant="body2" noWrap>
-                        {child?.guardianPhone || "—"}
-                      </Typography>
-                    </Stack>
-                    {child?.clubId && (
-                      <Chip
-                        size="small"
-                        color="success"
-                        label="Clubinho"
-                        sx={{ fontWeight: 700 }}
-                      />
-                    )}
-                  </Stack>
-                </Box>
-              </Stack>
-            </Grid>
-          </Grid>
-
-        )}
+          {!isXs && (
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={openCreate}
+              disabled={!canCreate}
+              data-testid="pagela-create-button"
+              sx={{ minHeight: 44, fontWeight: 800, flexShrink: 0 }}
+            >
+              {PAGELA_EDITOR_TEXTS.newButton}
+            </Button>
+          )}
+        </Stack>
       </Paper>
+
+      {isXs && (
+        <Button
+          fullWidth
+          variant="contained"
+          size="large"
+          startIcon={<Add />}
+          onClick={openCreate}
+          disabled={!canCreate}
+          data-testid="pagela-create-button"
+          sx={{ minHeight: 48, mb: 2, fontWeight: 800 }}
+        >
+          {PAGELA_EDITOR_TEXTS.newButton}
+        </Button>
+      )}
 
       {(list.error || cError) && (
         <Alert
@@ -354,132 +266,70 @@ export default function ChildPagelasPage() {
         </Alert>
       )}
 
-      {isXs && launchClosed && !childInactive && (
+      {launchClosed && !childInactive && (
         <Alert severity="warning" sx={{ mb: 2 }} data-testid="pagela-launch-closed-banner">
           <strong>{PAGELA_PERIOD_TEXTS.closedTitle}.</strong>{" "}
           {launch.window?.message || PAGELA_PERIOD_TEXTS.closedFallback}
         </Alert>
       )}
 
-      <Grid container spacing={{ xs: 1.5, md: 2.5 }}>
-        <Grid item xs={12} lg={5}>
-          {(list.loading && !list.rows.length) || loadingChild ? (
-            <Box textAlign="center" my={4}>
-              <CircularProgress />
-            </Box>
-          ) : child ? (
-            isXs || childInactive ? null : (
-              <PagelaQuickForm
-                initial={formInitial}
-                childId={childId}
-                childName={child?.name || ""}
-                childGender={child?.gender || ""}
-                launchWindow={launch.window}
-                launchLoading={launch.loading}
-                launchError={launch.error}
-                teacherProfileId={TEACHER_PROFILE_ID}
-                findPagela={findPagela}
-                onCreate={async (p) => {
-                  await actions.create(p);
-                  showSnack("Pagela salva!");
-                }}
-                onUpdate={async (id, p) => {
-                  await actions.update(id, p);
-                  showSnack("Pagela atualizada!");
-                }}
-              />
-            )
-          ) : null}
-        </Grid>
-
-        <Grid item xs={12} lg={7}>
-          <Paper
-            sx={{
-              p: { xs: 1.5, md: 2 },
-              borderRadius: 3,
-              border: "1px solid",
-              borderColor: "divider",
-            }}
-          >
-            <Typography variant="subtitle1" fontWeight={900} sx={{ mb: 1.25 }}>
-              Pagelas anteriores
-            </Typography>
-            <PagelaList
-              rows={list.rows}
-              total={list.total}
-              page={list.page}
-              limit={list.limit}
-              setPage={list.setPage}
-              filters={filters}
-              onEdit={(row) => {
-                if (childInactive) return;
-                if (isXs) {
-                  openEdit(row);
-                } else {
-                  setFormInitial(row);
-                }
-              }}
-              onDelete={async (row) => {
-                try {
-                  await actions.remove(row.id);
-                  showSnack("Pagela excluída.", "info");
-                } catch (err: unknown) {
-                  showSnack(getErrorMessage(err, "Não foi possível excluir a pagela."), "error");
-                }
-              }}
-            />
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {isXs && !launchClosed && !childInactive && (
-        <Fab
-          color="primary"
-          aria-label="Criar pagela"
-          onClick={openCreate}
-          sx={{ position: "fixed", bottom: 88, right: 16, zIndex: 1300 }}
-        >
-          <Add />
-        </Fab>
-      )}
-
-      {isXs && (
-        <SwipeableDrawer
-          anchor="bottom"
-          open={sheetOpen}
-          onOpen={() => setSheetOpen(true)}
-          onClose={closeSheet}
-          disableSwipeToOpen
-          ModalProps={{ keepMounted: true }}
-          PaperProps={{
-            sx: { height: "86vh", borderTopLeftRadius: 24, borderTopRightRadius: 24 },
-          }}
-        >
-          <Box sx={{ p: 1.25, pb: 2, height: "100%", overflow: "auto" }}>
-            <PagelaQuickForm
-              initial={formInitial}
-              childId={childId}
-              childName={child?.name || ""}
-              childGender={child?.gender || ""}
-              launchWindow={launch.window}
-              launchLoading={launch.loading}
-              launchError={launch.error}
-              teacherProfileId={TEACHER_PROFILE_ID}
-              findPagela={findPagela}
-              onCreate={async (p) => {
-                await actions.create(p);
-                showSnack("Pagela salva!");
-                closeSheet();
-              }}
-              onUpdate={async (id, p) => {
-                await actions.update(id, p);
-                showSnack("Pagela atualizada!");
-                closeSheet();
-              }}
-              onClose={closeSheet}
-            />
+      <Paper
+        sx={{
+          p: { xs: 1.5, md: 2 },
+          borderRadius: 3,
+          border: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight={900} sx={{ mb: 0.5 }}>
+          Pagelas
+        </Typography>
+        {(list.loading && !list.rows.length) || loadingChild ? (
+          <Box textAlign="center" my={4} data-testid="pagela-list-loading">
+            <CircularProgress />
           </Box>
-        </SwipeableDrawer>
+        ) : (
+          <PagelaList
+            rows={list.rows}
+            total={list.total}
+            page={list.page}
+            limit={list.limit}
+            setPage={list.setPage}
+            filters={filters}
+            canEdit={!childInactive}
+            onEdit={openEdit}
+            onDelete={async (row) => {
+              try {
+                await actions.remove(row.id);
+                showSnack(PAGELA_EDITOR_TEXTS.deleted, "info");
+              } catch (err: unknown) {
+                showSnack(getErrorMessage(err, PAGELA_EDITOR_TEXTS.deleteError), "error");
+              }
+            }}
+          />
+        )}
+      </Paper>
+
+      {child && (
+        <PagelaEditorDialog
+          editor={editor}
+          childId={childId}
+          childName={child.name}
+          launchWindow={launch.window}
+          launchLoading={launch.loading}
+          launchError={launch.error}
+          findPagela={findPagela}
+          onCreate={async (p) => {
+            await actions.create(p);
+            showSnack(PAGELA_EDITOR_TEXTS.created);
+          }}
+          onUpdate={async (id, p) => {
+            await actions.update(id, p);
+            showSnack(PAGELA_EDITOR_TEXTS.updated);
+          }}
+          onEditExisting={openEdit}
+          onClose={closeEditor}
+        />
       )}
 
       <Snackbar
@@ -487,6 +337,7 @@ export default function ChildPagelasPage() {
         autoHideDuration={2800}
         onClose={closeSnack}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        sx={{ bottom: { xs: 16, md: 24 } }}
       >
         <MuiAlert elevation={6} variant="filled" severity={snack.severity} onClose={closeSnack}>
           {snack.message}

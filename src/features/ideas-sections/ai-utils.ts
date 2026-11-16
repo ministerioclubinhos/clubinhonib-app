@@ -106,6 +106,30 @@ export function excludedIdeaSourceIds(
 }
 
 /**
+ * O material do original que corresponde a um arquivo da publicação: o próprio
+ * arquivo ou uma versão da IA dele. Arquivo novo, adicionado na revisão, não
+ * tem original.
+ */
+export function ideaAiSourceForMedia(
+  section: IdeasSectionResponse,
+  media: MediaItem
+): IdeasSectionResponse['medias'][number] | null {
+  const snapshot = section.aiEnhancement?.snapshot?.medias ?? [];
+  const direct = snapshot.find((source) => source.url === media.url);
+  if (direct) return direct;
+  const attempts = section.aiEnhancement?.attemptHistory ?? [];
+  return (
+    snapshot.find((source) =>
+      attempts.some((attempt) =>
+        attempt.medias.some(
+          (m) => m.sourceMediaId === source.id && m.enhancedMedia?.url === media.url
+        )
+      )
+    ) ?? null
+  );
+}
+
+/**
  * Resumo das escolhas, para o cartão de publicação.
  *
  * Quem publica está a algumas telas de distância da comparação: a lista diz,

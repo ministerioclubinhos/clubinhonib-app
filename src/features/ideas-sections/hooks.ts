@@ -41,7 +41,6 @@ import { buildReviewSubmission, buildSectionFormData } from './utils';
 import { buildIdeaShareSubmission } from './share-utils';
 import { GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
-
 export function useShareIdea() {
   const submissionLock = useRef(false);
   const [status, setStatus] = useState<IdeaShareStatus>(IdeaShareStatus.EDITING);
@@ -172,7 +171,9 @@ export function useIdeasSections() {
 /** Páginas onde a administração pode publicar uma ideia. */
 export function useIdeasPages() {
   const [pages, setPages] = useState<IdeasPage[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Começa carregando: sem isso a tela mostrava "nenhuma página cadastrada"
+  // por um instante, antes de a primeira consulta sair.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const fetchPages = useCallback(async () => {

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { ApiClient } from '../support/api';
+import { createButton, openCreateForm, pagelaCards, pagelaForm, saveButton } from '../support/pagela-ui';
 import {
   currentUser,
   launchWindow,
@@ -53,13 +54,15 @@ test.describe('Pagela: dentro do período letivo', () => {
     requireOpen();
     child = await seedChild(api);
     await page.goto(`/area-das-criancas/${child.id}`);
+    const form = await openCreateForm(page);
 
     // A semana oferecida é a letiva de hoje, vinda da API — não a do calendário.
     await expect(page.getByTestId('pagela-week-select')).toHaveValue(String(window.currentWeek));
-    await page.getByRole('checkbox', { name: /Presença/ }).check();
-    await page.getByLabel('Observações').fill('Lançada pelo teste');
-    await page.getByRole('button', { name: /Salvar/ }).click();
+    await form.getByRole('checkbox', { name: /Presença/ }).check();
+    await form.getByLabel('Observações').fill('Lançada pelo teste');
+    await saveButton(page).click();
     await expect(page.getByText('Pagela salva!')).toBeVisible();
+    await expect(pagelaForm(page)).toBeHidden();
 
     const [saved] = await pagelasOf(api, child.id);
     expect(saved).toMatchObject({
@@ -85,11 +88,17 @@ test.describe('Pagela: dentro do período letivo', () => {
     );
     await page.goto(`/area-das-criancas/${child.id}`);
 
-    await expect(page.getByText(/Editando/)).toBeVisible();
-    await expect(page.getByLabel('Observações')).toHaveValue('Original');
-    await page.getByRole('checkbox', { name: /Recitou o versículo/ }).check();
-    await page.getByLabel('Observações').fill('Corrigida');
-    await page.getByRole('button', { name: /Salvar/ }).click();
+    // Criar na semana que já tem pagela não duplica: oferece editar a existente.
+    const form = await openCreateForm(page);
+    await expect(page.getByTestId('pagela-week-taken')).toBeVisible();
+    await expect(saveButton(page)).toBeDisabled();
+    await page.getByTestId('pagela-week-taken').getByRole('button').click();
+
+    await expect(page.getByTestId('pagela-editor-week')).toContainText(`Semana ${window.currentWeek}`);
+    await expect(form.getByLabel('Observações')).toHaveValue('Original');
+    await form.getByRole('checkbox', { name: /Recitou o versículo/ }).check();
+    await form.getByLabel('Observações').fill('Corrigida');
+    await saveButton(page).click();
     await expect(page.getByText('Pagela atualizada!')).toBeVisible();
 
     const rows = await pagelasOf(api, child.id);
@@ -107,11 +116,12 @@ test.describe('Pagela: dentro do período letivo', () => {
     requireOpen();
     child = await seedChild(api);
     await page.goto(`/area-das-criancas/${child.id}`);
+    const form = await openCreateForm(page);
 
     await expect(page.getByTestId('pagela-week-select')).toHaveValue(String(window.currentWeek));
-    await page.getByRole('checkbox', { name: /Fez meditação/ }).check();
-    await page.getByRole('checkbox', { name: /Recitou o versículo/ }).check();
-    await page.getByRole('button', { name: /Salvar/ }).click();
+    await form.getByRole('checkbox', { name: /Fez meditação/ }).check();
+    await form.getByRole('checkbox', { name: /Recitou o versículo/ }).check();
+    await saveButton(page).click();
     await expect(page.getByText('Pagela salva!')).toBeVisible();
 
     const [saved] = await pagelasOf(api, child.id);
@@ -122,8 +132,9 @@ test.describe('Pagela: dentro do período letivo', () => {
     requireOpen();
     child = await seedChild(api);
     await page.goto(`/area-das-criancas/${child.id}`);
+    const form = await openCreateForm(page);
 
-    await page.getByRole('combobox', { name: /Semana/ }).click();
+    await form.getByRole('combobox', { name: /Semana/ }).click();
     await expect(page.getByRole('option')).toHaveCount(window.currentWeek ?? 0);
     await expect(page.getByRole('option', { name: `Semana ${window.currentWeek} (atual)` })).toBeVisible();
     await expect(page.getByRole('option', { name: `Semana ${(window.currentWeek ?? 0) + 1}`, exact: true })).toHaveCount(0);
@@ -195,7 +206,10 @@ test.describe('Pagela: criança desativada', () => {
 
     await page.goto(`/area-das-criancas/${child.id}`);
     await expect(page.getByTestId('pagela-child-inactive')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Salvar/ })).toHaveCount(0);
+    await expect(createButton(page)).toBeDisabled();
+    await expect(pagelaCards(page)).toHaveCount(1);
+    await expect(pagelaCards(page).getByRole('button', { name: 'Editar pagela' })).toBeDisabled();
+    await expect(saveButton(page)).toHaveCount(0);
 
     const edit = await api.send('PATCH', `/pagelas/${created.id}`, { present: false });
     expect(edit).toMatchObject({ status: 409, code: 'CHILD_7003' });
@@ -234,8 +248,14 @@ test.describe('Pagela: fora do período letivo', () => {
     expect(closed.message).toBeTruthy();
 
     await page.goto(`/area-das-criancas/${child.id}`);
+    await expect(page.getByTestId('pagela-launch-closed-banner')).toContainText(closed.message ?? '');
+    await expect(createButton(page)).toBeDisabled();
+    await expect(pagelaCards(page)).toHaveCount(1);
+
+    // Corrigir também fica barrado: o formulário abre só para explicar o motivo.
+    await pagelaCards(page).getByRole('button', { name: 'Editar pagela' }).click();
     await expect(page.getByTestId('pagela-launch-closed')).toContainText(closed.message ?? '');
-    await expect(page.getByRole('button', { name: /Salvar/ })).toHaveCount(0);
+    await expect(saveButton(page)).toBeDisabled();
     await expect(page.getByTestId('pagela-week-select')).toHaveCount(0);
 
     const create = await api.send('POST', '/pagelas', pagelaBody(child.id, window, { week: 1 }));

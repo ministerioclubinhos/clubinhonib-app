@@ -5,17 +5,26 @@ Contrato da API: `clubinhonib-api/docs/api-ideas-enhancement.md`.
 
 ## Feature flag
 
-`idea_ai_enhancement` liga todo o fluxo de IA das ideias. Desligada, a API não
-enfileira no envio, recusa pedidos/regenerações e o worker não processa; a
-revisão mostra o aviso `idea-ai-disabled`, esconde "Regenerar com IA" e continua
-permitindo cancelar, restaurar e publicar resultados já gerados. O estado vem da
-API em `aiEnhancement.enabled`. No `./run.sh local` a flag é criada e ligada.
+`idea_ai_enhancement` liga todo o fluxo de IA das ideias, para o professor **e
+para a administração**. Desligada:
+
+- **Back:** não enfileira no envio, o worker não processa, todos os endpoints
+  `/ideas-sections/:id/ai-enhancement*` respondem 403 (`IdeaAiEnabledGuard`) e a
+  leitura da ideia e da fila não traz nada de IA (`aiEnhancement` e `aiStatus`
+  ausentes; o filtro `aiStatus` é ignorado).
+- **Front:** a revisão não mostra a faixa de IA, a comparação, as versões da IA
+  nos materiais nem o diálogo de regenerar; a fila esconde o filtro "Melhoria por
+  IA" e a etiqueta de estado nos cartões. A ideia é revisada e publicada só com
+  o que o professor enviou.
+
+O estado vem de `useFeatureFlagsContext().isEnabled(FEATURE.IDEA_AI_ENHANCEMENT)`.
+No `./run.sh local` a flag é criada e ligada.
 
 ## Princípio: upgrade, não mudança total
 
 A IA melhora a ideia que o professor compartilhou sem perder a ideia central, a
 originalidade e o jeito de quem escreveu. A API reprova propostas que se
-afastam demais do original (menos de 70% das palavras-chave mantidas; 60% no
+afastam demais do original (menos de 70% das palavras-chave mantidas, sem contar acento, maiúscula nem pequenos erros de grafia; 60% no
 título) e mostra o motivo na guarda de essência da etapa 2; o original fica.
 
 Vídeos (upload ou link do YouTube) nunca passam pela IA: aparecem como
@@ -36,6 +45,40 @@ escolhidos em "Materiais escolhidos".
   atualiza a cada 15 s (só com a aba visível).
 
 ## Revisão (`/adm/editar-ideias-compartilhadas/:id`)
+
+### Estrutura visual
+
+Uma coluna em largura total, na ordem de uso (celular e desktop):
+
+1. **Cabeçalho enxuto:** voltar, "Revisar ideia compartilhada", o título da ideia e
+   os chips (estado, visibilidade, materiais, data de envio).
+2. **Faixa de IA (`idea-review-step-ai`):** no desktop é uma linha com o estado,
+   as tentativas e o botão "Regenerar com IA…" à direita; no celular o botão
+   ocupa a largura toda. Abaixo ficam só os avisos que importam (progresso,
+   erro, limite), uma linha com a tentativa em comparação e o histórico
+   recolhido. Com o limite atingido há um só aviso visível.
+3. **Título e Descrição:** um bloco por campo, com o seletor Original | Versão
+   IA e três colunas no desktop — **Original do professor | Melhorada pela IA |
+   Texto final (vai ao ar)**. A versão escolhida ganha borda mais forte e um
+   check. No celular as três empilham, na mesma ordem.
+4. **Materiais:** um cartão só; cada arquivo aparece uma vez, com a comparação
+   dentro dele.
+5. **Publicar (`idea-review-publication`):** no desktop é uma barra fixa no
+   rodapé da janela, em uma linha (checklist curta, destino, visibilidade,
+   confirmação e "Publicar ideia"); no celular é o último cartão, e a barra
+   fixa "Publicar ideia" continua no rodapé.
+
+### Documentos com imagens
+
+- **PDF visual** — só imagem (molde do Canva) ou com texto e imagens de conteúdo
+  (caça-palavras) — ganha uma versão limpa, sem IA: o mesmo conteúdo com nitidez
+  e níveis ajustados. Essa versão não tem DOCX nem edição, o texto deixa de ser
+  selecionável, e a comparação avisa que o conteúdo é o mesmo.
+- Fica "Mantido como enviado" (a etiqueta traz o motivo na dica) o PDF que não
+  pôde ser tratado: muitas páginas, leitura falhou ou o servidor sem `pdftoppm`.
+- Quando há versão da IA de um documento, um aviso lembra que ela é só texto e
+  pede para conferir os dois arquivos antes de escolher
+  (`idea-ai-document-text-only`).
 
 ### Etapa 1 — Melhoria com IA
 
@@ -69,6 +112,34 @@ escolhidos em "Materiais escolhidos".
   são identificados (`IdeaAiMediaNotice`).
 - Quando chega um resultado novo durante a revisão, as escolhas e o texto voltam
   às versões sugeridas e um aviso explica isso.
+  O aviso oferece **Restaurar meu texto**, que devolve o título e a descrição
+  que estavam na tela antes do resultado novo (só aparece se forem diferentes).
+- **Usar todas as melhorias** e **Manter tudo original** pedem confirmação
+  quando o título ou a descrição foram editados à mão, porque substituem o texto.
+- Com uma única página de destino cadastrada, ela já vem selecionada; enquanto as
+  páginas carregam, a mensagem "nenhuma página cadastrada" não aparece.
+
+### Editar o documento melhorado
+
+Para um documento (PDF/Word) com versão da IA, a etapa 2 mostra **Editar
+documento** na coluna "Melhorada pela IA". Abre um editor tipo Word em tela cheia
+com o conteúdo que a IA gerou; **Gerar PDF** cria o PDF e o DOCX novos e troca os
+arquivos da versão da IA ("Editado manualmente" aparece no cartão).
+
+- O editor é **isolado do Estúdio**: cópia própria em
+  `src/features/ideas-sections/document-editor/` (TipTap), sem importar nada de
+  `ai-lessons`. Mudanças lá não alteram esta tela, e vice-versa. O back também tem
+  conversor próprio (`IdeaTiptapDocxProvider`).
+- O aviso do topo lembra o princípio: melhorar e documentar com clareza, sem trocar
+  etapas, materiais ou objetivos do professor. **Ver original** abre o arquivo
+  enviado. A guarda de essência da IA não roda em edição humana.
+- **Cancelar** com alterações pede confirmação. O botão **Gerar PDF** só habilita
+  depois de uma alteração.
+- Resultados antigos (sem o conteúdo do editor guardado) abrem com o texto extraído
+  do PDF e um aviso de que a formatação precisa ser refeita.
+- Bloqueado com a IA trabalhando, ideia publicada ou resultado trocado (409).
+- Os arquivos antigos saem do S3 só depois de salvar e só se nenhuma outra
+  tentativa os usar; se o salvamento falhar, os novos são descartados.
 
 ### Publicação
 

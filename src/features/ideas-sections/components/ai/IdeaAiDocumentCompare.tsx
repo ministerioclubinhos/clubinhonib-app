@@ -1,29 +1,36 @@
 import { useState } from 'react';
-import { Box, Button, Paper, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, Paper, Stack, Typography } from '@mui/material';
+import { EditOutlined } from '@mui/icons-material';
 import type { IdeaAiMediaCompareProps, IdeasSectionMedia } from '../../types';
 import { IDEA_AI_COMPARE_COLUMNS } from '../../ai-constants';
 import IdeaAiChoice from './IdeaAiChoice';
 import IdeasMediaPreviewDialog from '../IdeasMediaPreviewDialog';
+import IdeaAiDocumentEditDialog from './IdeaAiDocumentEditDialog';
 export default function IdeaAiDocumentCompare({
   original,
   result,
   decision,
   onChange,
   disabled,
+  documentEdit,
 }: IdeaAiMediaCompareProps) {
   const [preview, setPreview] = useState<IdeasSectionMedia | null>(null);
+  const [editing, setEditing] = useState(false);
   /** Sem versão da IA não há o que comparar: uma coluna só, sem cartão vazio. */
   const enhancedMedia = result?.enhancedMedia ?? null;
   const columns: IdeasSectionMedia[] = enhancedMedia ? [original, enhancedMedia] : [original];
   return (
     <Stack data-testid="idea-ai-document-compare" spacing={1.5}>
-      <IdeaAiChoice
-        label={original.originalName ?? 'documento'}
-        decision={decision}
-        enhanced={Boolean(enhancedMedia)}
-        onChange={onChange}
-        disabled={disabled}
-      />
+      {/* Sem versão da IA não há o que escolher: o seletor só confundia. */}
+      {enhancedMedia && (
+        <IdeaAiChoice
+          label={original.originalName ?? 'documento'}
+          decision={decision}
+          enhanced={Boolean(enhancedMedia)}
+          onChange={onChange}
+          disabled={disabled}
+        />
+      )}
       <Box
         sx={{
           display: 'grid',
@@ -59,6 +66,27 @@ export default function IdeaAiDocumentCompare({
               >
                 Baixar arquivo
               </Button>
+              {index === 1 && result?.documentEditedAt && (
+                <Chip
+                  size="small"
+                  color="info"
+                  variant="outlined"
+                  data-testid="idea-ai-document-edited"
+                  label="Editado manualmente"
+                />
+              )}
+              {index === 1 && documentEdit && (
+                <Button
+                  type="button"
+                  data-testid="idea-ai-document-edit"
+                  startIcon={<EditOutlined />}
+                  onClick={() => setEditing(true)}
+                  disabled={disabled}
+                  sx={{ minHeight: 44 }}
+                >
+                  Editar documento
+                </Button>
+              )}
               {index === 1 && result?.editableMedia && (
                 <Button
                   component="a"
@@ -75,12 +103,27 @@ export default function IdeaAiDocumentCompare({
           </Paper>
         ))}
       </Box>
-      {!enhancedMedia && (
-        <Typography variant="caption" color="text.secondary">
-          Original mantido.
-        </Typography>
+      {enhancedMedia && result?.editableMedia && (
+        <Alert data-testid="idea-ai-document-text-only" severity="warning">
+          A versão da IA é só texto: imagens pequenas ou decorativas do original não são incluídas.
+          Abra os dois arquivos e confira antes de escolher.
+        </Alert>
+      )}
+      {enhancedMedia && !result?.editableMedia && (
+        <Alert data-testid="idea-ai-document-image-cleaned" severity="info">
+          Mesmo desenho do original, com nitidez e níveis ajustados. Feito sem IA e sem alterar o
+          conteúdo.
+        </Alert>
       )}
       <IdeasMediaPreviewDialog media={preview} onClose={() => setPreview(null)} />
+      {documentEdit && enhancedMedia && (
+        <IdeaAiDocumentEditDialog
+          open={editing}
+          context={documentEdit}
+          original={original}
+          onClose={() => setEditing(false)}
+        />
+      )}
     </Stack>
   );
 }

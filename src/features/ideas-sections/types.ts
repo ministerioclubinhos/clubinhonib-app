@@ -1,3 +1,4 @@
+import type { IdeaTiptapDocument } from './document-editor/editor.types';
 import type { IdeasPageSummary } from '@/features/ideas-pages/types';
 import type { MediaItem } from '@/store/slices/types';
 
@@ -277,6 +278,8 @@ export interface IdeaAiMediaResult {
   decision: IdeaAiDecision;
   enhancedMedia: IdeasSectionMedia | null;
   editableMedia: IdeasSectionMedia | null;
+  /** Quando um administrador editou o documento à mão; null = como a IA gerou. */
+  documentEditedAt: string | null;
   /** Falha técnica; com `carriedOver`, a versão anterior foi mantida. */
   errorCode: IdeaAiErrorCode | null;
   /** Veio da tentativa base, sem nova chamada à IA. */
@@ -340,7 +343,6 @@ export interface IdeaAiEnhancementRequest {
 }
 /** Etapa 2 da revisão: a comparação item a item. */
 export interface IdeaAiCompareProps {
-  excludedMediaIds?: string[];
   section: IdeasSectionResponse;
   decisions: IdeaAiDecisions | null;
   onChange: (value: IdeaAiDecisions) => void;
@@ -401,6 +403,39 @@ export interface IdeaAiMediaCompareProps {
   decision: IdeaAiDecision;
   onChange: (value: IdeaAiDecision) => void;
   disabled: boolean;
+  /** Habilita "Editar documento" na versão da IA (só documentos). */
+  documentEdit?: IdeaAiDocumentEditContext;
+}
+
+/** De onde o editor do documento melhorado tira e para onde manda a edição. */
+export interface IdeaAiDocumentEditContext {
+  sectionId: string;
+  /** Tentativa em comparação; outra no lugar invalida a edição (409). */
+  enhancementId: string;
+  /** Chamado depois de salvar, para recarregar a ideia com os arquivos novos. */
+  onSaved: () => void;
+}
+
+/** De onde veio o conteúdo aberto no editor do documento melhorado. */
+export enum IdeaAiDocumentSource {
+  STORED = 'STORED',
+  EXTRACTED = 'EXTRACTED',
+}
+
+/** Documento melhorado no formato do editor, como a API entrega e recebe. */
+export interface IdeaAiDocument {
+  enhancementId: string;
+  sourceMediaId: string;
+  document: IdeaTiptapDocument;
+  source: IdeaAiDocumentSource;
+  editedAt: string | null;
+}
+
+export interface IdeaAiDocumentEditDialogProps {
+  open: boolean;
+  context: IdeaAiDocumentEditContext;
+  original: IdeasSectionMedia;
+  onClose: () => void;
 }
 export interface IdeaAiChoiceProps {
   label: string;
@@ -480,4 +515,26 @@ export interface IdeasPreviewMedia {
   mediaType: string;
   title?: string | null;
   originalName?: string | null;
+}
+
+export interface IdeaReviewReadinessItem {
+  label: string;
+  /** Rótulo curto, usado na barra de uma linha do desktop. */
+  shortLabel: string;
+  done: boolean;
+}
+
+export interface IdeaReviewReadinessProps {
+  items: IdeaReviewReadinessItem[];
+}
+
+export interface IdeaAiMaterialCompareProps {
+  section: IdeasSectionResponse;
+  /** O arquivo como o professor enviou. */
+  source: IdeasSectionMedia;
+  decision: IdeaAiDecision;
+  onDecisionChange: (decision: IdeaAiDecision) => void;
+  /** Recarrega a ideia depois que um documento melhorado é editado e salvo. */
+  onDocumentSaved?: () => void;
+  disabled: boolean;
 }

@@ -63,7 +63,7 @@ export async function seedChild(
   api: ApiClient,
   overrides: Record<string, unknown> = {},
 ): Promise<SeededChild> {
-  const name = `E2E Criança ${uniqueSuffix()}`;
+  const name = typeof overrides.name === 'string' ? overrides.name : `E2E Criança ${uniqueSuffix()}`;
   const guardianPhone = uniquePhone();
   const created = await api.post<{ id: string }>('/children', {
     name,

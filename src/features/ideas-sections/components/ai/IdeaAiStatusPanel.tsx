@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import StopCircleOutlined from '@mui/icons-material/StopCircleOutlined';
+import { alpha } from '@mui/material/styles';
 import {
   Accordion,
   AccordionDetails,
@@ -24,7 +25,11 @@ import {
   type IdeasSectionMedia,
 } from '../../types';
 import { formatDateTime } from '../../utils';
-import { IDEA_AI_ERROR_LABELS, IDEA_AI_SCOPE_LABELS } from '../../ai-constants';
+import {
+  IDEA_AI_ERROR_LABELS,
+  IDEA_AI_SCOPE_LABELS,
+  IDEA_AI_VISUALLY_HIDDEN_SX,
+} from '../../ai-constants';
 import {
   ideaAiAttemptsLeft,
   ideaAiProgressPercent,
@@ -63,15 +68,85 @@ export default function IdeaAiStatusPanel({
 
   return (
     <Stack data-testid="idea-ai-status-panel" spacing={2}>
-      <Stack direction="row" alignItems="center" flexWrap="wrap" gap={1}>
-        <IdeaAiStatusChip status={latest?.status ?? section.aiStatus} />
-        {detail && (
-          <Typography variant="body2" color="text.secondary" data-testid="idea-ai-attempts">
-            {detail.attemptsUsed} de {detail.maxAttempts} tentativas usadas · nada é publicado
-            automaticamente
-          </Typography>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'stretch', md: 'center' }}
+        gap={1.5}
+      >
+        <Stack direction="row" alignItems="center" flexWrap="wrap" gap={1} sx={{ minWidth: 0 }}>
+          <IdeaAiStatusChip status={latest?.status ?? section.aiStatus} />
+          {detail && (
+            <Typography variant="body2" color="text.secondary" data-testid="idea-ai-attempts">
+              {detail.attemptsUsed} de {detail.maxAttempts} tentativas usadas
+            </Typography>
+          )}
+        </Stack>
+        {!published && (detail?.enabled !== false || active) && (
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            gap={1}
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            sx={{ flexShrink: 0 }}
+          >
+            {detail?.enabled !== false && (
+              <Button
+                type="button"
+                variant="contained"
+                data-testid="idea-ai-reprocess"
+                startIcon={<AutoAwesomeOutlined />}
+                onClick={onRegenerate}
+                disabled={disabled || busy || Boolean(block)}
+                sx={(theme) => ({
+                  minHeight: { xs: 52, md: 44 },
+                  width: { xs: '100%', md: 'auto' },
+                  px: 3,
+                  textTransform: 'none',
+                  fontWeight: 800,
+                  fontSize: 16,
+                  borderRadius: 3,
+                  color: 'common.white',
+                  background: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+                  boxShadow: `0 6px 16px ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.secondary.dark}, ${theme.palette.primary.dark})`,
+                  },
+                  '&.Mui-disabled': {
+                    background: theme.palette.action.disabledBackground,
+                    boxShadow: 'none',
+                  },
+                })}
+              >
+                {history.length ? 'Regenerar com IA…' : 'Melhorar ideia com IA…'}
+              </Button>
+            )}
+            {active && (
+              <Button
+                type="button"
+                color="warning"
+                data-testid="idea-ai-cancel"
+                startIcon={<StopCircleOutlined />}
+                onClick={onCancel}
+                disabled={disabled || busy}
+                sx={{ minHeight: 44, textTransform: 'none' }}
+              >
+                Cancelar melhoria
+              </Button>
+            )}
+          </Stack>
         )}
       </Stack>
+      {!published && block && !active && (
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          data-testid="idea-ai-block-reason"
+          /* Com o limite atingido o alerta abaixo já diz isso: aqui só para leitores de tela. */
+          sx={ideaAiAttemptsLeft(detail) === 0 ? IDEA_AI_VISUALLY_HIDDEN_SX : undefined}
+        >
+          {block}
+        </Typography>
+      )}
 
       {active && (
         <Box data-testid="idea-ai-progress" role="status" aria-live="polite">
@@ -143,58 +218,23 @@ export default function IdeaAiStatusPanel({
         </Alert>
       )}
 
-      {result && (
-        <Typography variant="body2" color="text.secondary" data-testid="idea-ai-current">
-          Em comparação: tentativa {result.attempt}
-          {result.scope !== IdeaAiScope.FULL && result.baseAttempt
-            ? ` (completa a tentativa ${result.baseAttempt})`
-            : ''}{' '}
-          • {formatDateTime(result.finishedAt)}
-        </Typography>
-      )}
-
-      {original?.source === IdeaAiSnapshotSource.LEGACY_CAPTURE && (
-        <Alert data-testid="idea-ai-legacy" severity="info">
-          Ideia anterior a este recurso: o original corresponde aos dados existentes quando a
-          preservação foi iniciada.
-        </Alert>
-      )}
-
-      {!published && (detail?.enabled !== false || active) && (
-        <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} alignItems={{ sm: 'center' }}>
-          {detail?.enabled !== false && (
-            <Button
-              type="button"
-              variant={result ? 'outlined' : 'contained'}
-              data-testid="idea-ai-reprocess"
-              startIcon={<AutoAwesomeOutlined />}
-              onClick={onRegenerate}
-              disabled={disabled || busy || Boolean(block)}
-              sx={{ minHeight: 44, textTransform: 'none' }}
-            >
-              {history.length ? 'Regenerar com IA…' : 'Melhorar ideia com IA…'}
-            </Button>
-          )}
-          {active && (
-            <Button
-              type="button"
-              color="warning"
-              data-testid="idea-ai-cancel"
-              startIcon={<StopCircleOutlined />}
-              onClick={onCancel}
-              disabled={disabled || busy}
-              sx={{ minHeight: 44, textTransform: 'none' }}
-            >
-              Cancelar melhoria
-            </Button>
-          )}
-          {block && !active && (
-            <Typography variant="caption" color="text.secondary" data-testid="idea-ai-block-reason">
-              {block}
-            </Typography>
-          )}
-        </Stack>
-      )}
+      <Stack direction="row" flexWrap="wrap" columnGap={2} rowGap={0.5}>
+        {result && (
+          <Typography variant="caption" color="text.secondary" data-testid="idea-ai-current">
+            Em comparação: tentativa {result.attempt}
+            {result.scope !== IdeaAiScope.FULL && result.baseAttempt
+              ? ` (completa a tentativa ${result.baseAttempt})`
+              : ''}{' '}
+            • {formatDateTime(result.finishedAt)}
+          </Typography>
+        )}
+        {original?.source === IdeaAiSnapshotSource.LEGACY_CAPTURE && (
+          <Typography variant="caption" color="text.secondary" data-testid="idea-ai-legacy">
+            Ideia anterior a este recurso: o original corresponde aos dados existentes quando a
+            preservação foi iniciada.
+          </Typography>
+        )}
+      </Stack>
 
       {published && (
         <Accordion

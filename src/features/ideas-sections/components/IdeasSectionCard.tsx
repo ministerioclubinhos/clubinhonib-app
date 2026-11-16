@@ -1,3 +1,4 @@
+import { FEATURE, useFeatureFlagsContext } from '@/features/feature-flags';
 import IdeaAiStatusChip from './ai/IdeaAiStatusChip';
 import React from 'react';
 import { IconButton, Tooltip, Typography } from '@mui/material';
@@ -24,6 +25,7 @@ const ICON_SX = { fontSize: 16 } as const;
 
 /** Uma ideia compartilhada na fila da administração. */
 export default function IdeasSectionCard({ section, onView, onReview, onDelete, disabled }: Props) {
+  const aiEnabled = useFeatureFlagsContext().isEnabled(FEATURE.IDEA_AI_ENHANCEMENT);
   const pendente = isPending(section);
 
   return (
@@ -54,7 +56,7 @@ export default function IdeasSectionCard({ section, onView, onReview, onDelete, 
       ]}
       footer={
         <>
-          <IdeaAiStatusChip status={section.aiStatus} />
+          {aiEnabled ? <IdeaAiStatusChip status={section.aiStatus} /> : null}
           <Typography variant="caption" color="text.secondary" noWrap>
             {pendente ? 'Fora do site' : 'Visível no site'}
           </Typography>

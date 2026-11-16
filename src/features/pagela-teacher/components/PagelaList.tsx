@@ -1,26 +1,31 @@
 import * as React from "react";
 import {
-  Grid,
-  Pagination,
-  Stack,
-  Typography,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Badge,
   Box,
   Button,
+  Collapse,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  Typography,
   useMediaQuery,
   useTheme,
-  Paper,
 } from "@mui/material";
-import AllInclusiveIcon from "@mui/icons-material/AllInclusive";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import PagelaCard from "./PagelaCard";
 import type { Pagela } from "../types";
 import type { Tri } from "../hooks";
+import {
+  PAGELA_EDITOR_TEXTS,
+  PAGELA_FILTER_WEEK_DIGITS,
+  PAGELA_FILTER_YEAR_DIGITS,
+} from "../constants";
+import { parseWeekFilter, parseYearFilter } from "../utils";
 
 type FiltersProps = {
   year?: number;
@@ -36,7 +41,46 @@ type FiltersProps = {
   clearFilters: () => void;
 };
 
-const DEBOUNCE_MS = 450;
+const TRI_OPTIONS: ReadonlyArray<{ value: Tri; label: string }> = [
+  { value: "any", label: "Qualquer" },
+  { value: "yes", label: "Sim" },
+  { value: "no", label: "Não" },
+];
+
+function TriSelect({
+  label,
+  value,
+  onChange,
+  testId,
+}: {
+  label: string;
+  value: Tri;
+  onChange: (v: Tri) => void;
+  testId: string;
+}) {
+  return (
+    <FormControl
+      size="small"
+      fullWidth
+      data-testid={`${testId}-control`}
+      sx={{ minWidth: 0 }}
+    >
+      <InputLabel>{label}</InputLabel>
+      <Select
+        label={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value as Tri)}
+        data-testid={testId}
+      >
+        {TRI_OPTIONS.map((o) => (
+          <MenuItem key={o.value} value={o.value} sx={{ minHeight: 44 }}>
+            {o.label}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+}
 
 export default function PagelaList({
   rows,
@@ -47,6 +91,7 @@ export default function PagelaList({
   filters,
   onEdit,
   onDelete,
+  canEdit = true,
 }: {
   rows: Pagela[];
   total: number;
@@ -54,255 +99,153 @@ export default function PagelaList({
   limit: number;
   setPage: (p: number) => void;
   filters: FiltersProps;
+  canEdit?: boolean;
   onEdit: (r: Pagela) => void;
   onDelete: (r: Pagela) => Promise<void>;
 }) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const hasAny =
-    filters.year !== undefined ||
-    filters.week !== undefined ||
-    filters.presentQ !== "any" ||
-    filters.medQ !== "any" ||
-    filters.verseQ !== "any";
+  const activeCount =
+    (filters.year !== undefined ? 1 : 0) +
+    (filters.week !== undefined ? 1 : 0) +
+    (filters.presentQ !== "any" ? 1 : 0) +
+    (filters.medQ !== "any" ? 1 : 0) +
+    (filters.verseQ !== "any" ? 1 : 0);
 
-  const [yearText, setYearText] = React.useState<string>(filters.year?.toString() ?? "");
-  const [weekText, setWeekText] = React.useState<string>(filters.week?.toString() ?? "");
+  const [showFilters, setShowFilters] = React.useState(false);
+  const [yearText, setYearText] = React.useState(filters.year?.toString() ?? "");
+  const [weekText, setWeekText] = React.useState(filters.week?.toString() ?? "");
 
-  React.useEffect(() => {
-    setYearText(filters.year?.toString() ?? "");
-  }, [filters.year]);
-
-  React.useEffect(() => {
-    setWeekText(filters.week?.toString() ?? "");
-  }, [filters.week]);
-
-  const applyYearFromText = React.useCallback(() => {
-    const raw = yearText.trim();
-    if (raw === "") {
-      if (filters.year !== undefined) filters.setYear(undefined);
-      return;
-    }
-    const digits = raw.replace(/\D+/g, "");
-    if (!digits) return;
-    const n = Math.floor(Number(digits));
-    if (!Number.isFinite(n)) return;
-    const clamped = Math.max(2000, Math.min(9999, n));
-    if (clamped !== filters.year) filters.setYear(clamped);
-    setYearText(String(clamped)); 
-  }, [yearText, filters.year, filters.setYear]);
-
-  const applyWeekFromText = React.useCallback(() => {
-    const raw = weekText.trim();
-    if (raw === "") {
-      if (filters.week !== undefined) filters.setWeek(undefined);
-      return;
-    }
-    const digits = raw.replace(/\D+/g, "");
-    if (!digits) return;
-    const n = Math.floor(Number(digits));
-    if (!Number.isFinite(n)) return;
-    const clamped = Math.max(1, Math.min(53, n));
-    if (clamped !== filters.week) filters.setWeek(clamped);
-    setWeekText(String(clamped));
-  }, [weekText, filters.week, filters.setWeek]);
-
-  React.useEffect(() => {
-    const t = setTimeout(() => {
-      const raw = yearText.trim();
-      if (raw === "") {
-        if (filters.year !== undefined) filters.setYear(undefined);
-        return;
-      }
-      const digits = raw.replace(/\D+/g, "");
-      if (digits.length !== 4) return;
-      const n = Number(digits);
-      if (!Number.isFinite(n)) return;
-      const clamped = Math.max(2000, Math.min(9999, Math.floor(n)));
-      if (clamped !== filters.year) filters.setYear(clamped);
-    }, DEBOUNCE_MS);
-    return () => clearTimeout(t);
-  }, [yearText, filters.year, filters.setYear]);
-
-  React.useEffect(() => {
-    const t = setTimeout(() => {
-      const raw = weekText.trim();
-      if (raw === "") {
-        if (filters.week !== undefined) filters.setWeek(undefined);
-        return;
-      }
-      const digits = raw.replace(/\D+/g, "");
-      if (digits.length < 1) return; 
-      const n = Number(digits);
-      if (!Number.isFinite(n)) return;
-      const clamped = Math.max(1, Math.min(53, Math.floor(n)));
-      if (clamped !== filters.week) filters.setWeek(clamped);
-    }, DEBOUNCE_MS);
-    return () => clearTimeout(t);
-  }, [weekText, filters.week, filters.setWeek]);
-
-  const handleYearChange = (v: string) => {
-    const digits = v.replace(/\D+/g, "").slice(0, 4);
+  // A consulta já tem o próprio atraso: aqui o filtro só vale quando o número
+  // está completo, para a lista não recarregar a cada dígito.
+  const changeYear = (text: string) => {
+    const digits = text.replace(/\D+/g, "").slice(0, PAGELA_FILTER_YEAR_DIGITS);
     setYearText(digits);
+    const parsed = parseYearFilter(digits);
+    if (parsed !== null && parsed !== filters.year) filters.setYear(parsed);
   };
-  const handleWeekChange = (v: string) => {
-    const digits = v.replace(/\D+/g, "").slice(0, 2);
+  const changeWeek = (text: string) => {
+    const digits = text.replace(/\D+/g, "").slice(0, PAGELA_FILTER_WEEK_DIGITS);
     setWeekText(digits);
+    const parsed = parseWeekFilter(digits);
+    if (parsed !== null && parsed !== filters.week) filters.setWeek(parsed);
   };
 
-  const onKeyDownApply =
-    (apply: () => void) =>
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") apply();
-    };
+  const clear = () => {
+    filters.clearFilters();
+    setYearText("");
+    setWeekText("");
+  };
 
   return (
-    <Stack data-testid="pagela-teacher-pagela-list" spacing={1.75}>
-      <Box
-        sx={{
-          display: "grid",
-          gap: 1,
-          pt: 1,
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(5, minmax(140px, 1fr))" },
-          alignItems: "center",
-          overflowX: "auto",
-          pb: 0.5,
-        }}
-      >
-        <TextField
-          label="Ano"
-          margin="dense"
-          size="small"
-          type="text"
-          value={yearText}
-          onChange={(e) => handleYearChange(e.target.value)}
-          onBlur={applyYearFromText}
-          onKeyDown={onKeyDownApply(applyYearFromText)}
-          inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 4 }}
-          fullWidth
-        />
+    <Stack data-testid="pagela-teacher-pagela-list" spacing={1.5}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Button
+          onClick={() => setShowFilters((v) => !v)}
+          aria-expanded={showFilters}
+          data-testid="pagela-filters-toggle"
+          startIcon={
+            <Badge color="primary" badgeContent={activeCount}>
+              <FilterListIcon />
+            </Badge>
+          }
+          sx={{ minHeight: 44, fontWeight: 800, textTransform: "none" }}
+        >
+          {PAGELA_EDITOR_TEXTS.filters}
+        </Button>
+        {activeCount > 0 && (
+          <Button
+            onClick={clear}
+            data-testid="pagela-filters-clear"
+            sx={{ minHeight: 44, fontWeight: 700, textTransform: "none" }}
+          >
+            {PAGELA_EDITOR_TEXTS.clearFilters}
+          </Button>
+        )}
+      </Stack>
 
-        <TextField
-          label="Semana"
-          margin="dense"
-          size="small"
-          type="text"
-          value={weekText}
-          onChange={(e) => handleWeekChange(e.target.value)}
-          onBlur={applyWeekFromText}
-          onKeyDown={onKeyDownApply(applyWeekFromText)}
-          inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 2 }}
-          sx={{ width: { xs: "100%", sm: "100%" } }}
-        />
-
-        <FormControl size="small" margin="dense" fullWidth sx={{ minWidth: 0 }}>
-          <InputLabel>Presença</InputLabel>
-          <Select
+      <Collapse in={showFilters} unmountOnExit>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 1.25,
+            gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(5, 1fr)" },
+          }}
+        >
+          <TextField
+            label="Ano"
+            size="small"
+            value={yearText}
+            onChange={(e) => changeYear(e.target.value)}
+            slotProps={{ htmlInput: { inputMode: "numeric", maxLength: 4 } }}
+          />
+          <TextField
+            label="Semana"
+            size="small"
+            value={weekText}
+            onChange={(e) => changeWeek(e.target.value)}
+            slotProps={{ htmlInput: { inputMode: "numeric", maxLength: 2 } }}
+          />
+          <TriSelect
             label="Presença"
             value={filters.presentQ}
-            onChange={(e) => filters.setPresentQ(e.target.value as Tri)}
-          >
-            <MenuItem value="any">
-              <AllInclusiveIcon fontSize="small" style={{ marginRight: 8 }} />
-              Qualquer
-            </MenuItem>
-            <MenuItem value="yes">
-              <CheckCircleIcon fontSize="small" style={{ marginRight: 8 }} />
-              Sim
-            </MenuItem>
-            <MenuItem value="no">
-              <HighlightOffIcon fontSize="small" style={{ marginRight: 8 }} />
-              Não
-            </MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" margin="dense" fullWidth sx={{ minWidth: 0 }}>
-          <InputLabel>Meditação</InputLabel>
-          <Select
+            onChange={filters.setPresentQ}
+            testId="pagela-filter-present"
+          />
+          <TriSelect
             label="Meditação"
             value={filters.medQ}
-            onChange={(e) => filters.setMedQ(e.target.value as Tri)}
-          >
-            <MenuItem value="any">
-              <AllInclusiveIcon fontSize="small" style={{ marginRight: 8 }} />
-              Qualquer
-            </MenuItem>
-            <MenuItem value="yes">
-              <CheckCircleIcon fontSize="small" style={{ marginRight: 8 }} />
-              Sim
-            </MenuItem>
-            <MenuItem value="no">
-              <HighlightOffIcon fontSize="small" style={{ marginRight: 8 }} />
-              Não
-            </MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" margin="dense" fullWidth sx={{ minWidth: 0 }}>
-          <InputLabel>Versículo</InputLabel>
-          <Select
+            onChange={filters.setMedQ}
+            testId="pagela-filter-meditation"
+          />
+          <TriSelect
             label="Versículo"
             value={filters.verseQ}
-            onChange={(e) => filters.setVerseQ(e.target.value as Tri)}
-          >
-            <MenuItem value="any">
-              <AllInclusiveIcon fontSize="small" style={{ marginRight: 8 }} />
-              Qualquer
-            </MenuItem>
-            <MenuItem value="yes">
-              <CheckCircleIcon fontSize="small" style={{ marginRight: 8 }} />
-              Sim
-            </MenuItem>
-            <MenuItem value="no">
-              <HighlightOffIcon fontSize="small" style={{ marginRight: 8 }} />
-              Não
-            </MenuItem>
-          </Select>
-        </FormControl>
-
-        <Box sx={{ gridColumn: { xs: "1 / -1", sm: "auto" }, display: "flex", justifyContent: "flex-end" }}>
-          {hasAny && (
-            <Button
-              onClick={() => {
-                filters.clearFilters();
-                setYearText("");
-                setWeekText("");
-              }}
-              size="small"
-              variant="text"
-              sx={{ fontWeight: 700, textTransform: "none" }}
-            >
-              Limpar filtros
-            </Button>
-          )}
+            onChange={filters.setVerseQ}
+            testId="pagela-filter-verse"
+          />
         </Box>
-      </Box>
+      </Collapse>
 
       {rows.length > 0 ? (
-        <Grid container spacing={{ xs: 1, sm: 1.25, md: 1.5 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gap: { xs: 1, md: 1.5 },
+            gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
+          }}
+        >
           {rows.map((r) => (
-            <Grid key={r.id} item xs={12} sm={6} md={4} lg={4}>
-              <PagelaCard row={r} onEdit={onEdit} onDelete={onDelete} />
-            </Grid>
+            <PagelaCard key={r.id} row={r} canEdit={canEdit} onEdit={onEdit} onDelete={onDelete} />
           ))}
-        </Grid>
+        </Box>
       ) : (
-        <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, textAlign: "center", color: "text.secondary" }}>
-          <Typography variant="body2">Sem registros para a busca.</Typography>
+        <Paper
+          variant="outlined"
+          data-testid="pagela-list-empty"
+          sx={{ p: 3, borderRadius: 3, textAlign: "center", color: "text.secondary" }}
+        >
+          <Typography variant="body2">
+            {activeCount > 0
+              ? PAGELA_EDITOR_TEXTS.emptyFiltered
+              : PAGELA_EDITOR_TEXTS.empty}
+          </Typography>
         </Paper>
       )}
 
-      <Stack direction="row" justifyContent="center">
-        <Pagination
-          count={Math.max(1, Math.ceil(total / limit))}
-          page={page}
-          onChange={(_, p) => setPage(p)}
-          size={isXs ? "small" : "medium"}
-          color="primary"
-        />
-      </Stack>
+      {total > limit && (
+        <Stack direction="row" justifyContent="center">
+          <Pagination
+            count={Math.max(1, Math.ceil(total / limit))}
+            page={page}
+            onChange={(_, p) => setPage(p)}
+            size={isXs ? "small" : "medium"}
+            siblingCount={isXs ? 0 : 1}
+            color="primary"
+          />
+        </Stack>
+      )}
     </Stack>
   );
 }

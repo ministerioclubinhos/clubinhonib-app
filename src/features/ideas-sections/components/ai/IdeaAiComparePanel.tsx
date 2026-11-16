@@ -1,27 +1,26 @@
 import { useState } from 'react';
-import { Alert, Box, Button, Divider, Stack, Typography } from '@mui/material';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from '@mui/material';
 
-import { MediaType } from '@/store/slices/types';
 import {
   IdeaAiDecision,
-  IdeaAiMediaStatus,
-  IdeaAiSkipReason,
   IdeaAiSnapshotSource,
   IdeaAiTextField,
   type IdeaAiCompareProps,
   type IdeaAiDecisions,
-  type IdeasSectionMedia,
 } from '../../types';
-import { ideaAiChosenText, initialIdeaAiDecisions } from '../../ai-utils';
+import { ideaAiChosenText, initialIdeaAiDecisions, isIdeaTextEdited } from '../../ai-utils';
 import { IDEA_AI_TEXT_LABELS } from '../../ai-constants';
 import { IDEA_REVIEW_MAX_DESCRIPTION, IDEA_REVIEW_MAX_TITLE } from '../../constants';
-import IdeaAiMediaNotice from './IdeaAiMediaNotice';
-import IdeasMediaPreviewDialog from '../IdeasMediaPreviewDialog';
 import IdeaAiTextCompare from './IdeaAiTextCompare';
-import IdeaAiDocumentCompare from './IdeaAiDocumentCompare';
-import IdeaAiImageCompare from './IdeaAiImageCompare';
 import IdeaAiGuardWarning from './IdeaAiGuardWarning';
-import IdeaAiSkippedNotice from './IdeaAiSkippedNotice';
 
 /**
  * Etapa 2: item a item, o que vai para a publicação.
@@ -31,7 +30,6 @@ import IdeaAiSkippedNotice from './IdeaAiSkippedNotice';
  * original.
  */
 export default function IdeaAiComparePanel({
-  excludedMediaIds = [],
   section,
   decisions,
   onChange,
@@ -39,7 +37,8 @@ export default function IdeaAiComparePanel({
   onTextChange,
   disabled,
 }: IdeaAiCompareProps) {
-  const [previewMedia, setPreviewMedia] = useState<IdeasSectionMedia | null>(null);
+  // Decisão em espera: "usar tudo" / "manter original" apagam o texto editado.
+  const [pendingAll, setPendingAll] = useState<IdeaAiDecision | null>(null);
   const detail = section.aiEnhancement;
   const original = detail?.snapshot ?? {
     title: section.title,
@@ -48,15 +47,6 @@ export default function IdeaAiComparePanel({
     source: IdeaAiSnapshotSource.LEGACY_CAPTURE,
   };
   const result = detail?.currentResult;
-  const changeMedia = (sourceMediaId: string, decision: IdeaAiDecision) => {
-    if (decisions)
-      onChange({
-        ...decisions,
-        medias: decisions.medias.map((m) =>
-          m.sourceMediaId === sourceMediaId ? { ...m, decision } : m
-        ),
-      });
-  };
   const applyToAll = (decision: IdeaAiDecision) => {
     const base: IdeaAiDecisions | null =
       decision === IdeaAiDecision.ENHANCED ? initialIdeaAiDecisions(detail) : decisions;
@@ -88,16 +78,46 @@ export default function IdeaAiComparePanel({
     });
   };
 
+  const textEdited =
+    isIdeaTextEdited(
+      ideaAiChosenText(
+        decisions?.title ?? IdeaAiDecision.ORIGINAL,
+        original.title,
+        result?.enhancedTitle ?? null
+      ),
+      text.title
+    ) ||
+    isIdeaTextEdited(
+      ideaAiChosenText(
+        decisions?.description ?? IdeaAiDecision.ORIGINAL,
+        original.description,
+        result?.enhancedDescription ?? null
+      ),
+      text.description
+    );
+  const requestApplyToAll = (decision: IdeaAiDecision) => {
+    if (textEdited) setPendingAll(decision);
+    else applyToAll(decision);
+  };
+
   return (
     <Stack data-testid="idea-ai-compare-panel" spacing={2.5}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} flexWrap="wrap">
+      <Stack direction="row" alignItems="center" flexWrap="wrap" gap={1}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
+          Aplicar a tudo:
+        </Typography>
         <Button
           type="button"
           data-testid="idea-ai-use-all"
           variant="outlined"
+          size="small"
           disabled={disabled}
-          sx={{ minHeight: 44, textTransform: 'none' }}
-          onClick={() => applyToAll(IdeaAiDecision.ENHANCED)}
+          sx={{ minHeight: 44, textTransform: 'none', flex: { xs: 1, sm: 'none' } }}
+          onClick={() => requestApplyToAll(IdeaAiDecision.ENHANCED)}
         >
           Usar todas as melhorias
         </Button>
@@ -105,9 +125,10 @@ export default function IdeaAiComparePanel({
           type="button"
           data-testid="idea-ai-use-original"
           variant="outlined"
+          size="small"
           disabled={disabled}
-          sx={{ minHeight: 44, textTransform: 'none' }}
-          onClick={() => applyToAll(IdeaAiDecision.ORIGINAL)}
+          sx={{ minHeight: 44, textTransform: 'none', flex: { xs: 1, sm: 'none' } }}
+          onClick={() => requestApplyToAll(IdeaAiDecision.ORIGINAL)}
         >
           Manter tudo original
         </Button>
@@ -158,78 +179,41 @@ export default function IdeaAiComparePanel({
         }}
       />
 
-      {original.medias.length > 0 && (
-        <>
-          <Divider />
-          <Typography component="h3" variant="subtitle1" fontWeight={700}>
-            Materiais enviados
-          </Typography>
-        </>
-      )}
-      {original.medias.map((media) => {
-        const excluded = excludedMediaIds.includes(media.id);
-        const improved = result?.medias.find((m) => m.sourceMediaId === media.id);
-        const decision =
-          decisions?.medias.find((m) => m.sourceMediaId === media.id)?.decision ??
-          IdeaAiDecision.ORIGINAL;
-        return (
-          <Box key={media.id} data-testid="idea-ai-media-item" sx={{ minWidth: 0 }}>
-            {excluded && (
-              <Alert severity="info" sx={{ mb: 1 }}>
-                Removido da publicação na etapa 3. O arquivo original continua preservado.
-              </Alert>
-            )}
-            <Typography
-              component="h4"
-              variant="subtitle2"
-              fontWeight={700}
-              sx={{ mb: 1, overflowWrap: 'anywhere' }}
-            >
-              {media.originalName || media.title || 'Material'}
-            </Typography>
-            {media.mediaType === MediaType.IMAGE ? (
-              <IdeaAiImageCompare
-                original={media}
-                result={improved}
-                decision={decision}
-                onChange={(value) => changeMedia(media.id, value)}
-                disabled={disabled || !decisions || excluded}
-              />
-            ) : media.mediaType === MediaType.DOCUMENT ? (
-              <IdeaAiDocumentCompare
-                original={media}
-                result={improved}
-                decision={decision}
-                onChange={(value) => changeMedia(media.id, value)}
-                disabled={disabled || !decisions || excluded}
-              />
-            ) : (
-              <Button
-                data-testid="idea-ai-video-link"
-                type="button"
-                onClick={() => setPreviewMedia(media)}
-                sx={{ minHeight: 44 }}
-              >
-                Assistir vídeo original
-              </Button>
-            )}
-            <Box sx={{ mt: 1 }}>
-              <IdeaAiGuardWarning guard={improved?.guard} />
-              <IdeaAiMediaNotice result={improved} baseAttempt={result?.baseAttempt ?? null} />
-              {(improved?.status === IdeaAiMediaStatus.SKIPPED ||
-                improved?.status === IdeaAiMediaStatus.FAILED ||
-                media.mediaType === MediaType.VIDEO) && (
-                <IdeaAiSkippedNotice
-                  reason={improved?.skipReason ?? IdeaAiSkipReason.NOT_SUPPORTED}
-                  failed={improved?.status === IdeaAiMediaStatus.FAILED}
-                  errorCode={improved?.errorCode}
-                />
-              )}
-            </Box>
-          </Box>
-        );
-      })}
-      <IdeasMediaPreviewDialog media={previewMedia} onClose={() => setPreviewMedia(null)} />
+      <Dialog
+        data-testid="idea-ai-replace-text-dialog"
+        open={pendingAll !== null}
+        onClose={() => setPendingAll(null)}
+      >
+        <DialogTitle>Substituir o texto que você editou?</DialogTitle>
+        <DialogContent>
+          Você ajustou o título ou a descrição à mão. Esta ação volta os dois campos e as escolhas
+          dos materiais para{' '}
+          {pendingAll === IdeaAiDecision.ENHANCED ? 'a versão da IA' : 'o original'}, e o que você
+          digitou se perde.
+        </DialogContent>
+        <DialogActions>
+          <Button
+            type="button"
+            data-testid="idea-ai-replace-text-cancel"
+            onClick={() => setPendingAll(null)}
+            sx={{ minHeight: 44 }}
+          >
+            Manter minha edição
+          </Button>
+          <Button
+            type="button"
+            data-testid="idea-ai-replace-text-confirm"
+            color="warning"
+            onClick={() => {
+              if (pendingAll) applyToAll(pendingAll);
+              setPendingAll(null);
+            }}
+            sx={{ minHeight: 44 }}
+          >
+            Substituir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }

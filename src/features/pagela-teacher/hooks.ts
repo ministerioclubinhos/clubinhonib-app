@@ -197,7 +197,7 @@ export function useChildrenBrowser(pageSize: number = 20) {
 
 export function useChildPagelas(
   childId: string | null | undefined,
-  initial?: { year?: number; week?: number }
+  initial?: { year?: number; week?: number; limit?: number }
 ) {
   const [year, setYearState] = useState<number | undefined>(initial?.year);
   const [week, setWeekState] = useState<number | undefined>(initial?.week);
@@ -207,7 +207,7 @@ export function useChildPagelas(
   const [rows, setRows] = useState<Pagela[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(12);
+  const [limit, setLimit] = useState(initial?.limit ?? 12);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const setYear = useCallback((v?: number) => { setYearState(v); setPage(1); }, []);
@@ -337,9 +337,19 @@ export function useChildPagelas(
     [doFetch]
   );
 
+  const rowsCountRef = useRef(0);
+  rowsCountRef.current = rows.length;
+
   const remove = useCallback(
     async (id: string) => {
       await apiDeletePagela(id);
+      // Excluir o último item de uma página que não é a primeira a deixaria
+      // vazia: a lista recua uma página, e a troca de página já recarrega.
+      const current = queryRef.current;
+      if (current && current.page > 1 && rowsCountRef.current <= 1) {
+        setPage(current.page - 1);
+        return;
+      }
       await doFetch(true);
     },
     [doFetch]
