@@ -14,7 +14,6 @@ export const MATERIAL_GALLERY_SORT_OPTIONS = [
 
 export const MATERIAL_GALLERY_SKELETONS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
 
-export const MATERIAL_GALLERY_CONTENT_WIDTH = { xs: '98%', md: '95%' } as const;
 
 export const MATERIAL_GALLERY_GRID = {
   display: 'grid',

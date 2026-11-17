@@ -2,14 +2,12 @@ import React, { useMemo, useState } from 'react';
 import {
   Box,
   Typography,
-  Paper,
   Card,
   CardContent,
   CardMedia,
   CircularProgress,
   TextField,
   InputAdornment,
-  Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
@@ -18,6 +16,8 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useSelector } from 'react-redux';
 import { RootState } from 'store/slices';
 import { MediaTargetType } from 'store/slices/types';
+
+import TeacherPageCard from '../Layout/TeacherPageCard';
 
 const ACCENT = '#9333ea';
 
@@ -44,67 +44,14 @@ const IdeasGallerySection: React.FC = () => {
   };
 
   return (
-    <Paper
-      data-testid="teacher-area-sections-ideas-gallery-section"
-      elevation={0}
-      sx={{
-        p: { xs: 2, sm: 2.5, md: 3 },
-        border: '1px solid #e2e8f0',
-        borderTop: `4px solid ${ACCENT}`,
-        backgroundColor: '#ffffff',
-        borderRadius: 3.5,
-        boxShadow: '0 4px 18px rgba(15, 23, 42, 0.04)',
-      }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between',
-          alignItems: { xs: 'stretch', sm: 'center' },
-          gap: 2,
-          mb: 2,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-          <Box
-            sx={{
-              width: 38,
-              height: 38,
-              borderRadius: 2,
-              bgcolor: `${ACCENT}14`,
-              color: ACCENT,
-              display: 'grid',
-              placeItems: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <LightbulbOutlinedIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography
-                variant="h6"
-                fontWeight={800}
-                color="#0f172a"
-                sx={{ fontSize: { xs: '1rem', md: '1.15rem' }, lineHeight: 1.2 }}
-              >
-                Banco de Ideias & Dinâmicas
-              </Typography>
-              {!loading && (
-                <Chip
-                  size="small"
-                  label={filteredIdeas.length}
-                  sx={{ bgcolor: `${ACCENT}18`, color: ACCENT, fontWeight: 700, height: 22 }}
-                />
-              )}
-            </Box>
-            <Typography variant="caption" sx={{ color: '#64748b' }}>
-              Brincadeiras, recursos visuais e atividades criativas compartilhadas por professores
-            </Typography>
-          </Box>
-        </Box>
-
+    <TeacherPageCard
+      testId="teacher-area-sections-ideas-gallery-section"
+      icon={<LightbulbOutlinedIcon sx={{ fontSize: 22 }} />}
+      accent={ACCENT}
+      title="Banco de Ideias & Dinâmicas"
+      subtitle="Brincadeiras, recursos visuais e atividades criativas compartilhadas por professores"
+      count={filteredIdeas.length}
+      actions={
         <TextField
           size="small"
           placeholder="Buscar ideias..."
@@ -123,8 +70,8 @@ const IdeasGallerySection: React.FC = () => {
             },
           }}
         />
-      </Box>
-
+      }
+    >
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
           <CircularProgress sx={{ color: ACCENT }} />
@@ -143,124 +90,126 @@ const IdeasGallerySection: React.FC = () => {
             pt: 0.5,
           }}
         >
-            {filteredIdeas.map((idea) => (
-              <Box key={idea.id} sx={{ height: '100%' }}>
-                <Card
-                  onClick={() => handleRedirect(idea.path)}
-                  elevation={0}
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    bgcolor: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 2.5,
-                    cursor: 'pointer',
-                    overflow: 'hidden',
-                    transition: 'all 0.22s ease',
-                    '&:hover': {
-                      bgcolor: '#ffffff',
-                      borderColor: ACCENT,
-                      boxShadow: `0 8px 20px ${ACCENT}1f`,
-                      transform: 'translateY(-3px)',
-                      '& .idea-thumb': { transform: 'scale(1.05)' },
-                      '& .idea-cta': { gap: 1 },
-                    },
-                  }}
-                >
-                  <Box sx={{ overflow: 'hidden', height: { xs: 135, md: 150 }, flexShrink: 0 }}>
-                    {idea.image ? (
-                      <CardMedia
-                        component="img"
-                        className="idea-thumb"
-                        image={idea.image}
-                        alt={idea.title}
-                        sx={{
-                          height: '100%',
-                          objectFit: 'cover',
-                          transition: 'transform 0.35s ease',
-                        }}
-                      />
-                    ) : (
-                      <Box
-                        className="idea-thumb"
-                        sx={{
-                          height: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: `linear-gradient(135deg, ${ACCENT} 0%, #6b21a8 100%)`,
-                          transition: 'transform 0.35s ease',
-                        }}
-                      >
-                        <LightbulbOutlinedIcon sx={{ fontSize: 44, color: 'rgba(255,255,255,0.85)' }} />
-                      </Box>
-                    )}
-                  </Box>
-
-                  <CardContent
-                    sx={{
-                      flexGrow: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      p: 2,
-                      '&:last-child': { pb: 2 },
-                    }}
-                  >
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={800}
-                      color="#0f172a"
+          {filteredIdeas.map((idea) => (
+            <Box key={idea.id} sx={{ height: '100%' }}>
+              <Card
+                onClick={() => handleRedirect(idea.path)}
+                elevation={0}
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  bgcolor: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 2.5,
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  transition: 'all 0.22s ease',
+                  '&:hover': {
+                    bgcolor: '#ffffff',
+                    borderColor: ACCENT,
+                    boxShadow: `0 8px 20px ${ACCENT}1f`,
+                    transform: 'translateY(-3px)',
+                    '& .idea-thumb': { transform: 'scale(1.05)' },
+                    '& .idea-cta': { gap: 1 },
+                  },
+                }}
+              >
+                <Box sx={{ overflow: 'hidden', height: { xs: 135, md: 150 }, flexShrink: 0 }}>
+                  {idea.image ? (
+                    <CardMedia
+                      component="img"
+                      className="idea-thumb"
+                      image={idea.image}
+                      alt={idea.title}
                       sx={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        lineHeight: 1.3,
-                        minHeight: '2.6em',
-                        mb: 0.5,
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 0.35s ease',
                       }}
-                    >
-                      {idea.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="#475569"
-                      sx={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        flexGrow: 1,
-                        fontSize: '0.84rem',
-                      }}
-                    >
-                      {idea.description}
-                    </Typography>
-
+                    />
+                  ) : (
                     <Box
-                      className="idea-cta"
+                      className="idea-thumb"
                       sx={{
+                        height: '100%',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.5,
-                        mt: 1.5,
-                        pt: 1,
-                        borderTop: '1px solid #e2e8f0',
-                        color: ACCENT,
-                        fontWeight: 700,
-                        fontSize: '0.8rem',
-                        transition: 'gap 0.2s ease',
+                        justifyContent: 'center',
+                        background: `linear-gradient(135deg, ${ACCENT} 0%, #6b21a8 100%)`,
+                        transition: 'transform 0.35s ease',
                       }}
                     >
-                      Ver ideia
-                      <ArrowForwardIcon sx={{ fontSize: '0.95rem' }} />
+                      <LightbulbOutlinedIcon
+                        sx={{ fontSize: 44, color: 'rgba(255,255,255,0.85)' }}
+                      />
                     </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-            ))}
-          </Box>
+                  )}
+                </Box>
+
+                <CardContent
+                  sx={{
+                    flexGrow: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    p: 2,
+                    '&:last-child': { pb: 2 },
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight={800}
+                    color="#0f172a"
+                    sx={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      lineHeight: 1.3,
+                      minHeight: '2.6em',
+                      mb: 0.5,
+                    }}
+                  >
+                    {idea.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="#475569"
+                    sx={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      flexGrow: 1,
+                      fontSize: '0.84rem',
+                    }}
+                  >
+                    {idea.description}
+                  </Typography>
+
+                  <Box
+                    className="idea-cta"
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      mt: 1.5,
+                      pt: 1,
+                      borderTop: '1px solid #e2e8f0',
+                      color: ACCENT,
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      transition: 'gap 0.2s ease',
+                    }}
+                  >
+                    Ver ideia
+                    <ArrowForwardIcon sx={{ fontSize: '0.95rem' }} />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+          ))}
+        </Box>
       ) : (
         <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 4 }}>
           {search
@@ -268,7 +217,7 @@ const IdeasGallerySection: React.FC = () => {
             : 'Nenhuma galeria de ideias disponível no momento.'}
         </Typography>
       )}
-    </Paper>
+    </TeacherPageCard>
   );
 };
 

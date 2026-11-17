@@ -1,13 +1,6 @@
-import {
-  AutoStoriesOutlined,
-  Clear,
-  GridViewOutlined,
-  Search,
-  SearchOff,
-} from '@mui/icons-material';
+import { AutoStoriesOutlined, Clear, Search, SearchOff } from '@mui/icons-material';
 import {
   Alert,
-  alpha,
   Box,
   Button,
   Container,
@@ -20,12 +13,12 @@ import {
   Typography,
 } from '@mui/material';
 
+import TeacherPageCard from '@/pages/TeacherArea/components/Layout/TeacherPageCard';
 import { FEATURE } from '@/features/feature-flags';
 import { useFeatureEnabled } from '@/hooks';
 
 import {
   MATERIAL_GALLERY_CATEGORIES,
-  MATERIAL_GALLERY_CONTENT_WIDTH,
   MATERIAL_GALLERY_GRID,
   MATERIAL_GALLERY_SKELETONS,
   MATERIAL_GALLERY_SORT_OPTIONS,
@@ -40,78 +33,15 @@ export function WeekMaterialsGallery() {
   const showSpecialFamilyDay = useFeatureEnabled(FEATURE.SPECIAL_FAMILY_DAY);
 
   return (
-    <Box
-      data-testid="week-materials-gallery"
-      sx={{ minHeight: '80vh', bgcolor: 'grey.50', pb: { xs: 5, md: 8 } }}
+    <TeacherPageCard
+      testId="week-materials-gallery"
+      icon={<AutoStoriesOutlined sx={{ fontSize: 22 }} />}
+      accent="#0284c7"
+      title="Materiais Semanais"
+      subtitle="Lições e recursos para preparar o próximo encontro do seu Clubinho"
+      count={gallery.loading || gallery.error ? undefined : gallery.materials.length}
     >
-      <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
-        <Container
-          maxWidth={false}
-          disableGutters
-          sx={{ width: MATERIAL_GALLERY_CONTENT_WIDTH, pt: 2, pb: { xs: 3, md: 4 } }}
-        >
-          <Stack direction="row" spacing={3} alignItems="center" justifyContent="space-between">
-            <Box>
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                sx={{ color: 'primary.main', mb: 1 }}
-              >
-                <AutoStoriesOutlined fontSize="small" />
-                <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 2 }}>
-                  Biblioteca do professor
-                </Typography>
-              </Stack>
-              <Typography
-                component="h1"
-                variant="h3"
-                sx={{
-                  fontSize: { xs: '2rem', md: '2.75rem' },
-                  fontWeight: 800,
-                  color: 'text.primary',
-                  letterSpacing: '-0.035em',
-                  mb: 1.5,
-                }}
-              >
-                Galeria de materiais
-              </Typography>
-              <Typography color="text.secondary" sx={{ maxWidth: 620, lineHeight: 1.7 }}>
-                Lições e recursos para preparar o próximo encontro do seu Clubinho.
-              </Typography>
-            </Box>
-            <Stack
-              direction="row"
-              spacing={2}
-              alignItems="center"
-              sx={{
-                display: { xs: 'none', md: 'flex' },
-                flexShrink: 0,
-                p: 2.5,
-                borderRadius: 3,
-                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.05),
-              }}
-            >
-              <GridViewOutlined sx={{ fontSize: 36, color: 'primary.main' }} />
-              <Box>
-                <Typography component="p" variant="h5" fontWeight={800}>
-                  {gallery.loading || gallery.error ? '—' : gallery.materials.length}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  materiais no acervo
-                </Typography>
-              </Box>
-            </Stack>
-          </Stack>
-        </Container>
-      </Box>
-
-      <Container
-        data-testid="week-material-gallery-content"
-        maxWidth={false}
-        disableGutters
-        sx={{ width: MATERIAL_GALLERY_CONTENT_WIDTH, pt: { xs: 3, md: 4 } }}
-      >
+      <Container data-testid="week-material-gallery-content" maxWidth={false} disableGutters>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2.5 }}>
           <TextField
             label="Buscar materiais"
@@ -308,6 +238,6 @@ export function WeekMaterialsGallery() {
           </>
         )}
       </Container>
-    </Box>
+    </TeacherPageCard>
   );
 }

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
-  Box,
   Button,
   CircularProgress,
   Container,
@@ -10,7 +9,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { CheckCircleOutline, SendOutlined } from '@mui/icons-material';
+import { CheckCircleOutline, PhotoCameraOutlined, SendOutlined } from '@mui/icons-material';
 import {
   apiCreateImageSection,
   buildSectionFormData,
@@ -19,6 +18,7 @@ import {
   validateClubinhoPublication,
 } from '@/features/image-sections';
 import type { SectionData } from '@/store/slices/image-section/imageSectionSlice';
+import TeacherPageCard from '../components/Layout/TeacherPageCard';
 import { extractErrorMessage } from '@/utils/apiError';
 
 export default function ImageSectionPage() {
@@ -66,26 +66,14 @@ export default function ImageSectionPage() {
     }
   };
   return (
-    <Box
-      data-testid="teacher-area-image-section-image-section-page"
-      sx={{ py: { xs: 1, md: 2 } }}
+    <TeacherPageCard
+      testId="teacher-area-image-section-image-section-page"
+      icon={<PhotoCameraOutlined sx={{ fontSize: 22 }} />}
+      accent="#16a34a"
+      title="Fotos do Clubinho"
+      subtitle="Envie fotos ou um vídeo do seu Clubinho. Compartilhe as descobertas, a alegria e os encontros que merecem ser lembrados."
     >
       <Container maxWidth={false} disableGutters>
-        <Typography variant="overline" color="success.main" display="block" fontWeight={700}>
-          Momentos do Clubinho
-        </Typography>
-        <Typography
-          component="h1"
-          variant="h3"
-          fontWeight={800}
-          sx={{ fontSize: { xs: '1.8rem', md: '2.6rem' }, mb: 1 }}
-        >
-          Uma história para compartilhar.
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 4, maxWidth: 650 }}>
-          Envie fotos ou um vídeo do seu Clubinho. Compartilhe as descobertas, a alegria e os
-          encontros que merecem ser lembrados.
-        </Typography>
         {submitted ? (
           <Paper
             data-testid="clubinho-upload-success"
@@ -169,6 +157,6 @@ export default function ImageSectionPage() {
           </>
         )}
       </Container>
-    </Box>
+    </TeacherPageCard>
   );
 }

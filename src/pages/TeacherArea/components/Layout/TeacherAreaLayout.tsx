@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { Suspense, useState, useCallback } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Box, Container } from '@mui/material';
+import { Box, CircularProgress, Container } from '@mui/material';
 import UnsavedChangesDialog from '@/components/common/modal/UnsavedChangesDialog';
 import { hasUnsavedChanges } from '@/utils/unsavedChanges';
 import { CONTAINER_STYLES } from '../../constants';
@@ -56,9 +56,19 @@ const TeacherAreaLayout: React.FC = () => {
               flex: 1,
               minWidth: 0,
               width: '100%',
+              minHeight: { xs: '55vh', md: '70vh' },
             }}
           >
-            <Outlet />
+            {/* Suspense local: trocar de subpágina nunca desmonta a casca (header + sidebar) */}
+            <Suspense
+              fallback={
+                <Box sx={{ display: 'grid', placeItems: 'center', py: 10 }}>
+                  <CircularProgress size={40} thickness={4} />
+                </Box>
+              }
+            >
+              <Outlet />
+            </Suspense>
           </Box>
         </Box>
       </Container>
