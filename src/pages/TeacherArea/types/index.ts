@@ -1,3 +1,5 @@
+import type { MyProfile } from '@/features/profile/types';
+
 export interface BannerSectionProps {
   showWeekBanner: boolean;
   showMeditationBanner: boolean;
@@ -5,6 +7,7 @@ export interface BannerSectionProps {
 
 export interface WelcomeSectionProps {
   userName?: string;
+  user?: MyProfile | null;
   showVerse?: boolean;
 }
 

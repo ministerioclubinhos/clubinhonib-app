@@ -94,6 +94,10 @@ import {
   VideoPagesManager,
   WeekMaterialPageForm,
   WeekMaterialsList,
+  TeacherAreaLayout,
+  TeacherDocumentsPage,
+  TeacherVideosPage,
+  TeacherIdeasGalleryPage,
   WeekMaterialsManager,
 } from './routes/lazyPages';
 
@@ -298,7 +302,28 @@ function App() {
                   <Route path="*" element={<NotFoundPage />} />
 
                   <Route element={<ProtectedRoute />}>
-                    <Route path="/area-do-professor" element={<TeacherArea />} />
+                    {/* Sidebar + cabeçalho fixos para todas as subpáginas da Área do Professor */}
+                    <Route element={<TeacherAreaLayout />}>
+                      <Route path="/area-do-professor" element={<TeacherArea />} />
+                      <Route element={<FeatureRoute flag={FEATURE.WEEKLY_MATERIALS} redirectTo="/area-do-professor" />}>
+                        <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
+                      </Route>
+                      <Route element={<FeatureRoute flag={FEATURE.DOCUMENTS_LIBRARY} redirectTo="/area-do-professor" />}>
+                        <Route path="/area-do-professor/documentos" element={<TeacherDocumentsPage />} />
+                      </Route>
+                      <Route element={<FeatureRoute flag={FEATURE.TRAINING_VIDEOS} redirectTo="/area-do-professor" />}>
+                        <Route path="/area-do-professor/videos" element={<TeacherVideosPage />} />
+                      </Route>
+                      <Route element={<FeatureRoute flag={FEATURE.IDEAS_SHARING} redirectTo="/area-do-professor" />}>
+                        <Route path="/area-do-professor/ideias" element={<TeacherIdeasGalleryPage />} />
+                      </Route>
+                      <Route element={<FeatureRoute flag={FEATURE.CLUB_PHOTO_UPLOAD} redirectTo="/area-do-professor" />}>
+                        <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
+                      </Route>
+                      <Route element={<FeatureRoute flag={FEATURE.IDEA_SUBMISSION} redirectTo="/area-do-professor" />}>
+                        <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
+                      </Route>
+                    </Route>
                     <Route path="/meu-perfil" element={<ProfilePage />} />
                     <Route element={<FeatureRoute flag={FEATURE.NOTIFICATION_CENTER_V2} />}>
                       <Route path="/notificacoes" element={<NotificationsPage />} />
@@ -309,17 +334,8 @@ function App() {
                       desligada a rota deixa de existir, e o atalho que leva
                       até ela também some da tela.
                     */}
-                    <Route element={<FeatureRoute flag={FEATURE.CLUB_PHOTO_UPLOAD} redirectTo="/area-do-professor" />}>
-                      <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
-                    </Route>
-                    <Route element={<FeatureRoute flag={FEATURE.WEEKLY_MATERIALS} redirectTo="/area-do-professor" />}>
-                      <Route path="/lista-materias-semanais" element={<WeekMaterialsList />} />
-                    </Route>
                     <Route element={<FeatureRoute flag={FEATURE.SITE_FEEDBACK} redirectTo="/area-do-professor" />}>
                       <Route path="/avaliar-site" element={<SiteFeedbackForm />} />
-                    </Route>
-                    <Route element={<FeatureRoute flag={FEATURE.IDEA_SUBMISSION} redirectTo="/area-do-professor" />}>
-                      <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
                     </Route>
                   </Route>
 

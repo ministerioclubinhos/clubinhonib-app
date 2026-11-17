@@ -19,7 +19,6 @@ import {
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/slices';
-import { motion, AnimatePresence } from 'framer-motion';
 import Slider from 'react-slick';
 import CommentIcon from '@mui/icons-material/Comment';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -34,6 +33,8 @@ import { setComments } from 'store/slices/comment/commentsSlice';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
 import CommentDetailDialog from './CommentDetailDialog';
+
+const ACCENT = '#0d9488';
 
 const CommentsSection: React.FC = () => {
   const dispatch = useDispatch();
@@ -106,28 +107,25 @@ const CommentsSection: React.FC = () => {
     setSuccessSnackbarOpen(false);
   };
 
+  const slidesToShow = Math.min(3, Math.max(1, comments.length));
+
   const sliderSettings = useMemo(
     () => ({
       dots: true,
-      infinite: true,
+      infinite: comments.length > 3,
       speed: 500,
-      slidesToShow: 3,
+      slidesToShow,
       slidesToScroll: 1,
-      autoplay: true,
-      autoplaySpeed: 4000,
+      autoplay: comments.length > 3,
+      autoplaySpeed: 5000,
       pauseOnHover: true,
       responsive: [
-        { breakpoint: 960, settings: { slidesToShow: 2 } },
-        { breakpoint: 600, settings: { slidesToShow: 1 } },
+        { breakpoint: 960, settings: { slidesToShow: Math.min(2, slidesToShow), infinite: comments.length > 2 } },
+        { breakpoint: 600, settings: { slidesToShow: 1, infinite: comments.length > 1 } },
       ],
       arrows: true,
-      appendDots: (dots: React.ReactNode) => (
-        <Box sx={{ mt: 2 }}>
-          <ul style={{ margin: 0, padding: 0 }}>{dots}</ul>
-        </Box>
-      ),
     }),
-    []
+    [comments.length, slidesToShow]
   );
 
   const labels: Record<string, string> = {
@@ -139,7 +137,7 @@ const CommentsSection: React.FC = () => {
 
   const placeholders: Record<string, string> = {
     name: 'Seu nome',
-    comment: 'Escreva seu comentário aqui...',
+    comment: 'Escreva seu testemunho ou experiência aqui...',
     clubinho: 'Ex: Clubinho do Amor',
     neighborhood: 'Ex: Jardim das Flores',
   };
@@ -152,463 +150,359 @@ const CommentsSection: React.FC = () => {
   };
 
   return (
-    <motion.div data-testid="teacher-area-sections-comments-section"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
+    <Box data-testid="teacher-area-sections-comments-section">
       <Paper
-        elevation={4}
+        elevation={0}
         sx={{
-          p: { xs: 2, md: 4 },
-          mt: 5,
-          borderRadius: { xs: 3, md: 4 },
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
-          border: `2px solid ${theme.palette.primary.main}20`,
-          position: 'relative',
-          overflow: 'hidden',
+          p: { xs: 2, sm: 2.5, md: 3 },
+          borderRadius: 3.5,
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          borderTop: `4px solid ${ACCENT}`,
+          boxShadow: '0 4px 18px rgba(15, 23, 42, 0.04)',
         }}
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: -50,
-            right: -50,
-            width: 200,
-            height: 200,
-            background: 'rgba(25, 118, 210, 0.05)',
-            borderRadius: '50%',
-            zIndex: 0,
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'stretch', sm: 'center' },
+            justifyContent: 'space-between',
+            gap: 2,
+            mb: 2.5,
           }}
-        />
-
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 3 } }}>
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
             <Box
               sx={{
-                p: { xs: 1, md: 1.5 },
+                width: 38,
+                height: 38,
                 borderRadius: 2,
-                bgcolor: 'primary.main',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mr: { xs: 1.5, md: 2 },
+                bgcolor: `${ACCENT}14`,
+                color: ACCENT,
+                display: 'grid',
+                placeItems: 'center',
+                flexShrink: 0,
               }}
             >
-              <CommentIcon sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }} />
+              <CommentIcon sx={{ fontSize: 22 }} />
             </Box>
             <Box>
-              <Typography
-                variant="h4"
-                fontWeight="bold"
-                color="primary.main"
-                sx={{
-                  fontSize: { xs: '1rem', md: '1.8rem' },
-                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                }}
-              >
-                Comentários dos Professores
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight={800}
+                  color="#0f172a"
+                  sx={{ fontSize: { xs: '1rem', md: '1.15rem' }, lineHeight: 1.2 }}
+                >
+                  Mural de Testemunhos dos Professores
+                </Typography>
                 {comments.length > 0 && (
                   <Chip
                     size="small"
                     label={comments.length}
                     sx={{
-                      ml: 1,
-                      bgcolor: `${theme.palette.primary.main}15`,
-                      color: 'primary.main',
+                      bgcolor: `${ACCENT}18`,
+                      color: ACCENT,
                       fontWeight: 700,
-                      verticalAlign: 'middle',
+                      height: 22,
                     }}
                   />
                 )}
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ fontSize: { xs: '0.8rem', md: '0.95rem' }, mt: 0.3 }}
-              >
-                🌱 Testemunhos de quem já está semeando a Palavra nos Clubinhos
+              </Box>
+              <Typography variant="caption" color="#64748b">
+                Relatos e frutos de quem está semeando a Palavra nos Clubinhos
               </Typography>
             </Box>
           </Box>
 
-          <Box sx={{ mb: { xs: 2, md: 4 } }}>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button
-                variant="contained"
-                startIcon={<ExpandMoreIcon sx={{ transform: formOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />}
-                onClick={() => setFormOpen(!formOpen)}
+          <Button
+            variant={formOpen ? 'outlined' : 'contained'}
+            startIcon={
+              <ExpandMoreIcon
                 sx={{
-                  mb: { xs: 2, md: 3 },
-                  borderRadius: { xs: 2, md: 3 },
-                  textTransform: 'none',
-                  fontSize: { xs: '0.75rem', md: '1rem' },
-                  px: { xs: 1.5, md: 3 },
-                  py: { xs: 0.8, md: 1.5 },
-                  minWidth: { xs: 'auto', md: 'auto' },
-                  width: { xs: '100%', md: 'auto' },
-                  boxShadow: { xs: 2, md: 3 },
-                  '&:hover': {
-                    boxShadow: { xs: 4, md: 6 },
-                  },
-                  '& .MuiButton-startIcon': {
-                    marginRight: { xs: 0.5, md: 1 },
-                    '& svg': {
-                      fontSize: { xs: '1rem', md: '1.25rem' },
-                    },
-                  },
+                  transform: formOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.25s ease',
                 }}
-              >
-                {formOpen ? 'Fechar' : 'Adicionar Comentário'}
-              </Button>
-            </motion.div>
+              />
+            }
+            onClick={() => setFormOpen(!formOpen)}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 700,
+              bgcolor: formOpen ? 'transparent' : ACCENT,
+              borderColor: ACCENT,
+              color: formOpen ? ACCENT : '#fff',
+              '&:hover': {
+                bgcolor: formOpen ? `${ACCENT}10` : '#0f766e',
+              },
+            }}
+          >
+            {formOpen ? 'Fechar Formulário' : 'Adicionar Comentário'}
+          </Button>
+        </Box>
 
-            <Collapse in={formOpen}>
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
+        <Collapse in={formOpen}>
+          <Card
+            elevation={0}
+            sx={{
+              mb: 3,
+              borderRadius: 3,
+              bgcolor: '#f8fafc',
+              border: '1px solid #cbd5e1',
+            }}
+          >
+            <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+              <Typography
+                variant="subtitle1"
+                fontWeight={800}
+                color="#0f172a"
+                sx={{ mb: 2 }}
               >
-                <Card
-                  elevation={3}
+                📝 Compartilhe sua experiência no Clubinho
+              </Typography>
+
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                {['name', 'comment', 'clubinho', 'neighborhood'].map((field) => (
+                  <Grid item xs={12} md={field === 'comment' ? 8 : 4} key={field}>
+                    <TextField
+                      fullWidth
+                      required
+                      label={labels[field]}
+                      placeholder={placeholders[field]}
+                      variant="outlined"
+                      size="small"
+                      multiline={field === 'comment'}
+                      rows={field === 'comment' ? 3 : 1}
+                      value={formData[field as keyof typeof formData]}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [field]: e.target.value })
+                      }
+                      error={errors[field as keyof typeof errors]}
+                      helperText={
+                        errors[field as keyof typeof errors]
+                          ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD
+                          : ''
+                      }
+                      InputProps={{
+                        startAdornment: (
+                          <Box sx={{ mr: 1, color: ACCENT, display: 'flex', alignItems: 'center' }}>
+                            {fieldIcons[field]}
+                          </Box>
+                        ),
+                      }}
+                      sx={{ bgcolor: '#ffffff' }}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  endIcon={
+                    isSubmitting ? (
+                      <CircularProgress color="inherit" size={18} />
+                    ) : (
+                      <SendIcon sx={{ fontSize: '1.1rem' }} />
+                    )
+                  }
                   sx={{
-                    borderRadius: 3,
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
-                    border: `1px solid ${theme.palette.primary.main}20`,
+                    bgcolor: ACCENT,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    px: 3,
+                    '&:hover': { bgcolor: '#0f766e' },
                   }}
                 >
-                  <CardContent sx={{ p: { xs: 2, md: 4 } }}>
-                    <Typography
-                      variant="h6"
-                      fontWeight="bold"
-                      color="primary.main"
-                      sx={{ mb: { xs: 2, md: 3 }, textAlign: 'center', fontSize: { xs: '0.9rem', md: '1.25rem' } }}
-                    >
-                      📝 Compartilhe sua experiência
-                    </Typography>
+                  {isSubmitting ? 'Enviando...' : 'Enviar Comentário'}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Collapse>
 
-                    <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: { xs: 2, md: 3 } }}>
-                      {['name', 'comment', 'clubinho', 'neighborhood'].map((field) => (
-                        <Grid item xs={12} md={field === 'comment' ? 8 : 4} key={field}>
-                          <Box sx={{ position: 'relative' }}>
-                            <TextField
-                              fullWidth
-                              required
-                              label={labels[field]}
-                              placeholder={placeholders[field]}
-                              variant="outlined"
-                              size="medium"
-                              multiline={field === 'comment'}
-                              rows={field === 'comment' ? 4 : 1}
-                              value={formData[field as keyof typeof formData]}
-                              onChange={(e) =>
-                                setFormData({ ...formData, [field]: e.target.value })
-                              }
-                              error={errors[field as keyof typeof errors]}
-                              helperText={
-                                errors[field as keyof typeof errors]
-                                  ? FORM_VALIDATION_MESSAGES.REQUIRED_FIELD
-                                  : ''
-                              }
-                              InputProps={{
-                                startAdornment: (
-                                  <Box sx={{ mr: 1, color: 'primary.main', display: 'flex', alignItems: 'center' }}>
-                                    {fieldIcons[field]}
-                                  </Box>
-                                ),
-                              }}
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: 2,
-                                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: 'primary.main',
-                                  },
-                                },
-                                '& .MuiInputLabel-root': {
-                                  fontSize: { xs: '0.875rem', md: '1rem' },
-                                },
-                                '& .MuiOutlinedInput-input': {
-                                  fontSize: { xs: '0.875rem', md: '1rem' },
-                                  padding: { xs: '12px 14px', md: '16px 14px' },
-                                },
-                              }}
-                            />
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
-
-                    <Box sx={{ textAlign: 'center' }}>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={handleSubmit}
-                          disabled={isSubmitting}
-                          endIcon={
-                            isSubmitting ? (
-                              <CircularProgress color="inherit" size={18} />
-                            ) : (
-                              <SendIcon sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
-                            )
-                          }
+        {comments.length > 0 ? (
+          <Box
+            sx={{
+              position: 'relative',
+              py: 1,
+              pb: 3,
+              px: { xs: 0.5, md: 1 },
+              '& .slick-track': { display: 'flex !important', marginLeft: 0 },
+              '& .slick-slide': {
+                height: 'inherit',
+                '& > div': { height: '100%' },
+              },
+              '& .slick-prev:before, & .slick-next:before': {
+                color: ACCENT,
+                fontSize: '26px',
+              },
+              '& .slick-prev': { left: { xs: -8, md: -16 }, zIndex: 2 },
+              '& .slick-next': { right: { xs: -8, md: -16 }, zIndex: 2 },
+              '& .slick-dots': {
+                bottom: -24,
+                '& li.slick-active button:before': { color: ACCENT },
+                '& li button:before': { color: ACCENT, opacity: 0.25 },
+              },
+            }}
+          >
+            <Slider {...sliderSettings}>
+              {comments.map((comment) => (
+                <Box
+                  key={comment.id}
+                  sx={{
+                    p: 1,
+                    height: '100%',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <Card
+                    elevation={0}
+                    onClick={() => setSelectedComment(comment)}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      minHeight: { xs: 230, md: 250 },
+                      borderRadius: 2.5,
+                      bgcolor: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      cursor: 'pointer',
+                      transition: 'all 0.22s ease',
+                      '&:hover': {
+                        bgcolor: '#ffffff',
+                        transform: 'translateY(-3px)',
+                        borderColor: ACCENT,
+                        boxShadow: `0 8px 20px ${ACCENT}1f`,
+                      },
+                    }}
+                  >
+                    <CardContent sx={{ p: 2.5, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                        <Avatar
                           sx={{
-                            borderRadius: { xs: 2, md: 3 },
-                            textTransform: 'none',
-                            fontSize: { xs: '0.8rem', md: '1rem' },
-                            px: { xs: 2, md: 4 },
-                            py: { xs: 1, md: 1.5 },
-                            minWidth: { xs: 'auto', md: 'auto' },
-                            boxShadow: 3,
-                            '&:hover': {
-                              boxShadow: 6,
-                            },
-                            '&:disabled': {
-                              opacity: 0.7,
-                            },
+                            bgcolor: ACCENT,
+                            mr: 1.5,
+                            width: 40,
+                            height: 40,
+                            fontSize: '1rem',
+                            fontWeight: 800,
                           }}
                         >
-                          {isSubmitting ? 'Enviando...' : 'Enviar Comentário'}
-                        </Button>
-                      </motion.div>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Collapse>
-          </Box>
+                          {comment.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box>
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight={800}
+                            color="#0f172a"
+                            sx={{ lineHeight: 1.2 }}
+                          >
+                            {comment.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {new Date(comment.createdAt).toLocaleDateString('pt-BR')}
+                          </Typography>
+                        </Box>
+                      </Box>
 
-          <AnimatePresence>
-            {comments.length > 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <Box sx={{
-                  position: 'relative',
-                  px: 1,
-                  '& .slick-track': { display: 'flex !important' },
-                  '& .slick-slide': {
-                    height: 'inherit',
-                    '& > div': { height: '100%' },
-                  },
-                  '& .slick-prev:before, & .slick-next:before': {
-                    color: theme.palette.primary.main,
-                    fontSize: '28px'
-                  },
-                  '& .slick-prev': {
-                    left: { xs: 5, md: -30 },
-                    zIndex: 2,
-                  },
-                  '& .slick-next': {
-                    right: { xs: 5, md: -30 },
-                    zIndex: 2,
-                  },
-                  '& .slick-arrow': {
-                    width: { xs: 30, md: 40 },
-                    height: { xs: 30, md: 40 },
-                    backgroundColor: { xs: 'rgba(255,255,255,0.9)', md: 'transparent' },
-                    borderRadius: { xs: '50%', md: 0 },
-                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.2)', md: 'none' },
-                    '&:before': {
-                      fontSize: { xs: '20px', md: '28px' },
-                      color: theme.palette.primary.main,
-                    },
-                    '&:hover': {
-                      backgroundColor: { xs: 'rgba(255,255,255,1)', md: 'transparent' },
-                    },
-                  },
-                }}>
-                  <Slider {...sliderSettings}>
-                    {comments.map((comment, index) => (
                       <Box
-                        key={comment.id}
                         sx={{
-                          p: { xs: 0.5, md: 2 },
-                          height: '100%',
-                          boxSizing: 'border-box',
+                          flexGrow: 1,
+                          mb: 2,
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: '#ffffff',
+                          border: '1px solid #e2e8f0',
+                          borderLeft: `3px solid ${ACCENT}`,
                         }}
                       >
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          transition={{ duration: 0.4, delay: index * 0.1 }}
-                          style={{ height: '100%' }}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            lineHeight: 1.55,
+                            color: '#334155',
+                            fontStyle: 'italic',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 5,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
                         >
-                          <Card
-                            elevation={6}
-                            onClick={() => setSelectedComment(comment)}
+                          “{comment.comment}”
+                        </Typography>
+
+                        {comment.comment.length > 180 && (
+                          <Typography
+                            variant="caption"
                             sx={{
-                              width: '100%',
-                              height: '100%',
-                              minHeight: { xs: 260, md: 320 },
-                              borderRadius: { xs: 2, md: 3 },
-                              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
-                              border: `2px solid ${theme.palette.primary.main}15`,
-                              cursor: 'pointer',
-                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                              '&:hover': {
-                                elevation: 12,
-                                transform: 'translateY(-4px)',
-                                borderColor: theme.palette.primary.main,
-                                boxShadow: `0 20px 40px ${theme.palette.primary.main}20`,
-                              },
+                              display: 'block',
+                              mt: 0.75,
+                              color: ACCENT,
+                              fontWeight: 700,
                             }}
                           >
-                            <CardContent sx={{ p: { xs: 1.5, md: 3 }, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
-                                <Avatar
-                                  sx={{
-                                    bgcolor: 'primary.main',
-                                    mr: { xs: 1.5, md: 2 },
-                                    width: { xs: 36, md: 48 },
-                                    height: { xs: 36, md: 48 },
-                                    fontSize: { xs: '0.9rem', md: '1.2rem' },
-                                  }}
-                                >
-                                  {comment.name.charAt(0).toUpperCase()}
-                                </Avatar>
-                                <Box>
-                                  <Typography
-                                    variant="h6"
-                                    fontWeight="bold"
-                                    color="primary.main"
-                                    sx={{
-                                      fontSize: { xs: '0.9rem', md: '1.1rem' },
-                                      mb: 0.5,
-                                    }}
-                                  >
-                                    {comment.name}
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' } }}
-                                  >
-                                    {new Date(comment.createdAt).toLocaleDateString('pt-BR')}
-                                  </Typography>
-                                </Box>
-                              </Box>
-
-                              <Box sx={{ flexGrow: 1, mb: { xs: 1.5, md: 2 } }}>
-                                <Paper
-                                  elevation={1}
-                                  sx={{
-                                    p: { xs: 1.5, md: 2 },
-                                    borderRadius: 2,
-                                    background: 'linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)',
-                                    borderLeft: `4px solid ${theme.palette.primary.main}`,
-                                  }}
-                                >
-                                  <Typography
-                                    variant="body1"
-                                    sx={{
-                                      fontSize: { xs: '0.85rem', md: '1rem' },
-                                      lineHeight: { xs: 1.5, md: 1.6 },
-                                      color: 'text.primary',
-                                      fontStyle: 'italic',
-                                      display: '-webkit-box',
-                                      WebkitLineClamp: 6,
-                                      WebkitBoxOrient: 'vertical',
-                                      overflow: 'hidden',
-                                    }}
-                                  >
-                                    “{comment.comment}”
-                                  </Typography>
-
-                                  {comment.comment.length > 180 && (
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        display: 'block',
-                                        mt: 1,
-                                        color: 'primary.main',
-                                        fontWeight: 700,
-                                        fontSize: { xs: '0.72rem', md: '0.78rem' },
-                                      }}
-                                    >
-                                      Ler comentário completo…
-                                    </Typography>
-                                  )}
-                                </Paper>
-                              </Box>
-
-                              <Box sx={{ mt: 'auto' }}>
-                                <Stack direction="row" spacing={{ xs: 0.5, md: 1 }} flexWrap="wrap" useFlexGap>
-                                  <Chip
-                                    icon={<HomeIcon />}
-                                    label={comment.clubinho}
-                                    size="small"
-                                    sx={{
-                                      bgcolor: 'primary.light',
-                                      color: 'white',
-                                      fontSize: { xs: '0.7rem', md: '0.75rem' },
-                                      height: { xs: 24, md: 28 },
-                                      '& .MuiChip-icon': {
-                                        fontSize: { xs: '0.8rem', md: '0.875rem' },
-                                      },
-                                    }}
-                                  />
-                                  <Chip
-                                    icon={<LocationOnIcon />}
-                                    label={comment.neighborhood}
-                                    size="small"
-                                    sx={{
-                                      bgcolor: 'secondary.light',
-                                      color: 'white',
-                                      fontSize: { xs: '0.7rem', md: '0.75rem' },
-                                      height: { xs: 24, md: 28 },
-                                      '& .MuiChip-icon': {
-                                        fontSize: { xs: '0.8rem', md: '0.875rem' },
-                                      },
-                                    }}
-                                  />
-                                </Stack>
-                              </Box>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
+                            Ler relato completo…
+                          </Typography>
+                        )}
                       </Box>
-                    ))}
-                  </Slider>
+
+                      <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap sx={{ mt: 'auto' }}>
+                        <Chip
+                          icon={<HomeIcon />}
+                          label={comment.clubinho}
+                          size="small"
+                          sx={{
+                            bgcolor: `${theme.palette.primary.main}14`,
+                            color: 'primary.main',
+                            fontWeight: 600,
+                            fontSize: '0.72rem',
+                            height: 24,
+                          }}
+                        />
+                        <Chip
+                          icon={<LocationOnIcon />}
+                          label={comment.neighborhood}
+                          size="small"
+                          sx={{
+                            bgcolor: '#f1f5f9',
+                            color: '#475569',
+                            fontWeight: 600,
+                            fontSize: '0.72rem',
+                            height: 24,
+                          }}
+                        />
+                      </Stack>
+                    </CardContent>
+                  </Card>
                 </Box>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6 }}
-              >
-                <Paper
-                  elevation={1}
-                  sx={{
-                    p: 4,
-                    textAlign: 'center',
-                    borderRadius: 3,
-                    background: 'linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)',
-                  }}
-                >
-                  <CommentIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                  <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                    Nenhum comentário publicado ainda
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Envie o seu e ele aparecerá após avaliação.
-                  </Typography>
-                </Paper>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Box>
+              ))}
+            </Slider>
+          </Box>
+        ) : (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              textAlign: 'center',
+              borderRadius: 2.5,
+              bgcolor: '#f8fafc',
+              border: '1px dashed #cbd5e1',
+            }}
+          >
+            <CommentIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
+            <Typography variant="subtitle1" fontWeight={700} color="text.secondary">
+              Nenhum comentário publicado ainda
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Envie o seu relato sobre o Clubinho e ele aparecerá aqui após avaliação.
+            </Typography>
+          </Paper>
+        )}
       </Paper>
 
       <CommentDetailDialog
@@ -634,7 +528,7 @@ const CommentsSection: React.FC = () => {
           {FEATURE_SUCCESS_MESSAGES.COMMENT_SENT}
         </Alert>
       </Snackbar>
-    </motion.div>
+    </Box>
   );
 };
 

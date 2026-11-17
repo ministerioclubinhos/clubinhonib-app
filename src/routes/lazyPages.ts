@@ -37,6 +37,22 @@ export const ProfilePage = lazyNamedWithRetry(
 
 // Área do professor
 export const TeacherArea = lazyWithRetry(() => import('@/pages/TeacherArea/TeacherArea'));
+export const TeacherAreaLayout = lazyNamedWithRetry(
+  () => import('@/pages/TeacherArea/components'),
+  (module) => module.TeacherAreaLayout
+);
+export const TeacherDocumentsPage = lazyNamedWithRetry(
+  () => import('@/pages/TeacherArea/components'),
+  (module) => module.DocumentsSection
+);
+export const TeacherVideosPage = lazyNamedWithRetry(
+  () => import('@/pages/TeacherArea/components'),
+  (module) => module.TrainingVideosSection
+);
+export const TeacherIdeasGalleryPage = lazyNamedWithRetry(
+  () => import('@/pages/TeacherArea/components'),
+  (module) => module.IdeasGallerySection
+);
 export const ImageSectionPage = lazyWithRetry(
   () => import('@/pages/TeacherArea/ImageSection/ImageSectionPage')
 );

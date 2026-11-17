@@ -10,7 +10,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { ArrowBack, CheckCircleOutline, SendOutlined } from '@mui/icons-material';
+import { CheckCircleOutline, SendOutlined } from '@mui/icons-material';
 import {
   apiCreateImageSection,
   buildSectionFormData,
@@ -68,18 +68,9 @@ export default function ImageSectionPage() {
   return (
     <Box
       data-testid="teacher-area-image-section-image-section-page"
-      sx={{ bgcolor: 'grey.50', minHeight: '100vh', py: { xs: 3, md: 5 } }}
+      sx={{ py: { xs: 1, md: 2 } }}
     >
-      <Container maxWidth="lg">
-        <Button
-          type="button"
-          disabled={isSaving}
-          startIcon={<ArrowBack />}
-          onClick={() => navigate('/area-do-professor')}
-          sx={{ minHeight: 44, mb: 2 }}
-        >
-          Área do professor
-        </Button>
+      <Container maxWidth={false} disableGutters>
         <Typography variant="overline" color="success.main" display="block" fontWeight={700}>
           Momentos do Clubinho
         </Typography>

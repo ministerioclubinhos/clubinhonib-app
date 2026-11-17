@@ -3,6 +3,7 @@ export * from './constants';
 export * from './hooks';
 export * from './types';
 export * from './utils';
+export { WeekMaterialsGallery } from './components/WeekMaterialsGallery';
 
 export { default as WeekMaterialsManager } from './WeekMaterialsManager';
 export { default as WeekMaterialPageForm } from './WeekMaterialPageForm';

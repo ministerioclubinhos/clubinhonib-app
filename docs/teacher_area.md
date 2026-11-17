@@ -102,3 +102,29 @@ Teste: `e2e/flows/child-decisions.spec.ts`.
     autoria na ficha.
   - `e2e/flows/statistics-attendance.spec.ts` — regras de cálculo e frequência.
   - `e2e/flows/children-roles.spec.ts` — os mesmos fluxos logado como professor e como coordenador: recorte por clubinho, autoria com o usuário certo, o que cada papel não pode fazer.
+
+## Weekly materials gallery
+
+`/lista-materias-semanais` presents the published material routes as a responsive
+cover gallery (one column on phones, two on tablets, three on desktop). Content
+uses 98% of the viewport width on mobile and 95% from the desktop breakpoint,
+without a fixed maximum width. The feature lives in `features/week-materials`;
+the routed page only composes it.
+Redux remains the owner of `/routes`, and `useVisibleRoutes` preserves feature
+visibility. No extra material-detail requests are made for the gallery.
+
+Search matches titles, subtitles and cleaned descriptions, ignoring accents and
+surrounding whitespace. Category buttons distinguish weekly and special material
+using the existing description marker; sorting supports newest, oldest and title.
+Cards retain the complete title, a two-line description, a current-week badge
+when `route.current` is true, and one keyboard-accessible link over the whole card.
+The Family Day destination still requires its feature flag and matching ID.
+
+Loading uses cover-sized skeletons. Failed route loads expose retry through the
+existing Redux action, empty searches offer filter reset, and missing or failed
+cover images use an illustrated placeholder. Internal description markers never
+appear in the cards or participate in search.
+
+Coverage: `e2e/unit/week-material-gallery.utils.spec.ts` and
+`e2e/flows/week-material-gallery.spec.ts` (real local API, search/category/sort,
+keyboard navigation, mobile overflow, unavailable cover, loading and retry).

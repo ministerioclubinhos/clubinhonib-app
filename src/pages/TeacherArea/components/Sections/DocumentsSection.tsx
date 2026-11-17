@@ -9,14 +9,10 @@ import {
   TextField,
   InputAdornment,
 } from '@mui/material';
-import { motion } from 'framer-motion';
 import DescriptionIcon from '@mui/icons-material/Description';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 import api from '@/config/axiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
@@ -28,7 +24,7 @@ import {
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
 import { RouteData } from 'store/slices/route/routeSlice';
 
-const ACCENT = '#0288d1';
+const ACCENT = '#0284c7';
 
 const DocumentsSection: React.FC = () => {
   const dispatch = useDispatch();
@@ -77,14 +73,18 @@ const DocumentsSection: React.FC = () => {
   };
 
   return (
-    <Paper data-testid="teacher-area-sections-documents-section"
-      elevation={2}
+    <Paper
+      data-testid="teacher-area-sections-documents-section"
+      elevation={0}
       sx={{
-        p: { xs: 2, md: 3 },
-        mt: 5,
-        borderLeft: `5px solid ${ACCENT}`,
-        backgroundColor: '#e1f5fe',
-        borderRadius: 2,
+        p: { xs: 2, sm: 2.5, md: 3 },
+        borderTop: `4px solid ${ACCENT}`,
+        border: '1px solid #e2e8f0',
+        borderTopWidth: 4,
+        borderTopColor: ACCENT,
+        backgroundColor: '#ffffff',
+        borderRadius: 3.5,
+        boxShadow: '0 4px 18px rgba(15, 23, 42, 0.04)',
       }}
     >
       <Box
@@ -94,24 +94,44 @@ const DocumentsSection: React.FC = () => {
           justifyContent: 'space-between',
           alignItems: { xs: 'stretch', sm: 'center' },
           gap: 2,
-          mb: 1,
+          mb: 2,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DescriptionIcon sx={{ color: ACCENT }} />
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            color="#424242"
-            sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+          <Box
+            sx={{
+              width: 38,
+              height: 38,
+              borderRadius: 2,
+              bgcolor: `${ACCENT}14`,
+              color: ACCENT,
+              display: 'grid',
+              placeItems: 'center',
+              flexShrink: 0,
+            }}
           >
-            Documentos Importantes
-          </Typography>
-          <Chip
-            size="small"
-            label={filteredRoutes.length}
-            sx={{ bgcolor: `${ACCENT}20`, color: ACCENT, fontWeight: 700 }}
-          />
+            <DescriptionIcon sx={{ fontSize: 22 }} />
+          </Box>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography
+                variant="h6"
+                fontWeight={800}
+                color="#0f172a"
+                sx={{ fontSize: { xs: '1rem', md: '1.15rem' }, lineHeight: 1.2 }}
+              >
+                Documentos & Apostilas de Apoio
+              </Typography>
+              <Chip
+                size="small"
+                label={filteredRoutes.length}
+                sx={{ bgcolor: `${ACCENT}18`, color: ACCENT, fontWeight: 700, height: 22 }}
+              />
+            </Box>
+            <Typography variant="caption" sx={{ color: '#64748b' }}>
+              Guias, orientações e materiais didáticos para consulta do professor
+            </Typography>
+          </Box>
         </Box>
 
         <TextField
@@ -122,25 +142,17 @@ const DocumentsSection: React.FC = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                <SearchIcon sx={{ color: 'text.secondary', fontSize: 19 }} />
               </InputAdornment>
             ),
             sx: {
-              bgcolor: 'white',
+              bgcolor: '#f8fafc',
               borderRadius: 2,
-              minWidth: { sm: 250 },
+              minWidth: { sm: 240 },
             },
           }}
         />
       </Box>
-
-      <Typography
-        variant="body2"
-        color="#616161"
-        sx={{ mb: 2, fontSize: { xs: '0.85rem', md: '0.95rem' } }}
-      >
-        📄 Guias, orientações e materiais de apoio do Clubinho — clique em um documento para visualizá-lo.
-      </Typography>
 
       {error && (
         <Typography variant="body2" color="error" textAlign="center" sx={{ mb: 2 }}>
@@ -151,153 +163,124 @@ const DocumentsSection: React.FC = () => {
       {filteredRoutes.length > 0 ? (
         <Box
           sx={{
-            py: 2,
-            px: { xs: 0.5, md: 1 },
-            '& .slick-track': { display: 'flex !important' },
-            '& .slick-slide': {
-              height: 'inherit',
-              '& > div': { height: '100%' },
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              lg: 'repeat(3, minmax(0, 1fr))',
+              xl: 'repeat(4, minmax(0, 1fr))',
             },
-            '& .slick-prev:before, & .slick-next:before': {
-              color: ACCENT,
-              fontSize: '28px',
-            },
-            '& .slick-prev': { left: { xs: -10, md: -20 }, zIndex: 2 },
-            '& .slick-next': { right: { xs: -10, md: -20 }, zIndex: 2 },
-            '& .slick-dots': {
-              bottom: -35,
-              '& li.slick-active button:before': { color: ACCENT },
-              '& li button:before': { color: ACCENT, opacity: 0.25 },
-            },
+            gap: { xs: 1.5, md: 2 },
+            pt: 0.5,
           }}
         >
-          <Slider
-            dots
-            infinite={filteredRoutes.length > 4}
-            speed={500}
-            slidesToShow={4}
-            slidesToScroll={1}
-            autoplay
-            autoplaySpeed={5000}
-            pauseOnHover
-            responsive={[
-              { breakpoint: 1200, settings: { slidesToShow: 3, infinite: filteredRoutes.length > 3 } },
-              { breakpoint: 900, settings: { slidesToShow: 2, infinite: filteredRoutes.length > 2 } },
-              { breakpoint: 600, settings: { slidesToShow: 1, infinite: filteredRoutes.length > 1 } },
-            ]}
-          >
             {filteredRoutes.map((route) => {
               const isLoading = loadingId === route.id;
 
               return (
-                <Box key={route.id} sx={{ p: 1.5, height: '100%' }}>
-                  <motion.div
-                    whileTap={{ scale: 0.97 }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    style={{ height: '100%' }}
+                <Box key={route.id} sx={{ height: '100%' }}>
+                  <Card
+                    onClick={() => !isLoading && handleOpenModal(route)}
+                    elevation={0}
+                    sx={{
+                      height: '100%',
+                      minHeight: 180,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      bgcolor: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 2.5,
+                      cursor: 'pointer',
+                      overflow: 'hidden',
+                      opacity: isLoading ? 0.7 : 1,
+                      transition: 'all 0.22s ease',
+                      '&:hover': {
+                        bgcolor: '#ffffff',
+                        borderColor: ACCENT,
+                        boxShadow: `0 8px 20px ${ACCENT}1f`,
+                        transform: 'translateY(-3px)',
+                      },
+                    }}
                   >
-                    <Card
-                      onClick={() => !isLoading && handleOpenModal(route)}
+                    <CardContent
                       sx={{
-                        height: '100%',
-                        minHeight: 190,
+                        flexGrow: 1,
                         display: 'flex',
                         flexDirection: 'column',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        borderRadius: 2,
-                        cursor: 'pointer',
-                        overflow: 'hidden',
-                        opacity: isLoading ? 0.7 : 1,
-                        transition: 'box-shadow 0.3s ease, transform 0.3s ease',
-                        '&:hover': {
-                          boxShadow: `0 10px 24px ${ACCENT}30`,
-                          transform: 'translateY(-4px)',
-                          '& .doc-icon': { transform: 'scale(1.1) rotate(-4deg)' },
-                        },
+                        p: 2,
+                        '&:last-child': { pb: 2 },
                       }}
                     >
-                      <CardContent
-                        sx={{
-                          flexGrow: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          p: { xs: 1.5, md: 2 },
-                          '&:last-child': { pb: { xs: 1.5, md: 2 } },
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.2, mb: 1 }}>
-                          <Box
-                            className="doc-icon"
-                            sx={{
-                              flexShrink: 0,
-                              width: 40,
-                              height: 40,
-                              borderRadius: 1.5,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              bgcolor: `${ACCENT}15`,
-                              color: ACCENT,
-                              transition: 'transform 0.25s ease',
-                            }}
-                          >
-                            <PictureAsPdfIcon sx={{ fontSize: '1.4rem' }} />
-                          </Box>
-                          <Typography
-                            variant="subtitle1"
-                            fontWeight="bold"
-                            color="#424242"
-                            sx={{
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                              lineHeight: '1.25em',
-                              minHeight: '2.5em',
-                            }}
-                          >
-                            {route.title}
-                          </Typography>
-                        </Box>
-
-                        <Typography
-                          variant="body2"
-                          color="#616161"
-                          sx={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            flexGrow: 1,
-                          }}
-                        >
-                          {route.description || 'Sem descrição'}
-                        </Typography>
-
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25, mb: 1 }}>
                         <Box
                           sx={{
+                            flexShrink: 0,
+                            width: 38,
+                            height: 38,
+                            borderRadius: 1.5,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 0.5,
-                            mt: 1.5,
+                            justifyContent: 'center',
+                            bgcolor: `${ACCENT}15`,
                             color: ACCENT,
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
                           }}
                         >
-                          <VisibilityIcon sx={{ fontSize: '1rem' }} />
-                          {isLoading ? 'Carregando...' : 'Visualizar'}
+                          <PictureAsPdfIcon sx={{ fontSize: '1.3rem' }} />
                         </Box>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight={800}
+                          color="#0f172a"
+                          sx={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            lineHeight: 1.3,
+                            minHeight: '2.6em',
+                          }}
+                        >
+                          {route.title}
+                        </Typography>
+                      </Box>
+
+                      <Typography
+                        variant="body2"
+                        color="#475569"
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          flexGrow: 1,
+                          fontSize: '0.84rem',
+                        }}
+                      >
+                        {route.description || 'Documento de apoio pedagógico do Clubinho.'}
+                      </Typography>
+
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          mt: 1.5,
+                          pt: 1,
+                          borderTop: '1px solid #e2e8f0',
+                          color: ACCENT,
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <VisibilityIcon sx={{ fontSize: '1rem' }} />
+                        {isLoading ? 'Carregando...' : 'Abrir documento'}
+                      </Box>
+                    </CardContent>
+                  </Card>
                 </Box>
               );
             })}
-          </Slider>
-        </Box>
+          </Box>
       ) : (
         <Typography
           variant="body2"

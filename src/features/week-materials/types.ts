@@ -4,6 +4,30 @@ import type {
   MediaType,
   MediaUploadType,
 } from '@/store/slices/types';
+import type { RouteData } from '@/store/slices/route/routeSlice';
+
+export enum MaterialGalleryCategory {
+  ALL = 'all',
+  WEEKLY = 'weekly',
+  SPECIAL = 'special',
+}
+
+export enum MaterialGallerySort {
+  NEWEST = 'newest',
+  OLDEST = 'oldest',
+  TITLE = 'title',
+}
+
+export interface MaterialGalleryFilters {
+  search: string;
+  category: MaterialGalleryCategory;
+  sort: MaterialGallerySort;
+}
+
+export interface WeekMaterialGalleryCardProps {
+  material: RouteData;
+  href: string;
+}
 /**
  * Espelha `RouteType` da API. O enum `Type` do store cobre apenas `page` e
  * `doc`, então usá-lo aqui declararia menos valores do que a API pode devolver.

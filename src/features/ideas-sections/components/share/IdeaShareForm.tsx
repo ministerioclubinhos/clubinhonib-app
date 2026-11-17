@@ -15,7 +15,6 @@ import {
   Typography,
 } from '@mui/material';
 import {
-  ArrowBackRounded,
   CheckCircleOutline,
   CloudUploadOutlined,
   DescriptionOutlined,
@@ -116,9 +115,9 @@ export function IdeaShareForm() {
       component="form"
       onSubmit={onSubmit}
       data-testid="idea-share-form"
-      sx={{ bgcolor: 'grey.50', minHeight: '100vh', pt: { xs: 2, md: 3 }, pb: { xs: 17, md: 3 } }}
+      sx={{ pt: { xs: 1, md: 2 }, pb: { xs: 17, md: 3 } }}
     >
-      <Container maxWidth={false} sx={{ width: { xs: '98%', md: '95%' }, px: '0 !important' }}>
+      <Container maxWidth={false} disableGutters>
         <Box
           sx={{
             display: 'grid',
@@ -131,14 +130,6 @@ export function IdeaShareForm() {
           }}
         >
           <Box sx={{ gridColumn: '1 / -1' }}>
-            <Button
-              type="button"
-              startIcon={<ArrowBackRounded />}
-              onClick={() => navigate('/area-do-professor')}
-              sx={{ mb: 2, minHeight: 44, textTransform: 'none' }}
-            >
-              Área do professor
-            </Button>
             <Typography variant="overline" color="success.main" display="block" fontWeight={700}>
               COMPARTILHAR IDEIA
             </Typography>

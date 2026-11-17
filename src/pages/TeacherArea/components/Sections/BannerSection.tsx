@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { FEATURE } from '@/features/feature-flags';
 import { useFeatureFlags } from '@/hooks';
 import { BannerSectionProps } from '../../types';
@@ -10,57 +10,68 @@ const itemSx = { display: 'flex', '& > *': { width: '100%' } };
 const BannerSection: React.FC<BannerSectionProps> = ({ showMeditationBanner }) => {
   const { flags } = useFeatureFlags();
 
-  // O convite para compartilhar uma ideia só aparece enquanto o envio existe.
   const showIdeasBanner = flags[FEATURE.IDEA_SUBMISSION];
-
-  // O banner da semana leva à lista de materiais; sem ela, ele não tem destino.
   const showWeekBanner = flags[FEATURE.WEEKLY_MATERIALS];
+  const showMeditation = showMeditationBanner && flags[FEATURE.WEEKLY_MEDITATION];
 
-  /*
-   * Duas perguntas diferentes: a prop diz se existe meditação nesta semana, e
-   * a flag diz se o recurso está no ar. As duas precisam ser verdadeiras.
-   */
-  const showMeditation =
-    showMeditationBanner && flags[FEATURE.WEEKLY_MEDITATION];
+  if (!showIdeasBanner && !showWeekBanner && !showMeditation) {
+    return null;
+  }
 
   return (
-    <Grid data-testid="teacher-area-sections-banner-section"
-      container
-      spacing={{ xs: 2, md: 3 }}
-      alignItems="stretch"
-      sx={{ mb: { xs: 4, md: 6 }, mt: 0 }}
-    >
-      {showMeditation ? (
-        <>
-          {showIdeasBanner && (
-            <Grid item xs={12} sx={itemSx}>
-              <IdeasSharingBanner variant="full" />
+    <Box sx={{ mb: { xs: 3, md: 4 } }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, px: 0.5 }}>
+        <Typography
+          variant="overline"
+          sx={{
+            fontWeight: 800,
+            color: '#475569',
+            letterSpacing: 1,
+            fontSize: '0.75rem',
+          }}
+        >
+          📚 Preparação da Semana
+        </Typography>
+      </Box>
+
+      <Grid
+        data-testid="teacher-area-sections-banner-section"
+        container
+        spacing={{ xs: 2, md: 2.5 }}
+        alignItems="stretch"
+      >
+        {showMeditation ? (
+          <>
+            {showWeekBanner && (
+              <Grid item xs={12} md={6} sx={itemSx}>
+                <TeacherWeekBanner />
+              </Grid>
+            )}
+            <Grid item xs={12} md={showWeekBanner ? 6 : 12} sx={itemSx}>
+              <TeacherMeditationBanner />
             </Grid>
-          )}
-          {showWeekBanner && (
-            <Grid item xs={12} md={6} sx={itemSx}>
-              <TeacherWeekBanner />
-            </Grid>
-          )}
-          <Grid item xs={12} md={6} sx={itemSx}>
-            <TeacherMeditationBanner />
-          </Grid>
-        </>
-      ) : (
-        <>
-          {showIdeasBanner && (
-            <Grid item xs={12} md={6} sx={itemSx}>
-              <IdeasSharingBanner variant="compact" />
-            </Grid>
-          )}
-          {showWeekBanner && (
-            <Grid item xs={12} md={6} sx={itemSx}>
-              <TeacherWeekBanner />
-            </Grid>
-          )}
-        </>
-      )}
-    </Grid>
+            {showIdeasBanner && (
+              <Grid item xs={12} sx={itemSx}>
+                <IdeasSharingBanner variant="full" />
+              </Grid>
+            )}
+          </>
+        ) : (
+          <>
+            {showWeekBanner && (
+              <Grid item xs={12} md={showIdeasBanner ? 7 : 12} sx={itemSx}>
+                <TeacherWeekBanner />
+              </Grid>
+            )}
+            {showIdeasBanner && (
+              <Grid item xs={12} md={showWeekBanner ? 5 : 12} sx={itemSx}>
+                <IdeasSharingBanner variant={showWeekBanner ? 'compact' : 'full'} />
+              </Grid>
+            )}
+          </>
+        )}
+      </Grid>
+    </Box>
   );
 };
 

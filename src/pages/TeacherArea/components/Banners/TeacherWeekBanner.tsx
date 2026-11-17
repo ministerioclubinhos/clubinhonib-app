@@ -2,12 +2,12 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { useVisibleRoutes } from '@/features/feature-flags';
-import { Box, Typography, Button, Paper } from '@mui/material';
+import { Box, Typography, Button, Paper, Chip, Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { MediaTargetType } from 'store/slices/types';
-import { motion } from 'framer-motion';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
 
 const TeacherWeekBanner: React.FC = () => {
   const routes = useVisibleRoutes();
@@ -20,191 +20,218 @@ const TeacherWeekBanner: React.FC = () => {
 
   if (!currentWeekRoute) {
     return (
-      <Paper data-testid="teacher-area-banners-teacher-week-banner"
-        elevation={3}
+      <Paper
+        data-testid="teacher-area-banners-teacher-week-banner"
+        elevation={0}
         sx={{
           width: '100%',
           height: '100%',
-          minHeight: { xs: 220, sm: 240, md: 320 },
+          minHeight: { xs: 200, md: 230 },
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center',
-          p: { xs: 2, sm: 3 },
-          borderRadius: { xs: 2, md: 3 },
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-          border: '1px solid rgba(0,0,0,0.05)',
+          justifyContent: 'space-between',
+          p: { xs: 2.5, md: 3 },
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+          color: '#ffffff',
+          boxShadow: '0 8px 24px rgba(2, 132, 199, 0.2)',
         }}
       >
-        <Typography
-          variant="h6"
-          sx={{
-            color: 'text.secondary',
-            fontSize: { xs: '1rem', md: '1.1rem' },
-            fontWeight: 500,
-          }}
-        >
-          Nenhum material semanal atual encontrado.
-        </Typography>
+        <Box>
+          <Chip
+            icon={<AutoStoriesIcon sx={{ color: '#fff !important', fontSize: '1rem' }} />}
+            label="Lição Bíblica Semanal"
+            size="small"
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.18)',
+              color: '#fff',
+              fontWeight: 700,
+              mb: 1.5,
+            }}
+          />
+          <Typography variant="h5" fontWeight={800} sx={{ mb: 0.75, fontSize: { xs: '1.2rem', md: '1.4rem' } }}>
+            Acervo de Aulas do Clubinho
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.88)', maxWidth: 520 }}>
+            Nenhum material está marcado como semana atual no momento, mas você pode consultar todas as lições bíblicas disponíveis.
+          </Typography>
+        </Box>
+
+        <Box sx={{ mt: 2.5 }}>
+          <Button
+            variant="contained"
+            component={Link}
+            to="/lista-materias-semanais"
+            endIcon={<ArrowForwardIcon />}
+            sx={{
+              bgcolor: '#ffffff',
+              color: '#0369a1',
+              fontWeight: 800,
+              textTransform: 'none',
+              borderRadius: 2,
+              px: 2.5,
+              py: 1,
+              '&:hover': { bgcolor: '#f0f9ff' },
+            }}
+          >
+            Ver Materiais Semanais
+          </Button>
+        </Box>
       </Paper>
     );
   }
 
-  return (
-    <motion.div data-testid="teacher-area-banners-teacher-week-banner"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      style={{ height: '100%' }}
-    >
-      <Paper
-        elevation={4}
-        sx={{
-          width: '100%',
-          height: '100%',
-          minHeight: { xs: 240, sm: 260, md: 320 },
-          boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center',
-          p: { xs: 2.5, sm: 3, md: 4 },
-          borderRadius: { xs: 2, md: 3 },
-          background: 'linear-gradient(135deg, #0073E6 0%, #4A90E2 50%, #87CEEB 100%)',
-          color: '#fff',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <motion.div
-          animate={{ y: [0, -12, 0], x: [0, 5, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            position: 'absolute',
-            top: -50,
-            right: -50,
-            width: 200,
-            height: 200,
-            background: 'rgba(255,255,255,0.12)',
-            borderRadius: '50%',
-            zIndex: 0,
-          }}
-        />
-        <motion.div
-          animate={{ y: [0, 10, 0], x: [0, -5, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            position: 'absolute',
-            bottom: -30,
-            left: -30,
-            width: 150,
-            height: 150,
-            background: 'rgba(255,255,255,0.09)',
-            borderRadius: '50%',
-            zIndex: 0,
-          }}
-        />
+  const lessonPath = `/${currentWeekRoute.path.replace(/^\/+/, '')}`;
 
-        <Box
+  return (
+    <Paper
+      data-testid="teacher-area-banners-teacher-week-banner"
+      elevation={0}
+      sx={{
+        width: '100%',
+        height: '100%',
+        minHeight: { xs: 220, md: 250 },
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        p: { xs: 2.5, sm: 3, md: 3.5 },
+        borderRadius: 3.5,
+        background: 'linear-gradient(135deg, #0369a1 0%, #0284c7 60%, #0ea5e9 100%)',
+        color: '#fff',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 10px 28px rgba(2, 132, 199, 0.22)',
+      }}
+    >
+      <Box
+        sx={{
+          position: 'absolute',
+          top: -40,
+          right: -40,
+          width: 180,
+          height: 180,
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+          <Chip
+            icon={<AutoStoriesIcon sx={{ color: '#fff !important', fontSize: '1rem' }} />}
+            label="Lição da Semana"
+            size="small"
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.2)',
+              color: '#fff',
+              fontWeight: 800,
+              letterSpacing: 0.4,
+            }}
+          />
+          <Chip
+            label="Em andamento"
+            size="small"
+            sx={{
+              bgcolor: 'rgba(186, 230, 253, 0.22)',
+              color: '#e0f2fe',
+              fontWeight: 700,
+              fontSize: '0.7rem',
+            }}
+          />
+        </Stack>
+
+        <Typography
+          variant="h5"
+          fontWeight={800}
           sx={{
-            position: 'relative',
-            zIndex: 1,
-            width: '100%',
-            maxWidth: { xs: '100%', md: 600 },
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: { xs: 1.5, md: 2 },
+            fontSize: { xs: '1.25rem', sm: '1.45rem', md: '1.6rem' },
+            lineHeight: 1.25,
+            mb: 0.75,
           }}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.45 }}
-          >
-            <Box
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.8,
-                px: 1.8,
-                py: 0.5,
-                borderRadius: '999px',
-                bgcolor: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(4px)',
-              }}
-            >
-              <AutoStoriesIcon sx={{ fontSize: { xs: '1rem', md: '1.2rem' } }} />
-              <Typography
-                variant="overline"
-                sx={{
-                  fontSize: { xs: '0.7rem', md: '0.8rem' },
-                  fontWeight: 700,
-                  letterSpacing: '1.5px',
-                  lineHeight: 1.6,
-                }}
-              >
-                Material da Semana
-              </Typography>
-            </Box>
-          </motion.div>
+          {currentWeekRoute.title || 'Material Semanal do Clubinho'}
+        </Typography>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.45 }}
+        {currentWeekRoute.subtitle && (
+          <Typography
+            variant="subtitle2"
+            sx={{
+              color: '#e0f2fe',
+              fontWeight: 600,
+              fontSize: { xs: '0.9rem', md: '0.98rem' },
+              mb: 1,
+            }}
           >
-            <Typography
-              variant="body2"
-              sx={{
-                fontSize: { xs: '0.85rem', md: '0.95rem' },
-                opacity: 0.9,
-                fontStyle: 'italic',
-                textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
-              }}
-            >
-              {firstName}, a história desta semana já está pronta para o seu Clubinho! 📖
-            </Typography>
-          </motion.div>
+            {currentWeekRoute.subtitle}
+          </Typography>
+        )}
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.4 }}
-          >
-            <Button
-              variant="contained"
-              size="large"
-              component={Link}
-              to="/lista-materias-semanais"
-              endIcon={<ArrowForwardIcon />}
-              sx={{
-                bgcolor: 'white',
-                color: '#0073E6',
-                fontWeight: 'bold',
-                textTransform: 'none',
-                px: { xs: 3, sm: 4, md: 5 },
-                py: { xs: 1.2, md: 1.5 },
-                fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.15rem' },
-                borderRadius: 3,
-                boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
-                '&:hover': {
-                  bgcolor: 'rgba(255,255,255,0.95)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-                },
-                transition: 'all 0.3s ease',
-                minWidth: { xs: 200, md: 240 },
-              }}
-            >
-              Ver Histórias Bíblicas
-            </Button>
-          </motion.div>
-        </Box>
-      </Paper>
-    </motion.div>
+        <Typography
+          variant="body2"
+          sx={{
+            fontSize: { xs: '0.85rem', md: '0.92rem' },
+            color: 'rgba(255,255,255,0.9)',
+          }}
+        >
+          {firstName}, o roteiro, visuais e atividades desta semana já estão prontos para você preparar sua aula! 📖
+        </Typography>
+      </Box>
+
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1.25}
+        sx={{ mt: 2.5, position: 'relative', zIndex: 1, width: { xs: '100%', sm: 'auto' } }}
+      >
+        <Button
+          variant="contained"
+          component={Link}
+          to={lessonPath}
+          endIcon={<ArrowForwardIcon />}
+          sx={{
+            bgcolor: '#ffffff',
+            color: '#0369a1',
+            fontWeight: 800,
+            textTransform: 'none',
+            px: 2.5,
+            py: 1.1,
+            width: { xs: '100%', sm: 'auto' },
+            borderRadius: 2.5,
+            boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
+            '&:hover': {
+              bgcolor: '#f0f9ff',
+              transform: 'translateY(-1px)',
+            },
+          }}
+        >
+          Abrir Material da Semana
+        </Button>
+
+        <Button
+          variant="outlined"
+          component={Link}
+          to="/lista-materias-semanais"
+          startIcon={<LibraryBooksOutlinedIcon />}
+          sx={{
+            color: '#ffffff',
+            borderColor: 'rgba(255,255,255,0.45)',
+            fontWeight: 700,
+            textTransform: 'none',
+            px: 2,
+            py: 1.1,
+            width: { xs: '100%', sm: 'auto' },
+            borderRadius: 2.5,
+            '&:hover': {
+              borderColor: '#ffffff',
+              bgcolor: 'rgba(255,255,255,0.12)',
+            },
+          }}
+        >
+          Ver Todas as Semanas
+        </Button>
+      </Stack>
+    </Paper>
   );
 };
 
