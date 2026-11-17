@@ -1,9 +1,13 @@
-export const MOTIVATION_TEXT = '💬 Que tal aproveitar esta semana para compartilhar o amor de Jesus com as crianças da sua comunidade?';
 
 export interface BibleVerse {
   text: string;
   reference: string;
 }
+
+export const EVANGELISM_VERSE: BibleVerse = {
+  text: 'E não nos cansemos de fazer o bem, porque a seu tempo ceifaremos, se não desfalecermos.',
+  reference: 'Gálatas 6:9',
+};
 
 export const WEEKLY_VERSES: BibleVerse[] = [
   {

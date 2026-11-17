@@ -3,8 +3,9 @@ export interface BannerSectionProps {
   showMeditationBanner: boolean;
 }
 
-export interface MotivationSectionProps {
-  motivationText: string;
+export interface WelcomeSectionProps {
+  userName?: string;
+  showVerse?: boolean;
 }
 
 export interface TeacherContentProps {

@@ -16,12 +16,11 @@ import {
   FofinhoButton,
   SpecialFamilyCallout,
   BannerSection,
-  MotivationSection,
+  WelcomeSection,
   TeacherContent,
-  VerseOfWeekSection,
 } from './components';
 import { useTeacherArea } from './hooks';
-import { MOTIVATION_TEXT, CONTAINER_STYLES } from './constants';
+import { CONTAINER_STYLES } from './constants';
 
 const TeacherArea: React.FC = () => {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -52,9 +51,7 @@ const TeacherArea: React.FC = () => {
         ]}
       />
 
-      {flags[FEATURE.VERSE_OF_WEEK] && <VerseOfWeekSection />}
-
-      <MotivationSection motivationText={MOTIVATION_TEXT} />
+      <WelcomeSection userName={user?.name} showVerse={flags[FEATURE.VERSE_OF_WEEK]} />
 
       <Paper elevation={4} sx={CONTAINER_STYLES.paper}>
         <Typography
