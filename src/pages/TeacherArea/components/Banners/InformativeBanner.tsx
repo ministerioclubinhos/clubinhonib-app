@@ -90,7 +90,7 @@ const InformativeBanner: React.FC = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1.25 }}>
             <Chip
               icon={<CampaignIcon sx={{ color: '#fff !important', fontSize: '1.05rem' }} />}
-              label="Aviso da Coordenação"
+              label="Aviso da Liderança"
               size="small"
               sx={{
                 bgcolor: 'rgba(0,0,0,0.22)',

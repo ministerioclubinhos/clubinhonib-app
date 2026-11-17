@@ -40,8 +40,8 @@ const TeacherAreaHeader: React.FC = () => {
         overflow: 'hidden',
         border: '1px solid #dbe4f0',
         boxShadow: '0 6px 24px rgba(15, 23, 42, 0.06)',
-        background: 'linear-gradient(135deg, #0f2942 0%, #154c79 55%, #1e6091 100%)',
-        color: '#ffffff',
+        background: 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 55%, #ffffff 100%)',
+        color: '#0f2942',
         position: 'relative',
       }}
     >
@@ -53,7 +53,7 @@ const TeacherAreaHeader: React.FC = () => {
           width: 220,
           height: 220,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%)',
+          background: 'radial-gradient(circle, rgba(56,189,248,0.18) 0%, rgba(255,255,255,0) 70%)',
           pointerEvents: 'none',
         }}
       />
@@ -78,11 +78,11 @@ const TeacherAreaHeader: React.FC = () => {
             sx={{
               width: { xs: 50, sm: 60 },
               height: { xs: 50, sm: 60 },
-              bgcolor: 'rgba(255,255,255,0.18)',
-              color: '#fff',
+              bgcolor: '#bae6fd',
+              color: '#0f2942',
               fontWeight: 800,
               fontSize: { xs: '1.2rem', sm: '1.45rem' },
-              border: '2px solid rgba(255,255,255,0.75)',
+              border: '2px solid #ffffff',
               boxShadow: '0 4px 14px rgba(0,0,0,0.22)',
               flexShrink: 0,
             }}
@@ -93,12 +93,12 @@ const TeacherAreaHeader: React.FC = () => {
           <Box sx={{ minWidth: 0 }}>
             <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 0.5 }}>
               <Chip
-                icon={<SchoolIcon sx={{ color: '#fff !important', fontSize: '0.9rem' }} />}
+                icon={<SchoolIcon sx={{ color: '#0369a1 !important', fontSize: '0.9rem' }} />}
                 label="Área do Professor"
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(255,255,255,0.18)',
-                  color: '#fff',
+                  bgcolor: '#bae6fd',
+                  color: '#0c4a6e',
                   fontWeight: 700,
                   fontSize: '0.7rem',
                   height: 22,
@@ -110,7 +110,7 @@ const TeacherAreaHeader: React.FC = () => {
                 size="small"
                 sx={{
                   bgcolor: 'rgba(56, 189, 248, 0.22)',
-                  color: '#e0f2fe',
+                  color: '#0c4a6e',
                   fontWeight: 600,
                   fontSize: '0.7rem',
                   height: 22,
@@ -135,14 +135,14 @@ const TeacherAreaHeader: React.FC = () => {
               variant="body2"
               sx={{
                 display: { xs: 'none', sm: 'block' },
-                color: 'rgba(255,255,255,0.88)',
+                color: '#334155',
                 mt: 0.4,
                 fontSize: { xs: '0.78rem', sm: '0.88rem' },
                 lineHeight: 1.45,
               }}
             >
               Sua sala de preparação, materiais didáticos e acompanhamento do Clubinho •{' '}
-              <Box component="span" sx={{ fontStyle: 'italic', color: '#bae6fd' }}>
+              <Box component="span" sx={{ fontStyle: 'italic', color: '#0369a1' }}>
                 “Apascenta os meus cordeiros.” (João 21:15)
               </Box>
             </Typography>
@@ -166,8 +166,8 @@ const TeacherAreaHeader: React.FC = () => {
                 px: 1.75,
                 py: 1,
                 borderRadius: 2,
-                bgcolor: 'rgba(255,255,255,0.12)',
-                border: '1px solid rgba(255,255,255,0.22)',
+                bgcolor: '#ffffff',
+                border: '1px solid #cfe3f5',
                 backdropFilter: 'blur(8px)',
                 display: 'flex',
                 alignItems: 'center',
@@ -179,20 +179,20 @@ const TeacherAreaHeader: React.FC = () => {
                   width: 34,
                   height: 34,
                   borderRadius: 1.5,
-                  bgcolor: 'rgba(255,255,255,0.2)',
+                  bgcolor: '#e0f2fe',
                   display: 'grid',
                   placeItems: 'center',
                   flexShrink: 0,
                 }}
               >
-                <HomeOutlinedIcon sx={{ fontSize: 19, color: '#fff' }} />
+                <HomeOutlinedIcon sx={{ fontSize: 19, color: '#0369a1' }} />
               </Box>
               <Box>
                 <Typography
                   variant="caption"
                   sx={{
                     display: 'block',
-                    color: 'rgba(255,255,255,0.75)',
+                    color: '#64748b',
                     fontWeight: 700,
                     fontSize: '0.64rem',
                     textTransform: 'uppercase',
@@ -202,12 +202,12 @@ const TeacherAreaHeader: React.FC = () => {
                 >
                   Meu Clubinho
                 </Typography>
-                <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#fff', lineHeight: 1.25 }}>
+                <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#0f2942', lineHeight: 1.25 }}>
                   Clubinho Nº {club.number}
                 </Typography>
                 <Stack direction="row" spacing={0.5} alignItems="center">
-                  <AccessTimeIcon sx={{ fontSize: 12, color: '#bae6fd' }} />
-                  <Typography variant="caption" sx={{ color: '#e0f2fe', fontWeight: 600 }}>
+                  <AccessTimeIcon sx={{ fontSize: 12, color: '#0369a1' }} />
+                  <Typography variant="caption" sx={{ color: '#334155', fontWeight: 600 }}>
                     {weekdayLabel(club.weekday)}
                     {club.time ? ` às ${club.time}` : ''}
                   </Typography>
@@ -220,19 +220,19 @@ const TeacherAreaHeader: React.FC = () => {
                 px: 1.75,
                 py: 1,
                 borderRadius: 2,
-                bgcolor: 'rgba(255,255,255,0.12)',
-                border: '1px solid rgba(255,255,255,0.22)',
+                bgcolor: '#ffffff',
+                border: '1px solid #cfe3f5',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.25,
               }}
             >
-              <HomeOutlinedIcon sx={{ fontSize: 20, color: '#bae6fd' }} />
+              <HomeOutlinedIcon sx={{ fontSize: 20, color: '#0369a1' }} />
               <Box>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.75)', display: 'block', lineHeight: 1.1 }}>
+                <Typography variant="caption" sx={{ color: '#64748b', display: 'block', lineHeight: 1.1 }}>
                   Coordenação
                 </Typography>
-                <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#fff' }}>
+                <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#0f2942' }}>
                   {coordinatorClubs.length} {coordinatorClubs.length === 1 ? 'Clubinho vinculado' : 'Clubinhos vinculados'}
                 </Typography>
               </Box>
@@ -252,8 +252,8 @@ const TeacherAreaHeader: React.FC = () => {
                 size="small"
                 startIcon={<ChildCareIcon />}
                 sx={{
-                  bgcolor: '#ffffff',
-                  color: '#0f2942',
+                  bgcolor: '#154c79',
+                  color: '#ffffff',
                   fontWeight: 800,
                   textTransform: 'none',
                   borderRadius: 2,
@@ -262,7 +262,7 @@ const TeacherAreaHeader: React.FC = () => {
                   flex: { xs: 1, sm: 'none' }, fontSize: { xs: '0.8rem', sm: '0.875rem' }, minHeight: 40,
                   boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
                   '&:hover': {
-                    bgcolor: '#f0f9ff',
+                    bgcolor: '#0f2942',
                   },
                 }}
               >
@@ -276,8 +276,8 @@ const TeacherAreaHeader: React.FC = () => {
               size="small"
               startIcon={<PersonOutlineIcon />}
               sx={{
-                color: '#ffffff',
-                borderColor: 'rgba(255,255,255,0.4)',
+                color: '#154c79',
+                borderColor: '#93c5e8',
                 fontWeight: 700,
                 textTransform: 'none',
                 borderRadius: 2,
@@ -285,8 +285,8 @@ const TeacherAreaHeader: React.FC = () => {
                 py: 0.9,
                 flex: { xs: 1, sm: 'none' }, fontSize: { xs: '0.8rem', sm: '0.875rem' }, minHeight: 40,
                 '&:hover': {
-                  borderColor: '#ffffff',
-                  bgcolor: 'rgba(255,255,255,0.1)',
+                  borderColor: '#154c79',
+                  bgcolor: 'rgba(21,76,121,0.06)',
                 },
               }}
             >

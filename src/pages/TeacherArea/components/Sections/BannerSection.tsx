@@ -59,12 +59,12 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showMeditationBanner }) =
         ) : (
           <>
             {showWeekBanner && (
-              <Grid item xs={12} md={showIdeasBanner ? 7 : 12} sx={itemSx}>
+              <Grid item xs={12} md={showIdeasBanner ? 6 : 12} sx={itemSx}>
                 <TeacherWeekBanner />
               </Grid>
             )}
             {showIdeasBanner && (
-              <Grid item xs={12} md={showWeekBanner ? 5 : 12} sx={itemSx}>
+              <Grid item xs={12} md={showWeekBanner ? 6 : 12} sx={itemSx}>
                 <IdeasSharingBanner variant={showWeekBanner ? 'compact' : 'full'} />
               </Grid>
             )}
