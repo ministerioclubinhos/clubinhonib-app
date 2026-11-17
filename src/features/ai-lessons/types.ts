@@ -162,6 +162,8 @@ export interface Lesson {
   editorialPurpose?: string | null;
   status: LessonStatus;
   weekMaterialId: string | null;
+  /** Presentation image generated with item 1; becomes the route image when published. */
+  coverImageUrl?: string | null;
   publicationFailureMessage?: string | null;
   publicationState?: LessonPublicationState;
   createdAt: string;
@@ -384,6 +386,8 @@ export interface LessonPublicationPreview {
   title: string;
   isSpecial: boolean;
   documentCount: number;
+  /** Image the published route will use; null falls back to the shared card. */
+  coverImageUrl?: string | null;
   weekMaterial: LessonPublicationMaterial | null;
   duplicates: LessonPublicationDuplicate[];
 }

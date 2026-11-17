@@ -82,6 +82,19 @@ export function LessonPublishConfirmDialog({
           <Typography variant="body2" fontWeight={700} sx={{ overflowWrap: 'anywhere' }}>
             {preview.title}
           </Typography>
+          {preview.coverImageUrl ? (
+            <Box
+              component="img"
+              src={preview.coverImageUrl}
+              alt="Imagem de apresentação que a rota vai usar"
+              data-testid="ai-lesson-publish-cover"
+              sx={{ mt: 1, width: 140, maxWidth: '100%', aspectRatio: '3 / 2', objectFit: 'cover', borderRadius: 1.5, display: 'block' }}
+            />
+          ) : (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
+              Esta lição não tem imagem de apresentação: a rota usará o card padrão.
+            </Typography>
+          )}
         </Box>
       )}
 

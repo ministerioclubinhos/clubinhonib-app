@@ -8,12 +8,13 @@ import {
 import { lessonStageDescription, lessonStageLabel } from '../../presentation.utils';
 import { PRODUCTION_STAGE_CARD_ID, PRODUCTION_TEXTS } from '../../production.constants';
 import type { ProductionStageCardProps } from '../../production.types';
-import { LessonCategory, LessonStageType } from '../../types';
+import { LessonCategory, LessonStageType, LessonStatus } from '../../types';
 import { LessonCommentsPanel } from '../LessonCommentsPanel';
 import { LessonStageContentViewer } from '../LessonStageContentViewer';
 import { StoryVisualConfiguration } from '../StoryVisualConfiguration';
 import { useImageRegeneration } from '../../useImageRegeneration';
 import { ImageRegenerationDialog } from '../generation/ImageRegenerationDialog';
+import { LessonCoverPreview } from './LessonCoverPreview';
 import { ProductionStageActions } from './ProductionStageActions';
 import { ProductionStageGuidance } from './ProductionStageGuidance';
 
@@ -118,6 +119,15 @@ export function ProductionStageCard({
           onResolve={onResolveComment}
           resolvingId={resolvingCommentId}
         />
+
+        {stage.type === LessonStageType.LESSON && hasVersion && (
+          <LessonCoverPreview
+            lessonId={lesson.id}
+            coverImageUrl={lesson.coverImageUrl}
+            locked={[LessonStatus.PUBLISHED, LessonStatus.ARCHIVED].includes(lesson.status)}
+            busy={workflow.stageGenerating || workflow.generationLocked}
+          />
+        )}
 
         {stage.type === LessonStageType.LESSON_VISUALS ? (
           <StoryVisualConfiguration

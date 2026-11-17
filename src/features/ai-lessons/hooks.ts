@@ -189,6 +189,14 @@ export function useGenerateStage() {
       client.invalidateQueries({ queryKey: aiLessonsKeys.detail(value.id) }),
   });
 }
+export function useRegenerateLessonCover() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: aiLessonsService.regenerateCover,
+    onSuccess: (lesson) => updateLesson(client, lesson),
+    onSettled: (_, __, id) => client.invalidateQueries({ queryKey: aiLessonsKeys.detail(id) }),
+  });
+}
 export function useRegenerateStageImages() {
   const client = useQueryClient();
   return useMutation({

@@ -101,6 +101,27 @@ export const PRODUCTION_CONFIRM_COPY: Record<ProductionConfirmationKind, Product
   },
 };
 
+/** Presentation image of the lesson, shown with item 1. */
+export const LESSON_COVER_TEXTS = {
+  title: 'Imagem de apresentação',
+  caption: 'Capa do material publicado',
+  description:
+    'Ilustração com o título curto e o personagem principal da lição. Ela será a imagem do card do material quando a lição for publicada. Gerar outra imagem substitui esta e não altera nenhum item.',
+  empty: 'Ainda sem imagem. Gere uma para o card do material.',
+  alt: 'Imagem de apresentação da lição',
+  view: 'Ver',
+  viewLabel: 'Ver a imagem de apresentação',
+  generate: 'Gerar imagem',
+  regenerate: 'Gerar outra imagem',
+  generating: 'Gerando…',
+  generatingHint: 'A imagem leva alguns segundos. Você pode continuar aqui.',
+  openOriginal: 'Abrir em tamanho original',
+  close: 'Fechar',
+  published: 'Lição publicada: a imagem da rota já foi definida e não pode mais ser trocada.',
+  busy: 'Aguarde a geração em andamento para gerar a imagem.',
+  error: 'Não foi possível gerar a imagem de apresentação.',
+} as const;
+
 export const PRODUCTION_TEXTS = {
   back: 'Voltar para Produção de Lições',
   backFromError: 'Voltar para lições',

@@ -78,6 +78,14 @@ export const aiLessonsService = {
   async generateStage(id: string, payload: RegenerateSectionPayload): Promise<Lesson> {
     return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/generate`, payload)).data;
   },
+  async regenerateCover(id: string): Promise<Lesson> {
+    return (
+      await apiAxios.post<Lesson>(`${endpoint}/${id}/cover/regenerate`, undefined, {
+        // The cover panel shows the refusal next to the button.
+        skipGlobalError: true,
+      })
+    ).data;
+  },
   async regenerateStageImages(id: string, payload: RegenerateStageImagesPayload): Promise<Lesson> {
     return (
       await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/regenerate-images`, payload, {

@@ -246,6 +246,24 @@ Na revisão final, pacotes PACKAGE_READY exibem “Iniciar revisão”. A ação
 
 The manual-work producer and reviewer use the same `ManualWorkPreview`, sourced from the current version's `printableAssets`, verse text and verse reference. Both display two vertically stacked copies, each with a black outer frame, matching the PDF composition; missing artwork produces an explicit empty state. Previewing never regenerates or recolors the approved artwork.
 
+## Estúdio: imagem de apresentação da lição
+
+(2026-11-17) Ao gerar o item 1 (Lição completa), a API também cria uma
+ilustração horizontal 3:2 que mistura um **título curto** (até 4 palavras,
+simplificado quando o tema é longo) com o **personagem principal** da lição, e
+a guarda em `Lesson.coverImageUrl`. Ela só é usada como imagem da rota de
+materiais semanais ou especiais publicados.
+
+Na produção do item 1, `LessonCoverPreview` é discreto: uma miniatura com o
+rótulo "Imagem de apresentação" e o botão "Ver". Ele abre um diálogo com a
+imagem ampliada, o link "Abrir em tamanho original" e o botão "Gerar outra
+imagem" (`POST /lessons/:id/cover/regenerate`, `useRegenerateLessonCover`), que
+substitui a imagem sem alterar nenhum item. O botão fica bloqueado durante uma
+geração e em lição publicada ou arquivada, cuja rota já exibe a imagem. O
+diálogo de publicação mostra a mesma imagem (ou avisa que a rota usará o card
+padrão). Lições com o item 1 anterior ao recurso começam sem imagem e podem
+gerá-la.
+
 ## Estúdio: revisão, aprovação e publicação
 
 **Marcas técnicas.** A descrição salva de um material pode conter
