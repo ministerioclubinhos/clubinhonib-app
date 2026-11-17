@@ -1,163 +1,70 @@
 import React from 'react';
-import { Box, Container, Typography, Paper, Tabs, Tab, useTheme, useMediaQuery } from '@mui/material';
-import { Dashboard, CalendarMonth, EventBusy, Assessment } from '@mui/icons-material';
+import { PAGE_WIDTH } from './constants';
+import { Box, Button, Container, Paper, Typography, useTheme } from '@mui/material';
+import { EventBusy } from '@mui/icons-material';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ControlDashboard, PeriodManagement, ExceptionManagement } from './components';
+import { Link as RouterLink } from 'react-router-dom';
+import { ControlDashboard } from './components';
 import { queryClient } from '../../config/queryClient';
+import { CLUB_CONTROL_TEXTS } from './constants';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
-  return (
-    <div data-testid="club-control-club-control-page-tab-panel" role="tabpanel" hidden={value !== index}>
-      {value === index && <Box sx={{ py: { xs: 2, sm: 3 } }}>{children}</Box>}
-    </div>
-  );
-};
-
+/**
+ * Controle de pagelas: só a conferência da semana. O período letivo e os dias
+ * sem clubinho têm tela própria (`/adm/periodo-letivo`) — o controle só aponta
+ * para lá.
+ */
 const ClubControlPageContent: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [tabValue, setTabValue] = React.useState(0);
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
 
   return (
-    <Container data-testid="club-control-club-control-page-club-control-page-content" maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>
-      
+    <Container
+      data-testid="club-control-club-control-page-club-control-page-content"
+      maxWidth={false}
+      sx={{ py: { xs: 2, sm: 4 }, px: 0, width: PAGE_WIDTH }}
+    >
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 1.5, sm: 2.5, md: 3 },
-          mb: { xs: 2, sm: 3 },
+          p: { xs: 1.5, sm: 2.5 },
+          mb: { xs: 1.5, sm: 3 },
           borderRadius: 3,
           background: `linear-gradient(135deg, ${theme.palette.primary.main}20 0%, ${theme.palette.secondary.main}20 100%)`,
-          border: `2px solid ${theme.palette.primary.main}40`,
+          border: `1px solid ${theme.palette.primary.main}40`,
+          display: 'flex',
+          alignItems: { xs: 'stretch', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 1.5,
         }}
       >
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: { xs: 'flex-start', sm: 'center' }, 
-          gap: { xs: 1.5, sm: 2 }, 
-          mb: { xs: 1.5, sm: 2 },
-          flexDirection: { xs: 'column', sm: 'row' }
-        }}>
-          <Dashboard sx={{ 
-            fontSize: { xs: 28, sm: 36, md: 40 }, 
-            color: theme.palette.primary.main,
-            flexShrink: 0
-          }} />
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography 
-              variant="h4" 
-              fontWeight="bold"
-              sx={{ 
-                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' },
-                mb: { xs: 0.5, sm: 0 }
-              }}
-            >
-              🎯 Módulo de Controle
-            </Typography>
-            <Typography 
-              variant="body2" 
-              color="text.secondary"
-              sx={{ 
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                lineHeight: { xs: 1.4, sm: 1.5 }
-              }}
-            >
-              Sistema de controle e verificação de pagelas por clube - Garantindo que nenhuma criança fique sem ser atendida
-            </Typography>
-          </Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="h1" fontWeight={800} sx={{ fontSize: { xs: '1.25rem', sm: '1.75rem' } }}>
+            {CLUB_CONTROL_TEXTS.title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {CLUB_CONTROL_TEXTS.intro}
+          </Typography>
         </Box>
-
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant={isMobile ? 'scrollable' : 'fullWidth'}
-          scrollButtons={isMobile ? 'auto' : false}
-          sx={{
-            bgcolor: 'white',
-            borderRadius: 2,
-            mt: { xs: 1.5, sm: 2 },
-            '& .MuiTab-root': {
-              fontWeight: 600,
-              textTransform: 'none',
-              fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-              minHeight: { xs: 48, sm: 72 },
-              px: { xs: 1, sm: 2 },
-            },
-            '& .MuiTab-iconWrapper': {
-              fontSize: { xs: 18, sm: 20, md: 24 },
-            },
-          }}
+        <Button
+          component={RouterLink}
+          to="/adm/periodo-letivo"
+          variant="outlined"
+          startIcon={<EventBusy />}
+          data-testid="club-control-go-to-calendar"
+          sx={{ minHeight: 44, fontWeight: 700, flexShrink: 0 }}
         >
-          <Tab 
-            icon={<Assessment />} 
-            iconPosition="start" 
-            label={isMobile ? "Painel" : "Painel de Controle"}
-            sx={{ 
-              '& .MuiTab-label': {
-                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-              }
-            }}
-          />
-          <Tab 
-            icon={<CalendarMonth />} 
-            iconPosition="start" 
-            label={isMobile ? "Períodos" : "Períodos Letivos"}
-            sx={{ 
-              '& .MuiTab-label': {
-                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-              }
-            }}
-          />
-          <Tab 
-            icon={<EventBusy />} 
-            iconPosition="start" 
-            label={isMobile ? "Exceções" : "Exceções (Dias sem Clube)"}
-            sx={{ 
-              '& .MuiTab-label': {
-                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-              }
-            }}
-          />
-        </Tabs>
+          {CLUB_CONTROL_TEXTS.calendarLink}
+        </Button>
       </Paper>
 
-      <TabPanel value={tabValue} index={0}>
-        <Box sx={{ px: { xs: 0, sm: 0 } }}>
-          <ControlDashboard />
-        </Box>
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={1}>
-        <Box sx={{ px: { xs: 0, sm: 0 } }}>
-          <PeriodManagement />
-        </Box>
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={2}>
-        <Box sx={{ px: { xs: 0, sm: 0 } }}>
-          <ExceptionManagement />
-        </Box>
-      </TabPanel>
+      <ControlDashboard />
     </Container>
   );
 };
 
-const ClubControlPage: React.FC = () => {
-  return (
-    <QueryClientProvider data-testid="club-control-club-control-page" client={queryClient}>
-      <ClubControlPageContent />
-    </QueryClientProvider>
-  );
-};
+const ClubControlPage: React.FC = () => (
+  <QueryClientProvider data-testid="club-control-club-control-page" client={queryClient}>
+    <ClubControlPageContent />
+  </QueryClientProvider>
+);
 
 export default ClubControlPage;

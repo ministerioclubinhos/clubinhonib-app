@@ -9,6 +9,8 @@ export interface RoleConfig {
     gradient: string;
     color: string;
     label: string;
+    /** Rótulo no plural, para totais. */
+    pluralLabel: string;
     icon: React.ReactElement;
     bgLight: string;
 }
@@ -24,6 +26,7 @@ export const roleConfig: Record<string, RoleConfig> = {
         gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: '#764ba2',
         label: 'Admin',
+        pluralLabel: 'Admins',
         icon: <AdminIcon sx={{ fontSize: 14 }} />,
         bgLight: 'rgba(118, 75, 162, 0.08)',
     },
@@ -31,6 +34,7 @@ export const roleConfig: Record<string, RoleConfig> = {
         gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
         color: '#f5576c',
         label: 'Coordenador',
+        pluralLabel: 'Coordenadores',
         icon: <LeaderIcon sx={{ fontSize: 14 }} />,
         bgLight: 'rgba(245, 87, 108, 0.08)',
     },
@@ -38,6 +42,7 @@ export const roleConfig: Record<string, RoleConfig> = {
         gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
         color: '#4facfe',
         label: 'Professor',
+        pluralLabel: 'Professores',
         icon: <MemberIcon sx={{ fontSize: 14 }} />,
         bgLight: 'rgba(79, 172, 254, 0.08)',
     },

@@ -108,8 +108,13 @@ test.describe("buildChildrenQuery", () => {
   test("usa a ordenação padrão aceita pela API", () => {
     const params = buildChildrenQuery({ page: 1, limit: 12 });
 
-    expect(params.orderBy).toBe("name");
-    expect(params.order).toBe("ASC");
+    // As crianças mais assíduas primeiro; pedir outra ordem continua valendo.
+    expect(params.orderBy).toBe("attendance");
+    expect(params.order).toBe("DESC");
+
+    const byName = buildChildrenQuery({ page: 1, limit: 12, orderBy: "name", order: "ASC" });
+    expect(byName.orderBy).toBe("name");
+    expect(byName.order).toBe("ASC");
   });
 
   test("envia os filtros preenchidos", () => {

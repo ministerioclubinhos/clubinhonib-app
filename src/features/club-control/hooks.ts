@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { clubControlApi } from './api';
-import type { CreateAcademicPeriodDto, CreateWeekdayExceptionDto } from './types';
+import { clubControlApi, type CheckWeekParams } from './api';
+import type { CreateAcademicPeriodDto, CreateWeekdayExceptionDto, WeekListFilters } from './types';
 
 export const useControlDashboard = (page: number = 1, limit: number = 20) => {
   return useQuery({
@@ -18,11 +18,17 @@ export const useControlDashboard = (page: number = 1, limit: number = 20) => {
   });
 };
 
-export const useWeekCheck = (year?: number, week?: number, page: number = 1, limit: number = 50) => {
+export const useWeekCheck = (
+  year?: number,
+  week?: number,
+  page: number = 1,
+  limit: number = 50,
+  filters: WeekListFilters = {},
+) => {
   return useQuery({
-    queryKey: ['weekCheck', year, week, page, limit],
+    queryKey: ['weekCheck', year, week, page, limit, filters],
     queryFn: async () => {
-      const params: { year?: number; week?: number; page?: number; limit?: number } = { page, limit };
+      const params: CheckWeekParams = { page, limit, ...filters };
       if (year !== undefined && week !== undefined) {
         params.year = year;
         params.week = week;
@@ -30,9 +36,9 @@ export const useWeekCheck = (year?: number, week?: number, page: number = 1, lim
       const response = await clubControlApi.checkWeek(params);
       return response.data;
     },
-    enabled: true, 
-    staleTime: 0, 
-    gcTime: 0, 
+    enabled: true,
+    staleTime: 0,
+    gcTime: 0,
     refetchOnWindowFocus: false,
     retry: 1,
     retryDelay: 1000,

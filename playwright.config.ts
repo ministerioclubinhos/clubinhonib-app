@@ -39,6 +39,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     locale: 'pt-BR',
     timezoneId: 'America/Sao_Paulo',
+    // Os gráficos animam; nos testes aparecem direto no valor final.
+    reducedMotion: 'reduce',
   },
   projects: [
     /**

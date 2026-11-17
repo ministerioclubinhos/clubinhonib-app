@@ -507,3 +507,11 @@ export interface CreateWeekdayExceptionDto {
   isRecurrent?: boolean;
   notes?: string;
 }
+
+/** Filtros da lista de clubinhos da semana; vão para o back, que filtra e pagina. */
+export interface WeekListFilters {
+  status?: string;
+  severity?: string;
+  weekday?: string;
+  hasProblems?: boolean;
+}

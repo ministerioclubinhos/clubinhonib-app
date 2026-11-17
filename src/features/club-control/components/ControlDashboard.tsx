@@ -8,12 +8,15 @@ import {
   CircularProgress,
   Button,
   useTheme,
+  useMediaQuery,
   Grid2,
   Chip,
   Collapse,
 } from '@mui/material';
 import { Refresh, Block, PersonOff, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useWeekCheck, useCurrentWeek } from '../hooks';
+import { CLUBS_PAGE_SIZE } from '../constants';
+import type { WeekListFilters } from '../types';
 import { ClubsListTable } from './ClubsListTable';
 import { NoClubsMessage } from './NoClubsMessage';
 import { WeekNavigationHeader } from './WeekNavigationHeader';
@@ -75,12 +78,24 @@ export const ControlDashboard: React.FC = () => {
   const [expandedClubs, setExpandedClubs] = React.useState<Set<string>>(new Set());
   const [expandedInactiveInfo, setExpandedInactiveInfo] = React.useState(false);
   const [clubsPage, setClubsPage] = React.useState(1);
-  const [clubsLimit, setClubsLimit] = React.useState(50);
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [clubsLimit, setClubsLimit] = React.useState<number>(
+    isMobile ? CLUBS_PAGE_SIZE.mobile : CLUBS_PAGE_SIZE.desktop,
+  );
   
   const [statusFilter, setStatusFilter] = React.useState<string>('all');
   const [severityFilter, setSeverityFilter] = React.useState<string>('all');
   const [weekdayFilter, setWeekdayFilter] = React.useState<string>('all');
   const [hasProblemsFilter, setHasProblemsFilter] = React.useState<boolean | null>(null);
+  const listFilters = React.useMemo<WeekListFilters>(
+    () => ({
+      ...(statusFilter !== 'all' && { status: statusFilter }),
+      ...(severityFilter !== 'all' && { severity: severityFilter }),
+      ...(weekdayFilter !== 'all' && { weekday: weekdayFilter }),
+      ...(hasProblemsFilter !== null && { hasProblems: hasProblemsFilter }),
+    }),
+    [statusFilter, severityFilter, weekdayFilter, hasProblemsFilter],
+  );
   
   const { 
     data, 
@@ -91,7 +106,8 @@ export const ControlDashboard: React.FC = () => {
     academicYear !== null ? academicYear : undefined, 
     academicWeek !== null ? academicWeek : undefined, 
     clubsPage, 
-    clubsLimit
+    clubsLimit,
+    listFilters,
   );
   
   React.useEffect(() => {
@@ -138,46 +154,21 @@ export const ControlDashboard: React.FC = () => {
     setExpandedClubs(new Set());
   }, [academicYear, academicWeek]);
 
-  const filteredClubs = React.useMemo(() => {
-    if (!data?.clubs) return [];
-    
-    let filtered = [...data.clubs];
+  // O back já devolve a lista filtrada e paginada.
+  // Outra semana também recomeça da primeira página.
+  React.useEffect(() => {
+    setClubsPage(1);
+    setExpandedClubs(new Set());
+  }, [academicYear, academicWeek]);
 
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(club => club.status === statusFilter);
-    }
+  // Mudar o filtro volta para a primeira página: a lista nova pode ser menor que a atual.
+  function changeFilter(apply: () => void) {
+    apply();
+    setClubsPage(1);
+    setExpandedClubs(new Set());
+  }
 
-    if (severityFilter !== 'all') {
-      filtered = filtered.filter(club => {
-        if (!club.indicators || club.indicators.length === 0) return false;
-        return club.indicators.some(ind => ind.severity === severityFilter);
-      });
-    }
-
-    if (weekdayFilter !== 'all') {
-      filtered = filtered.filter(club => {
-        const clubWeekday = (club.weekday || '').toLowerCase();
-        return clubWeekday === weekdayFilter.toLowerCase();
-      });
-    }
-
-    if (hasProblemsFilter !== null) {
-      if (hasProblemsFilter) {
-        filtered = filtered.filter(club => 
-          club.status !== 'ok' && 
-          club.status !== 'pending' &&
-          club.status !== 'exception' && 
-          club.status !== 'out_of_period'
-        );
-      } else {
-        filtered = filtered.filter(club => club.status === 'ok');
-      }
-    }
-
-    return filtered;
-  }, [data?.clubs, statusFilter, severityFilter, weekdayFilter, hasProblemsFilter]);
-
-  const clubsToDisplay = filteredClubs;
+  const clubsToDisplay = data?.clubs ?? [];
 
   const currentWeekData = data?.currentWeek || currentWeekInfo;
 
@@ -454,10 +445,10 @@ export const ControlDashboard: React.FC = () => {
           severityFilter={severityFilter}
           weekdayFilter={weekdayFilter}
           hasProblemsFilter={hasProblemsFilter}
-          onStatusFilterChange={setStatusFilter}
-          onSeverityFilterChange={setSeverityFilter}
-          onWeekdayFilterChange={setWeekdayFilter}
-          onHasProblemsFilterChange={setHasProblemsFilter}
+          onStatusFilterChange={(value) => changeFilter(() => setStatusFilter(value))}
+          onSeverityFilterChange={(value) => changeFilter(() => setSeverityFilter(value))}
+          onWeekdayFilterChange={(value) => changeFilter(() => setWeekdayFilter(value))}
+          onHasProblemsFilterChange={(value) => changeFilter(() => setHasProblemsFilter(value))}
           clubsPage={clubsPage}
           clubsLimit={clubsLimit}
           onPageChange={setClubsPage}

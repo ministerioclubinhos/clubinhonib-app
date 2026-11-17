@@ -28,9 +28,8 @@ test.describe('Controle de clubinhos: edição de período', () => {
   });
 
   test('edita a descrição pelo diálogo', async ({ page }) => {
-    await page.goto('/adm/controle-clubinhos');
-    await expect(page.getByTestId('club-control-club-control-page-club-control-page-content')).toBeVisible();
-    await page.getByRole('tab', { name: /Períodos/ }).click();
+    await page.goto('/adm/periodo-letivo');
+    await expect(page.getByTestId('academic-calendar-page')).toBeVisible();
     await expect(page.getByTestId('club-control-period-management')).toBeVisible();
 
     const row = page.getByText(String(year), { exact: false }).locator('xpath=ancestor::*[self::tr or contains(@class,"MuiCard-root") or contains(@class,"MuiPaper-root")][1]').first();

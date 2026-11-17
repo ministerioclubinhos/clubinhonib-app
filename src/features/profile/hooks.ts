@@ -5,7 +5,11 @@ import { useAbortController, useDebouncedValue } from "@/hooks";
 import type { RootState } from "@/store/slices";
 import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
 
-import { apiFetchProfileBirthdays, apiFetchProfiles } from "./api";
+import {
+  apiFetchProfileBirthdays,
+  apiFetchProfiles,
+  apiFetchProfilesSummary,
+} from "./api";
 import {
   PROFILES_DEFAULT_LIMIT,
   PROFILES_DEFAULT_SORT,
@@ -20,6 +24,7 @@ import type {
   ProfileBirthday,
   ProfilesPaginationMeta,
   ProfilesQueryParams,
+  ProfilesSummary,
   UserPreferences,
 } from "./types";
 
@@ -114,7 +119,12 @@ export function useProfileAlerts(): ProfileAlert[] {
 /** Filtros da listagem administrativa de perfis. */
 export type ProfilesFilters = Pick<
   ProfilesQueryParams,
-  "role" | "loveLanguages" | "temperaments" | "favoriteColor"
+  | "role"
+  | "loveLanguages"
+  | "temperaments"
+  | "favoriteColor"
+  | "gender"
+  | "birthMonth"
 >;
 
 /** Ordenação da listagem administrativa de perfis. */
@@ -239,4 +249,38 @@ export function useProfileBirthdays(reloadToken = 0) {
   );
 
   return { ...groups, loading };
+}
+
+/**
+ * Totais do topo da tela.
+ *
+ * Como a faixa de aniversariantes, é acessória: se falhar, a tela segue sem os
+ * indicadores.
+ */
+export function useProfilesSummary(reloadToken = 0) {
+  const [summary, setSummary] = useState<ProfilesSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    const run = async () => {
+      setLoading(true);
+      try {
+        const data = await apiFetchProfilesSummary();
+        if (active) setSummary(data);
+      } catch {
+        if (active) setSummary(null);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void run();
+    return () => {
+      active = false;
+    };
+  }, [reloadToken]);
+
+  return { summary, loading };
 }

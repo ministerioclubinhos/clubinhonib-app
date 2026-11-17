@@ -7,6 +7,8 @@ import {
   Grid2,
   useTheme,
   Button,
+  Collapse,
+  Badge,
   TablePagination,
   FormControl,
   InputLabel,
@@ -14,9 +16,9 @@ import {
   MenuItem,
   useMediaQuery,
 } from '@mui/material';
-import {
-} from '@mui/icons-material';
+import { FilterList } from '@mui/icons-material';
 import type { ClubCheckResult, WeekCheckResult } from '../types';
+import { CLUBS_PAGE_SIZE_OPTIONS } from '../constants';
 import ClubsListDesktopTable from './ClubsListDesktopTable';
 import ClubsListMobileCards from './ClubsListMobileCards';
 import {
@@ -68,6 +70,12 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
+  const activeFilters =
+    Number(statusFilter !== 'all') +
+    Number(severityFilter !== 'all') +
+    Number(weekdayFilter !== 'all') +
+    Number(hasProblemsFilter !== null);
 
   // Rótulo e gravidade vêm de `utils.ts`; aqui ficam só as escolhas visuais.
   return (
@@ -90,8 +98,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
         <Chip
           label={
             (statusFilter !== 'all' || severityFilter !== 'all' || weekdayFilter !== 'all' || hasProblemsFilter !== null)
-              ? `${clubs.length} de ${data?.clubs?.length || 0} clubinhos (filtrados)`
-              : `${data?.clubs?.length || 0} de ${data?.pagination?.total || 0} clubinhos`
+              ? `${data?.pagination?.total ?? clubs.length} clubinho(s) com esses filtros`
+              : `${data?.pagination?.total ?? clubs.length} clubinhos`
           }
           sx={{
             bgcolor: 'white',
@@ -109,9 +117,25 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Grid2 container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
+        {isMobile && (
+          <Button
+            data-testid="club-control-filters-toggle"
+            onClick={() => setFiltersOpen((open) => !open)}
+            aria-expanded={filtersOpen}
+            startIcon={
+              <Badge badgeContent={activeFilters} color="primary">
+                <FilterList />
+              </Badge>
+            }
+            sx={{ minHeight: 44, fontWeight: 800 }}
+          >
+            {filtersOpen ? 'Esconder filtros' : 'Filtros'}
+          </Button>
+        )}
+        <Collapse in={!isMobile || filtersOpen} timeout="auto">
+        <Grid2 container spacing={{ xs: 1.5, sm: 2 }} alignItems="center" sx={{ pt: { xs: 1, md: 0 } }}>
           <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" data-testid="club-control-filter-status">
               <InputLabel>Status</InputLabel>
               <Select
                 value={statusFilter}
@@ -130,7 +154,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
             </FormControl>
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" data-testid="club-control-filter-severity">
               <InputLabel>Severidade</InputLabel>
               <Select
                 value={severityFilter}
@@ -146,7 +170,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
             </FormControl>
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" data-testid="club-control-filter-weekday">
               <InputLabel>Dia da Semana</InputLabel>
               <Select
                 value={weekdayFilter}
@@ -164,7 +188,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
             </FormControl>
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" data-testid="club-control-filter-problems">
               <InputLabel>Problemas</InputLabel>
               <Select
                 value={hasProblemsFilter === null ? 'all' : hasProblemsFilter ? 'problems' : 'ok'}
@@ -181,6 +205,7 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
             </FormControl>
           </Grid2>
         </Grid2>
+        </Collapse>
 
         {(statusFilter !== 'all' || severityFilter !== 'all' || weekdayFilter !== 'all' || hasProblemsFilter !== null) && (
           <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -271,8 +296,8 @@ export const ClubsListTable: React.FC<ClubsListTableProps> = ({
               onPageChange(1);
               onExpandedClubsReset();
             }}
-            rowsPerPageOptions={[20, 50, 100]}
-            labelRowsPerPage="Clubinhos por página:"
+            rowsPerPageOptions={isMobile ? [...CLUBS_PAGE_SIZE_OPTIONS.mobile] : [...CLUBS_PAGE_SIZE_OPTIONS.desktop]}
+            labelRowsPerPage={isMobile ? 'Por página:' : 'Clubinhos por página:'}
             labelDisplayedRows={({ from, to, count }) =>
               `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
             }

@@ -423,6 +423,7 @@ export interface OverviewStatsResponseDto {
     };
   };
   indicators?: {
+    currentAcademicWeek?: { year: number; week: number } | null;
     clubsWithLowAttendance: number;
     childrenWithLowEngagement: number;
     clubsMissingPagelas: number;
@@ -587,7 +588,7 @@ export interface ChildrenStatsResponseDto {
     byAgeGroup: Array<{ ageGroup: string; count: number; percentage: number }>;
     byClub: Array<{ clubId: string; clubNumber: number; count: number }>;
     byCity: Array<{ city: string; state: string; count: number }>;
-    byParticipationTime: Array<{ timeRange: string; count: number }>;
+    byParticipationTime: Array<{ timeRange: string; count: number; percentage: number }>;
   };
   children: ChildStat[];
   pagination: PaginationInfo;
@@ -768,4 +769,26 @@ export interface WeeklyAttendanceDto {
     endDate: string;
   };
   note?: string;
+}
+
+/** Recorte que a tela monta: o filtro de período e a busca, além dos filtros de pagela. */
+export type StatisticsContextFilters = PagelasStatsQueryDto & {
+  period?: PeriodShortcut;
+  search?: string;
+};
+
+/** O que o aviso de variação semanal precisa de uma coluna do gráfico. */
+export interface WeekColumnLike {
+  value: number;
+}
+
+/** Um aviso da página: o que está acontecendo e quem está nessa situação. */
+export interface AttentionItem {
+  key: string;
+  title: string;
+  detail?: string;
+  names?: string[];
+  severity?: 'warning' | 'error' | 'info';
+  actionLabel?: string;
+  onAction?: () => void;
 }

@@ -17,7 +17,7 @@ import StarIcon from '@mui/icons-material/Star';
 import { motion } from 'framer-motion';
 
 import type { CompleteProfile } from '../types';
-import { calculateAge, formatBirthDateShort, getBirthdayStatus, getInitials } from '../utils';
+import { calculateAge, formatBirthDateShort, getBirthdayStatus, getInitials, isProfileIncomplete } from '../utils';
 import { getGenderStyle, roleConfig } from './profileStyles';
 
 interface ProfileCardProps {
@@ -33,6 +33,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, index, onClick }) =>
   const birthdayStatus = getBirthdayStatus(profile.personalData?.birthDate);
   const age = calculateAge(profile.personalData?.birthDate);
   const isBirthdayToday = birthdayStatus === 'today';
+  const incomplete = isProfileIncomplete(profile);
 
   return (
     <motion.article
@@ -41,8 +42,17 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, index, onClick }) =>
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
       whileHover={{ y: -4 }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Abrir perfil de ${profile.name}`}
       onClick={onClick}
-      style={{ height: '100%', cursor: 'pointer' }}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      style={{ height: '100%', cursor: 'pointer', outline: 'none' }}
     >
       <Paper
         elevation={0}
@@ -65,7 +75,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, index, onClick }) =>
             borderColor: isBirthdayToday ? '#f6416c' : genderStyle.color,
             boxShadow: `0 10px 28px ${alpha(genderStyle.color, 0.22)}`,
           },
-          '&:focus-within': {
+          '&:focus-within, article:focus-visible &': {
             borderColor: genderStyle.color,
             boxShadow: `0 0 0 3px ${alpha(genderStyle.color, 0.2)}`,
           },
@@ -162,6 +172,15 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, index, onClick }) =>
         </Stack>
 
         {/* Preference Chips */}
+        {incomplete && (
+          <Chip
+            label="Perfil incompleto"
+            size="small"
+            color="warning"
+            variant="outlined"
+            sx={{ alignSelf: 'flex-start', height: 20, fontSize: '0.62rem', fontWeight: 700, mt: 'auto', mb: profile.preferences ? 0.75 : 0 }}
+          />
+        )}
         {profile.preferences && (
           <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ gap: 0.5, mt: 'auto' }}>
             {profile.preferences.temperaments && (

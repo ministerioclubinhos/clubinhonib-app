@@ -142,6 +142,9 @@ export const ClubWeeklySummaryPage = lazyWithRetry(
   () => import('@/features/club-weekly-summary/ClubWeeklySummaryPage')
 );
 export const StatisticsPage = lazyWithRetry(() => import('@/features/statistics/StatisticsPage'));
+export const AcademicCalendarPage = lazyWithRetry(
+  () => import('@/features/club-control/AcademicCalendarPage')
+);
 export const ClubControlPage = lazyWithRetry(
   () => import('@/features/club-control/ClubControlPage')
 );

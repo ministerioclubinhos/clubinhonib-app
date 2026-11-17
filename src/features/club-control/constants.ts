@@ -80,3 +80,38 @@ export const SUGGESTED_HOLIDAYS: SuggestedHoliday[] = [
   { date: '2025-11-15', label: 'Proclamação', recurrent: true },
   { date: '2025-11-20', label: 'Consciência Negra', recurrent: true },
 ];
+
+/** As abas da tela do calendário do clubinho (`?aba=`). */
+export enum AcademicCalendarTab {
+  Periods = 'periodo',
+  Exceptions = 'excecoes',
+}
+
+export const ACADEMIC_CALENDAR_DEFAULT_TAB = AcademicCalendarTab.Periods;
+export const ACADEMIC_CALENDAR_TAB_PARAM = 'aba';
+
+export const ACADEMIC_CALENDAR_TEXTS = {
+  title: 'Período letivo e dias sem clubinho',
+  intro:
+    'Defina quando o ano do clubinho começa e termina e marque os dias em que não haverá clubinho. O controle de pagelas usa essas datas para saber quando uma pagela é esperada.',
+  periodsTab: 'Período letivo',
+  exceptionsTab: 'Dias sem clubinho',
+  menuLabel: 'Período letivo',
+  menuDescription: 'Datas do ano letivo e dias sem clubinho.',
+} as const;
+
+export const CLUB_CONTROL_TEXTS = {
+  title: 'Controle de pagelas',
+  intro: 'Veja, semana a semana, quais clubinhos já lançaram as pagelas e quais ainda faltam.',
+  calendarLink: 'Período letivo e dias sem clubinho',
+} as const;
+
+/** Clubinhos por página na lista da semana: poucos no celular, mais no computador. */
+export const CLUBS_PAGE_SIZE = { mobile: 6, desktop: 20 } as const;
+export const CLUBS_PAGE_SIZE_OPTIONS = {
+  mobile: [6, 12, 24],
+  desktop: [20, 50, 100],
+} as const;
+
+/** A tela de controle ocupa quase toda a largura: 98% no celular e 95% no computador. */
+export const PAGE_WIDTH = { xs: '98%', md: '95%' } as const;

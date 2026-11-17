@@ -5,7 +5,7 @@ export interface PeriodDates {
   endDate: string;
 }
 
-export function getPeriodDates(period: PeriodShortcut | undefined, customStart?: string, customEnd?: string): PeriodDates | undefined {
+export function getPeriodDates(period: PeriodShortcut | undefined, customStart?: string, customEnd?: string, now: Date = new Date()): PeriodDates | undefined {
   if (!period || period === 'custom') {
     
     if (customStart && customEnd) {
@@ -14,7 +14,6 @@ export function getPeriodDates(period: PeriodShortcut | undefined, customStart?:
     return undefined;
   }
 
-  const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   switch (period) {

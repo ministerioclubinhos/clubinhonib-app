@@ -46,6 +46,7 @@ import {
   Checklist,
   BarChart,
   CalendarMonth,
+  EventBusy,
   ChevronLeft,
   ChevronRight,
   SmartToy,
@@ -179,6 +180,7 @@ function AdminLayout() {
         title: "Operacional",
         items: [
           { label: "Controle de Clubinhos", to: "/adm/controle-clubinhos", icon: <Checklist />, flag: FEATURE.CLUB_CONTROL },
+          { label: "Período letivo", to: "/adm/periodo-letivo", icon: <EventBusy />, flag: FEATURE.CLUB_CONTROL },
           { label: "Estatísticas", to: "/adm/estatisticas", icon: <BarChart />, flag: FEATURE.STATISTICS },
           // Feature flags não entram no menu: o acesso é pelo rodapé, e só
           // para administradores.

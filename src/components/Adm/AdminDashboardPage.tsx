@@ -22,6 +22,7 @@ import {
   Search as SearchIcon,
   NoteAdd,
   EventNote,
+  EventBusy,
   PhotoLibrary,
   Collections,
   VideoLibrary,
@@ -95,6 +96,7 @@ const cardData: CardData[] = [
   { title: "Feedbacks", description: "Gerencie feedbacks enviados para o Clubinho.", icon: <RateReview fontSize="large" color="primary" />, path: "/adm/feedbacks", section: "interacoes" },
 
   { title: "Controle de Clubinhos", description: "Verificação em tempo real de pagelas por clube.", icon: <Checklist fontSize="large" color="primary" />, path: "/adm/controle-clubinhos", section: "operacional", flag: FEATURE.CLUB_CONTROL },
+  { title: "Período letivo", description: "Datas do ano letivo e dias sem clubinho.", icon: <EventBusy fontSize="large" color="primary" />, path: "/adm/periodo-letivo", section: "operacional", flag: FEATURE.CLUB_CONTROL },
   { title: "Estatísticas", description: "Visualize estatísticas e análises completas.", icon: <BarChart fontSize="large" color="primary" />, path: "/adm/estatisticas", section: "operacional", flag: FEATURE.STATISTICS },
   // Feature flags não entram no painel: o acesso é pelo rodapé, e só para
   // administradores.

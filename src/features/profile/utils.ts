@@ -1,6 +1,7 @@
 import { EMPTY_VALUE, NAME_MIN_LENGTH, PASSWORD_MIN_LENGTH } from "./constants";
 import type {
   ChangePasswordRequest,
+  CompleteProfile,
   MyProfile,
   PersonalDataInput,
   ProfileBirthday,
@@ -334,3 +335,26 @@ export const splitBirthdaysByProximity = (
 
     return { today, week, month };
 };
+
+/* ------------------------------------------------------------------ *
+ * Listagem administrativa
+ * ------------------------------------------------------------------ */
+
+/** Quantos filtros além da busca estão valendo. */
+export function countActiveProfileFilters(filters: {
+  role?: unknown;
+  gender?: unknown;
+  birthMonth?: unknown;
+  temperaments?: unknown;
+  loveLanguages?: unknown;
+  favoriteColor?: unknown;
+}): number {
+  return Object.values(filters).filter(Boolean).length;
+}
+
+/** O perfil ainda não tem data de nascimento nem preferência alguma. */
+export function isProfileIncomplete(profile: CompleteProfile): boolean {
+  const hasPreferences = Object.values(profile.preferences ?? {}).some(Boolean);
+
+  return !profile.personalData?.birthDate || !hasPreferences;
+}

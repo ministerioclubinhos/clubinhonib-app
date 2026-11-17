@@ -1,4 +1,6 @@
 import {
+  ACADEMIC_CALENDAR_DEFAULT_TAB,
+  AcademicCalendarTab,
   CLUB_STATUSES_WITH_PROBLEM,
   CLUB_STATUS_LABELS,
   CLUB_STATUS_SEVERITY,
@@ -74,4 +76,9 @@ export function validatePeriodDates(
  */
 export function completionRate(withPagela: number, total: number): number {
   return total > 0 ? Math.round((withPagela / total) * 1000) / 10 : 0;
+}
+
+/** A aba pedida na URL; qualquer valor desconhecido cai na padrão. */
+export function parseAcademicCalendarTab(value: string | null | undefined): AcademicCalendarTab {
+  return Object.values(AcademicCalendarTab).find((tab) => tab === value) ?? ACADEMIC_CALENDAR_DEFAULT_TAB;
 }

@@ -41,6 +41,7 @@ import { FEATURE, FeatureRoute, useVisibleRoutes } from './features/feature-flag
 import { NotificationProvider } from './features/notifications';
 import {
   About,
+  AcademicCalendarPage,
   AdminDashboardPage,
   AdminLayout,
   ChildPagelasPage,
@@ -382,6 +383,7 @@ function App() {
                         </Route>
                         <Route element={<FeatureRoute flag={FEATURE.CLUB_CONTROL} redirectTo="/adm" />}>
                           <Route path="controle-clubinhos" element={<ClubControlPage />} />
+                          <Route path="periodo-letivo" element={<AcademicCalendarPage />} />
                         </Route>
                         {/*
                           O painel de flags não passa por FeatureRoute: ele é a

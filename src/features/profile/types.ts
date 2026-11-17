@@ -154,6 +154,20 @@ export type UpdateCompleteProfileRequest = {
 
 export type CreateCompleteProfileRequest = UpdateCompleteProfileRequest;
 
+/** Gêneros aceitos como filtro por `GET /profiles`. */
+export type ProfileGender = "Masculino" | "Feminino";
+
+/** Totais do topo da tela (`ProfileSummaryResponseDto`). */
+export type ProfilesSummary = {
+  total: number;
+  admins: number;
+  coordinators: number;
+  teachers: number;
+  birthdaysThisMonth: number;
+  /** Sem data de nascimento ou sem preferências. */
+  incomplete: number;
+};
+
 /** Campo de ordenação aceito por `GET /profiles` (`ProfileSortField`). */
 export type ProfileSortField = "name" | "email" | "createdAt" | "birthDate";
 export type ProfileSortOrder = "ASC" | "DESC";
@@ -184,6 +198,9 @@ export type ProfilesQueryParams = {
   loveLanguages?: string;
   temperaments?: string;
   favoriteColor?: string;
+  gender?: ProfileGender;
+  /** 1 (janeiro) a 12 (dezembro). */
+  birthMonth?: number;
   sortBy?: ProfileSortField;
   order?: ProfileSortOrder;
 };

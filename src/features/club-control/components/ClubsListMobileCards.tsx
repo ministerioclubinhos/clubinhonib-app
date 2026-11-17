@@ -2,15 +2,11 @@ import React from 'react';
 import {
   Alert,
   AlertTitle,
-  Badge,
   Box,
   Card,
   CardContent,
-  Chip,
   Collapse,
   Divider,
-  Grid2,
-  IconButton,
   LinearProgress,
   List,
   Paper,
@@ -65,147 +61,85 @@ export default function ClubsListMobileCards({
             return (
               <Card
                 key={club.clubId}
-                elevation={2}
+                elevation={0}
                 sx={{
-                  mb: 2,
-                  border: `2px solid ${statusConfig.borderColor}40`,
+                  mb: 1,
+                  border: `1px solid ${statusConfig.borderColor}55`,
+                  borderLeft: `5px solid ${statusConfig.borderColor}`,
                   bgcolor: statusConfig.bgcolor,
                   borderRadius: 2,
                   overflow: 'hidden',
                 }}
               >
                 <CardContent
-                  sx={{ p: { xs: 1.5, sm: 2 }, cursor: 'pointer' }}
-                  onClick={() => onToggleExpanded(club.clubId)}
+                  data-testid="club-control-club-row"
+                  data-status={club.status}
+                  sx={{ p: 0, '&:last-child': { pb: 0 } }}
                 >
-                  <Stack spacing={1.5}>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flex: 1 }}>
-                        <Box
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: '50%',
-                            bgcolor: statusConfig.color + '20',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 'bold',
-                            color: statusConfig.color,
-                            fontSize: '1rem',
-                          }}
-                        >
-                          {club.clubNumber}
-                        </Box>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: { xs: '0.95rem', sm: '1rem' } }}>
-                            Clubinho #{club.clubNumber}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                            {club.week.expectedDate ? dayjs(club.week.expectedDate).format('DD/MM/YYYY') : 'Sem data'}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                      <IconButton size="small" onClick={(e) => { e.stopPropagation(); onToggleExpanded(club.clubId); }} aria-label="Mostrar ou esconder os detalhes do clubinho">
-                        {isExpanded ? <ExpandLess /> : <ExpandMore />}
-                      </IconButton>
-                    </Box>
-
-                    <Grid2 container spacing={1.5}>
-                      <Grid2 size={6}>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                            Dia da Semana
-                          </Typography>
-                          <Box sx={{ mt: 0.5 }}>
-                            {club.weekday ? (
-                              <Chip
-                                label={weekdayNames[club.weekday] || club.weekday}
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontWeight: 'bold', fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                              />
-                            ) : (
-                              <Chip
-                                label="N/D"
-                                size="small"
-                                variant="outlined"
-                                color="default"
-                                sx={{ fontWeight: 'bold', opacity: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                              />
-                            )}
-                          </Box>
-                        </Box>
-                      </Grid2>
-                      <Grid2 size={6}>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                            Crianças
-                          </Typography>
-                          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
-                            <Typography variant="body2" fontWeight="bold" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              {club.children.withPagela}/{club.children.total}
-                            </Typography>
-                            {club.children.missing > 0 && (
-                              <Badge
-                                badgeContent={club.children.missing}
-                                color={club.status === 'pending' ? 'info' : 'error'}
-                              >
-                                <PersonOff
-                                  fontSize="small"
-                                  sx={{
-                                    color: club.status === 'pending'
-                                      ? theme.palette.info.main
-                                      : theme.palette.error.main
-                                  }}
-                                />
-                              </Badge>
-                            )}
-                          </Stack>
-                        </Box>
-                      </Grid2>
-                    </Grid2>
-
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                          Completude
-                        </Typography>
-                        <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                          {completeness.toFixed(0)}%
-                        </Typography>
+                  <Box
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isExpanded}
+                    aria-label={`Clubinho ${club.clubNumber}: ${statusConfig.label}. Mostrar ou esconder os detalhes`}
+                    onClick={() => onToggleExpanded(club.clubId)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onToggleExpanded(club.clubId);
+                      }
+                    }}
+                    sx={{ px: 1.25, py: 1, minHeight: 56, cursor: 'pointer' }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={1.25}>
+                      <Box
+                        sx={{
+                          minWidth: 44,
+                          height: 36,
+                          px: 0.5,
+                          borderRadius: 2,
+                          bgcolor: statusConfig.color,
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 900,
+                          fontSize: '0.95rem',
+                        }}
+                      >
+                        {club.clubNumber}
                       </Box>
-                      <LinearProgress
-                        variant="determinate"
-                        value={completeness}
-                        sx={{
-                          height: 6,
-                          borderRadius: 3,
-                          bgcolor: statusConfig.bgcolor,
-                          '& .MuiLinearProgress-bar': {
-                            bgcolor: statusConfig.color,
-                            borderRadius: 3,
-                          },
-                        }}
-                      />
-                    </Box>
-
-                    <Box>
-                      <Chip
-                        icon={statusConfig.icon}
-                        label={statusConfig.label}
-                        size="small"
-                        sx={{
-                          bgcolor: statusConfig.bgcolor,
-                          color: statusConfig.color,
-                          border: `2px solid ${statusConfig.borderColor}`,
-                          fontWeight: 'bold',
-                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                        }}
-                      />
-                    </Box>
-                  </Stack>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Stack direction="row" alignItems="center" spacing={0.75} flexWrap="wrap" useFlexGap>
+                          <Typography variant="body2" fontWeight={800}>
+                            {club.weekday ? weekdayNames[club.weekday] || club.weekday : 'Sem dia'}
+                            {club.week.expectedDate ? ` · ${dayjs(club.week.expectedDate).format('DD/MM')}` : ''}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: statusConfig.color, fontWeight: 800 }}>
+                            {statusConfig.label}
+                          </Typography>
+                        </Stack>
+                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={completeness}
+                            sx={{
+                              flex: 1,
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: statusConfig.color + '25',
+                              '& .MuiLinearProgress-bar': { bgcolor: statusConfig.color, borderRadius: 3 },
+                            }}
+                          />
+                          <Typography variant="caption" fontWeight={800} sx={{ minWidth: 38, textAlign: 'right' }}>
+                            {club.children.withPagela}/{club.children.total}
+                          </Typography>
+                        </Stack>
+                      </Box>
+                      <Box sx={{ display: 'flex', color: 'text.secondary' }}>
+                        {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                      </Box>
+                    </Stack>
+                  </Box>
                 </CardContent>
 
                 <Collapse in={isExpanded} timeout="auto" unmountOnExit>

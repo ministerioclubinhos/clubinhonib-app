@@ -14,6 +14,18 @@ import type {
 
 const BASE_URL = '/club-control';
 
+/** O que `/check/week` aceita: a semana, a página e os filtros da lista (todos no back). */
+export interface CheckWeekParams {
+  year?: number;
+  week?: number;
+  page?: number;
+  limit?: number;
+  status?: string;
+  severity?: string;
+  weekday?: string;
+  hasProblems?: boolean;
+}
+
 export const clubControlApi = {
 
   createPeriod: (data: CreateAcademicPeriodDto) =>
@@ -49,7 +61,7 @@ export const clubControlApi = {
   checkClub: (clubId: string, params: { year: number; week: number }) =>
     apiAxios.get<ClubCheckResult>(`${BASE_URL}/check/club/${clubId}`, { params }),
 
-  checkWeek: (params?: { year?: number; week?: number; page?: number; limit?: number }) =>
+  checkWeek: (params?: CheckWeekParams) =>
     apiAxios.get<WeekCheckResult>(`${BASE_URL}/check/week`, { params }),
 
   getDashboard: (params?: { page?: number; limit?: number }) =>

@@ -1,11 +1,12 @@
 import type {
+  StatisticsContextFilters,
   AcceptedChristsStatsQueryDto,
   ChildrenStatsQueryDto,
   ClubsStatsQueryDto,
   PagelasStatsQueryDto,
   TeachersStatsQueryDto,
 } from '../types';
-import type { StatisticsContextFilters } from '../context/StatisticsContext';
+
 
 /**
  * Os filtros da tela traduzidos para cada contrato da API.

@@ -36,7 +36,7 @@ interface ClubTimeline {
 }
 
 const KNOWN_STATUSES = ['ok', 'partial', 'missing', 'pending', 'vacation', 'inactive', 'out_of_period'];
-const KNOWN_LABELS = ['OK', 'Parcial', 'Faltou', 'Aguardando o dia do clubinho', 'Férias', 'Inativo', 'Fora do período letivo'];
+const KNOWN_LABELS = ['Lançou', 'Lançou em parte', 'Não lançou', 'Ainda não é o dia', 'De férias', 'Inativo', 'Fora do ano letivo'];
 
 let api: ApiClient;
 let window: LaunchWindow;
@@ -65,14 +65,6 @@ test.afterAll(async () => {
 
 const yearStats = (clubId: string) =>
   api.get<PagelasStats>('/statistics/pagelas', { year: window.year ?? 0, clubId });
-
-async function openFrequency(page: Page, subTab: 'Semana' | 'Timeline') {
-  await page.goto('/adm/estatisticas');
-  await page.getByTestId('statistics-dashboard-navigation-tabs').getByRole('tab', { name: 'Frequência' }).click();
-  const frequency = page.getByTestId('statistics-tabs-frequency-tab');
-  await expect(frequency).toBeVisible();
-  if (subTab === 'Timeline') await frequency.getByRole('tab', { name: /Timeline/ }).click();
-}
 
 const hasHorizontalScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
@@ -172,69 +164,27 @@ test.describe('Estatísticas: regras de cálculo na API', () => {
   });
 });
 
-test.describe('Estatísticas: frequência na tela', () => {
+test.describe('Estatísticas: pagela da semana na aba Clubinhos', () => {
   test('cada clubinho da semana tem rótulo próprio, sem "Desconhecido"', async ({ page }) => {
-    await openFrequency(page, 'Semana');
+    await page.goto('/adm/estatisticas?aba=clubinhos');
 
-    const grid = page.getByTestId('statistics-weekly-attendance-grid');
-    const chips = grid.getByTestId('statistics-weekly-attendance-status');
+    const chips = page.getByTestId('statistics-clubs-week').getByTestId('statistics-clubs-week-chip');
     await expect(chips.first()).toBeVisible();
-    await expect(grid.getByText('Desconhecido')).toHaveCount(0);
-    for (const label of await chips.allInnerTexts()) expect(KNOWN_LABELS).toContain(label.trim());
-  });
-
-  test('na linha do tempo, semana futura nunca aparece como falta', async ({ page }) => {
-    test.skip((window.currentWeek ?? 0) >= (window.totalWeeks ?? 0), 'não há semana futura no período');
-    await openFrequency(page, 'Timeline');
-
-    const timeline = page.getByTestId('statistics-club-attendance-timeline');
-    const weeks = timeline.getByTestId('statistics-timeline-week');
-    await expect(weeks.first()).toBeVisible();
-    await expect(timeline.getByTestId('statistics-timeline-legend').getByText('Pendente', { exact: true })).toBeVisible();
-
-    // A linha do tempo é paginada: percorre as páginas olhando as semanas
-    // depois da atual. Elas são pendentes — ou já têm pagela, em banco de
-    // teste semeado com datas futuras —, mas nunca "sem pagela".
-    const nextPage = timeline.getByRole('button', { name: /next page|próxima página/i }).first();
-    let futureSeen = 0;
-    for (let step = 0; step < 8; step += 1) {
-      const states = await weeks.evaluateAll((nodes) =>
-        nodes.map((node) => ({
-          week: Number(node.getAttribute('data-week')),
-          state: node.getAttribute('data-state'),
-        })),
-      );
-      for (const item of states.filter((entry) => entry.week > (window.currentWeek ?? 0))) {
-        futureSeen += 1;
-        expect(item.state, `semana ${item.week}`).not.toBe('missing');
-      }
-      if (await nextPage.isDisabled()) break;
-      await nextPage.click();
-      await page.waitForLoadState('networkidle');
-      await expect(weeks.first()).toBeVisible();
+    await expect(page.getByText('Desconhecido')).toHaveCount(0);
+    for (const label of await chips.allInnerTexts()) {
+      expect(KNOWN_LABELS.some((known) => label.endsWith(known)), label).toBe(true);
     }
-    expect(futureSeen).toBeGreaterThan(0);
-  });
-
-  test('os cartões do topo avisam que não seguem os filtros', async ({ page }) => {
-    await page.goto('/adm/estatisticas');
-    await expect(page.getByText('Visão geral — não segue os filtros').first()).toBeVisible();
-    await expect(page.getByText('Top Performers')).toHaveCount(0);
+    // Um chip por clubinho que a API devolveu para a semana.
+    await expect(chips).toHaveCount(weekly.clubs.length);
   });
 });
 
-test.describe('Estatísticas: frequência no celular (360px)', () => {
+test.describe('Estatísticas: pagela da semana no celular (360px)', () => {
   test.use({ viewport: { width: 360, height: 780 } });
 
-  test('a grade e a linha do tempo cabem sem rolar a página para o lado', async ({ page }) => {
-    await openFrequency(page, 'Semana');
-    const grid = page.getByTestId('statistics-weekly-attendance-grid');
-    await expect(grid.getByTestId('statistics-weekly-attendance-status').first()).toBeVisible();
-    expect(await hasHorizontalScroll(page)).toBe(false);
-
-    await page.getByTestId('statistics-tabs-frequency-tab').getByRole('tab', { name: /Timeline/ }).click();
-    const timeline = page.getByTestId('statistics-club-attendance-timeline');
-    await expect(timeline.getByTestId('statistics-timeline-week').first()).toBeVisible();
+  test('os clubinhos da semana cabem sem rolar a página para o lado', async ({ page }) => {
+    await page.goto('/adm/estatisticas?aba=clubinhos');
+    await expect(page.getByTestId('statistics-clubs-week-chip').first()).toBeVisible();
     expect(await hasHorizontalScroll(page)).toBe(false);
   });
 });

@@ -9,6 +9,7 @@ import type {
   MyProfile,
   PaginatedProfilesResponse,
   ProfilesQueryParams,
+  ProfilesSummary,
   UpdateCompleteProfileRequest,
   UpdateMyAccountRequest,
   UpdateProfileImageRequest,
@@ -102,6 +103,12 @@ export async function apiFetchProfiles(
     signal: options?.signal,
   });
 
+  return data;
+}
+
+/** Totais por papel, aniversariantes do mês e perfis incompletos. */
+export async function apiFetchProfilesSummary(): Promise<ProfilesSummary> {
+  const { data } = await api.get<ProfilesSummary>("/profiles/summary");
   return data;
 }
 

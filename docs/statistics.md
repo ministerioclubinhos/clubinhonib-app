@@ -5,14 +5,39 @@ The Statistics module provides data visualization and reporting tools to help le
 ## 📁 Key Files
 
 - **Features**:
-  - `src/features/statistics/`: Logic for data aggregation and chart generation.
+  - `src/features/statistics/`: páginas, visões (`views/`), blocos simples (`components/plain/`), textos e contas.
 
-## 📊 Features
+## 📊 A página (`/adm/estatisticas`)
 
-- **Attendance Charts**: Visualizing attendance trends over time / by club.
-- **Growth Metrics**: Tracking new member registrations and retention rates.
-- **Spiritual Impact**: Reporting on decisions for Christ and other spiritual milestones.
-- **Custom Reports**: Generating downloadable reports for board meetings or reviews.
+Feita para quem não é da área de estatística: cinco visões, um filtro de
+período e nenhum gráfico que peça legenda. Cada número vem com uma frase que
+diz o que ele significa ("8 de cada 10 crianças esperadas vieram").
+
+| Visão | O que mostra |
+| --- | --- |
+| Resumo | Crianças, presença, decisões por Jesus, clubinhos, presença por semana e o que merece atenção (com atalho para a visão certa). |
+| Crianças | Cadastradas/desativadas, presença média, idade média, quem mais vem, quem precisa de uma visita, meninos e meninas, faixas de idade, tempo de casa, decisões. |
+| Clubinhos | Presença e tamanho de cada clubinho, cidades e quem já lançou a pagela da semana. Clubinho sem pagela diz "Sem pagelas", não 0%. |
+| Professores | Total, quem lançou pagela no período, quem não lançou e professores por clubinho. |
+| Coordenadores | Quantos cuidam de clubinho, e para cada um: clubinhos, crianças e presença média (ponderada pelas pagelas). |
+
+- **Avisos com nome** (`utils/alerts.ts`, `views/useClubAlerts.ts`): clubinho que
+  não lançou a pagela da semana passada e da atual (só conta quem era esperado;
+  "ainda não é o dia", férias e inativo não são falta), presença abaixo de 60%,
+  clubinho sem pagela há mais de 10 dias, sem criança, sem professor, sem
+  coordenador, crianças que vêm pouco e professores que não lançaram. Cada aviso
+  lista quem está na situação e leva para a visão certa. Na segunda-feira a
+  semana atual ainda está toda pendente, por isso a semana passada vem junto.
+- A visão (`?aba=`) e o período (`?periodo=`: este mês, últimos 30 dias, este
+  ano) ficam na URL; valor desconhecido cai no padrão.
+- Barras em CSS (`BarList`, `WeekColumns`) no lugar de pizza, radar e funil:
+  o nome fica ao lado da barra e o valor escrito no fim.
+- Os textos ficam em `texts.ts`, sem "taxa", "score" ou "engajamento" (o e2e
+  confere). Contas e traduções puras em `utils/plain.ts`.
+- Coordenadores vêm do cadastro (`/coordinator-profiles`) cruzado com
+  `/statistics/clubs`: a estatística de clubinho devolve "N/A" no nome.
+- `/statistics/teachers` só lista professores de clubinho ativo; por isso a
+  visão mostra o total do cadastro e, na dica, quantos estão num clubinho ativo.
 
 ## 🔌 Um payload por endpoint
 
@@ -34,8 +59,8 @@ recebe — uma lista explícita por contrato, no mesmo desenho de
 `features/clubs/utils.ts`. Os hooks passam por ele **sempre**, então nenhuma
 tela consegue contornar: uma chave nova no contexto ou entra numa das listas ou
 não é enviada. `e2e/unit/statistics.queryPayload.spec.ts` tranca o conjunto
-exato de chaves de cada um, e `e2e/flows/statistics.spec.ts` percorre as onze
-abas afirmando que nenhuma resposta de `/statistics` volta com erro.
+exato de chaves de cada um, e `e2e/flows/statistics.spec.ts` percorre as cinco
+visões afirmando que nenhuma resposta de `/statistics` volta com erro.
 
 ## ♻️ Cache e frescura
 

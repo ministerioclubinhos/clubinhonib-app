@@ -1,6 +1,6 @@
 import { UserRole } from "@/types/shared";
 
-import type { ProfileSortField, ProfileSortOrder } from "./types";
+import type { ProfileGender, ProfileSortField, ProfileSortOrder } from "./types";
 
 /**
  * Abas da tela `/meu-perfil`, na ordem em que aparecem.
@@ -88,3 +88,40 @@ export const PROFILE_REQUIRED_PREFERENCES = [
 
 /** Texto exibido quando o campo não tem valor. */
 export const EMPTY_VALUE = "—";
+
+/** Como a listagem administrativa desenha as pessoas. */
+export enum ProfilesViewMode {
+  GRID = "grid",
+  LIST = "list",
+}
+
+/** Onde a tela lembra o modo de visualização escolhido. */
+export const PROFILES_VIEW_STORAGE_KEY = "clubinho:profiles:view";
+
+/** Gêneros oferecidos como filtro. */
+export const PROFILES_GENDER_FILTERS: ReadonlyArray<{
+  value: ProfileGender;
+  label: string;
+}> = [
+  { value: "Masculino", label: "Masculino" },
+  { value: "Feminino", label: "Feminino" },
+];
+
+/** Meses do ano, de 1 a 12, para o filtro de aniversário. */
+export const PROFILES_MONTHS: ReadonlyArray<{ value: number; label: string }> = [
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
+].map((label, index) => ({ value: index + 1, label }));
+
+/** Tempo que o aviso de sucesso fica na tela. */
+export const PROFILES_TOAST_DURATION_MS = 4000;

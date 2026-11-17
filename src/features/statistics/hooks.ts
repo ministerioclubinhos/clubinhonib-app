@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { statisticsApi } from './api';
 import { clubControlApi } from '../club-control/api';
-import type { CurrentWeekInfo } from '../club-control/types';
+import { apiFetchCoordinators } from '../coordinators/api';
+import { previousWeek } from './utils/alerts';
+import { elapsedRange, percentChange, previousRange } from './utils/comparison';
+import type { PeriodShortcut } from './types';
 import {
   toAcceptedChristsQuery,
   toChildrenQuery,
@@ -14,6 +17,7 @@ import {
   STATISTICS_QUERY_KEY,
   STATISTICS_STALE_TIME_MS,
   STATISTICS_LIST_STALE_TIME_MS,
+  LIST_FETCH_LIMIT,
 } from './constants';
 
 /**
@@ -29,13 +33,13 @@ import {
  * em vez de baterem no banco duas vezes.
  */
 
-export const usePagelasChartData = (filters?: StatisticsQueryBag) => {
+export const usePagelasStats = (filters?: StatisticsQueryBag) => {
   const params = toPagelasQuery(filters);
 
   return useQuery({
-    queryKey: [STATISTICS_QUERY_KEY, 'pagelasCharts', params],
+    queryKey: [STATISTICS_QUERY_KEY, 'pagelas', params],
     queryFn: async () => {
-      const response = await statisticsApi.getPagelasChartData(params);
+      const response = await statisticsApi.getPagelas(params);
       return response.data;
     },
     staleTime: STATISTICS_STALE_TIME_MS,
@@ -43,13 +47,13 @@ export const usePagelasChartData = (filters?: StatisticsQueryBag) => {
   });
 };
 
-export const useAcceptedChristsChartData = (filters?: StatisticsQueryBag) => {
+export const useAcceptedChristsStats = (filters?: StatisticsQueryBag) => {
   const params = toAcceptedChristsQuery(filters);
 
   return useQuery({
-    queryKey: [STATISTICS_QUERY_KEY, 'acceptedChristsCharts', params],
+    queryKey: [STATISTICS_QUERY_KEY, 'acceptedChrists', params],
     queryFn: async () => {
-      const response = await statisticsApi.getAcceptedChristsChartData(params);
+      const response = await statisticsApi.getAcceptedChrists(params);
       return response.data;
     },
     staleTime: STATISTICS_STALE_TIME_MS,
@@ -57,19 +61,14 @@ export const useAcceptedChristsChartData = (filters?: StatisticsQueryBag) => {
   });
 };
 
-export const useInsights = (filters?: StatisticsQueryBag) => {
-  const params = toPagelasQuery(filters);
-
-  return useQuery({
-    queryKey: [STATISTICS_QUERY_KEY, 'insights', params],
-    queryFn: async () => {
-      const response = await statisticsApi.getInsights(params);
-      return response.data;
-    },
-    staleTime: STATISTICS_STALE_TIME_MS,
+/** Coordenadores cadastrados, com os clubinhos de cada um. */
+export const useCoordinatorsList = () =>
+  useQuery({
+    queryKey: [STATISTICS_QUERY_KEY, 'coordinators'],
+    queryFn: () => apiFetchCoordinators({ page: 1, limit: LIST_FETCH_LIMIT }),
+    staleTime: STATISTICS_LIST_STALE_TIME_MS,
     refetchOnWindowFocus: false,
   });
-};
 
 export const useOverview = () => {
   return useQuery({
@@ -125,36 +124,6 @@ export const useTeachers = (filters?: StatisticsQueryBag) => {
   });
 };
 
-export const useClubAttendance = (
-  clubId: string,
-  params: { year: number; startDate?: string; endDate?: string; page?: number; limit?: number }
-) => {
-  return useQuery({
-    queryKey: [STATISTICS_QUERY_KEY, 'clubAttendance', clubId, params],
-    queryFn: async () => {
-      const response = await statisticsApi.getClubAttendance(clubId, params);
-      return response.data;
-    },
-    enabled: !!clubId && !!params.year,
-    staleTime: STATISTICS_LIST_STALE_TIME_MS,
-    refetchOnWindowFocus: false,
-  });
-};
-
-export const useCurrentWeek = () => {
-  return useQuery<CurrentWeekInfo>({
-    queryKey: ['currentWeek'],
-    queryFn: async () => {
-      const response = await clubControlApi.getCurrentWeek();
-      return response.data;
-    },
-    staleTime: STATISTICS_STALE_TIME_MS,
-    refetchOnWindowFocus: false,
-    retry: 1,
-    retryDelay: 1000,
-  });
-};
-
 export const useWeeklyAttendance = (params: { year: number; week: number; page?: number; limit?: number }) => {
   return useQuery({
     queryKey: [STATISTICS_QUERY_KEY, 'weeklyAttendance', params],
@@ -167,6 +136,23 @@ export const useWeeklyAttendance = (params: { year: number; week: number; page?:
     refetchOnWindowFocus: false,
   });
 };
+
+/**
+ * A pagela da semana letiva atual e da anterior, para os avisos.
+ *
+ * Na segunda-feira a semana atual ainda não tem ninguém "faltando": quem
+ * importa é a semana que acabou de fechar. Por isso as duas vêm juntas.
+ */
+export function useRecentWeeklyAttendance() {
+  const overview = useOverview();
+  const current = overview.data?.indicators?.currentAcademicWeek ?? null;
+  const previous = current ? previousWeek(current.year, current.week) : null;
+
+  const currentQuery = useWeeklyAttendance({ year: current?.year ?? 0, week: current?.week ?? 0, limit: LIST_FETCH_LIMIT });
+  const previousQuery = useWeeklyAttendance({ year: previous?.year ?? 0, week: previous?.week ?? 0, limit: LIST_FETCH_LIMIT });
+
+  return { current, previous, currentQuery, previousQuery };
+}
 
 /**
  * Quando os agregados do painel foram buscados de fato.
@@ -209,4 +195,33 @@ export function useAcademicYears() {
     staleTime: STATISTICS_STALE_TIME_MS,
     refetchOnWindowFocus: false,
   });
+}
+
+/**
+ * Presenças do recorte escolhido contra o recorte anterior de mesmo tamanho, em %.
+ *
+ * O resumo geral do back só compara mês com mês. Aqui a comparação segue o
+ * período da tela (semana, mês, 30 dias, ano). `rate` fica `undefined` sem
+ * base de comparação (nada no recorte anterior).
+ */
+export function usePeriodGrowth(period: PeriodShortcut): { rate: number | undefined } {
+  const current = elapsedRange(period);
+  const previous = previousRange(period);
+
+  const usePresences = (range: { startDate: string; endDate: string } | undefined) =>
+    useQuery({
+      queryKey: [STATISTICS_QUERY_KEY, 'periodPresences', range],
+      queryFn: async () => {
+        const response = await statisticsApi.getPagelas(toPagelasQuery({ ...range, groupBy: 'week' }));
+        return (response.data.byWeek ?? []).reduce((sum, row) => sum + row.presentCount, 0);
+      },
+      enabled: !!range,
+      staleTime: STATISTICS_STALE_TIME_MS,
+      refetchOnWindowFocus: false,
+    });
+
+  const now = usePresences(current);
+  const before = usePresences(previous);
+  if (now.data === undefined || before.data === undefined) return { rate: undefined };
+  return { rate: percentChange(now.data, before.data) };
 }

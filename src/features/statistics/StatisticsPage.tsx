@@ -1,269 +1,168 @@
-import React, { Suspense, memo } from 'react';
-import {
-  Box,
-  Skeleton,
-  useTheme,
-  alpha,
-  Paper,
-  Fab,
-  Zoom,
-  Typography,
-} from '@mui/material';
-import { KeyboardArrowUp } from '@mui/icons-material';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { StatisticsProvider, useStatistics } from './context';
-import { PAGE_WIDTH, STATISTICS_QUERY_KEY, StatisticsTab } from './constants';
-import { useStatisticsLastUpdated } from './hooks';
-import { DashboardHeader, NavigationTabs } from './components/dashboard';
-import { KPIDashboard, SmartFilters } from './components/ui';
+import React from 'react';
+import { Box, Button, Paper, Tab, Tabs, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Refresh } from '@mui/icons-material';
+import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
-import { queryClient } from '../../config/queryClient';
+import { useSearchParams } from 'react-router-dom';
+import {
+  PAGE_WIDTH,
+  PLAIN_PERIOD_OPTIONS,
+  STATISTICS_PERIOD_PARAM,
+  STATISTICS_QUERY_KEY,
+  STATISTICS_TAB_PARAM,
+  StatisticsTab,
+} from './constants';
+import { useStatisticsLastUpdated } from './hooks';
+import {
+  PLAIN_PERIOD_LABELS,
+  STATISTICS_TAB_INTRO,
+  STATISTICS_TAB_LABELS,
+  STATISTICS_TEXTS,
+} from './texts';
+import { parsePlainPeriod, parseStatisticsTab } from './utils/plain';
+import { ChildrenView } from './views/ChildrenView';
+import { ClubsView } from './views/ClubsView';
+import { CoordinatorsView } from './views/CoordinatorsView';
+import { SummaryView } from './views/SummaryView';
+import { TeachersView } from './views/TeachersView';
 
 dayjs.locale('pt-br');
 
-// Lazy loaded tabs
-const OverviewTab = React.lazy(() => import('./tabs/OverviewTab'));
-const ChildrenTab = React.lazy(() => import('./tabs/ChildrenTab'));
-const FrequencyTab = React.lazy(() => import('./tabs/FrequencyTab'));
-const ClubsTab = React.lazy(() => import('./tabs/ClubsTab'));
-const TeachersTab = React.lazy(() => import('./tabs/TeachersTab'));
-const DemographicTab = React.lazy(() => import('./tabs/DemographicTab'));
-const GeographicTab = React.lazy(() => import('./tabs/GeographicTab'));
-const DecisionsTab = React.lazy(() => import('./tabs/DecisionsTab'));
-const RetentionTab = React.lazy(() => import('./tabs/RetentionTab'));
-const ActivitiesTab = React.lazy(() => import('./tabs/ActivitiesTab'));
-const RankingsTab = React.lazy(() => import('./tabs/RankingsTab'));
+const TAB_ORDER = Object.values(StatisticsTab);
 
-// Loading skeleton for tabs
-const TabSkeleton: React.FC = () => (
-  <Box data-testid="statistics-statistics-page-tab-skeleton" sx={{ display: 'grid', gap: 2 }}>
-    <Skeleton variant="rounded" height={80} />
-    {/* Duas colunas no celular, quatro a partir do tablet: quatro esqueletos
-        lado a lado num aparelho de 390px viram quatro tiras ilegíveis. */}
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
-        gap: 2,
-      }}
-    >
-      {[1, 2, 3, 4].map((i) => (
-        <Skeleton key={i} variant="rounded" height={100} />
-      ))}
-    </Box>
-    <Skeleton variant="rounded" height={350} />
-  </Box>
-);
+/**
+ * Estatísticas para quem não é da área.
+ *
+ * Cinco visões (resumo, crianças, clubinhos, professores, coordenadores),
+ * um único filtro de período e nenhum gráfico que peça legenda. A visão e o
+ * período ficam na URL: dá para mandar o link e o voltar do navegador funciona.
+ */
+const StatisticsPage: React.FC = () => {
+  const [params, setParams] = useSearchParams();
+  const queryClient = useQueryClient();
+  const tab = parseStatisticsTab(params.get(STATISTICS_TAB_PARAM));
+  const period = parsePlainPeriod(params.get(STATISTICS_PERIOD_PARAM));
+  const updatedAt = useStatisticsLastUpdated();
 
-// Scroll to top button
-const ScrollToTop: React.FC = memo(() => {
-  const [visible, setVisible] = React.useState(false);
+  const update = (key: string, value: string) =>
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.set(key, value);
+        return next;
+      },
+      { replace: true },
+    );
 
-  React.useEffect(() => {
-    const handleScroll = () => {
-      setVisible(window.scrollY > 300);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  return (
-    <Zoom data-testid="statistics-statistics-page-scroll-to-top" in={visible}>
-      <Fab
-        color="primary"
-        size="small"
-        onClick={scrollToTop}
-        aria-label="Voltar ao topo"
-        sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          zIndex: 1000,
-        }}
-      >
-        <KeyboardArrowUp />
-      </Fab>
-    </Zoom>
-  );
-});
-
-ScrollToTop.displayName = 'ScrollToTop';
-
-// Tab content renderer
-const TabContent: React.FC = memo(() => {
-  const { state } = useStatistics();
-  const theme = useTheme();
-
-  const renderTab = () => {
-    switch (state.activeTab) {
-      case StatisticsTab.Overview:
-        return <OverviewTab />;
-      case StatisticsTab.Frequency:
-        return <FrequencyTab />;
+  const renderView = () => {
+    switch (tab) {
       case StatisticsTab.Children:
-        return <ChildrenTab />;
+        return <ChildrenView period={period} />;
       case StatisticsTab.Clubs:
-        return <ClubsTab />;
+        return <ClubsView period={period} />;
       case StatisticsTab.Teachers:
-        return <TeachersTab />;
-      case StatisticsTab.Demographic:
-        return <DemographicTab filters={state.filters} />;
-      case StatisticsTab.Geographic:
-        return <GeographicTab filters={state.filters} />;
-      case StatisticsTab.Decisions:
-        return <DecisionsTab filters={state.filters} />;
-      case StatisticsTab.Retention:
-        return <RetentionTab filters={state.filters} />;
-      case StatisticsTab.Activities:
-        return <ActivitiesTab filters={state.filters} />;
-      case StatisticsTab.Rankings:
-        return <RankingsTab filters={state.filters} />;
+        return <TeachersView period={period} />;
+      case StatisticsTab.Coordinators:
+        return <CoordinatorsView period={period} />;
+      case StatisticsTab.Summary:
       default:
-        return <OverviewTab />;
+        return <SummaryView period={period} onGoToTab={(next) => update(STATISTICS_TAB_PARAM, next)} />;
     }
   };
 
   return (
-    <Paper data-testid="statistics-statistics-page-tab-content"
-      elevation={0}
-      sx={{
-        borderRadius: 3,
-        overflow: 'hidden',
-        border: `1px solid ${theme.palette.divider}`,
-        p: { xs: 2, md: 3 },
-        minHeight: 400,
-      }}
-    >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={state.activeTab}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Suspense fallback={<TabSkeleton />}>
-            {renderTab()}
-          </Suspense>
-        </motion.div>
-      </AnimatePresence>
-    </Paper>
-  );
-});
-
-TabContent.displayName = 'TabContent';
-
-/**
- * Quando os números da tela foram buscados de fato.
- *
- * Antes o rodapé imprimia `dayjs()` — a hora do render. Com cache de minutos,
- * a tela afirmava que o dado era deste segundo enquanto mostrava um número de
- * dez minutos atrás. Agora a hora vem do próprio cache, e some quando ainda
- * não há resposta nenhuma.
- */
-const LastUpdatedLabel: React.FC = memo(() => {
-  const updatedAt = useStatisticsLastUpdated();
-
-  return (
-    <Typography data-testid="statistics-last-updated" variant="body2" color="text.secondary">
-      {updatedAt
-        ? `Dados de ${dayjs(updatedAt).format('DD/MM/YYYY HH:mm')}`
-        : 'Carregando os dados…'}
-    </Typography>
-  );
-});
-
-LastUpdatedLabel.displayName = 'LastUpdatedLabel';
-
-// Main content component
-const StatisticsContent: React.FC = memo(() => {
-  const theme = useTheme();
-
-  return (
-    <Box data-testid="statistics-statistics-page-statistics-content"
-      sx={{
-        minHeight: '100vh',
-        bgcolor: alpha(theme.palette.primary.main, 0.02),
-        pb: 4,
-      }}
-    >
-      <Box
+    <Box data-testid="statistics-page" sx={{ width: PAGE_WIDTH, mx: 'auto', py: { xs: 2, md: 4 }, pb: 6 }}>
+      <Paper
+        data-testid="statistics-header"
+        elevation={0}
         sx={{
-          width: PAGE_WIDTH,
-          mx: 'auto',
-          py: { xs: 2, md: 4 },
+          p: { xs: 2, md: 3 },
+          mb: 2,
+          borderRadius: 3,
+          color: '#fff',
+          background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: 1,
         }}
       >
-        {/* Header */}
-        {/*
-          Só as chaves das estatísticas. O `queryClient` é o compartilhado do
-          app: sem o prefixo, "Atualizar" derrubava também o controle de
-          clubinhos, as pagelas e o resumo semanal.
-        */}
-        <DashboardHeader
-          onRefresh={() =>
-            void queryClient.invalidateQueries({ queryKey: [STATISTICS_QUERY_KEY] })
-          }
-        />
-
-        {/*
-          O recorte vem antes de qualquer número. Ele rege os gráficos e as
-          onze abas, e ficava embaixo dos KPIs: a leitura natural era de cima
-          para baixo, o que fazia o filtro parecer um detalhe de uma seção.
-
-          Os KPIs logo abaixo são a exceção: vêm de `/statistics/overview`,
-          que não recebe filtro nenhum (janelas fixas: esta semana, este mês,
-          este ano). O próprio bloco avisa isso — ver
-          `KPI_FIXED_WINDOW_CAPTION`.
-        */}
-        <Box sx={{ mb: 3 }}>
-          <SmartFilters />
-        </Box>
-
-        {/* Visão geral em janelas fixas: não segue o recorte acima. */}
-        <Box sx={{ mb: 3 }}>
-          <Suspense fallback={<Skeleton variant="rounded" height={200} sx={{ borderRadius: 3 }} />}>
-            <KPIDashboard />
-          </Suspense>
-        </Box>
-
-        {/* Navigation Tabs */}
-        <NavigationTabs />
-
-        {/* Tab Content */}
-        <TabContent />
-
-        {/* Footer */}
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <LastUpdatedLabel />
-          <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.7 }}>
-            Use os filtros para personalizar suas análises
+        <Box sx={{ minWidth: 0 }}>
+          <Typography component="h1" sx={{ fontSize: { xs: '1.5rem', md: '2rem' }, fontWeight: 900, color: '#fff !important' }}>
+            {STATISTICS_TEXTS.title}
           </Typography>
+          <Typography sx={{ opacity: 0.92 }}>{STATISTICS_TEXTS.subtitle}</Typography>
         </Box>
+        <Button
+          data-testid="statistics-refresh"
+          onClick={() => void queryClient.invalidateQueries({ queryKey: [STATISTICS_QUERY_KEY] })}
+          startIcon={<Refresh />}
+          sx={{ minHeight: 44, flexShrink: 0, color: '#fff', bgcolor: 'rgba(255,255,255,0.16)', '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' } }}
+        >
+          {STATISTICS_TEXTS.refresh}
+        </Button>
+      </Paper>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mb: 2 }}>
+        <Typography variant="body2" fontWeight={700}>
+          {STATISTICS_TEXTS.periodLabel}
+        </Typography>
+        <ToggleButtonGroup
+          data-testid="statistics-period"
+          exclusive
+          size="small"
+          value={period}
+          onChange={(_, next: string | null) => next && update(STATISTICS_PERIOD_PARAM, next)}
+          aria-label={STATISTICS_TEXTS.periodLabel}
+          color="primary"
+        >
+          {PLAIN_PERIOD_OPTIONS.map((option) => (
+            <ToggleButton key={option} value={option} sx={{ minHeight: 44, px: 2, textTransform: 'none' }}>
+              {PLAIN_PERIOD_LABELS[option]}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
       </Box>
 
-      {/* Scroll to top button */}
-      <ScrollToTop />
+      <Tabs
+        data-testid="statistics-tabs"
+        value={tab}
+        onChange={(_, next: StatisticsTab) => update(STATISTICS_TAB_PARAM, next)}
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        aria-label="Visões das estatísticas"
+        sx={{ borderBottom: 1, borderColor: 'divider', mb: 1.5, '& .MuiTabs-indicator': { height: 4, borderRadius: '4px 4px 0 0' } }}
+      >
+        {TAB_ORDER.map((value) => (
+          <Tab
+            key={value}
+            value={value}
+            label={STATISTICS_TAB_LABELS[value]}
+            data-testid={`statistics-tab-${value}`}
+            sx={{ minHeight: 48, minWidth: 0, px: 2, fontWeight: 800, textTransform: 'none', '&.Mui-selected': { bgcolor: 'action.hover', borderRadius: '8px 8px 0 0' } }}
+          />
+        ))}
+      </Tabs>
+
+      <Typography data-testid="statistics-tab-intro" color="text.secondary" sx={{ mb: 2 }}>
+        {STATISTICS_TAB_INTRO[tab]}
+      </Typography>
+
+      {renderView()}
+
+      <Typography
+        data-testid="statistics-last-updated"
+        variant="body2"
+        color="text.secondary"
+        sx={{ mt: 3, textAlign: 'center' }}
+      >
+        {updatedAt
+          ? STATISTICS_TEXTS.updatedAt(dayjs(updatedAt).format('DD/MM/YYYY HH:mm'))
+          : STATISTICS_TEXTS.loadingData}
+      </Typography>
     </Box>
-  );
-});
-
-StatisticsContent.displayName = 'StatisticsContent';
-
-// Main page component with providers
-const StatisticsPage: React.FC = () => {
-  return (
-    <QueryClientProvider data-testid="statistics-statistics-page" client={queryClient}>
-      <StatisticsProvider>
-        <StatisticsContent />
-      </StatisticsProvider>
-    </QueryClientProvider>
   );
 };
 

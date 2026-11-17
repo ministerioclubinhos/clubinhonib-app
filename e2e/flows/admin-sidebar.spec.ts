@@ -20,6 +20,7 @@ function sectionItems(page: Page, title: string) {
 test.describe('Painel: menu lateral', () => {
   const cases: [string, string][] = [
     ['/adm/controle-clubinhos', 'Operacional'],
+    ['/adm/periodo-letivo', 'Operacional'],
     ['/adm/estatisticas', 'Operacional'],
     ['/adm/paginas-materiais-semanais', 'Materiais'],
     ['/adm/paginas-ideias', 'Materiais'],
