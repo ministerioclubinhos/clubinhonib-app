@@ -1,8 +1,8 @@
-import { hasAcceptedChrist } from "@/features/children/utils";
+import { formatPhone, hasAcceptedChrist } from "@/features/children/utils";
 import * as React from "react";
 import {
-  Card, CardActionArea, CardContent, Stack, Typography,
-  Box, Avatar, Tooltip, IconButton, useTheme, useMediaQuery, Divider,
+  Card, CardActionArea, Stack, Typography, Box, Avatar, Tooltip, IconButton,
+  Chip, Divider, Button, useTheme,
 } from "@mui/material";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditIcon from "@mui/icons-material/Edit";
@@ -10,13 +10,15 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import PhoneIcon from "@mui/icons-material/Phone";
-import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import { ChildListItem } from "@/features/children/types";
 import DecisionModal from "./DecisionModal";
 import { FEATURE } from "@/features/feature-flags";
 import { useFeatureEnabled } from "@/hooks";
+
+const ACTION_SX = { width: 44, height: 44 } as const;
 
 function genderPastel(seed: string, gender: string | undefined) {
   const hash = Array.from(seed).reduce((acc, ch) => (acc * 33 + ch.charCodeAt(0)) % 1000, 7);
@@ -30,23 +32,37 @@ function genderPastel(seed: string, gender: string | undefined) {
   };
 }
 
-export default function ChildCard({
-  child,
-  onClick,
-  onEdit,
-  onDelete,
-  onRefresh,
-  onToggleActive
-}: {
+type ChildCardProps = {
   child: ChildListItem;
   onClick: (c: ChildListItem) => void;
+  onViewDetails?: (c: ChildListItem) => void;
   onEdit?: (c: ChildListItem) => void;
   onDelete?: (c: ChildListItem) => void;
   onRefresh?: () => void;
   onToggleActive?: (c: ChildListItem) => void;
-}) {
+};
+
+function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+      <Box sx={{ display: "flex", color: "text.secondary", opacity: 0.8 }}>{icon}</Box>
+      <Typography variant="body2" color="text.secondary" noWrap title={value} sx={{ minWidth: 0 }}>
+        {label}: <Box component="span" sx={{ color: "text.primary", fontWeight: 600 }}>{value}</Box>
+      </Typography>
+    </Stack>
+  );
+}
+
+export default function ChildCard({
+  child,
+  onClick,
+  onViewDetails,
+  onEdit,
+  onDelete,
+  onRefresh,
+  onToggleActive,
+}: ChildCardProps) {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
   const colors = genderPastel(child.name || child.id, child.gender);
   const initials = React.useMemo(() => {
     const parts = (child.name || "").trim().split(/\s+/).slice(0, 2);
@@ -56,53 +72,99 @@ export default function ChildCard({
   const alreadyAccepted = hasAcceptedChrist(child.acceptedChrists);
   const [modalOpen, setModalOpen] = React.useState(false);
   const canRegisterDecision = useFeatureEnabled(FEATURE.ACCEPTED_CHRISTS);
+  const isLight = theme.palette.mode === "light";
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
+  return (
+    <>
+      <Card
+        data-testid="pagela-teacher-child-card"
+        variant="outlined"
+        sx={{
+          borderRadius: 3,
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          borderColor: "divider",
+          opacity: child.isActive ? 1 : 0.78,
+          transition: "transform .12s ease, box-shadow .12s ease",
+          "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
+        }}
+      >
+        {/* Faixa de cor: identifica a criança sem ocupar espaço. */}
+        <Box sx={{ height: 6, background: `linear-gradient(90deg, ${colors.soft}, ${colors.solid})` }} />
 
-
-  if (isXs) {
-    const ACTION_SX = { width: 44, height: 44 } as const;
-    return (
-      <>
-        <Card
-          data-testid="pagela-teacher-child-card"
-          variant="outlined"
-          sx={{ borderRadius: 3, overflow: "hidden", borderColor: "divider" }}
+        <CardActionArea
+          onClick={() => onClick(child)}
+          sx={{ flex: 1, display: "flex", alignItems: "flex-start", justifyContent: "flex-start", gap: 1.5, p: 1.5 }}
         >
-          <CardActionArea
-            onClick={() => onClick(child)}
-            sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 1.5, p: 1.5 }}
-          >
-            <Avatar
-              sx={{ width: 48, height: 48, bgcolor: colors.solid, fontWeight: 900, flexShrink: 0 }}
-            >
-              {initials || <ChildCareIcon />}
-            </Avatar>
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography fontWeight={900} noWrap title={child.name}>
+          <Avatar sx={{ width: 52, height: 52, bgcolor: colors.solid, color: "#143a2b", fontWeight: 900, flexShrink: 0 }}>
+            {initials || <ChildCareIcon />}
+          </Avatar>
+
+          <Stack spacing={0.75} sx={{ minWidth: 0, flex: 1 }}>
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
+              <Typography fontWeight={900} noWrap title={child.name} sx={{ flex: 1, minWidth: 0 }}>
                 {child.name}
               </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap title={child.guardianName}>
-                Resp.: {child.guardianName || "—"}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                Tel.: {child.guardianPhone || "—"}
-              </Typography>
-            </Box>
-            <ChevronRightIcon sx={{ color: "text.disabled", flexShrink: 0 }} />
-          </CardActionArea>
+              <ChevronRightIcon sx={{ color: "text.disabled", flexShrink: 0 }} />
+            </Stack>
 
-          <Divider />
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ px: 0.5, bgcolor: theme.palette.mode === "light" ? "grey.50" : "grey.900" }}
-          >
-            <Stack direction="row">
-              {canRegisterDecision && (
+            <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
+              <Chip
+                size="small"
+                label={child.isActive ? "Ativa" : "Desativada"}
+                color={child.isActive ? "success" : "default"}
+                variant={child.isActive ? "filled" : "outlined"}
+                sx={{ fontWeight: 700 }}
+              />
+              {alreadyAccepted && (
+                <Chip
+                  size="small"
+                  icon={<FavoriteIcon />}
+                  label="Aceitou Jesus"
+                  color="error"
+                  variant="outlined"
+                  sx={{ fontWeight: 700 }}
+                />
+              )}
+            </Stack>
+
+            <InfoRow icon={<FamilyRestroomIcon fontSize="small" />} label="Resp." value={child.guardianName || "—"} />
+            <InfoRow
+              icon={<PhoneIcon fontSize="small" />}
+              label="Tel."
+              value={child.guardianPhone ? formatPhone(child.guardianPhone) : "—"}
+            />
+          </Stack>
+        </CardActionArea>
+
+        {!!onViewDetails && (
+          <Box sx={{ px: 1.5, pb: 1.5 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="small"
+              startIcon={<InfoOutlinedIcon />}
+              onClick={() => onViewDetails(child)}
+              data-testid="child-card-details-button"
+              sx={{ minHeight: 44, fontWeight: 700 }}
+            >
+              Mais detalhes
+            </Button>
+          </Box>
+        )}
+
+        <Divider />
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ px: 0.5, bgcolor: isLight ? "grey.50" : "grey.900" }}
+        >
+          <Stack direction="row">
+            {canRegisterDecision && (
+              <Tooltip title={alreadyAccepted ? "Registrar reconciliação" : "Registrar decisão por Jesus"}>
                 <IconButton
                   onClick={(e) => { e.stopPropagation(); setModalOpen(true); }}
                   aria-label="Registrar decisão"
@@ -110,8 +172,10 @@ export default function ChildCard({
                 >
                   <FavoriteIcon sx={{ color: alreadyAccepted ? theme.palette.error.main : "#bbb" }} />
                 </IconButton>
-              )}
-              {!!onEdit && (
+              </Tooltip>
+            )}
+            {!!onEdit && (
+              <Tooltip title="Editar criança">
                 <IconButton
                   onClick={(e) => { e.stopPropagation(); onEdit(child); }}
                   aria-label="Editar criança"
@@ -119,8 +183,10 @@ export default function ChildCard({
                 >
                   <EditIcon fontSize="small" />
                 </IconButton>
-              )}
-              {!!onDelete && (
+              </Tooltip>
+            )}
+            {!!onDelete && (
+              <Tooltip title="Excluir criança">
                 <IconButton
                   onClick={(e) => { e.stopPropagation(); onDelete(child); }}
                   aria-label="Excluir criança"
@@ -128,332 +194,59 @@ export default function ChildCard({
                 >
                   <DeleteIcon fontSize="small" />
                 </IconButton>
-              )}
-            </Stack>
-
-            {!!onToggleActive && (
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ pr: 1 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={700}>
-                  {child.isActive ? "Ativa" : "Desativada"}
-                </Typography>
-                <Box
-                  component="button"
-                  type="button"
-                  role="switch"
-                  aria-checked={child.isActive}
-                  aria-label={child.isActive ? "Desativar criança" : "Ativar criança"}
-                  onClick={(e: React.MouseEvent) => { e.stopPropagation(); onToggleActive(child); }}
-                  sx={{
-                    position: "relative",
-                    "&::before": { content: '""', position: "absolute", inset: "-6px -4px" },
-                    width: 48,
-                    height: 28,
-                    borderRadius: 14,
-                    border: "none",
-                    cursor: "pointer",
-                    bgcolor: child.isActive ? theme.palette.success.main : theme.palette.grey[400],
-                    display: "flex",
-                    alignItems: "center",
-                    px: 0.5,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: "50%",
-                      bgcolor: "white",
-                      transition: "transform .2s",
-                      transform: child.isActive ? "translateX(20px)" : "translateX(0)",
-                      boxShadow: "0 2px 6px rgba(0,0,0,.25)",
-                    }}
-                  />
-                </Box>
-              </Stack>
+              </Tooltip>
             )}
           </Stack>
-        </Card>
-        <DecisionModal
-          data-testid="pagela-teacher-child-card-decision"
-          open={modalOpen && canRegisterDecision}
-          onClose={handleCloseModal}
-          child={child}
-          onSuccess={async () => {
-            if (onRefresh) await onRefresh();
-          }}
-        />
-      </>
-    );
-  }
 
-  return (
-    <>
-      <Card data-testid="pagela-teacher-child-card"
-        variant="outlined"
-        sx={{
-          borderRadius: 4,
-          height: "100%",
-          overflow: "hidden",
-          borderColor: "divider",
-          transition: "transform .12s ease, box-shadow .12s ease",
-          "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
-          position: "relative",
-          background:
-            theme.palette.mode === "light"
-              ? "linear-gradient(180deg, #fff 0%, #fafbfc 100%)"
-              : "linear-gradient(180deg, #1e1e1e 0%, #161616 100%)",
-        }}
-      >
-        {/* O registro da decisão só aparece enquanto o recurso está no ar. */}
-        {canRegisterDecision && (
-        <Tooltip title={alreadyAccepted ? "Registrar reconciliação" : "Registrar decisão por Jesus"}>
-          <IconButton
-            onClick={(e) => { e.stopPropagation(); setModalOpen(true); }}
-            sx={{
-              position: "absolute",
-              top: 8,
-              left: 8,
-              width: 44,
-              height: 44,
-              bgcolor: "background.paper",
-              border: "2px solid",
-              borderColor: "divider",
-              zIndex: 3,
-              "&:hover": { bgcolor: "background.paper" },
-            }}
-           aria-label="Registrar decisão">
-            <FavoriteIcon sx={{ color: alreadyAccepted ? theme.palette.error.main : "#ccc" }} />
-          </IconButton>
-        </Tooltip>
-        )}
-
-        <Stack
-          direction="row"
-          spacing={0.5}
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            zIndex: 3,
-          }}
-        >
-          {!!onEdit && (
-            <Tooltip title="Editar criança">
-              <IconButton
-                onClick={(e) => { e.stopPropagation(); onEdit(child); }}
+          {!!onToggleActive && (
+            <Tooltip title={child.isActive ? "Desativar criança" : "Ativar criança"}>
+              <Box
+                component="button"
+                type="button"
+                role="switch"
+                aria-checked={child.isActive}
+                aria-label={child.isActive ? "Desativar criança" : "Ativar criança"}
+                onClick={(e: React.MouseEvent) => { e.stopPropagation(); onToggleActive(child); }}
                 sx={{
-                  width: 44,
-                  height: 44,
-                  bgcolor: "background.paper",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  "&:hover": { bgcolor: "background.paper" },
+                  position: "relative",
+                  mr: 1,
+                  // Área de toque de 44 px sem engordar o interruptor.
+                  "&::before": { content: '""', position: "absolute", inset: "-8px -4px" },
+                  width: 48,
+                  height: 28,
+                  flexShrink: 0,
+                  borderRadius: 14,
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  px: 0.5,
+                  bgcolor: child.isActive ? theme.palette.success.main : theme.palette.grey[400],
+                  transition: "background-color .2s",
+                  "&:focus-visible": { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 2 },
                 }}
-               aria-label="Editar criança">
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          )}
-
-          {!!onDelete && (
-            <Tooltip title="Excluir criança">
-              <IconButton
-                onClick={(e) => { e.stopPropagation(); onDelete(child); }}
-                sx={{
-                  width: 44,
-                  height: 44,
-                  bgcolor: "background.paper",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  color: "error.main",
-                  "&:hover": { bgcolor: "error.50" },
-                }}
-               aria-label="Excluir criança">
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+              >
+                <Box
+                  sx={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: "50%",
+                    bgcolor: "white",
+                    transition: "transform .2s",
+                    transform: child.isActive ? "translateX(20px)" : "translateX(0)",
+                    boxShadow: "0 2px 6px rgba(0,0,0,.25)",
+                  }}
+                />
+              </Box>
             </Tooltip>
           )}
         </Stack>
-
-        <Box
-          sx={{
-            height: { xs: 64, sm: 90 },
-            background: `linear-gradient(135deg, ${colors.soft} 0%, ${colors.solid} 100%)`,
-            position: "relative",
-          }}
-        >
-          <Box sx={{ position: "absolute", top: -10, left: -10, width: 80, height: 80, borderRadius: "50%", opacity: 0.18, backgroundColor: colors.solid, filter: "blur(2px)" }} />
-          <Box sx={{ position: "absolute", bottom: -14, right: -10, width: 72, height: 72, borderRadius: "50%", opacity: 0.12, backgroundColor: colors.soft, filter: "blur(1px)" }} />
-
-          <Avatar
-            sx={{
-              position: "absolute",
-              left: 14,
-              bottom: -24,
-              width: { xs: 48, sm: 56 },
-              height: { xs: 48, sm: 56 },
-              border: "3px solid",
-              borderColor: "background.paper",
-              bgcolor: colors.solid,
-              fontWeight: 900,
-            }}
-          >
-            {initials || <ChildCareIcon />}
-          </Avatar>
-        </Box>
-
-        <CardActionArea onClick={() => onClick(child)} sx={{ display: "flex" }}>
-          <CardContent sx={{ pt: 3.5, pb: 2.25, px: { xs: 1.5, sm: 2 } }}>
-            <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mb: 0.5 }}>
-              <ChildCareIcon fontSize="small" sx={{ opacity: 0.7 }} />
-              <Typography
-                variant="subtitle1"
-                fontWeight={900}
-                title={child.name}
-                sx={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-              >
-                {child.name}
-              </Typography>
-            </Stack>
-
-            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mb: 0.25 }}>
-              <FamilyRestroomIcon fontSize="small" sx={{ opacity: 0.7 }} />
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                noWrap
-                title={child.guardianName}
-                sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-              >
-                Resp.: {child.guardianName || "—"}
-              </Typography>
-            </Stack>
-
-            <Stack direction="row" spacing={0.75} alignItems="center">
-              <PhoneIcon fontSize="small" sx={{ opacity: 0.7 }} />
-              <Typography variant="body2" color="text.secondary" noWrap title={child.guardianPhone}>
-                Tel.: {child.guardianPhone || "—"}
-              </Typography>
-            </Stack>
-
-            <Stack direction="row" spacing={0.5} sx={{ mt: 1.25, display: { xs: "none", sm: "flex" } }} alignItems="center" flexWrap="wrap">
-              <EmojiEmotionsIcon fontSize="small" sx={{ opacity: 0.65 }} />
-              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, letterSpacing: 0.15 }}>
-                toque para abrir a caderneta
-              </Typography>
-              <FavoriteIcon fontSize="inherit" sx={{ opacity: 0.5, ml: 0.25 }} />
-            </Stack>
-          </CardContent>
-        </CardActionArea>
-
-        {!!onToggleActive && (
-          <>
-            <Divider />
-            <Box
-              sx={{
-                px: { xs: 1.5, sm: 2 },
-                py: 1.5,
-                bgcolor: theme.palette.mode === "light" ? "grey.50" : "grey.900",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 1.5,
-              }}
-            >
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{
-                  fontSize: { xs: "0.7rem", sm: "0.75rem" },
-                  fontWeight: 500,
-                  flex: 1,
-                  lineHeight: 1.4,
-                }}
-              >
-                {!child.isActive
-                  ? "Criança voltou a frequentar o clubinho?"
-                  : "Criança não frequenta mais o clubinho?"}
-              </Typography>
-              <Tooltip title={child.isActive ? "Desativar criança" : "Ativar criança"}>
-                <Box
-                  component="button"
-                  type="button"
-                  role="switch"
-                  aria-checked={child.isActive}
-                  aria-label={child.isActive ? "Desativar criança" : "Ativar criança"}
-                  onClick={(e) => { e.stopPropagation(); onToggleActive(child); }}
-                  sx={{
-                    position: "relative",
-                    // Área de toque de 44 px sem engordar o interruptor.
-                    "&::before": { content: '""', position: "absolute", inset: "-6px -4px" },
-                    width: 56,
-                    height: 32,
-                    borderRadius: 16,
-                    border: "none",
-                    cursor: "pointer",
-                    bgcolor: child.isActive ? theme.palette.success.main : theme.palette.grey[400],
-                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    "&:hover": {
-                      bgcolor: child.isActive ? theme.palette.success.dark : theme.palette.grey[500],
-                      transform: "scale(1.05)",
-                    },
-                    "&:active": {
-                      transform: "scale(0.95)",
-                    },
-                    "&:focus": {
-                      outline: `2px solid ${child.isActive ? theme.palette.success.main : theme.palette.grey[400]}`,
-                      outlineOffset: 2,
-                    },
-                    display: "flex",
-                    alignItems: "center",
-                    px: 0.5,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      bgcolor: "white",
-                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      transform: child.isActive ? "translateX(24px)" : "translateX(0)",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {child.isActive ? (
-                      <Box
-                        component="span"
-                        sx={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: "50%",
-                          bgcolor: theme.palette.success.main,
-                        }}
-                      />
-                    ) : (
-                      <Box
-                        component="span"
-                        sx={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: "50%",
-                          bgcolor: theme.palette.grey[500],
-                        }}
-                      />
-                    )}
-                  </Box>
-                </Box>
-              </Tooltip>
-            </Box>
-          </>
-        )}
       </Card>
-      <DecisionModal data-testid="pagela-teacher-child-card"
+
+      <DecisionModal
+        data-testid="pagela-teacher-child-card-decision"
         open={modalOpen && canRegisterDecision}
-        onClose={handleCloseModal}
+        onClose={() => setModalOpen(false)}
         child={child}
         onSuccess={async () => {
           // Quem fecha é o modal: depois de excluir um registro ele segue
@@ -461,7 +254,6 @@ export default function ChildCard({
           if (onRefresh) await onRefresh();
         }}
       />
-
     </>
   );
 }

@@ -14,6 +14,7 @@ import type { ChildFormValues, ChildResponse, ChildListItem } from "../children/
 import { childToForm, emptyChildForm } from "../children/utils";
 import { useChildMutations } from "../children/hooks";
 import ChildFormDialog from "../children/components/ChildFormDialog";
+import ChildViewDialog from "../children/components/ChildViewDialog";
 import { apiFetchChild } from "../children/api";
 import ToggleActiveConfirmDialog from "@/components/common/modal/ToggleActiveConfirmDialog";
 import { ToggleActiveSubject } from "@/components/common/modal/types";
@@ -59,6 +60,7 @@ export default function ChildrenBrowserPage() {
   } = useChildrenBrowser(pageSize);
 
   const [creating, setCreating] = React.useState<ChildFormValues | null>(null);
+  const [viewing, setViewing] = React.useState<ChildResponse | null>(null);
   const [editing, setEditing] = React.useState<ChildFormValues | null>(null);
   const [confirmToggleActive, setConfirmToggleActive] = React.useState<ChildListItem | null>(null);
   const [confirmDelete, setConfirmDelete] = React.useState<ChildListItem | null>(null);
@@ -101,6 +103,15 @@ export default function ChildrenBrowserPage() {
       setDialogError("");
     } catch (err: unknown) {
       // O aviso global já mostrou a falha; o formulário não chega a abrir.
+      void err;
+    }
+  };
+
+  const openDetails = async (childId: string) => {
+    try {
+      setViewing(await apiFetchChild(childId));
+    } catch (err: unknown) {
+      // O aviso global já mostrou a falha; os detalhes não chegam a abrir.
       void err;
     }
   };
@@ -343,6 +354,7 @@ export default function ChildrenBrowserPage() {
                 <ChildCard
                   child={child}
                   onClick={(c) => nav(`/area-das-criancas/${c.id}`, { state: { child: c } })}
+                  onViewDetails={(c) => openDetails(c.id)}
                   onEdit={(c) => openEdit(c.id)}
                   onDelete={isAdmin ? (c) => setConfirmDelete(c) : undefined}
                   onRefresh={refetch}
@@ -370,6 +382,24 @@ export default function ChildrenBrowserPage() {
           )}
         </>
       )}
+
+      <ChildViewDialog
+        child={viewing}
+        onClose={() => setViewing(null)}
+        onEdit={() => {
+          if (!viewing) return;
+          const id = viewing.id;
+          setViewing(null);
+          void openEdit(id);
+        }}
+        onToggleActive={() => {
+          if (!viewing) return;
+          const id = viewing.id;
+          setViewing(null);
+          const item = items.find((c) => c.id === id);
+          if (item) setConfirmToggleActive(item);
+        }}
+      />
 
       <ChildFormDialog
         mode="create"

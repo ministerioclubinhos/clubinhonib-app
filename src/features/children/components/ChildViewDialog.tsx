@@ -118,6 +118,7 @@ export default function ChildViewDialog({
       open={!!child}
       onClose={onClose}
       fullWidth
+      fullScreen={isXs}
       maxWidth="sm"
       aria-labelledby="child-view-title"
     >
@@ -176,7 +177,7 @@ export default function ChildViewDialog({
             </Stack>
           </Box>
 
-          <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
+          <DialogContent dividers sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}>
             <Grid2 container spacing={1.25}>
               <Grid2 size={{ xs: 12, sm: 6 }}>
                 <DetailCard icon={<CakeIcon fontSize="small" />} title="Nascimento">
