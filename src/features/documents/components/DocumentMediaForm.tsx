@@ -15,6 +15,11 @@ import {
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import LinkIcon from '@mui/icons-material/Link';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import {
+  ACCEPTED_DOCUMENT_INPUT,
+  ACCEPTED_DOCUMENT_LABEL,
+  isAcceptedDocumentFile,
+} from '@/core/document-viewer';
 import { MediaUploadType, MediaPlatform } from '../types';
 
 export type ExistingMediaInfo =
@@ -50,7 +55,7 @@ const DocumentMediaForm: React.FC<Props> = ({
     (e: React.DragEvent) => {
       e.preventDefault();
       const f = e.dataTransfer.files?.[0];
-      if (f && /\.(pdf|doc|docx)$/i.test(f.name)) setFile(f);
+      if (f && isAcceptedDocumentFile(f.name)) setFile(f);
     },
     [setFile]
   );
@@ -58,7 +63,7 @@ const DocumentMediaForm: React.FC<Props> = ({
 
   return (
     <Fragment>
-      <Grid item xs={12} sm={6}>
+      <Grid data-testid="documents-document-media-form" item xs={12} sm={6}>
         <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}>
           <InputLabel>Tipo de upload</InputLabel>
           <Select
@@ -83,7 +88,7 @@ const DocumentMediaForm: React.FC<Props> = ({
       {uploadType === MediaUploadType.LINK && (
         <Fragment>
           {hasCurrentAttachment && existingMedia?.type === 'link' && (
-            <Grid item xs={12}>
+            <Grid data-testid="documents-document-media-form" item xs={12}>
               <Paper
                 variant="outlined"
                 sx={{
@@ -106,12 +111,12 @@ const DocumentMediaForm: React.FC<Props> = ({
                   <Chip label="Link" size="small" color="primary" variant="outlined" sx={{ borderRadius: 1 }} />
                 </Box>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                  Use &quot;Remover mídia&quot; acima para desvincular e poder adicionar outro link ou arquivo.
+                  Para trocar, informe outro link abaixo ou mude o tipo para Upload e escolha um arquivo.
                 </Typography>
               </Paper>
             </Grid>
           )}
-          <Grid item xs={12} sm={6}>
+          <Grid data-testid="documents-document-media-form" item xs={12} sm={6}>
             <TextField
               fullWidth
               label="URL do documento"
@@ -123,7 +128,7 @@ const DocumentMediaForm: React.FC<Props> = ({
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid data-testid="documents-document-media-form" item xs={12} sm={6}>
             <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}>
               <InputLabel>Plataforma</InputLabel>
               <Select
@@ -142,7 +147,7 @@ const DocumentMediaForm: React.FC<Props> = ({
       )}
 
       {uploadType === MediaUploadType.UPLOAD && (
-        <Grid item xs={12}>
+        <Grid data-testid="documents-document-media-form" item xs={12}>
           {hasCurrentAttachment && existingMedia?.type === 'upload' && (
             <Paper
               variant="outlined"
@@ -165,11 +170,11 @@ const DocumentMediaForm: React.FC<Props> = ({
                 <Chip label="Arquivo enviado" size="small" color="primary" variant="outlined" sx={{ borderRadius: 1 }} />
               </Box>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                Use &quot;Remover mídia&quot; acima para desvincular e poder enviar outro arquivo.
+                Para trocar, escolha um novo arquivo abaixo: ao salvar, o arquivo atual é removido e substituído pelo novo.
               </Typography>
             </Paper>
           )}
-          {existingMedia?.type !== 'upload' && (
+          {(
             <Paper
               component="label"
               variant="outlined"
@@ -195,8 +200,16 @@ const DocumentMediaForm: React.FC<Props> = ({
               <input
                 type="file"
                 hidden
-                accept=".pdf,.doc,.docx"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                accept={ACCEPTED_DOCUMENT_INPUT}
+                onChange={(e) => {
+                  const picked = e.target.files?.[0] || null;
+                  // Mesma regra da API: só PDF, DOCX e PPTX.
+                  if (picked && !isAcceptedDocumentFile(picked.name)) {
+                    e.target.value = '';
+                    return;
+                  }
+                  setFile(picked);
+                }}
               />
               <Box
                 sx={{
@@ -218,10 +231,14 @@ const DocumentMediaForm: React.FC<Props> = ({
                   />
                 </Box>
                 <Typography variant="body2" color={file ? 'primary.main' : 'text.secondary'} fontWeight={600}>
-                  {file ? file.name : 'Arraste um arquivo ou clique para selecionar'}
+                  {file
+                    ? file.name
+                    : hasCurrentAttachment && existingMedia?.type === 'upload'
+                      ? 'Arraste um novo arquivo ou clique para trocar'
+                      : 'Arraste um arquivo ou clique para selecionar'}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                  PDF, DOC ou DOCX
+                  {ACCEPTED_DOCUMENT_LABEL}
                 </Typography>
               </Box>
             </Paper>

@@ -1,101 +1,148 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/store/slices";
-import { CommentData, setComments } from "store/slices/comment/commentsSlice";
-import { apiDeleteComment, apiGetComments, apiPublishComment, apiUpdateComment } from "./api";
-import { debounce } from "./utils";
-import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from "@/constants/errorMessages";
+import { useCallback, useEffect, useState } from "react";
 
-export function useCommentsData() {
-  const dispatch = useDispatch<AppDispatch>();
-  const comments = useSelector((s: RootState) => s.comments.comments);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+import { useAbortController, useDebouncedValue } from "@/hooks";
+import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
 
-  const fetchComments = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await apiGetComments();
-      dispatch(setComments(data));
-    } catch (e: any) {
-      setError(FORM_VALIDATION_MESSAGES.COMMENT_FETCH_ERROR);
-    } finally {
-      setLoading(false);
-    }
-  }, [dispatch]);
+import {
+  apiDeleteComment,
+  apiFetchComments,
+  apiPublishComment,
+  apiUnpublishComment,
+  apiUpdateComment,
+} from "./api";
+import { COMMENTS_DEFAULT_LIMIT } from "./constants";
+import type {
+  CommentFilters,
+  CommentResponse,
+  UpdateCommentRequest,
+} from "./types";
 
-  useEffect(() => { fetchComments(); }, [fetchComments]);
-
-  return { comments, loading, error, setError, fetchComments };
-}
-
-export function useCommentsFilter(comments: CommentData[] | null | undefined) {
-  const [filtered, setFiltered] = useState<CommentData[]>([]);
+/**
+ * Página de comentários da administração.
+ *
+ * O estado é local de propósito. A versão anterior guardava a listagem inteira
+ * no Redux, o mesmo lugar de onde a home lê os comentários publicados — depois
+ * de abrir esta tela, a home passava a exibir também os não publicados.
+ */
+export function useComments() {
+  const [items, setItems] = useState<CommentResponse[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(COMMENTS_DEFAULT_LIMIT);
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<"all" | "published" | "unpublished">("all");
-  const [isFiltering, setIsFiltering] = useState(false);
+  const [filters, setFilters] = useState<Omit<CommentFilters, "searchString">>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const applyFilter = useCallback((term: string, s: typeof status) => {
-    let result = comments || [];
-    if (term.trim()) {
-      const q = term.toLowerCase();
-      result = result.filter((c) =>
-        (c.name || "").toLowerCase().includes(q) ||
-        (c.clubinho || "").toLowerCase().includes(q) ||
-        (c.neighborhood || "").toLowerCase().includes(q)
-      );
-    }
-    if (s === "published") result = result.filter((c) => !!c.published);
-    if (s === "unpublished") result = result.filter((c) => !c.published);
-    setFiltered(result);
-    setIsFiltering(false);
-  }, [comments]);
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
 
-  const debounced = useMemo(
-    () => debounce((term: string) => applyFilter(term, status), 300),
-    [applyFilter, status]
-  );
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
 
-  const onSearchChange = (term: string) => {
-    setSearch(term);
-    setIsFiltering(true);
-    debounced(term);
+  useEffect(() => {
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiFetchComments(
+          {
+            page,
+            limit: pageSize,
+            filters: { ...filters, searchString: debouncedSearch || undefined },
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.data) ? data.data : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, "Erro ao carregar os comentários"));
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  return {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
   };
-
-  useEffect(() => { applyFilter(search, status); }, [applyFilter, search, status]);
-  useEffect(() => () => debounced.cancel(), [debounced]);
-
-  return { filtered, search, onSearchChange, status, setStatus, isFiltering };
 }
 
-export function useCommentActions(fetchComments: () => Promise<void> | void) {
+/** Ações da listagem. Cada uma devolve se deu certo. */
+export function useCommentMutations(refresh: () => void) {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState("");
 
-  const publish = useCallback(async (c: CommentData) => {
-    setActionLoading(true); setActionError("");
-    try { await apiPublishComment(c); await fetchComments(); }
-    catch (e: any) { setActionError(FORM_VALIDATION_MESSAGES.COMMENT_PUBLISH_ERROR); throw e; }
-    finally { setActionLoading(false); }
-  }, [fetchComments]);
+  const run = useCallback(
+    async (action: () => Promise<void>, fallbackMessage: string) => {
+      setActionLoading(true);
+      setActionError("");
+      try {
+        await action();
+        refresh();
+        return true;
+      } catch (err: unknown) {
+        setActionError(extractErrorMessage(err, fallbackMessage));
+        return false;
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [refresh],
+  );
 
-  const remove = useCallback(async (c: CommentData) => {
-    if (!c.id) return;
-    setActionLoading(true); setActionError("");
-    try { await apiDeleteComment(c.id); await fetchComments(); }
-    catch (e: any) { setActionError(FORM_VALIDATION_MESSAGES.COMMENT_DELETE_ERROR); throw e; }
-    finally { setActionLoading(false); }
-  }, [fetchComments]);
+  const setPublished = useCallback(
+    (id: string, published: boolean) =>
+      run(async () => {
+        await (published ? apiPublishComment(id) : apiUnpublishComment(id));
+      }, "Erro ao alterar a publicação do comentário"),
+    [run],
+  );
 
-  const update = useCallback(async (c: CommentData, payload: {
-    name: string; comment: string; clubinho: string; neighborhood: string; published?: boolean;
-  }) => {
-    setActionLoading(true); setActionError("");
-    try { await apiUpdateComment(c, payload); await fetchComments(); }
-    catch (e: any) { setActionError(FORM_VALIDATION_MESSAGES.COMMENT_SAVE_ERROR); throw e; }
-    finally { setActionLoading(false); }
-  }, [fetchComments]);
+  const update = useCallback(
+    (id: string, payload: UpdateCommentRequest) =>
+      run(async () => {
+        await apiUpdateComment(id, payload);
+      }, "Erro ao salvar o comentário"),
+    [run],
+  );
 
-  return { actionLoading, actionError, setActionError, publish, remove, update };
+  const remove = useCallback(
+    (id: string) =>
+      run(async () => {
+        await apiDeleteComment(id);
+      }, "Erro ao excluir o comentário"),
+    [run],
+  );
+
+  return {
+    actionLoading,
+    actionError,
+    setActionError,
+    setPublished,
+    update,
+    remove,
+  };
 }

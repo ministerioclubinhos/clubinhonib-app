@@ -8,7 +8,7 @@ const NavBar: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <AppBar position="fixed" sx={{ backgroundColor: '#81d742', zIndex: 1300 }}>
+    <AppBar data-testid="nav-bar-navbar-nav-bar" position="fixed" sx={{ backgroundColor: '#81d742', zIndex: 1300 }}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <Typography
           variant="h6"

@@ -1,16 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { MediaItem } from '@/store/slices/types';
+import type {
+  MeditationDayResponse,
+  MeditationResponse,
+} from '@/features/meditations/types';
 
 export type WeekDay = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
 
-export interface DayItem {
-  id: string;
-  day: WeekDay | string;
-  verse: string;
-  topic: string;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-}
+/** @deprecated Use `MeditationDayResponse` de `@/features/meditations`. */
+export type DayItem = MeditationDayResponse;
 
 export enum WeekDayLabel {
   Monday = 'Segunda-feira',
@@ -20,16 +18,8 @@ export enum WeekDayLabel {
   Friday = 'Sexta-feira',
 }
 
-export interface MeditationData {
-  id: string;
-  topic: string;
-  startDate: string;
-  endDate: string;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  media: MediaItem;
-  days: DayItem[];
-}
+/** Meditação selecionada para edição/visualização. */
+export type MeditationData = MeditationResponse;
 
 interface MeditationState {
   meditationData: MeditationData | null;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import {
   Box, Stack, TextField, InputAdornment, IconButton, Skeleton, Alert,
   Card, CardActionArea, Avatar, Typography, Chip, Tooltip, Pagination
@@ -12,111 +12,55 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useTheme, alpha } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-import { apiFetchChildren } from "@/features/children/api";
-import type { ChildResponseDto, ChildFilters, ChildSort } from "@/features/children/types";
-import type { ClubResponseDto } from "@/features/clubs/types";
+import type { ChildResponse } from "@/features/children/types";
+import type { ClubResponse } from "@/features/clubs/types";
 import { EmptyState } from "./common/EmptyState";
 import { PlaceholderCard } from "./common/PlaceholderCard";
-import { fmtDate, formatPhone, useDebounced } from "../utils";
+import {
+  CHILDREN_PAGE_LIMIT,
+  TOUCH_TARGET_DESKTOP,
+  TOUCH_TARGET_MOBILE,
+} from "../constants";
+import { useChildrenBrowser } from "../hooks";
+import { formatDate, formatPhone, initialsFromName } from "../utils";
 
-function initialsFromName(name?: string): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  const first = parts[0][0] || "";
-  const last = parts[parts.length - 1][0] || "";
-  return (first + last).toUpperCase();
-}
-
-export function ChildrenPanel({
-  club,
-  onSelect,
-  selectedId,
-}: {
-  club: ClubResponseDto | null;
-  onSelect: (c: ChildResponseDto) => void;
+type Props = {
+  club: ClubResponse | null;
+  onSelect: (child: ChildResponse) => void;
   selectedId: string | null;
-}) {
+};
+
+export function ChildrenPanel({ club, onSelect, selectedId }: Props) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const touchMin = isMobile ? 56 : 48;
+  const touchMin = isMobile ? TOUCH_TARGET_MOBILE : TOUCH_TARGET_DESKTOP;
 
-  const [search, setSearch] = useState("");
-  const dq = useDebounced(search);
+  const {
+    rows,
+    total,
+    page,
+    setPage,
+    search,
+    setSearch,
+    loading,
+    error,
+    reload,
+  } = useChildrenBrowser(club);
 
-  const [page, setPage] = useState(1);
-  const [limit] = useState(12);
-  const [rows, setRows] = useState<ChildResponseDto[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
-
-  const sort = useMemo<ChildSort>(() => ({ id: "updatedAt", desc: true }), []);
-  const filters: ChildFilters = useMemo(
-    () => ({
-      searchString: dq || undefined,
-      clubNumber: club?.number ?? undefined,
-    }),
-    [dq, club?.number]
-  );
-
-  const lastKeyRef = useRef<string>("");
-  const abortRef = useRef<AbortController | null>(null);
-
-  const fetchChildren = useCallback(async () => {
-    if (!club) {
-      setRows([]);
-      setTotal(0);
-      return;
-    }
-
-    const key = JSON.stringify({ page, limit, filters, sort, clubId: club.id });
-    if (key === lastKeyRef.current) return;
-    lastKeyRef.current = key;
-
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
-
-    setLoading(true);
-    setError("");
-    try {
-      const data = await apiFetchChildren({ page, limit, filters, sort });
-      const meta = (data as any)?.meta;
-      setRows(Array.isArray((data as any)?.data) ? (data as any).data : []);
-      setTotal(Number(meta?.totalItems ?? (data as any)?.total ?? 0));
-    } catch (e: any) {
-      if (e?.name !== "CanceledError" && e?.name !== "AbortError") {
-        setError(e?.response?.data?.message || e?.message || "Erro ao listar crianças");
-      }
-    } finally {
-      if (abortRef.current === ctrl) abortRef.current = null;
-      setLoading(false);
-    }
-  }, [club, page, limit, filters, sort]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [club?.id]);
-
-  useEffect(() => {
-    fetchChildren();
-    return () => abortRef.current?.abort();
-  }, [fetchChildren]);
+  const limit = CHILDREN_PAGE_LIMIT;
 
   if (!club) {
-    return <PlaceholderCard title="Escolha um Clubinho" subtitle="Clique em um Clubinho para ver suas crianças." />;
+    return <PlaceholderCard data-testid="pagela-clubs-children-panel" title="Escolha um Clubinho" subtitle="Clique em um Clubinho para ver suas crianças." />;
   }
 
   return (
-    <Stack sx={{ height: "100%" }} spacing={2}>
+    <Stack data-testid="pagela-clubs-children-panel" sx={{ height: "100%" }} spacing={2}>
       <TextField
         size="small"
         placeholder="Buscar por nome, responsável, telefone..."
         value={search}
         onChange={(e) => {
           setSearch(e.target.value);
-          setPage(1);
         }}
         InputProps={{
           startAdornment: (
@@ -151,8 +95,8 @@ export function ChildrenPanel({
 
           {!loading && !error && rows.map((c) => {
             const initials = initialsFromName(c.name);
-            const nasc = c.birthDate ? fmtDate(c.birthDate) : null;
-            const desde = c.joinedAt ? fmtDate(c.joinedAt) : null;
+            const nasc = c.birthDate ? formatDate(c.birthDate) : null;
+            const desde = c.joinedAt ? formatDate(c.joinedAt) : null;
             const selected = selectedId === c.id;
 
             const avatarBg = c.gender === "F"
@@ -242,7 +186,7 @@ export function ChildrenPanel({
                         {c.birthDate && (
                           <Chip
                             size="small"
-                            label={`Nasc.: ${fmtDate(c.birthDate)}`}
+                            label={`Nasc.: ${formatDate(c.birthDate)}`}
                             color="default"
                             variant="outlined"
                             sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
@@ -252,7 +196,7 @@ export function ChildrenPanel({
                           <Chip
                             size="small"
                             color="secondary"
-                            label={`Desde ${fmtDate(c.joinedAt)}`}
+                            label={`Desde ${formatDate(c.joinedAt)}`}
                             sx={{ borderRadius: 999, height: 22, ".MuiChip-label": { px: 1, fontSize: 12 } }}
                           />
                         )}
@@ -268,7 +212,7 @@ export function ChildrenPanel({
 
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flexWrap: "wrap", gap: 1 }}>
         <Tooltip title="Recarregar">
-          <IconButton onClick={() => fetchChildren()} size={isMobile ? "small" : "medium"}>
+          <IconButton onClick={reload} size={isMobile ? "small" : "medium"} aria-label="Recarregar">
             <RefreshIcon />
           </IconButton>
         </Tooltip>

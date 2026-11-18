@@ -1,92 +1,126 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
-import { apiDeleteFeedback, apiListFeedbacks, apiMarkAsRead } from "./api";
-import { setFeedbacks } from "@/store/slices/feedback/feedbackSlice";
-import { FeedbackData } from "@/store/slices/feedback/feedbackSlice";
+import { useCallback, useEffect, useState } from "react";
 
-function useDebouncedValue<T>(value: T, delay = 300) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
-}
+import { useAbortController, useDebouncedValue } from "@/hooks";
+import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
 
-export function useFeedbackList() {
-  const dispatch = useDispatch();
-  const [items, setItems] = useState<FeedbackData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState("");
+import {
+  apiDeleteFeedback,
+  apiFetchFeedbacks,
+  apiMarkFeedbackAsRead,
+  apiMarkFeedbackAsUnread,
+} from "./api";
+import {
+  FEEDBACKS_DEFAULT_LIMIT,
+} from "./constants";
+import type { FeedbackFilters, FeedbackResponse } from "./types";
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await apiListFeedbacks();
-      setItems(data);
-      dispatch(setFeedbacks(data));
-    } catch (e: any) {
-      setError(e?.response?.data?.message || e?.message || "Erro ao carregar feedbacks");
-    } finally {
-      setLoading(false);
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  return { items, loading, error, setError, refresh, setItems };
-}
-
-export function useFeedbackSearch(items: FeedbackData[]) {
+/** Página de avaliações, com busca e filtros resolvidos pela API. */
+export function useFeedbacks() {
+  const [items, setItems] = useState<FeedbackResponse[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(FEEDBACKS_DEFAULT_LIMIT);
   const [search, setSearch] = useState("");
-  const term = useDebouncedValue(search, 300);
+  const [filters, setFilters] = useState<Omit<FeedbackFilters, "searchString">>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const filtered = useMemo(() => {
-    if (!term.trim()) return items;
-    const t = term.toLowerCase();
-    return items.filter((f) =>
-      [f.name, f.email || "", f.comment, f.category]
-        .some((field) => String(field).toLowerCase().includes(t))
-    );
-  }, [items, term]);
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
 
-  return { search, setSearch, filtered };
+  // Trocar busca ou filtro recomeça da primeira página: a página 5 do
+  // resultado anterior quase nunca existe no novo.
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
+
+  useEffect(() => {
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiFetchFeedbacks(
+          {
+            page,
+            limit: pageSize,
+            filters: { ...filters, searchString: debouncedSearch || undefined },
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.data) ? data.data : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, "Erro ao carregar as avaliações"));
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  return {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  };
 }
 
-export function useFeedbackMutations(refresh: () => Promise<void> | void) {
-  const [mLoading, setLoading] = useState(false);
-  const [mError, setError] = useState("");
+/** Ações da listagem. Cada uma devolve se deu certo. */
+export function useFeedbackMutations(refresh: () => void) {
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState("");
 
-  const deleteOne = useCallback(async (id: string) => {
-    setLoading(true);
-    setError("");
-    try {
-      await apiDeleteFeedback(id);
-      await refresh();
-    } catch (e: any) {
-      setError(e?.response?.data?.message || e?.message || "Erro ao excluir feedback");
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  }, [refresh]);
+  const run = useCallback(
+    async (action: () => Promise<void>, fallbackMessage: string) => {
+      setActionLoading(true);
+      setActionError("");
+      try {
+        await action();
+        refresh();
+        return true;
+      } catch (err: unknown) {
+        setActionError(extractErrorMessage(err, fallbackMessage));
+        return false;
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [refresh],
+  );
 
-  const markAsRead = useCallback(async (id: string) => {
-    setLoading(true);
-    setError("");
-    try {
-      await apiMarkAsRead(id);
-      await refresh();
-    } catch (e: any) {
-      setError(e?.response?.data?.message || e?.message || "Erro ao marcar como lido");
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  }, [refresh]);
+  const setRead = useCallback(
+    (id: string, read: boolean) =>
+      run(async () => {
+        await (read ? apiMarkFeedbackAsRead(id) : apiMarkFeedbackAsUnread(id));
+      }, "Erro ao alterar a situação da avaliação"),
+    [run],
+  );
 
-  return { mLoading, mError, setMError: setError, deleteOne, markAsRead };
+  const remove = useCallback(
+    (id: string) =>
+      run(async () => {
+        await apiDeleteFeedback(id);
+      }, "Erro ao excluir a avaliação"),
+    [run],
+  );
+
+  return { actionLoading, actionError, setActionError, setRead, remove };
 }

@@ -31,7 +31,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ open, onClose, ev
   const dataFormatada = dayjs(event.date).format('DD [de] MMMM');
 
   return (
-    <Dialog
+    <Dialog data-testid="event-event-details-modal"
       open={open}
       onClose={onClose}
       maxWidth="sm"

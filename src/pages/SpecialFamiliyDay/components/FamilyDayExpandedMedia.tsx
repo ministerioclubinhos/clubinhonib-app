@@ -45,7 +45,7 @@ const ExpandedVideo = ({ media }: { media: MediaItem }) => {
     media.uploadType === MediaUploadType.UPLOAD
   ) {
     return (
-      <Box
+      <Box data-testid="special-familiy-day-family-day-expanded-media-expanded-video"
         component="video"
         src={media.url}
         controls
@@ -72,7 +72,7 @@ const ExpandedVideo = ({ media }: { media: MediaItem }) => {
   if (!embedUrl) return null;
 
   return (
-    <Box
+    <Box data-testid="special-familiy-day-family-day-expanded-media-expanded-video"
       component="iframe"
       src={embedUrl}
       title={media.title || "Vídeo expandido"}
@@ -128,7 +128,7 @@ export const FamilyDayExpandedMedia = ({
   });
 
   return (
-    <Dialog
+    <Dialog data-testid="special-familiy-day-family-day-expanded-media"
       open={Boolean(media)}
       onClose={onClose}
       fullScreen
@@ -228,7 +228,7 @@ const NavigationButton = ({
   const isNext = direction === "next";
 
   return (
-    <IconButton
+    <IconButton data-testid="special-familiy-day-family-day-expanded-media-navigation-button"
       onClick={onClick}
       aria-label={isNext ? "Próxima mídia" : "Mídia anterior"}
       sx={{

@@ -1,4 +1,4 @@
-import { Box, Button, Container, Grid, Stack, Typography } from "@mui/material";
+import { Box, Button, Container, Grid2, Stack, Typography } from "@mui/material";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
@@ -7,7 +7,7 @@ import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import { motion } from "framer-motion";
 
-import { WeekMaterialPageData } from "@/store/slices/week-material/weekMaterialSlice";
+import { WeekMaterialResponse } from "@/features/week-materials";
 import { SectionEyebrow } from "./FamilyDayShared";
 import { FAMILY_COLORS, sectionWidthSx } from "./familyDayTheme";
 
@@ -39,7 +39,7 @@ const eventInfo = [
 ];
 
 const EventDetails = () => (
-  <Box sx={{ pb: { xs: 7, md: 10 } }}>
+  <Box data-testid="special-familiy-day-family-day-hero-event-details" sx={{ pb: { xs: 7, md: 10 } }}>
     <Container maxWidth={false} sx={sectionWidthSx}>
       <Box
         sx={{
@@ -116,7 +116,7 @@ const EventDetails = () => (
   </Box>
 );
 
-export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
+export const FamilyDayHero = ({ data }: { data: WeekMaterialResponse }) => {
   const heroTitle = data.title?.trim() || "Dia da Família";
   const titleParts = heroTitle.split(/(família)/i);
   const hasMaterials =
@@ -126,7 +126,7 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
 
   return (
     <>
-      <Box
+      <Box data-testid="special-familiy-day-family-day-hero"
         component="section"
         sx={{
           position: "relative",
@@ -185,8 +185,8 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
         />
 
         <Container maxWidth={false} sx={sectionWidthSx}>
-          <Grid container spacing={{ xs: 5.5, md: 7 }} alignItems="center">
-            <Grid item xs={12} md={7}>
+          <Grid2 container spacing={{ xs: 5.5, md: 7 }} alignItems="center">
+            <Grid2 size={{ xs: 12, md: 7 }}>
               <Box
                 component={motion.div}
                 initial={{ opacity: 0, x: -28 }}
@@ -348,9 +348,9 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
                   )}
                 </Stack>
               </Box>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} md={5}>
+            <Grid2 size={{ xs: 12, md: 5 }}>
               <Box
                 component={motion.div}
                 initial={{ opacity: 0, scale: 0.94, rotate: 2 }}
@@ -532,8 +532,8 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
                   </Box>
                 </Stack>
               </Box>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </Container>
 
         <Box
@@ -551,7 +551,7 @@ export const FamilyDayHero = ({ data }: { data: WeekMaterialPageData }) => {
         />
       </Box>
 
-      <EventDetails />
+      <EventDetails data-testid="special-familiy-day-family-day-hero" />
     </>
   );
 };

@@ -1,39 +1,23 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RouteData } from '@/store/slices/route/routeSlice';
-import { MediaItem } from '@/store/slices/types';
-
-export interface WeekMaterialPageData {
-  id: string;
-  title: string;
-  subtitle: string;
-  currentWeek: boolean;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-  videos: MediaItem[];
-  documents: MediaItem[];
-  images: MediaItem[];
-  audios: MediaItem[];
-  route: RouteData;
-}
+import type { WeekMaterialResponse } from '@/features/week-materials/types';
 
 interface WeekMaterialState {
-  weekMaterialSData: WeekMaterialPageData | null;
-  loading: boolean;
-  error: string | null;
+  /** Page selected in the admin list and edited by the admin form. */
+  weekMaterialSData: WeekMaterialResponse | null;
 }
 
 const initialState: WeekMaterialState = {
   weekMaterialSData: null,
-  loading: false,
-  error: null,
 };
 
-const studyMaterialSlice = createSlice({
-  name: 'studyMaterial',
+const weekMaterialSlice = createSlice({
+  name: 'weekMaterial',
   initialState,
   reducers: {
-    setWeekMaterialData: (state, action: PayloadAction<WeekMaterialPageData>) => {
+    setWeekMaterialData: (
+      state,
+      action: PayloadAction<WeekMaterialResponse>,
+    ) => {
       state.weekMaterialSData = action.payload;
     },
     clearWeekMaterialData: (state) => {
@@ -42,5 +26,6 @@ const studyMaterialSlice = createSlice({
   },
 });
 
-export const { setWeekMaterialData, clearWeekMaterialData } = studyMaterialSlice.actions;
-export default studyMaterialSlice.reducer;
+export const { setWeekMaterialData, clearWeekMaterialData } =
+  weekMaterialSlice.actions;
+export default weekMaterialSlice.reducer;

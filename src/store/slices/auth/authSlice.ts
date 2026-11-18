@@ -1,35 +1,19 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import apiAxios from '@/config/axiosConfig';
 
-import {
-  PersonalData,
-  UserPreferences,
-  ProfileImage,
-  UserRole,
-  TeacherProfileLite,
-  CoordinatorProfileLite,
-} from '@/types/shared';
+import type { MyProfile } from '@/features/profile/types';
 import { authService } from './auth.service';
 import { clearAuthTokens, readAuthTokens, sanitizeToken, writeAuthTokens } from './authStorage';
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  cpf?: string | null;
-  active?: boolean;
-  commonUser?: boolean;
-  phone?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  completed?: boolean;
-  teacherProfile?: TeacherProfileLite | null;
-  coordinatorProfile?: CoordinatorProfileLite | null;
-  personalData?: PersonalData;
-  preferences?: UserPreferences;
-  image?: ProfileImage;
-}
+/**
+ * O usuário logado.
+ *
+ * É exatamente o que `GET /auth/me` devolve — o mesmo `MyProfileResponseDto`
+ * de `GET /profile`. Antes quase todo campo era opcional aqui porque
+ * `/auth/me` deixava `active`, `completed`, `createdAt` e `updatedAt` de fora;
+ * agora os dois endpoints respondem o contrato inteiro.
+ */
+export type User = MyProfile;
 
 interface GoogleUser {
   name: string;

@@ -1,107 +1,84 @@
 import api from "@/config/axiosConfig";
-import { CreateUserForm, UsersPage, UserRow, UpdateUserForm } from "./types";
-import { extractPhoneDigits } from "@/components/common/inputs";
 
-export async function apiListUsers(params: {
-  page: number;
-  limit: number;
-  q?: string;
-  role?: string;
-  active?: boolean | null;
-  completed?: boolean | null;
-  sort?: string;
-  order?: "ASC" | "DESC";
-}): Promise<UsersPage> {
-  const {
-    page,
-    limit,
-    q,
-    role,
-    active,
-    completed,
-    sort = "updatedAt",
-    order = "DESC",
-  } = params;
+import { USERS_ENDPOINT } from "./constants";
+import { buildUsersQuery } from "./utils";
+import type {
+  ApiMessage,
+  CreateUserRequest,
+  PaginatedUsersResponse,
+  UpdateUserRequest,
+  UserFilters,
+  UserResponse,
+  UserSortField,
+  UserSortOrder,
+} from "./types";
 
-  const { data } = await api.get<UsersPage>("/users", {
-    params: {
-      page,
-      limit,
-      q: q || undefined,
-      role: role && role !== "all" ? role : undefined,
-      active: active === true ? "true" : active === false ? "false" : undefined,
-      completed:
-        completed === true ? "true" : completed === false ? "false" : undefined,
-      sort,
-      order,
-    },
+/** Página de usuários, com busca e filtros aplicados pela API. */
+export async function apiFetchUsers(
+  args: {
+    page: number;
+    limit: number;
+    filters?: UserFilters;
+    sort?: UserSortField;
+    order?: UserSortOrder;
+  },
+  options?: { signal?: AbortSignal },
+): Promise<PaginatedUsersResponse> {
+  const { data } = await api.get<PaginatedUsersResponse>(USERS_ENDPOINT, {
+    params: buildUsersQuery(args),
+    signal: options?.signal,
   });
 
   return data;
 }
 
+export async function apiFetchUser(id: string): Promise<UserResponse> {
+  const { data } = await api.get<UserResponse>(`${USERS_ENDPOINT}/${id}`);
+  return data;
+}
+
 export async function apiCreateUser(
-  payload: Omit<CreateUserForm, "confirmPassword">
-): Promise<UserRow> {
-  const { name, email, password, phone, role, active } = payload;
-
-  const { data } = await api.post<UserRow>("/users", {
-    name,
-    email,
-    password,
-    phone: phone ? extractPhoneDigits(phone) : undefined,
-    role,
-    active,
-  });
-
+  payload: CreateUserRequest,
+): Promise<UserResponse> {
+  const { data } = await api.post<UserResponse>(USERS_ENDPOINT, payload);
   return data;
 }
 
 export async function apiUpdateUser(
   id: string,
-  payload: UpdateUserForm
-): Promise<UserRow> {
-  console.log(payload);
-
-  const {
-    name,
-    email,
-    role,
-    phone,
-    active,
-    completed,
-    commonUser,
-    password,
-  } = payload;
-
-  const { data } = await api.put<UserRow>(`/users/${id}`, {
-    name,
-    email,
-    role,
-    phone: phone ? extractPhoneDigits(phone) : undefined,
-    active,
-    completed,
-    commonUser,
-    password,
-  });
-
+  payload: UpdateUserRequest,
+): Promise<UserResponse> {
+  const { data } = await api.put<UserResponse>(
+    `${USERS_ENDPOINT}/${id}`,
+    payload,
+  );
   return data;
 }
 
-export async function apiDeleteUser(id: string): Promise<void> {
-  await api.delete(`/users/${id}`);
+export async function apiDeleteUser(id: string): Promise<ApiMessage> {
+  const { data } = await api.delete<ApiMessage>(`${USERS_ENDPOINT}/${id}`);
+  return data;
 }
 
+/**
+ * Troca a foto de um usuário.
+ *
+ * O arquivo vai como `FormData`; a instância compartilhada do axios manda
+ * `application/json` por padrão, então o multipart precisa declarar o próprio
+ * tipo. O nome do campo é o que o `UpdateUserImageService` procura.
+ */
 export async function apiUpdateUserImage(
   id: string,
-  file: File
-): Promise<UserRow> {
+  file: File,
+): Promise<UserResponse> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const { data } = await api.patch<UserRow>(`/users/${id}/image`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const { data } = await api.patch<UserResponse>(
+    `${USERS_ENDPOINT}/${id}/image`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  );
 
   return data;
 }

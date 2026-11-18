@@ -112,7 +112,7 @@ export default function WeekAudioPlayerView({ audio, compact = false }: Props) {
   const fileSize = audio.size ? `${(audio.size / 1024 / 1024).toFixed(1)} MB` : null;
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-week-material-view-page-week-audio-player-view"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={compact ? undefined : { y: -2 }}

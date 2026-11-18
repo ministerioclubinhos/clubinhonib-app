@@ -14,7 +14,7 @@ const AccessDeniedPage: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <Box
+        <Box data-testid="error-access-denied-page"
             sx={{
                 minHeight: 'calc(100vh - var(--app-header-h, 64px))',
                 display: 'flex',

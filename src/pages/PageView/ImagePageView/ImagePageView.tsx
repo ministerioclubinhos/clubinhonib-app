@@ -1,13 +1,12 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { PUBLIC_MEDIA_BASE_PATH, PUBLIC_MEDIA_PAGE_WIDTH } from '@/features/public-media/constants';
 import {
   Box,
   CircularProgress,
   Container,
   Typography,
   Alert,
-  Tooltip,
-  Fab,
   Skeleton,
   Paper,
   Grid,
@@ -15,18 +14,16 @@ import {
   useTheme,
   useMediaQuery,
   Chip,
-  Stack,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '@/config/axiosConfig';
 import { RootState, AppDispatch } from '@/store/slices';
-import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import { UserRole } from '@/types/shared';
 import SectionImagePageView from './SectionImagePageView';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import { FofinhoButton } from './../../TeacherArea/components';
+import { isCancelledRequest } from '@/utils/apiError';
 import {
   setSectionData,
   appendSections,
@@ -37,6 +34,8 @@ import {
 interface PageSectionProps {
   idToFetch?: string;
   feed?: boolean;
+  /** `public` abre fora da Área do Professor, com volta para a galeria. */
+  variant?: 'teacher' | 'public';
 }
 
 function SectionSkeleton() {
@@ -44,7 +43,7 @@ function SectionSkeleton() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <motion.div
+    <motion.div data-testid="page-view-image-page-view-section-skeleton"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -125,7 +124,7 @@ function SectionSkeleton() {
   );
 }
 
-export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
+export default function PageSectionView({ idToFetch, feed, variant = 'teacher' }: PageSectionProps) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -135,11 +134,9 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const section = useSelector((state: RootState) => state.imageSectionPagination.section);
 
-  const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
   const defaultSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID;
 
   const observer = useRef<IntersectionObserver | null>(null);
@@ -182,8 +179,8 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
         }
 
         setHasMore(data.page * data.limit < data.total);
-      } catch (err: any) {
-        if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+      } catch (err: unknown) {
+        if (!isCancelledRequest(err)) {
           console.error('Erro ao carregar a seção:', err);
           setError('Erro ao carregar a seção. Tente novamente mais tarde.');
         }
@@ -204,7 +201,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -220,7 +217,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -244,7 +241,7 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
 
   if (!section) {
     return (
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Container data-testid="page-view-image-page-view-page-section-view" maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -277,126 +274,63 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
     );
   }
 
+  const totalPhotos = sectionsList.reduce((sum, item) => sum + (item.mediaItems?.length ?? 0), 0);
+  const totalSections = section.total ?? sectionsList.length;
+  const isPublic = variant === 'public';
+  const backProps = isPublic
+    ? { component: RouterLink, to: PUBLIC_MEDIA_BASE_PATH }
+    : { onClick: handleBack };
+
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+    <Box sx={{ bgcolor: isPublic ? '#f4f6f9' : 'transparent', minHeight: isPublic ? '70vh' : undefined }}>
+    <Container
+      data-testid="page-view-image-page-view-page-section-view"
+      maxWidth={isPublic ? false : 'xl'}
+      disableGutters={isPublic}
+      sx={{ py: { xs: 2, md: 4 }, ...(isPublic ? { width: PUBLIC_MEDIA_PAGE_WIDTH } : { px: { xs: 1.5, sm: 3 } }) }}
+    >
 
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+      <Box
+        component="header"
+        sx={{
+          mb: { xs: 2, md: 3 },
+          p: { xs: 2, sm: 3, md: 4 },
+          borderRadius: { xs: 3, md: 4 },
+          color: '#fff',
+          background: 'linear-gradient(135deg, #81d742 0%, #3f8f1b 100%)',
+          boxShadow: '0 10px 30px rgba(63,143,27,0.25)',
+        }}
       >
-        <Paper
-          elevation={3}
-          sx={{
-            p: { xs: 3, md: 4 },
-            mb: 4,
-            borderRadius: { xs: 3, md: 4 },
-            background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
+        <IconButton
+          {...backProps}
+          aria-label={isPublic ? 'Voltar para Fotos e Vídeos' : 'Voltar'}
+          data-testid="image-page-back"
+          sx={{ width: 44, height: 44, mb: 1, ml: -0.5, color: '#fff', bgcolor: 'rgba(255,255,255,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }}
         >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '50%',
-              zIndex: 0,
-            }}
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography component="h1" sx={{ fontWeight: 800, color: '#fff', lineHeight: 1.15, fontSize: { xs: '1.6rem', sm: '2.1rem', md: '2.6rem' } }}>
+          {section.title}
+        </Typography>
+        {section.subtitle && (
+          <Typography sx={{ mt: 0.5, fontWeight: 600, opacity: 0.95, fontSize: { xs: '1rem', md: '1.25rem' } }}>{section.subtitle}</Typography>
+        )}
+        {section.description && (
+          <Typography sx={{ mt: 1, opacity: 0.92, lineHeight: 1.6, maxWidth: 760, fontSize: { xs: '0.95rem', md: '1.05rem' } }}>
+            {section.description}
+          </Typography>
+        )}
+        <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <Chip
+            icon={<PhotoLibraryIcon sx={{ color: '#fff !important' }} />}
+            label={`${totalSections} ${totalSections === 1 ? 'seção' : 'seções'}`}
+            sx={{ bgcolor: 'rgba(255,255,255,0.22)', color: '#fff', fontWeight: 700 }}
           />
-
-          <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              mb={2}
-              flexWrap="wrap"
-              gap={2}
-            >
-              <Box display="flex" alignItems="center" gap={2}>
-                <IconButton
-                  onClick={handleBack}
-                  sx={{
-                    bgcolor: 'rgba(255,255,255,0.2)',
-                    color: 'white',
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,0.3)',
-                    },
-                  }}
-                >
-                  <ArrowBackIcon />
-                </IconButton>
-                <PhotoLibraryIcon sx={{ fontSize: { xs: '2rem', md: '2.5rem' } }} />
-              </Box>
-
-            </Box>
-
-            <Typography
-              variant="h3"
-              fontWeight="bold"
-              sx={{
-                fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
-                mb: 1,
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              }}
-            >
-              📸 {section.title}
-            </Typography>
-
-            {(section as any).subtitle && (
-              <Typography
-                variant="h5"
-                fontWeight="600"
-                sx={{
-                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
-                  mb: 2,
-                  opacity: 0.95,
-                  textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-                }}
-              >
-                {(section as any).subtitle}
-              </Typography>
-            )}
-
-            {section.description && (
-              <Typography
-                variant="h6"
-                sx={{
-                  fontSize: { xs: '1rem', md: '1.2rem' },
-                  opacity: 0.9,
-                  lineHeight: 1.6,
-                  maxWidth: '800px',
-                }}
-              >
-                {section.description}
-              </Typography>
-            )}
-
-            <Box
-              display="flex"
-              alignItems="center"
-              gap={2}
-              mt={3}
-              flexWrap="wrap"
-            >
-              <Chip
-                label={`${sectionsList.length} ${sectionsList.length === 1 ? 'Seção' : 'Seções'}`}
-                sx={{
-                  bgcolor: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  fontWeight: 'bold',
-                }}
-              />
-            </Box>
-          </Box>
-        </Paper>
-      </motion.div>
+          {totalPhotos > 0 && (
+            <Chip label={`${totalPhotos} ${totalPhotos === 1 ? 'foto' : 'fotos'}${hasMore ? '+' : ''}`} sx={{ bgcolor: 'rgba(255,255,255,0.22)', color: '#fff', fontWeight: 700 }} />
+          )}
+        </Box>
+      </Box>
 
       <AnimatePresence>
         {sectionsList.length > 0 ? (
@@ -473,5 +407,6 @@ export default function PageSectionView({ idToFetch, feed }: PageSectionProps) {
       </AnimatePresence>
 
     </Container>
+    </Box>
   );
 }

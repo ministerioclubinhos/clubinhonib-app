@@ -1,176 +1,249 @@
 import React from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider,
-  Typography, Alert, TextField, FormControl, InputLabel, Select, MenuItem,
-  useTheme, useMediaQuery, FormControlLabel, Checkbox
+  Alert,
+  Button,
+  Checkbox,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  FormControl,
+  FormControlLabel,
+  Grid2,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
+import { useSelector } from "react-redux";
+
+import { selectIsAdmin } from "@/store/selectors/routeSelectors";
+import type { RootState } from "@/store/slices";
+import { clubLinkPermissionsOf } from "@/utils/clubLinkPermissions";
+
 import AddressFields from "./form/AddressFields";
 import CoordinatorSelect from "./form/CoordinatorSelect";
 import TeachersSelect from "./form/TeachersSelect";
-import {
-  CoordinatorOption, CreateClubForm, EditClubForm, TeacherOption,
-  Weekday, WEEKDAYS
+import { WEEKDAY_OPTIONS } from "../constants";
+import { validateClubForm } from "../utils";
+import type {
+  ClubFormValues,
+  CoordinatorOption,
+  TeacherOption,
+  Weekday,
 } from "../types";
-import { useSelector } from "react-redux";
-import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
 type Props = {
   mode: "create" | "edit";
   open: boolean;
-  value: CreateClubForm | EditClubForm | null;
-  onChange: (val: CreateClubForm | EditClubForm) => void;
+  value: ClubFormValues | null;
+  onChange: (value: ClubFormValues) => void;
   onCancel: () => void;
   onSubmit: () => void;
   error: string;
   loading: boolean;
   coordinatorOptions: CoordinatorOption[];
   teacherOptions: TeacherOption[];
+  /** Clubinhos que quem está editando alcança; limita de onde trazer professor. */
+  /** O clubinho sendo editado; nulo na criação. */
+  clubId?: string | null;
+  /** Coordenador que o clubinho tinha ao abrir o formulário. */
+  initialCoordinatorProfileId?: string | null;
 };
 
 export default function ClubFormDialog({
-  mode, open, value, onChange, onCancel, onSubmit,
-  error, loading, coordinatorOptions, teacherOptions,
+  mode,
+  open,
+  value,
+  onChange,
+  onCancel,
+  onSubmit,
+  error,
+  loading,
+  coordinatorOptions,
+  teacherOptions,
+  clubId = null,
+  initialCoordinatorProfileId = null,
 }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const teachersKey = React.useMemo(
-    () => (teacherOptions ?? [])
-      .map(t => `${t.teacherProfileId}:${t.vinculado ? 1 : 0}`)
-      .join("|"),
-    [teacherOptions]
-  );
+  const role = useSelector((state: RootState) => state.auth.user?.role);
+  const permissions = clubLinkPermissionsOf(role);
   const isAdmin = useSelector(selectIsAdmin);
+
+  /**
+   * Quem sai do clubinho quando a escolha muda. Trocar o coordinador aqui é uma
+   * edição visível, mas o nome de quem perde a turma precisa estar à vista.
+   */
+  const replacedCoordinatorName = React.useMemo(() => {
+    const current = initialCoordinatorProfileId;
+    if (!current || current === value?.coordinatorProfileId) return undefined;
+
+    const name = coordinatorOptions.find(
+      (option) => option.coordinatorProfileId === current,
+    )?.name;
+
+    return name ? `Substitui ${name} na coordenação deste clubinho.` : undefined;
+  }, [initialCoordinatorProfileId, value?.coordinatorProfileId, coordinatorOptions]);
   const isCreate = mode === "create";
+
+  const teachersKey = React.useMemo(
+    () =>
+      (teacherOptions ?? [])
+        .map((t) => `${t.teacherProfileId}:${t.vinculado ? 1 : 0}`)
+        .join("|"),
+    [teacherOptions],
+  );
+
+  const fieldErrors = React.useMemo(
+    () => (value ? validateClubForm(value) : {}),
+    [value],
+  );
 
   if (!value) return null;
 
-  const teachers = (value as any).teacherProfileIds ?? [];
-  const coord = (value as any).coordinatorProfileId ?? null;
-  const time = (value as any).time ?? "";
+  const patch = (changes: Partial<ClubFormValues>) =>
+    onChange({ ...value, ...changes });
 
-  const numberValue =
-    isAdmin
-      ? (isCreate ? ((value as any).number ?? 0) : ((value as any).number ?? ""))
-      : undefined;
+  const canSubmit = Object.keys(fieldErrors).length === 0 && !loading;
 
   return (
-    <Dialog
+    // No celular o formulário ocupa a tela inteira: são muitos campos, e a
+    // caixa estreita deixava o teclado cobrindo metade deles.
+    <Dialog data-testid="clubs-club-form-dialog"
       open={open}
       onClose={onCancel}
       maxWidth="md"
       fullWidth
-      PaperProps={{
-        sx: {
-          width: isXs ? "98vw" : undefined,
-          maxWidth: isXs ? "98vw" : undefined,
-          m: isXs ? 0 : undefined,
-        },
-      }}
+      fullScreen={isXs}
     >
       <DialogTitle>{isCreate ? "Criar Clubinho" : "Editar Clubinho"}</DialogTitle>
 
       <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
-        <Grid container spacing={2}>
+        <Grid2 container spacing={2}>
           {isAdmin && (
-            <Grid item xs={12} md={3}>
+            <Grid2 size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Número"
                 type="text"
                 fullWidth
-                inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-                value={numberValue}
+                slotProps={{
+                  htmlInput: { inputMode: "numeric", pattern: "[0-9]*" },
+                }}
+                value={value.number ?? ""}
+                error={Boolean(fieldErrors.number)}
+                helperText={fieldErrors.number}
                 onChange={(e) => {
-                  const raw = e.target.value;
-                  const onlyDigits = raw.replace(/\D/g, "");
-                  const parsed = onlyDigits ? Number(onlyDigits) : undefined;
-                  onChange({ ...value, number: parsed } as any);
+                  const digits = e.target.value.replace(/\D/g, "");
+                  patch({ number: digits ? Number(digits) : null });
                 }}
               />
-            </Grid>
+            </Grid2>
           )}
 
-          <Grid item xs={12} md={5}>
+          <Grid2 size={{ xs: 12, md: 5 }}>
             <FormControl fullWidth>
-              <InputLabel>Dia da semana</InputLabel>
+              <InputLabel id="club-weekday-label">Dia da semana</InputLabel>
               <Select
+                labelId="club-weekday-label"
                 label="Dia da semana"
-                value={(value as any).weekday ?? "saturday"}
-                onChange={(e) =>
-                  onChange({ ...value, weekday: e.target.value as Weekday } as any)
-                }
+                value={value.weekday}
+                onChange={(e) => patch({ weekday: e.target.value as Weekday })}
               >
-                {WEEKDAYS.map((w) => (
-                  <MenuItem key={w.value} value={w.value}>{w.label}</MenuItem>
+                {WEEKDAY_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} md={4}>
+          <Grid2 size={{ xs: 12, md: 4 }}>
             <TextField
               label="Horário"
               type="time"
               fullWidth
-              inputProps={{ step: 60 }}
-              value={time}
-              onChange={(e) => onChange({ ...value, time: e.target.value } as any)}
-              helperText="0:00 a 23:59"
+              slotProps={{ htmlInput: { step: 60 } }}
+              value={value.time ?? ""}
+              error={Boolean(fieldErrors.time)}
+              helperText={fieldErrors.time ?? "0:00 a 23:59"}
+              onChange={(e) => patch({ time: e.target.value || null })}
             />
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} md={4}>
+          <Grid2 size={{ xs: 12, md: 4 }}>
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={(value as any).isActive !== false}
-                  onChange={(e) => onChange({ ...value, isActive: e.target.checked } as any)}
+                  checked={value.isActive}
+                  onChange={(e) => patch({ isActive: e.target.checked })}
                 />
               }
               label="Ativo"
             />
-          </Grid>
+          </Grid2>
 
-          {isAdmin && (
-            <Grid item xs={12} md={12}>
+          {/* Definir o coordenador é atributo do clubinho, e o valor atual está
+              à vista — por isso a troca acontece aqui, enquanto a tela de
+              coordenadores recusa: lá o dono atual não aparece. */}
+          {permissions.canManageCoordinatorLinks && (
+            <Grid2 size={12}>
               <CoordinatorSelect
-                value={coord}
+                value={value.coordinatorProfileId}
                 options={coordinatorOptions}
-                onChange={(val) =>
-                  onChange({ ...value, coordinatorProfileId: val } as any)
-                }
+                onChange={(coordinatorProfileId) => patch({ coordinatorProfileId })}
+                helperText={replacedCoordinatorName}
               />
-            </Grid>
+            </Grid2>
           )}
 
-          <Grid item xs={12}><Divider /></Grid>
+          <Grid2 size={12}>
+            <Divider />
+          </Grid2>
 
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" fontWeight={700}>Endereço</Typography>
-          </Grid>
+          <Grid2 size={12}>
+            <Typography variant="subtitle1" fontWeight={700}>
+              Endereço
+            </Typography>
+          </Grid2>
+
           <AddressFields
-            value={(value as any).address ?? {}}
-            onChange={(addr) => onChange({ ...value, address: addr } as any)}
+            value={value.address}
+            onChange={(address) => patch({ address })}
           />
 
-          <Grid item xs={12}><Divider /></Grid>
+          <Grid2 size={12}>
+            <Divider />
+          </Grid2>
 
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" fontWeight={700}>Professores</Typography>
-          </Grid>
-          <Grid item xs={12}>
+          <Grid2 size={12}>
+            <Typography variant="subtitle1" fontWeight={700}>
+              Professores
+            </Typography>
+          </Grid2>
+
+          <Grid2 size={12}>
             <TeachersSelect
               key={teachersKey}
-              value={teachers}
+              value={value.teacherProfileIds}
               options={teacherOptions}
-              onChange={(ids) =>
-                onChange({ ...value, teacherProfileIds: ids } as any)
-              }
+              currentClubId={clubId}
+              onChange={(teacherProfileIds) => patch({ teacherProfileIds })}
             />
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
 
         {loading && (
           <Typography align="center" sx={{ mt: 2 }}>
@@ -179,11 +252,29 @@ export default function ClubFormDialog({
         )}
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onCancel} sx={{ color: "text.secondary" }}>
+      <DialogActions
+        sx={{
+          p: { xs: 2, sm: 1.5 },
+          gap: 1,
+          flexDirection: { xs: "column-reverse", sm: "row" },
+          alignItems: { xs: "stretch", sm: "center" },
+        }}
+      >
+        <Button
+          onClick={onCancel}
+          fullWidth={isXs}
+          size={isXs ? "large" : "medium"}
+          sx={{ color: "text.secondary" }}
+        >
           Cancelar
         </Button>
-        <Button variant="contained" onClick={onSubmit} disabled={loading}>
+        <Button
+          variant="contained"
+          onClick={onSubmit}
+          disabled={!canSubmit}
+          fullWidth={isXs}
+          size={isXs ? "large" : "medium"}
+        >
           {isCreate ? "Criar" : "Salvar"}
         </Button>
       </DialogActions>

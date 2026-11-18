@@ -10,7 +10,7 @@ interface ConfirmDialogProps {
 
 export function ConfirmDialog({ open, title, message, onConfirm, onCancel }: ConfirmDialogProps) {
   return (
-    <Dialog open={open} onClose={onCancel} fullWidth maxWidth="xs">
+    <Dialog data-testid="teacher-area-modals-confirm-modal-confirm-dialog" open={open} onClose={onCancel} fullWidth maxWidth="xs">
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <DialogContentText>{message}</DialogContentText>

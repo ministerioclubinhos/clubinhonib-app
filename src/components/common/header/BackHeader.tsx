@@ -26,7 +26,7 @@ const BackHeader: React.FC<BackHeaderProps> = ({
   const navigate = useNavigate();
 
   return isXs ? (
-    <Box
+    <Box data-testid="header-back-header"
       sx={{
         mb: 3,
         display: "flex",
@@ -62,7 +62,7 @@ const BackHeader: React.FC<BackHeaderProps> = ({
       </Typography>
     </Box>
   ) : (
-    <Typography
+    <Typography data-testid="header-back-header"
       variant="h4"
       fontWeight={700}
       textAlign="center"

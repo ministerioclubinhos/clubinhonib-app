@@ -4,7 +4,7 @@ import { ABOUT_SECTIONS } from './constants';
 
 const About: React.FC = () => {
   return (
-    <AboutLayout>
+    <AboutLayout data-testid="about">
       {ABOUT_SECTIONS.map((section, index) => (
         <AboutSection
           key={section.id}

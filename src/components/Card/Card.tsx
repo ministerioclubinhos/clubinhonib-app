@@ -40,7 +40,7 @@ const Card: React.FC<CardProps> = ({ title, description, image, link, type }) =>
 
   return (
     <Fragment>
-      <MuiCard
+      <MuiCard data-testid="card"
         onClick={handleClick}
         sx={{
           width: 280,
@@ -73,7 +73,7 @@ const Card: React.FC<CardProps> = ({ title, description, image, link, type }) =>
         </CardContent>
       </MuiCard>
 
-      <Dialog open={isOpen} onClose={() => setIsOpen(false)} maxWidth="lg" fullWidth scroll="body">
+      <Dialog data-testid="card" open={isOpen} onClose={() => setIsOpen(false)} maxWidth="lg" fullWidth scroll="body">
         <DialogTitle sx={{ m: 0, p: 2 }}>
           {title}
           <IconButton

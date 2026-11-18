@@ -1,0 +1,26 @@
+export enum MeditationTextField {
+  TITLE = 'title',
+  VERSE_TEXT = 'verseText',
+  VERSE_REFERENCE = 'verseReference',
+  FIRST_ACTIVITY = 'firstActivity',
+  SECOND_ACTIVITY = 'secondActivity',
+  THIRD_ACTIVITY = 'thirdActivity',
+  FOURTH_ACTIVITY = 'fourthActivity',
+  PRAYER = 'prayer',
+  BIBLICAL_TEXT = 'biblicalText',
+  INTRODUCTION = 'introduction',
+}
+export const MEDITATION_FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24];
+export const MEDITATION_FONTS = ['Arial', 'Calibri', 'Times New Roman', 'Verdana'];
+export const MEDITATION_SECTION_FIELDS = {
+  verseText: 'VERSÍCULO PARA MEMORIZAR',
+  verseReference: 'VERSÍCULO PARA MEMORIZAR',
+  prayer: 'FALANDO COM DEUS',
+  biblicalText: 'TEXTO BÍBLICO',
+  introduction: 'ENTENDENDO A LIÇÃO',
+} as const;
+export const MEDITATION_SHEET_OVERFLOW_TOLERANCE_PX = 2;
+export const MEDITATION_FULLSCREEN_LABEL = 'Editor da meditação em tela cheia';
+export const MEDITATION_COPY_SELECTOR = '[data-meditation-copy]';
+export const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])';

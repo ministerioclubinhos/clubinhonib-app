@@ -49,7 +49,7 @@ export const WeekNavigationHeader: React.FC<WeekNavigationHeaderProps> = ({
   const theme = useTheme();
 
   return (
-    <Paper
+    <Paper data-testid="club-control-week-navigation-header"
       elevation={0}
       sx={{
         p: { xs: 2, sm: 2.5 },
@@ -160,7 +160,7 @@ export const WeekNavigationHeader: React.FC<WeekNavigationHeaderProps> = ({
           }}
         >
           <Tooltip title="Semana anterior">
-            <IconButton onClick={onPrevWeek} size="medium" sx={{ bgcolor: 'white' }}>
+            <IconButton onClick={onPrevWeek} size="medium" sx={{ bgcolor: 'white' }} aria-label="Semana anterior">
               <NavigateBefore />
             </IconButton>
           </Tooltip>
@@ -173,12 +173,12 @@ export const WeekNavigationHeader: React.FC<WeekNavigationHeaderProps> = ({
             Ir para Atual
           </Button>
           <Tooltip title="Próxima semana">
-            <IconButton onClick={onNextWeek} size="medium" sx={{ bgcolor: 'white' }}>
+            <IconButton onClick={onNextWeek} size="medium" sx={{ bgcolor: 'white' }} aria-label="Próxima semana">
               <NavigateNext />
             </IconButton>
           </Tooltip>
           <Tooltip title="Atualizar dados">
-            <IconButton onClick={onRefresh} color="primary" size="medium" sx={{ bgcolor: 'white' }}>
+            <IconButton onClick={onRefresh} color="primary" size="medium" sx={{ bgcolor: 'white' }} aria-label="Atualizar dados">
               <Refresh />
             </IconButton>
           </Tooltip>

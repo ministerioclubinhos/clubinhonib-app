@@ -8,7 +8,7 @@ interface ModalProps {
 
 const Modal: React.FC<ModalProps> = ({ onClose, children }) => {
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
+    <div data-testid="modal" className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeButton} onClick={onClose}>
           ✖

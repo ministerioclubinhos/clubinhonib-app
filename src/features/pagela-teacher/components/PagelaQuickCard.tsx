@@ -25,6 +25,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from "../types";
 import { todayISO, toLabelWeek } from "../utils";
+import type { ChipProps } from '@mui/material';
 
 type Props = {
   childName?: string;
@@ -108,11 +109,11 @@ export default function PagelaQuickCard({
     }
   };
 
-  const ChipYes = (props: any) => (
-    <Chip size="small" color="success" icon={<CheckCircle sx={{ fontSize: 16 }} />} {...props} />
+  const ChipYes = (props: ChipProps) => (
+    <Chip data-testid="pagela-teacher-pagela-quick-card-chip-yes" size="small" color="success" icon={<CheckCircle sx={{ fontSize: 16 }} />} {...props} />
   );
-  const ChipNo = (props: any) => (
-    <Chip size="small" variant="outlined" icon={<RadioButtonUnchecked sx={{ fontSize: 16 }} />} {...props} />
+  const ChipNo = (props: ChipProps) => (
+    <Chip data-testid="pagela-teacher-pagela-quick-card-chip-no" size="small" variant="outlined" icon={<RadioButtonUnchecked sx={{ fontSize: 16 }} />} {...props} />
   );
 
   const chipMobileSx = {
@@ -132,13 +133,13 @@ export default function PagelaQuickCard({
 
   const Chips = () =>
     isXs ? (
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 0.5, rowGap: 0, width: "100%" }}>
+      <Box data-testid="pagela-teacher-pagela-quick-card-chips" sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 0.5, rowGap: 0, width: "100%" }}>
         {present ? <ChipYes label="Pres" sx={chipMobileSx} /> : <ChipNo label="Pres" sx={chipMobileSx} />}
         {med ? <ChipYes label="Med" sx={chipMobileSx} /> : <ChipNo label="Med" sx={chipMobileSx} />}
         {verse ? <ChipYes label="Vers" sx={chipMobileSx} /> : <ChipNo label="Vers" sx={chipMobileSx} />}
       </Box>
     ) : (
-      <Stack direction="row" spacing={0.75} flexWrap="wrap" justifyContent="flex-end">
+      <Stack data-testid="pagela-teacher-pagela-quick-card-chips" direction="row" spacing={0.75} flexWrap="wrap" justifyContent="flex-end">
         {present ? <ChipYes label="Presente" /> : <ChipNo label="Presença" />}
         {med ? <ChipYes label="Meditação" /> : <ChipNo label="Meditação" />}
         {verse ? <ChipYes label="Versículo" /> : <ChipNo label="Versículo" />}
@@ -149,7 +150,7 @@ export default function PagelaQuickCard({
   const todayBr = formatDateBRLong(new Date());
 
   return (
-    <Card sx={{ borderRadius: 4, overflow: "hidden", boxShadow: "0 10px 26px rgba(0,0,0,.08)", borderLeft: `8px solid ${accent}`, bgcolor: alpha(accent, theme.palette.mode === "light" ? 0.06 : 0.12) }}>
+    <Card data-testid="pagela-teacher-pagela-quick-card" sx={{ borderRadius: 4, overflow: "hidden", boxShadow: "0 10px 26px rgba(0,0,0,.08)", borderLeft: `8px solid ${accent}`, bgcolor: alpha(accent, theme.palette.mode === "light" ? 0.06 : 0.12) }}>
       <Box sx={{ px: { xs: 1.5, md: 2.25 }, py: 1, bgcolor: alpha(accent, 0.12), borderBottom: "1px solid", borderColor: alpha(accent, 0.28) }}>
         {isXs ? (
           <Stack direction="row" spacing={1} alignItems="flex-start">

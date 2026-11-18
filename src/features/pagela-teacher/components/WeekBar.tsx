@@ -33,7 +33,7 @@ export default function WeekBar({ year, week, onChange, goCurrent }: Props) {
 
   if (isXs) {
     return (
-      <Stack spacing={1}>
+      <Stack data-testid="pagela-teacher-week-bar" spacing={1}>
         <Box
           sx={{
             display: "flex",
@@ -44,17 +44,17 @@ export default function WeekBar({ year, week, onChange, goCurrent }: Props) {
         >
           <Box sx={{ display: "flex", gap: 0.5 }}>
             <Tooltip title="Semana anterior">
-              <IconButton size="small" onClick={dec}>
+              <IconButton size="small" onClick={dec} aria-label="Semana anterior">
                 <ChevronLeft />
               </IconButton>
             </Tooltip>
             <Tooltip title="Semana atual">
-              <IconButton size="small" onClick={goCurrent}>
+              <IconButton size="small" onClick={goCurrent} aria-label="Semana atual">
                 <Today />
               </IconButton>
             </Tooltip>
             <Tooltip title="Próxima semana">
-              <IconButton size="small" onClick={inc}>
+              <IconButton size="small" onClick={inc} aria-label="Próxima semana">
                 <ChevronRight />
               </IconButton>
             </Tooltip>
@@ -72,7 +72,7 @@ export default function WeekBar({ year, week, onChange, goCurrent }: Props) {
   }
 
   return (
-    <Box
+    <Box data-testid="pagela-teacher-week-bar"
       sx={{
         display: "flex",
         gap: 1,

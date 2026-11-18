@@ -10,8 +10,6 @@ import {
   Alert,
   Stack,
   Tooltip,
-  Dialog,
-  IconButton,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
@@ -23,6 +21,7 @@ import { apiUpdateProfileImage } from '../api';
 import { fetchCurrentUser } from '@/store/slices/auth/authSlice';
 import type { AppDispatch } from '@/store/slices';
 import { extractErrorMessage } from '@/utils/apiError';
+import ImageZoomDialog from './ImageZoomDialog';
 
 interface ProfileImageUploadProps {
   currentImageUrl?: string;
@@ -66,8 +65,8 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
   };
 
   const detectDevice = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+    const userAgent = navigator.userAgent || navigator.vendor;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent);
     const isAndroid = /android/i.test(userAgent);
     const isMobile = isIOS || isAndroid;
 
@@ -386,6 +385,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
                 });
               }
             } catch {
+              // Sem esta câmera; o laço tenta a próxima opção.
             }
           }
 
@@ -437,16 +437,17 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
         cleanup();
       };
 
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorName = (err as { name?: string })?.name;
       let errorMessage = 'Erro ao acessar a câmera. ';
 
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
         errorMessage += 'Permissão negada. Por favor, permita o acesso à câmera nas configurações do navegador.';
-      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+      } else if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError') {
         errorMessage += 'Nenhuma câmera encontrada.';
-      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+      } else if (errorName === 'NotReadableError' || errorName === 'TrackStartError') {
         errorMessage += 'A câmera está sendo usada por outro aplicativo.';
-      } else if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+      } else if (errorName === 'OverconstrainedError' || errorName === 'ConstraintNotSatisfiedError') {
         errorMessage += 'Configurações da câmera não suportadas.';
       } else {
         errorMessage += 'Tente usar a opção de selecionar da galeria.';
@@ -494,12 +495,14 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
       try {
         await dispatch(fetchCurrentUser()).unwrap();
       } catch {
+        // A foto já foi gravada; recarregar o usuário é conveniência.
       }
 
-      const newImage = updatedProfile.image || (updatedProfile.mediaItems && updatedProfile.mediaItems.length > 0 ? updatedProfile.mediaItems[0] : null);
-
-      if (newImage?.url) {
-        setPreview(newImage.url);
+      // A resposta traz o perfil já atualizado, com a foto em `image`. O
+      // campo `mediaItems`, que a versão anterior também consultava, nunca
+      // existiu no contrato da API.
+      if (updatedProfile.image?.url) {
+        setPreview(updatedProfile.image.url);
       }
 
       onUpdate();
@@ -513,7 +516,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
   };
 
   return (
-    <motion.div
+    <motion.div data-testid="profile-profile-image-upload"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -675,50 +678,11 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
         </Box>
       </Box>
 
-      <Dialog
+      <ImageZoomDialog
         open={previewOpen}
+        imageUrl={imageToShow || ''}
         onClose={() => setPreviewOpen(false)}
-        maxWidth="md"
-        slotProps={{
-          paper: {
-            sx: {
-              bgcolor: 'transparent',
-              boxShadow: 'none',
-              overflow: 'visible',
-            },
-          },
-        }}
-      >
-        <Box sx={{ position: 'relative' }}>
-          <IconButton
-            onClick={() => setPreviewOpen(false)}
-            sx={{
-              position: 'absolute',
-              top: -20,
-              right: -20,
-              bgcolor: 'rgba(0,0,0,0.7)',
-              color: 'white',
-              '&:hover': {
-                bgcolor: 'rgba(0,0,0,0.85)',
-              },
-              zIndex: 1,
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          <Box
-            component="img"
-            src={imageToShow || ''}
-            alt="Foto de perfil ampliada"
-            sx={{
-              maxWidth: '90vw',
-              maxHeight: '80vh',
-              borderRadius: 2,
-              objectFit: 'contain',
-            }}
-          />
-        </Box>
-      </Dialog>
+      />
     </motion.div>
   );
 };

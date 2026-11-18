@@ -1,140 +1,137 @@
 import { useCallback, useEffect, useState } from "react";
+
+import { useAbortController, useDebouncedValue } from "@/hooks";
+import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
+
 import {
   apiCreateUser,
   apiDeleteUser,
-  apiListUsers,
+  apiFetchUsers,
   apiUpdateUser,
 } from "./api";
-import {
-  CreateUserForm,
-  SortParam,
-  UserFilters,
-  UserRow,
-  UpdateUserForm,
-} from "./types";
-import { extractErrorMessage } from "@/utils/apiError";
+import { USERS_DEFAULT_LIMIT } from "./constants";
+import type { UserFilters, UserResponse } from "./types";
+import { toCreateUserRequest, toUpdateUserRequest } from "./utils";
+import type { UserFormValues } from "./types";
 
-export function useUsers(
-  pageIndex: number,
-  pageSize: number,
-  sorting: SortParam,
-  filters: UserFilters
-) {
-  const [rows, setRows] = useState<UserRow[]>([]);
+/** Página de usuários, com busca e filtros resolvidos pela API. */
+export function useUsers() {
+  const [items, setItems] = useState<UserResponse[]>([]);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(USERS_DEFAULT_LIMIT);
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<Omit<UserFilters, "searchString">>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const fetchPage = useCallback(async () => {
-    setLoading(true);
-    setError("");
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
 
-    try {
-      const sort = sorting?.id ?? "updatedAt";
-      const order = sorting?.desc ? "DESC" : "ASC";
-
-      const page = await apiListUsers({
-        page: pageIndex + 1,
-        limit: pageSize,
-        q: filters.q || undefined,
-        role: filters.role,
-        active: filters.active,
-        completed: filters.completed,
-        sort,
-        order,
-      });
-
-      setRows(Array.isArray(page?.items) ? page.items : []);
-      setTotal(Number(page?.meta?.total ?? 0));
-    } catch (err: unknown) {
-      setError(extractErrorMessage(err, "Erro ao buscar usuários"));
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    filters.active,
-    filters.completed,
-    filters.q,
-    filters.role,
-    pageIndex,
-    pageSize,
-    sorting,
-  ]);
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
 
   useEffect(() => {
-    fetchPage();
-  }, [fetchPage]);
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiFetchUsers(
+          {
+            page,
+            limit: pageSize,
+            filters: { ...filters, searchString: debouncedSearch || undefined },
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.items) ? data.items : []);
+        setTotal(Number(data?.meta?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, "Erro ao carregar os usuários"));
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
 
   return {
-    rows,
+    items,
     total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
     loading,
     error,
     setError,
-    fetchPage,
-    setRows,
-    setTotal,
+    refresh,
   };
 }
 
-export function useUserMutations(refreshPage: () => Promise<void> | void) {
-  const [dialogLoading, setDialogLoading] = useState(false);
-  const [dialogError, setDialogError] = useState("");
+/** Escritas da tela. Cada operação devolve se deu certo. */
+export function useUserMutations(refresh: () => void) {
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState("");
 
-  const createUser = useCallback(async (form: CreateUserForm) => {
-    setDialogLoading(true);
-    setDialogError("");
-
-    try {
-      const { confirmPassword, ...payload } = form;
-      await apiCreateUser(payload);
-      await refreshPage();
-    } catch (err: unknown) {
-      setDialogError(extractErrorMessage(err, "Erro ao criar usuário"));
-      throw err;
-    } finally {
-      setDialogLoading(false);
-    }
-  }, [refreshPage]);
-
-  const updateUser = useCallback(
-    async (id: string, form: UpdateUserForm & { confirmPassword?: string }) => {
-      setDialogLoading(true);
-      setDialogError("");
-
+  const run = useCallback(
+    async (action: () => Promise<void>, fallbackMessage: string) => {
+      setActionLoading(true);
+      setActionError("");
       try {
-        const { confirmPassword: _, ...payload } = form;
-        await apiUpdateUser(id, payload);
-        await refreshPage();
+        await action();
+        refresh();
+        return true;
       } catch (err: unknown) {
-        setDialogError(extractErrorMessage(err, "Erro ao atualizar usuário"));
-        throw err;
+        setActionError(extractErrorMessage(err, fallbackMessage));
+        return false;
       } finally {
-        setDialogLoading(false);
+        setActionLoading(false);
       }
     },
-    [refreshPage]
+    [refresh],
   );
 
-  const deleteUser = useCallback(async (id: string) => {
-    setDialogLoading(true);
-    setDialogError("");
+  const createUser = useCallback(
+    (values: UserFormValues) =>
+      run(async () => {
+        await apiCreateUser(toCreateUserRequest(values));
+      }, "Erro ao criar o usuário"),
+    [run],
+  );
 
-    try {
-      await apiDeleteUser(id);
-      await refreshPage();
-    } catch (err: unknown) {
-      setDialogError(extractErrorMessage(err, "Erro ao excluir usuário"));
-      throw err;
-    } finally {
-      setDialogLoading(false);
-    }
-  }, [refreshPage]);
+  const updateUser = useCallback(
+    (id: string, values: UserFormValues) =>
+      run(async () => {
+        await apiUpdateUser(id, toUpdateUserRequest(values));
+      }, "Erro ao atualizar o usuário"),
+    [run],
+  );
+
+  const deleteUser = useCallback(
+    (id: string) =>
+      run(async () => {
+        await apiDeleteUser(id);
+      }, "Erro ao excluir o usuário"),
+    [run],
+  );
 
   return {
-    dialogLoading,
-    dialogError,
-    setDialogError,
+    actionLoading,
+    actionError,
+    setActionError,
     createUser,
     updateUser,
     deleteUser,

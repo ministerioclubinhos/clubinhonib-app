@@ -8,7 +8,7 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 export function SectionHeader({ context, title, subtitle }: { context: "clubs" | "children" | "pagelas"; title: string; subtitle?: string; }) {
 const icon = context === "clubs" ? <PeopleAltIcon /> : context === "children" ? <PersonIcon /> : <EventAvailableIcon />;
 return (
-<Stack direction="row" alignItems="center" spacing={1}>
+<Stack data-testid="pagela-clubs-section-header" direction="row" alignItems="center" spacing={1}>
 <Badge overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }} badgeContent={<WbSunnyIcon fontSize="inherit" />}>
 <Avatar>{icon}</Avatar>
 </Badge>

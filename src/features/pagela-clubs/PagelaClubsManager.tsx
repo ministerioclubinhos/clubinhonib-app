@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Box,
   Stack,
@@ -13,7 +14,6 @@ import {
   Grid,
 } from "@mui/material";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import BookmarksIcon from "@mui/icons-material/Bookmarks";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -23,19 +23,27 @@ import { ClubsPanel } from "./components/ClubsPanel";
 import { PagelasPanel } from "./components/PagelasPanel";
 import { ChildrenPanel } from "./components/ChildrenPanel";
 
-import type { ClubResponseDto } from "@/features/clubs/types";
-import type { ChildResponseDto } from "@/features/children/types";
+import type { ClubResponse } from "@/features/clubs/types";
+import type { ChildResponse } from "@/features/children/types";
 import BackHeader from "@/components/common/header/BackHeader";
+import { selectIsAdmin } from "@/store/selectors/routeSelectors";
 
-type MobileStep = "clubs" | "children" | "pagelas";
+import { CLUBS_SUBTITLE, CLUBS_SUBTITLE_MOBILE } from "./constants";
+import { viewerScopeOf } from "./utils";
+import type { PagelaBrowseStep } from "./types";
 
 export default function PagelaClubsManager() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const [selectedClub, setSelectedClub] = useState<ClubResponseDto | null>(null);
-  const [selectedChild, setSelectedChild] = useState<ChildResponseDto | null>(null);
-  const [mobileStep, setMobileStep] = useState<MobileStep>("clubs");
+  // A API já devolve só o que cada papel alcança; o alcance aqui muda apenas
+  // o texto, para o coordenador não achar que está vendo a rede inteira.
+  const isAdmin = useSelector(selectIsAdmin);
+  const scope = viewerScopeOf(isAdmin);
+
+  const [selectedClub, setSelectedClub] = useState<ClubResponse | null>(null);
+  const [selectedChild, setSelectedChild] = useState<ChildResponse | null>(null);
+  const [mobileStep, setMobileStep] = useState<PagelaBrowseStep>("clubs");
 
   useEffect(() => {
     if (!isMobile) return;
@@ -56,7 +64,7 @@ export default function PagelaClubsManager() {
   };
 
   return (
-    <Box
+    <Box data-testid="pagela-clubs-pagela-clubs-manager"
       sx={{
         height: "100%",
         display: "flex",
@@ -144,7 +152,7 @@ export default function PagelaClubsManager() {
                     minHeight: 0,
                   }}
                 >
-                  <SectionHeader context="clubs" title="Clubinhos" subtitle="Selecione um clubinho para ver as crianças" />
+                  <SectionHeader context="clubs" title="Clubinhos" subtitle={CLUBS_SUBTITLE[scope]} />
                   <Box sx={{ flex: 1, minHeight: 0 }}>
                     <ClubsPanel
                       onSelect={(club) => {
@@ -152,6 +160,7 @@ export default function PagelaClubsManager() {
                         setSelectedChild(null);
                       }}
                       selectedId={selectedClub?.id || null}
+                      scope={scope}
                     />
                   </Box>
                 </CardContent>
@@ -217,7 +226,7 @@ export default function PagelaClubsManager() {
             {mobileStep === "clubs" && (
               <Card sx={{ flex: 1, overflow: "hidden", minHeight: 0, display: "flex" }}>
                 <CardContent sx={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", gap: 2, minHeight: 0 }}>
-                  <SectionHeader context="clubs" title="Clubinhos" subtitle="Toque em um clubinho para avançar" />
+                  <SectionHeader context="clubs" title="Clubinhos" subtitle={CLUBS_SUBTITLE_MOBILE[scope]} />
                   <Box sx={{ flex: 1, minHeight: 0 }}>
                     <ClubsPanel
                       onSelect={(club) => {
@@ -226,6 +235,7 @@ export default function PagelaClubsManager() {
                         setMobileStep("children");
                       }}
                       selectedId={selectedClub?.id || null}
+                      scope={scope}
                     />
                   </Box>
                 </CardContent>

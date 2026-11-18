@@ -1,124 +1,88 @@
 import api from "@/config/axiosConfig";
-import {
-  ClubResponseDto, Paginated, CreateClubForm, EditClubForm,
-  CoordinatorMiniDto, TeacherOption, UserPublicDto,
-  ClubFilters, ClubSort,
-  CoordinatorOption,
-  SimpleClubResponseDto
-} from "./types";
-import { CoordinatorProfile } from "../coordinators/types";
-import { TeacherProfile } from "../teachers/types";
 
+import { DEFAULT_CLUB_SORT } from "./constants";
+import type {
+  ApiMessage,
+  ClubFilters,
+  ClubResponse,
+  ClubSelectOption,
+  ClubSimpleResponse,
+  ClubSort,
+  ClubsQueryParams,
+  CreateClubRequest,
+  Paginated,
+  UpdateClubRequest,
+} from "./types";
+
+/** Página de clubinhos, com filtros e ordenação aplicados pela API. */
 export async function apiFetchClubs(args: {
   page: number;
   limit: number;
   filters?: ClubFilters;
   sort?: ClubSort;
-}) {
-  const { page, limit, filters, sort } = args;
-  const {
-    searchString,
-    isActive,
-  } = filters || {};
+  /** Permite cancelar a busca quando outra começa. */
+  signal?: AbortSignal;
+}): Promise<Paginated<ClubResponse>> {
+  const { page, limit, filters, sort, signal } = args;
+  const active = sort ?? DEFAULT_CLUB_SORT;
 
-  const sortField = sort?.id ?? "updatedAt";
-  const order = sort?.desc ? "DESC" : "ASC";
+  const params: ClubsQueryParams = {
+    page,
+    limit,
+    searchString: filters?.searchString?.trim() || undefined,
+    isActive: filters?.isActive,
+    sort: active?.id ?? "number",
+    order: active?.desc ? "DESC" : "ASC",
+  };
 
-  const { data } = await api.get<Paginated<ClubResponseDto>>("/clubs", {
-    params: {
-      page,
-      limit,
-      searchString: searchString || undefined,
-      isActive: isActive !== undefined ? isActive : undefined,
-      sort: sortField,
-      order,
-    },
+  const { data } = await api.get<Paginated<ClubResponse>>("/clubs", {
+    params,
+    signal,
   });
+
   return data;
 }
 
-export async function apiFetchClub(id: string) {
-  const { data } = await api.get<ClubResponseDto>(`/clubs/${id}`);
+/** Um clubinho, com coordenador, professores e endereço. */
+export async function apiFetchClub(id: string): Promise<ClubResponse> {
+  const { data } = await api.get<ClubResponse>(`/clubs/${id}`);
   return data;
 }
 
-export async function apiFetchSimpleClubs() {
-  const { data } = await api.get<SimpleClubResponseDto[]>(`/clubs/simple-options`);
+/** Todos os clubinhos visíveis, sem paginação, para listas leves. */
+export async function apiFetchAllClubs(): Promise<ClubSimpleResponse[]> {
+  const { data } = await api.get<ClubSimpleResponse[]>("/clubs/all");
   return data;
 }
 
-export async function apiCreateClub(payload: CreateClubForm) {
-  const { data } = await api.post<ClubResponseDto>("/clubs", payload);
+/** Opções prontas para os seletores de clubinho. */
+export async function apiFetchClubOptions(): Promise<ClubSelectOption[]> {
+  const { data } = await api.get<ClubSelectOption[]>("/clubs/simple-options");
   return data;
 }
 
-export async function apiUpdateClub(id: string, payload: Omit<EditClubForm, "id">) {
-  const { data } = await api.patch<ClubResponseDto>(`/clubs/${id}`, payload);
+export async function apiCreateClub(
+  payload: CreateClubRequest,
+): Promise<ClubResponse> {
+  const { data } = await api.post<ClubResponse>("/clubs", payload);
   return data;
 }
 
-export async function apiDeleteClub(id: string) {
-  await api.delete(`/clubs/${id}`);
-}
-
-export async function apiToggleClubActive(id: string) {
-  const { data } = await api.patch<ClubResponseDto>(`/clubs/${id}/toggle-active`);
+export async function apiUpdateClub(
+  id: string,
+  payload: UpdateClubRequest,
+): Promise<ClubResponse> {
+  const { data } = await api.patch<ClubResponse>(`/clubs/${id}`, payload);
   return data;
 }
 
-export async function apiListUsersByRole(role: "coordinator" | "teacher", limit = 500) {
-  const { data } = await api.get<{ items: { id: string; name?: string; email?: string }[] }>("/users", {
-    params: { role, page: 1, limit, sort: "name", order: "ASC" },
-  });
-  return (Array.isArray(data?.items) ? data.items : []);
-}
-
-export async function apiGetCoordinatorProfile(userId: string) {
-  const { data } = await api.get<CoordinatorMiniDto>(`/coordinator-profiles/${userId}`);
+export async function apiDeleteClub(id: string): Promise<ApiMessage> {
+  const { data } = await api.delete<ApiMessage>(`/clubs/${id}`);
   return data;
 }
 
-export async function apiGetTeacherProfile(userId: string) {
-  const { data } = await api.get<{ id: string; user: UserPublicDto; club?: { id: string; number?: number } | null }>(`/teacher-profiles/${userId}`);
-  return data;
-}
-
-export async function apiLoadCoordinatorOptions() {
-  const { data } = await api.get<CoordinatorProfile[]>("/coordinator-profiles");
-  return data.map((c) => ({
-    coordinatorProfileId: c.id,
-    name: c.user?.name,
-  })) as CoordinatorOption[];
-}
-
-export async function apiLoadTeacherOptions() {
-  const { data } = await api.get<TeacherProfile[]>("/teacher-profiles");
-  return data.map((t) => ({
-    teacherProfileId: t.id,
-    name: t.user?.name ?? t.user?.email ?? t.id,
-    assignedClub: t.club?.number ?? null,
-    vinculado: t.vinculado,
-  })) as TeacherOption[];
-}
-
-export type TeacherSimpleApi = {
-  teacherProfileId: string;
-  name: string;
-  vinculado: boolean;
-};
-
-export type CoordinatorSimpleApi = {
-  coordinatorProfileId: string;
-  name: string;
-  vinculado: boolean;
-};
-
-export async function apiListTeachersSimple(): Promise<TeacherSimpleApi[]> {
-  const { data } = await api.get<TeacherSimpleApi[]>("/teacher-profiles/simple");
-  return data;
-}
-
-export async function apiListCoordinatorsSimple(): Promise<CoordinatorSimpleApi[]> {
-  const { data } = await api.get<CoordinatorSimpleApi[]>("/coordinator-profiles/simple");
+/** Inverte o status do clubinho e devolve como ele ficou. */
+export async function apiToggleClubActive(id: string): Promise<ClubResponse> {
+  const { data } = await api.patch<ClubResponse>(`/clubs/${id}/toggle-active`);
   return data;
 }

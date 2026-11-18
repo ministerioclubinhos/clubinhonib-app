@@ -41,7 +41,7 @@ export default function IdeasPageSelectionModal({
   };
 
   return (
-    <Dialog
+    <Dialog data-testid="ideas-sections-ideas-page-selection-modal"
       open={open}
       onClose={onClose}
       fullWidth
@@ -60,7 +60,7 @@ export default function IdeasPageSelectionModal({
       >
         Selecionar Página de Ideias
         <Tooltip title="Fechar">
-          <IconButton onClick={onClose} size="small">
+          <IconButton onClick={onClose} size="small" aria-label="Fechar">
             <Close />
           </IconButton>
         </Tooltip>
@@ -108,7 +108,7 @@ export default function IdeasPageSelectionModal({
                           {page.subtitle}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {page.sections?.length || 0} seção(ões) • 
+                          {page.sectionCount} seção(ões) •
                           {page.public ? ' Público' : ' Privado'}
                         </Typography>
                       </Box>

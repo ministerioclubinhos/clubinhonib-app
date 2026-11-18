@@ -1,105 +1,105 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Grid, 
-  Modal, 
-  IconButton, 
-  Tooltip, 
-  Skeleton,
-  useTheme,
-  useMediaQuery,
-  Chip,
-  Stack,
-  Avatar,
-  Card,
-  CardContent,
-  CardMedia,
-  Badge,
-} from '@mui/material';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, EffectCoverflow } from 'swiper/modules';
+import { Box, Dialog, IconButton, Paper, Skeleton, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import DriveIcon from '@mui/icons-material/Google';
-import CloudIcon from '@mui/icons-material/CloudQueue';
-import FolderIcon from '@mui/icons-material/Folder';
-import ImageIcon from '@mui/icons-material/Image';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import UpdateIcon from '@mui/icons-material/Update';
-import { MediaPlatform, MediaItem } from 'store/slices/types';
-import { getMediaPreviewUrl } from 'utils/getMediaPreviewUrl';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
+import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Keyboard, Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import 'swiper/css/effect-coverflow';
-import type { SectionData } from 'store/slices/image/imageSlice';
-import { motion } from 'framer-motion';
 
-export interface SectionItemProps extends Omit<SectionData, 'id' | 'public'> {}
+import { MediaItem } from 'store/slices/types';
+import { getMediaPreviewUrl } from 'utils/getMediaPreviewUrl';
 
-const formatDateTime = (value: string | Date) => {
-  const date = new Date(value);
-  const monthNames = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-  ];
-  
-  const day = date.getDate();
-  const month = monthNames[date.getMonth()];
-  const year = date.getFullYear();
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  
-  return {
-    date: `${day} de ${month} de ${year}`,
-    time: `${hours}:${minutes}`,
-  };
-};
+import { PHOTO_FEATURE_MIN, PHOTO_PREVIEW_COUNT } from './photoSection.constants';
+import { formatPhotoDate, photoCountLabel } from './photoSection.utils';
 
-const getPlatformIcon = (platform?: MediaPlatform | string) => {
-  switch (platform) {
-    case MediaPlatform.GOOGLE_DRIVE:
-      return <DriveIcon fontSize="small" />;
-    case MediaPlatform.ONEDRIVE:
-    case MediaPlatform.DROPBOX:
-      return <CloudIcon fontSize="small" />;
-    default:
-      return <FolderIcon fontSize="small" />;
-  }
-};
+/**
+ * As props declaram o que o componente consome, em vez de derivarem do tipo da
+ * seção: aqui as datas chegam já convertidas e as mídias vêm do estado local.
+ */
+export interface SectionItemProps {
+  caption: string;
+  description: string;
+  mediaItems: MediaItem[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
 
-const ImageWithSkeleton: React.FC<{ src: string; alt: string; sx?: any; onClick?: () => void }> = ({
-  src,
-  alt,
-  sx,
-  onClick,
-}) => {
+interface TileProps {
+  src: string;
+  alt: string;
+  featured: boolean;
+  overlayCount?: number;
+  onOpen: () => void;
+}
+
+/** Um bloco do mosaico: carrega com esqueleto e cai num ícone se a imagem falhar. */
+const PhotoTile: React.FC<TileProps> = ({ src, alt, featured, overlayCount, onOpen }) => {
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+
   return (
-    <Box sx={{ position: 'relative' }}>
-      {!loaded && (
-        <Skeleton
-          variant="rectangular"
+    <Box
+      component="button"
+      type="button"
+      onClick={onOpen}
+      aria-label={overlayCount ? `Ver todas as fotos (+${overlayCount})` : `Abrir foto: ${alt}`}
+      sx={{
+        position: 'relative',
+        p: 0,
+        border: 0,
+        cursor: 'pointer',
+        overflow: 'hidden',
+        borderRadius: { xs: 2, md: 2.5 },
+        bgcolor: '#e2e8f0',
+        aspectRatio: '1 / 1',
+        gridColumn: featured ? 'span 2' : 'auto',
+        gridRow: featured ? 'span 2' : 'auto',
+        '&:focus-visible': { outline: '3px solid #81d742', outlineOffset: 2 },
+        '&:hover img': { transform: 'scale(1.06)' },
+      }}
+    >
+      {!loaded && !failed && <Skeleton variant="rectangular" sx={{ position: 'absolute', inset: 0, height: '100%' }} />}
+      {failed ? (
+        <Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: '#94a3b8' }}>
+          <BrokenImageOutlinedIcon />
+        </Box>
+      ) : (
+        <Box
+          component="img"
+          src={src}
+          alt={alt}
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
           sx={{
-            ...sx,
-            position: 'absolute',
-            top: 0,
-            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+            transition: 'transform .35s ease',
+            visibility: loaded ? 'visible' : 'hidden',
           }}
         />
       )}
-      <Box
-        component="img"
-        src={src}
-        alt={alt}
-        onLoad={() => setLoaded(true)}
-        onClick={onClick}
-        sx={{
-          ...sx,
-          visibility: loaded ? 'visible' : 'hidden',
-        }}
-      />
+      {overlayCount ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'grid',
+            placeItems: 'center',
+            bgcolor: 'rgba(15,23,42,0.6)',
+            color: '#fff',
+            fontWeight: 800,
+            fontSize: { xs: '1.4rem', md: '1.8rem' },
+          }}
+        >
+          +{overlayCount}
+        </Box>
+      ) : null}
     </Box>
   );
 };
@@ -109,422 +109,108 @@ const SectionImagePageView: React.FC<SectionItemProps> = ({
   description,
   mediaItems,
   createdAt,
-  updatedAt,
 }) => {
-  const [openModal, setOpenModal] = useState(false);
-  const [startIndex, setStartIndex] = useState(0);
-  const [showAll, setShowAll] = useState(false);
-  const [hoveredImage, setHoveredImage] = useState<number | null>(null);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   if (!mediaItems || mediaItems.length === 0) return null;
 
-  const created = createdAt ? formatDateTime(createdAt) : null;
-  const updated = updatedAt ? formatDateTime(updatedAt) : null;
-
-  const handleImageClick = (index: number) => {
-    setStartIndex(index);
-    setOpenModal(true);
-  };
-
-  const thumbnails = showAll ? mediaItems.slice(1) : mediaItems.slice(1, 7);
-  const heroSrc = getMediaPreviewUrl(mediaItems[0] as MediaItem);
+  const total = mediaItems.length;
+  const date = formatPhotoDate(createdAt);
+  const collapsed = total > PHOTO_PREVIEW_COUNT;
+  const visible = collapsed ? mediaItems.slice(0, PHOTO_PREVIEW_COUNT) : mediaItems;
+  const hiddenCount = total - visible.length;
+  const hasFeature = total >= PHOTO_FEATURE_MIN;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      style={{ marginBottom: theme.spacing(4) }}
+    <Paper
+      data-testid="page-view-image-page-view-section-image-page-view"
+      elevation={0}
+      component="section"
+      sx={{ borderRadius: 3, border: '1px solid #e2e8f0', p: { xs: 1.5, sm: 2.5, md: 3 }, bgcolor: '#fff' }}
     >
-      <Card
-        elevation={6}
+      <Box sx={{ mb: { xs: 1.5, md: 2 } }}>
+        <Typography component="h2" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: '1.1rem', md: '1.35rem' }, lineHeight: 1.25 }}>
+          {caption}
+        </Typography>
+        {description && (
+          <Typography sx={{ mt: 0.5, color: '#475569', fontSize: { xs: '0.9rem', md: '1rem' }, lineHeight: 1.55 }}>
+            {description}
+          </Typography>
+        )}
+        <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 2, rowGap: 0.5, color: '#64748b', fontSize: '0.8rem', fontWeight: 600 }}>
+          <span>{photoCountLabel(total)}</span>
+          {date && (
+            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+              <CalendarTodayOutlinedIcon sx={{ fontSize: 14 }} />
+              {date}
+            </Box>
+          )}
+        </Box>
+      </Box>
+
+      <Box
         sx={{
-          borderRadius: { xs: 3, md: 4 },
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8faff 100%)',
-          border: `2px solid ${theme.palette.success.main}20`,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            elevation: 12,
-            transform: 'translateY(-4px)',
-            borderColor: theme.palette.success.main,
-            boxShadow: `0 20px 40px ${theme.palette.success.main}20`,
-          },
+          display: 'grid',
+          gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(3, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' },
+          gap: { xs: 0.75, md: 1.25 },
         }}
       >
-        
-        <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 }, pb: 2 }}>
-          <Box 
-            display="flex" 
-            alignItems="flex-start" 
-            gap={{ xs: 2, sm: 3 }} 
-            mb={{ xs: 2, sm: 3 }}
-            flexDirection={{ xs: 'column', sm: 'row' }}
-          >
-            <Box 
-              display="flex" 
-              alignItems="center" 
-              gap={{ xs: 2, sm: 3 }}
-              width={{ xs: '100%', sm: 'auto' }}
-            >
-              <Avatar
-                sx={{
-                  width: { xs: 40, sm: 48, md: 56 },
-                  height: { xs: 40, sm: 48, md: 56 },
-                  bgcolor: 'success.main',
-                  boxShadow: 3,
-                }}
-              >
-                <ImageIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
-              </Avatar>
-            
-              <Box flex={1}>
-                <Box 
-                  display="flex" 
-                  alignItems={{ xs: 'flex-start', sm: 'center' }} 
-                  gap={{ xs: 1, sm: 2 }} 
-                  mb={1}
-                  flexDirection={{ xs: 'column', sm: 'row' }}
-                >
-                  <Typography
-                    variant="h5"
-                    fontWeight="bold"
-                    color="success.main"
-                    sx={{
-                      fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.6rem' },
-                      lineHeight: { xs: 1.2, md: 1.3 },
-                      mb: { xs: 1, sm: 0 },
-                    }}
-                  >
-                    {caption}
-                  </Typography>
-                  <Badge
-                    badgeContent={mediaItems.length}
-                    color="secondary"
-                    sx={{
-                      '& .MuiBadge-badge': {
-                        fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                        fontWeight: 'bold',
-                      },
-                    }}
-                  >
-                    <Chip
-                      label="Imagens"
-                      size="small"
-                      sx={{
-                        bgcolor: 'success.light',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                        height: { xs: 20, sm: 24 },
-                      }}
-                    />
-                  </Badge>
-                </Box>
-
-                {description && (
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    sx={{
-                      fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' },
-                      lineHeight: { xs: 1.4, md: 1.6 },
-                      mb: { xs: 1.5, md: 2 },
-                    }}
-                  >
-                    {description}
-                  </Typography>
-                )}
-
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }}>
-                  {created && (
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <ScheduleIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary"
-                        sx={{
-                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        {created.date} às {created.time}
-                      </Typography>
-                    </Box>
-                  )}
-                  {updated && updated.date !== created?.date && (
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <UpdateIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary"
-                        sx={{
-                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        {updated.date} às {updated.time}
-                      </Typography>
-                    </Box>
-                  )}
-                </Stack>
-              </Box>
-            </Box>
-          </Box>
-        </CardContent>
-
-        {heroSrc && (
-          <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.6 }}
-            >
-              <CardMedia
-                component="img"
-                image={heroSrc}
-                alt={caption || 'Imagem principal'}
-                onClick={() => handleImageClick(0)}
-                sx={{
-                  height: { xs: 250, sm: 350, md: 450 },
-                  objectFit: 'cover',
-                  cursor: 'pointer',
-                  transition: 'transform 0.6s ease',
-                }}
-              />
-            </motion.div>
-
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: '50%',
-                background: 'linear-gradient(transparent, rgba(0,0,0,0.3))',
-                pointerEvents: 'none',
-              }}
+        {visible.map((item, index) => {
+          const isLast = collapsed && index === visible.length - 1;
+          return (
+            <PhotoTile
+              key={item.id ?? index}
+              src={getMediaPreviewUrl(item)}
+              alt={`${caption} - foto ${index + 1}`}
+              featured={hasFeature && index === 0}
+              overlayCount={isLast ? hiddenCount + 1 : undefined}
+              onOpen={() => setLightboxIndex(index)}
             />
-          </Box>
-        )}
+          );
+        })}
+      </Box>
 
-        {thumbnails.length > 0 && (
-          <CardContent sx={{ p: { xs: 2, md: 3 } }}>
-            <Grid container spacing={1.5}>
-              {thumbnails.map((item, index) => {
-                const src = getMediaPreviewUrl(item as MediaItem);
-                const actualIndex = index + 1;
-                
-                return (
-                  <Grid item xs={4} sm={2} md={2} key={item.id || index}>
-                    <motion.div
-                      whileHover={{ scale: 1.05, rotate: 2 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Box
-                        sx={{
-                          position: 'relative',
-                          borderRadius: { xs: 2, md: 3 },
-                          overflow: 'hidden',
-                          cursor: 'pointer',
-                          transform: hoveredImage === actualIndex ? 'scale(1.05)' : 'scale(1)',
-                          transition: 'transform 0.3s ease',
-                        }}
-                        onMouseEnter={() => setHoveredImage(actualIndex)}
-                        onMouseLeave={() => setHoveredImage(null)}
-                      >
-                        <ImageWithSkeleton
-                          src={src || ''}
-                          alt={`${caption} - ${actualIndex + 1}`}
-                          onClick={() => handleImageClick(actualIndex)}
-                          sx={{
-                            width: '100%',
-                            height: { xs: 70, sm: 90, md: 110 },
-                            objectFit: 'cover',
-                            display: 'block',
-                          }}
-                        />
-
-                        <motion.div
-                          animate={{ 
-                            scale: hoveredImage === actualIndex ? 1.2 : 1,
-                            rotate: hoveredImage === actualIndex ? 5 : 0,
-                          }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              top: 6,
-                              right: 6,
-                              bgcolor: 'rgba(0,0,0,0.7)',
-                              color: 'white',
-                              borderRadius: 1,
-                              p: 0.5,
-                              display: 'flex',
-                              alignItems: 'center',
-                              backdropFilter: 'blur(4px)',
-                            }}
-                          >
-                            {getPlatformIcon((item as any).platformType)}
-                          </Box>
-                        </motion.div>
-
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: hoveredImage === actualIndex ? 1 : 0 }}
-                          transition={{ duration: 0.2 }}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: 'rgba(76, 175, 80, 0.3)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: 'white',
-                              fontWeight: 'bold',
-                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                            }}
-                          >
-                            Ver Imagem
-                          </Typography>
-                        </motion.div>
-                      </Box>
-                    </motion.div>
-                  </Grid>
-                );
-              })}
-            </Grid>
-
-            {mediaItems.length > 7 && !showAll && (
-              <Box textAlign="center" mt={3}>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Typography
-                    variant="button"
-                    color="primary"
-                    sx={{
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                      fontSize: { xs: '0.85rem', md: '0.9rem' },
-                      fontWeight: 'bold',
-                    }}
-                    onClick={() => setShowAll(true)}
-                  >
-                    Ver todas as {mediaItems.length} imagens
-                  </Typography>
-                </motion.div>
-              </Box>
-            )}
-          </CardContent>
-        )}
-
-        <Modal
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: 'rgba(0,0,0,0.95)',
-            backdropFilter: 'blur(8px)',
-          }}
+      <Dialog
+        open={lightboxIndex !== null}
+        onClose={() => setLightboxIndex(null)}
+        fullScreen
+        PaperProps={{ sx: { bgcolor: 'rgba(2,6,23,0.97)', color: '#fff' } }}
+      >
+        <IconButton
+          onClick={() => setLightboxIndex(null)}
+          aria-label="Fechar"
+          sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10, width: 48, height: 48, color: '#fff', bgcolor: 'rgba(255,255,255,0.14)', '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' } }}
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.3 }}
+          <CloseIcon />
+        </IconButton>
+        <Typography sx={{ position: 'absolute', top: 22, left: 16, zIndex: 10, fontWeight: 700, fontSize: '0.9rem', maxWidth: 'calc(100% - 90px)' }} noWrap>
+          {caption}
+        </Typography>
+        {lightboxIndex !== null && (
+          <Swiper
+            modules={[Navigation, Pagination, Keyboard]}
+            navigation
+            keyboard
+            pagination={{ type: 'fraction' }}
+            initialSlide={lightboxIndex}
+            style={{ width: '100%', height: '100%' }}
           >
-            <Box
-              sx={{
-                width: '90vw',
-                height: '90vh',
-                position: 'relative',
-                borderRadius: 2,
-                overflow: 'hidden',
-              }}
-            >
-              <IconButton
-                onClick={() => setOpenModal(false)}
-                sx={{
-                  position: 'absolute',
-                  top: 16,
-                  right: 16,
-                  bgcolor: 'rgba(255,255,255,0.1)',
-                  color: 'white',
-                  zIndex: 10,
-                  backdropFilter: 'blur(8px)',
-                  '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.2)',
-                  },
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-
-              <Swiper
-                modules={[Navigation, Pagination, EffectCoverflow]}
-                navigation
-                pagination={{ clickable: true }}
-                effect="coverflow"
-                coverflowEffect={{
-                  rotate: 50,
-                  stretch: 0,
-                  depth: 100,
-                  modifier: 1,
-                  slideShadows: true,
-                }}
-                initialSlide={startIndex}
-                style={{ width: '100%', height: '100%' }}
-              >
-                {mediaItems.map((item, index) => {
-                  const src = getMediaPreviewUrl(item as MediaItem);
-                  return (
-                    <SwiperSlide key={item.id || index}>
-                      <Box
-                        sx={{
-                          width: '100%',
-                          height: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Box
-                          component="img"
-                          src={src || ''}
-                          alt={`${caption} - ${index + 1}`}
-                          sx={{
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            objectFit: 'contain',
-                            borderRadius: 1,
-                          }}
-                        />
-                      </Box>
-                    </SwiperSlide>
-                  );
-                })}
-              </Swiper>
-            </Box>
-          </motion.div>
-        </Modal>
-      </Card>
-    </motion.div>
+            {mediaItems.map((item, index) => (
+              <SwiperSlide key={item.id ?? index}>
+                <Box sx={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', p: { xs: 1, md: 6 } }}>
+                  <Box
+                    component="img"
+                    src={getMediaPreviewUrl(item)}
+                    alt={`${caption} - foto ${index + 1}`}
+                    sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 1 }}
+                  />
+                </Box>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
+      </Dialog>
+    </Paper>
   );
 };
 

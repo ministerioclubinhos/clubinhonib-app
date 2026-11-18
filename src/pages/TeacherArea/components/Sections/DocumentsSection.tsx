@@ -2,43 +2,40 @@ import React, { useMemo, useState } from 'react';
 import {
   Box,
   Typography,
-  Paper,
   Card,
   CardContent,
-  Chip,
   TextField,
   InputAdornment,
+  Button,
+  CircularProgress,
 } from '@mui/material';
-import { motion } from 'framer-motion';
+import DownloadIcon from '@mui/icons-material/Download';
 import DescriptionIcon from '@mui/icons-material/Description';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 import api from '@/config/axiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
-import {
-  setDocumentData,
-  clearDocumentData,
-} from 'store/slices/documents/documentSlice';
+import { useVisibleRoutes } from '@/features/feature-flags';
+import { setDocumentData, clearDocumentData } from 'store/slices/documents/documentSlice';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
+import { downloadDocumentFile, isUploadedMedia } from '@/core/document-viewer';
 import { RouteData } from 'store/slices/route/routeSlice';
 
-const ACCENT = '#0288d1';
+import TeacherPageCard from '../Layout/TeacherPageCard';
+
+const ACCENT = '#0284c7';
 
 const DocumentsSection: React.FC = () => {
   const dispatch = useDispatch();
-  const documentData = useSelector(
-    (state: RootState) => state.document.documentData
-  );
-  const routes = useSelector((state: RootState) => state.routes.routes);
+  const documentData = useSelector((state: RootState) => state.document.documentData);
+  const routes = useVisibleRoutes();
   const [openModal, setOpenModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const documentRoutes = useMemo(
     () => routes.filter((route) => route.entityType === 'Document'),
@@ -50,8 +47,7 @@ const DocumentsSection: React.FC = () => {
     if (!term) return documentRoutes;
     return documentRoutes.filter(
       (route) =>
-        route.title?.toLowerCase().includes(term) ||
-        route.description?.toLowerCase().includes(term)
+        route.title?.toLowerCase().includes(term) || route.description?.toLowerCase().includes(term)
     );
   }, [documentRoutes, searchTerm]);
 
@@ -70,49 +66,41 @@ const DocumentsSection: React.FC = () => {
     }
   };
 
+  const handleDownload = async (route: RouteData) => {
+    try {
+      setError(null);
+      setDownloadingId(route.id);
+      const response = await api.get(`/documents/${route.idToFetch}`);
+      const media = response.data?.media;
+      if (!media?.url) throw new Error('Documento sem arquivo');
+      if (isUploadedMedia(media)) {
+        await downloadDocumentFile(media);
+      } else {
+        // Link externo não pode ser baixado por nós: abre na plataforma de origem.
+        window.open(media.url, '_blank', 'noopener,noreferrer');
+      }
+    } catch (err) {
+      console.error('Erro ao baixar documento:', err);
+      setError('Não foi possível baixar o documento. Tente novamente.');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   const handleCloseModal = () => {
     setOpenModal(false);
     dispatch(clearDocumentData());
   };
 
   return (
-    <Paper
-      elevation={2}
-      sx={{
-        p: { xs: 2, md: 3 },
-        mt: 5,
-        borderLeft: `5px solid ${ACCENT}`,
-        backgroundColor: '#e1f5fe',
-        borderRadius: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between',
-          alignItems: { xs: 'stretch', sm: 'center' },
-          gap: 2,
-          mb: 1,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DescriptionIcon sx={{ color: ACCENT }} />
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            color="#424242"
-            sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}
-          >
-            Documentos Importantes
-          </Typography>
-          <Chip
-            size="small"
-            label={filteredRoutes.length}
-            sx={{ bgcolor: `${ACCENT}20`, color: ACCENT, fontWeight: 700 }}
-          />
-        </Box>
-
+    <TeacherPageCard
+      testId="teacher-area-sections-documents-section"
+      icon={<DescriptionIcon sx={{ fontSize: 22 }} />}
+      accent={ACCENT}
+      title="Documentos & Apostilas de Apoio"
+      subtitle="Guias, orientações e materiais didáticos para consulta do professor"
+      count={filteredRoutes.length}
+      actions={
         <TextField
           size="small"
           placeholder="Buscar documento..."
@@ -121,26 +109,18 @@ const DocumentsSection: React.FC = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                <SearchIcon sx={{ color: 'text.secondary', fontSize: 19 }} />
               </InputAdornment>
             ),
             sx: {
-              bgcolor: 'white',
+              bgcolor: '#f8fafc',
               borderRadius: 2,
-              minWidth: { sm: 250 },
+              minWidth: { sm: 240 },
             },
           }}
         />
-      </Box>
-
-      <Typography
-        variant="body2"
-        color="#616161"
-        sx={{ mb: 2, fontSize: { xs: '0.85rem', md: '0.95rem' } }}
-      >
-        📄 Guias, orientações e materiais de apoio do Clubinho — clique em um documento para visualizá-lo.
-      </Typography>
-
+      }
+    >
       {error && (
         <Typography variant="body2" color="error" textAlign="center" sx={{ mb: 2 }}>
           {error}
@@ -150,160 +130,165 @@ const DocumentsSection: React.FC = () => {
       {filteredRoutes.length > 0 ? (
         <Box
           sx={{
-            py: 2,
-            px: { xs: 0.5, md: 1 },
-            '& .slick-track': { display: 'flex !important' },
-            '& .slick-slide': {
-              height: 'inherit',
-              '& > div': { height: '100%' },
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              lg: 'repeat(3, minmax(0, 1fr))',
+              xl: 'repeat(4, minmax(0, 1fr))',
             },
-            '& .slick-prev:before, & .slick-next:before': {
-              color: ACCENT,
-              fontSize: '28px',
-            },
-            '& .slick-prev': { left: { xs: -10, md: -20 }, zIndex: 2 },
-            '& .slick-next': { right: { xs: -10, md: -20 }, zIndex: 2 },
-            '& .slick-dots': {
-              bottom: -35,
-              '& li.slick-active button:before': { color: ACCENT },
-              '& li button:before': { color: ACCENT, opacity: 0.25 },
-            },
+            gap: { xs: 1.5, md: 2 },
+            pt: 0.5,
           }}
         >
-          <Slider
-            dots
-            infinite={filteredRoutes.length > 4}
-            speed={500}
-            slidesToShow={4}
-            slidesToScroll={1}
-            autoplay
-            autoplaySpeed={5000}
-            pauseOnHover
-            responsive={[
-              { breakpoint: 1200, settings: { slidesToShow: 3, infinite: filteredRoutes.length > 3 } },
-              { breakpoint: 900, settings: { slidesToShow: 2, infinite: filteredRoutes.length > 2 } },
-              { breakpoint: 600, settings: { slidesToShow: 1, infinite: filteredRoutes.length > 1 } },
-            ]}
-          >
-            {filteredRoutes.map((route) => {
-              const isLoading = loadingId === route.id;
+          {filteredRoutes.map((route) => {
+            const isLoading = loadingId === route.id;
+            const isDownloading = downloadingId === route.id;
 
-              return (
-                <Box key={route.id} sx={{ p: 1.5, height: '100%' }}>
-                  <motion.div
-                    whileTap={{ scale: 0.97 }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    style={{ height: '100%' }}
+            return (
+              <Box key={route.id} sx={{ height: '100%' }}>
+                <Card
+                  onClick={() => !isLoading && handleOpenModal(route)}
+                  elevation={0}
+                  sx={{
+                    height: '100%',
+                    minHeight: 180,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    bgcolor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 2.5,
+                    cursor: 'pointer',
+                    overflow: 'hidden',
+                    opacity: isLoading ? 0.7 : 1,
+                    transition: 'all 0.22s ease',
+                    '&:hover': {
+                      bgcolor: '#ffffff',
+                      borderColor: ACCENT,
+                      boxShadow: `0 8px 20px ${ACCENT}1f`,
+                      transform: 'translateY(-3px)',
+                    },
+                  }}
+                >
+                  <CardContent
+                    sx={{
+                      flexGrow: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      p: 2,
+                      '&:last-child': { pb: 2 },
+                    }}
                   >
-                    <Card
-                      onClick={() => !isLoading && handleOpenModal(route)}
-                      sx={{
-                        height: '100%',
-                        minHeight: 190,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        borderRadius: 2,
-                        cursor: 'pointer',
-                        overflow: 'hidden',
-                        opacity: isLoading ? 0.7 : 1,
-                        transition: 'box-shadow 0.3s ease, transform 0.3s ease',
-                        '&:hover': {
-                          boxShadow: `0 10px 24px ${ACCENT}30`,
-                          transform: 'translateY(-4px)',
-                          '& .doc-icon': { transform: 'scale(1.1) rotate(-4deg)' },
-                        },
-                      }}
-                    >
-                      <CardContent
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25, mb: 1 }}>
+                      <Box
                         sx={{
-                          flexGrow: 1,
+                          flexShrink: 0,
+                          width: 38,
+                          height: 38,
+                          borderRadius: 1.5,
                           display: 'flex',
-                          flexDirection: 'column',
-                          p: { xs: 1.5, md: 2 },
-                          '&:last-child': { pb: { xs: 1.5, md: 2 } },
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: `${ACCENT}15`,
+                          color: ACCENT,
                         }}
                       >
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.2, mb: 1 }}>
-                          <Box
-                            className="doc-icon"
-                            sx={{
-                              flexShrink: 0,
-                              width: 40,
-                              height: 40,
-                              borderRadius: 1.5,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              bgcolor: `${ACCENT}15`,
-                              color: ACCENT,
-                              transition: 'transform 0.25s ease',
-                            }}
-                          >
-                            <PictureAsPdfIcon sx={{ fontSize: '1.4rem' }} />
-                          </Box>
-                          <Typography
-                            variant="subtitle1"
-                            fontWeight="bold"
-                            color="#424242"
-                            sx={{
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                              lineHeight: '1.25em',
-                              minHeight: '2.5em',
-                            }}
-                          >
-                            {route.title}
-                          </Typography>
-                        </Box>
+                        <PictureAsPdfIcon sx={{ fontSize: '1.3rem' }} />
+                      </Box>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight={800}
+                        color="#0f172a"
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          lineHeight: 1.3,
+                          minHeight: '2.6em',
+                        }}
+                      >
+                        {route.title}
+                      </Typography>
+                    </Box>
 
-                        <Typography
-                          variant="body2"
-                          color="#616161"
-                          sx={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            flexGrow: 1,
-                          }}
-                        >
-                          {route.description || 'Sem descrição'}
-                        </Typography>
+                    <Typography
+                      variant="body2"
+                      color="#475569"
+                      sx={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        flexGrow: 1,
+                        fontSize: '0.84rem',
+                      }}
+                    >
+                      {route.description || 'Documento de apoio pedagógico do Clubinho.'}
+                    </Typography>
 
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                            mt: 1.5,
-                            color: ACCENT,
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                          }}
-                        >
-                          <VisibilityIcon sx={{ fontSize: '1rem' }} />
-                          {isLoading ? 'Carregando...' : 'Visualizar'}
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </Box>
-              );
-            })}
-          </Slider>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        mt: 1.5,
+                        pt: 1,
+                        borderTop: '1px solid #e2e8f0',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          color: ACCENT,
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <VisibilityIcon sx={{ fontSize: '1rem' }} />
+                        {isLoading ? 'Carregando...' : 'Abrir documento'}
+                      </Box>
+                      <Button
+                        size="small"
+                        data-testid={`teacher-area-document-download-${route.id}`}
+                        aria-label={`Baixar ${route.title}`}
+                        disabled={isDownloading}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(route);
+                        }}
+                        startIcon={
+                          isDownloading ? (
+                            <CircularProgress size={14} color="inherit" />
+                          ) : (
+                            <DownloadIcon sx={{ fontSize: '1.1rem' }} />
+                          )
+                        }
+                        sx={{
+                          minHeight: 40,
+                          px: 1.5,
+                          textTransform: 'none',
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                          color: ACCENT,
+                          borderRadius: 2,
+                          '&:hover': { bgcolor: `${ACCENT}15` },
+                        }}
+                      >
+                        {isDownloading ? 'Baixando...' : 'Baixar'}
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Box>
+            );
+          })}
         </Box>
       ) : (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          textAlign="center"
-          sx={{ py: 4 }}
-        >
+        <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 4 }}>
           {searchTerm
             ? `Nenhum documento encontrado para "${searchTerm}".`
             : 'Nenhum documento disponível no momento.'}
@@ -316,7 +301,7 @@ const DocumentsSection: React.FC = () => {
         media={documentData?.media || null}
         title={documentData?.name}
       />
-    </Paper>
+    </TeacherPageCard>
   );
 };
 
