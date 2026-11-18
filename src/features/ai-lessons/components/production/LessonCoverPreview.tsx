@@ -18,6 +18,7 @@ import {
   AutoAwesome as GenerateIcon,
   Close as CloseIcon,
   ImageOutlined as EmptyIcon,
+  ZoomIn as ZoomIcon,
 } from '@mui/icons-material';
 import { extractErrorMessage } from '@/utils/apiError';
 import { useRegenerateLessonCover } from '../../hooks';
@@ -55,22 +56,29 @@ export function LessonCoverPreview({
 
   return (
     <>
-      <Stack
+      <Box
         data-testid="ai-lesson-cover-preview"
-        direction="row"
-        spacing={1.25}
-        alignItems="center"
-        sx={{ mb: 2 }}
+        sx={{
+          minWidth: 0,
+          p: 1.5,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          borderRadius: 3,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+        }}
       >
         <ButtonBase
           data-testid="ai-lesson-cover-thumbnail"
           aria-label={LESSON_COVER_TEXTS.viewLabel}
           onClick={() => setOpen(true)}
           sx={{
-            width: 60,
+            width: { xs: 88, sm: 104 },
             flexShrink: 0,
             aspectRatio: '3 / 2',
-            borderRadius: 1.5,
+            borderRadius: 2,
             overflow: 'hidden',
             border: '1px solid',
             borderColor: 'divider',
@@ -78,6 +86,9 @@ export function LessonCoverPreview({
             bgcolor: 'action.hover',
             color: 'text.disabled',
             position: 'relative',
+            boxShadow: coverImageUrl ? 1 : 0,
+            transition: 'box-shadow .2s, transform .2s',
+            '&:hover': { boxShadow: 3, transform: 'translateY(-1px)' },
             '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
           }}
         >
@@ -90,37 +101,43 @@ export function LessonCoverPreview({
               sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           ) : (
-            <EmptyIcon fontSize="small" />
+            <EmptyIcon />
           )}
           {generating && (
             <CircularProgress
-              size={18}
+              size={22}
               aria-hidden
-              sx={{ position: 'absolute', top: 'calc(50% - 9px)', left: 'calc(50% - 9px)' }}
+              sx={{ position: 'absolute', top: 'calc(50% - 11px)', left: 'calc(50% - 11px)' }}
             />
           )}
         </ButtonBase>
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.3 }}>
+          <Typography
+            variant="overline"
+            sx={{ fontWeight: 800, lineHeight: 1.2, display: 'block' }}
+          >
             {LESSON_COVER_TEXTS.title}
           </Typography>
-          <Typography variant="caption" color="text.disabled" sx={{ display: 'block', lineHeight: 1.3 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
             {generating
               ? LESSON_COVER_TEXTS.generating
               : coverImageUrl
                 ? LESSON_COVER_TEXTS.caption
                 : LESSON_COVER_TEXTS.empty}
           </Typography>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={
+              coverImageUrl ? <ZoomIcon fontSize="small" /> : <GenerateIcon fontSize="small" />
+            }
+            onClick={() => setOpen(true)}
+            sx={{ textTransform: 'none', fontWeight: 700, minHeight: 36, whiteSpace: 'nowrap' }}
+          >
+            {coverImageUrl ? LESSON_COVER_TEXTS.view : LESSON_COVER_TEXTS.generate}
+          </Button>
         </Box>
-        <Button
-          size="small"
-          color="inherit"
-          onClick={() => setOpen(true)}
-          sx={{ textTransform: 'none', fontWeight: 700, color: 'text.secondary', flexShrink: 0 }}
-        >
-          {coverImageUrl ? LESSON_COVER_TEXTS.view : LESSON_COVER_TEXTS.generate}
-        </Button>
-      </Stack>
+      </Box>
 
       <Dialog
         data-testid="ai-lesson-cover-dialog"
@@ -163,7 +180,11 @@ export function LessonCoverPreview({
                 sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             ) : (
-              <Typography variant="body2" color="text.secondary" sx={{ px: 2, textAlign: 'center' }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ px: 2, textAlign: 'center' }}
+              >
                 {LESSON_COVER_TEXTS.empty}
               </Typography>
             )}
@@ -173,7 +194,13 @@ export function LessonCoverPreview({
                 spacing={1}
                 alignItems="center"
                 justifyContent="center"
-                sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(255,255,255,0.78)', px: 2, textAlign: 'center' }}
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  bgcolor: 'rgba(255,255,255,0.78)',
+                  px: 2,
+                  textAlign: 'center',
+                }}
               >
                 <CircularProgress size={32} />
                 <Typography variant="body2" fontWeight={700}>
@@ -218,7 +245,9 @@ export function LessonCoverPreview({
             data-testid="ai-lesson-cover-regenerate"
             variant="contained"
             disabled={disabled}
-            startIcon={generating ? <CircularProgress size={16} color="inherit" /> : <GenerateIcon />}
+            startIcon={
+              generating ? <CircularProgress size={16} color="inherit" /> : <GenerateIcon />
+            }
             onClick={() => regenerate.mutate(lessonId)}
             sx={{ minHeight: 44, fontWeight: 700, textTransform: 'none' }}
           >

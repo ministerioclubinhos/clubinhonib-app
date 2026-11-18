@@ -191,7 +191,7 @@ const buttonMap: Record<string, FofinhoButtonProps> = {
     accentHex: '#0284c7',
   },
   photos: {
-    to: '/imagens-clubinho',
+    to: '/fotos-videos-clubinho',
     label: 'Enviar Fotos do Clubinho',
     subtitle: 'Registre os momentos do seu Clubinho',
     icon: PhotoCameraIcon,

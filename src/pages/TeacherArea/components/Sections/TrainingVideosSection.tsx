@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { getRoutePagePath } from '../../pagePaths';
 import {
   Box,
   Typography,
@@ -11,7 +12,7 @@ import {
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import SearchIcon from '@mui/icons-material/Search';
 
 import { selectVideoRoutes } from '@/store/selectors/routeSelectors';
@@ -37,9 +38,8 @@ const TrainingVideosSection: React.FC = () => {
     );
   }, [videos, search]);
 
-  const handleRedirect = (path: string) => {
-    const absolutePath = `/${path.replace(/^\/+/, '')}`;
-    navigate(absolutePath);
+  const handleRedirect = (route: RouteData) => {
+    navigate(getRoutePagePath(route));
   };
 
   return (
@@ -88,7 +88,7 @@ const TrainingVideosSection: React.FC = () => {
           {filteredVideos.map((video) => (
             <Box key={video.id} sx={{ height: '100%' }}>
               <Card
-                onClick={() => handleRedirect(video.path)}
+                onClick={() => handleRedirect(video)}
                 elevation={0}
                 sx={{
                   height: '100%',
@@ -172,7 +172,7 @@ const TrainingVideosSection: React.FC = () => {
                       transition: 'all 0.25s ease',
                     }}
                   >
-                    <PlayArrowIcon sx={{ color: 'white', fontSize: 26 }} />
+                    <VideoLibraryIcon sx={{ color: 'white', fontSize: 24 }} />
                   </Box>
                 </Box>
 
@@ -229,8 +229,8 @@ const TrainingVideosSection: React.FC = () => {
                       fontSize: '0.8rem',
                     }}
                   >
-                    <PlayArrowIcon sx={{ fontSize: '1rem' }} />
-                    Assistir vídeo
+                    <VisibilityIcon sx={{ fontSize: '1rem' }} />
+                    Ver
                   </Box>
                 </CardContent>
               </Card>

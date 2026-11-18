@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
   Box,
@@ -8,9 +8,9 @@ import {
   Avatar,
   CircularProgress,
   Alert,
-  useTheme,
-  useMediaQuery,
   Stack,
+  Tabs,
+  Tab,
   List,
   ListItemButton,
   ListItemIcon,
@@ -24,20 +24,19 @@ import {
   Person as PersonIcon,
   Lock as LockIcon,
   PhotoCamera as PhotoCameraIcon,
-  HomeOutlined as HomeOutlinedIcon,
-  GroupsOutlined as GroupsOutlinedIcon,
   Badge as BadgeIcon,
   Favorite as FavoriteIcon,
 } from '@mui/icons-material';
 import { RootState, AppDispatch } from '@/store/slices';
 import { useDispatch } from 'react-redux';
 import { fetchCurrentUser } from '@/store/slices/auth/authSlice';
-import { weekdayLabel } from '@/utils/dateUtils';
 import ProfileEditForm from '@/features/profile/components/ProfileEditForm';
 import PasswordChangeForm from '@/features/profile/components/PasswordChangeForm';
 import ProfileImageUpload from '@/features/profile/components/ProfileImageUpload';
 import PersonalDataForm from '@/features/profile/components/PersonalDataForm';
 import PreferencesForm from '@/features/profile/components/PreferencesForm';
+import ProfileClubCard from '@/features/profile/components/ProfileClubCard';
+import ProfileCoordinatorClubs from '@/features/profile/components/ProfileCoordinatorClubs';
 import { extractErrorMessage } from '@/utils/apiError';
 import { PROFILE_TABS, profileTabIndexFromHash } from './constants';
 import LinkClubModal from '@/features/auth/components/LinkClubModal';
@@ -61,29 +60,20 @@ const menuItems = PROFILE_TABS.map((tab, index) => ({
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, initialized, user, loadingUser } = useSelector((state: RootState) => state.auth);
   const [error, setError] = useState<string | null>(null);
   const [linkClubOpen, setLinkClubOpen] = useState(false);
   const { flags } = useFeatureFlags();
 
-  const initialTab = React.useMemo(
-    () =>
-      typeof window === 'undefined'
-        ? 0
-        : profileTabIndexFromHash(window.location.hash),
-    [],
-  );
-  const [selectedMenu, setSelectedMenu] = useState(initialTab);
+  // O hash vem do roteador: os avisos de pendência do sininho navegam para
+  // `/meu-perfil#foto` etc., e `navigate` não dispara `hashchange`.
+  const { hash } = useLocation();
+  const [selectedMenu, setSelectedMenu] = useState(() => profileTabIndexFromHash(hash));
 
   useEffect(() => {
-    const onHashChange = () =>
-      setSelectedMenu(profileTabIndexFromHash(window.location.hash));
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, []);
+    setSelectedMenu(profileTabIndexFromHash(hash));
+  }, [hash]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -236,9 +226,9 @@ const ProfilePage: React.FC = () => {
                 background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                 p: { xs: 1.5, sm: 2 },
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: { xs: 'row', md: 'column' },
                 alignItems: 'center',
-                gap: 1,
+                gap: { xs: 1.5, md: 1 },
               }}
             >
               <Avatar
@@ -254,7 +244,7 @@ const ProfilePage: React.FC = () => {
               >
                 {profile?.name?.charAt(0).toUpperCase() || 'U'}
               </Avatar>
-              <Box sx={{ textAlign: 'center' }}>
+              <Box sx={{ textAlign: { xs: 'left', md: 'center' }, minWidth: 0 }}>
                 <Typography
                   variant="subtitle1"
                   fontWeight={700}
@@ -281,53 +271,34 @@ const ProfilePage: React.FC = () => {
               </Box>
             </Box>
 
+            {/* Mobile-first: abas roláveis no topo; a lista lateral só de md em diante */}
+            <Tabs
+              value={selectedMenu}
+              onChange={(_, value: number) => handleMenuClick(value)}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              aria-label="Seções do perfil"
+              sx={{
+                display: { xs: 'flex', md: 'none' },
+                minHeight: 48,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                '& .MuiTab-root': { minHeight: 48, minWidth: 0, px: 1.75, textTransform: 'none', fontWeight: 700, fontSize: '0.8rem' },
+              }}
+            >
+              {menuItems.map((item) => (
+                <Tab key={item.label} icon={item.icon} iconPosition="start" label={item.shortLabel} />
+              ))}
+            </Tabs>
+
             {/* Se for Professor e tiver clubinho vinculado */}
             {user?.teacherProfile?.club && (
               <Box sx={{ px: 2, py: 1.5, bgcolor: 'rgba(25, 118, 210, 0.03)' }}>
                 <Typography variant="overline" sx={{ display: 'block', mb: 1, color: 'text.secondary', fontWeight: 700, lineHeight: 1, fontSize: '0.65rem', letterSpacing: 0.5 }}>
                   MEU CLUBINHO
                 </Typography>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 1.5,
-                    bgcolor: 'white',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                  }}
-                >
-                  <Stack spacing={1}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Box sx={{
-                        p: 0.5,
-                        borderRadius: 1,
-                        bgcolor: 'primary.main',
-                        color: 'white',
-                        display: 'flex'
-                      }}>
-                        <HomeOutlinedIcon sx={{ fontSize: 16 }} />
-                      </Box>
-                      <Typography variant="subtitle2" fontWeight={700} color="text.primary">
-                        Clubinho {user.teacherProfile.club.number}
-                      </Typography>
-                    </Stack>
-                    <Box sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      bgcolor: 'action.hover',
-                      py: 0.5,
-                      px: 1,
-                      borderRadius: 1
-                    }}>
-                      <GroupsOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                      <Typography variant="caption" fontWeight={600} color="text.secondary">
-                        {weekdayLabel(user.teacherProfile.club.weekday)} às {user.teacherProfile.club.time || '00:00'}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Paper>
+                <ProfileClubCard club={user.teacherProfile.club} />
               </Box>
             )}
 
@@ -378,58 +349,13 @@ const ProfilePage: React.FC = () => {
                 <Typography variant="overline" sx={{ display: 'block', mb: 1, color: 'text.secondary', fontWeight: 700, lineHeight: 1, fontSize: '0.65rem', letterSpacing: 0.5 }}>
                   COORDENAÇÃO
                 </Typography>
-                <Stack spacing={1.5}>
-                  {user.coordinatorProfile.clubs.map((club) => (
-                    <Paper
-                      key={club.id}
-                      elevation={0}
-                      sx={{
-                        p: 1.5,
-                        bgcolor: 'white',
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        borderRadius: 2,
-                      }}
-                    >
-                      <Stack spacing={1}>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Box sx={{
-                            p: 0.5,
-                            borderRadius: 1,
-                            bgcolor: 'primary.main',
-                            color: 'white',
-                            display: 'flex'
-                          }}>
-                            <HomeOutlinedIcon sx={{ fontSize: 16 }} />
-                          </Box>
-                          <Typography variant="subtitle2" fontWeight={700} color="text.primary">
-                            Clubinho {club.number}
-                          </Typography>
-                        </Stack>
-                        <Box sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          bgcolor: 'action.hover',
-                          py: 0.5,
-                          px: 1,
-                          borderRadius: 1
-                        }}>
-                          <GroupsOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                          <Typography variant="caption" fontWeight={600} color="text.secondary">
-                            {weekdayLabel(club.weekday)} às {club.time || '00:00'}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </Paper>
-                  ))}
-                </Stack>
+                <ProfileCoordinatorClubs clubs={user.coordinatorProfile.clubs} />
               </Box>
             )}
 
-            <Divider />
+            <Divider sx={{ display: { xs: 'none', md: 'block' } }} />
 
-            <List sx={{ p: 0.5 }} dense>
+            <List sx={{ p: 0.5, display: { xs: 'none', md: 'block' } }} dense>
               {menuItems.map((item, index) => (
                 <ListItemButton
                   key={index}
@@ -463,7 +389,7 @@ const ProfilePage: React.FC = () => {
                     {item.icon}
                   </ListItemIcon>
                   <ListItemText
-                    primary={isSmall ? item.shortLabel : item.label}
+                    primary={item.label}
                     primaryTypographyProps={{
                       fontWeight: selectedMenu === index ? 700 : 500,
                       fontSize: '0.8rem',

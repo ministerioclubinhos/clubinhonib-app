@@ -14,9 +14,7 @@ const PANEL_SX = {
 } as const;
 
 /** Placeholder with the shape of the loaded screen, so nothing jumps when the lesson arrives. */
-export function ProductionDetailSkeleton({
-  'data-testid': testId,
-}: ProductionDetailSkeletonProps) {
+export function ProductionDetailSkeleton({ 'data-testid': testId }: ProductionDetailSkeletonProps) {
   return (
     <Box
       data-testid={testId}

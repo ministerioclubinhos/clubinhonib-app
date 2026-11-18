@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { getRoutePagePath } from '@/pages/TeacherArea/pagePaths';
+import { MediaTargetType } from '@/store/slices/types';
 import {
   Alert,
   AlertTitle,
@@ -145,7 +147,7 @@ export default function VideoPageForm({ fromTemplatePage = false }: VideoPageFor
           <Button
             type="button"
             component="a"
-            href={`/${loadedPage.route.path}`}
+            href={getRoutePagePath({ entityType: MediaTargetType.VideosPage, path: loadedPage.route.path, idToFetch: loadedPage.route.idToFetch })}
             target="_blank"
             rel="noopener noreferrer"
             endIcon={<OpenInNew />}

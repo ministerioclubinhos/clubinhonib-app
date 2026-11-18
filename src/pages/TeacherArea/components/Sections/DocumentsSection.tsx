@@ -1,5 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Typography, Card, CardContent, TextField, InputAdornment } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  TextField,
+  InputAdornment,
+  Button,
+  CircularProgress,
+} from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
 import DescriptionIcon from '@mui/icons-material/Description';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -10,6 +20,7 @@ import { RootState } from '@/store/slices';
 import { useVisibleRoutes } from '@/features/feature-flags';
 import { setDocumentData, clearDocumentData } from 'store/slices/documents/documentSlice';
 import MediaDocumentPreviewModal from 'utils/MediaDocumentPreviewModal';
+import { downloadDocumentFile, isUploadedMedia } from '@/core/document-viewer';
 import { RouteData } from 'store/slices/route/routeSlice';
 
 import TeacherPageCard from '../Layout/TeacherPageCard';
@@ -24,6 +35,7 @@ const DocumentsSection: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const documentRoutes = useMemo(
     () => routes.filter((route) => route.entityType === 'Document'),
@@ -51,6 +63,27 @@ const DocumentsSection: React.FC = () => {
       setError('Não foi possível carregar o documento. Tente novamente.');
     } finally {
       setLoadingId(null);
+    }
+  };
+
+  const handleDownload = async (route: RouteData) => {
+    try {
+      setError(null);
+      setDownloadingId(route.id);
+      const response = await api.get(`/documents/${route.idToFetch}`);
+      const media = response.data?.media;
+      if (!media?.url) throw new Error('Documento sem arquivo');
+      if (isUploadedMedia(media)) {
+        await downloadDocumentFile(media);
+      } else {
+        // Link externo não pode ser baixado por nós: abre na plataforma de origem.
+        window.open(media.url, '_blank', 'noopener,noreferrer');
+      }
+    } catch (err) {
+      console.error('Erro ao baixar documento:', err);
+      setError('Não foi possível baixar o documento. Tente novamente.');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -110,6 +143,7 @@ const DocumentsSection: React.FC = () => {
         >
           {filteredRoutes.map((route) => {
             const isLoading = loadingId === route.id;
+            const isDownloading = downloadingId === route.id;
 
             return (
               <Box key={route.id} sx={{ height: '100%' }}>
@@ -197,17 +231,55 @@ const DocumentsSection: React.FC = () => {
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.5,
+                        justifyContent: 'space-between',
+                        gap: 1,
                         mt: 1.5,
                         pt: 1,
                         borderTop: '1px solid #e2e8f0',
-                        color: ACCENT,
-                        fontWeight: 700,
-                        fontSize: '0.8rem',
                       }}
                     >
-                      <VisibilityIcon sx={{ fontSize: '1rem' }} />
-                      {isLoading ? 'Carregando...' : 'Abrir documento'}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          color: ACCENT,
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        <VisibilityIcon sx={{ fontSize: '1rem' }} />
+                        {isLoading ? 'Carregando...' : 'Abrir documento'}
+                      </Box>
+                      <Button
+                        size="small"
+                        data-testid={`teacher-area-document-download-${route.id}`}
+                        aria-label={`Baixar ${route.title}`}
+                        disabled={isDownloading}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(route);
+                        }}
+                        startIcon={
+                          isDownloading ? (
+                            <CircularProgress size={14} color="inherit" />
+                          ) : (
+                            <DownloadIcon sx={{ fontSize: '1.1rem' }} />
+                          )
+                        }
+                        sx={{
+                          minHeight: 40,
+                          px: 1.5,
+                          textTransform: 'none',
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                          color: ACCENT,
+                          borderRadius: 2,
+                          '&:hover': { bgcolor: `${ACCENT}15` },
+                        }}
+                      >
+                        {isDownloading ? 'Baixando...' : 'Baixar'}
+                      </Button>
                     </Box>
                   </CardContent>
                 </Card>

@@ -1,4 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
+import { getRoutePagePath } from '@/pages/TeacherArea/pagePaths';
+import { MediaTargetType } from '@/store/slices/types';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -184,6 +186,9 @@ export default function WeekMaterialDetailsModal({
   const groups = mediaGroupsOf(material);
   const totalMedia = countMediaOf(material);
   const routePath = material?.route?.path ?? '';
+  const pagePath = routePath
+    ? getRoutePagePath({ entityType: MediaTargetType.WeekMaterialsPage, path: routePath, idToFetch: material?.id ?? '' })
+    : '';
 
   // Cada página tem seu conjunto de abas: a aba escolhida na anterior pode nem
   // existir nesta.
@@ -344,18 +349,18 @@ export default function WeekMaterialDetailsModal({
                         {/* O caminho é longo e não precisa ser lido inteiro: quem
                             quer o endereço usa o botão de copiar ao lado. */}
                         <Link
-                          href={`/${routePath}`}
+                          href={pagePath}
                           underline="hover"
                           noWrap
-                          title={`/${routePath}`}
+                          title={pagePath}
                           sx={{ flex: 1, minWidth: 0 }}
                         >
-                          /{routePath}
+                          {pagePath}
                         </Link>
                         <Tooltip title="Copiar endereço">
                           <IconButton
                             aria-label="Copiar endereço público"
-                            onClick={() => handleCopy(`${window.location.origin}/${routePath}`)}
+                            onClick={() => handleCopy(`${window.location.origin}${pagePath}`)}
                             sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET, flexShrink: 0 }}
                           >
                             <ContentCopyIcon fontSize="small" />
@@ -464,7 +469,7 @@ export default function WeekMaterialDetailsModal({
                   type="button"
                   variant="contained"
                   startIcon={<OpenInNewIcon />}
-                  onClick={() => navigate(`/${routePath}`)}
+                  onClick={() => navigate(pagePath)}
                   disabled={!routePath || isDeleting}
                   fullWidth={isMobile}
                   sx={{ minHeight: TOUCH_TARGET, textTransform: 'none' }}

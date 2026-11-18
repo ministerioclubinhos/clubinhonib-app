@@ -26,12 +26,20 @@ try {
   ]);
   if (rows.length !== 1) throw new Error('Fixture ownership mismatch');
   if (input.status) {
-    if (!['DRAFT', 'PACKAGE_READY', 'IN_REVIEW'].includes(input.status))
+    if (!['DRAFT', 'PACKAGE_READY', 'IN_REVIEW', 'PUBLISHED', 'ARCHIVED'].includes(input.status))
       throw new Error('Invalid fixture status');
     await connection.execute('UPDATE lessons SET status = ? WHERE id = ?', [
       input.status,
       input.id,
     ]);
+  }
+  for (const [stage, status] of Object.entries(input.stageStatuses ?? {})) {
+    if (!['DRAFT', 'PRODUCER_APPROVED', 'IN_REVIEW', 'APPROVED', 'STALE'].includes(status))
+      throw new Error('Invalid fixture stage status');
+    await connection.execute(
+      'UPDATE lesson_stages SET status = ? WHERE lesson_id = ? AND type = ?',
+      [status, input.id, stage]
+    );
   }
   for (const stage of input.stages ?? []) {
     if (

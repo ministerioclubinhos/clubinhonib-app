@@ -15,6 +15,7 @@ import {
   LessonConnectionState,
   LessonStageAction,
   LessonStreamEnd,
+  type ChangeMemoryVersePayload,
   type GenerateLessonPayload,
   type GenerateStageVariables,
   type RegenerateStageImagesVariables,
@@ -185,6 +186,17 @@ export function useGenerateStage() {
     mutationFn: ({ id, payload }: GenerateStageVariables) =>
       aiLessonsService.generateStage(id, payload),
     onSuccess: (lesson) => updateLesson(client, lesson),
+    onSettled: (_, __, value) =>
+      client.invalidateQueries({ queryKey: aiLessonsKeys.detail(value.id) }),
+  });
+}
+export function useChangeMemoryVerse() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: ChangeMemoryVersePayload }) =>
+      aiLessonsService.changeMemoryVerse(id, payload),
+    onSuccess: (lesson) => updateLesson(client, lesson),
+    // A refused change (another session edited item 1) must leave the screen with the server copy.
     onSettled: (_, __, value) =>
       client.invalidateQueries({ queryKey: aiLessonsKeys.detail(value.id) }),
   });

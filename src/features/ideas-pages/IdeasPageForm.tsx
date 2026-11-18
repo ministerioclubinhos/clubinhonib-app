@@ -1,4 +1,6 @@
+import { MediaTargetType } from '@/store/slices/types';
 import { useCallback, useEffect, useState } from 'react';
+import { getRoutePagePath } from '@/pages/TeacherArea/pagePaths';
 import {
   Alert,
   AlertTitle,
@@ -215,7 +217,7 @@ export default function IdeasPageForm({ fromTemplatePage = false }: IdeasPageFor
           <Button
             type="button"
             component="a"
-            href={`/${loadedPage.route.path}`}
+            href={getRoutePagePath({ entityType: MediaTargetType.IdeasPage, path: loadedPage.route.path, idToFetch: loadedPage.route.idToFetch })}
             target="_blank"
             rel="noopener noreferrer"
             endIcon={<OpenInNew />}

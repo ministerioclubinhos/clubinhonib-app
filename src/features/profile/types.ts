@@ -50,6 +50,8 @@ export type ProfileClub = {
   /** `HH:mm`, ou `null` quando não cadastrado. */
   time: string | null;
   isActive: boolean;
+  district: string | null;
+  city: string | null;
 };
 
 /** Vínculo de professor (`MyProfileTeacherDto`). */

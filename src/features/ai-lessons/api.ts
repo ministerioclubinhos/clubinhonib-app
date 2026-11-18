@@ -1,6 +1,7 @@
 import { subscribeLessonStream } from './stream';
 import type {
   ActiveLessonGeneration,
+  ChangeMemoryVersePayload,
   RegenerateStageImagesPayload,
   Lesson,
   LessonDashboard,
@@ -77,6 +78,14 @@ export const aiLessonsService = {
   },
   async generateStage(id: string, payload: RegenerateSectionPayload): Promise<Lesson> {
     return (await apiAxios.post<Lesson>(`${endpoint}/${id}/stages/generate`, payload)).data;
+  },
+  async changeMemoryVerse(id: string, payload: ChangeMemoryVersePayload): Promise<Lesson> {
+    return (
+      await apiAxios.patch<Lesson>(`${endpoint}/${id}/memory-verse`, payload, {
+        // The dialog shows the refusal next to the fields.
+        skipGlobalError: true,
+      })
+    ).data;
   },
   async regenerateCover(id: string): Promise<Lesson> {
     return (

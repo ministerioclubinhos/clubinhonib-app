@@ -3,19 +3,14 @@ import {
   Alert,
   Box,
   Button,
-  Container,
   Grid2,
-  IconButton,
   Paper,
   Skeleton,
   Stack,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
@@ -32,7 +27,10 @@ import { fetchRoutes } from 'store/slices/route/routeSlice';
 
 import IdeasGalleryDialog from './IdeasGalleryDialog';
 import MediaSection from './MediaSection';
-import { PAGE_WIDTH, TOUCH_TARGET, type IdeasMediaKind } from './constants';
+import { TEACHER_LIST_PATH } from '@/pages/TeacherArea/pagePaths';
+import { MediaTargetType } from '@/store/slices/types';
+import TeacherPageCard from '@/pages/TeacherArea/components/Layout/TeacherPageCard';
+import { TOUCH_TARGET, type IdeasMediaKind } from './constants';
 import { countMedias, pageSummaryLabel } from './utils';
 
 interface IdeasPageViewProps {
@@ -65,8 +63,6 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
 
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const isAdmin = isAuthenticated && user?.role === UserRole.ADMIN;
@@ -117,119 +113,62 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
   const sections = ideasPage?.sections ?? [];
   const totalMedia = countMedias(sections);
 
+  const adminActions =
+    isAdmin && ideasPage ? (
+      <Stack direction="row" spacing={1}>
+        <Button
+          type="button"
+          size="small"
+          variant="outlined"
+          onClick={handleEdit}
+          disabled={isDeleting}
+          startIcon={<EditOutlinedIcon />}
+          sx={{ minHeight: TOUCH_TARGET, textTransform: 'none', flex: { xs: 1, sm: 'none' } }}
+        >
+          Editar
+        </Button>
+        <Button
+          type="button"
+          size="small"
+          variant="outlined"
+          color="error"
+          onClick={() => setDeleteConfirmOpen(true)}
+          disabled={isDeleting}
+          startIcon={<DeleteOutlineIcon />}
+          sx={{ minHeight: TOUCH_TARGET, textTransform: 'none', flex: { xs: 1, sm: 'none' } }}
+        >
+          Excluir
+        </Button>
+      </Stack>
+    ) : undefined;
+
   return (
-    <Box data-testid="page-view-ideas-material-viewpage-ideas-page-view" sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Box
-        component="header"
-        sx={{
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          py: { xs: 2, sm: 3 },
-        }}
-      >
-        {/* A faixa colorida vai de ponta a ponta; o conteúdo dela segue a
-            mesma largura dos cartões, para o título nascer alinhado com eles. */}
-        <Container maxWidth="xl" disableGutters sx={{ width: PAGE_WIDTH }}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-            <IconButton
-              onClick={() => navigate(-1)}
-              aria-label="Voltar"
-              sx={{
-                color: 'inherit',
-                width: TOUCH_TARGET,
-                height: TOUCH_TARGET,
-                bgcolor: 'rgba(255, 255, 255, 0.12)',
-              }}
-            >
-              <ArrowBackIcon />
-            </IconButton>
+    <TeacherPageCard
+      testId="page-view-ideas-material-viewpage-ideas-page-view"
+      icon={<LightbulbOutlinedIcon sx={{ fontSize: 22 }} />}
+      accent="#9333ea"
+      backTo={TEACHER_LIST_PATH[MediaTargetType.IdeasPage]}
+      backLabel="Voltar para Ideias"
+      title={loading ? 'Carregando...' : ideasPage?.title ?? 'Ideias'}
+      subtitle={!loading && ideasPage ? pageSummaryLabel(sections.length, totalMedia) : undefined}
+      actions={adminActions}
+    >
+      {ideasPage?.description && (
+        <Typography
+          sx={{ mb: 2.5, maxWidth: 760, color: '#475569', fontSize: { xs: '0.95rem', md: '1rem' }, whiteSpace: 'pre-wrap' }}
+        >
+          {ideasPage.description}
+        </Typography>
+      )}
 
-            {isAdmin && ideasPage && (
-              <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
-                <Button
-                  type="button"
-                  size="small"
-                  onClick={handleEdit}
-                  disabled={isDeleting}
-                  startIcon={<EditOutlinedIcon />}
-                  sx={{ color: 'inherit', minHeight: TOUCH_TARGET, textTransform: 'none' }}
-                >
-                  Editar
-                </Button>
-                <Button
-                  type="button"
-                  size="small"
-                  onClick={() => setDeleteConfirmOpen(true)}
-                  disabled={isDeleting}
-                  startIcon={<DeleteOutlineIcon />}
-                  sx={{ color: 'inherit', minHeight: TOUCH_TARGET, textTransform: 'none' }}
-                >
-                  Excluir
-                </Button>
-              </Stack>
-            )}
-          </Stack>
-
-          <Stack direction="row" spacing={1.5} alignItems="flex-start">
-            <LightbulbOutlinedIcon sx={{ fontSize: 32, mt: 0.5, flexShrink: 0 }} />
-
-            <Box sx={{ minWidth: 0 }}>
-              {loading ? (
-                <Skeleton variant="text" width={220} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.3)' }} />
-              ) : (
-                <Typography
-                  variant="h1"
-                  sx={{
-                    // O título é o elemento mais importante da tela: no celular
-                    // ele vinha menor que o corpo do texto.
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
-                    fontWeight: 800,
-                    lineHeight: 1.15,
-                    // `Global.css` pinta todo `h1` com a cor secundária, que
-                    // aqui ficaria azul sobre azul.
-                    color: 'inherit',
-                  }}
-                >
-                  {ideasPage?.title}
-                </Typography>
-              )}
-
-              {ideasPage?.description && (
-                <Typography
-                  sx={{
-                    mt: 1,
-                    maxWidth: 760,
-                    fontSize: { xs: '0.95rem', md: '1.05rem' },
-                    opacity: 0.92,
-                    whiteSpace: 'pre-wrap',
-                  }}
-                >
-                  {ideasPage.description}
-                </Typography>
-              )}
-
-              {!loading && ideasPage && (
-                <Typography variant="body2" sx={{ mt: 1.5, opacity: 0.85 }}>
-                  {pageSummaryLabel(sections.length, totalMedia)}
-                </Typography>
-              )}
-            </Box>
-          </Stack>
-        </Container>
-      </Box>
-
-      <Container data-testid="page-view-ideas-material-viewpage-content"
-        maxWidth="xl"
-        disableGutters
-        sx={{ width: PAGE_WIDTH, py: { xs: 2, sm: 3 } }}
-      >
+      <Box data-testid="page-view-ideas-material-viewpage-content">
         {error && (
           <Alert
             severity="error"
             sx={{ mb: 2 }}
             action={
-              <Button color="inherit" size="small" onClick={() => navigate(-1)}>
-                Voltar
+              <Button color="inherit" size="small" onClick={() => navigate('/area-do-professor/ideias')}>
+                Ver ideias
               </Button>
             }
           >
@@ -274,7 +213,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
             ))}
           </Grid2>
         )}
-      </Container>
+      </Box>
 
       <IdeasGalleryDialog
         open={Boolean(gallery)}
@@ -292,9 +231,6 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
         loading={isDeleting}
       />
 
-      {/* O rodapé do site fica logo abaixo; no celular a folga evita que o
-          último cartão encoste nele. */}
-      {isMobile && <Box sx={{ height: 16 }} />}
-    </Box>
+    </TeacherPageCard>
   );
 }

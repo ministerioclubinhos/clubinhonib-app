@@ -12,6 +12,7 @@ import { useFeatureFlags } from '@/hooks';
 import { FEATURE } from '@/features/feature-flags';
 import { weekdayLabel } from '@/utils/dateUtils';
 import { UserRole } from '@/types/shared';
+import { formatCoordinatorClubsLabel, formatTeacherClubLabel } from '../../utils/clubLabel';
 
 const ROLE_LABELS: Record<string, string> = {
   [UserRole.ADMIN]: 'Administração',
@@ -203,7 +204,7 @@ const TeacherAreaHeader: React.FC = () => {
                   Meu Clubinho
                 </Typography>
                 <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#0f2942', lineHeight: 1.25 }}>
-                  Clubinho Nº {club.number}
+                  {formatTeacherClubLabel(club)}
                 </Typography>
                 <Stack direction="row" spacing={0.5} alignItems="center">
                   <AccessTimeIcon sx={{ fontSize: 12, color: '#0369a1' }} />
@@ -233,7 +234,7 @@ const TeacherAreaHeader: React.FC = () => {
                   Coordenação
                 </Typography>
                 <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#0f2942' }}>
-                  {coordinatorClubs.length} {coordinatorClubs.length === 1 ? 'Clubinho vinculado' : 'Clubinhos vinculados'}
+                  {formatCoordinatorClubsLabel(coordinatorClubs)}
                 </Typography>
               </Box>
             </Box>

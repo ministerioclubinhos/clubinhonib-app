@@ -129,6 +129,8 @@ export interface ProductionStageCardProps {
   onShowFailureDetails: () => void;
   onGoToReview: () => void;
   onOpenProviderSettings: () => void;
+  /** The memory verse was changed: the screen returns to item 1 and says what is left to do. */
+  onVerseChanged: (verse: { reference: string; text: string }, outdated: LessonStageType[]) => void;
 }
 
 export interface ImageRegenerationDialogProps {

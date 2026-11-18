@@ -16,6 +16,7 @@ import { ProductionNotices } from '@/features/ai-lessons/components/production/P
 import { ProductionStageCard } from '@/features/ai-lessons/components/production/ProductionStageCard';
 import { ProductionUnsavedBar } from '@/features/ai-lessons/components/production/ProductionUnsavedBar';
 import { RemoteVersionDialog } from '@/features/ai-lessons/components/production/RemoteVersionDialog';
+import { LESSON_VERSE_TEXTS } from '@/features/ai-lessons/production.constants';
 import { STUDIO_ROUTES } from '@/features/ai-lessons/presentation.constants';
 import { lessonStageLabel } from '@/features/ai-lessons/presentation.utils';
 import {
@@ -29,7 +30,7 @@ import {
   LessonConnectionState,
   StageNavigationMode,
   StudioScreenKind,
-  type LessonStageType,
+  LessonStageType,
 } from '@/features/ai-lessons/types';
 import { useLessonPdfPreview } from '@/features/ai-lessons/useLessonPdfPreview';
 import { useProductionStage } from '@/features/ai-lessons/useProductionStage';
@@ -55,6 +56,10 @@ export const LessonDraftDetailPage: React.FC = () => {
   const [llmErrorOpen, setLlmErrorOpen] = useState(false);
   const [remoteVersionOpen, setRemoteVersionOpen] = useState(false);
   const [navigationCollapsed, setNavigationCollapsed] = useState(false);
+  /** What the admin has to do after changing the memory verse; stays until dismissed. */
+  const [verseNotice, setVerseNotice] = useState<{ reference: string; outdated: string[] } | null>(
+    null
+  );
 
   const data = useProductionStage(id, lesson, selectedType);
   const { stage, version, local, edited } = data;
@@ -153,6 +158,18 @@ export const LessonDraftDetailPage: React.FC = () => {
         onRebase={workflow.requestRebase}
       />
 
+      {verseNotice && (
+        <Alert
+          data-testid="ai-lesson-verse-changed-notice"
+          severity="success"
+          onClose={() => setVerseNotice(null)}
+          sx={{ mb: 2, borderRadius: 2 }}
+        >
+          {LESSON_VERSE_TEXTS.done(verseNotice.reference)} {LESSON_VERSE_TEXTS.doneNext}
+          {verseNotice.outdated.length > 0 && ` Gerar de novo: ${verseNotice.outdated.join(', ')}.`}
+        </Alert>
+      )}
+
       <ProductionHeader
         lesson={lesson}
         step={productionHeaderStep(lesson)}
@@ -201,6 +218,14 @@ export const LessonDraftDetailPage: React.FC = () => {
               onResolveComment={(commentId) => resolveComment.mutate({ id, commentId })}
               onShowFailureDetails={() => setLlmErrorOpen(true)}
               onGoToReview={goToReview}
+              onVerseChanged={(verse, outdated) => {
+                // The verse lives in item 1: the screen goes back there to conclude it again.
+                setVerseNotice({
+                  reference: verse.reference,
+                  outdated: outdated.map((type) => lessonStageLabel(type, lesson.category)),
+                });
+                selectStage(LessonStageType.LESSON);
+              }}
               onOpenProviderSettings={() =>
                 leave.requestLeave(() => navigate(AI_PROVIDER_SETTINGS_ROUTE))
               }

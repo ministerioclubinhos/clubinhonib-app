@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { TEACHER_PAGE_BASE_PATH } from '../../pagePaths';
 import {
   Box,
   Paper,
@@ -133,6 +134,18 @@ const TeacherAreaSidebar: React.FC<Props> = ({
             },
           ]
         : []),
+      ...(flags[FEATURE.IDEA_SUBMISSION]
+        ? [
+            {
+              id: 'share-idea',
+              label: 'Compartilhar Ideia',
+              to: '/compartilhar-ideia',
+              icon: <ShareIcon fontSize="small" />,
+              accentColor: '#7c3aed',
+              group: 'preparacao' as const,
+            },
+          ]
+        : []),
       ...(flags[FEATURE.TRAINING_VIDEOS]
         ? [
             {
@@ -150,22 +163,10 @@ const TeacherAreaSidebar: React.FC<Props> = ({
         ? [
             {
               id: 'photos',
-              label: 'Fotos do Clubinho',
-              to: '/imagens-clubinho',
+              label: 'Enviar Fotos do Clubinho',
+              to: '/fotos-videos-clubinho',
               icon: <PhotoCameraIcon fontSize="small" />,
               accentColor: '#16a34a',
-              group: 'preparacao' as const,
-            },
-          ]
-        : []),
-      ...(flags[FEATURE.IDEA_SUBMISSION]
-        ? [
-            {
-              id: 'share-idea',
-              label: 'Compartilhar Ideia',
-              to: '/compartilhar-ideia',
-              icon: <ShareIcon fontSize="small" />,
-              accentColor: '#7c3aed',
               group: 'preparacao' as const,
             },
           ]
@@ -177,6 +178,9 @@ const TeacherAreaSidebar: React.FC<Props> = ({
   const isActive = (item: TeacherNavItem) => {
     if (item.exact) {
       return location.pathname === item.to;
+    }
+    if (item.id === 'materials' && location.pathname.startsWith(`${TEACHER_PAGE_BASE_PATH[MediaTargetType.WeekMaterialsPage]}/`)) {
+      return true;
     }
     return location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
   };

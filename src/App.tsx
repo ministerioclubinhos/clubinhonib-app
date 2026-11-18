@@ -25,6 +25,15 @@ import { fetchRoutes } from './store/slices/route/routeSlice';
 import { initAuth, signOut } from './store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
 
+import {
+  TEACHER_NESTED_PAGES,
+  TEACHER_PAGE_BASE_PATH,
+  getRoutePagePath,
+  isTeacherNestedEntity,
+} from './pages/TeacherArea/pagePaths';
+import { PublicMediaKind, getPublicMediaPath } from './features/public-media';
+import { MediaTargetType } from './store/slices/types';
+import TeacherNestedPage from './pages/TeacherArea/TeacherNestedPage';
 import type { RouteData as DynamicRouteType } from './store/slices/route/routeSlice';
 import type { RootState as RootStateType, AppDispatch as AppDispatchType } from './store/slices';
 
@@ -98,6 +107,8 @@ import {
   TeacherDocumentsPage,
   TeacherVideosPage,
   TeacherIdeasGalleryPage,
+  PublicMediaGalleryPage,
+  PublicMediaDetailPage,
   WeekMaterialsManager,
 } from './routes/lazyPages';
 
@@ -298,6 +309,11 @@ function App() {
                     <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} />
                   </Route>
 
+                  {/* Galeria pública de fotos e vídeos: sem login e fora da Área do Professor. */}
+                  <Route path="/fotos-e-videos" element={<PublicMediaGalleryPage />} />
+                  <Route path="/fotos-e-videos/fotos/:id" element={<PublicMediaDetailPage kind={PublicMediaKind.Photos} />} />
+                  <Route path="/fotos-e-videos/videos/:id" element={<PublicMediaDetailPage kind={PublicMediaKind.Videos} />} />
+
                   <Route path="/acesso-negado" element={<AccessDeniedPage />} />
                   <Route path="*" element={<NotFoundPage />} />
 
@@ -318,12 +334,13 @@ function App() {
                         <Route path="/area-do-professor/ideias" element={<TeacherIdeasGalleryPage />} />
                       </Route>
                       <Route element={<FeatureRoute flag={FEATURE.CLUB_PHOTO_UPLOAD} redirectTo="/area-do-professor" />}>
-                        <Route path="/imagens-clubinho" element={<ImageSectionPage />} />
+                        <Route path="/fotos-videos-clubinho" element={<ImageSectionPage />} />
                       </Route>
                       <Route element={<FeatureRoute flag={FEATURE.IDEA_SUBMISSION} redirectTo="/area-do-professor" />}>
                         <Route path="/compartilhar-ideia" element={<IdeasSectionPage />} />
                       </Route>
                     </Route>
+                    <Route path="/imagens-clubinho" element={<Navigate to="/fotos-videos-clubinho" replace />} />
                     <Route path="/meu-perfil" element={<ProfilePage />} />
                     <Route element={<FeatureRoute flag={FEATURE.NOTIFICATION_CENTER_V2} />}>
                       <Route path="/notificacoes" element={<NotificationsPage />} />
@@ -451,13 +468,44 @@ function App() {
                     </Route>
                   </Route>
 
-                  {dynamicRoutes.map((route: DynamicRouteType) => (
-                    <Route
-                      key={route.id}
-                      path={`/${route.path}`}
-                      element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
-                    />
-                  ))}
+                  {/* Materiais semanais, ideias e vídeos abrem dentro da Área do Professor (mesma casca), por id. */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={<TeacherAreaLayout />}>
+                      {TEACHER_NESTED_PAGES.map((entityType) => (
+                        <Route
+                          key={entityType}
+                          path={`${TEACHER_PAGE_BASE_PATH[entityType]}/:id`}
+                          element={<TeacherNestedPage entityType={entityType} />}
+                        />
+                      ))}
+                    </Route>
+                  </Route>
+
+                  {dynamicRoutes.map((route: DynamicRouteType) =>
+                    isTeacherNestedEntity(route.entityType) ? (
+                      // Endereço antigo por slug (links salvos, e-mails): leva para o novo, por id.
+                      <Route
+                        key={`legacy-${route.id}`}
+                        path={`/${route.path}`}
+                        element={
+                          <Navigate
+                            to={
+                              route.entityType === MediaTargetType.VideosPage && route.public
+                                ? getPublicMediaPath(PublicMediaKind.Videos, route.idToFetch)
+                                : getRoutePagePath(route)
+                            }
+                            replace
+                          />
+                        }
+                      />
+                    ) : (
+                      <Route
+                        key={route.id}
+                        path={`/${route.path}`}
+                        element={<PageRenderer entityType={route.entityType} idToFetch={route.idToFetch} />}
+                      />
+                    )
+                  )}
                   </Routes>
                 </Suspense>
               </Box>

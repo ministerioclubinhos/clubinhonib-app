@@ -85,7 +85,7 @@ visibility rules are unchanged.
 
 ## Clubinho photo and video submissions
 
-The existing routes remain `/imagens-clubinho`, `/feed-clubinho`, and
+The existing routes remain `/fotos-videos-clubinho` (formerly `/imagens-clubinho`), `/feed-clubinho`, and
 `/adm/fotos-clubinhos`. The upload form keeps its draft locally and sends the
 shared `sectionData` multipart contract through the Axios feature API. A post
 contains either 1–20 photos (JPG/PNG/WebP/GIF, 10 MB each) or one video

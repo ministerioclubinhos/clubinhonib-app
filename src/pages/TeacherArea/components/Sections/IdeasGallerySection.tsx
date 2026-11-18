@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import type { RouteData } from 'store/slices/route/routeSlice';
+import { getRoutePagePath } from '../../pagePaths';
 import {
   Box,
   Typography,
@@ -39,8 +41,8 @@ const IdeasGallerySection: React.FC = () => {
       );
   }, [routes, search]);
 
-  const handleRedirect = (path: string) => {
-    navigate(`/${path.replace(/^\/+/, '')}`);
+  const handleRedirect = (route: RouteData) => {
+    navigate(getRoutePagePath(route));
   };
 
   return (
@@ -93,7 +95,7 @@ const IdeasGallerySection: React.FC = () => {
           {filteredIdeas.map((idea) => (
             <Box key={idea.id} sx={{ height: '100%' }}>
               <Card
-                onClick={() => handleRedirect(idea.path)}
+                onClick={() => handleRedirect(idea)}
                 elevation={0}
                 sx={{
                   height: '100%',

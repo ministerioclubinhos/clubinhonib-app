@@ -283,7 +283,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
             )}
 
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Box sx={{ display: 'flex', justifyContent: { xs: 'stretch', sm: 'flex-end' } }}>
                 <Button
                   type="submit"
                   variant="contained"
@@ -291,6 +291,8 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
                   size="small"
                   startIcon={isSubmitting ? <CircularProgress size={16} /> : <SaveIcon fontSize="small" />}
                   sx={{
+                    width: { xs: '100%', sm: 'auto' },
+                    minHeight: 48,
                     px: 3,
                     py: 1,
                     background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',

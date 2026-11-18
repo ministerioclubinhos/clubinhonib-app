@@ -2,7 +2,7 @@ import React from 'react';
 import { Box } from '@mui/material';
 import { HeroSection, FeaturesSection, TestimonialsSection, CTASection } from './components';
 import WeekMaterialsBanner from './WeekMaterialsBanner';
-import CardsSection from './CardsSection';
+import MediaShowcaseSection from '@/features/public-media/components/MediaShowcaseSection';
 import { FEATURES } from './constants';
 import { useComments, useAuth } from './hooks';
 import { FEATURE } from '@/features/feature-flags';
@@ -33,7 +33,7 @@ const Home: React.FC = () => {
 
       {isAuthenticated && <WeekMaterialsBanner />}
       
-      <CardsSection />
+      <MediaShowcaseSection />
 
       <FeaturesSection features={FEATURES} />
 

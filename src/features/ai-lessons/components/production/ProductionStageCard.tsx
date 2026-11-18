@@ -6,7 +6,11 @@ import {
   LESSON_STAGE_STATUS_LABELS,
 } from '../../presentation.constants';
 import { lessonStageDescription, lessonStageLabel } from '../../presentation.utils';
-import { PRODUCTION_STAGE_CARD_ID, PRODUCTION_TEXTS } from '../../production.constants';
+import {
+  PRODUCTION_STAGE_CARD_ID,
+  PRODUCTION_TEXTS,
+  VERSE_TOOL_STAGES,
+} from '../../production.constants';
 import type { ProductionStageCardProps } from '../../production.types';
 import { LessonCategory, LessonStageType, LessonStatus } from '../../types';
 import { LessonCommentsPanel } from '../LessonCommentsPanel';
@@ -15,6 +19,7 @@ import { StoryVisualConfiguration } from '../StoryVisualConfiguration';
 import { useImageRegeneration } from '../../useImageRegeneration';
 import { ImageRegenerationDialog } from '../generation/ImageRegenerationDialog';
 import { LessonCoverPreview } from './LessonCoverPreview';
+import { LessonVerseTool } from './LessonVerseTool';
 import { ProductionStageActions } from './ProductionStageActions';
 import { ProductionStageGuidance } from './ProductionStageGuidance';
 
@@ -30,6 +35,7 @@ export function ProductionStageCard({
   onShowFailureDetails,
   onGoToReview,
   onOpenProviderSettings,
+  onVerseChanged,
 }: ProductionStageCardProps) {
   const { stage, version, edited } = data;
   // Before the early return: hooks run on every render.
@@ -46,6 +52,8 @@ export function ProductionStageCard({
   const { visual } = workflow;
   const isStoryVisuals = stage.type === LessonStageType.LESSON_VISUALS;
   const hasVersion = Boolean(stage.currentVersionId);
+  const showVerseTool = VERSE_TOOL_STAGES.includes(stage.type) && Boolean(data.verse);
+  const showCover = stage.type === LessonStageType.LESSON && hasVersion;
   const openPreview = () => {
     // The PDF is built from the saved version; an unsaved edit would not be in it.
     if (!edited) void preview.open();
@@ -120,13 +128,35 @@ export function ProductionStageCard({
           resolvingId={resolvingCommentId}
         />
 
-        {stage.type === LessonStageType.LESSON && hasVersion && (
-          <LessonCoverPreview
-            lessonId={lesson.id}
-            coverImageUrl={lesson.coverImageUrl}
-            locked={[LessonStatus.PUBLISHED, LessonStatus.ARCHIVED].includes(lesson.status)}
-            busy={workflow.stageGenerating || workflow.generationLocked}
-          />
+        {(showVerseTool || showCover) && (
+          <Box
+            data-testid="ai-lesson-stage-meta"
+            sx={{
+              display: 'grid',
+              // Two tiles side by side when there is room (280px each), stacked otherwise.
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+              gap: 1.5,
+              mb: 2,
+            }}
+          >
+            {showVerseTool && data.verse && (
+              <LessonVerseTool
+                lesson={lesson}
+                verse={data.verse}
+                unsaved={edited}
+                busy={workflow.stageGenerating || workflow.generationLocked}
+                onChanged={onVerseChanged}
+              />
+            )}
+            {showCover && (
+              <LessonCoverPreview
+                lessonId={lesson.id}
+                coverImageUrl={lesson.coverImageUrl}
+                locked={[LessonStatus.PUBLISHED, LessonStatus.ARCHIVED].includes(lesson.status)}
+                busy={workflow.stageGenerating || workflow.generationLocked}
+              />
+            )}
+          </Box>
         )}
 
         {stage.type === LessonStageType.LESSON_VISUALS ? (

@@ -11,5 +11,6 @@ Mandatory summary:
 - Use strict TypeScript and NEVER use `any` under any circumstances.
 - Reuse Material UI, shared components, guards, query-key patterns, and error utilities.
 - Cover mobile, accessibility, role/club permissions, privacy, tests, and docs.
+- Run every test, type-check, lint, build or Playwright command limited in CPU and RAM (`nice -n 19 systemd-run --user --scope -p MemoryMax=3G -p CPUQuota=200%`, `--workers=1`/`--maxWorkers=1`, `NODE_OPTIONS=--max-old-space-size=2048`); unlimited runs freeze the machine. See `AGENTS.md`.
 
 If this summary and the detailed guide differ, the detailed guide controls.

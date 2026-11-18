@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getRoutePagePath } from '@/pages/TeacherArea/pagePaths';
+import { MediaTargetType } from '@/store/slices/types';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -290,7 +292,7 @@ export function useVideoPageForm({
           : FEATURE_SUCCESS_MESSAGES.PAGE_UPDATED,
         severity: 'success',
       });
-      navigate(`/${saved.route.path}`);
+      navigate(getRoutePagePath({ entityType: MediaTargetType.VideosPage, path: saved.route.path, idToFetch: saved.route.idToFetch }));
     } catch (saveError: unknown) {
       // A API diz o que recusou — arquivo ausente, sessão expirada, payload
       // grande demais, validação. Trocar isso por um texto fixo deixava o

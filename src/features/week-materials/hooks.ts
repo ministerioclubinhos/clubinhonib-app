@@ -1,4 +1,6 @@
+import { MediaTargetType } from '@/store/slices/types';
 import { useCallback, useEffect, useState } from 'react';
+import { getRoutePagePath } from '@/pages/TeacherArea/pagePaths';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -401,7 +403,7 @@ export function useWeekMaterialForm({
         message: FEATURE_SUCCESS_MESSAGES.PAGE_SAVED,
         severity: 'success',
       });
-      navigate(`/${saved.route.path}`);
+      navigate(getRoutePagePath({ entityType: MediaTargetType.WeekMaterialsPage, path: saved.route.path, idToFetch: saved.id }));
     } catch (saveError: unknown) {
       // A API diz o que recusou — arquivo ausente, sessão expirada, payload
       // grande demais, validação. Trocar isso por um texto fixo deixava o

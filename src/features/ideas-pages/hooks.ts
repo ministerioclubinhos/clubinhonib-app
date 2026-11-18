@@ -1,4 +1,6 @@
+import { MediaTargetType } from '@/store/slices/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getRoutePagePath } from '@/pages/TeacherArea/pagePaths';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -282,7 +284,7 @@ export function useIdeasPageForm({
           : FEATURE_SUCCESS_MESSAGES.PAGE_UPDATED,
         severity: 'success',
       });
-      navigate(`/${saved.route.path}`);
+      navigate(getRoutePagePath({ entityType: MediaTargetType.IdeasPage, path: saved.route.path, idToFetch: saved.route.idToFetch }));
     } catch (saveError: unknown) {
       setSectionApiErrors(sectionApiErrorsFrom(saveError));
       // A API diz o que recusou — arquivo ausente, sessão expirada, payload

@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, Chip, Paper, Typography } from '@mui/material';
+import { Box, Chip, IconButton, Paper, Typography } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface Props {
   icon: React.ReactNode;
@@ -10,6 +12,9 @@ interface Props {
   /** Slot à direita do cabeçalho (busca, botões). No mobile desce para baixo do título. */
   actions?: React.ReactNode;
   testId?: string;
+  /** Quando presente, mostra a seta de voltar para a listagem de origem. */
+  backTo?: string;
+  backLabel?: string;
   children: React.ReactNode;
 }
 
@@ -26,6 +31,8 @@ const TeacherPageCard: React.FC<Props> = ({
   count,
   actions,
   testId,
+  backTo,
+  backLabel = 'Voltar',
   children,
 }) => (
   <Paper
@@ -51,6 +58,17 @@ const TeacherPageCard: React.FC<Props> = ({
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+        {backTo && (
+          <IconButton
+            component={RouterLink}
+            to={backTo}
+            aria-label={backLabel}
+            data-testid="teacher-page-card-back"
+            sx={{ width: 44, height: 44, flexShrink: 0, ml: -0.75, color: '#334155' }}
+          >
+            <ArrowBackIcon />
+          </IconButton>
+        )}
         <Box
           sx={{
             width: 38,

@@ -171,3 +171,12 @@ export const ObservabilityAuditPage = lazyNamedWithRetry(
   () => import('@/features/observability-audit'),
   (module) => module.ObservabilityAuditPage
 );
+
+export const PublicMediaGalleryPage = lazyNamedWithRetry(
+  () => import('@/features/public-media'),
+  (module) => module.PublicMediaGalleryPage
+);
+export const PublicMediaDetailPage = lazyNamedWithRetry(
+  () => import('@/features/public-media'),
+  (module) => module.PublicMediaDetailPage
+);

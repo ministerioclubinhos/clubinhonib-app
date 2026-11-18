@@ -49,7 +49,7 @@ export const FEED_CELEBRATIONS_STORAGE_KEY = 'clubinho_feed_celebrated_v1';
 export const FEED_ROUTES = {
   HOME: '/',
   FEED: '/feed-clubinho',
-  UPLOAD_PHOTOS: '/imagens-clubinho',
+  UPLOAD_PHOTOS: '/fotos-videos-clubinho',
   ADMIN_MEDIA: '/adm/fotos-clubinhos',
 } as const;
 

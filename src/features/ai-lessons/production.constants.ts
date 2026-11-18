@@ -1,7 +1,12 @@
 import { DEFAULT_LESSON_VISUAL_STYLE } from './constants';
 import { AiProviderProfile } from '@/features/ai-providers/types';
 import type { ProductionConfirmCopy, VisualConfigForm } from './production.types';
-import { LessonStageStatus, ProductionConfirmationKind, StudioHubAction } from './types';
+import {
+  LessonStageStatus,
+  LessonStageType,
+  ProductionConfirmationKind,
+  StudioHubAction,
+} from './types';
 import type { lessonProductionActions } from './workflow';
 
 /** Width of the header's actions column on desktop; the title takes what is left. */
@@ -101,15 +106,70 @@ export const PRODUCTION_CONFIRM_COPY: Record<ProductionConfirmationKind, Product
   },
 };
 
+/** Items that print the memory verse: the tool to change it is offered in each of them. */
+export const VERSE_TOOL_STAGES: readonly LessonStageType[] = [
+  LessonStageType.LESSON,
+  LessonStageType.VERSE_VISUALS,
+  LessonStageType.VERSE_FIXATION,
+  LessonStageType.MEDITATION_YOUNGER,
+  LessonStageType.MEDITATION_OLDER,
+];
+
+/** Limits of the verse form, the same the API enforces. */
+export const VERSE_FIELD_LIMITS = {
+  textMin: 10,
+  textMax: 600,
+  referenceMax: 120,
+} as const;
+
+/** Item statuses that count as concluded: changing the verse withdraws them. */
+export const VERSE_CONCLUDED_STATUSES: readonly LessonStageStatus[] = [
+  LessonStageStatus.PRODUCER_APPROVED,
+  LessonStageStatus.IN_REVIEW,
+  LessonStageStatus.APPROVED,
+];
+
+export const LESSON_VERSE_TEXTS = {
+  label: 'Versículo para memorizar',
+  change: 'Alterar versículo',
+  changeLabel: 'Alterar o versículo da lição',
+  dialogTitle: 'Alterar versículo',
+  warningTitle: 'Você está alterando o versículo.',
+  warningBody:
+    'Ele é usado em toda a lição: visuais do versículo, fixação e meditações. O item 1 volta para produção e você precisará concluí-lo de novo.',
+  impactTitle: 'Estes itens já gerados ficam desatualizados e precisam ser gerados de novo:',
+  noImpact: 'Nenhum item depois do item 1 foi gerado ainda.',
+  textLabel: 'Texto do versículo (NVI)',
+  referenceLabel: 'Referência',
+  referenceHelper: 'Livro capítulo:versículo, por exemplo João 3:16',
+  versionChip: 'NVI',
+  acknowledge: 'Entendo que o item 1 volta para produção e que os itens acima precisam ser gerados de novo.',
+  confirm: 'Alterar versículo',
+  saving: 'Alterando…',
+  cancel: 'Cancelar',
+  unchanged: 'Altere o texto ou a referência para continuar.',
+  textTooShort: 'O texto do versículo precisa ter ao menos 10 caracteres.',
+  textTooLong: 'O texto do versículo pode ter no máximo 600 caracteres.',
+  referenceRequired: 'Informe a referência do versículo.',
+  unsaved: 'Salve ou descarte a edição deste item antes de alterar o versículo.',
+  published: 'Lição publicada: o versículo não pode mais ser alterado.',
+  busy: 'Aguarde a geração em andamento para alterar o versículo.',
+  error: 'Não foi possível alterar o versículo.',
+  done: (reference: string) => `Versículo alterado para ${reference}.`,
+  doneNext: 'O item 1 voltou para produção: conclua-o e gere de novo os itens desatualizados.',
+} as const;
+
 /** Presentation image of the lesson, shown with item 1. */
 export const LESSON_COVER_TEXTS = {
   title: 'Imagem de apresentação',
   caption: 'Capa do material publicado',
+  /** Label of the compact row beside item 1. */
+  rowLabel: 'Imagem de apresentação',
   description:
     'Ilustração com o título curto e o personagem principal da lição. Ela será a imagem do card do material quando a lição for publicada. Gerar outra imagem substitui esta e não altera nenhum item.',
   empty: 'Ainda sem imagem. Gere uma para o card do material.',
   alt: 'Imagem de apresentação da lição',
-  view: 'Ver',
+  view: 'Ver imagem',
   viewLabel: 'Ver a imagem de apresentação',
   generate: 'Gerar imagem',
   regenerate: 'Gerar outra imagem',

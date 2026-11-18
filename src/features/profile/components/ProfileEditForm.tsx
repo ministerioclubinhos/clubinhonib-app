@@ -309,7 +309,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
             )}
 
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Box sx={{ display: 'flex', justifyContent: { xs: 'stretch', sm: 'flex-end' } }}>
                 <Button
                   type="submit"
                   variant="contained"
@@ -317,6 +317,8 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                   startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : <SaveIcon fontSize="small" />}
                   disabled={isSubmitting}
                   sx={{
+                    width: { xs: '100%', sm: 'auto' },
+                    minHeight: 48,
                     px: 3,
                     py: 1,
                     borderRadius: 1.5,

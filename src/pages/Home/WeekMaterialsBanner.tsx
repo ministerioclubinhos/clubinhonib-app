@@ -1,4 +1,5 @@
 import React from 'react';
+import { getRoutePagePath } from '@/pages/TeacherArea/pagePaths';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { useVisibleRoutes } from '@/features/feature-flags';
@@ -177,7 +178,7 @@ const WeekMaterialsBanner: React.FC = () => {
               variant="contained"
               size="large"
               component={Link}
-              to={`/${currentWeekRoute.path}`}
+              to={getRoutePagePath(currentWeekRoute)}
               sx={{
                 px: { xs: 4, md: 6 },
                 py: { xs: 2, md: 2.5 },

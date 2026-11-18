@@ -1,4 +1,5 @@
 import type { RouteData } from '@/store/slices/route/routeSlice';
+import { getRoutePagePath } from '@/pages/TeacherArea/pagePaths';
 import { MediaTargetType } from '@/store/slices/types';
 
 import { MaterialGalleryCategory, MaterialGallerySort, type MaterialGalleryFilters } from './types';
@@ -43,5 +44,5 @@ export function getMaterialGalleryPath(
 ): string {
   return showSpecialFamilyDay && specialFamilyDayId && route.idToFetch === specialFamilyDayId
     ? '/dia-especial-familia'
-    : `/${route.path.replace(/^\/+/, '')}`;
+    : getRoutePagePath(route);
 }

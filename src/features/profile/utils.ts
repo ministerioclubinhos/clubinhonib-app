@@ -358,3 +358,8 @@ export function isProfileIncomplete(profile: CompleteProfile): boolean {
 
   return !profile.personalData?.birthDate || !hasPreferences;
 }
+
+/** "Centro - Recife": bairro e cidade do clubinho, só o que estiver cadastrado. */
+export function formatClubLocation(club: Pick<ProfileClub, 'district' | 'city'>): string {
+  return [club.district, club.city].filter((part): part is string => Boolean(part?.trim())).join(' - ');
+}

@@ -382,6 +382,15 @@ export interface LessonPublicationDuplicate {
   routePath: string | null;
 }
 /** `GET /lessons/:id/publication-preview`. */
+/** Body of `PATCH /lessons/:id/memory-verse`. */
+export interface ChangeMemoryVersePayload {
+  text: string;
+  reference: string;
+  /** `lockVersion` of item 1 the admin was looking at. */
+  lockVersion: number;
+  /** The admin confirmed the warning: item 1 returns to production and later items go stale. */
+  acknowledgeImpact?: boolean;
+}
 export interface LessonPublicationPreview {
   title: string;
   isSpecial: boolean;

@@ -22,7 +22,7 @@ test('Clubinho: upload video, review, publish with author, and view on mobile', 
   const caption = `E2E Vídeo Clubinho 90 ${uniqueSuffix()}`;
   let sectionId: string | undefined;
   try {
-    await page.goto('/imagens-clubinho', { waitUntil: 'domcontentloaded' });
+    await page.goto('/fotos-videos-clubinho', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('clubinho-upload-submit')).toBeVisible();
     await page.getByTestId('clubinho-upload-submit').click();
     await expect(page.getByTestId('clubinho-upload-error')).toContainText('título');
@@ -242,7 +242,7 @@ test('Clubinho: upload video, review, publish with author, and view on mobile', 
 test('Clubinho: photo selection stays available and removal allows changing mode', async ({
   page,
 }) => {
-  await page.goto('/imagens-clubinho', { waitUntil: 'domcontentloaded' });
+  await page.goto('/fotos-videos-clubinho', { waitUntil: 'domcontentloaded' });
   await page.getByTestId('clubinho-upload-input').setInputFiles([
     { name: 'foto-1.png', mimeType: 'image/png', buffer: PNG_1X1 },
     { name: 'foto-2.png', mimeType: 'image/png', buffer: PNG_1X1 },
