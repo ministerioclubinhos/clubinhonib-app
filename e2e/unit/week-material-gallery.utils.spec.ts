@@ -86,11 +86,20 @@ test('combina busca e categoria e ordena sem alterar os dados compartilhados', (
 });
 
 test('preserva o desvio do Dia da Família somente com a flag ligada e o ID correspondente', () => {
+  // Materiais semanais abrem dentro da Área do Professor, por id.
+  const byId = '/materiais-semanais/page-weekly';
   expect(getMaterialGalleryPath(weekly, true, weekly.idToFetch)).toBe('/dia-especial-familia');
-  expect(getMaterialGalleryPath(weekly, false, weekly.idToFetch)).toBe('/materiais_semana_2');
-  expect(getMaterialGalleryPath(weekly, true, 'other')).toBe('/materiais_semana_2');
-  expect(getMaterialGalleryPath(weekly, true, '')).toBe('/materiais_semana_2');
-  expect(getMaterialGalleryPath(route({ path: '/materiais_semana_2' }), false, '')).toBe(
-    '/materiais_semana_2'
+  expect(getMaterialGalleryPath(weekly, false, weekly.idToFetch)).toBe(byId);
+  expect(getMaterialGalleryPath(weekly, true, 'other')).toBe(byId);
+  expect(getMaterialGalleryPath(weekly, true, '')).toBe(byId);
+});
+
+test('páginas que não moram na Área do Professor mantêm o endereço raiz por slug', () => {
+  const gallery = { entityType: MediaTargetType.ImagesPage };
+  expect(getMaterialGalleryPath(route({ ...gallery, path: 'fotos_semana_2' }), false, '')).toBe(
+    '/fotos_semana_2'
+  );
+  expect(getMaterialGalleryPath(route({ ...gallery, path: '/fotos_semana_2/' }), false, '')).toBe(
+    '/fotos_semana_2'
   );
 });

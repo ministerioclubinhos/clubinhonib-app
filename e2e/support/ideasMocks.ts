@@ -77,6 +77,7 @@ export function completedAttempt(): IdeaAiAttempt {
       skipReason: null,
       errorCode: null,
       carriedOver: false,
+      documentEditedAt: null,
       enhancedMedia: {
         ...media,
         id: `enhanced-${media.id}`,

@@ -45,6 +45,8 @@ test.describe("profile utils", () => {
         weekday: "saturday",
         time: "14:30",
         isActive: true,
+        district: "Centro",
+        city: "Manaus",
       },
     },
     coordinatorProfile: null,
