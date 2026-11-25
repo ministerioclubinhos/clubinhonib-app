@@ -26,6 +26,7 @@ import {
   PhotoLibrary,
   Collections,
   VideoLibrary,
+  PlayCircle,
   Description,
   Comment,
   Campaign,
@@ -86,6 +87,10 @@ const cardData: CardData[] = [
   { title: "Galerias de Fotos", description: "Organize e edite galerias de imagens do site.", icon: <PhotoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-fotos", section: "midias" },
   { title: "Fotos e vídeos dos Clubinhos", description: "Revise e publique fotos e vídeos dos Clubinhos.", icon: <Collections fontSize="large" color="primary" />, path: "/adm/fotos-clubinhos", section: "midias", flag: FEATURE.PHOTO_MODERATION },
   { title: "Vídeos", description: "Adicione vídeos ou links do YouTube para o site.", icon: <VideoLibrary fontSize="large" color="primary" />, path: "/adm/paginas-videos", section: "midias" },
+
+  { title: "Clubinho Play", description: "Categorias e números da plataforma de vídeos dos professores.", icon: <PlayCircle fontSize="large" color="primary" />, path: "/adm/play", section: "midias", flag: FEATURE.CLUBINHO_PLAY },
+
+  { title: "Aprovar vídeos do Play", description: "Aprove ou reprove os vídeos enviados por professores e coordenação.", icon: <PlayCircle fontSize="large" color="primary" />, path: "/adm/play/envios", section: "midias", flag: FEATURE.CLUBINHO_PLAY },
 
   { title: "Materiais de Visita", description: "Gerencie conteúdos semanais.", icon: <EventNote fontSize="large" color="primary" />, path: "/adm/paginas-materiais-semanais", section: "materiais" },
   { title: "Páginas de Ideias", description: "Gerencie páginas de ideias para professores.", icon: <Lightbulb fontSize="large" color="primary" />, path: "/adm/paginas-ideias", section: "materiais" },

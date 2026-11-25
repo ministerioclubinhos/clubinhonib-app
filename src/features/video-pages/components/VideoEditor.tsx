@@ -32,8 +32,10 @@ import { validateMediaURL } from '@/utils/validateMediaURL';
 import MediaItemCard from '@/components/common/media/MediaItemCard';
 import MediaViewerDialog from '@/components/common/media/MediaViewerDialog';
 
+import { extractVideoMetadata } from '@/features/play/media';
 import { VIDEO_SEARCH_THRESHOLD } from '../constants';
-import { VideoDraft, VideoEditorProps } from '../types';
+import { VideoDraft, VideoEditorProps, VideoPlayAttributes } from '../types';
+import VideoPlayControls from './VideoPlayControls';
 import { videoMatchesQuery } from '../utils';
 
 interface EditorErrors {
@@ -79,6 +81,7 @@ export default function VideoEditor({
   onChange,
   onDraftChange,
   apiErrors,
+  playScope = 'none',
 }: VideoEditorProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -120,7 +123,26 @@ export default function VideoEditor({
       ...previous,
       url: URL.createObjectURL(file),
       file,
+      // Arquivo trocado: a miniatura e a duração antigas não valem mais.
+      thumbnailFile: undefined,
+      thumbnailUrl: null,
+      durationSeconds: null,
     }));
+
+    // Duração e miniatura saem do próprio arquivo, no navegador.
+    void extractVideoMetadata(file).then(({ durationSeconds, thumbnail }) => {
+      setDraft((previous) =>
+        previous.file === file
+          ? {
+              ...previous,
+              durationSeconds,
+              ...(thumbnail
+                ? { thumbnailFile: thumbnail, thumbnailUrl: URL.createObjectURL(thumbnail) }
+                : {}),
+            }
+          : previous
+      );
+    });
   };
 
   const handleSave = () => {
@@ -163,6 +185,10 @@ export default function VideoEditor({
     setFileName(video.file?.name ?? video.originalName ?? '');
     setEditingIndex(index);
     setErrors(NO_ERRORS);
+  };
+
+  const updatePlay = (index: number, changes: VideoPlayAttributes) => {
+    onChange(videos.map((video, current) => (current === index ? { ...video, ...changes } : video)));
   };
 
   const confirmRemove = () => {
@@ -467,6 +493,11 @@ export default function VideoEditor({
                   onView={() => setViewing(video)}
                   onEdit={() => handleEdit(index)}
                   onRemove={() => setDeleteIndex(index)}
+                />
+                <VideoPlayControls
+                  video={video}
+                  scope={playScope}
+                  onChange={(changes) => updatePlay(index, changes)}
                 />
               </Grid2>
             ) : null

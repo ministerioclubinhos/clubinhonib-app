@@ -49,6 +49,26 @@ export const TeacherVideosPage = lazyNamedWithRetry(
   () => import('@/pages/TeacherArea/components'),
   (module) => module.TrainingVideosSection
 );
+export const PlayHomePage = lazyNamedWithRetry(
+  () => import('@/features/play'),
+  (module) => module.PlayHomePage
+);
+export const PlayWatchPage = lazyNamedWithRetry(
+  () => import('@/features/play'),
+  (module) => module.PlayWatchPage
+);
+export const PlaySubmitPage = lazyNamedWithRetry(
+  () => import('@/features/play'),
+  (module) => module.PlaySubmitPage
+);
+export const PlaySubmissionsAdminPage = lazyNamedWithRetry(
+  () => import('@/features/play'),
+  (module) => module.PlaySubmissionsAdminPage
+);
+export const PlayAdminPage = lazyNamedWithRetry(
+  () => import('@/features/play'),
+  (module) => module.PlayAdminPage
+);
 export const TeacherIdeasGalleryPage = lazyNamedWithRetry(
   () => import('@/pages/TeacherArea/components'),
   (module) => module.IdeasGallerySection

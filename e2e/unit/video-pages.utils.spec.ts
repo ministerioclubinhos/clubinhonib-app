@@ -24,6 +24,8 @@ const values: VideoPageFormValues = {
   title: 'Galeria de vídeos',
   description: 'Vídeos do evento',
   public: true,
+  playScope: 'none',
+  playCategoryId: null,
 };
 
 const linkedVideo: VideoDraft = {
@@ -209,5 +211,63 @@ test.describe('contrato do resumo de /video-pages', () => {
       sort: 'createdAt',
       order: 'DESC',
     });
+  });
+});
+
+test.describe('Clubinho Play no payload', () => {
+  const videos: VideoDraft[] = [
+    { ...linkedVideo, inPlay: true, featured: true, position: 2 },
+    { ...storedUpload, inPlay: false, featured: true },
+  ];
+
+  test('modo "none" não envia atributos por vídeo', () => {
+    const payload = readPayload(buildVideoPageFormData(values, videos));
+    expect(payload.play).toEqual({ scope: 'none', categoryId: null });
+    for (const video of payload.videos) {
+      expect(video).not.toHaveProperty('inPlay');
+      expect(video).not.toHaveProperty('featured');
+    }
+  });
+
+  test('modo "selected" envia inPlay e só dá destaque/posição a quem está no Play', () => {
+    const payload = readPayload(
+      buildVideoPageFormData({ ...values, playScope: 'selected' }, videos)
+    );
+    expect(payload.play).toEqual({ scope: 'selected', categoryId: null });
+    expect(payload.videos[0]).toMatchObject({ inPlay: true, featured: true, position: 2 });
+    expect(payload.videos[1]).toMatchObject({ inPlay: false });
+    expect(payload.videos[1]).not.toHaveProperty('featured');
+  });
+
+  test('modo "all" não envia inPlay, mas mantém destaque e posição', () => {
+    const payload = readPayload(buildVideoPageFormData({ ...values, playScope: 'all' }, videos));
+    expect(payload.play).toEqual({ scope: 'all', categoryId: null });
+    expect(payload.videos[0]).not.toHaveProperty('inPlay');
+    expect(payload.videos[0]).toMatchObject({ featured: true, position: 2 });
+  });
+});
+
+test.describe('Clubinho Play: categoria, miniatura e duração', () => {
+  test('envia a categoria e anexa a miniatura de quem está no Play', () => {
+    const thumb = new File(['x'], 'miniatura.jpg', { type: 'image/jpeg' });
+    const formData = buildVideoPageFormData(
+      { ...values, playScope: 'selected', playCategoryId: 'cat-1' },
+      [
+        { ...linkedVideo, inPlay: true, thumbnailFile: thumb, durationSeconds: 75 },
+        { ...storedUpload, inPlay: false, thumbnailFile: thumb, durationSeconds: 10 },
+      ]
+    );
+    const payload = readPayload(formData);
+
+    expect(payload.play).toEqual({ scope: 'selected', categoryId: 'cat-1' });
+    expect(payload.videos[0]).toMatchObject({
+      thumbnailField: 'video-thumb-0',
+      durationSeconds: 75,
+    });
+    expect(formData.get('video-thumb-0')).toBeInstanceOf(File);
+    // Fora do Play, miniatura e duração não viajam (a API recusaria).
+    expect(payload.videos[1]).not.toHaveProperty('thumbnailField');
+    expect(payload.videos[1]).not.toHaveProperty('durationSeconds');
+    expect(formData.get('video-thumb-1')).toBeNull();
   });
 });

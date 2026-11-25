@@ -63,6 +63,10 @@ export const FEATURE = {
   DOCUMENTS_LIBRARY: 'documents_library',
   /** Seção de vídeos de treinamento. */
   TRAINING_VIDEOS: 'training_videos',
+  /** Clubinho Play: plataforma de vídeos da Área do Professor. */
+  CLUBINHO_PLAY: 'clubinho_play',
+  /** Envio de vídeos ao Clubinho Play (vai para aprovação). */
+  PLAY_SUBMISSIONS: 'play_submissions',
   /** Seção com o passo a passo da aula. */
   TEACHING_STEPS: 'teaching_steps',
   /** Versículo da semana na área do professor. */

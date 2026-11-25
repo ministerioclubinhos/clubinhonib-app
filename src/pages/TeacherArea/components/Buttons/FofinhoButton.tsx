@@ -16,6 +16,7 @@ import {
   ChildCare as ChildCareIcon,
   ChevronRight as ChevronRightIcon,
   Lightbulb as LightbulbIcon,
+  PlayCircle as PlayCircleIcon,
 } from '@mui/icons-material';
 
 type MUIButtonColor =
@@ -269,6 +270,14 @@ const buttonMap: Record<string, FofinhoButtonProps> = {
     icon: EventAvailableIcon,
     color: 'info',
     accentHex: '#0891b2',
+  },
+  play: {
+    to: '/area-do-professor/play',
+    label: 'Clubinho Play',
+    subtitle: 'Vídeos para a sua preparação',
+    icon: PlayCircleIcon,
+    color: 'secondary',
+    accentHex: '#4f46e5',
   },
   teacherArea: {
     to: '/area-do-professor',

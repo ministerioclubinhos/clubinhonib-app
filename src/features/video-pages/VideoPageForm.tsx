@@ -31,6 +31,7 @@ import { useGuardedExit } from '@/hooks';
 import { MediaUploadType } from '@/store/slices/types';
 
 import VideoEditor from './components/VideoEditor';
+import PlaySettings from './components/PlaySettings';
 import { VIDEO_PAGE_ROUTES, VIDEO_TITLE_MAX_LENGTH } from './constants';
 import { useUnsavedChangesGuard, useVideoPageById, useVideoPageForm } from './hooks';
 import type { VideoPageFormProps } from './types';
@@ -224,8 +225,16 @@ export default function VideoPageForm({ fromTemplatePage = false }: VideoPageFor
                 onChange={setVideos}
                 onDraftChange={setHasVideoDraft}
                 apiErrors={videoApiErrors}
+                playScope={values.playScope}
               />
             </Paper>
+
+            <PlaySettings
+              value={values.playScope}
+              onChange={(scope) => setValue('playScope', scope)}
+              categoryId={values.playCategoryId}
+              onCategoryChange={(categoryId) => setValue('playCategoryId', categoryId)}
+            />
           </Stack>
 
           <Paper

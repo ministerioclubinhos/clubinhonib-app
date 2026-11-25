@@ -1,5 +1,6 @@
 import type { SectionApiErrors } from '@/components/common/section-outline/types';
 import type { MediaItem, MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
+import type { PlayScope } from '@/features/play/types';
 import type { Type as RouteType } from '@/store/slices/route/routeSlice';
 
 /** Vídeo exatamente como a API devolve. */
@@ -14,6 +15,12 @@ export interface VideoItemResponse {
   isLocalFile: boolean;
   originalName?: string;
   size?: number;
+  /** Atributos do Play; só vêm quando a galeria tem o Play configurado. */
+  inPlay?: boolean;
+  featured?: boolean;
+  position?: number | null;
+  thumbnailUrl?: string | null;
+  durationSeconds?: number | null;
 }
 
 /** Rota exposta por `/video-pages`. */
@@ -39,6 +46,7 @@ export interface VideoPageResponse {
   createdAt: string;
   updatedAt: string;
   route: VideoRouteResponse;
+  play?: { scope: PlayScope; categoryId: string | null };
   videos: VideoItemResponse[];
 }
 
@@ -89,6 +97,8 @@ export interface VideoPageFormValues {
   title: string;
   description: string;
   public: boolean;
+  playScope: PlayScope;
+  playCategoryId: string | null;
 }
 
 /** Quais campos obrigatórios estão pendentes. */
@@ -109,6 +119,11 @@ export interface VideoItemRequest {
   platformType?: MediaPlatform;
   originalName?: string;
   fieldKey?: string;
+  inPlay?: boolean;
+  featured?: boolean;
+  position?: number;
+  thumbnailField?: string;
+  durationSeconds?: number;
 }
 
 /** JSON enviado no campo multipart `videosPageData`. */
@@ -117,11 +132,24 @@ export interface VideoPageRequest {
   title: string;
   description: string;
   public: boolean;
+  play: { scope: PlayScope; categoryId: string | null };
   videos: VideoItemRequest[];
 }
 
 /** Vídeo em edição no formulário. */
-export type VideoDraft = MediaItem;
+/** Atributos do Clubinho Play de um vídeo em edição. */
+export interface VideoPlayAttributes {
+  inPlay?: boolean;
+  featured?: boolean;
+  position?: number | null;
+  /** Miniatura escolhida ou capturada nesta sessão (vai no multipart). */
+  thumbnailFile?: File;
+  /** Miniatura já gravada, ou a prévia da nova. */
+  thumbnailUrl?: string | null;
+  durationSeconds?: number | null;
+}
+
+export type VideoDraft = MediaItem & VideoPlayAttributes;
 
 export interface VideoPageFormProps {
   /** True quando o admin cria a galeria a partir da galeria de modelos. */
@@ -160,4 +188,6 @@ export interface VideoEditorProps {
   onDraftChange?: (hasDraft: boolean) => void;
   /** Mensagens que a API recusou, agrupadas pela posição do vídeo. */
   apiErrors?: SectionApiErrors;
+  /** Modo do Play da galeria; define os controles por vídeo. */
+  playScope?: PlayScope;
 }

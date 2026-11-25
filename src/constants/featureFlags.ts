@@ -53,6 +53,10 @@ export interface FeatureFlags {
   documents_library: boolean;
   /** Seção de vídeos de treinamento. */
   training_videos: boolean;
+  /** Clubinho Play: plataforma de vídeos da Área do Professor. */
+  clubinho_play: boolean;
+  /** Envio de vídeos ao Clubinho Play (vai para aprovação). */
+  play_submissions: boolean;
   /** Seção com o passo a passo da aula. */
   teaching_steps: boolean;
   /** Versículo da semana na área do professor. */
@@ -110,6 +114,8 @@ export const MOCKED_FEATURE_FLAGS: FeatureFlags = {
   weekly_meditation: true,
   documents_library: true,
   training_videos: true,
+  clubinho_play: true,
+  play_submissions: true,
   teaching_steps: true,
   verse_of_week: true,
   informative_banners: true,

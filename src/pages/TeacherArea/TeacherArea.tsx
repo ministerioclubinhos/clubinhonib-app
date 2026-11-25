@@ -45,6 +45,7 @@ const TeacherArea: React.FC = () => {
             ...(flags[FEATURE.WEEKLY_MATERIALS] ? ['materials'] : []),
             ...(flags[FEATURE.CLUB_PHOTO_UPLOAD] ? ['photos'] : []),
             ...(flags[FEATURE.IDEA_SUBMISSION] ? ['ideas'] : []),
+            ...(flags[FEATURE.CLUBINHO_PLAY] ? ['play'] : []),
             ...(flags[FEATURE.EVENTS_SECTION] ? ['events'] : []),
             ...(flags[FEATURE.SITE_FEEDBACK] ? ['rate'] : []),
             ...(flags[FEATURE.CONTACT_FORM] ? ['help'] : []),

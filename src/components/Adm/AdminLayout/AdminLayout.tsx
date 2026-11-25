@@ -30,6 +30,7 @@ import {
   PhotoLibrary,
   Collections,
   VideoLibrary,
+  PlayCircle,
   Lightbulb,
   MenuBook,
   Description,
@@ -145,6 +146,8 @@ function AdminLayout() {
           { label: "Páginas de fotos", to: "/adm/paginas-fotos", icon: <PhotoLibrary /> },
           { label: "Fotos e vídeos", to: "/adm/fotos-clubinhos", icon: <Collections />, flag: FEATURE.PHOTO_MODERATION },
           { label: "Páginas de vídeos", to: "/adm/paginas-videos", icon: <VideoLibrary /> },
+          { label: "Clubinho Play", to: "/adm/play", icon: <PlayCircle />, flag: FEATURE.CLUBINHO_PLAY },
+          { label: "Aprovar vídeos do Play", to: "/adm/play/envios", icon: <PlayCircle />, flag: FEATURE.CLUBINHO_PLAY },
         ],
       },
       {

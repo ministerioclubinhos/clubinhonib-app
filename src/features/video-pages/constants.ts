@@ -18,6 +18,9 @@ export const MULTIPART_HEADERS = {
 /** Prefixo do campo multipart de cada vídeo enviado. */
 export const VIDEO_FILE_FIELD_PREFIX = 'video';
 
+/** Prefixo do campo multipart da miniatura de cada vídeo. */
+export const VIDEO_THUMBNAIL_FIELD_PREFIX = 'video-thumb';
+
 /** Rotas administrativas das telas de galeria de vídeos. */
 export const VIDEO_PAGE_ROUTES = {
   MANAGE: '/adm/paginas-videos',

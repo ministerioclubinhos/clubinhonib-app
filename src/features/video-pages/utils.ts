@@ -1,6 +1,9 @@
+import { PLAY_SCOPE } from '@/features/play/constants';
+import type { PlayScope } from '@/features/play/types';
 import { MediaItem, MediaType, MediaUploadType } from '@/store/slices/types';
 import {
   VIDEO_FILE_FIELD_PREFIX,
+  VIDEO_THUMBNAIL_FIELD_PREFIX,
   VIDEO_PAGE_PAYLOAD_FIELD,
   VIDEO_TITLE_MAX_LENGTH,
 } from './constants';
@@ -37,6 +40,44 @@ export const isUploadedVideo = (video: MediaItem): boolean =>
 export const buildVideoFieldKey = (index: number): string => `${VIDEO_FILE_FIELD_PREFIX}-${index}`;
 
 /**
+ * Atributos de Play enviados por vídeo. A API recusa campo que o modo não
+ * aceita, então só viaja o que o modo atual permite.
+ */
+export const toPlayRequest = (
+  video: VideoDraft,
+  scope: PlayScope,
+  index: number,
+  formData: FormData
+): Pick<
+  VideoItemRequest,
+  'inPlay' | 'featured' | 'position' | 'thumbnailField' | 'durationSeconds'
+> => {
+  if (scope === PLAY_SCOPE.NONE) return {};
+  const inPlay = scope === PLAY_SCOPE.SELECTED ? Boolean(video.inPlay) : undefined;
+  const withAttributes = scope === PLAY_SCOPE.ALL || inPlay === true;
+
+  let thumbnailField: string | undefined;
+  if (withAttributes && video.thumbnailFile) {
+    thumbnailField = `${VIDEO_THUMBNAIL_FIELD_PREFIX}-${index}`;
+    formData.append(thumbnailField, video.thumbnailFile);
+  }
+
+  return {
+    ...(inPlay !== undefined ? { inPlay } : {}),
+    ...(withAttributes
+      ? {
+          featured: Boolean(video.featured),
+          ...(typeof video.position === 'number' ? { position: video.position } : {}),
+          ...(thumbnailField ? { thumbnailField } : {}),
+          ...(typeof video.durationSeconds === 'number'
+            ? { durationSeconds: video.durationSeconds }
+            : {}),
+        }
+      : {}),
+  };
+};
+
+/**
  * Mapeia um vídeo para o contrato de requisição, anexando o arquivo apenas
  * quando ele é novo — um upload já salvo é reenviado pela URL, e a API
  * preserva o objeto que está no S3.
@@ -44,7 +85,8 @@ export const buildVideoFieldKey = (index: number): string => `${VIDEO_FILE_FIELD
 export const toVideoRequest = (
   video: VideoDraft,
   index: number,
-  formData: FormData
+  formData: FormData,
+  playScope: PlayScope = PLAY_SCOPE.NONE
 ): VideoItemRequest => {
   const isUpload = isUploadedVideo(video);
   // Um arquivo escolhido nesta sessão sempre viaja, inclusive para um vídeo já
@@ -69,6 +111,7 @@ export const toVideoRequest = (
     ...(isUpload ? {} : { platformType: video.platformType }),
     ...(video.file ? { originalName: video.file.name } : {}),
     ...(fieldKey ? { fieldKey } : {}),
+    ...toPlayRequest(video, playScope, index, formData),
   };
 };
 
@@ -83,7 +126,10 @@ export const buildVideoPagePayload = (
   title: values.title.trim(),
   description: values.description.trim(),
   public: values.public,
-  videos: videos.map((video, index) => toVideoRequest(video, index, formData)),
+  play: { scope: values.playScope, categoryId: values.playCategoryId },
+  videos: videos.map((video, index) =>
+    toVideoRequest(video, index, formData, values.playScope)
+  ),
 });
 
 /** Monta o corpo multipart de criação/edição. */
@@ -107,6 +153,8 @@ export const toFormValues = (page: VideoPageResponse | null): VideoPageFormValue
   title: page?.title ?? '',
   description: page?.description ?? '',
   public: page?.public ?? true,
+  playScope: page?.play?.scope ?? PLAY_SCOPE.NONE,
+  playCategoryId: page?.play?.categoryId ?? null,
 });
 
 /** Vídeos da página no formato editável do formulário. */

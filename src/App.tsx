@@ -47,6 +47,8 @@ import NotFoundPage from './pages/Error/NotFoundPage';
 import AccessDeniedPage from './pages/Error/AccessDeniedPage';
 
 import { FEATURE, FeatureRoute, useVisibleRoutes } from './features/feature-flags';
+import { PLAY_ROUTE, PLAY_WATCH_ROUTE } from './features/play/constants';
+import { PLAY_SUBMIT_ROUTE } from './features/play/submissions/constants';
 import { NotificationProvider } from './features/notifications';
 import {
   About,
@@ -106,6 +108,11 @@ import {
   TeacherAreaLayout,
   TeacherDocumentsPage,
   TeacherVideosPage,
+  PlayHomePage,
+  PlayWatchPage,
+  PlayAdminPage,
+  PlaySubmitPage,
+  PlaySubmissionsAdminPage,
   TeacherIdeasGalleryPage,
   PublicMediaGalleryPage,
   PublicMediaDetailPage,
@@ -330,6 +337,13 @@ function App() {
                       <Route element={<FeatureRoute flag={FEATURE.TRAINING_VIDEOS} redirectTo="/area-do-professor" />}>
                         <Route path="/area-do-professor/videos" element={<TeacherVideosPage />} />
                       </Route>
+                      <Route element={<FeatureRoute flag={FEATURE.CLUBINHO_PLAY} redirectTo="/area-do-professor" />}>
+                        <Route path={PLAY_ROUTE} element={<PlayHomePage />} />
+                        <Route element={<FeatureRoute flag={FEATURE.PLAY_SUBMISSIONS} redirectTo={PLAY_ROUTE} />}>
+                          <Route path={PLAY_SUBMIT_ROUTE} element={<PlaySubmitPage />} />
+                        </Route>
+                        <Route path={PLAY_WATCH_ROUTE} element={<PlayWatchPage />} />
+                      </Route>
                       <Route element={<FeatureRoute flag={FEATURE.IDEAS_SHARING} redirectTo="/area-do-professor" />}>
                         <Route path="/area-do-professor/ideias" element={<TeacherIdeasGalleryPage />} />
                       </Route>
@@ -388,6 +402,10 @@ function App() {
                         <Route path="ideias-compartilhadas" element={<IdeasSectionManager />} />
                       </Route>
                       <Route path="paginas-videos" element={<VideoPagesManager />} />
+                      <Route element={<FeatureRoute flag={FEATURE.CLUBINHO_PLAY} redirectTo="/adm" />}>
+                        <Route path="play" element={<PlayAdminPage />} />
+                        <Route path="play/envios" element={<PlaySubmissionsAdminPage />} />
+                      </Route>
                       <Route path="paginas-ideias" element={<IdeasPagesManager />} />
                       <Route path="criar-pagina" element={<SelecPageTemplate />} />
                       <Route path="usuarios" element={<UsersManager />} />
