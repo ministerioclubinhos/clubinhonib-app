@@ -1,4 +1,5 @@
-import { LESSON_GAME_SUMMARY_ASSET_ID } from './constants';
+import { getApiErrorCode } from '@/utils/apiError';
+import { LESSON_ERROR_CODES, LESSON_GAME_SUMMARY_ASSET_ID } from './constants';
 import { generationSignature } from './generation.utils';
 import {
   LessonCategory,
@@ -179,4 +180,13 @@ export function formatLessonBadgeLabel(lesson: Pick<Lesson, 'category' | 'weekNu
 
 export function parseLessonCategory(value: string): LessonCategory | '' {
   return Object.values(LessonCategory).find((item) => item === value) ?? '';
+}
+
+/**
+ * Só o conflito de versão significa "alterado em outra sessão". Os demais 409
+ * (item anterior não concluído, item desatualizado, conteúdo incompleto) trazem
+ * da API a instrução do que fazer, e ela precisa chegar à tela.
+ */
+export function isLessonLockConflict(error: unknown): boolean {
+  return getApiErrorCode(error) === LESSON_ERROR_CODES.stageLockConflict;
 }

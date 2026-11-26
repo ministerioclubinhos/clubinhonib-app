@@ -6,11 +6,17 @@ import {
 } from '@/features/ai-lessons/types';
 import { ApiClient } from '../support/api';
 import {
+  approvedBefore,
+  confirmStaleSave,
+  createLessonWithMeditations,
   createStudioFixture,
   prepareStudioFixture,
   selectStudioStage,
+  stageDocument,
   studioDocument,
 } from '../support/studio';
+
+const IMAGE_STAGES = [LessonStageType.LESSON_VISUALS, LessonStageType.MANUAL_WORK];
 
 const cases = [
   {
@@ -35,22 +41,34 @@ for (const width of [360, 1440]) {
     test(`concluir ${scenario.stage} libera ${scenario.next} sem edições falsas em ${width}px`, async ({
       page,
     }) => {
+      // Gerar meditações passa pela fila de IA (simulada), uma de cada vez.
+      test.setTimeout(300_000);
       const api = await ApiClient.login();
-      const lesson = await createStudioFixture(api);
+      const isLesson = scenario.stage === LessonStageType.LESSON;
+      const lesson = isLesson
+        ? await createStudioFixture(api)
+        : await createLessonWithMeditations(
+            api,
+            [scenario.stage, scenario.next].filter((type) => type !== LessonStageType.MANUAL_WORK)
+          );
       try {
-        const stages = [scenario.stage, scenario.next].filter(
-          (type) => type !== LessonStageType.LESSON
-        );
-        prepareStudioFixture(lesson, stages);
-        for (const type of stages) {
+        if (isLesson) {
+          prepareStudioFixture(lesson, [scenario.next]);
           const current = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
-          const stage = current.stages.find((item) => item.type === type)!;
           await api.patch(`/api/v1/lessons/${lesson.id}/stages/content`, {
-            stage: type,
-            lockVersion: stage.lockVersion,
+            stage: scenario.next,
+            lockVersion: current.stages.find((item) => item.type === scenario.next)!.lockVersion,
             tiptapAstJson: studioDocument('Conteúdo inicial'),
             structuredDataJson: { title: 'Título inicial' },
           });
+        }
+        else {
+          prepareStudioFixture(
+            lesson,
+            [scenario.stage, scenario.next],
+            undefined,
+            approvedBefore(scenario.stage)
+          );
         }
         await page.setViewportSize({ width, height: 900 });
         await page.goto(`/adm/estudio/licoes/${lesson.id}`);
@@ -70,10 +88,20 @@ for (const width of [360, 1440]) {
 
         // Real edits still block completion, and saving clears only those edits.
         const editedText = `Edição salva ${scenario.stage}`;
-        await field.fill(editedText);
+        // No item 1 a edição acrescenta texto à narrativa: substituir o documento
+        // inteiro apagaria as seções que a conclusão exige.
+        const edit = async (text: string): Promise<void> => {
+          if (scenario.stage !== LessonStageType.LESSON) return field.fill(text);
+          const story = field.locator('p').last();
+          await story.click();
+          await page.keyboard.press('End');
+          await page.keyboard.type(` ${text}`);
+        };
+        await edit(editedText);
         await expect(notice).toBeVisible();
         await expect(complete).toBeDisabled();
         await save.click();
+        await confirmStaleSave(page);
         await expect(save).toBeDisabled();
         await expect(notice).toHaveCount(0);
         const saved = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
@@ -85,7 +113,7 @@ for (const width of [360, 1440]) {
           )
         ).toContain(editedText);
 
-        await field.fill('Edição a descartar');
+        await edit('Edição a descartar');
         await expect(notice).toBeVisible();
         await page.getByTestId('ai-lesson-discard-edit').click();
         await page
@@ -97,24 +125,38 @@ for (const width of [360, 1440]) {
 
         // Completion toggles edit permissions while its real API request is pending.
         await complete.click();
-        await expect(complete).toBeEnabled();
+        // A tela avança sozinha para o próximo item: o que vale é o que persistiu.
+        await expect
+          .poll(async () =>
+            (await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`)).stages.find(
+              (item) => item.type === scenario.stage
+            )?.status
+          )
+          .toBe(LessonStageStatus.PRODUCER_APPROVED);
         await expect(save).toBeDisabled();
         await expect(notice).toHaveCount(0);
-        const completed = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
-        expect(completed.stages.find((item) => item.type === scenario.stage)?.status).toBe(
-          LessonStageStatus.PRODUCER_APPROVED
-        );
 
         await selectStudioStage(page, scenario.next, width);
         await expect(notice).toHaveCount(0);
+        await expect(page.getByText('Conclua a etapa anterior do fluxo antes de gerar esta.')).toHaveCount(0);
+        // Os itens de imagem só concluem com artes; para eles, "liberar" é poder gerar.
+        if (IMAGE_STAGES.includes(scenario.next)) return;
+
         await expect(complete).toBeEnabled();
         await complete.click();
-        await expect(complete).toBeEnabled();
+        // A edição do item anterior desatualizou este: concluir sem gerar pede confirmação.
+        await page
+          .getByTestId('ai-lesson-production-confirm-dialog')
+          .getByRole('button', { name: 'Continua válido, concluir' })
+          .click();
         await expect(notice).toHaveCount(0);
-        const nextCompleted = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
-        expect(nextCompleted.stages.find((item) => item.type === scenario.next)?.status).toBe(
-          LessonStageStatus.PRODUCER_APPROVED
-        );
+        await expect
+          .poll(async () =>
+            (await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`)).stages.find(
+              (item) => item.type === scenario.next
+            )?.status
+          )
+          .toBe(LessonStageStatus.PRODUCER_APPROVED);
       } finally {
         page.on('dialog', (dialog) => dialog.accept());
         await api.delete(`/api/v1/lessons/${lesson.id}`);
@@ -122,4 +164,36 @@ for (const width of [360, 1440]) {
       }
     });
   }
+}
+
+for (const width of [360, 1440]) {
+  test(`recusa por etapa anterior pendente mostra o motivo da API em ${width}px`, async ({
+    page,
+  }) => {
+    // A tela tratava todo 409 como "atualizada em outra sessão" e escondia o que fazer.
+    const api = await ApiClient.login();
+    const lesson = await createStudioFixture(api);
+    try {
+      const stage = LessonStageType.MEDITATION_OLDER;
+      prepareStudioFixture(lesson, [stage]);
+      const current = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
+      await api.patch(`/api/v1/lessons/${lesson.id}/stages/content`, {
+        stage,
+        lockVersion: current.stages.find((item) => item.type === stage)!.lockVersion,
+        tiptapAstJson: stageDocument(stage, 'Conteúdo inicial'),
+        structuredDataJson: { title: 'Título inicial' },
+      });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`/adm/estudio/licoes/${lesson.id}?stage=${stage}`);
+      await page.getByTestId('ai-lesson-complete-stage').click();
+
+      await expect(page.getByRole('alert').filter({ hasText: /precisa ser concluída pelo produtor/ })).toBeVisible();
+      await expect(page.getByText(/atualizada em outra sessão/)).toHaveCount(0);
+      const after = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
+      expect(after.stages.find((item) => item.type === stage)?.status).toBe(LessonStageStatus.DRAFT);
+    } finally {
+      await api.delete(`/api/v1/lessons/${lesson.id}`);
+      await api.dispose();
+    }
+  });
 }

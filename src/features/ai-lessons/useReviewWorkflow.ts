@@ -57,6 +57,7 @@ import {
   reviewBlockReason,
   staleOriginStage,
 } from './workflow';
+import { isLessonLockConflict } from './utils';
 
 const CONFLICT_ACTION_MESSAGE =
   'Este item foi alterado em outra sessão enquanto estava aberto. O conteúdo atualizado foi recarregado e suas observações locais foram preservadas; revise a nova versão antes de decidir.';
@@ -315,7 +316,7 @@ export function useReviewWorkflow({ lesson, refetch, notes }: UseReviewWorkflowI
     archive.error ??
     unarchive.error;
   const actionErrorMessage = actionError
-    ? getHttpStatus(actionError) === HTTP_STATUS_CONFLICT
+    ? isLessonLockConflict(actionError)
       ? CONFLICT_ACTION_MESSAGE
       : getErrorMessage(actionError, 'Não foi possível concluir a ação de revisão.')
     : null;

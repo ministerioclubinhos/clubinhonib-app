@@ -41,6 +41,7 @@ import {
   stagesInvalidatedBy,
   staleOriginStage,
 } from './workflow';
+import { isLessonLockConflict } from './utils';
 
 /**
  * Everything the producer can do to the selected item: generate, save, conclude and
@@ -259,12 +260,12 @@ export function useProductionWorkflow({
     /** Nothing may be deleted while work of this screen is in flight or unsaved. */
     deleteDisabled: generationLocked || local.hasDrafts || save.isPending || complete.isPending,
     saveError: saveFailed
-      ? getHttpStatus(save.error) === HTTP_STATUS_CONFLICT
+      ? isLessonLockConflict(save.error)
         ? PRODUCTION_TEXTS.saveConflict
         : getErrorMessage(save.error, PRODUCTION_TEXTS.saveFailed)
       : null,
     completeError: complete.isError
-      ? getHttpStatus(complete.error) === HTTP_STATUS_CONFLICT
+      ? isLessonLockConflict(complete.error)
         ? PRODUCTION_TEXTS.completeConflict
         : getErrorMessage(complete.error, PRODUCTION_TEXTS.completeFailed)
       : null,
