@@ -1,6 +1,6 @@
 import { expect, Page, Route, test } from '@playwright/test';
 
-import { ApiClient } from '../support/api';
+import { ApiClient, uniqueSuffix } from '../support/api';
 import { API_URL, COORDINATOR_EMAIL, COORDINATOR_PASSWORD } from '../support/env';
 import { loginAs } from '../support/session';
 
@@ -524,6 +524,65 @@ test.describe('Observabilidade e auditoria', () => {
     await openAuditTab(page);
     await expect(page.getByTestId('audit-record-row-a1')).toBeVisible();
     await expect(page.getByTestId('audit-records-delete-range')).toBeVisible();
+  });
+
+  test('de ponta a ponta: uma ação real aparece, é achada pelo ID da requisição e é excluída do armazenamento', async ({
+    page,
+  }) => {
+    const admin = await ApiClient.login();
+    try {
+      // Uma escrita real é auditada; o ID da requisição vem no cabeçalho da resposta.
+      // Recurso recém-criado: ações iguais repetidas são agregadas num só registro.
+      const event = await admin.postMultipart<{ id: string }>('/events', {
+        eventData: JSON.stringify({
+          title: `E2E Auditoria ${uniqueSuffix()}`,
+          date: '2026-09-01',
+          location: 'Salão',
+          description: 'Evento do teste de auditoria',
+        }),
+      });
+      const action = await page.request.delete(`${API_URL}/events/${event.id}`, {
+        headers: { Authorization: `Bearer ${admin.token}` },
+      });
+      expect(action.ok(), `DELETE -> ${action.status()}`).toBeTruthy();
+      const requestId = action.headers()['x-request-id'];
+      expect(requestId).toBeTruthy();
+      const stored = async () => {
+        const to = new Date(Date.now() + 60_000);
+        const from = new Date(to.getTime() - 3_600_000);
+        const body = await admin.get<Page$<{ eventId: string }>>('/log-records/audit', {
+          from: from.toISOString(),
+          to: to.toISOString(),
+          requestId,
+          limit: 25,
+        });
+        return body.data.map((item) => item.eventId);
+      };
+      await expect.poll(async () => (await stored()).length, { timeout: 30_000 }).toBeGreaterThan(0);
+      const [eventId] = await stored();
+      const before = (await stored()).length;
+
+      await page.goto('/adm/observabilidade-auditoria');
+      await openAuditTab(page);
+      const toolbar = page.getByTestId('audit-records-toolbar');
+      await toolbar.getByLabel('ID da requisição').fill(requestId);
+      const row = page.getByTestId(`audit-record-row-${eventId}`);
+      await expect(row).toBeVisible();
+      await row.click();
+      await expect(page.getByTestId('record-details-field-request-id')).toContainText(requestId);
+      await page.getByTestId('record-details-delete').click();
+      await page
+        .getByRole('dialog')
+        .filter({ hasText: 'Ação Irreversível' })
+        .getByRole('button', { name: /^Excluir/ })
+        .click();
+      await expect(page.getByRole('alert').filter({ hasText: '1 registro excluído' })).toBeVisible();
+      await expect(row).toHaveCount(0);
+      await expect.poll(async () => (await stored()).length).toBe(before - 1);
+      expect(await stored()).not.toContain(eventId);
+    } finally {
+      await admin.dispose();
+    }
   });
 
   test('coordenador não vê o link e não abre a rota; anônimo vai para o login', async ({ browser }) => {

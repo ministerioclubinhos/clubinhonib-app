@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { DEFAULT_AI_PROVIDER_SETTINGS } from '@/features/ai-providers/constants';
+import {
+  AI_PROVIDER_SETTINGS_ENDPOINT,
+  DEFAULT_AI_PROVIDER_SETTINGS,
+} from '@/features/ai-providers/constants';
 import { AI_PROVIDER_PROFILES } from '@/features/ai-providers/constants';
 import {
   AiModelCatalogSource,
@@ -8,6 +11,8 @@ import {
   LlmProviderType,
   type SaveAiProviderSettingsRequest,
 } from '@/features/ai-providers/types';
+
+import { ApiClient } from '../support/api';
 
 test('salva Gemini no servidor, recarrega a escolha e não anuncia sucesso em erro', async ({
   page,
@@ -173,4 +178,40 @@ test('perfil de testes preenche os dois provedores, salva e pode voltar para pro
     'data-profile',
     AiProviderProfile.PRODUCTION
   );
+});
+
+test('de ponta a ponta: salvar pela tela grava no banco sem tocar nas chaves guardadas', async ({
+  page,
+}) => {
+  const api = await ApiClient.login();
+  const read = () => api.get<AiProviderSettings>(AI_PROVIDER_SETTINGS_ENDPOINT);
+  const original = await read();
+  const changed = original.gemini.maxRetries === 3 ? 4 : 3;
+  try {
+    await page.goto('/adm/config-provedores-ia');
+    const retries = page.getByTestId('ai-provider-gemini-max-retries');
+    await expect(retries).toHaveValue(String(original.gemini.maxRetries));
+    await retries.fill(String(changed));
+    await page.getByTestId('ai-providers-save-button').click();
+    await expect(page.getByTestId('ai-providers-config-feedback')).toContainText('sucesso');
+
+    const saved = await read();
+    expect(saved.gemini.maxRetries).toBe(changed);
+    expect([saved.openai.hasApiKey, saved.gemini.hasApiKey]).toEqual([
+      original.openai.hasApiKey,
+      original.gemini.hasApiKey,
+    ]);
+    expect(saved.llmProvider).toBe(original.llmProvider);
+    // A chave nunca volta ao navegador.
+    await page.reload();
+    await expect(retries).toHaveValue(String(changed));
+    await expect(page.getByTestId('ai-provider-openai-key-input')).toHaveValue('');
+  } finally {
+    // Sem `apiKey` no corpo, a API preserva o segredo gravado.
+    const { hasApiKey: _openaiKey, ...openai } = original.openai;
+    const { hasApiKey: _geminiKey, ...gemini } = original.gemini;
+    await api.put(AI_PROVIDER_SETTINGS_ENDPOINT, { llmProvider: original.llmProvider, openai, gemini });
+    expect((await read()).gemini.maxRetries).toBe(original.gemini.maxRetries);
+    await api.dispose();
+  }
 });
