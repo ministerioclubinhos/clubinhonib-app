@@ -1,39 +1,42 @@
-import { expect, Route, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-const EVENTS_URL = /\/events(?:\?.*)?$/;
+import { ApiClient, uniqueSuffix } from '../support/api';
+import { API_URL } from '../support/env';
+
 const REFERENCE_DATE = new Date('2026-09-08T12:00:00.000Z');
+const SCENARIOS = {
+  past: '2026-09-01',
+  week: '2026-09-10',
+  month: '2026-09-22',
+  later: '2026-10-05',
+} as const;
+type Scenario = keyof typeof SCENARIOS;
 
-const event = (id: string, title: string, date: string) => ({
-  id,
-  title,
-  date,
-  location: 'Salão do Clubinho',
-  description: `Descrição de ${title}`,
-  audience: 'all',
-  public: true,
-  isRecurring: false,
-  weekday: null,
-  occurrences: [date],
-  time: null,
-  clubId: null,
-  media: null,
-  createdAt: '2026-09-01T12:00:00.000Z',
-  updatedAt: '2026-09-01T12:00:00.000Z',
+/** Eventos reais no banco; o relógio da tela é fixado para os períodos serem estáveis. */
+let api: ApiClient;
+const ids = {} as Record<Scenario, string>;
+
+test.beforeAll(async () => {
+  api = await ApiClient.login();
+  const suffix = uniqueSuffix();
+  for (const [name, date] of Object.entries(SCENARIOS) as [Scenario, string][]) {
+    const event = await api.postMultipart<{ id: string }>('/events', {
+      eventData: JSON.stringify({
+        title: `E2E Agenda ${name} ${suffix}`,
+        date,
+        location: 'Salão do Clubinho',
+        description: 'Evento do teste da agenda',
+        audience: 'all',
+      }),
+    });
+    ids[name] = event.id;
+  }
 });
 
-const json = (route: Route, body: unknown) =>
-  route.fulfill({
-    status: 200,
-    contentType: 'application/json',
-    body: JSON.stringify(body),
-  });
-
-const EVENTS = [
-  event('past', 'Evento anterior', '2026-09-01'),
-  event('week', 'Evento desta semana', '2026-09-10'),
-  event('month', 'Evento deste mês', '2026-09-22'),
-  event('later', 'Evento mais adiante', '2026-10-05'),
-];
+test.afterAll(async () => {
+  for (const id of Object.values(ids)) await api.delete(`/events/${id}`);
+  await api?.dispose();
+});
 
 const rangeOf = (requestUrl: string) => {
   const search = new URL(requestUrl).searchParams;
@@ -44,14 +47,9 @@ test.describe('Agenda em cards', () => {
   test('consulta o mês do calendário e os períodos dos cards na API', async ({ page }) => {
     const eventRequests: string[] = [];
     await page.clock.setFixedTime(REFERENCE_DATE);
-    await page.route(EVENTS_URL, (route) => {
-      const requestUrl = route.request().url();
-      const { from, to } = rangeOf(requestUrl);
-      eventRequests.push(requestUrl);
-      return json(
-        route,
-        EVENTS.filter((item) => (!from || item.date >= from) && (!to || item.date <= to)),
-      );
+    page.on('request', (request) => {
+      if (request.url().startsWith(`${API_URL}/events?`) || request.url() === `${API_URL}/events`)
+        eventRequests.push(request.url());
     });
 
     await page.setViewportSize({ width: 390, height: 844 });
@@ -92,24 +90,24 @@ test.describe('Agenda em cards', () => {
     await expect
       .poll(() => rangeOf(eventRequests.at(-1) ?? 'http://localhost/events'))
       .toEqual({ from: '2026-09-08', to: '2026-09-13' });
-    await expect(cards.getByTestId('event-card-week')).toBeVisible();
-    await expect(cards.getByTestId('event-card-month')).toHaveCount(0);
-    await expect(cards.getByTestId('event-card-later')).toHaveCount(0);
+    await expect(cards.getByTestId(`event-card-${ids.week}`)).toBeVisible();
+    await expect(cards.getByTestId(`event-card-${ids.month}`)).toHaveCount(0);
+    await expect(cards.getByTestId(`event-card-${ids.later}`)).toHaveCount(0);
 
     await cards.getByTestId('event-cards-period-month').click();
     await expect
       .poll(() => rangeOf(eventRequests.at(-1) ?? 'http://localhost/events'))
       .toEqual({ from: '2026-09-08', to: '2026-09-30' });
-    await expect(cards.getByTestId('event-card-week')).toBeVisible();
-    await expect(cards.getByTestId('event-card-month')).toBeVisible();
-    await expect(cards.getByTestId('event-card-later')).toHaveCount(0);
+    await expect(cards.getByTestId(`event-card-${ids.week}`)).toBeVisible();
+    await expect(cards.getByTestId(`event-card-${ids.month}`)).toBeVisible();
+    await expect(cards.getByTestId(`event-card-${ids.later}`)).toHaveCount(0);
 
     await cards.getByTestId('event-cards-period-all').click();
     await expect
       .poll(() => rangeOf(eventRequests.at(-1) ?? 'http://localhost/events'))
       .toEqual({ from: null, to: null });
-    await expect(cards.getByTestId('event-card-week')).toBeVisible();
-    await expect(cards.getByTestId('event-card-month')).toBeVisible();
-    await expect(cards.getByTestId('event-card-later')).toBeVisible();
+    await expect(cards.getByTestId(`event-card-${ids.week}`)).toBeVisible();
+    await expect(cards.getByTestId(`event-card-${ids.month}`)).toBeVisible();
+    await expect(cards.getByTestId(`event-card-${ids.later}`)).toBeVisible();
   });
 });
