@@ -41,7 +41,7 @@ import type { RootState as RootStateType, AppDispatch as AppDispatchType } from 
 
 
 import { SnackbarProvider } from 'notistack';
-import { LazyMotion, domAnimation } from 'framer-motion';
+import { LazyMotion, MotionConfig, domAnimation } from 'framer-motion';
 import AppErrorBoundary from './components/AppErrorBoundary';
 import GlobalErrorHandler from './components/GlobalErrorHandler';
 import NotFoundPage from './pages/Error/NotFoundPage';
@@ -251,6 +251,8 @@ function App() {
     <AppErrorBoundary data-testid="app">
       {/* Animações enxutas (`m.*`) do bundle inicial; `motion.*` segue funcionando. */}
       <LazyMotion features={domAnimation}>
+      {/* Respeita "reduzir movimento" do sistema nas animações de entrada. */}
+      <MotionConfig reducedMotion="user">
       <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
         <GlobalErrorHandler />
         <BrowserRouter>
@@ -316,8 +318,11 @@ function App() {
                       <Route path="/cadastrar-google" element={<Register commonUser={false} />} />
                     </Route>
                   </Route>
-                  <Route element={<FeatureRoute flag={FEATURE.SPECIAL_FAMILY_DAY} />}>
-                    <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} />
+                  {/* Conteúdo dos professores (a API exige sessão): sem login, vai ao login. */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={<FeatureRoute flag={FEATURE.SPECIAL_FAMILY_DAY} />}>
+                      <Route path="/dia-especial-familia" element={<SpecialFamilyDayPage />} />
+                    </Route>
                   </Route>
 
                   {/* Galeria pública de fotos e vídeos: sem login e fora da Área do Professor. */}
@@ -543,6 +548,7 @@ function App() {
           </NotificationProvider>
         </BrowserRouter>
       </SnackbarProvider>
+      </MotionConfig>
       </LazyMotion>
     </AppErrorBoundary>
   );

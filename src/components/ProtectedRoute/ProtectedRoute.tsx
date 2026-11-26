@@ -14,7 +14,9 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
-  redirectTo = "/",
+  // Perfil sem acesso vai para a página que explica o motivo; mandar para a
+  // home sem aviso parecia um link quebrado.
+  redirectTo = "/acesso-negado",
   adminBypass = true,
 }) => {
   const location = useLocation();
