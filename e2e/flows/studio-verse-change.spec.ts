@@ -2,7 +2,6 @@ import { expect, test, type Page } from '@playwright/test';
 import { ApiClient } from '../support/api';
 import {
   FAKE_VERSE,
-  concludeStage,
   createGeneratedLesson,
   createLessonWithDownstream,
   memoryVerseOf,

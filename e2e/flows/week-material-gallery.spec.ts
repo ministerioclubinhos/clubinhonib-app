@@ -66,10 +66,10 @@ test.describe('Galeria de materiais do professor', () => {
     await expect(grid.getByRole('article').first()).toContainText(weekly.title);
 
     const open = grid.getByRole('link', { name: `Ver material: ${weekly.title}`, exact: true });
-    await expect(open).toHaveAttribute('href', `/${weekly.route.path}`);
+    await expect(open).toHaveAttribute('href', `/materiais-semanais/${weekly.id}`);
     await open.focus();
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(new RegExp(`/${weekly.route.path}$`));
+    await expect(page).toHaveURL(new RegExp(`/materiais-semanais/${weekly.id}$`));
     await expect(
       page.getByRole('heading', { name: weekly.title, exact: true }).first()
     ).toBeVisible();

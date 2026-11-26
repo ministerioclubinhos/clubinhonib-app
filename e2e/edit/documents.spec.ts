@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { ApiClient, PNG_1X1, uniqueSuffix } from '../support/api';
+import { ApiClient, PDF_MINIMAL, PNG_1X1, uniqueSuffix } from '../support/api';
 import { cardOf, replaceText, searchListing } from '../support/ui';
 
 type Document = { id: string; name: string; description: string | null; media: { url: string; isLocalFile: boolean } | null };
@@ -15,13 +15,13 @@ test.describe('Documentos: edição', () => {
     api = await ApiClient.login();
     doc = await api.postMultipart<Document>(
       '/documents',
-      { documentData: JSON.stringify({ name: `E2E Documento ${suffix}`, description: 'Descrição original', media: { title: 'Arquivo', description: 'png', uploadType: 'upload', mediaType: 'document', isLocalFile: true, fileField: 'docFile' } }) },
-      { docFile: { name: 'e2e.png', mimeType: 'image/png', buffer: PNG_1X1 } },
+      { documentData: JSON.stringify({ name: `E2E Documento ${suffix}`, description: 'Descrição original', media: { title: 'Arquivo', description: 'pdf', uploadType: 'upload', mediaType: 'document', isLocalFile: true, fileField: 'docFile' } }) },
+      { docFile: { name: 'e2e.pdf', mimeType: 'application/pdf', buffer: PDF_MINIMAL } },
     );
   });
 
   test.afterAll(async () => {
-    await api.delete(`/documents/${doc.id}`);
+    if (doc) await api.delete(`/documents/${doc.id}`);
     await api.dispose();
   });
 
@@ -51,5 +51,16 @@ test.describe('Documentos: edição', () => {
       description: 'Descrição editada pelo Playwright',
       media: expect.objectContaining({ url: doc.media?.url, isLocalFile: true }),
     });
+  });
+
+  test('recusa arquivo que não é PDF, DOCX ou PPTX', async () => {
+    const refused = await api.sendMultipart(
+      'POST',
+      '/documents',
+      { documentData: JSON.stringify({ name: `E2E Documento recusado ${suffix}`, description: 'x', media: { title: 'Arquivo', description: 'png', uploadType: 'upload', mediaType: 'document', isLocalFile: true, fileField: 'docFile' } }) },
+      { docFile: { name: 'e2e.png', mimeType: 'image/png', buffer: PNG_1X1 } },
+    );
+    expect(refused.status).toBe(422);
+    expect(refused.message).toContain('Envie um PDF, DOCX ou PPTX');
   });
 });

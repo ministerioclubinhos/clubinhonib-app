@@ -60,7 +60,9 @@ test.describe('Editor de páginas de ideias', () => {
       description: 'Materiais da nova página',
       sections: [{ title: 'Ideia de abertura' }],
     });
-    await expect(page).toHaveURL(new RegExp(`/${saved.route.path}$`));
+    // Depois de salvar, a página abre dentro da Área do Professor, por id.
+    await expect(page).toHaveURL(new RegExp(`/area-do-professor/ideias/${saved.id}$`));
+    await expect(page.getByRole('heading', { name: title }).first()).toBeVisible();
   });
 
   test('preserva rascunho ao trocar abas, recolher e remover outra seção', async ({ page }) => {

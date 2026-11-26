@@ -30,13 +30,14 @@ test.describe('Moderação: fotos e ideias', () => {
       { foto: { name: 'foto.png', mimeType: 'image/png', buffer: PNG_1X1 } },
     );
     idea = await teacher.postMultipart<IdeasSection>('/ideas-sections', { sectionData: JSON.stringify({ title: `E2E Ideia ${suffix}`, description: 'Original', medias: [{ title: 'Link', uploadType: 'link', mediaType: 'video', isLocalFile: false, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', platformType: 'youtube' }] }) });
-    ideasPage = await api.postMultipart<IdeasPage>('/ideas-pages', { ideasMaterialsPageData: JSON.stringify({ title: `E2E Destino ${suffix}`, description: 'd', public: true, sections: [] }) });
+    ideasPage = await api.postMultipart<IdeasPage>('/ideas-pages', { ideasMaterialsPageData: JSON.stringify({ title: `E2E Destino ${suffix}`, description: 'd', public: true, sections: [{ title: 'Seção base', description: 'd', public: true, medias: [] }] }) });
   });
 
   test.afterAll(async () => {
-    await api.delete(`/image-sections/${photos.id}`);
-    await api.delete(`/ideas-pages/${ideasPage.id}`);
-    await api.delete(`/ideas-sections/${idea.id}`);
+    // Se o preparo falhar no meio, a limpeza não pode esconder o erro original.
+    if (photos) await api.delete(`/image-sections/${photos.id}`);
+    if (ideasPage) await api.delete(`/ideas-pages/${ideasPage.id}`);
+    if (idea) await api.delete(`/ideas-sections/${idea.id}`);
     await teacher.dispose();
     await api.dispose();
   });

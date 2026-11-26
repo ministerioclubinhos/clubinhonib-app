@@ -223,7 +223,9 @@ test.describe('Editor de páginas de ideias: cenários completos', () => {
 
     const saved = await save(page, 'POST');
     created.push(saved.id);
-    await expect(page).toHaveURL(new RegExp(`/${saved.route.path}$`));
+    // Depois de salvar, a página abre dentro da Área do Professor, por id.
+    await expect(page).toHaveURL(new RegExp(`/area-do-professor/ideias/${saved.id}$`));
+    await expect(page.getByRole('heading', { name: title }).first()).toBeVisible();
 
     const stored = await fetchPage(saved.id);
     expect(stored).toMatchObject({ title, subtitle: 'Subtítulo da página' });
