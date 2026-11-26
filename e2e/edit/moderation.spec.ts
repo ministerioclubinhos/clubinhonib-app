@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 import { ApiClient, PNG_1X1, uniqueSuffix } from '../support/api';
 import { TEACHER_EMAIL, TEACHER_PASSWORD } from '../support/env';
+import { waitForIdeaAi } from '../support/ideaAi';
 import { replaceText, selectMuiOption } from '../support/ui';
 
 type ImageSection = { id: string; caption: string; description: string; public: boolean; pageId: string | null };
@@ -54,10 +55,17 @@ test.describe('Moderação: fotos e ideias', () => {
   });
 
   test('ideia compartilhada: publica numa página de ideias', async ({ page }) => {
+    // Com a melhoria por IA ligada, o envio entra na fila (IA simulada). A tela
+    // só é estável depois que a tentativa termina.
+    const aiEnabled = (await api.get<Record<string, boolean>>('/feature-flags/map')).idea_ai_enhancement;
+    if (aiEnabled) await waitForIdeaAi(api, idea.id);
+
     await page.goto(`/adm/editar-ideias-compartilhadas/${idea.id}`);
     await expect(page.getByTestId('ideas-sections-ideas-section-review-page')).toBeVisible();
     await selectMuiOption(page, page.getByRole('combobox', { name: 'Página de destino' }), `E2E Destino ${suffix}`);
     await selectMuiOption(page, page.getByRole('combobox', { name: 'Visibilidade' }), 'Pública');
+    // Havendo resultado de IA, publicar exige confirmar as escolhas.
+    if (aiEnabled) await page.getByRole('checkbox', { name: 'Confirmo as escolhas' }).check();
     await page.getByRole('button', { name: 'Publicar ideia' }).click();
 
     await expect.poll(async () => api.get<IdeasSection>(`/ideas-sections/${idea.id}`)).toMatchObject({ pageId: ideasPage.id, public: true });
