@@ -51,7 +51,7 @@ const TeacherAreaLayout: React.FC = () => {
           />
 
           <Box
-            component="main"
+            data-testid="teacher-area-content"
             sx={{
               flex: 1,
               minWidth: 0,

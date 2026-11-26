@@ -9,7 +9,6 @@ const AboutLayout: React.FC<AboutLayoutProps> = ({ children }) => {
 
   return (
     <Box data-testid="about-about-layout"
-      component="main"
       sx={{
         minHeight: 'calc(100vh - 128px)',
         background: 'linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 50%, #f0f8ff 100%)',

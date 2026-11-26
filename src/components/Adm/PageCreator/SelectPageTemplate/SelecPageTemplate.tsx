@@ -50,7 +50,6 @@ export default function SelecPageTemplate() {
   return (
     <Box
       data-testid="adm-page-creator-select-page-template-selec-page-template"
-      component="main"
       sx={{
         minHeight: '100vh',
         // O AdminLayout deixa 32px de cada lado no desktop; anulá-los aqui faz

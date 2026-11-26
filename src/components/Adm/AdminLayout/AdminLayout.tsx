@@ -527,7 +527,6 @@ function AdminLayout() {
       </Drawer>
 
       <Box
-        component="main"
         sx={{
           flexGrow: 1,
           minWidth: 0,

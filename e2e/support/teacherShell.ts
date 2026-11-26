@@ -18,8 +18,8 @@ export async function expectTeacherShellWidth(page: Page, content: Locator): Pro
     .poll(async () => ((await shell.boundingBox())?.width ?? 0) / viewport)
     .toBeCloseTo(desktop ? SHELL_RATIO.desktop : SHELL_RATIO.mobile, 2);
 
-  const main = shell.locator('main, [role="main"]').first();
-  const available = (await main.boundingBox())?.width ?? 0;
+  const column = shell.getByTestId('teacher-area-content');
+  const available = (await column.boundingBox())?.width ?? 0;
   const used = (await content.boundingBox())?.width ?? 0;
   expect(used, 'a página ocupa o espaço que a casca oferece').toBeGreaterThanOrEqual(available - 2);
   expect(used).toBeLessThanOrEqual(available + 1);
