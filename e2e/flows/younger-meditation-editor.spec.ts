@@ -1,99 +1,28 @@
-import { LessonStatus } from '@/features/ai-lessons/types';
 import { expect, test } from '@playwright/test';
-import { LessonStageStatus, LessonStageType } from '@/features/ai-lessons/types';
-import type { Lesson, TiptapDocument } from '@/services/aiLessonsService';
+
+import { LessonStageType, type Lesson } from '@/features/ai-lessons/types';
+
+import { ApiClient } from '../support/api';
+import { confirmStaleSave, createLessonWithMeditations, prepareStudioFixture } from '../support/studio';
 
 for (const width of [375, 1440]) {
   test(`folha exclusiva dos menores sincroniza as cópias e salva em ${width}px`, async ({
     page,
   }, testInfo) => {
-    test.setTimeout(120_000);
+    // As duas meditações são geradas pelo fluxo real (fila e IA simulada).
+    test.setTimeout(300_000);
     await page.setViewportSize({ width, height: 900 });
-    const data = {
-      title: 'Jesus ressuscitou',
-      verseText: 'Eu sou a vida.',
-      verseReference: 'João 11:25',
-      prayer: 'Jesus, obrigado.',
-      activities: [{ instruction: 'Pinte Jesus.' }, { instruction: 'Pinte seus amigos.' }],
-      printableAssets: [
-        { url: '/test-younger-coloring-art.svg' },
-        { url: '/test-younger-coloring-art.svg' },
-      ],
+    const api = await ApiClient.login();
+    const meditations = [LessonStageType.MEDITATION_YOUNGER, LessonStageType.MEDITATION_OLDER];
+    const lesson = await createLessonWithMeditations(api, meditations);
+    prepareStudioFixture(lesson, meditations);
+    /** O documento persistido da versão atual do item. */
+    const savedDocument = async (type: LessonStageType): Promise<string> => {
+      const current = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
+      const stage = current.stages.find((item) => item.type === type)!;
+      return JSON.stringify(stage.versions.find((item) => item.id === stage.currentVersionId)?.tiptapAstJson);
     };
-    const lesson: Lesson = {
-      id: 'younger-editor-regression',
-      theme: 'Jesus vive',
-      biblicalReference: 'João 11',
-      weekNumber: 14,
-      status: LessonStatus.IN_PROGRESS,
-      weekMaterialId: null,
-      createdAt: '',
-      updatedAt: '',
-      comments: [],
-      stages: [
-        LessonStageType.LESSON,
-        LessonStageType.MEDITATION_YOUNGER,
-        LessonStageType.MEDITATION_OLDER,
-      ].map((type) => ({
-        id: type,
-        type,
-        status: LessonStageStatus.DRAFT,
-        currentVersionId: `version-${type}`,
-        lockVersion: 1,
-        failureMessage: null,
-        versions: [
-          {
-            id: `version-${type}`,
-            versionNumber: 1,
-            createdAt: '',
-            changeSummary: '',
-            structuredDataJson:
-              type === LessonStageType.MEDITATION_OLDER
-                ? {
-                    ...data,
-                    activities: [...data.activities, { instruction: 'Numere os acontecimentos.' }],
-                    printableAssets: [
-                      { id: '1', url: '/test-younger-coloring-art.svg' },
-                      { id: '3', url: '/test-younger-coloring-art.svg' },
-                    ],
-                  }
-                : data,
-            tiptapAstJson: {
-              type: 'doc',
-              content: [
-                {
-                  type: 'paragraph',
-                  content: [{ type: 'text', text: 'Conteúdo do editor original.' }],
-                },
-              ],
-            },
-          },
-        ],
-      })),
-    };
-    await page.route('**/test-younger-coloring-art.svg', (route) =>
-      route.fulfill({
-        contentType: 'image/svg+xml',
-        body: '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="180" viewBox="0 0 300 180"><rect width="300" height="180" fill="white"/><g fill="none" stroke="black" stroke-width="3"><circle cx="150" cy="40" r="22"/><path d="M150 62 L115 145 L185 145 Z M137 145 L137 168 M163 145 L163 168 M127 86 L80 60 M173 86 L220 60"/><path d="M20 170 Q60 125 95 170 M205 170 Q245 125 280 170"/></g></svg>',
-      })
-    );
-    let saved: TiptapDocument | undefined;
-    await page.route(/\/api\/v1\/lessons\/younger-editor-regression(\?.*)?$/, (route) =>
-      route.fulfill({ json: lesson })
-    );
-    await page.route('**/api/v1/lessons/younger-editor-regression/events*', (route) =>
-      route.fulfill({ contentType: 'text/event-stream', body: '' })
-    );
-    await page.route('**/api/v1/lessons/younger-editor-regression/stages/content', (route) => {
-      saved = route.request().postDataJSON().tiptapAstJson as TiptapDocument;
-      const stage = lesson.stages.find(
-        (item) => item.type === route.request().postDataJSON().stage
-      )!;
-      stage.versions[0].tiptapAstJson = saved;
-      stage.lockVersion++;
-      return route.fulfill({ json: lesson });
-    });
-    await page.goto('/adm/estudio/licoes/younger-editor-regression');
+    await page.goto(`/adm/estudio/licoes/${lesson.id}`);
     await expect(page.getByTestId('ai-lesson-document-editor')).toBeVisible();
     await page
       .getByTestId(`ai-stage-tab-${LessonStageType.MEDITATION_YOUNGER}`)
@@ -138,8 +67,12 @@ for (const width of [375, 1440]) {
       page.getByTestId('younger-meditation-lower-first-activity').locator('strong')
     ).toHaveText('Pinte Jesus com seus amigos.');
     await page.getByRole('button', { name: 'Salvar edição', exact: true }).click();
-    await expect.poll(() => JSON.stringify(saved)).toContain('Pinte Jesus com seus amigos.');
-    await expect.poll(() => JSON.stringify(saved)).toContain('bold');
+    // A meditação dos maiores, em produção, depende desta e ficará desatualizada.
+    await confirmStaleSave(page);
+    await expect
+      .poll(() => savedDocument(LessonStageType.MEDITATION_YOUNGER))
+      .toContain('Pinte Jesus com seus amigos.');
+    expect(await savedDocument(LessonStageType.MEDITATION_YOUNGER)).toContain('bold');
     await page.reload();
     await page
       .getByTestId(`ai-stage-tab-${LessonStageType.MEDITATION_YOUNGER}`)
@@ -218,7 +151,7 @@ for (const width of [375, 1440]) {
       .click();
     await expect(olderField.locator('em')).toHaveText('Circule a resposta correta sobre a lição.');
     await page.getByRole('button', { name: 'Salvar edição', exact: true }).click();
-    await expect.poll(() => JSON.stringify(saved)).toContain('italic');
+    await expect.poll(() => savedDocument(LessonStageType.MEDITATION_OLDER)).toContain('italic');
     await page.reload();
     await page
       .getByTestId(`ai-stage-tab-${LessonStageType.MEDITATION_OLDER}`)
@@ -242,5 +175,8 @@ for (const width of [375, 1440]) {
       });
     }
     await expect(page.getByTestId('younger-meditation-editor')).toHaveCount(0);
+    page.on('dialog', (dialog) => dialog.accept());
+    await api.delete(`/api/v1/lessons/${lesson.id}`);
+    await api.dispose();
   });
 }
