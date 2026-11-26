@@ -16,7 +16,11 @@ export class ApiClient {
   ) {}
 
   static async login(email = ADMIN_EMAIL, password = ADMIN_PASSWORD): Promise<ApiClient> {
-    const ctx = await request.newContext({ baseURL: API_URL });
+    const ctx = await request.newContext({
+      baseURL: API_URL,
+      // Autentica por token: não herda a sessão de navegador do spec.
+      storageState: { cookies: [], origins: [] },
+    });
     const res = await ctx.post('/auth/login', { data: { email, password } });
     expect(res.ok(), `login da API falhou: ${res.status()}`).toBeTruthy();
     const body = (await res.json()) as { accessToken?: string };

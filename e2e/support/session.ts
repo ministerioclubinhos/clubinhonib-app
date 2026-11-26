@@ -8,7 +8,11 @@ import { Browser, expect, Page } from '@playwright/test';
  * tocar no estado guardado em `e2e/.auth`.
  */
 export async function loginAs(browser: Browser, email: string, password: string): Promise<Page> {
-  const context = await browser.newContext({ storageState: undefined, locale: 'pt-BR' });
+  // `undefined` herdaria o estado do projeto (o do admin): aqui é vazio mesmo.
+  const context = await browser.newContext({
+    storageState: { cookies: [], origins: [] },
+    locale: 'pt-BR',
+  });
   const page = await context.newPage();
   await page.goto('/login');
   await page.getByRole('textbox', { name: 'Email' }).fill(email);

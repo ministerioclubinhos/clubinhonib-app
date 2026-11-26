@@ -1,7 +1,9 @@
-import { LessonStatus } from '@/features/ai-lessons/types';
 import { expect, test } from '@playwright/test';
-import { LessonStageStatus, LessonStageType } from '@/features/ai-lessons/types';
-import type { Lesson, TiptapDocument } from '@/services/aiLessonsService';
+
+import { LessonStageType, type Lesson } from '@/features/ai-lessons/types';
+
+import { ApiClient } from '../support/api';
+import { createStudioFixture } from '../support/studio';
 
 for (const width of [375, 1440]) {
   test(`formata, substitui, cria links e conserva as edições salvas em ${width}px`, async ({
@@ -9,61 +11,30 @@ for (const width of [375, 1440]) {
   }) => {
     test.setTimeout(120_000);
     await page.setViewportSize({ width, height: 900 });
-    const lesson: Lesson = {
-      id: 'toolbar-regression',
-      theme: 'O Semeador',
-      biblicalReference: 'Mateus 13',
-      weekNumber: 20,
-      status: LessonStatus.IN_PROGRESS,
-      weekMaterialId: null,
-      createdAt: '',
-      updatedAt: '',
-      comments: [],
-      stages: [LessonStageType.LESSON].map((type) => ({
-        id: type,
-        type,
-        status: LessonStageStatus.DRAFT,
-        currentVersionId: `version-${type}`,
-        lockVersion: 1,
-        failureMessage: null,
-        versions: [
-          {
-            id: `version-${type}`,
-            versionNumber: 1,
-            createdAt: '',
-            changeSummary: '',
-            structuredDataJson: {},
-            tiptapAstJson: {
-              type: 'doc',
-              content: Array.from({ length: 3 }, (_, index) => ({
-                type: 'paragraph',
-                content: [
-                  {
-                    type: 'text',
-                    text: `Jesus ensina. Parágrafo ${index}.`,
-                  },
-                ],
-              })),
-            },
-          },
-        ],
-      })),
-    };
-
-    let saved: TiptapDocument | undefined;
-    await page.route(/\/api\/v1\/lessons\/toolbar-regression(\?.*)?$/, (route) =>
-      route.fulfill({ json: lesson })
-    );
-    await page.route('**/api/v1/lessons/toolbar-regression/events*', (route) =>
-      route.fulfill({ contentType: 'text/event-stream', body: '' })
-    );
-    await page.route('**/api/v1/lessons/toolbar-regression/stages/content', (route) => {
-      saved = route.request().postDataJSON().tiptapAstJson as TiptapDocument;
-      lesson.stages[0].versions[0].tiptapAstJson = saved;
-      lesson.stages[0].lockVersion += 1;
-      return route.fulfill({ json: lesson });
+    // Lição real com três parágrafos, salva pelo mesmo contrato do editor.
+    const api = await ApiClient.login();
+    let lesson = await createStudioFixture(api);
+    const stage = lesson.stages.find((item) => item.type === LessonStageType.LESSON)!;
+    lesson = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
+      stage: LessonStageType.LESSON,
+      lockVersion: stage.lockVersion,
+      tiptapAstJson: {
+        type: 'doc',
+        content: Array.from({ length: 3 }, (_, index) => ({
+          type: 'paragraph',
+          content: [{ type: 'text', text: `Jesus ensina. Parágrafo ${index}.` }],
+        })),
+      },
+      structuredDataJson: {},
     });
-    await page.goto('/adm/estudio/licoes/toolbar-regression');
+    const storedDocument = async (): Promise<string> => {
+      const current = (await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`)).stages.find(
+        (item) => item.type === LessonStageType.LESSON
+      )!;
+      const version = current.versions.find((item) => item.id === current.currentVersionId);
+      return JSON.stringify(version?.tiptapAstJson ?? {});
+    };
+    await page.goto(`/adm/estudio/licoes/${lesson.id}`);
     const doc = page.getByTestId('ai-lesson-document-editor').locator('.tiptap');
     await expect(doc).toContainText('Jesus ensina.');
     const openTools = async () => {
@@ -138,18 +109,18 @@ for (const width of [375, 1440]) {
     await expect(page.getByTestId('ai-lesson-editor-fullscreen-dialog')).not.toBeVisible();
     await expect(doc).toContainText('Cristo');
     await page.getByRole('button', { name: 'Salvar edição', exact: true }).click();
-    await expect.poll(() => JSON.stringify(saved)).toContain('24pt');
-    expect(JSON.stringify(saved)).toContain('Arial');
-    expect(JSON.stringify(saved)).toContain('#7C3AED');
-    expect(JSON.stringify(saved)).toContain('#86EFAC');
-    expect(JSON.stringify(saved)).toContain('lineHeight');
-    expect(JSON.stringify(saved)).toContain('https://example.com/apoio');
-    expect(JSON.stringify(saved)).not.toContain('Jesus');
+    await expect.poll(storedDocument).toContain('24pt');
+    const saved = await storedDocument();
+    for (const expected of ['Arial', '#7C3AED', '#86EFAC', 'lineHeight', 'https://example.com/apoio'])
+      expect(saved).toContain(expected);
+    expect(saved).not.toContain('Jesus');
     await page.reload();
     await expect(doc.locator('span').first()).toHaveCSS('font-size', '32px');
     await expect(doc).toContainText('Cristo');
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       width
     );
+    await api.delete(`/api/v1/lessons/${lesson.id}`);
+    await api.dispose();
   });
 }
