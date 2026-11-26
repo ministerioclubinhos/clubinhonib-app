@@ -1,7 +1,11 @@
+import { STUDIO_STAGE_ORDER } from '@/features/ai-lessons/constants';
 import { expect, test } from '@playwright/test';
 import { ApiClient, uniqueSuffix } from '../support/api';
 import {
+  generationBody,
+  pollStage,
   confirmStaleSave,
+  createStudioReviewPackage,
   createStudioFixture,
   selectStudioStage,
   lessonDocument,
@@ -308,14 +312,19 @@ for (const target of [
   test(`devolve, salva, conclui e revisa novamente ${target} sem fabricar estados no cliente`, async ({
     page,
   }) => {
-    test.setTimeout(120_000);
+    // O pacote gera as duas meditações pela fila de IA simulada.
+    test.setTimeout(240_000);
     const api = await ApiClient.login();
-    const { createStudioReviewPackage } = await import('../support/studio');
     const lesson = await createStudioReviewPackage(api);
     const tab = `ai-lesson-review-tab-${target.toLowerCase().replaceAll('_', '-')}`;
+    // Só age depois que o painel do item escolhido está na tela.
+    const openTab = async () => {
+      await page.getByTestId(tab).click();
+      await expect(page.getByTestId(tab)).toHaveAttribute('aria-selected', 'true');
+    };
     try {
       await page.goto(`/adm/estudio/revisao/${lesson.id}`);
-      await page.getByTestId(tab).click();
+      await openTab();
       await page
         .getByTestId('ai-lesson-review-feedback-input')
         .fill('Ajustar o conteúdo desta etapa para a turma.');
@@ -325,29 +334,46 @@ for (const target of [
       expect(current.status).toBe(LessonStatus.CHANGES_REQUESTED);
       const returned = current.stages.find((item) => item.type === target)!;
       expect(returned.status).toBe('CHANGES_REQUESTED');
-      // A separate producer saves through the real contract; visual/manual stages have no text editor.
-      current = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
-        stage: target,
-        lockVersion: returned.lockVersion,
-        tiptapAstJson: stageDocument(target, 'Conteúdo ajustado'),
-        structuredDataJson: {},
-      });
-      for (const item of current.stages.filter((stage) =>
-        ['DRAFT', 'STALE', 'CHANGES_REQUESTED'].includes(stage.status)
-      )) {
+      // Outra pessoa produz a correção pelo contrato real: o texto é salvo; as
+      // artes (sem editor de texto) são geradas de novo.
+      if (target === LessonStageType.LESSON) {
+        current = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
+          stage: target,
+          lockVersion: returned.lockVersion,
+          tiptapAstJson: stageDocument(target, 'Conteúdo ajustado'),
+          structuredDataJson: {},
+        });
+      } else {
+        await api.post(`/api/v1/lessons/${lesson.id}/stages/generate`, generationBody(target));
+        current = await pollStage(api, lesson.id, target);
+      }
+      // Na ordem do fluxo; o que ficou desatualizado é confirmado como válido.
+      const pending = STUDIO_STAGE_ORDER.map((type) => current.stages.find((stage) => stage.type === type)!).filter(
+        (stage) => ['DRAFT', 'STALE', 'CHANGES_REQUESTED'].includes(stage.status)
+      );
+      for (const item of pending) {
+        const latest = (await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`)).stages.find(
+          (stage) => stage.type === item.type
+        )!;
         await api.post(`/api/v1/lessons/${lesson.id}/stages/complete-production`, {
-          stage: item.type,
-          lockVersion: item.lockVersion,
+          stage: latest.type,
+          lockVersion: latest.lockVersion,
+          acknowledgeStale: latest.status === 'STALE',
         });
       }
       await page.reload();
       await expect(page.getByTestId('ai-lesson-review-start')).toBeVisible();
       await page.getByTestId('ai-lesson-review-start').click();
       await expect(page.getByTestId('ai-lesson-review-start')).toBeHidden();
-      await page.getByTestId(tab).click();
+      await openTab();
       await expect(page.getByTestId('ai-lesson-review-approve')).toBeEnabled();
       await page.getByTestId('ai-lesson-review-approve').click();
-      await expect(page.getByTestId('ai-lesson-review-approve')).toHaveText('Item Aprovado');
+      // A tela avisa e, havendo outro item pendente, avança para ele.
+      await expect(page.getByText(/” aprovado\. (Próximo item|Todos os itens|Não há outro)/)).toBeVisible();
+      await openTab();
+      await expect(
+        page.getByTestId('ai-lessons-review-stage-panel').getByText('Item Aprovado')
+      ).toBeVisible();
       const persisted = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
       expect(persisted.stages.find((stage) => stage.type === target)?.status).toBe('APPROVED');
     } finally {

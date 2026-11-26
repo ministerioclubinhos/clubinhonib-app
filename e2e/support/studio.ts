@@ -42,8 +42,18 @@ export const lessonDocument = (story: string): TiptapDocument => ({
   ],
 });
 
-export const stageDocument = (type: LessonStageType, text: string): TiptapDocument =>
-  type === LessonStageType.LESSON ? lessonDocument(text) : studioDocument(text);
+/** Brincadeiras (itens 3 e 5) só concluem com ao menos um passo no PASSO A PASSO. */
+export const gameDocument = (step: string): TiptapDocument => ({
+  type: 'doc',
+  content: [heading('PASSO A PASSO'), paragraph(step)],
+});
+
+const GAME_STAGES = [LessonStageType.STANDARD_GAME, LessonStageType.VERSE_FIXATION];
+
+export const stageDocument = (type: LessonStageType, text: string): TiptapDocument => {
+  if (type === LessonStageType.LESSON) return lessonDocument(text);
+  return GAME_STAGES.includes(type) ? gameDocument(text) : studioDocument(text);
+};
 
 export function prepareStudioFixture(
   lesson: Lesson,
@@ -109,29 +119,26 @@ export async function confirmStaleSave(page: Page): Promise<void> {
   await dialog.getByRole('button', { name: 'Salvar mesmo assim' }).click();
 }
 
+/** Os visuais da história pedem as escolhas que o administrador faz na tela. */
+export const generationBody = (stage: LessonStageType) =>
+  stage === LessonStageType.LESSON_VISUALS
+    ? { stage, visualType: 'STORY_SEQUENCE', visualOrientation: 'LANDSCAPE', visualQuantity: 4 }
+    : { stage };
+
+/**
+ * Um pacote em revisão produzido como em produção: os 8 itens são gerados na
+ * ordem do fluxo (IA simulada, com as artes enviadas ao armazenamento),
+ * concluídos e submetidos.
+ */
 export async function createStudioReviewPackage(api: ApiClient): Promise<Lesson> {
-  const lesson = await api.post<Lesson>('/api/v1/lessons', {
-    theme: `studio-e2e-${uniqueSuffix()}`,
-    biblicalReference: 'Lucas 15',
-    weekNumber: 20,
-    editorialPurpose: 'Mostrar que Deus ama e perdoa.',
-  });
-  prepareStudioFixture(lesson, Object.values(LessonStageType));
-  let updated = lesson;
-  for (const type of Object.values(LessonStageType)) {
-    const stage = updated.stages.find((item) => item.type === type)!;
-    updated = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
-      stage: type,
-      lockVersion: stage.lockVersion,
-      tiptapAstJson: stageDocument(type, `Conteúdo ${type}`),
-      structuredDataJson: {},
-    });
+  let lesson = await createGeneratedLesson(api);
+  for (const type of STUDIO_STAGE_ORDER) {
+    if (type !== LessonStageType.LESSON) {
+      await api.post(`/api/v1/lessons/${lesson.id}/stages/generate`, generationBody(type));
+      lesson = await pollStage(api, lesson.id, type);
+    }
+    lesson = await concludeStage(api, lesson, type);
   }
-  for (const stage of updated.stages)
-    await api.post(`/api/v1/lessons/${lesson.id}/stages/complete-production`, {
-      stage: stage.type,
-      lockVersion: stage.lockVersion,
-    });
   return api.post(`/api/v1/lessons/${lesson.id}/package/submit-review`);
 }
 
