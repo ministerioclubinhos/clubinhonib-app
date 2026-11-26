@@ -53,7 +53,26 @@ async function findOverflow(page: Page): Promise<string[]> {
     if (document.documentElement.scrollWidth > limit + 1) {
       found.unshift(`documento rola para o lado: ${document.documentElement.scrollWidth}px em ${limit}px`);
     }
-    return found.slice(0, 6);
+    // Botões fora da tela são defeito mesmo dentro de um contêiner que os
+    // esconde; só uma área com rolagem horizontal os alcança.
+    const scrollable = (element: Element): boolean => {
+      for (let node = element.parentElement; node && node !== document.body; node = node.parentElement) {
+        const { overflowX } = getComputedStyle(node);
+        if ((overflowX === 'auto' || overflowX === 'scroll') && node.scrollWidth > node.clientWidth) return true;
+        if (node.getAttribute('aria-hidden') === 'true') return true;
+      }
+      return false;
+    };
+    for (const button of Array.from(document.querySelectorAll('main button, main a[href]'))) {
+      const box = button.getBoundingClientRect();
+      const style = getComputedStyle(button);
+      if (!box.width || !box.height || style.visibility === 'hidden' || style.opacity === '0') continue;
+      if (box.left >= -1 && box.right <= limit + 1) continue;
+      if (scrollable(button) || button.closest('.slick-slider, .MuiTabs-root')) continue;
+      const label = button.getAttribute('aria-label') ?? button.textContent?.trim().slice(0, 40) ?? '';
+      found.push(`botão fora da tela "${label}" ${Math.round(box.left)}..${Math.round(box.right)} de ${limit}`);
+    }
+    return found.slice(0, 8);
   });
 }
 
@@ -100,6 +119,10 @@ export async function inspectPage(page: Page, route: string, screenshotName: str
     0,
     { timeout: 20_000 },
   );
+
+  await expect(page.locator('main').getByText(/^Carregando[^]{0,40}(…|\.\.\.)$/), `${route}: texto de carregamento preso`).toHaveCount(0, {
+    timeout: 20_000,
+  });
 
   for (const [key, count] of gets) if (count > 1) problems.duplicateRequests.push(`${count}x ${key}`);
   // Animações de entrada (JS) terminam antes da leitura e da captura.

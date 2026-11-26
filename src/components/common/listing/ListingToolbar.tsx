@@ -138,6 +138,8 @@ export default function ListingToolbar({
           <TextField
             size="small"
             fullWidth
+            // Numa busca estreita o texto de exemplo termina em reticências.
+            sx={{ "& input": { textOverflow: "ellipsis" } }}
             value={searchValue}
             placeholder={searchPlaceholder}
             onChange={(event) => onSearchChange(event.target.value)}
