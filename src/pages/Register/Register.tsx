@@ -12,16 +12,16 @@ import {
   Alert,
   MenuItem,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-import axios from 'axios';
 import api from '@/config/axiosConfig';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/slices';
 import { PhoneInput, extractPhoneDigits } from '@/components/common/inputs';
-import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
+import { FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
+import { getErrorMessage } from '@/utils/apiError';
 import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
 import type { Resolver } from 'react-hook-form';
 
@@ -52,7 +52,7 @@ const getSchema = (commonUser: boolean) =>
       .required(FORM_VALIDATION_MESSAGES.REQUIRED_FIELD),
     role: Yup.mixed<RoleChoice>()
       .oneOf(['teacher', 'coordinator'], 'Selecione Professor ou Coordenador')
-      .required('Selecione seu perfil') as any,
+      .required('Selecione seu perfil'),
   });
 
 interface FormData {
@@ -113,22 +113,28 @@ const Register: React.FC<RegisterProps> = ({ commonUser }) => {
         phone: extractPhoneDigits(data.phone),
         password: commonUser ? data.password : undefined,
         role: data.role || undefined,
-      });
+        registrationToken: commonUser ? undefined : googleUser?.registrationToken,
+      },
+      // A tela já mostra o motivo; sem isto o toast global repetia o erro.
+      { skipGlobalError: true });
 
       if (response.data?.emailVerification?.message) {
         setVerificationMessage(response.data.emailVerification.message);
       }
       setSuccess(true);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setGlobalError(error.response?.data?.message || 'Erro ao cadastrar. Tente novamente.');
-      } else {
-        setGlobalError(GENERIC_ERROR_MESSAGES.UNEXPECTED);
-      }
+      // A API devolve a mensagem em `error.message` (ex.: e-mail já em uso).
+      setGlobalError(getErrorMessage(error, 'Erro ao cadastrar. Tente novamente.'));
     } finally {
       setLoading(false);
     }
   };
+
+  // O cadastro pelo Google só existe depois do login com Google: o comprovante
+  // vive na memória, e sem ele a API recusaria o envio.
+  if (!commonUser && !googleUser) {
+    return <Navigate data-testid="register-google-redirect" to="/login" replace />;
+  }
 
   return (
     <Box data-testid="register" sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

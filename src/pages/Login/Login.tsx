@@ -151,8 +151,9 @@ const Login: React.FC = () => {
       }
 
       if (res.data.newUser) {
-        if (res.data.name && res.data.email) {
-          dispatch(setGoogleUser({ name: res.data.name, email: res.data.email }));
+        const { name, email: googleEmail, registrationToken } = res.data;
+        if (name && googleEmail && registrationToken) {
+          dispatch(setGoogleUser({ name, email: googleEmail, registrationToken }));
         }
         navigate('/cadastrar-google');
         return;

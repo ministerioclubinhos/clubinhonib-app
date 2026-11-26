@@ -54,7 +54,7 @@ export const authService = {
                 skipAuthRefresh: true,
                 skipGlobalError: true,
                 timeout: 5_000,
-            } as any,
+            },
         );
     },
 

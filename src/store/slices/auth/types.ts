@@ -46,6 +46,7 @@ export interface CompleteUserDto {
   phone: string;
   password?: string;
   role?: UserRole;
+  registrationToken: string;
 }
 
 export interface GoogleLoginDto {

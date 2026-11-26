@@ -2,6 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import apiAxios from '@/config/axiosConfig';
 
 import type { MyProfile } from '@/features/profile/types';
+import { getErrorMessage } from '@/utils/apiError';
 import { authService } from './auth.service';
 import { clearAuthTokens, readAuthTokens, sanitizeToken, writeAuthTokens } from './authStorage';
 
@@ -18,6 +19,8 @@ export type User = MyProfile;
 interface GoogleUser {
   name: string;
   email: string;
+  /** Comprovante da API que autoriza completar o cadastro desta conta. */
+  registrationToken: string;
 }
 
 export interface LoginResponse {
@@ -70,23 +73,21 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 'Erro ao buscar usuário';
-      return rejectWithValue(errorMessage);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Erro ao buscar usuário'));
     }
   }
 );
 
 export const linkTeacherClub = createAsyncThunk<User, number, { rejectValue: string }>(
   'auth/linkTeacherClub',
-  async (clubNumber, { dispatch, rejectWithValue }) => {
+  async (clubNumber, { rejectWithValue }) => {
     try {
       await authService.linkTeacherClub(clubNumber);
       const user = await authService.getCurrentUser();
       return user;
-    } catch (error: any) {
-      const msg = error?.response?.data?.message || 'Erro ao vincular clubinho';
-      return rejectWithValue(msg);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Erro ao vincular clubinho'));
     }
   }
 );
@@ -130,7 +131,7 @@ export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
       } else {
         dispatch(logout());
       }
-    } catch (e: any) {
+    } catch {
       return rejectWithValue('Falha ao inicializar auth');
     }
   }

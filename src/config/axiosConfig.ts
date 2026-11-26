@@ -32,6 +32,8 @@ declare module 'axios' {
      * tela. Use só quando o fluxo local mostra a mensagem por completo.
      */
     skipGlobalError?: boolean;
+    /** Um 401 desta chamada não tenta renovar a sessão (ex.: o próprio logout). */
+    skipAuthRefresh?: boolean;
   }
 }
 
@@ -90,6 +92,8 @@ const isCredentialEndpoint = (url?: string) => {
     '/auth/logout',
     '/auth/forgot-password',
     '/auth/reset-password',
+    '/auth/verify-email',
+    '/auth/resend-verification',
   ]).has(path);
 };
 

@@ -29,6 +29,7 @@ import {
   TEACHER_NESTED_PAGES,
   TEACHER_PAGE_BASE_PATH,
   getRoutePagePath,
+  CONTENT_LIST_PATH,
   isTeacherNestedEntity,
 } from './pages/TeacherArea/pagePaths';
 import { PublicMediaKind, getPublicMediaPath } from './features/public-media';
@@ -93,6 +94,7 @@ import {
   ProfilesManager,
   Register,
   ResetPassword,
+  ConfirmEmailPage,
   SelecPageTemplate,
   SiteFeedbackForm,
   SpecialFamilyDayPage,
@@ -299,6 +301,8 @@ function App() {
                     <Route path="/recuperar-senha/:token" element={<ResetPassword />} />
                   </Route>
                   <Route path="/verificar-email" element={<EmailVerificationInstructions />} />
+                  {/* Chegada do link do e-mail de confirmação; é ele que ativa a conta. */}
+                  <Route path="/confirmar-email/:token" element={<ConfirmEmailPage />} />
                   {/* Chegada do link no rodapé dos e-mails; sem sessão, porque
                       quem clica num e-mail antigo não está logado. */}
                   <Route path="/descadastrar" element={<UnsubscribePage />} />
@@ -500,7 +504,13 @@ function App() {
                   </Route>
 
                   {dynamicRoutes.map((route: DynamicRouteType) =>
-                    isTeacherNestedEntity(route.entityType) ? (
+                    CONTENT_LIST_PATH[route.entityType] ? (
+                      <Route
+                        key={route.id}
+                        path={`/${route.path}`}
+                        element={<Navigate to={getRoutePagePath(route)} replace />}
+                      />
+                    ) : isTeacherNestedEntity(route.entityType) ? (
                       // Endereço antigo por slug (links salvos, e-mails): leva para o novo, por id.
                       <Route
                         key={`legacy-${route.id}`}

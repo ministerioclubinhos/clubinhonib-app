@@ -14,6 +14,9 @@ export const EventosPage = lazyWithRetry(() => import('@/pages/Event/EventosPage
 export const ForgotPassword = lazyWithRetry(() => import('@/pages/ForgotPassword/ForgotPassword'));
 export const ResetPassword = lazyWithRetry(() => import('@/pages/ResetPassword/ResetPassword'));
 export const Register = lazyWithRetry(() => import('@/pages/Register/Register'));
+export const ConfirmEmailPage = lazyWithRetry(
+  () => import('@/pages/EmailVerification/ConfirmEmailPage')
+);
 export const EmailVerificationInstructions = lazyWithRetry(
   () => import('@/pages/EmailVerification/EmailVerificationInstructions')
 );

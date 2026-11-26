@@ -22,6 +22,17 @@ export const TEACHER_NESTED_PAGES = [
 
 export type NestedEntityType = keyof typeof TEACHER_PAGE_BASE_PATH;
 
+/**
+ * Conteúdos que têm rota (é o link dos avisos por e-mail), mas não uma página
+ * própria: a rota leva à tela que os exibe.
+ */
+export const CONTENT_LIST_PATH: Partial<Record<string, string>> = {
+  [MediaTargetType.Document]: '/area-do-professor/documentos',
+  [MediaTargetType.Informative]: '/area-do-professor',
+  [MediaTargetType.Meditation]: '/area-do-professor',
+  [MediaTargetType.Event]: '/eventos',
+};
+
 const stripSlashes = (path: string): string => path.replace(/^\/+|\/+$/g, '');
 
 export const isTeacherNestedEntity = (entityType: string): entityType is NestedEntityType =>
@@ -29,15 +40,16 @@ export const isTeacherNestedEntity = (entityType: string): entityType is NestedE
 
 /**
  * Endereço público da página de uma rota dinâmica. Materiais semanais, ideias e
- * vídeos abrem dentro da Área do Professor, por id (`/<listagem>/:id`); os demais
- * tipos mantêm o endereço raiz por slug.
+ * vídeos abrem dentro da Área do Professor, por id (`/<listagem>/:id`); conteúdos
+ * sem página própria vão para a listagem; os demais mantêm o endereço por slug.
  */
 export function getRoutePagePath(route: {
   entityType: string;
   path: string;
   idToFetch: string;
 }): string {
-  return isTeacherNestedEntity(route.entityType)
-    ? `${TEACHER_PAGE_BASE_PATH[route.entityType]}/${route.idToFetch}`
-    : `/${stripSlashes(route.path)}`;
+  if (isTeacherNestedEntity(route.entityType)) {
+    return `${TEACHER_PAGE_BASE_PATH[route.entityType]}/${route.idToFetch}`;
+  }
+  return CONTENT_LIST_PATH[route.entityType] ?? `/${stripSlashes(route.path)}`;
 }
