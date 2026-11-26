@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { Box, Button, Grid2, Stack } from '@mui/material';
 import { Add as AddIcon, Settings as SettingsIcon } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -71,9 +71,18 @@ export const AiLessonsListPage: React.FC = () => {
 
   // A busca digitada chega à URL já com o atraso, e volta para a página 1.
   const debouncedSearch = useDebouncedValue(search, LESSON_SEARCH_DEBOUNCE_MS);
+  const appliedSearch = useRef(state.search.trim());
   useEffect(() => {
-    if (debouncedSearch.trim() !== state.search) patch({ search: debouncedSearch, page: 1 });
-    // `state.search` só é lido para comparar; reagir a ele desfaria a digitação.
+    // Só um termo novo escreve na URL. `patch` também muda quando o endereço
+    // muda: ao abrir uma lição, a listagem (ainda montada enquanto a próxima
+    // tela carrega) regravava a busca e puxava a pessoa de volta.
+    const term = debouncedSearch.trim();
+    if (term === appliedSearch.current) return;
+    // O atraso pode vencer depois de a pessoa já ter aberto uma lição, com a
+    // listagem ainda montada enquanto a próxima tela carrega: a URL já é outra.
+    if (!window.location.pathname.endsWith(STUDIO_ROUTES.production)) return;
+    appliedSearch.current = term;
+    patch({ search: debouncedSearch, page: 1 });
   }, [debouncedSearch, patch]);
 
   const { sort, order } = parseLessonSortOption(state.sort);
