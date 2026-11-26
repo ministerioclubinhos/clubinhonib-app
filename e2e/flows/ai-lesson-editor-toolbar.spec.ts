@@ -1,7 +1,40 @@
-import { LessonStatus } from '@/features/ai-lessons/types';
-import { expect, test } from '@playwright/test';
-import { LessonStageStatus, LessonStageType } from '@/features/ai-lessons/types';
-import type { Lesson } from '@/services/aiLessonsService';
+import { expect, test, type Page } from '@playwright/test';
+
+import { LessonStageType, type Lesson, type TiptapDocument } from '@/features/ai-lessons/types';
+
+import { ApiClient } from '../support/api';
+import { createStudioFixture, prepareStudioFixture, stageDocument } from '../support/studio';
+
+/** Documento longo no formato canônico do item (o item 1 exige suas seções). */
+const longDocument = (type: LessonStageType): TiptapDocument => {
+  const base = stageDocument(type, 'Início do conteúdo');
+  return {
+    ...base,
+    content: [
+      ...(base.content ?? []),
+      ...Array.from({ length: 80 }, (_, index) => ({
+        type: 'paragraph',
+        content: [{ type: 'text', text: `Parágrafo ${index}: conteúdo longo para editar durante a rolagem.` }],
+      })),
+    ],
+  };
+};
+
+async function settledScrollY(page: Page): Promise<number> {
+  let previous = Number.NaN;
+  await expect
+    .poll(
+      async () => {
+        const current = await page.evaluate(() => window.scrollY);
+        const stable = current === previous;
+        previous = current;
+        return stable;
+      },
+      { intervals: [400] }
+    )
+    .toBe(true);
+  return previous;
+}
 
 for (const width of [320, 375, 768, 1440]) {
   test(`barra permanece no topo durante a rolagem interna em ${width}px em todas as etapas textuais`, async ({
@@ -12,56 +45,23 @@ for (const width of [320, 375, 768, 1440]) {
       LessonStageType.LESSON,
       LessonStageType.STANDARD_GAME,
       LessonStageType.VERSE_FIXATION,
-      LessonStageType.MEDITATION_YOUNGER,
-      LessonStageType.MEDITATION_OLDER,
+      // As meditações têm editores próprios, cobertos nos specs delas.
     ];
-    const lesson: Lesson = {
-      id: 'toolbar-regression',
-      theme: 'O Semeador',
-      biblicalReference: 'Mateus 13',
-      weekNumber: 20,
-      status: LessonStatus.IN_PROGRESS,
-      weekMaterialId: null,
-      createdAt: '',
-      updatedAt: '',
-      comments: [],
-      stages: editableStages.map((type) => ({
-        id: type,
-        type,
-        status: LessonStageStatus.DRAFT,
-        currentVersionId: `version-${type}`,
-        lockVersion: 1,
-        failureMessage: null,
-        versions: [
-          {
-            id: `version-${type}`,
-            versionNumber: 1,
-            createdAt: '',
-            changeSummary: '',
-            structuredDataJson: {},
-            tiptapAstJson: {
-              type: 'doc',
-              content: Array.from({ length: 80 }, (_, index) => ({
-                type: 'paragraph',
-                content: [
-                  {
-                    type: 'text',
-                    text: `Parágrafo ${index}: conteúdo longo para editar durante a rolagem.`,
-                  },
-                ],
-              })),
-            },
-          },
-        ],
-      })),
-    };
-    await page.route(/\/api\/v1\/lessons\/toolbar-regression(\?.*)?$/, (route) =>
-      route.fulfill({ json: lesson })
-    );
-    await page.route('**/api/v1/lessons/toolbar-regression/events*', (route) =>
-      route.fulfill({ contentType: 'text/event-stream', body: '' })
-    );
-    await page.goto('/adm/estudio/licoes/toolbar-regression');
+    // Lição real: o conteúdo longo é gravado pela API e relido pela tela.
+    const api = await ApiClient.login();
+    const lesson = await createStudioFixture(api);
+    prepareStudioFixture(lesson, editableStages);
+    let current = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
+    for (const type of editableStages) {
+      const stage = current.stages.find((item) => item.type === type)!;
+      current = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
+        stage: type,
+        lockVersion: stage.lockVersion,
+        tiptapAstJson: longDocument(type),
+        structuredDataJson: {},
+      });
+    }
+    await page.goto(`/adm/estudio/licoes/${lesson.id}`);
     for (const type of editableStages) {
       await page.getByTestId(`ai-stage-tab-${type}`).filter({ visible: true }).click();
       const toolbar = page.getByTestId('ai-lesson-document-editor-toolbar');
@@ -85,7 +85,9 @@ for (const width of [320, 375, 768, 1440]) {
         expect(bounds.width).toBeGreaterThanOrEqual(44);
         expect(bounds.height).toBeGreaterThanOrEqual(44);
       }
-      const initialScroll = await page.evaluate(() => window.scrollY);
+      // A página ainda se acomoda após a troca de item (avisos carregando): a
+      // referência é lida só quando a rolagem parar.
+      const initialScroll = await settledScrollY(page);
       const paddingTop = await editor.evaluate((element) =>
         parseFloat(getComputedStyle(element).paddingTop)
       );
@@ -154,5 +156,8 @@ for (const width of [320, 375, 768, 1440]) {
       );
       await page.evaluate(() => window.scrollTo(0, 0));
     }
+    page.on('dialog', (dialog) => dialog.accept());
+    await api.delete(`/api/v1/lessons/${lesson.id}`);
+    await api.dispose();
   });
 }
