@@ -159,7 +159,9 @@ export default function FeatureFlagsManager() {
    * rótulo.
    */
   const actions = (
-    <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ width: '100%' }}>
+    // `useFlexGap`: com `order`, a margem do `spacing` segue a ordem do DOM e os
+    // dois botões ficavam colados no desktop.
+    <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} useFlexGap sx={{ width: '100%' }}>
       <Button
         variant="contained"
         startIcon={<AddIcon />}

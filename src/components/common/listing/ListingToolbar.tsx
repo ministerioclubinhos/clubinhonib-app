@@ -46,6 +46,9 @@ type Props = {
 /** Alvo mínimo confortável para o dedo. */
 const TOUCH_TARGET = 44;
 
+/** Largura em que a busca ainda mostra o que está sendo digitado. */
+const SEARCH_MIN_WIDTH = 240;
+
 /**
  * Busca, filtros e recarga da listagem.
  *
@@ -113,12 +116,25 @@ export default function ListingToolbar({
         borderColor: "divider",
       }}
     >
+      {/* No desktop a barra quebra de linha quando não cabe. Numa linha só, a
+          busca era a única que encolhia e chegava a 20px de largura. */}
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={{ xs: 1.5, md: 2 }}
+        useFlexGap
+        sx={{ flexWrap: { md: "wrap" } }}
         alignItems={{ xs: "stretch", md: "center" }}
       >
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+        <Stack
+          data-testid="listing-toolbar-search"
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{
+            flex: { md: `1 1 ${SEARCH_MIN_WIDTH}px` },
+            minWidth: { xs: 0, md: SEARCH_MIN_WIDTH },
+          }}
+        >
           <TextField
             size="small"
             fullWidth
