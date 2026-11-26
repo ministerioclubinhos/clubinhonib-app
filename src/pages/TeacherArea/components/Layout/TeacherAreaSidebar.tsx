@@ -372,12 +372,19 @@ const TeacherAreaSidebar: React.FC<Props> = ({
                         {!collapsed && (
                           <>
                             <ListItemText
-                              primary={item.label}
+                              primary={
+                                <Box component="span" display="block" data-testid="teacher-area-sidebar-label">
+                                  {item.label}
+                                </Box>
+                              }
+                              sx={{ mr: 1 }}
                               primaryTypographyProps={{
                                 fontSize: '0.84rem',
                                 fontWeight: active ? 800 : 600,
                                 color: active ? item.accentColor : '#334155',
-                                noWrap: true,
+                                // Rótulo longo quebra em duas linhas; cortado, "Documentos
+                                // Importantes" virava "Documentos Importa…".
+                                lineHeight: 1.3,
                               }}
                             />
                             {item.badge !== undefined && (

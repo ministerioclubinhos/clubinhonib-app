@@ -22,7 +22,7 @@ The Teacher Area is the central hub for club leaders and teachers to manage thei
 
 ### Shared idea submission (phase 1)
 
-`IdeaShareForm` is dedicated to this flow. `useIdeaShareForm` owns the RHF/Yup draft, including materials; transport remains in the feature hook/API. The obsolete Redux draft and generic user creator are removed. Desktop content uses 95% width with text/materials side by side; mobile uses 98% and a fixed submission bar with safe-area spacing.
+`IdeaShareForm` is dedicated to this flow. `useIdeaShareForm` owns the RHF/Yup draft, including materials; transport remains in the feature hook/API. The obsolete Redux draft and generic user creator are removed. The Teacher Area shell (`TeacherAreaLayout`) uses 95% of the viewport on desktop and 98% on mobile; the form fills the space the shell gives it (beside the sidebar on desktop, with text/materials side by side). Mobile has a fixed submission bar with safe-area spacing.
 
 Teachers select Documento, Imagem or Vídeo before adding files. Only Vídeo exposes the alternative YouTube input. Supported formats/limits are explained beside the upload control. Grouped previews support remove/undo. Field errors preserve focus and API failures preserve the draft with a retry action. Navigation uses the shared unsaved-change guard; temporary preview URLs are revoked on reset/unmount.
 
@@ -106,9 +106,10 @@ Teste: `e2e/flows/child-decisions.spec.ts`.
 ## Weekly materials gallery
 
 `/lista-materias-semanais` presents the published material routes as a responsive
-cover gallery (one column on phones, two on tablets, three on desktop). Content
-uses 98% of the viewport width on mobile and 95% from the desktop breakpoint,
-without a fixed maximum width. The feature lives in `features/week-materials`;
+cover gallery (one column on phones, two on tablets, three on desktop). The
+Teacher Area shell uses 98% of the viewport width on mobile and 95% from the
+desktop breakpoint, without a fixed maximum width, and every nested page fills
+the space the shell gives it. The feature lives in `features/week-materials`;
 the routed page only composes it.
 Redux remains the owner of `/routes`, and `useVisibleRoutes` preserves feature
 visibility. No extra material-detail requests are made for the gallery.

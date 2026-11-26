@@ -1,3 +1,4 @@
+import { expectTeacherShellWidth } from '../support/teacherShell';
 import { expect, Page, test } from '@playwright/test';
 
 import { MediaType } from '@/store/slices/types';
@@ -103,21 +104,12 @@ test.describe('Página pública de ideias', () => {
     await expect(gallery.getByRole('heading', { name: 'Roteiro em PDF' })).toBeVisible();
   });
 
-  /** Quanto o conteúdo ocupa da largura da janela, em porcentagem. */
-  async function contentWidthRatio(page: Page): Promise<number> {
-    const box = await page.getByTestId('page-view-ideas-material-viewpage-content').boundingBox();
-    const viewport = page.viewportSize();
-    return box && viewport ? (box.width / viewport.width) * 100 : 0;
-  }
-
-  test('segue a largura padrão do site: 95% no desktop e 98% no celular', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await openPublicPage(page);
-    expect(await contentWidthRatio(page)).toBeCloseTo(95, 0);
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await openPublicPage(page);
-    expect(await contentWidthRatio(page)).toBeCloseTo(98, 0);
+  test('segue a largura padrão da Área do Professor no desktop e no celular', async ({ page }) => {
+    for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+      await page.setViewportSize(viewport);
+      await openPublicPage(page);
+      await expectTeacherShellWidth(page, page.getByTestId('page-view-ideas-material-viewpage-ideas-page-view'));
+    }
   });
 
   test('no celular a página não rola para o lado e a galeria ocupa a tela', async ({ page }) => {

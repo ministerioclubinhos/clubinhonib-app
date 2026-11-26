@@ -1,3 +1,4 @@
+import { expectTeacherShellWidth } from '../support/teacherShell';
 import { expect, test } from '@playwright/test';
 
 import type { WeekMaterialResponse } from '@/features/week-materials/types';
@@ -42,7 +43,7 @@ test.describe('Galeria de materiais do professor', () => {
   test('busca, filtra, ordena e abre o material pelo teclado', async ({ page }) => {
     await page.goto(GALLERY_URL);
     await expect(
-      page.getByRole('heading', { name: 'Galeria de materiais', exact: true })
+      page.getByRole('heading', { name: 'Materiais Semanais', exact: true })
     ).toBeVisible();
     const search = page.getByRole('textbox', { name: 'Buscar materiais' });
     await search.fill(suffix);
@@ -91,6 +92,17 @@ test.describe('Galeria de materiais do professor', () => {
     await expect(page.getByTestId('week-material-gallery-grid')).toBeVisible();
   });
 
+  test('o menu da Área do Professor mostra os nomes inteiros no desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(GALLERY_URL);
+    const labels = page.getByTestId('teacher-area-sidebar-label');
+    await expect(labels.filter({ hasText: 'Documentos Importantes' }).first()).toBeVisible();
+    const clipped = await labels.evaluateAll((items) =>
+      items.filter((item) => item.scrollWidth > item.clientWidth + 1).map((item) => item.textContent)
+    );
+    expect(clipped).toEqual([]);
+  });
+
   test('preserva a galeria quando a capa falha e cabe no celular', async ({ page }, testInfo) => {
     await page.route('**/card_materiais.png', (route) => route.abort());
     await page.setViewportSize({ width: 390, height: 844 });
@@ -99,23 +111,26 @@ test.describe('Galeria de materiais do professor', () => {
     const cards = page.getByTestId('week-material-gallery-grid').getByRole('article');
     await expect(cards).toHaveCount(2);
     await expect(cards.first().getByTestId('week-material-gallery-cover-fallback')).toBeVisible();
-    expect(
-      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
-    ).toBe(true);
-    const content = page.getByTestId('week-material-gallery-content');
-    expect((await content.boundingBox())?.width).toBeCloseTo(390 * 0.98, 0);
+    // O layout é refeito depois do redimensionamento: a leitura espera assentar.
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+      .toBe(true);
+    const card = page.getByTestId('week-materials-gallery');
+    await expectTeacherShellWidth(page, card);
     await page.screenshot({ path: testInfo.outputPath('gallery-mobile.png'), fullPage: true });
     await page.setViewportSize({ width: 1440, height: 1000 });
-    expect(
-      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
-    ).toBe(true);
-    expect((await content.boundingBox())?.width).toBeCloseTo(1440 * 0.95, 0);
+    // O layout é refeito depois do redimensionamento: a leitura espera assentar.
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+      .toBe(true);
+    await expectTeacherShellWidth(page, card);
     await page.screenshot({ path: testInfo.outputPath('gallery-desktop.png'), fullPage: true });
     await page.setViewportSize({ width: 320, height: 740 });
-    expect((await content.boundingBox())?.width).toBeCloseTo(320 * 0.98, 0);
-    expect(
-      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
-    ).toBe(true);
+    await expectTeacherShellWidth(page, card);
+    // O layout é refeito depois do redimensionamento: a leitura espera assentar.
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+      .toBe(true);
     for (const button of await page
       .getByRole('group', { name: 'Categoria dos materiais' })
       .getByRole('button')
@@ -168,9 +183,10 @@ test.describe('Galeria de materiais do professor', () => {
       fullPage: true,
     });
     await page.setViewportSize({ width: 390, height: 844 });
-    expect(
-      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
-    ).toBe(true);
+    // O layout é refeito depois do redimensionamento: a leitura espera assentar.
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+      .toBe(true);
     await page.screenshot({ path: testInfo.outputPath('gallery-real-mobile.png'), fullPage: true });
   });
 });

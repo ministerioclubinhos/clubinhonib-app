@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { mockIdeasApp, originalIdea } from '../support/ideasMocks';
+import { expectTeacherShellWidth } from '../support/teacherShell';
 test.use({ storageState: { cookies: [], origins: [] } });
 test('explicit media categories, YouTube only for video, remove/undo and immediate success', async ({
   page,
@@ -61,10 +62,9 @@ for (const width of [390, 1440])
     const dimensions = await page.getByTestId('idea-share-form').evaluate((el) => ({
       width: el.clientWidth,
       content: el.scrollWidth,
-      container: el.querySelector('.MuiContainer-root')?.getBoundingClientRect().width ?? 0,
     }));
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.width + 1);
-    expect(dimensions.container / dimensions.width).toBeCloseTo(width < 900 ? 0.98 : 0.95, 2);
+    await expectTeacherShellWidth(page, page.getByTestId('ideas-sections-share-form'));
     if (width === 390) {
       expect(
         await page
