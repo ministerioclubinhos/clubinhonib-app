@@ -57,7 +57,10 @@ export const LibreOfficeDocEditor = ({
   const compact = useMediaQuery(theme.breakpoints.down('md'));
 
   const [fullscreen, setFullscreen] = useState(false);
-  const lastEmitted = useRef<TiptapDocument | null>(null);
+  // O documento que o editor está exibindo, venha da digitação ou do pai. O editor
+  // é reaproveitado entre itens: guardar só o último digitado fazia a volta a
+  // esse item pular a troca e manter o texto de outro na tela.
+  const shownDocument = useRef<TiptapDocument>(initialJson);
   const [toolsAnchor, setToolsAnchor] = useState<null | HTMLElement>(null);
   const [tableAnchor, setTableAnchor] = useState<null | HTMLElement>(null);
 
@@ -69,14 +72,15 @@ export const LibreOfficeDocEditor = ({
     shouldRerenderOnTransaction: true,
     onUpdate: ({ editor: value }) => {
       const json = value.getJSON() as TiptapDocument;
-      lastEmitted.current = json;
+      shownDocument.current = json;
       onChange?.(json);
     },
   });
 
   useEffect(() => {
-    // The parent echoing back what this editor just emitted needs no comparison.
-    if (!editor || initialJson === lastEmitted.current) return;
+    // The parent echoing back what this editor already shows needs no comparison.
+    if (!editor || initialJson === shownDocument.current) return;
+    shownDocument.current = initialJson;
     if (JSON.stringify(editor.getJSON()) !== JSON.stringify(initialJson)) {
       editor.commands.setContent(initialJson, { emitUpdate: false });
     }

@@ -516,6 +516,15 @@ hooks e layout; as regras ficam em `production.utils.ts`, os textos em
 `production.constants.ts`, os tipos em `production.types.ts` e os componentes em
 `src/features/ai-lessons/components/production/`.
 
+### Troca de item e conflitos
+
+- O editor do documento é reaproveitado entre os itens; ele sincroniza com o
+  documento que está **exibindo**, não com o último digitado, para nunca mostrar
+  (e salvar) o texto de outro item.
+- Só `LESSON_9303` significa "alterado em outra sessão" (produção e revisão).
+  Os demais 409 (etapa anterior pendente, item desatualizado, conteúdo
+  incompleto) mostram a mensagem da API, que diz o que fazer.
+
 ### Organização
 
 - `useProductionStage`: o item selecionado (versão do servidor, edição local,

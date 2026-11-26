@@ -4,16 +4,46 @@ import { expect, type Page } from '@playwright/test';
 import { ApiClient, uniqueSuffix } from './api';
 import { assertLocalApi } from './emailFlags';
 import {
+  LessonStageStatus,
   LessonStageType,
   LessonStatus,
   type Lesson,
   type TiptapDocument,
 } from '@/features/ai-lessons/types';
+import { STUDIO_STAGE_ORDER } from '@/features/ai-lessons/constants';
 
 export const studioDocument = (text: string): TiptapDocument => ({
   type: 'doc',
   content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
 });
+
+const heading = (text: string) => ({
+  type: 'heading',
+  attrs: { level: 2 },
+  content: [{ type: 'text', text }],
+});
+const paragraph = (text: string) => ({
+  type: 'paragraph',
+  content: [{ type: 'text', text }],
+});
+
+/**
+ * Item 1 no formato canônico. A API só conclui a lição com a narrativa e o
+ * versículo principal (texto, referência e NVI) em suas seções.
+ */
+export const lessonDocument = (story: string): TiptapDocument => ({
+  type: 'doc',
+  content: [
+    heading('VERSÍCULO PARA MEMORIZAR'),
+    paragraph('“Eu sou o bom pastor.”'),
+    paragraph('João 10:11 — NVI'),
+    heading('LIÇÃO BÍBLICA'),
+    paragraph(story.endsWith('.') ? story : `${story}.`),
+  ],
+});
+
+export const stageDocument = (type: LessonStageType, text: string): TiptapDocument =>
+  type === LessonStageType.LESSON ? lessonDocument(text) : studioDocument(text);
 
 export function prepareStudioFixture(
   lesson: Lesson,
@@ -49,7 +79,7 @@ export async function createStudioFixture(
     updated = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
       stage: type,
       lockVersion: stage.lockVersion,
-      tiptapAstJson: studioDocument(`Conteúdo inicial ${type}`),
+      tiptapAstJson: stageDocument(type, `Conteúdo inicial ${type}`),
       structuredDataJson: {},
     });
   }
@@ -61,6 +91,22 @@ export async function selectStudioStage(page: Page, type: LessonStageType, width
     .getByTestId(`ai-lesson-stage-navigation-${mode}`)
     .getByTestId(`ai-stage-tab-${type}`)
     .click();
+  // A troca roda numa transição do roteador: sem esperar, a ação seguinte cai no
+  // editor da etapa anterior. O item aberto fica no endereço (sem o parâmetro, é
+  // o item 1).
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get('stage') ?? LessonStageType.LESSON)
+    .toBe(type);
+}
+
+/**
+ * Salvar um item com dependentes em produção pede confirmação, que lista o que
+ * ficará desatualizado.
+ */
+export async function confirmStaleSave(page: Page): Promise<void> {
+  const dialog = page.getByTestId('ai-lesson-production-confirm-dialog');
+  await expect(dialog).toContainText('marca como desatualizados');
+  await dialog.getByRole('button', { name: 'Salvar mesmo assim' }).click();
 }
 
 export async function createStudioReviewPackage(api: ApiClient): Promise<Lesson> {
@@ -77,7 +123,7 @@ export async function createStudioReviewPackage(api: ApiClient): Promise<Lesson>
     updated = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
       stage: type,
       lockVersion: stage.lockVersion,
-      tiptapAstJson: studioDocument(`Conteúdo ${type}`),
+      tiptapAstJson: stageDocument(type, `Conteúdo ${type}`),
       structuredDataJson: {},
     });
   }
@@ -149,6 +195,34 @@ export async function createGeneratedLesson(api: ApiClient): Promise<Lesson> {
   return generated;
 }
 
+/** Os itens anteriores concluídos: o Estúdio só gera e conclui na ordem do fluxo. */
+export const approvedBefore = (stage: LessonStageType): Partial<Record<LessonStageType, string>> =>
+  Object.fromEntries(
+    STUDIO_STAGE_ORDER.slice(0, STUDIO_STAGE_ORDER.indexOf(stage)).map((type) => [
+      type,
+      LessonStageStatus.PRODUCER_APPROVED,
+    ])
+  );
+
+/**
+ * Lição com as meditações pedidas geradas pelo fluxo real (fila, worker e
+ * guardas) com a IA simulada. Cada uma é gerada com as anteriores concluídas e
+ * todas voltam para produção (rascunho).
+ */
+export async function createLessonWithMeditations(
+  api: ApiClient,
+  meditations: LessonStageType[]
+): Promise<Lesson> {
+  let lesson = await createGeneratedLesson(api);
+  for (const type of meditations) {
+    prepareStudioFixture(lesson, [], undefined, approvedBefore(type));
+    await api.post(`/api/v1/lessons/${lesson.id}/stages/generate`, { stage: type });
+    lesson = await pollStage(api, lesson.id, type);
+    expect(stageOfLesson(lesson, type).status, `geração de ${type}`).toBe(LessonStageStatus.DRAFT);
+  }
+  return lesson;
+}
+
 export async function concludeStage(
   api: ApiClient,
   lesson: Lesson,
@@ -179,7 +253,7 @@ export async function createLessonWithDownstream(
     lesson = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
       stage: type,
       lockVersion: stage.lockVersion,
-      tiptapAstJson: studioDocument(`Conteúdo ${type}`),
+      tiptapAstJson: stageDocument(type, `Conteúdo ${type}`),
       structuredDataJson: {},
     });
   }

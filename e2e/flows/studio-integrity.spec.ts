@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { ApiClient, uniqueSuffix } from '../support/api';
 import {
+  confirmStaleSave,
   createStudioFixture,
   selectStudioStage,
-  studioDocument,
+  lessonDocument,
+  stageDocument,
   prepareStudioFixture,
 } from '../support/studio';
 import {
@@ -29,6 +31,7 @@ for (const width of [360, 1440]) {
       await editor.fill('Edição local A');
       await expect(page.getByTestId('ai-lesson-complete-stage')).toBeDisabled();
       await selectStudioStage(page, LessonStageType.STANDARD_GAME, width);
+      await expect(editor).toContainText('Conteúdo inicial STANDARD_GAME');
       await editor.fill('Edição local da brincadeira');
       await selectStudioStage(page, LessonStageType.LESSON, width);
       await expect(editor).toContainText('Edição local A');
@@ -36,7 +39,7 @@ for (const width of [360, 1440]) {
       const savedB = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
         stage: LessonStageType.LESSON,
         lockVersion: original.lockVersion,
-        tiptapAstJson: studioDocument('Texto remoto B'),
+        tiptapAstJson: lessonDocument('Texto remoto B'),
         structuredDataJson: {},
       });
       // Wait for a genuine SSE snapshot carrying B before saving A.
@@ -51,21 +54,44 @@ for (const width of [360, 1440]) {
         .toBe(savedB.stages.find((stage) => stage.type === LessonStageType.LESSON)?.lockVersion);
       // The server sends snapshots every 2s; clock time alone is not used as the conflict assertion.
       await page.waitForTimeout(2200);
-      const request = page.waitForRequest(
-        (req) => req.method() === 'PATCH' && req.url().endsWith('/stages/content')
-      );
-      await page.getByTestId('ai-lesson-save-edit').click();
-      expect((await request).postDataJSON() as SaveTiptapPayload).toMatchObject({
-        lockVersion: original.lockVersion,
-      });
-      await expect(page.getByTestId('ai-lesson-save-error')).toContainText('outra sessão');
+      // A versão nova chega pelo SSE: a tela bloqueia o salvamento antes do pedido.
+      const saveButton = page.getByTestId('ai-lesson-save-edit');
+      await expect(page.getByRole('alert').filter({ hasText: 'versão mais nova em outra sessão' })).toBeVisible();
+      await expect(saveButton).toBeDisabled();
       await expect(editor).toContainText('Edição local A');
+      // E a API também recusa a base antiga: nada de escrita cega.
+      const stale = await api.send('PATCH', `/api/v1/lessons/${lesson.id}/stages/content`, {
+        stage: LessonStageType.LESSON,
+        lockVersion: original.lockVersion,
+        tiptapAstJson: lessonDocument('Escrita sobre base antiga'),
+        structuredDataJson: {},
+      });
+      expect(stale.status).toBe(409);
       const persisted = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
       expect(
         JSON.stringify(
           persisted.stages.find((stage) => stage.type === LessonStageType.LESSON)?.versions
         )
       ).toContain('Texto remoto B');
+      expect(JSON.stringify(persisted)).not.toContain('Escrita sobre base antiga');
+
+      // Reaplicar pede confirmação e só então libera o salvamento sobre a atual.
+      await page.getByRole('button', { name: 'Reaplicar minha edição sobre a versão atual' }).click();
+      const confirm = page.getByTestId('ai-lesson-production-confirm-dialog');
+      await expect(confirm).toContainText('serão sobrescritas');
+      await confirm.getByRole('button', { name: /Reaplicar/ }).click();
+      await expect(saveButton).toBeEnabled();
+      const request = page.waitForRequest(
+        (req) => req.method() === 'PATCH' && req.url().endsWith('/stages/content')
+      );
+      await saveButton.click();
+      expect((await request).postDataJSON() as SaveTiptapPayload).toMatchObject({
+        lockVersion: savedB.stages.find((stage) => stage.type === LessonStageType.LESSON)?.lockVersion,
+      });
+      await expect
+        .poll(async () => JSON.stringify((await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`)).stages))
+        .toContain('Edição local A');
+
       await selectStudioStage(page, LessonStageType.STANDARD_GAME, width);
       await expect(editor).toContainText('Edição local da brincadeira');
       // Confirm browser-native leave protection separately from stage navigation.
@@ -78,6 +104,51 @@ for (const width of [360, 1440]) {
       await expect(page).toHaveURL(new RegExp(`${lesson.id}(\\?.*)?$`));
       const bounds = await page.getByTestId('ai-lessons-detail').boundingBox();
       expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(width);
+    } finally {
+      page.on('dialog', (dialog) => dialog.accept());
+      await api.delete(`/api/v1/lessons/${lesson.id}`);
+      await api.dispose();
+    }
+  });
+}
+
+for (const width of [360, 1440]) {
+  test(`voltar a um item mostra o rascunho dele, nunca o do item visitado entre as idas, em ${width}px`, async ({
+    page,
+  }) => {
+    // O editor é reaproveitado entre os itens: ao voltar para o último item
+    // digitado, ele continuava com o texto do outro — que seria salvo no item errado.
+    const api = await ApiClient.login();
+    const lesson = await createStudioFixture(api);
+    try {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`/adm/estudio/licoes/${lesson.id}`);
+      const editor = page
+        .getByTestId('ai-lesson-document-editor')
+        .locator('[contenteditable="true"]');
+      await selectStudioStage(page, LessonStageType.STANDARD_GAME, width);
+      await expect(editor).toContainText('Conteúdo inicial STANDARD_GAME');
+      await editor.fill('Rascunho só da brincadeira');
+      await selectStudioStage(page, LessonStageType.LESSON, width);
+      await expect(editor).toContainText('Conteúdo inicial LESSON');
+      await selectStudioStage(page, LessonStageType.STANDARD_GAME, width);
+      await expect(editor).toContainText('Rascunho só da brincadeira');
+      await expect(editor).not.toContainText('Conteúdo inicial LESSON');
+
+      await editor.press('End');
+      await editor.pressSequentially(' completo');
+      await page.getByTestId('ai-lesson-save-edit').click();
+      await expect(page.getByTestId('ai-lesson-unsaved-notice')).toHaveCount(0);
+      const saved = await api.get<Lesson>(`/api/v1/lessons/${lesson.id}`);
+      const textOf = (type: LessonStageType) => {
+        const stage = saved.stages.find((item) => item.type === type)!;
+        return JSON.stringify(
+          stage.versions.find((item) => item.id === stage.currentVersionId)?.tiptapAstJson
+        );
+      };
+      expect(textOf(LessonStageType.STANDARD_GAME)).toContain('Rascunho só da brincadeira');
+      expect(textOf(LessonStageType.STANDARD_GAME)).not.toContain('Conteúdo inicial LESSON');
+      expect(textOf(LessonStageType.LESSON)).not.toContain('Rascunho só da brincadeira');
     } finally {
       page.on('dialog', (dialog) => dialog.accept());
       await api.delete(`/api/v1/lessons/${lesson.id}`);
@@ -114,6 +185,7 @@ test('save pendente não limpa texto digitado depois; API recebe a segunda revis
       (req) => req.method() === 'PATCH' && req.url().endsWith('/stages/content')
     );
     await page.getByTestId('ai-lesson-save-edit').click();
+    await confirmStaleSave(page);
     await sent;
     await editor.fill('Texto digitado durante o envio');
     await expect(page.getByTestId('ai-lesson-complete-stage')).toBeDisabled();
@@ -154,7 +226,8 @@ test('fila filtra antes da página: 12 rascunhos recentes não escondem dois rev
     }
     await page.goto('/adm/estudio/revisao');
     await page.getByPlaceholder('Buscar por tema ou referência bíblica...').fill(suffix);
-    await expect(page.locator('[data-testid^="ai-lesson-review-card-"]')).toHaveCount(2);
+    // O ID completo: o prefixo também casa com a barra de progresso de cada cartão.
+    await expect(page.getByTestId(/^ai-lesson-review-card-[0-9a-f-]{36}$/)).toHaveCount(2);
     const filtered = await api.get<LessonListResponse>('/api/v1/lessons', {
       statuses: REVIEW_LESSON_STATUSES.join(','),
       search: suffix,
@@ -256,7 +329,7 @@ for (const target of [
       current = await api.patch<Lesson>(`/api/v1/lessons/${lesson.id}/stages/content`, {
         stage: target,
         lockVersion: returned.lockVersion,
-        tiptapAstJson: studioDocument('Conteúdo ajustado'),
+        tiptapAstJson: stageDocument(target, 'Conteúdo ajustado'),
         structuredDataJson: {},
       });
       for (const item of current.stages.filter((stage) =>
