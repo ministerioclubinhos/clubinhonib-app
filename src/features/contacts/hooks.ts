@@ -1,71 +1,122 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { apiDeleteContact, apiListContacts, apiMarkAsRead } from "./api";
-import { Contact } from "./types";
+import { useCallback, useEffect, useState } from "react";
 
+import { useAbortController, useDebouncedValue } from "@/hooks";
+import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
+
+import {
+  apiDeleteContact,
+  apiFetchContacts,
+  apiMarkContactAsRead,
+  apiMarkContactAsUnread,
+} from "./api";
+import { CONTACTS_DEFAULT_LIMIT } from "./constants";
+import type { ContactFilters, ContactResponse } from "./types";
+
+/** Página de contatos, com busca e filtros resolvidos pela API. */
 export function useContacts() {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<ContactResponse[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(CONTACTS_DEFAULT_LIMIT);
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<Omit<ContactFilters, "searchString">>({});
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const fetchContacts = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await apiListContacts();
-      setContacts(data);
-    } catch (e: any) {
-      setError(e?.response?.data?.message || e.message || "Erro ao carregar contatos");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
 
-  useEffect(() => { fetchContacts(); }, [fetchContacts]);
-
-  return { contacts, setContacts, loading, error, setError, fetchContacts };
-}
-
-export function useContactSearch(source: Contact[]) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filtered, setFiltered] = useState<Contact[]>(source);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
 
   useEffect(() => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      const term = searchTerm.trim().toLowerCase();
-      if (!term) { setFiltered(source); return; }
-      setFiltered(
-        source.filter((c) =>
-          [c.name, c.email, c.phone, c.message]
-            .filter(Boolean)
-            .some((f) => String(f).toLowerCase().includes(term))
-        )
-      );
-    }, 300);
-    return () => { if (timer.current) clearTimeout(timer.current); };
-  }, [searchTerm, source]);
+    const controller = nextController();
 
-  return { searchTerm, setSearchTerm, filtered };
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiFetchContacts(
+          {
+            page,
+            limit: pageSize,
+            filters: { ...filters, searchString: debouncedSearch || undefined },
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.data) ? data.data : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, "Erro ao carregar os contatos"));
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  return {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  };
 }
 
-export function useContactMutations(refresh: () => Promise<void> | void) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+/** Ações da listagem. Cada uma devolve se deu certo. */
+export function useContactMutations(refresh: () => void) {
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState("");
 
-  const remove = useCallback(async (id: string) => {
-    setBusy(true); setError("");
-    try { await apiDeleteContact(id); await refresh(); }
-    catch (e: any) { setError(e?.response?.data?.message || e.message || "Erro ao excluir contato"); throw e; }
-    finally { setBusy(false); }
-  }, [refresh]);
+  const run = useCallback(
+    async (action: () => Promise<void>, fallbackMessage: string) => {
+      setActionLoading(true);
+      setActionError("");
+      try {
+        await action();
+        refresh();
+        return true;
+      } catch (err: unknown) {
+        setActionError(extractErrorMessage(err, fallbackMessage));
+        return false;
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [refresh],
+  );
 
-  const markAsRead = useCallback(async (id: string) => {
-    setBusy(true); setError("");
-    try { await apiMarkAsRead(id); await refresh(); }
-    catch (e: any) { setError(e?.response?.data?.message || e.message || "Erro ao marcar como lido"); throw e; }
-    finally { setBusy(false); }
-  }, [refresh]);
+  const setRead = useCallback(
+    (id: string, read: boolean) =>
+      run(async () => {
+        await (read ? apiMarkContactAsRead(id) : apiMarkContactAsUnread(id));
+      }, "Erro ao alterar a situação do contato"),
+    [run],
+  );
 
-  return { busy, error, setError, remove, markAsRead };
+  const remove = useCallback(
+    (id: string) =>
+      run(async () => {
+        await apiDeleteContact(id);
+      }, "Erro ao excluir o contato"),
+    [run],
+  );
+
+  return { actionLoading, actionError, setActionError, setRead, remove };
 }

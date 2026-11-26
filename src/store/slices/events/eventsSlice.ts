@@ -1,15 +1,21 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { MediaItem } from '@/store/slices/types';
 
 export interface EventData {
   id: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   title: string;
   date: string;
   location: string;
   description: string;
-  media: MediaItem;
+  /** O arquivo do evento, quando há um. */
+  media?: {
+    url: string;
+    originalName?: string;
+    size?: number;
+    createdAt?: string;
+  };
+  audience?: string;
 }
 
 interface EventsState {

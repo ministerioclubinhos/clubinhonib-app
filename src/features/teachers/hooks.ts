@@ -1,153 +1,157 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+import { apiFetchClubOptions } from "@/features/clubs/api";
+import type { ClubSelectOption } from "@/features/clubs/types";
+import { useAbortController, useDebouncedValue } from "@/hooks";
+import { extractErrorMessage, isCancelledRequest } from "@/utils/apiError";
+
 import {
   apiAssignTeacherToClub,
-  apiGetTeacher,
-  apiListClubsSimple,
-  apiListTeachers,
+  apiFetchTeachers,
   apiUnassignTeacherFromClub,
 } from "./api";
-import { ClubSimple, TeacherProfile, TeacherQuery, Page } from "./types";
-import type { SortingState } from "@tanstack/react-table";
-import { extractErrorMessage } from "@/utils/apiError";
+import { TEACHERS_DEFAULT_LIMIT } from "./constants";
+import type { TeacherFilters, TeacherResponse } from "./types";
 
-export function useTeacherProfiles(
-  pageIndex: number,  
-  pageSize: number,
-  sorting: SortingState,
-  filters: Pick<TeacherQuery, "searchString" | "q" | "active" | "hasClub" | "clubNumber">,
-) {
-  const [rows, setRows] = useState<TeacherProfile[]>([]);
-  const [total, setTotal] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+/** Página de professores, com busca e filtros resolvidos pela API. */
+export function useTeachers() {
+  const [items, setItems] = useState<TeacherResponse[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(TEACHERS_DEFAULT_LIMIT);
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<Omit<TeacherFilters, "searchString">>(
+    {},
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const filtersKey = useMemo(
-    () =>
-      JSON.stringify({
-        q: filters.q ?? undefined,
-        searchString: filters.searchString ?? undefined,
-        active: filters.active ?? undefined,
-        hasClub: filters.hasClub ?? undefined,
-        clubNumber: filters.clubNumber ?? undefined,
-      }),
-    [filters.q, filters.searchString, filters.active, filters.hasClub, filters.clubNumber]
+  const debouncedSearch = useDebouncedValue(search);
+  const nextController = useAbortController();
+
+  useEffect(() => setPage(1), [debouncedSearch, filters, pageSize]);
+
+  useEffect(() => {
+    const controller = nextController();
+
+    const run = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiFetchTeachers(
+          {
+            page,
+            limit: pageSize,
+            filters: { ...filters, searchString: debouncedSearch || undefined },
+          },
+          { signal: controller.signal },
+        );
+        setItems(Array.isArray(data?.items) ? data.items : []);
+        setTotal(Number(data?.total ?? 0));
+      } catch (err: unknown) {
+        if (isCancelledRequest(err)) return;
+        setError(extractErrorMessage(err, "Erro ao carregar os professores"));
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void run();
+  }, [page, pageSize, debouncedSearch, filters, reloadToken, nextController]);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  return {
+    items,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    loading,
+    error,
+    setError,
+    refresh,
+  };
+}
+
+/** Vínculo entre professor e clubinho. Cada operação devolve se deu certo. */
+export function useTeacherMutations(refresh: () => void) {
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState("");
+
+  const run = useCallback(
+    async (action: () => Promise<void>, fallbackMessage: string) => {
+      setActionLoading(true);
+      setActionError("");
+      try {
+        await action();
+        refresh();
+        return true;
+      } catch (err: unknown) {
+        setActionError(extractErrorMessage(err, fallbackMessage));
+        return false;
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [refresh],
   );
 
-  const sortParam = useMemo<Pick<TeacherQuery, "sort" | "order">>(() => {
-    const first = sorting?.[0];
-    const map = {
-      teacher: "name",
-      updatedAt: "updatedAt",
-      createdAt: "createdAt",
-      club: "clubNumber",
-      coord: "name",
-    } as const;
-    if (!first) return { sort: "updatedAt", order: "desc" };
-    type SortKey = (typeof map)[keyof typeof map];
-    const id = first.id as keyof typeof map | "name" | "updatedAt" | "createdAt" | "clubNumber";
-    const sort: SortKey = map[id as keyof typeof map] ?? "updatedAt";
-    const order: "asc" | "desc" = first.desc ? "desc" : "asc";
-    return { sort, order };
-  }, [sorting]);
+  const assignClub = useCallback(
+    (teacherId: string, clubId: string) =>
+      run(async () => {
+        await apiAssignTeacherToClub(teacherId, clubId);
+      }, "Erro ao vincular o clubinho"),
+    [run],
+  );
 
-  const seqRef = useRef(0);
+  const unassignClub = useCallback(
+    (teacherId: string, clubId?: string) =>
+      run(async () => {
+        await apiUnassignTeacherFromClub(teacherId, clubId);
+      }, "Erro ao desvincular o clubinho"),
+    [run],
+  );
 
-  const fetchPage = useCallback(async () => {
-    const mySeq = ++seqRef.current;
-    setLoading(true);
-    setError("");
-    try {
-      const data: Page<TeacherProfile> = await apiListTeachers({
-        ...(JSON.parse(filtersKey) as Pick<TeacherQuery, "searchString" | "q" | "active" | "hasClub" | "clubNumber">),
-        page: pageIndex + 1, 
-        limit: pageSize,
-        sort: sortParam.sort,
-        order: sortParam.order,
-      });
-
-      if (mySeq !== seqRef.current) return;
-
-      setRows(data.items || []);
-      setTotal(data.total || 0);
-    } catch (err: unknown) {
-      if (mySeq !== seqRef.current) return;
-      setError(extractErrorMessage(err, "Erro ao listar professores"));
-    } finally {
-      if (mySeq === seqRef.current) setLoading(false);
-    }
-  }, [filtersKey, pageIndex, pageSize, sortParam]);
-
-  useEffect(() => { fetchPage(); }, [fetchPage]);
-
-  const refreshOne = useCallback(async (teacherId: string) => {
-    try {
-      const prof = await apiGetTeacher(teacherId);
-      setRows(prev => {
-        const i = prev.findIndex(p => p.id === teacherId);
-        if (i === -1) return prev;
-        const next = [...prev]; next[i] = prof; return next;
-      });
-    } catch {
-      setRows(prev => prev.filter(p => p.id !== teacherId));
-    }
-  }, []);
-
-  return { rows, total, loading, error, setError, fetchPage, refreshOne };
+  return { actionLoading, actionError, setActionError, assignClub, unassignClub };
 }
 
-export function useTeacherMutations(
-  refreshPage: () => Promise<void> | void,
-  refreshOne: (teacherId: string) => Promise<void> | void
-) {
-  const [dialogLoading, setDialogLoading] = useState(false);
-  const [dialogError, setDialogError] = useState("");
-
-  const setClub = useCallback(async (teacherId: string, clubId: string) => {
-    setDialogLoading(true); setDialogError("");
-    try { await apiAssignTeacherToClub(teacherId, clubId); await refreshOne(teacherId); }
-    catch (err: unknown) { setDialogError(extractErrorMessage(err, "Erro ao vincular Clubinho")); throw err; }
-    finally { setDialogLoading(false); }
-  }, [refreshOne]);
-
-  const clearClub = useCallback(async (teacherId: string) => {
-    setDialogLoading(true); setDialogError("");
-    try {
-      const current = await apiGetTeacher(teacherId);
-      const currentClubId = current?.club?.id;
-      if (!currentClubId) return;
-      await apiUnassignTeacherFromClub(teacherId, currentClubId);
-      await refreshOne(teacherId);
-    } catch (err: unknown) {
-      setDialogError(extractErrorMessage(err, "Erro ao desvincular Clubinho"));
-      throw err;
-    } finally { setDialogLoading(false); }
-  }, [refreshOne]);
-
-  return { dialogLoading, dialogError, setDialogError, setClub, clearClub };
-}
-
-export function useClubsIndex() {
-  const [clubs, setClubs] = useState<ClubSimple[]>([]);
+/**
+ * Clubinhos disponíveis para o vínculo.
+ *
+ * A lista é carregada uma vez e alimenta o seletor do diálogo: antes o número
+ * do clubinho era digitado à mão e um número inexistente só falhava na hora de
+ * salvar.
+ */
+export function useClubOptions() {
+  const [clubs, setClubs] = useState<ClubSelectOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const refresh = useCallback(async () => {
-    setLoading(true); setError("");
+    setLoading(true);
+    setError("");
     try {
-      const list = await apiListClubsSimple();
-      setClubs(list || []);
+      setClubs(await apiFetchClubOptions());
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, "Erro ao listar clubinhos"));
+      setError(extractErrorMessage(err, "Erro ao carregar os clubinhos"));
+      setClubs([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const byNumber = useMemo(() => {
-    const map = new Map<number, ClubSimple>();
-    for (const c of clubs) if (typeof c.number === "number") map.set(c.number, c);
-    return map;
-  }, [clubs]);
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
-  return { clubs, byNumber, loading, error, refresh };
+  return { clubs, loading, error, refresh };
 }

@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 import {
   FormControl,
+  FormHelperText,
   InputLabel,
   Select,
   MenuItem,
@@ -14,13 +15,17 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { CoordinatorOption } from "../../types";
+import type { SelectChangeEvent } from "@mui/material";
+
+import type { CoordinatorOption } from "../../types";
 
 type Props = {
   value?: string | null;
   options: CoordinatorOption[];
   onChange: (val: string | null) => void;
   label?: string;
+  /** Aviso exibido abaixo do campo — por exemplo, quem perde a coordenação. */
+  helperText?: string;
 };
 
 function normalize(s?: string | null) {
@@ -35,6 +40,7 @@ export default function CoordinatorSelect({
   options,
   onChange,
   label = "Coordenador (opcional)",
+  helperText,
 }: Props) {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
@@ -53,15 +59,15 @@ export default function CoordinatorSelect({
   }, [options, query]);
 
   const handleChange = useCallback(
-    (e: any) => {
-      const v = e.target.value as string;
-      onChange(v ? v : null);
+    (event: SelectChangeEvent<string>) => {
+      const selected = event.target.value;
+      onChange(selected ? selected : null);
     },
     [onChange]
   );
 
   const clearSelection = () => onChange(null);
-  const stop = (e: any) => e.stopPropagation();
+  const stop = (event: React.SyntheticEvent) => event.stopPropagation();
 
   const actionStackProps = isXs
     ? { direction: "column" as const, sx: { width: "100%" } }
@@ -69,11 +75,13 @@ export default function CoordinatorSelect({
 
   const btnProps = isXs ? { fullWidth: true, size: "medium" as const } : { size: "small" as const };
 
-  const menuWidth = isXs ? "98vw" : 480;
-  const menuMaxH = isXs ? "70vh" : 420;
+  // No celular o menu ocupa a largura útil da tela, descontada a margem — com
+  // `vw` puro a barra de rolagem entra na conta e sobra rolagem horizontal.
+  const menuWidth = isXs ? "calc(100vw - 32px)" : 480;
+  const menuMaxH = isXs ? "70dvh" : 420;
 
   return (
-    <FormControl fullWidth>
+    <FormControl data-testid="clubs-form-coordinator-select" fullWidth>
       <InputLabel>{label}</InputLabel>
       <Select
         label={label}
@@ -115,7 +123,7 @@ export default function CoordinatorSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={stop}
-              inputProps={{ "aria-label": "Buscar coordenador" }}
+              slotProps={{ htmlInput: { "aria-label": "Buscar coordenador" } }}
             />
           </Box>
 
@@ -149,7 +157,9 @@ export default function CoordinatorSelect({
           <MenuItem disabled>
             <ListItemText
               primary="Nenhum coordenador encontrado."
-              primaryTypographyProps={{ variant: "body2", color: "text.secondary" }}
+              slotProps={{
+                primary: { variant: "body2", color: "text.secondary" },
+              }}
             />
           </MenuItem>
         ) : (
@@ -160,6 +170,7 @@ export default function CoordinatorSelect({
           ))
         )}
       </Select>
+      {helperText ? <FormHelperText>{helperText}</FormHelperText> : null}
     </FormControl>
   );
 }

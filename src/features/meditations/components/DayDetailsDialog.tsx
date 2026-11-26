@@ -7,11 +7,13 @@ import { DayItem, WeekDay, WeekDayLabel } from '@/store/slices/meditation/medita
 interface Props {
   day: DayItem | null;
   onClose: () => void;
+  /** Quando informado, mostra o botão que abre a edição da meditação. */
+  onEdit?: () => void;
 }
 
-export default function DayDetailsDialog({ day, onClose }: Props) {
+export default function DayDetailsDialog({ day, onClose, onEdit }: Props) {
   return (
-    <Dialog
+    <Dialog data-testid="meditations-day-details-dialog"
       open={!!day}
       onClose={onClose}
       fullWidth
@@ -37,6 +39,11 @@ export default function DayDetailsDialog({ day, onClose }: Props) {
 
       <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
         <Button variant="outlined" onClick={onClose}>Fechar</Button>
+        {onEdit && (
+          <Button data-testid="meditation-day-dialog-edit" variant="contained" onClick={onEdit}>
+            Editar meditação
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

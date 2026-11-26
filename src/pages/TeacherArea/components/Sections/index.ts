@@ -1,10 +1,9 @@
 export { default as BannerSection } from './BannerSection';
-export { default as MotivationSection } from './MotivationSection';
+export { default as WelcomeSection } from './WelcomeSection';
 export { default as TeacherContent } from './TeacherContent';
 export { default as CommentsSection } from './CommentsSection';
 export { default as DocumentsSection } from './DocumentsSection';
 export { default as IdeasGallerySection } from './IdeasGallerySection';
 export { default as TrainingVideosSection } from './TrainingVideosSection';
 export { default as WeekMaterialsList } from './WeekMaterialsList';
-export { default as VerseOfWeekSection } from './VerseOfWeekSection';
-export { default as TeachingStepsSection } from './TeachingStepsSection';
+export { default as TeacherGuideCarousel } from './TeacherGuideCarousel';

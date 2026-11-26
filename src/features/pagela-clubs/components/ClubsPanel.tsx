@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import {
     Box,
     Stack,
@@ -14,7 +14,6 @@ import {
     Chip,
     Tooltip,
     Pagination,
-    Divider,
 } from "@mui/material";
 import PaginationItem from "@mui/material/PaginationItem";
 import SearchIcon from "@mui/icons-material/Search";
@@ -25,85 +24,52 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useTheme, alpha } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-import { apiFetchClubs } from "@/features/clubs/api";
-import type { ClubResponseDto, ClubFilters, ClubSort, Weekday } from "@/features/clubs/types";
+import type { ClubResponse } from "@/features/clubs/types";
 import { EmptyState } from "./common/EmptyState";
-import { WEEKDAY_PT, useDebounced } from "../utils";
+import {
+    CLUBS_EMPTY_MESSAGE,
+    CLUBS_PAGE_LIMIT,
+    TOUCH_TARGET_DESKTOP,
+    TOUCH_TARGET_MOBILE,
+} from "../constants";
+import { useClubsBrowser } from "../hooks";
+import { formatClubLocation, formatMeetingDay } from "../utils";
+import type { PagelaViewerScope } from "../types";
 
-export function ClubsPanel({
-    onSelect,
-    selectedId,
-}: {
-    onSelect: (club: ClubResponseDto) => void;
+type Props = {
+    onSelect: (club: ClubResponse) => void;
     selectedId: string | null;
-}) {
+    /** Muda apenas o texto: quem filtra a lista é a API. */
+    scope: PagelaViewerScope;
+};
+
+export function ClubsPanel({ onSelect, selectedId, scope }: Props) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const touchMin = isMobile ? 56 : 48;
+    const touchMin = isMobile ? TOUCH_TARGET_MOBILE : TOUCH_TARGET_DESKTOP;
 
-    const [search, setSearch] = useState("");
-    const dq = useDebounced(search);
+    const {
+        rows,
+        total,
+        page,
+        setPage,
+        search,
+        setSearch,
+        loading,
+        error,
+        reload,
+    } = useClubsBrowser();
 
-    const [page, setPage] = useState(1);
-    const [limit] = useState(6);
-    const [rows, setRows] = useState<ClubResponseDto[]>([]);
-    const [total, setTotal] = useState(0);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string>("");
-
-    const sort = useMemo<ClubSort>(() => ({ id: "updatedAt", desc: true }), []);
-    const filters: ClubFilters = useMemo(
-        () => ({
-            searchString: dq || undefined,
-        }),
-        [dq]
-    );
-
-    const lastKeyRef = useRef<string>("");
-    const abortRef = useRef<AbortController | null>(null);
-
-    const fetchClubs = useCallback(async () => {
-        const key = JSON.stringify({ page, limit, filters, sort });
-        if (key === lastKeyRef.current) return;
-        lastKeyRef.current = key;
-
-        abortRef.current?.abort();
-        const ctrl = new AbortController();
-        abortRef.current = ctrl;
-
-        setLoading(true);
-        setError("");
-        try {
-            const data = await apiFetchClubs({ page, limit, filters, sort });
-            setRows(Array.isArray(data?.data) ? data.data : []);
-            setTotal(Number(data?.total ?? 0));
-        } catch (e: any) {
-            if (e?.name !== "CanceledError" && e?.name !== "AbortError") {
-                setError(e?.response?.data?.message || e?.message || "Erro ao listar clubinhos");
-            }
-        } finally {
-            if (abortRef.current === ctrl) abortRef.current = null;
-            setLoading(false);
-        }
-    }, [page, limit, filters, sort]);
-
-    useEffect(() => {
-        fetchClubs();
-        return () => abortRef.current?.abort();
-    }, [fetchClubs]);
-
-    const weekdayLong = (w: Weekday | undefined) => (w ? WEEKDAY_PT[w] : "-");
-    const diaDe = (w: Weekday | undefined) => (w ? `Dia de ${weekdayLong(w)}` : "Dia não informado");
+    const limit = CLUBS_PAGE_LIMIT;
 
     return (
-        <Stack sx={{ height: "100%" }} spacing={2}>
+        <Stack data-testid="pagela-clubs-clubs-panel" sx={{ height: "100%" }} spacing={2}>
             <TextField
                 size="small"
                 placeholder="Endereço / nº do clubinho.."
                 value={search}
                 onChange={(e) => {
                     setSearch(e.target.value);
-                    setPage(1);
                 }}
                 InputProps={{
                     startAdornment: (
@@ -133,7 +99,7 @@ export function ClubsPanel({
                     {!loading && error && <Alert severity="error">{error}</Alert>}
 
                     {!loading && !error && rows.length === 0 && (
-                        <EmptyState title="Nenhum clubinho encontrado" subtitle="Ajuste a busca ou cadastre um novo." />
+                        <EmptyState title="Nenhum clubinho encontrado" subtitle={CLUBS_EMPTY_MESSAGE[scope]} />
                     )}
 
                     {!loading &&
@@ -182,7 +148,7 @@ export function ClubsPanel({
                                                         #{c.number}
                                                     </Avatar>
                                                     <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.1, flex: 1 }}>
-                                                        {WEEKDAY_PT[c.weekday as Weekday]}
+                                                        {formatMeetingDay(c.weekday)}
                                                     </Typography>
                                                     <Chip
                                                         size="small"
@@ -252,9 +218,9 @@ export function ClubsPanel({
                                                     color="text.secondary"
                                                     noWrap
                                                     sx={{ opacity: 0.9 }}
-                                                    title={`${c.address?.district ?? ""} – ${c.address?.city ?? ""}/${c.address?.state ?? ""}`}
+                                                    title={formatClubLocation(c.address)}
                                                 >
-                                                    {c.address?.district ?? "Bairro não informado"} – {c.address?.city ?? "Cidade não informada"}/{c.address?.state ?? "Estado não informado"}
+                                                    {formatClubLocation(c.address)}
                                                 </Typography>
                                             </Stack>
                                         ) : (
@@ -275,7 +241,7 @@ export function ClubsPanel({
                                                         #{c.number}
                                                     </Avatar>
                                                     <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.1, flex: 1 }}>
-                                                        {WEEKDAY_PT[c.weekday as Weekday]}
+                                                        {formatMeetingDay(c.weekday)}
                                                     </Typography>
                                                     <Chip
                                                         size="small"
@@ -345,9 +311,9 @@ export function ClubsPanel({
                                                             color="text.secondary"
                                                             noWrap
                                                     sx={{ opacity: 0.9 }}
-                                                    title={`${c.address?.district} – ${c.address?.city}/${c.address?.state}`}
+                                                    title={formatClubLocation(c.address)}
                                                         >
-                                                    {c.address?.district} – {c.address?.city}/{c.address?.state}
+                                                    {formatClubLocation(c.address)}
                                                 </Typography>
                                             </Stack>
                                         )}
@@ -360,7 +326,7 @@ export function ClubsPanel({
 
             <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ flexWrap: "wrap", gap: 1 }}>
                 <Tooltip title="Recarregar">
-                    <IconButton onClick={() => fetchClubs()} size={isMobile ? "small" : "medium"}>
+                    <IconButton onClick={reload} size={isMobile ? "small" : "medium"} aria-label="Recarregar">
                         <RefreshIcon />
                     </IconButton>
                 </Tooltip>

@@ -54,7 +54,7 @@ export const FamilyDayMediaCarousel = ({
 
   return (
     <>
-      <Box
+      <Box data-testid="special-familiy-day-family-day-media-carousel"
         sx={{
           height: compact ? "100%" : "auto",
           mb: compact ? 0 : 2.2,
@@ -174,7 +174,7 @@ export const FamilyDayMediaCarousel = ({
       </Box>
 
       {kind === "video" && (
-        <FamilyDayExpandedMedia
+        <FamilyDayExpandedMedia data-testid="special-familiy-day-family-day-media-carousel"
           media={expandedMedia}
           items={items}
           kind="video"

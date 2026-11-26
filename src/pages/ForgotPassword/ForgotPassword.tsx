@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '@/config/axiosConfig';
 import { useApiError } from '@/hooks/useApiError';
 import { UserErrorCode } from '@/types/api-error';
-import { getErrorMessage, logApiError } from '@/utils/apiError';
+import { logApiError } from '@/utils/apiError';
 
 import { PASSWORD_RECOVERY_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
@@ -48,7 +48,6 @@ const ForgotPassword: React.FC = () => {
         hasFieldError,
         getFieldError,
         clearFieldError,
-        isErrorCode,
     } = useApiError();
 
     const navigate = useNavigate();
@@ -77,7 +76,7 @@ const ForgotPassword: React.FC = () => {
             const response = await api.post(
                 '/auth/forgot-password',
                 { email },
-                { skipGlobalError: true } as any
+                { skipGlobalError: true }
             );
 
             if (response.data?.status === 'VERIFICATION_EMAIL_SENT' || response.data?.message?.includes('verifi')) {
@@ -142,7 +141,7 @@ const ForgotPassword: React.FC = () => {
     };
 
     return (
-        <Box
+        <Box data-testid="forgot-password"
             sx={{
                 minHeight: 'calc(100vh - var(--app-header-h, 64px))',
                 display: 'flex',

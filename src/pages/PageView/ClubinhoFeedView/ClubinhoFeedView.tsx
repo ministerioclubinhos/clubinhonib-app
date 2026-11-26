@@ -1,541 +1,514 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
+  Alert,
   Box,
+  Button,
   CircularProgress,
   Container,
-  Typography,
-  Alert,
-  Tooltip,
-  Skeleton,
   Paper,
-  Grid,
-  IconButton,
-  useTheme,
-  useMediaQuery,
-  Chip,
-  Button,
+  Stack,
+  Typography,
 } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
-import api from '@/config/axiosConfig';
-import { RootState, AppDispatch } from '@/store/slices';
-import { fetchRoutes } from '@/store/slices/route/routeSlice';
-import { UserRole } from '@/types/shared';
-import ClubinhoSectionImageView from './ClubinhoSectionImageView/ClubinhoSectionImageView';
-import HomeIcon from '@mui/icons-material/Home';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import FilterAltOffOutlinedIcon from '@mui/icons-material/FilterAltOffOutlined';
+
 import {
-  setSectionData,
-  appendSections,
-  updatePagination,
-  PaginatedSectionResponse,
-} from '@/store/slices/image-section-pagination/imageSectionPaginationSlice';
+  type ActiveLightboxState,
+  type ClubinhoFeedViewProps,
+  FEED_CONTAINER_WIDTH,
+  FEED_CONTENT_MAX_WIDTH,
+  FEED_COPY_FEEDBACK_DURATION_MS,
+  FEED_MESSAGES,
+  FEED_PALETTE,
+  FEED_ROUTES,
+  FEED_TEST_IDS,
+  FEED_TOUCH_TARGET_PX,
+  FeedBentoMural,
+  FeedControlBar,
+  FeedEmptyState,
+  FeedErrorState,
+  FeedHeroBanner,
+  FeedLightboxDialog,
+  FeedLoadingSkeleton,
+  type FeedPhotoWallItem,
+  FeedPhotoWall,
+  FeedPostCard,
+  type FeedSectionViewModel,
+  FeedTimelineRail,
+  FeedViewMode,
+  filterFeedSections,
+  flattenFeedPhotos,
+  shareFeedSection,
+  ShareResultKind,
+  useClubinhoFeed,
+  useFeedCelebrations,
+} from '@/features/clubinho-feed';
+import { FEATURE } from '@/features/feature-flags';
+import { useFeatureFlags } from '@/hooks';
+import type { RootState } from '@/store/slices';
+import { UserRole } from '@/types/shared';
+import { apiToggleFeedCelebration } from '@/features/clubinho-feed/api';
 
-interface ClubinhoFeedViewProps {
-  feed?: boolean;
-}
-
-const feedContainerSx = {
-  width: '90%',
-  maxWidth: 'none',
-  minWidth: 0,
-  mx: 'auto',
-  px: '0 !important',
-  py: { xs: 2, md: 4 },
-  boxSizing: 'border-box',
-} as const;
-
-function SectionSkeleton() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
-      <Paper
-        elevation={2}
-        sx={{
-          p: { xs: 2, sm: 4 },
-          mt: { xs: 1, sm: 1 },
-          mb: { xs: 2, sm: 6 },
-          borderRadius: 4,
-          background: 'linear-gradient(145deg, #fafafa, #f0f0f0)',
-        }}
-      >
-        <Box textAlign="center" mb={3}>
-          <Skeleton
-            variant="text"
-            width={220}
-            height={32}
-            sx={{ mx: 'auto', borderRadius: 2 }}
-          />
-          <Skeleton
-            variant="text"
-            width="60%"
-            sx={{ mx: 'auto', mt: 1, borderRadius: 1 }}
-          />
-          <Skeleton
-            variant="text"
-            width="50%"
-            sx={{ mx: 'auto', mt: 1, borderRadius: 1 }}
-          />
-          <Box
-            mt={2}
-            display="flex"
-            flexDirection="column"
-            alignItems={{ xs: 'center', md: 'flex-end' }}
-          >
-            <Skeleton variant="text" width={180} sx={{ borderRadius: 1 }} />
-            <Skeleton variant="text" width={220} sx={{ borderRadius: 1 }} />
-          </Box>
-        </Box>
-        <Skeleton
-          variant="rectangular"
-          sx={{
-            width: '100%',
-            height: { xs: 200, sm: 400, md: 600 },
-            borderRadius: 2,
-            mb: 2,
-          }}
-        />
-        <Grid container spacing={1} justifyContent="center">
-          {[...Array(6)].map((_, i) => (
-            <Grid item xs={4} sm={2} md={2} key={i}>
-              <Skeleton
-                variant="rectangular"
-                height={80}
-                sx={{ borderRadius: 1 }}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      </Paper>
-    </motion.div>
-  );
-}
-
-export default function ClubinhoFeedView({ feed = true }: ClubinhoFeedViewProps) {
-
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const dispatch: AppDispatch = useDispatch();
+export default function ClubinhoFeedView(_props: ClubinhoFeedViewProps) {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const section = useSelector((state: RootState) => state.imageSectionPagination.section);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { flags } = useFeatureFlags();
 
-  const feedSectionId = import.meta.env.VITE_FEED_MINISTERIO_ID;
+  const {
+    feedPageId,
+    isMissingConfig,
+    pageMeta,
+    sections,
+    totalSections,
+    isInitialLoading,
+    isRefreshing,
+    isFetchingNextPage,
+    hasNextPage,
+    initialErrorMessage,
+    nextPageErrorMessage,
+    loadNextPage,
+    refreshFeed,
+  } = useClubinhoFeed();
 
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastSectionRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (loadingMore) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) setPage((prev) => prev + 1);
-      });
-      if (node) observer.current.observe(node);
-    },
-    [loadingMore, hasMore]
+  const { isCelebrated, toggleCelebration, markStoryViewed } = useFeedCelebrations();
+  const handleCelebrate = useCallback(async (sectionId: string) => {
+    if (!isAuthenticated || !feedPageId) return;
+    try {
+      await apiToggleFeedCelebration(feedPageId, sectionId);
+      toggleCelebration(sectionId);
+      // Refresh obtains the server-authoritative names and total.
+      await refreshFeed();
+    } catch { /* Keep current state if the request fails. */ }
+  }, [feedPageId, isAuthenticated, refreshFeed, toggleCelebration]);
+
+  const [viewMode, setViewMode] = useState<FeedViewMode>(FeedViewMode.TIMELINE);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeLightbox, setActiveLightbox] = useState<ActiveLightboxState | null>(null);
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  const [copiedSectionId, setCopiedSectionId] = useState<string | null>(null);
+
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const paginationObserverRef = useRef<IntersectionObserver | null>(null);
+  const initialHashHandledRef = useRef(false);
+
+  const canUploadPhotos = Boolean(isAuthenticated && flags[FEATURE.CLUB_PHOTO_UPLOAD]);
+  const canManageFeed = Boolean(
+    isAuthenticated && user?.role === UserRole.ADMIN && flags[FEATURE.PHOTO_MODERATION]
+  );
+  const hasSearchFilter = searchQuery.trim().length > 0;
+
+  const visibleSections = useMemo(
+    () => filterFeedSections(sections, searchQuery),
+    [sections, searchQuery]
   );
 
-  const sectionsList = useMemo(() => section?.sections ?? [], [section?.sections]);
+  const visiblePhotos = useMemo(() => flattenFeedPhotos(visibleSections), [visibleSections]);
+
+  const sectionsById = useMemo(
+    () => new Map(sections.map((section) => [section.id, section])),
+    [sections]
+  );
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchSectionData = async () => {
-      try {
-        setError(null);
-        if (page === 1) setLoading(true);
-        else setLoadingMore(true);
-
-        if (!feedSectionId) throw new Error('ID do feed não configurado.');
-
-        const { data } = await api.get<PaginatedSectionResponse>(
-          `/image-pages/${feedSectionId}/sections?page=${page}&limit=2`,
-          { signal: controller.signal }
-        );
-
-        if (page === 1) {
-          dispatch(setSectionData(data));
-        } else {
-          dispatch(appendSections(data.sections));
-          dispatch(updatePagination({ page: data.page, total: data.total }));
-        }
-
-        setHasMore(data.page * data.limit < data.total);
-      } catch (err: any) {
-        if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
-          console.error('Erro ao carregar o feed:', err);
-          setError('Erro ao carregar o feed. Tente novamente mais tarde.');
-        }
-      } finally {
-        if (page === 1) setLoading(false);
-        else setLoadingMore(false);
+    return () => {
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+      }
+      if (paginationObserverRef.current) {
+        paginationObserverRef.current.disconnect();
       }
     };
+  }, []);
 
-    fetchSectionData();
+  // Link compartilhado abre diretamente a publicação no modo expandido.
+  useEffect(() => {
+    if (initialHashHandledRef.current || sections.length === 0) return;
+    const rawHash = window.location.hash.replace(/^#/, '');
+    if (!rawHash.startsWith('publicacao-feed-')) return;
+    const section = sections.find((item) => item.anchorId === rawHash);
+    if (!section) return;
+    initialHashHandledRef.current = true;
+    setActiveLightbox({ section, initialIndex: 0 });
+  }, [sections]);
 
-    return () => controller.abort();
-  }, [page, feedSectionId, dispatch]);
+  // Observa qual publicação está visível para destacar no índice lateral
+  useEffect(() => {
+    if (viewMode !== FeedViewMode.TIMELINE || visibleSections.length === 0) return;
 
-  const handleRefresh = () => {
-    setPage(1);
-    setHasMore(true);
-    setError(null);
+    const articleElements = visibleSections
+      .map((section) => document.getElementById(section.anchorId))
+      .filter((element): element is HTMLElement => Boolean(element));
 
-  };
+    if (articleElements.length === 0) return;
 
-  const handleHome = () => {
-    navigate('/');
-  };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntry = entries.find((entry) => entry.isIntersecting);
+        if (!visibleEntry) return;
+        const matched = visibleSections.find(
+          (section) => section.anchorId === visibleEntry.target.id
+        );
+        if (matched) {
+          setActiveSectionId(matched.id);
+        }
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0.05 }
+    );
 
-  if (loading) {
+    articleElements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [viewMode, visibleSections]);
+
+  // Sentinela de paginação infinita automática
+  const sentinelRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (paginationObserverRef.current) {
+        paginationObserverRef.current.disconnect();
+      }
+      if (
+        !node ||
+        hasSearchFilter ||
+        !hasNextPage ||
+        isFetchingNextPage ||
+        Boolean(nextPageErrorMessage)
+      ) {
+        return;
+      }
+
+      paginationObserverRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            loadNextPage();
+          }
+        },
+        { rootMargin: '280px 0px' }
+      );
+
+      paginationObserverRef.current.observe(node);
+    },
+    [hasSearchFilter, hasNextPage, isFetchingNextPage, nextPageErrorMessage, loadNextPage]
+  );
+
+  const handleOpenLightbox = useCallback(
+    (section: FeedSectionViewModel, mediaIndex: number = 0) => {
+      markStoryViewed(section.id);
+      if (section.mediaCount === 0) return;
+      setActiveLightbox({ section, initialIndex: mediaIndex });
+    },
+    [markStoryViewed]
+  );
+
+  const handleSelectPhotoWallItem = useCallback(
+    (photo: FeedPhotoWallItem) => {
+      const parentSection = sectionsById.get(photo.sectionId);
+      if (!parentSection) return;
+      handleOpenLightbox(parentSection, photo.mediaIndex);
+    },
+    [sectionsById, handleOpenLightbox]
+  );
+
+  const handleJumpToSection = useCallback((section: FeedSectionViewModel) => {
+    setActiveSectionId(section.id);
+    const element = document.getElementById(section.anchorId);
+    element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  const handleShareSection = useCallback(async (section: FeedSectionViewModel) => {
+    const result = await shareFeedSection(section);
+    if (result === ShareResultKind.COPIED_LINK) {
+      setCopiedSectionId(section.id);
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+      }
+      copyTimerRef.current = setTimeout(() => {
+        setCopiedSectionId(null);
+      }, FEED_COPY_FEEDBACK_DURATION_MS);
+    }
+  }, []);
+
+  const handleScrollTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  if (isInitialLoading) {
     return (
-      <Container maxWidth={false} sx={feedContainerSx}>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-        >
-          {[...Array(2)].map((_, i) => (
-            <SectionSkeleton key={i} />
-          ))}
-        </motion.div>
-      </Container>
+      <Box
+        data-testid={FEED_TEST_IDS.PAGE_ROOT}
+        sx={{ minHeight: '100vh', bgcolor: FEED_PALETTE.canvas }}
+      >
+        <FeedLoadingSkeleton />
+      </Box>
     );
   }
 
-  if (error) {
+  if (isMissingConfig || initialErrorMessage) {
     return (
-      <Container maxWidth={false} sx={feedContainerSx}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Alert
-            severity="error"
-            sx={{
-              borderRadius: { xs: 3, md: 4 },
-              boxShadow: 2,
-              fontSize: { xs: '0.9rem', md: '1rem' },
-              p: { xs: 2, md: 3 },
-            }}
-            action={
-              <Button color="inherit" size="small" onClick={handleRefresh}>
-                Tentar Novamente
-              </Button>
-            }
-          >
-            {error}
-          </Alert>
-        </motion.div>
-      </Container>
-    );
-  }
-
-  if (!section) {
-    return (
-      <Container maxWidth={false} sx={feedContainerSx}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Paper
-            elevation={1}
-            sx={{
-              p: 6,
-              textAlign: 'center',
-              borderRadius: { xs: 3, md: 4 },
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
-            }}
-          >
-            <Typography
-              variant="h5"
-              color="text.secondary"
-              sx={{
-                fontSize: { xs: '1.3rem', md: '1.5rem' },
-                mb: 2,
-              }}
-            >
-              📰 Feed de Notícias
-            </Typography>
-            <Typography color="text.secondary" sx={{ mb: 3 }}>
-              O feed de notícias do Clubinho ainda não possui conteúdo.
-            </Typography>
-            <Button
-              variant="contained"
-              onClick={handleRefresh}
-              startIcon={<RefreshIcon />}
-              sx={{
-                bgcolor: 'primary.main',
-                '&:hover': {
-                  bgcolor: 'primary.dark',
-                },
-              }}
-            >
-              Atualizar Feed
-            </Button>
-          </Paper>
-        </motion.div>
-      </Container>
+      <Box
+        data-testid={FEED_TEST_IDS.PAGE_ROOT}
+        sx={{ minHeight: '100vh', bgcolor: FEED_PALETTE.canvas }}
+      >
+        <FeedErrorState
+          message={
+            isMissingConfig
+              ? FEED_MESSAGES.MISSING_CONFIG
+              : (initialErrorMessage ?? FEED_MESSAGES.LOAD_ERROR)
+          }
+          isRetrying={isRefreshing}
+          onRetry={() => {
+            void refreshFeed();
+          }}
+          onNavigateHome={() => navigate(FEED_ROUTES.HOME)}
+        />
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth={false} sx={feedContainerSx}>
+    <Box
+      data-testid={FEED_TEST_IDS.PAGE_ROOT}
+      sx={{
+        minHeight: '100vh',
+        bgcolor: FEED_PALETTE.canvas,
+        pb: { xs: 5, md: 8 },
+      }}
+    >
+      <FeedHeroBanner
+        title={FEED_MESSAGES.DEFAULT_TITLE}
+        description={pageMeta?.description ?? FEED_MESSAGES.DEFAULT_SUBTITLE}
+        totalSections={totalSections}
+        canUploadPhotos={canUploadPhotos}
+        canManageFeed={canManageFeed}
+        isRefreshing={isRefreshing}
+        onNavigateHome={() => navigate(FEED_ROUTES.HOME)}
+        onNavigateUpload={() => navigate(FEED_ROUTES.UPLOAD_PHOTOS)}
+        onNavigateManage={() => navigate(FEED_ROUTES.ADMIN_MEDIA)}
+        onRefresh={() => {
+          void refreshFeed();
+        }}
+      />
 
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+      <Container
+        data-testid="clubinho-feed-content"
+        maxWidth={false}
+        disableGutters
+        sx={{ width: FEED_CONTAINER_WIDTH, maxWidth: FEED_CONTENT_MAX_WIDTH, mx: 'auto' }}
       >
-        <Paper
-          elevation={2}
-          sx={{
-            p: { xs: 2, sm: 4 },
-            mb: { xs: 2, sm: 6 },
-            borderRadius: 4,
-            background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '50%',
-              zIndex: 0,
-            }}
-          />
+        {sections.length === 0 ? (
+          <Box sx={{ pt: { xs: 4, md: 6 } }}>
+            <FeedEmptyState
+              canUploadPhotos={canUploadPhotos}
+              isRefreshing={isRefreshing}
+              onRefresh={() => {
+                void refreshFeed();
+              }}
+              onNavigateUpload={() => navigate(FEED_ROUTES.UPLOAD_PHOTOS)}
+            />
+          </Box>
+        ) : (
+          <>
+            <FeedControlBar
+              viewMode={viewMode}
+              searchQuery={searchQuery}
+              visibleCount={visibleSections.length}
+              loadedCount={sections.length}
+              totalPhotosCount={visiblePhotos.length}
+              onViewModeChange={setViewMode}
+              onSearchChange={setSearchQuery}
+              onClearSearch={() => setSearchQuery('')}
+            />
 
-          <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Box
-              display="flex"
-              alignItems={{ xs: 'flex-start', sm: 'center' }}
-              justifyContent="space-between"
-              mb={{ xs: 1.5, sm: 2 }}
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              gap={{ xs: 1.5, sm: 2 }}
-            >
-              <Box display="flex" alignItems="center" gap={2}>
-                <IconButton
-                  onClick={handleHome}
+            {visibleSections.length === 0 ? (
+              <Paper
+                data-testid={FEED_TEST_IDS.FILTER_EMPTY_STATE}
+                elevation={0}
+                sx={{
+                  maxWidth: 620,
+                  mx: 'auto',
+                  my: { xs: 3, md: 5 },
+                  p: { xs: 3.5, sm: 5 },
+                  textAlign: 'center',
+                  borderRadius: 4,
+                  bgcolor: '#ffffff',
+                  border: `1px dashed ${FEED_PALETTE.borderStrong}`,
+                }}
+              >
+                <FilterAltOffOutlinedIcon
+                  sx={{ fontSize: 40, color: FEED_PALETTE.inkMuted, mb: 1 }}
+                />
+                <Typography
+                  component="h2"
                   sx={{
-                    bgcolor: 'rgba(255,255,255,0.2)',
-                    color: 'white',
+                    fontSize: '1.2rem',
+                    fontWeight: 800,
+                    color: FEED_PALETTE.inkPrimary,
+                    mb: 0.75,
+                  }}
+                >
+                  {FEED_MESSAGES.FILTER_EMPTY_TITLE}
+                </Typography>
+                <Typography sx={{ color: FEED_PALETTE.inkSecondary, mb: 2.5 }}>
+                  {FEED_MESSAGES.FILTER_EMPTY_DESCRIPTION}
+                </Typography>
+                <Button
+                  type="button"
+                  variant="contained"
+                  onClick={() => setSearchQuery('')}
+                  sx={{
+                    minHeight: FEED_TOUCH_TARGET_PX,
+                    px: 3,
+                    borderRadius: 99,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    bgcolor: FEED_PALETTE.brandForest,
+                    color: '#ffffff',
                     '&:hover': {
-                      bgcolor: 'rgba(255,255,255,0.3)',
+                      bgcolor: FEED_PALETTE.brandForestDeep,
                     },
                   }}
                 >
-                  <HomeIcon />
-                </IconButton>
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
-                  sx={{
-                    fontSize: { xs: '1.5rem', md: '2rem' },
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  📰 Feed Clubinho
-                </Typography>
-              </Box>
-
+                  Limpar filtro
+                </Button>
+              </Paper>
+            ) : viewMode === FeedViewMode.TIMELINE ? (
               <Box
-                display="flex"
-                gap={{ xs: 1, sm: 1 }}
-                alignItems="center"
-                flexWrap="wrap"
-                width={{ xs: '100%', sm: 'auto' }}
-                justifyContent={{ xs: 'space-between', sm: 'flex-end' }}
-              >
-                {isAuthenticated && (
-                  <Button
-                    onClick={() => navigate('/imagens-clubinho')}
-                    variant="contained"
-                    sx={{
-                      background: 'linear-gradient(45deg, #ff6b6b, #ff8e8e)',
-                      color: 'white',
-                      fontWeight: 'bold',
-                      borderRadius: 3,
-                      px: { xs: 2, sm: 3 },
-                      py: { xs: 1, sm: 1.5 },
-                      fontSize: { xs: '0.7rem', sm: '0.875rem' },
-                      textTransform: 'none',
-                      boxShadow: '0 4px 12px rgba(255, 107, 107, 0.4)',
-                      '&:hover': {
-                        background: 'linear-gradient(45deg, #ff5252, #ff7979)',
-                        boxShadow: '0 6px 16px rgba(255, 107, 107, 0.5)',
-                        transform: 'translateY(-2px)',
-                      },
-                      transition: 'all 0.3s ease',
-                      whiteSpace: 'nowrap',
-                      minWidth: { xs: 'auto', sm: 'auto' },
-                      maxWidth: { xs: 'calc(100% - 50px)', sm: 'none' },
-                      width: { xs: 'auto', sm: 'auto' },
-                    }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        display: { xs: 'none', sm: 'inline' }
-                      }}
-                    >
-                      📸 Envie fotos do seu Clubinho para todos verem
-                    </Box>
-                    <Box
-                      component="span"
-                      sx={{
-                        display: { xs: 'inline', sm: 'none' }
-                      }}
-                    >
-                      📸 Envie suas fotos
-                    </Box>
-                  </Button>
-                )}
-                <Tooltip title="Atualizar Feed">
-                  <IconButton
-                    onClick={handleRefresh}
-                    sx={{
-                      bgcolor: 'rgba(255,255,255,0.2)',
-                      color: 'white',
-                      '&:hover': {
-                        bgcolor: 'rgba(255,255,255,0.3)',
-                      },
-                      fontSize: { xs: '1rem', sm: '1.2rem' },
-                      width: { xs: 36, sm: 40 },
-                      height: { xs: 36, sm: 40 },
-                    }}
-                  >
-                    <RefreshIcon fontSize="inherit" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-
-            {section.description && (
-              <Typography
-                variant="h5"
-                fontWeight="600"
                 sx={{
-                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
-                  opacity: 0.95,
-                  lineHeight: 1.6,
-                  maxWidth: '800px',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-                }}
-              >
-                {section.description}
-              </Typography>
-            )}
-
-          </Box>
-        </Paper>
-      </motion.div>
-
-      <AnimatePresence>
-        {sectionsList.length > 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {sectionsList.map((sectionItem, index) => (
-              <motion.div
-                key={sectionItem.id}
-                ref={index === sectionsList.length - 1 ? lastSectionRef : null}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                style={{
-                  marginBottom: index < sectionsList.length - 1 ? theme.spacing(2) : 0
-                }}
-              >
-                <ClubinhoSectionImageView
-                  caption={sectionItem.caption}
-                  description={sectionItem.description}
-                  mediaItems={sectionItem.mediaItems}
-                  createdAt={sectionItem.createdAt ? new Date(sectionItem.createdAt) : undefined}
-                  updatedAt={sectionItem.updatedAt ? new Date(sectionItem.updatedAt) : undefined}
-                />
-              </motion.div>
-            ))}
-
-            {loadingMore && (
-              <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                py={4}
-              >
-                <CircularProgress size={40} />
-              </Box>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Paper
-              elevation={1}
-              sx={{
-                p: 6,
-                textAlign: 'center',
-                borderRadius: { xs: 3, md: 4 },
-                background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
-              }}
-            >
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ mb: 2 }}
-              >
-                📰 Nenhuma publicação disponível
-              </Typography>
-              <Typography color="text.secondary" sx={{ mb: 3 }}>
-                O feed de notícias ainda não possui publicações.
-              </Typography>
-              <Button
-                variant="contained"
-                onClick={handleRefresh}
-                startIcon={<RefreshIcon />}
-                sx={{
-                  bgcolor: 'primary.main',
-                  '&:hover': {
-                    bgcolor: 'primary.dark',
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    md: 'minmax(0, 1fr) 290px',
                   },
+                  gap: { xs: 2.5, md: 3 },
+                  alignItems: 'start',
                 }}
               >
-                Atualizar Feed
-              </Button>
-            </Paper>
-          </motion.div>
+                <Stack
+                  data-testid={FEED_TEST_IDS.TIMELINE_STREAM}
+                  spacing={{ xs: 2.5, sm: 3.5 }}
+                  sx={{ minWidth: 0 }}
+                >
+                  {visibleSections.map((section) => (
+                    <FeedPostCard
+                      key={section.id}
+                      section={section}
+                      isCelebrated={isCelebrated(section.id)}
+                      isCopied={copiedSectionId === section.id}
+                      onToggleCelebrate={handleCelebrate}
+                      onShare={(targetSection) => {
+                        void handleShareSection(targetSection);
+                      }}
+                      onOpenLightbox={handleOpenLightbox}
+                    />
+                  ))}
+                </Stack>
+
+                <FeedTimelineRail
+                  sections={visibleSections}
+                  activeSectionId={activeSectionId}
+                  canUploadPhotos={canUploadPhotos}
+                  onJumpToSection={handleJumpToSection}
+                  onNavigateUpload={() => navigate(FEED_ROUTES.UPLOAD_PHOTOS)}
+                  onScrollTop={handleScrollTop}
+                />
+              </Box>
+            ) : viewMode === FeedViewMode.BENTO ? (
+              <FeedBentoMural
+                sections={visibleSections}
+                isCelebrated={isCelebrated}
+                onToggleCelebrate={handleCelebrate}
+                onOpenLightbox={handleOpenLightbox}
+              />
+            ) : (
+              <FeedPhotoWall photos={visiblePhotos} onSelectPhoto={handleSelectPhotoWallItem} />
+            )}
+
+            {/* Rodapé de paginação progressiva */}
+            <Box sx={{ mt: { xs: 4, md: 5 } }}>
+              {nextPageErrorMessage && (
+                <Alert
+                  severity="warning"
+                  sx={{ maxWidth: 640, mx: 'auto', mb: 2, borderRadius: 3 }}
+                  action={
+                    <Button
+                      type="button"
+                      color="inherit"
+                      size="small"
+                      onClick={loadNextPage}
+                      sx={{
+                        minHeight: FEED_TOUCH_TARGET_PX,
+                        fontWeight: 700,
+                        textTransform: 'none',
+                      }}
+                    >
+                      Tentar novamente
+                    </Button>
+                  }
+                >
+                  {nextPageErrorMessage}
+                </Alert>
+              )}
+
+              {hasNextPage && (
+                <Stack alignItems="center" spacing={1.5}>
+                  <Box ref={sentinelRef} sx={{ width: '100%', height: 4 }} />
+                  <Button
+                    data-testid={FEED_TEST_IDS.LOAD_MORE_BUTTON}
+                    type="button"
+                    variant="outlined"
+                    disabled={isFetchingNextPage}
+                    onClick={loadNextPage}
+                    startIcon={
+                      isFetchingNextPage ? (
+                        <CircularProgress size={18} color="inherit" />
+                      ) : (
+                        <ExpandMoreRoundedIcon />
+                      )
+                    }
+                    sx={{
+                      minHeight: 48,
+                      px: 3.5,
+                      borderRadius: 99,
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      color: FEED_PALETTE.brandForest,
+                      borderColor: FEED_PALETTE.borderStrong,
+                      bgcolor: '#ffffff',
+                      '&:hover': {
+                        bgcolor: 'rgba(129, 215, 66, 0.1)',
+                        borderColor: FEED_PALETTE.brandForest,
+                      },
+                    }}
+                  >
+                    {isFetchingNextPage ? 'Carregando publicações...' : 'Carregar mais publicações'}
+                  </Button>
+                </Stack>
+              )}
+
+              {!hasNextPage && !hasSearchFilter && visibleSections.length > 0 && (
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="center"
+                  spacing={2}
+                  sx={{ py: 2, opacity: 0.8 }}
+                >
+                  <Box sx={{ width: 48, height: 1, bgcolor: FEED_PALETTE.borderStrong }} />
+                  <Typography
+                    variant="caption"
+                    sx={{ fontWeight: 700, color: FEED_PALETTE.inkMuted }}
+                  >
+                    {FEED_MESSAGES.END_OF_FEED}
+                  </Typography>
+                  <Box sx={{ width: 48, height: 1, bgcolor: FEED_PALETTE.borderStrong }} />
+                </Stack>
+              )}
+            </Box>
+          </>
         )}
-      </AnimatePresence>
-    </Container>
+      </Container>
+
+      <FeedLightboxDialog activeState={activeLightbox} onClose={() => setActiveLightbox(null)} />
+    </Box>
   );
 }

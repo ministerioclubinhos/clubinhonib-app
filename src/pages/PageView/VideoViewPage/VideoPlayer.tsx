@@ -1,17 +1,12 @@
 import { 
-  Typography, 
   Box, 
   Alert,
   Paper,
-  useTheme,
-  useMediaQuery,
 } from "@mui/material";
 import { MediaItem, MediaUploadType, MediaPlatform } from "@/store/slices/types";
 import { getYouTubeId } from "@/utils/video";
 
 const VideoPlayer = ({ video }: { video: MediaItem }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const renderUploadVideo = () => (
     <Paper
@@ -114,7 +109,7 @@ const VideoPlayer = ({ video }: { video: MediaItem }) => {
   }
 
   return (
-    <Alert 
+    <Alert data-testid="page-view-video-view-page-video-player"
       severity="warning" 
       sx={{ 
         borderRadius: { xs: 3, md: 4 },

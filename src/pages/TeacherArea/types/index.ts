@@ -1,27 +1,28 @@
+import type { MyProfile } from '@/features/profile/types';
+
 export interface BannerSectionProps {
   showWeekBanner: boolean;
   showMeditationBanner: boolean;
 }
 
-export interface MotivationSectionProps {
-  motivationText: string;
+export interface WelcomeSectionProps {
+  userName?: string;
+  user?: MyProfile | null;
+  showVerse?: boolean;
 }
 
 export interface TeacherContentProps {
   userName?: string;
 }
 
-export interface SpecialFamilyCalloutProps {
-  
-}
+/** Sem propriedades: o componente se vira sozinho. */
+export type SpecialFamilyCalloutProps = Record<string, never>;
 
-export interface IdeasSharingBannerProps {
-  
-}
+/** Sem propriedades: o componente se vira sozinho. */
+export type IdeasSharingBannerProps = Record<string, never>;
 
-export interface InformativeBannerProps {
-  
-}
+/** Sem propriedades: o componente se vira sozinho. */
+export type InformativeBannerProps = Record<string, never>;
 
 export interface SectionCardProps {
   icon: React.ReactNode;

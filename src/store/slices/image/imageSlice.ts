@@ -1,27 +1,17 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RouteData } from '@/store/slices/route/routeSlice';
-import { MediaItem } from '@/store/slices/types';
+import type {
+  ImagePageResponse,
+  ImageSectionResponse,
+} from '@/features/image-pages/types';
 
-export interface SectionData {
-  id?: string;
-  public: boolean;
-  caption: string;
-  description: string;
-  mediaItems: MediaItem[];
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-}
+/** @deprecated Use `ImageSectionResponse` de `@/features/image-pages`. */
+export type SectionData = ImageSectionResponse;
 
-export interface ImagePageData {
-  id?: string;
-  public: boolean;
-  title?: string | '';
-  description: string;
-  createdAt?: string;
-  updatedAt?: string;
-  sections: SectionData[];
-  route?: RouteData;
-}
+/**
+ * Galeria selecionada para edição. O tipo espelha a resposta da API: o `route`
+ * devolvido é um recorte, e título/descrição das mídias são opcionais.
+ */
+export type ImagePageData = ImagePageResponse;
 
 interface ImageState {
   imageData: ImagePageData | null;

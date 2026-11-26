@@ -10,8 +10,10 @@ import {
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-import api from "@/config/axiosConfig";
-import { WeekMaterialPageData } from "@/store/slices/week-material/weekMaterialSlice";
+import {
+  getWeekMaterial,
+  WeekMaterialResponse,
+} from "@/features/week-materials";
 import { MediaItem } from "@/store/slices/types";
 import MediaDocumentPreviewModal from "@/utils/MediaDocumentPreviewModal";
 import {
@@ -25,7 +27,7 @@ import {
 } from "./components";
 
 const SpecialFamilyDayPage = () => {
-  const [data, setData] = useState<WeekMaterialPageData | null>(null);
+  const [data, setData] = useState<WeekMaterialResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -43,10 +45,8 @@ const SpecialFamilyDayPage = () => {
       }
 
       try {
-        const response = await api.get<WeekMaterialPageData>(
-          `/week-material-pages/${sectionId}`
-        );
-        if (active) setData(response.data);
+        const material = await getWeekMaterial(sectionId);
+        if (active) setData(material);
       } catch {
         if (active) {
           setError("Erro ao carregar os dados do Dia Especial da Família.");
@@ -87,7 +87,7 @@ const SpecialFamilyDayPage = () => {
 
   if (loading) {
     return (
-      <ThemeProvider theme={familyDayTheme}>
+      <ThemeProvider data-testid="special-familiy-day-special-family-day-page" theme={familyDayTheme}>
         <Box
           sx={{
             minHeight: "72vh",
@@ -123,7 +123,7 @@ const SpecialFamilyDayPage = () => {
 
   if (error || !data) {
     return (
-      <ThemeProvider theme={familyDayTheme}>
+      <ThemeProvider data-testid="special-familiy-day-special-family-day-page" theme={familyDayTheme}>
         <Box
           sx={{
             minHeight: "68vh",
@@ -149,7 +149,7 @@ const SpecialFamilyDayPage = () => {
   }
 
   return (
-    <ThemeProvider theme={familyDayTheme}>
+    <ThemeProvider data-testid="special-familiy-day-special-family-day-page" theme={familyDayTheme}>
       <Box
         sx={{
           minHeight: "100vh",

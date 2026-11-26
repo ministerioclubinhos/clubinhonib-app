@@ -1,16 +1,14 @@
 import React from 'react';
-import { Box, Container, Typography, useTheme } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 
 interface AboutLayoutProps {
   children: React.ReactNode;
 }
 
 const AboutLayout: React.FC<AboutLayoutProps> = ({ children }) => {
-  const theme = useTheme();
 
   return (
-    <Box
-      component="main"
+    <Box data-testid="about-about-layout"
       sx={{
         minHeight: 'calc(100vh - 128px)',
         background: 'linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 50%, #f0f8ff 100%)',

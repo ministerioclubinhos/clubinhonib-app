@@ -1,39 +1,26 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import apiAxios from '@/config/axiosConfig';
 
-import {
-  PersonalData,
-  UserPreferences,
-  ProfileImage,
-  UserRole,
-  TeacherProfileLite,
-  CoordinatorProfileLite,
-} from '@/types/shared';
+import type { MyProfile } from '@/features/profile/types';
+import { getErrorMessage } from '@/utils/apiError';
 import { authService } from './auth.service';
 import { clearAuthTokens, readAuthTokens, sanitizeToken, writeAuthTokens } from './authStorage';
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  cpf?: string | null;
-  active?: boolean;
-  commonUser?: boolean;
-  phone?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  completed?: boolean;
-  teacherProfile?: TeacherProfileLite | null;
-  coordinatorProfile?: CoordinatorProfileLite | null;
-  personalData?: PersonalData;
-  preferences?: UserPreferences;
-  image?: ProfileImage;
-}
+/**
+ * O usuário logado.
+ *
+ * É exatamente o que `GET /auth/me` devolve — o mesmo `MyProfileResponseDto`
+ * de `GET /profile`. Antes quase todo campo era opcional aqui porque
+ * `/auth/me` deixava `active`, `completed`, `createdAt` e `updatedAt` de fora;
+ * agora os dois endpoints respondem o contrato inteiro.
+ */
+export type User = MyProfile;
 
 interface GoogleUser {
   name: string;
   email: string;
+  /** Comprovante da API que autoriza completar o cadastro desta conta. */
+  registrationToken: string;
 }
 
 export interface LoginResponse {
@@ -86,23 +73,21 @@ export const fetchCurrentUser = createAsyncThunk<User, void, { rejectValue: stri
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 'Erro ao buscar usuário';
-      return rejectWithValue(errorMessage);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Erro ao buscar usuário'));
     }
   }
 );
 
 export const linkTeacherClub = createAsyncThunk<User, number, { rejectValue: string }>(
   'auth/linkTeacherClub',
-  async (clubNumber, { dispatch, rejectWithValue }) => {
+  async (clubNumber, { rejectWithValue }) => {
     try {
       await authService.linkTeacherClub(clubNumber);
       const user = await authService.getCurrentUser();
       return user;
-    } catch (error: any) {
-      const msg = error?.response?.data?.message || 'Erro ao vincular clubinho';
-      return rejectWithValue(msg);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Erro ao vincular clubinho'));
     }
   }
 );
@@ -146,7 +131,7 @@ export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
       } else {
         dispatch(logout());
       }
-    } catch (e: any) {
+    } catch {
       return rejectWithValue('Falha ao inicializar auth');
     }
   }

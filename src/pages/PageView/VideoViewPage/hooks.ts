@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/slices";
 import { setVideoData } from "@/store/slices/video/videoSlice";
 import { fetchRoutes } from "@/store/slices/route/routeSlice";
-import { videoPageApi, toVideoPageData } from "./api";
+import { videoPageApi } from "./api";
 
 export const useVideoPage = (idToFetch: string) => {
     const dispatch = useDispatch<AppDispatch>();
@@ -23,8 +23,7 @@ export const useVideoPage = (idToFetch: string) => {
         try {
             setLoading(true);
             setError(null);
-            const dto = await videoPageApi.getById(idToFetch);
-            const data = toVideoPageData(dto);
+            const data = await videoPageApi.getById(idToFetch);
             dispatch(setVideoData(data));
         } catch (e) {
             console.error("Erro ao carregar página de vídeos:", e);
@@ -35,17 +34,7 @@ export const useVideoPage = (idToFetch: string) => {
     }, [dispatch, idToFetch]);
 
     useEffect(() => {
-        let mounted = true;
-        (async () => {
-            try {
-                await load();
-            } finally {
-                if (!mounted) return;
-            }
-        })();
-        return () => {
-            mounted = false;
-        };
+        void load();
     }, [load]);
 
     const deletePage = useCallback(

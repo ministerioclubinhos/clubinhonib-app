@@ -15,11 +15,11 @@ interface Props {
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
-    children: React.ReactElement<any, any>;
+    children: React.ReactElement;
   },
   ref: React.Ref<unknown>,
 ) {
-  return <Slide direction="up" ref={ref} {...props} />;
+  return <Slide data-testid="page-view-ideas-material-viewpage-ideas-video-player-view-transition" direction="up" ref={ref} {...props} />;
 });
 
 export default function IdeasVideoPlayerView({ video }: Props) {
@@ -247,7 +247,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
 
   return (
     <>
-      <Box sx={{
+      <Box data-testid="page-view-ideas-material-viewpage-ideas-video-player-view" sx={{
         width: '100%',
         p: { xs: 1.5, sm: 2, md: 3 },
         height: '100%',
@@ -268,20 +268,16 @@ export default function IdeasVideoPlayerView({ video }: Props) {
                 variant="subtitle1"
                 fontWeight="bold"
                 color={theme.palette.error.main}
-                sx={{
-                  fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-                  lineHeight: 1.3,
-                }}
+                sx={{ lineHeight: 1.3 }}
               >
                 {video.title}
               </Typography>
             </Box>
             <Tooltip title="Expandir vídeo">
               <IconButton
-                size="small"
                 onClick={() => setOpenModal(true)}
-                sx={{ color: theme.palette.text.secondary }}
-              >
+                sx={{ color: theme.palette.text.secondary, width: 44, height: 44 }}
+               aria-label={`Expandir ${video.title || 'vídeo'}`}>
                 <FullscreenIcon />
               </IconButton>
             </Tooltip>
@@ -296,10 +292,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
               variant="body2"
               color="text.secondary"
               mb={{ xs: 1.5, sm: 2 }}
-              sx={{
-                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
-                lineHeight: 1.4,
-              }}
+              sx={{ lineHeight: 1.5 }}
             >
               {video.description}
             </Typography>
@@ -319,7 +312,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
       </Box>
 
       {/* Expanded Video Modal */}
-      <Dialog
+      <Dialog data-testid="page-view-ideas-material-viewpage-ideas-video-player-view"
         open={openModal}
         slots={{ transition: Transition }}
         keepMounted
@@ -347,7 +340,7 @@ export default function IdeasVideoPlayerView({ video }: Props) {
           <Typography variant="h6" component="div">
             {video.title}
           </Typography>
-          <IconButton onClick={() => setOpenModal(false)} sx={{ color: 'white' }}>
+          <IconButton onClick={() => setOpenModal(false)} sx={{ color: 'white' }} aria-label="Fechar">
             <CloseIcon />
           </IconButton>
         </Box>

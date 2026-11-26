@@ -9,12 +9,33 @@ import {
 } from '@/utils/apiError';
 import { AuthErrorCode } from '@/types/api-error';
 
-const baseURL = import.meta.env.VITE_API_URL;
+// `?.` porque os testes de regra importam este módulo no Node, onde o Vite
+// não injeta `import.meta.env`; no navegador o valor é sempre o do ambiente.
+const baseURL = import.meta.env?.VITE_API_URL;
 
 const apiAxios = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' },
 });
+
+/**
+ * `skipGlobalError` faz parte do contrato público do cliente.
+ *
+ * Sem declará-la, cada chamada que precisava tratar o erro localmente
+ * escrevia `as any` para passar pelo type-check — e o `any` apagava a
+ * verificação do resto da configuração junto.
+ */
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    /**
+     * O interceptor não mostra a falha: quem chamou dá o retorno na própria
+     * tela. Use só quando o fluxo local mostra a mensagem por completo.
+     */
+    skipGlobalError?: boolean;
+    /** Um 401 desta chamada não tenta renovar a sessão (ex.: o próprio logout). */
+    skipAuthRefresh?: boolean;
+  }
+}
 
 const refreshAxios = axios.create({
   baseURL,
@@ -71,6 +92,8 @@ const isCredentialEndpoint = (url?: string) => {
     '/auth/logout',
     '/auth/forgot-password',
     '/auth/reset-password',
+    '/auth/verify-email',
+    '/auth/resend-verification',
   ]).has(path);
 };
 

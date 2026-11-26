@@ -8,12 +8,15 @@ import {
   CircularProgress,
   Button,
   useTheme,
-  Grid,
+  useMediaQuery,
+  Grid2,
   Chip,
   Collapse,
 } from '@mui/material';
 import { Refresh, Block, PersonOff, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useWeekCheck, useCurrentWeek } from '../hooks';
+import { CLUBS_PAGE_SIZE } from '../constants';
+import type { WeekListFilters } from '../types';
 import { ClubsListTable } from './ClubsListTable';
 import { NoClubsMessage } from './NoClubsMessage';
 import { WeekNavigationHeader } from './WeekNavigationHeader';
@@ -60,27 +63,6 @@ const academicWeekToCalendarWeek = (
   };
 };
 
-const calendarWeekToAcademicWeek = (
-  calendarYear: number,
-  calendarWeek: number,
-  periodStartDate: string | null
-): { academicYear: number; academicWeek: number } | null => {
-  if (!periodStartDate) return null;
-  
-  const startDate = dayjs(periodStartDate);
-  const targetDate = dayjs().year(calendarYear).week(calendarWeek).startOf('week');
-  
-  const weeksDiff = targetDate.diff(startDate.startOf('week'), 'week');
-  const academicWeek = weeksDiff + 1;
-  
-  if (academicWeek < 1) return null;
-  
-  return {
-    academicYear: startDate.year(),
-    academicWeek,
-  };
-};
-
 export const ControlDashboard: React.FC = () => {
   const theme = useTheme();
   
@@ -96,12 +78,24 @@ export const ControlDashboard: React.FC = () => {
   const [expandedClubs, setExpandedClubs] = React.useState<Set<string>>(new Set());
   const [expandedInactiveInfo, setExpandedInactiveInfo] = React.useState(false);
   const [clubsPage, setClubsPage] = React.useState(1);
-  const [clubsLimit, setClubsLimit] = React.useState(50);
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [clubsLimit, setClubsLimit] = React.useState<number>(
+    isMobile ? CLUBS_PAGE_SIZE.mobile : CLUBS_PAGE_SIZE.desktop,
+  );
   
   const [statusFilter, setStatusFilter] = React.useState<string>('all');
   const [severityFilter, setSeverityFilter] = React.useState<string>('all');
   const [weekdayFilter, setWeekdayFilter] = React.useState<string>('all');
   const [hasProblemsFilter, setHasProblemsFilter] = React.useState<boolean | null>(null);
+  const listFilters = React.useMemo<WeekListFilters>(
+    () => ({
+      ...(statusFilter !== 'all' && { status: statusFilter }),
+      ...(severityFilter !== 'all' && { severity: severityFilter }),
+      ...(weekdayFilter !== 'all' && { weekday: weekdayFilter }),
+      ...(hasProblemsFilter !== null && { hasProblems: hasProblemsFilter }),
+    }),
+    [statusFilter, severityFilter, weekdayFilter, hasProblemsFilter],
+  );
   
   const { 
     data, 
@@ -112,7 +106,8 @@ export const ControlDashboard: React.FC = () => {
     academicYear !== null ? academicYear : undefined, 
     academicWeek !== null ? academicWeek : undefined, 
     clubsPage, 
-    clubsLimit
+    clubsLimit,
+    listFilters,
   );
   
   React.useEffect(() => {
@@ -159,46 +154,21 @@ export const ControlDashboard: React.FC = () => {
     setExpandedClubs(new Set());
   }, [academicYear, academicWeek]);
 
-  const filteredClubs = React.useMemo(() => {
-    if (!data?.clubs) return [];
-    
-    let filtered = [...data.clubs];
+  // O back já devolve a lista filtrada e paginada.
+  // Outra semana também recomeça da primeira página.
+  React.useEffect(() => {
+    setClubsPage(1);
+    setExpandedClubs(new Set());
+  }, [academicYear, academicWeek]);
 
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(club => club.status === statusFilter);
-    }
+  // Mudar o filtro volta para a primeira página: a lista nova pode ser menor que a atual.
+  function changeFilter(apply: () => void) {
+    apply();
+    setClubsPage(1);
+    setExpandedClubs(new Set());
+  }
 
-    if (severityFilter !== 'all') {
-      filtered = filtered.filter(club => {
-        if (!club.indicators || club.indicators.length === 0) return false;
-        return club.indicators.some(ind => ind.severity === severityFilter);
-      });
-    }
-
-    if (weekdayFilter !== 'all') {
-      filtered = filtered.filter(club => {
-        const clubWeekday = (club.weekday || '').toLowerCase();
-        return clubWeekday === weekdayFilter.toLowerCase();
-      });
-    }
-
-    if (hasProblemsFilter !== null) {
-      if (hasProblemsFilter) {
-        filtered = filtered.filter(club => 
-          club.status !== 'ok' && 
-          club.status !== 'pending' &&
-          club.status !== 'exception' && 
-          club.status !== 'out_of_period'
-        );
-      } else {
-        filtered = filtered.filter(club => club.status === 'ok');
-      }
-    }
-
-    return filtered;
-  }, [data?.clubs, statusFilter, severityFilter, weekdayFilter, hasProblemsFilter]);
-
-  const clubsToDisplay = filteredClubs;
+  const clubsToDisplay = data?.clubs ?? [];
 
   const currentWeekData = data?.currentWeek || currentWeekInfo;
 
@@ -215,13 +185,16 @@ export const ControlDashboard: React.FC = () => {
   const handlePrevWeek = () => {
     if (academicWeek !== null && academicWeek > 1) {
       setAcademicWeek(academicWeek - 1);
-    } else if (academicWeek === 1 && academicYear !== null) {
-    } else {
-      if (currentWeekInfo?.academicYear && currentWeekInfo?.academicWeek) {
-        if (currentWeekInfo.academicWeek > 1) {
-          setAcademicYear(currentWeekInfo.academicYear);
-          setAcademicWeek(currentWeekInfo.academicWeek - 1);
-        }
+      return;
+    }
+
+    // Semana 1 é o início do ano letivo: não há semana anterior para onde ir.
+    if (academicWeek === 1 && academicYear !== null) return;
+
+    if (currentWeekInfo?.academicYear && currentWeekInfo?.academicWeek) {
+      if (currentWeekInfo.academicWeek > 1) {
+        setAcademicYear(currentWeekInfo.academicYear);
+        setAcademicWeek(currentWeekInfo.academicWeek - 1);
       }
     }
   };
@@ -250,7 +223,7 @@ export const ControlDashboard: React.FC = () => {
   };
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8 }}>
+      <Box data-testid="club-control-control-dashboard" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8 }}>
         <CircularProgress size={60} />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
           Carregando dados de controle...
@@ -260,62 +233,17 @@ export const ControlDashboard: React.FC = () => {
   }
 
   if (error) {
-    const isNetworkError = error && typeof error === 'object' && 'code' in error && error.code === 'ERR_NETWORK';
-    const is404 = error && typeof error === 'object' && 'response' in error && (error as any).response?.status === 404;
-    
     return (
-      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: `2px solid ${theme.palette.error.main}` }}>
+      <Paper data-testid="club-control-control-dashboard" elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `2px solid ${theme.palette.error.main}` }}>
         <Alert severity="error" sx={{ borderRadius: 2, mb: 2 }}>
-          <AlertTitle>❌ Erro ao Carregar Dados do Painel de Controle</AlertTitle>
-          {isNetworkError && (
-            <Typography variant="body2">
-              <strong>Erro de Rede:</strong> Não foi possível conectar ao servidor backend.
-            </Typography>
-          )}
-          {is404 && (
-            <Typography variant="body2">
-              <strong>Endpoint não encontrado (404):</strong> O módulo de controle ainda não está implementado no backend.
-            </Typography>
-          )}
-          {!isNetworkError && !is404 && (
-            <Typography variant="body2">
-              Não foi possível carregar os dados de controle.
-            </Typography>
-          )}
+          <AlertTitle>Não foi possível carregar o painel</AlertTitle>
+          Verifique sua conexão e tente novamente. Se o problema continuar, procure o suporte responsável.
         </Alert>
 
-        <Box sx={{ mb: 2, p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            🔧 Possíveis Soluções:
-          </Typography>
-          <Typography variant="body2" component="ul" sx={{ pl: 2, m: 0 }}>
-            <li>Verifique se o backend está rodando em <code>http://localhost:3000</code></li>
-            <li>Verifique se o módulo de controle está implementado no backend</li>
-            <li>Teste o endpoint manualmente: <code>GET /club-control/dashboard</code></li>
-            <li>Verifique o console do navegador (F12) para mais detalhes</li>
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Button variant="contained" size="small" onClick={() => refetch()} startIcon={<Refresh />}>
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+          <Button variant="contained" onClick={() => refetch()} startIcon={<Refresh />} sx={{ minHeight: 44 }}>
             Tentar Novamente
           </Button>
-          <Button 
-            variant="outlined" 
-            size="small" 
-            onClick={() => window.open('http://localhost:3000/club-control/dashboard', '_blank')}
-          >
-            Testar Endpoint
-          </Button>
-        </Box>
-
-        <Box sx={{ mt: 2, p: 1, bgcolor: 'grey.50', borderRadius: 1, fontSize: '0.75rem', fontFamily: 'monospace', overflow: 'auto', maxHeight: 200 }}>
-          <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
-            Detalhes do erro:
-          </Typography>
-          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-            {error instanceof Error ? error.message : JSON.stringify(error, null, 2)}
-          </pre>
         </Box>
       </Paper>
     );
@@ -323,7 +251,7 @@ export const ControlDashboard: React.FC = () => {
 
   if (!data) {
     return (
-      <Alert severity="warning" sx={{ borderRadius: 2 }}>
+      <Alert data-testid="club-control-control-dashboard" severity="warning" sx={{ borderRadius: 2 }}>
         <AlertTitle>⚠️ Nenhum Dado Disponível</AlertTitle>
         Não há dados disponíveis para esta semana.
       </Alert>
@@ -351,7 +279,7 @@ export const ControlDashboard: React.FC = () => {
 
   return (
 
-<Box sx={{ px: { xs: 1, sm: 2, md: 0 } }}>
+<Box data-testid="club-control-control-dashboard" sx={{ px: { xs: 1, sm: 2, md: 0 } }}>
       <WeekNavigationHeader
         academicWeek={academicWeek}
         academicYear={academicYear}
@@ -391,9 +319,9 @@ export const ControlDashboard: React.FC = () => {
         >
           <Collapse in={expandedInactiveInfo}>
             <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
-              <Grid container spacing={{ xs: 2, sm: 2 }}>
+              <Grid2 container spacing={{ xs: 2, sm: 2 }}>
                 {data.inactiveClubs && data.inactiveClubs.length > 0 && (
-                  <Grid item xs={12} md={6}>
+                  <Grid2 size={{ xs: 12, md: 6 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 }, mb: { xs: 1, sm: 1.5 } }}>
                       <Block sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.warning.main, flexShrink: 0 }} />
                       <Typography 
@@ -421,10 +349,10 @@ export const ControlDashboard: React.FC = () => {
                         />
                       ))}
                     </Box>
-                  </Grid>
+                  </Grid2>
                 )}
                 {data.childrenNotAttending && data.childrenNotAttending.total > 0 && (
-                  <Grid item xs={12} md={6}>
+                  <Grid2 size={{ xs: 12, md: 6 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 }, mb: { xs: 1, sm: 1.5 } }}>
                       <PersonOff sx={{ fontSize: { xs: 18, sm: 20 }, color: theme.palette.error.main, flexShrink: 0 }} />
                       <Typography 
@@ -462,9 +390,9 @@ export const ControlDashboard: React.FC = () => {
                         )}
                       </Box>
                     )}
-                  </Grid>
+                  </Grid2>
                 )}
-              </Grid>
+              </Grid2>
             </Box>
           </Collapse>
           <Box
@@ -517,10 +445,10 @@ export const ControlDashboard: React.FC = () => {
           severityFilter={severityFilter}
           weekdayFilter={weekdayFilter}
           hasProblemsFilter={hasProblemsFilter}
-          onStatusFilterChange={setStatusFilter}
-          onSeverityFilterChange={setSeverityFilter}
-          onWeekdayFilterChange={setWeekdayFilter}
-          onHasProblemsFilterChange={setHasProblemsFilter}
+          onStatusFilterChange={(value) => changeFilter(() => setStatusFilter(value))}
+          onSeverityFilterChange={(value) => changeFilter(() => setSeverityFilter(value))}
+          onWeekdayFilterChange={(value) => changeFilter(() => setWeekdayFilter(value))}
+          onHasProblemsFilterChange={(value) => changeFilter(() => setHasProblemsFilter(value))}
           clubsPage={clubsPage}
           clubsLimit={clubsLimit}
           onPageChange={setClubsPage}

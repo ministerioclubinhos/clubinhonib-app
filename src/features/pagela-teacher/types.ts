@@ -1,32 +1,29 @@
-export type Pagela = {
-  id: string;
-  childId: string;
-  teacherProfileId: string | null;
-  referenceDate: string;
-  year: number;
-  week: number;
-  present: boolean;
-  didMeditation: boolean;
-  recitedVerse: boolean;
-  notes: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-};
+import type { PagelaResponse } from "@/features/pagelas/types";
 
-export type PageDto<T> = { items: T[]; total: number; page: number; limit: number };
+/**
+ * Tipos da área do professor.
+ *
+ * O contrato de `/pagelas` é de `features/pagelas`; aqui ele é reexportado com
+ * os nomes que esta área usa, para os componentes não conhecerem dois donos.
+ */
+export type {
+  PagelaResponse as Pagela,
+  CreatePagelaRequest as CreatePagelaPayload,
+  UpdatePagelaRequest as UpdatePagelaPayload,
+  Paginated as PageDto,
+  PagelaLaunchWindow,
+} from "@/features/pagelas/types";
 
-export type CreatePagelaPayload = {
-  childId: string;
-  teacherProfileId?: string | null;
-  referenceDate: string;
-  week: number;
-  year?: number;
-  present: boolean;
-  didMeditation: boolean;
-  recitedVerse: boolean;
-  notes?: string | null;
-};
+/** Modos do editor de pagela: lançar uma nova ou corrigir uma existente. */
+export enum PagelaEditorMode {
+  CREATE = "create",
+  EDIT = "edit",
+}
 
-export type UpdatePagelaPayload = Partial<Omit<CreatePagelaPayload, "childId">> & {
-  teacherProfileId?: string | null;
-};
+/** O que o editor está fazendo agora; `null` quando está fechado. */
+export type PagelaEditorState =
+  | { mode: PagelaEditorMode.CREATE }
+  | {
+      mode: PagelaEditorMode.EDIT;
+      pagela: PagelaResponse;
+    };

@@ -5,7 +5,7 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
+  Grid2,
   Table,
   TableBody,
   TableCell,
@@ -16,10 +16,6 @@ import {
   Chip,
   Alert,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   useTheme,
   TablePagination,
   Snackbar,
@@ -30,11 +26,15 @@ import {
   Stack,
   Divider,
 } from '@mui/material';
-import { Delete, Add, CalendarMonth, CheckCircle, Info, Warning, Edit } from '@mui/icons-material';
+import { Delete, Add, CalendarMonth, CheckCircle, Info, Edit } from '@mui/icons-material';
 import { useCreatePeriod, useAcademicPeriods, useDeletePeriod, useUpdatePeriod } from '../hooks';
-import { AcademicPeriod } from '../api';
+import type { AcademicPeriod } from '../types';
 import dayjs from 'dayjs';
 import { SimpleDatePicker } from '@/components/common/inputs';
+import { getClubControlErrorMessage } from '../errorMessage';
+import { validatePeriodDates } from '../utils';
+import PeriodDeleteDialog from './PeriodDeleteDialog';
+import PeriodEditDialog from './PeriodEditDialog';
 
 export const PeriodManagement: React.FC = () => {
   const theme = useTheme();
@@ -79,7 +79,7 @@ export const PeriodManagement: React.FC = () => {
     severity: 'success',
   });
 
-  const { data: periodsData, isLoading } = useAcademicPeriods(page, limit);
+  const { data: periodsData, isLoading, isError, refetch } = useAcademicPeriods(page, limit);
   const periods = periodsData?.items || [];
   const createPeriod = useCreatePeriod();
   const updatePeriod = useUpdatePeriod();
@@ -87,6 +87,19 @@ export const PeriodManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (
+      formData.startDate > formData.endDate ||
+      dayjs(formData.startDate).year() !== formData.year ||
+      dayjs(formData.endDate).year() !== formData.year
+    ) {
+      setSnackbar({
+        open: true,
+        message: 'Informe datas válidas, em ordem, dentro do ano letivo selecionado.',
+        severity: 'warning',
+      });
+      return;
+    }
 
     try {
       await createPeriod.mutateAsync({
@@ -108,10 +121,10 @@ export const PeriodManagement: React.FC = () => {
         message: `Período letivo ${formData.year} cadastrado com sucesso! Este período vale para TODOS os clubinhos.`,
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao cadastrar período: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível cadastrar o período.'),
         severity: 'error',
       });
     }
@@ -139,6 +152,17 @@ export const PeriodManagement: React.FC = () => {
     e.preventDefault();
     if (!editDialog.period) return;
 
+    const checagem = validatePeriodDates(
+      editFormData.startDate,
+      editFormData.endDate,
+      editDialog.period.year,
+    );
+
+    if (!checagem.valid) {
+      setSnackbar({ open: true, message: checagem.message!, severity: 'warning' });
+      return;
+    }
+
     try {
       await updatePeriod.mutateAsync({
         periodId: editDialog.period.id,
@@ -155,10 +179,10 @@ export const PeriodManagement: React.FC = () => {
         message: 'Período atualizado com sucesso!',
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao atualizar período: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível atualizar o período.'),
         severity: 'error',
       });
     }
@@ -173,10 +197,10 @@ export const PeriodManagement: React.FC = () => {
         message: 'Período excluído com sucesso!',
         severity: 'success',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSnackbar({
         open: true,
-        message: `Erro ao excluir período: ${error.response?.data?.message || error.message}`,
+        message: getClubControlErrorMessage(error, 'Não foi possível excluir o período.'),
         severity: 'error',
       });
     }
@@ -187,7 +211,7 @@ export const PeriodManagement: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box data-testid="club-control-period-management">
 
       <Paper
         elevation={0}
@@ -240,16 +264,16 @@ export const PeriodManagement: React.FC = () => {
           • Um período por ano vale para <strong>TODOS os clubinhos</strong>
         </Typography>
         <Typography variant="caption" display="block">
-          • A primeira semana do período é a "Semana 1" do ano letivo
+          • A primeira semana do período é a “Semana 1” do ano letivo
         </Typography>
         <Typography variant="caption" display="block">
           • Fora do período letivo não há monitoramento de pagelas
         </Typography>
       </Alert>
 
-      <Grid container spacing={{ xs: 2, sm: 3 }}>
+      <Grid2 container spacing={{ xs: 2, sm: 3 }}>
 
-        <Grid item xs={12} md={5}>
+        <Grid2 size={{ xs: 12, md: 5 }}>
           <Paper
             elevation={0}
             sx={{
@@ -285,8 +309,8 @@ export const PeriodManagement: React.FC = () => {
             </Box>
 
             <form onSubmit={handleSubmit}>
-              <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-                <Grid item xs={12}>
+              <Grid2 container spacing={{ xs: 1.5, sm: 2 }}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     type="number"
@@ -297,9 +321,9 @@ export const PeriodManagement: React.FC = () => {
                     inputProps={{ min: 2020, max: 2100 }}
                     helperText="Ex: 2024, 2025..."
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12} sm={6}>
+                <Grid2 size={{ xs: 12, sm: 6 }}>
                   <SimpleDatePicker
                     value={formData.startDate}
                     onChange={(value) => setFormData({ ...formData, startDate: value })}
@@ -308,9 +332,9 @@ export const PeriodManagement: React.FC = () => {
                     margin="none"
                     helperText="Primeiro dia do ano letivo"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12} sm={6}>
+                <Grid2 size={{ xs: 12, sm: 6 }}>
                   <SimpleDatePicker
                     value={formData.endDate}
                     onChange={(value) => setFormData({ ...formData, endDate: value })}
@@ -319,9 +343,9 @@ export const PeriodManagement: React.FC = () => {
                     margin="none"
                     helperText="Último dia do ano letivo"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <TextField
                     fullWidth
                     label="Descrição"
@@ -330,9 +354,9 @@ export const PeriodManagement: React.FC = () => {
                     placeholder="Ex: Ano Letivo 2024"
                     helperText="Descrição do período"
                   />
-                </Grid>
+                </Grid2>
 
-                <Grid item xs={12}>
+                <Grid2 size={12}>
                   <Button
                     type="submit"
                     variant="contained"
@@ -343,8 +367,8 @@ export const PeriodManagement: React.FC = () => {
                   >
                     {createPeriod.isPending ? 'Cadastrando...' : 'Cadastrar Período Global'}
                   </Button>
-                </Grid>
-              </Grid>
+                </Grid2>
+              </Grid2>
             </form>
 
             <Alert severity="warning" sx={{ mt: 2 }}>
@@ -353,9 +377,9 @@ export const PeriodManagement: React.FC = () => {
               </Typography>
             </Alert>
           </Paper>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={7}>
+        <Grid2 size={{ xs: 12, md: 7 }}>
           <Paper
             elevation={0}
             sx={{
@@ -390,6 +414,13 @@ export const PeriodManagement: React.FC = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress />
                 </Box>
+              ) : isError ? (
+                <Alert
+                  severity="error"
+                  action={<Button onClick={() => refetch()}>Tentar novamente</Button>}
+                >
+                  Não foi possível carregar os períodos letivos.
+                </Alert>
               ) : !periods || periods.length === 0 ? (
                 <Alert severity="info" sx={{ borderRadius: 2 }}>
                   <Typography variant="body2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
@@ -562,7 +593,7 @@ export const PeriodManagement: React.FC = () => {
                                     color="primary"
                                     onClick={() => handleOpenEdit(period)}
                                     title="Editar período"
-                                  >
+                                   aria-label="Editar">
                                     <Edit />
                                   </IconButton>
                                   <IconButton
@@ -576,7 +607,7 @@ export const PeriodManagement: React.FC = () => {
                                       })
                                     }
                                     title="Excluir período"
-                                  >
+                                   aria-label="Excluir">
                                     <Delete />
                                   </IconButton>
                                 </Box>
@@ -621,120 +652,28 @@ export const PeriodManagement: React.FC = () => {
               )}
             </Box>
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
-      <Dialog
+      <PeriodEditDialog
         open={editDialog.open}
-        onClose={handleCloseEdit}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Edit sx={{ color: theme.palette.primary.main, fontSize: 28 }} />
-          Editar Período Letivo
-        </DialogTitle>
-        <form onSubmit={handleSubmitEdit}>
-          <DialogContent>
-            {editDialog.period && (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                <Typography variant="body2">
-                  Editando período do ano <strong>{editDialog.period.year}</strong>
-                </Typography>
-              </Alert>
-            )}
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6}>
-                <SimpleDatePicker
-                  value={editFormData.startDate}
-                  onChange={(value) => setEditFormData({ ...editFormData, startDate: value })}
-                  label="Data de Início"
-                  required
-                  margin="none"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <SimpleDatePicker
-                  value={editFormData.endDate}
-                  onChange={(value) => setEditFormData({ ...editFormData, endDate: value })}
-                  label="Data de Término"
-                  required
-                  margin="none"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Descrição"
-                  value={editFormData.description}
-                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                  placeholder="Ex: Ano Letivo 2024 - Atualizado"
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button
-              onClick={handleCloseEdit}
-              variant="outlined"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              color="primary"
-              variant="contained"
-              disabled={updatePeriod.isPending}
-              startIcon={updatePeriod.isPending ? <CircularProgress size={16} /> : <Edit />}
-            >
-              {updatePeriod.isPending ? 'Salvando...' : 'Salvar Alterações'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+        period={editDialog.period}
+        values={editFormData}
+        loading={updatePeriod.isPending}
+        onChange={setEditFormData}
+        onSubmit={handleSubmitEdit}
+        onCancel={handleCloseEdit}
+      />
 
-      <Dialog
+      <PeriodDeleteDialog
         open={deleteDialog.open}
-        onClose={() => setDeleteDialog({ open: false, periodId: '', description: '' })}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Warning sx={{ color: theme.palette.error.main, fontSize: 28 }} />
-          Confirmar Exclusão
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" gutterBottom>
-            Tem certeza que deseja excluir o período <strong>{deleteDialog.description}</strong>?
-          </Typography>
-          <Alert severity="warning" sx={{ mt: 2 }} icon={<Warning />}>
-            <Typography variant="body2" fontWeight="bold" gutterBottom>
-              ⚠️ Atenção: Esta ação não pode ser desfeita!
-            </Typography>
-            <Typography variant="caption" display="block">
-              A exclusão deste período afetará <strong>TODOS os clubinhos</strong> do sistema.
-              As semanas relacionadas a este período não serão mais monitoradas.
-            </Typography>
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => setDeleteDialog({ open: false, periodId: '', description: '' })}
-            variant="outlined"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleDelete}
-            color="error"
-            variant="contained"
-            disabled={deletePeriod.isPending}
-            startIcon={deletePeriod.isPending ? <CircularProgress size={16} /> : <Delete />}
-          >
-            {deletePeriod.isPending ? 'Excluindo...' : 'Excluir Período'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        description={deleteDialog.description}
+        loading={deletePeriod.isPending}
+        onConfirm={handleDelete}
+        onCancel={() =>
+          setDeleteDialog({ open: false, periodId: '', description: '' })
+        }
+      />
 
       <Snackbar
         open={snackbar.open}

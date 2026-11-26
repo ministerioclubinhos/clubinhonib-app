@@ -15,7 +15,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { extractErrorInfo } from '@/utils/apiError';
 import { AuthErrorCode } from '@/types/api-error';
-import { ChangePasswordDto } from '../types';
+import { ChangePasswordRequest } from '../types';
 import { apiChangePassword } from '../api';
 
 interface PasswordChangeFormProps {
@@ -24,12 +24,12 @@ interface PasswordChangeFormProps {
 }
 
 const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isCommonUser }) => {
-  const [formData, setFormData] = useState<ChangePasswordDto>({
+  const [formData, setFormData] = useState<ChangePasswordRequest>({
     currentPassword: '',
     newPassword: '',
   });
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<Partial<Record<keyof ChangePasswordDto | 'confirmPassword', string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof ChangePasswordRequest | 'confirmPassword', string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -40,7 +40,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
     next: { currentPassword: string; newPassword: string; confirmPassword: string },
     touched?: Partial<Record<'currentPassword' | 'newPassword' | 'confirmPassword', boolean>>
   ) => {
-    const newErrors: Partial<Record<keyof ChangePasswordDto | 'confirmPassword', string>> = {};
+    const newErrors: Partial<Record<keyof ChangePasswordRequest | 'confirmPassword', string>> = {};
 
     const should = (key: 'currentPassword' | 'newPassword' | 'confirmPassword') =>
       touched?.[key] ?? true;
@@ -67,7 +67,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
   };
 
   const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof ChangePasswordDto | 'confirmPassword', string>> = {};
+    const newErrors: Partial<Record<keyof ChangePasswordRequest | 'confirmPassword', string>> = {};
 
     if (isCommonUser && !formData.currentPassword?.trim()) {
       newErrors.currentPassword = 'Senha atual é obrigatória';
@@ -113,7 +113,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
 
     setIsSubmitting(true);
     try {
-      const payload: ChangePasswordDto = {
+      const payload: ChangePasswordRequest = {
         newPassword: formData.newPassword,
         ...(isCommonUser && formData.currentPassword ? { currentPassword: formData.currentPassword } : {}),
       };
@@ -138,7 +138,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
   };
 
   return (
-    <motion.div
+    <motion.div data-testid="profile-password-change-form"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -190,7 +190,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
                           <IconButton
                             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                             edge="end"
-                          >
+                           aria-label="Mostrar ou esconder a senha">
                             {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
                         </InputAdornment>
@@ -235,7 +235,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
                         <IconButton
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           edge="end"
-                        >
+                         aria-label="Mostrar ou esconder a senha">
                           {showNewPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
@@ -279,7 +279,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
                         <IconButton
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           edge="end"
-                        >
+                         aria-label="Mostrar ou esconder a senha">
                           {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
@@ -305,7 +305,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
             )}
 
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Box sx={{ display: 'flex', justifyContent: { xs: 'stretch', sm: 'flex-end' } }}>
                 <Button
                   type="submit"
                   variant="contained"
@@ -313,6 +313,8 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({ onError, isComm
                   startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : <SaveIcon fontSize="small" />}
                   disabled={isSubmitting || !isFormReady}
                   sx={{
+                    width: { xs: '100%', sm: 'auto' },
+                    minHeight: 48,
                     px: 3,
                     py: 1,
                     borderRadius: 1.5,

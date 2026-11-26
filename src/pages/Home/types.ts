@@ -1,6 +1,8 @@
+import type { SvgIconProps } from '@mui/material';
+
 export interface Feature {
   id: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<SvgIconProps>;
   title: string;
   description: string;
   color: string;

@@ -1,76 +1,89 @@
-import { UserRole } from "@/types/shared";
+/**
+ * Contratos de clubinhos.
+ *
+ * Os tipos de resposta espelham `src/modules/clubs/dto` da API. Quando o back
+ * mudar, este arquivo muda junto — nada aqui é inferido de uso.
+ */
 
+/** Dias em que um clubinho pode acontecer. Espelha o enum `Weekday` da API. */
 export type Weekday =
-  | "monday" | "tuesday" | "wednesday" | "thursday"
-  | "friday" | "saturday" | "sunday";
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday";
 
-export const WEEKDAYS: { value: Weekday; label: string }[] = [
-  { value: "monday", label: "Segunda" },
-  { value: "tuesday", label: "Terça" },
-  { value: "wednesday", label: "Quarta" },
-  { value: "thursday", label: "Quinta" },
-  { value: "friday", label: "Sexta" },
-  { value: "saturday", label: "Sábado" },
-  { value: "sunday", label: "Domingo" },
-];
-
-export type UserPublicDto = {
+/** Usuário por trás de um perfil, no recorte que a API devolve em clubinhos. */
+export type ClubUserMini = {
   id: string;
-  name?: string;
-  email?: string;
-  phone?: string;
-  role: UserRole;
+  name: string;
+  email: string;
+  phone: string;
   active: boolean;
   completed: boolean;
   commonUser: boolean;
 };
 
-export type CoordinatorMiniDto = { id: string; user: UserPublicDto };
-export type TeacherMiniDto = { id: string; user: UserPublicDto };
-
-export type AddressResponseDto = {
+/** Coordenador do clubinho. */
+export type ClubCoordinator = {
   id: string;
-  street: string;
-  number?: string;
-  district: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  complement?: string;
-  createdAt: string;
-  updatedAt: string;
+  active: boolean;
+  user: ClubUserMini | null;
 };
 
-export type ClubSimpleResponseDto = {
+/** Professor vinculado ao clubinho. */
+export type ClubTeacher = {
+  id: string;
+  active: boolean;
+  user: ClubUserMini | null;
+};
+
+/**
+ * Endereço no formato devolvido pela API (`ClubAddressResponseDto`).
+ *
+ * Toda coluna é anulável no banco, então a API devolve `null` em vez de omitir
+ * a chave — e o campo nunca some do objeto.
+ */
+export type ClubAddress = {
+  id: string;
+  street: string | null;
+  number: string | null;
+  district: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  complement: string | null;
+};
+
+/** Clubinho sem os vínculos, usado em listas leves (`GET /clubs/all`). */
+export type ClubSimpleResponse = {
   id: string;
   number: number;
   weekday: Weekday;
-  time?: string | null;
+  time: string | null;
   isActive: boolean;
-  address: AddressResponseDto;
+  address: ClubAddress | null;
   createdAt: string;
   updatedAt: string;
 };
 
-export type ClubResponseDto = {
+/** Clubinho completo (`GET /clubs`, `GET /clubs/:id`). */
+export type ClubResponse = ClubSimpleResponse & {
+  coordinator: ClubCoordinator | null;
+  teachers: ClubTeacher[];
+};
+
+/** Opção de clubinho nos seletores (`GET /clubs/simple-options`). */
+export type ClubSelectOption = {
   id: string;
-  number: number;
-  weekday: Weekday;
-  time?: string | null;
-  isActive: boolean;
-  address: AddressResponseDto;
-  coordinator?: CoordinatorMiniDto | null;
-  teachers: TeacherMiniDto[];
-  createdAt: string;
-  updatedAt: string;
+  /** Rótulo pronto: `Clubinho 12 : Centro`. */
+  label: string;
+  /** Indica se o clubinho já tem coordenador. */
+  coordinator: boolean;
 };
 
-export type SimpleClubResponseDto = {
-  id: string,
-  detalhe: string,
-  coordinator: boolean
-};
-
+/** Página devolvida por `GET /clubs`. */
 export type Paginated<T> = {
   data: T[];
   total: number;
@@ -79,27 +92,95 @@ export type Paginated<T> = {
   pageCount: number;
 };
 
-export type CreateClubForm = {
+/** Endereço na entrada: só os campos que a API aceita gravar. */
+export type ClubAddressInput = {
+  street?: string;
+  number?: string;
+  district?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  complement?: string;
+};
+
+/**
+ * Estado do formulário.
+ *
+ * É o que a tela edita, e não o que vai para a rede: `buildCreateClubRequest` e
+ * `buildUpdateClubRequest` fazem a tradução.
+ */
+export type ClubFormValues = {
+  number: number | null;
+  weekday: Weekday;
+  time: string | null;
+  isActive: boolean;
+  address: ClubAddressInput;
+  coordinatorProfileId: string | null;
+  teacherProfileIds: string[];
+};
+
+/** Corpo de `POST /clubs`. */
+export type CreateClubRequest = {
   number: number;
   weekday: Weekday;
+  time?: string;
+  isActive?: boolean;
+  address?: ClubAddressInput;
+  coordinatorProfileId?: string;
+  teacherProfileIds?: string[];
+};
+
+/** Corpo de `PATCH /clubs/:id`. */
+export type UpdateClubRequest = {
+  number?: number;
+  weekday?: Weekday;
   time?: string | null;
   isActive?: boolean;
-  address: Partial<AddressResponseDto>;
+  address?: ClubAddressInput;
   coordinatorProfileId?: string | null;
   teacherProfileIds?: string[];
 };
 
-export type EditClubForm = Partial<CreateClubForm> & { id: string };
-export type UserLite = { id: string; name?: string; email?: string };
+/** Resposta das rotas que só confirmam a operação. */
+export type ApiMessage = { message: string };
 
+/** Filtros da listagem. */
 export type ClubFilters = {
   searchString?: string;
   isActive?: boolean;
 };
 
-export type ClubSort =
-  | { id: "number" | "weekday" | "time" | "createdAt" | "updatedAt" | "city" | "state"; desc: boolean }
-  | null;
+/** Campo de ordenação aceito pela API. */
+export type ClubSortField =
+  | "number"
+  | "weekday"
+  | "time"
+  | "createdAt"
+  | "updatedAt"
+  | "city"
+  | "state";
 
+export type ClubSortOrder = "ASC" | "DESC";
+
+export type ClubSort = { id: ClubSortField; desc: boolean } | null;
+
+/** Query string de `GET /clubs`, espelhando `QueryClubsDto`. */
+export type ClubsQueryParams = {
+  page: number;
+  limit: number;
+  searchString?: string;
+  isActive?: boolean;
+  sort: ClubSortField;
+  order: ClubSortOrder;
+};
+
+/** Opções dos seletores do formulário. */
 export type CoordinatorOption = { coordinatorProfileId: string; name: string };
-export type TeacherOption = { teacherProfileId: string; name: string, vinculado: boolean };
+export type TeacherOption = {
+  teacherProfileId: string;
+  name: string;
+  vinculado: boolean;
+  /** Onde o professor está hoje; `null` quando não tem turma. */
+  clubId: string | null;
+  clubNumber: number | null;
+};

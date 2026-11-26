@@ -7,26 +7,34 @@ import {
   Typography,
   Button,
   Box,
-  Grid,
   IconButton,
   Paper,
   Tooltip,
 } from '@mui/material';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import LinkIcon from '@mui/icons-material/Link';
-import { DocumentItem } from '../types';
-import { mediaTypeLabel, platformLabel, uploadTypeLabel } from '../utils';
+import type { DocumentResponse } from '../types';
+import {
+  formatDate,
+  formatFileSize,
+  mediaTypeLabel,
+  platformLabel,
+  uploadTypeLabel,
+} from '../utils';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  document: DocumentItem | null;
+  document: DocumentResponse | null;
+  /** Abre a edição do documento mostrado. */
+  onEdit?: (document: DocumentResponse) => void;
 }
 
 const DetailField = ({ label, value }: { label: string; value?: string | number | null }) => (
-  <Box sx={{ py: 1.5 }}>
+  <Box data-testid="documents-document-details-modal-detail-field" sx={{ py: 1.5 }}>
     <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
       {label}
     </Typography>
@@ -36,7 +44,7 @@ const DetailField = ({ label, value }: { label: string; value?: string | number 
   </Box>
 );
 
-const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
+const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document, onEdit }) => {
   const url = document?.media?.url;
 
   const handleCopyUrl = () => {
@@ -44,7 +52,7 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
   };
 
   return (
-    <Dialog
+    <Dialog data-testid="documents-document-details-modal"
       open={open}
       onClose={onClose}
       maxWidth="sm"
@@ -68,7 +76,7 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DescriptionOutlinedIcon /> Detalhes do documento
         </Box>
-        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }} aria-label="Fechar">
           <CloseRoundedIcon />
         </IconButton>
       </DialogTitle>
@@ -81,6 +89,11 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
           <Paper variant="outlined" sx={{ p: 2, mt: 1, borderRadius: 2, borderColor: 'divider' }}>
             <DetailField label="Nome" value={document?.name} />
             <DetailField label="Descrição" value={document?.description} />
+            <DetailField label="Criado em" value={formatDate(document?.createdAt)} />
+            <DetailField
+              label="Atualizado em"
+              value={formatDate(document?.updatedAt)}
+            />
           </Paper>
         </Box>
 
@@ -94,6 +107,14 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
             <DetailField label="Plataforma" value={platformLabel(document?.media?.platformType)} />
             <DetailField label="Tipo de upload" value={uploadTypeLabel(document?.media?.uploadType)} />
             <DetailField label="Tipo de mídia" value={mediaTypeLabel(document?.media?.mediaType)} />
+            <DetailField
+              label="Arquivo"
+              value={document?.media?.originalName ?? '—'}
+            />
+            <DetailField
+              label="Tamanho"
+              value={formatFileSize(document?.media?.size)}
+            />
             <Box sx={{ py: 1.5 }}>
               <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
                 URL
@@ -104,7 +125,7 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
                 </Typography>
                 {url && (
                   <Tooltip title="Copiar URL">
-                    <IconButton onClick={handleCopyUrl} size="small" color="primary" sx={{ flexShrink: 0 }}>
+                    <IconButton onClick={handleCopyUrl} size="small" color="primary" sx={{ flexShrink: 0 }} aria-label="Copiar URL">
                       <ContentCopyRoundedIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
@@ -116,6 +137,18 @@ const DocumentDetailsModal: React.FC<Props> = ({ open, onClose, document }) => {
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        {onEdit && document && (
+          <Button
+            data-testid="document-details-edit"
+            type="button"
+            variant="outlined"
+            startIcon={<EditOutlinedIcon />}
+            onClick={() => onEdit(document)}
+            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, minHeight: 44 }}
+          >
+            Editar documento
+          </Button>
+        )}
         <Button onClick={onClose} variant="contained" sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, bgcolor: '#81d742', '&:hover': { bgcolor: '#6bb83a' } }}>
           Fechar
         </Button>

@@ -1,316 +1,333 @@
 import * as React from "react";
 import {
+  Alert,
+  AlertTitle,
   Box,
   Button,
-  Card,
-  CardContent,
-  Divider,
+  CircularProgress,
   FormControlLabel,
-  IconButton,
+  MenuItem,
   Stack,
   Switch,
   TextField,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
-import { Close, Save } from "@mui/icons-material";
+import { Save } from "@mui/icons-material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SpaIcon from "@mui/icons-material/Spa";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import FavoriteIcon from "@mui/icons-material/Favorite";
 import { useSelector } from "react-redux";
-import type { CreatePagelaPayload, Pagela, UpdatePagelaPayload } from "../types";
-import { todayISO } from "../utils";
+import {
+  PagelaEditorMode,
+  type CreatePagelaPayload,
+  type Pagela,
+  type PagelaLaunchWindow,
+  type UpdatePagelaPayload,
+} from "../types";
+import { launchableWeeks } from "../utils";
+import {
+  PAGELA_EDITOR_TEXTS,
+  PAGELA_NOTES_MAX_LENGTH,
+  PAGELA_PERIOD_TEXTS,
+} from "../constants";
+import {
+  buildCreatePagelaRequest,
+  buildUpdatePagelaRequest,
+} from "@/features/pagelas/utils";
+import { extractErrorMessage } from "@/utils/apiError";
+import type { RootState } from "@/store/slices";
 
 type Props = {
-  initial?: Pagela | null;
+  mode: PagelaEditorMode;
+  /** A pagela corrigida; só existe no modo de edição. */
+  initial: Pagela | null;
   childId: string;
-  childName: string;
-  childGender: string;
-  defaultYear: number;
-  defaultWeek: number;
-  teacherProfileId?: string | null;
 
-  findPagela: (year: number, week: number) => Pagela | null;
+  /** Janela de lançamento de hoje; `null` enquanto carrega ou se falhou. */
+  launchWindow: PagelaLaunchWindow | null;
+  launchLoading: boolean;
+  launchError: string;
+
+  /** Pagela já lançada para a criança na semana, se houver. */
+  findPagela: (year: number, week: number) => Promise<Pagela | null>;
 
   onCreate: (payload: CreatePagelaPayload) => Promise<void>;
   onUpdate: (id: string, payload: UpdatePagelaPayload) => Promise<void>;
-  onClose?: () => void;
+  /** Chamado depois de salvar com sucesso. */
+  onDone: () => void;
+  /** A semana escolhida já tem pagela: passa a editá-la. */
+  onEditExisting: (pagela: Pagela) => void;
+  onCancel: () => void;
 };
 
+/**
+ * Formulário de uma pagela.
+ *
+ * Quem o usa troca a `key` a cada abertura, então o estado nasce da pagela
+ * recebida e nunca precisa ser ressincronizado por efeito: criar e editar são
+ * dois modos separados, e a semana de uma pagela existente não muda.
+ */
 export default function PagelaQuickForm({
+  mode,
   initial,
   childId,
-  childName,
-  childGender,
-
-  teacherProfileId,
+  launchWindow,
+  launchLoading,
+  launchError,
   findPagela,
   onCreate,
   onUpdate,
-  onClose,
+  onDone,
+  onEditExisting,
+  onCancel,
 }: Props) {
-  const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const teacherProfileIdFromRedux = useSelector(
-    (s: any) => s?.auth?.user?.teacherProfile?.id ?? null
+  const teacherProfileId = useSelector(
+    (s: RootState) => s.auth.user?.teacherProfile?.id ?? null,
   ) as string | null;
 
-  const effectiveTeacherProfileId = teacherProfileIdFromRedux ?? teacherProfileId ?? null;
+  const editing = mode === PagelaEditorMode.EDIT && !!initial;
+  const isOpen = !!launchWindow?.open;
+  const weeks = React.useMemo(() => launchableWeeks(launchWindow), [launchWindow]);
 
-  const [yearText, setYearText] = React.useState<string>("");
-  const [weekText, setWeekText] = React.useState<string>("");
+  const [pickedWeek, setPickedWeek] = React.useState<number | null>(null);
+  const [present, setPresent] = React.useState(!!initial?.present);
+  const [med, setMed] = React.useState(!!initial?.didMeditation);
+  const [verse, setVerse] = React.useState(!!initial?.recitedVerse);
+  const [notes, setNotes] = React.useState(initial?.notes ?? "");
+  const [saving, setSaving] = React.useState(false);
+  const [saveError, setSaveError] = React.useState("");
 
-  const [editing, setEditing] = React.useState<boolean>(!!initial?.id);
-  const [currentId, setCurrentId] = React.useState<string | null>(initial?.id ?? null);
+  // Na criação a semana padrão é a letiva em andamento, nunca a do calendário.
+  const year = editing ? initial.year : launchWindow?.open ? launchWindow.year : null;
+  const week = editing
+    ? initial.week
+    : pickedWeek ?? (launchWindow?.open ? launchWindow.currentWeek : null);
 
-  const [present, setPresent] = React.useState<boolean>(initial?.present ?? false);
-  const [med, setMed] = React.useState<boolean>(initial?.didMeditation ?? false);
-  const [verse, setVerse] = React.useState<boolean>(initial?.recitedVerse ?? false);
-  const [notes, setNotes] = React.useState<string>(initial?.notes ?? "");
-
-  React.useEffect(() => {
-    if (initial?.id) {
-      setEditing(true);
-      setCurrentId(initial.id);
-      setYearText(String(initial.year ?? ""));
-      setWeekText(String(initial.week ?? ""));
-      setPresent(!!initial.present);
-      setMed(!!initial.didMeditation);
-      setVerse(!!initial.recitedVerse);
-      setNotes(initial.notes ?? "");
-    } else {
-      setEditing(false);
-      setCurrentId(null);
-      setYearText("");
-      setWeekText("");
-    }
-  }, [initial]);
-
-  const parsedYear = React.useMemo(() => {
-    if (!yearText.trim()) return undefined;
-    const n = Number(yearText);
-    if (!Number.isFinite(n)) return undefined;
-    if (n < 2000 || n > 9999) return undefined;
-    return Math.floor(n);
-  }, [yearText]);
-
-  const parsedWeek = React.useMemo(() => {
-    if (!weekText.trim()) return undefined;
-    const n = Number(weekText);
-    if (!Number.isFinite(n)) return undefined;
-    if (n < 1 || n > 53) return undefined;
-    return Math.floor(n);
-  }, [weekText]);
+  // Criar numa semana que já tem pagela duplicaria o registro: a tela avisa e
+  // oferece editar a existente. A busca vai à API porque a lista é paginada.
+  const [existing, setExisting] = React.useState<Pagela | null>(null);
+  const [checking, setChecking] = React.useState(false);
+  const findPagelaRef = React.useRef(findPagela);
+  findPagelaRef.current = findPagela;
 
   React.useEffect(() => {
-    if (parsedYear && parsedWeek) {
-      const found = findPagela(parsedYear, parsedWeek);
-      if (found) {
-        setEditing(true);
-        setCurrentId(found.id);
-        setYearText(String(found.year));
-        setWeekText(String(found.week));
-        setPresent(!!found.present);
-        setMed(!!found.didMeditation);
-        setVerse(!!found.recitedVerse);
-        setNotes(found.notes ?? "");
-      } else {
-        setEditing(false);
-        setCurrentId(null);
-      }
-    } else {
-      setEditing(false);
-      setCurrentId(null);
-    }
-  }, [parsedYear, parsedWeek, findPagela]);
+    if (editing || !year || !week) return;
 
-  const canSave = !!childId && parsedYear !== undefined && parsedWeek !== undefined;
+    let cancelled = false;
+    setChecking(true);
+    setExisting(null);
+    findPagelaRef
+      .current(year, week)
+      .then((found) => {
+        if (!cancelled) setExisting(found);
+      })
+      .catch(() => {
+        // Sem resposta, a API recusa a duplicata na hora de salvar.
+      })
+      .finally(() => {
+        if (!cancelled) setChecking(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editing, year, week]);
+
+  // A API só aceita criar ou corrigir pagela com o período letivo aberto.
+  const canSave =
+    isOpen && !saving && (editing || (!!week && !checking && !existing));
 
   const handleSave = async () => {
     if (!canSave) return;
 
-    const payloadCommon = {
-      referenceDate: todayISO(),
-      year: parsedYear!,
-      week: parsedWeek!,
-      present,
-      didMeditation: med,
-      recitedVerse: verse,
-      notes,
-      teacherProfileId: effectiveTeacherProfileId,
-    };
-
-    if (editing && currentId) {
-      await onUpdate(currentId, payloadCommon);
-    } else {
-      await onCreate({
-        childId,
-        ...payloadCommon,
-      });
+    setSaving(true);
+    setSaveError("");
+    try {
+      if (editing) {
+        // Só o que o formulário edita: mandar a data ou o professor de novo
+        // trocava a data do registro por hoje e apagava quem lançou.
+        await onUpdate(
+          initial.id,
+          buildUpdatePagelaRequest({
+            present,
+            didMeditation: med,
+            recitedVerse: verse,
+            notes,
+          }),
+        );
+      } else if (launchWindow && year && week) {
+        await onCreate(
+          buildCreatePagelaRequest({
+            childId,
+            referenceDate: launchWindow.today,
+            year,
+            week,
+            present,
+            didMeditation: med,
+            recitedVerse: verse,
+            notes,
+            teacherProfileId,
+          }),
+        );
+      }
+      onDone();
+    } catch (err: unknown) {
+      setSaveError(extractErrorMessage(err, PAGELA_PERIOD_TEXTS.saveError));
+      setSaving(false);
     }
-
-    if (isXs && onClose) onClose();
   };
 
-  const headerBg = editing
-    ? "linear-gradient(135deg, #FFE8B3 0%, #FFD480 50%, #FFC266 100%)"
-    : "linear-gradient(135deg, #b8f1d7 0%, #b8d6ff 50%, #ffc7ec 100%)";
-
-  const headerTitle = editing ? "Editando" : "Criando";
-  const footerMsg = editing
-    ? "ao salvar, você ATUALIZA o registro existente"
-    : "ao salvar, você CRIA um novo registro";
-
-  const yearWeekLabel = `Ano: ${parsedYear ?? "--"} • Semana: ${parsedWeek ?? "--"}`;
-
-  const article = childGender === "F" ? "a" : "o";
+  const showFields = isOpen && (editing || !!week);
 
   return (
-    <Card
-      variant="outlined"
-      sx={{
-        borderRadius: { xs: "24px 24px 0 0", sm: 4 },
-        overflow: "hidden",
-        borderColor: "divider",
-        transition: "box-shadow .12s ease, transform .12s ease",
-        "&:hover": { boxShadow: 4, transform: { sm: "translateY(-1px)" } },
-      }}
-    >
-      <Box
-        sx={{
-          position: "relative",
-          height: { xs: 64, sm: 84 },
-          background: headerBg,
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: -10,
-            left: -18,
-            width: 90,
-            height: 90,
-            borderRadius: "50%",
-            opacity: 0.15,
-            bgcolor: "#000",
-            filter: "blur(2px)",
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: -16,
-            right: -12,
-            width: 80,
-            height: 80,
-            borderRadius: "50%",
-            opacity: 0.12,
-            bgcolor: "#000",
-            filter: "blur(1px)",
-          }}
-        />
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ height: "100%", px: { xs: 1.25, sm: 2 } }}
-        >
-          <Stack spacing={0}>
-            <Typography variant="subtitle2" sx={{ color: "text.primary", opacity: 0.9, fontWeight: 800 }}>
-              {headerTitle} para {article} <strong>{childName || "—"}</strong>
-            </Typography>
+    <Box data-testid="pagela-teacher-pagela-quick-form">
+      <Stack spacing={1.5}>
+        {launchLoading && (
+          <Alert severity="info" icon={<CircularProgress size={18} />}>
+            {PAGELA_PERIOD_TEXTS.loading}
+          </Alert>
+        )}
 
-            <Stack direction="row" spacing={0.75} alignItems="center">
-              <CalendarMonthIcon fontSize="small" sx={{ opacity: 0.9 }} />
-              <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                {yearWeekLabel}
-              </Typography>
-            </Stack>
-          </Stack>
+        {!launchLoading && !launchWindow && (
+          <Alert severity="error" data-testid="pagela-launch-unavailable">
+            {launchError || PAGELA_PERIOD_TEXTS.unavailable}
+          </Alert>
+        )}
 
-          {isXs && (
-            <IconButton
-              size="small"
-              onClick={onClose}
-              aria-label="Fechar"
-              sx={{ bgcolor: "rgba(255,255,255,.85)", "&:hover": { bgcolor: "rgba(255,255,255,.95)" } }}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-          )}
-        </Stack>
-      </Box>
+        {launchWindow && !isOpen && (
+          <Alert severity="warning" data-testid="pagela-launch-closed">
+            <AlertTitle>{PAGELA_PERIOD_TEXTS.closedTitle}</AlertTitle>
+            {launchWindow.message || PAGELA_PERIOD_TEXTS.closedFallback}
+          </Alert>
+        )}
 
-      <CardContent sx={{ p: { xs: 1.5, md: 2.25 } }}>
-        <Stack spacing={1.25}>
-          <Stack direction="row" spacing={1}>
-            <TextField
-              label="Ano"
-              size="small"
-              type="text"
-              value={yearText}
-              onChange={(e) => setYearText(e.target.value.replace(/\D+/g, "").slice(0, 4))}
-              sx={{ width: 120 }}
-              inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 4 }}
-            />
-            <TextField
-              label="Semana"
-              size="small"
-              type="text"
-              value={weekText}
-              onChange={(e) => setWeekText(e.target.value.replace(/\D+/g, "").slice(0, 2))}
-              sx={{ width: 140 }}
-              inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 2 }}
-            />
-          </Stack>
-
-          <RowSwitch icon={<CheckCircleIcon />} label="Presença" checked={present} onChange={setPresent} />
-          <RowSwitch icon={<SpaIcon />} label="Fez meditação" checked={med} onChange={setMed} />
-          <RowSwitch icon={<MenuBookIcon />} label="Recitou o versículo" checked={verse} onChange={setVerse} />
-
-          <Divider sx={{ my: 0.5 }} />
-
-          <TextField
-            label="Observações"
-            size="small"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            multiline
-            minRows={2}
-            fullWidth
-          />
-
-          <Box sx={{ display: "flex", justifyContent: { xs: "stretch", sm: "flex-end" }, mt: 0.5 }}>
-            <Button
-              onClick={handleSave}
-              disabled={!canSave}
-              variant="contained"
-              startIcon={<Save />}
-              sx={{ borderRadius: 999, px: 2.25, py: 0.75, fontWeight: 800, width: { xs: "100%", sm: "auto" } }}
-            >
-              Salvar
-            </Button>
-          </Box>
-
-          <Stack
-            direction="row"
-            spacing={0.5}
-            alignItems="center"
-            justifyContent="center"
-            sx={{ color: "text.secondary", mt: 0.25 }}
+        {editing ? (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            data-testid="pagela-editor-week"
           >
-            <Typography variant="caption" sx={{ fontWeight: 700 }}>
-              {footerMsg}
-            </Typography>
-            <FavoriteIcon fontSize="inherit" sx={{ opacity: 0.6 }} />
-          </Stack>
+            Ano {initial.year} · Semana {initial.week}
+          </Typography>
+        ) : (
+          isOpen &&
+          week && (
+            <TextField
+              select
+              label="Semana"
+              value={week}
+              onChange={(e) => setPickedWeek(Number(e.target.value))}
+              helperText={
+                checking
+                  ? PAGELA_EDITOR_TEXTS.checking
+                  : `Ano letivo ${year} — ${PAGELA_PERIOD_TEXTS.weekHelper}`
+              }
+              fullWidth
+              slotProps={{
+                htmlInput: { "data-testid": "pagela-week-select" },
+              }}
+            >
+              {weeks.map((option) => (
+                <MenuItem key={option} value={option} sx={{ minHeight: 44 }}>
+                  Semana {option}
+                  {option === launchWindow?.currentWeek ? " (atual)" : ""}
+                </MenuItem>
+              ))}
+            </TextField>
+          )
+        )}
+
+        {existing && (
+          <Alert
+            severity="warning"
+            data-testid="pagela-week-taken"
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => onEditExisting(existing)}
+                sx={{ minHeight: 44, fontWeight: 800 }}
+              >
+                {PAGELA_EDITOR_TEXTS.editExisting}
+              </Button>
+            }
+          >
+            {PAGELA_EDITOR_TEXTS.weekTaken}
+          </Alert>
+        )}
+
+        {showFields && (
+          <>
+            <RowSwitch
+              icon={<CheckCircleIcon />}
+              label="Presença"
+              checked={present}
+              onChange={setPresent}
+            />
+            <RowSwitch
+              icon={<SpaIcon />}
+              label="Fez meditação"
+              checked={med}
+              onChange={setMed}
+            />
+            <RowSwitch
+              icon={<MenuBookIcon />}
+              label="Recitou o versículo"
+              checked={verse}
+              onChange={setVerse}
+            />
+
+            <TextField
+              label="Observações"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              multiline
+              minRows={3}
+              fullWidth
+              helperText={`${notes.length}/${PAGELA_NOTES_MAX_LENGTH}`}
+              slotProps={{ htmlInput: { maxLength: PAGELA_NOTES_MAX_LENGTH } }}
+            />
+          </>
+        )}
+
+        {saveError && (
+          <Alert
+            severity="error"
+            data-testid="pagela-save-error"
+            onClose={() => setSaveError("")}
+          >
+            {saveError}
+          </Alert>
+        )}
+
+        <Stack
+          direction={{ xs: "column-reverse", sm: "row" }}
+          spacing={1}
+          justifyContent="flex-end"
+        >
+          <Button
+            onClick={onCancel}
+            disabled={saving}
+            data-testid="pagela-editor-cancel"
+            sx={{ minHeight: 44 }}
+          >
+            {PAGELA_EDITOR_TEXTS.cancel}
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={!canSave}
+            variant="contained"
+            data-testid="pagela-editor-save"
+            startIcon={
+              saving ? <CircularProgress size={16} color="inherit" /> : <Save />
+            }
+            sx={{ minHeight: 44, fontWeight: 800, px: 3 }}
+          >
+            {saving ? PAGELA_EDITOR_TEXTS.saving : PAGELA_EDITOR_TEXTS.save}
+          </Button>
         </Stack>
-      </CardContent>
-    </Card>
+      </Stack>
+    </Box>
   );
 }
 
@@ -327,18 +344,21 @@ function RowSwitch({
 }) {
   return (
     <FormControlLabel
+      data-testid="pagela-teacher-pagela-quick-form-row-switch"
       control={<Switch checked={checked} onChange={(_, v) => onChange(v)} />}
       label={
-        <Stack direction="row" spacing={0.75} alignItems="center">
-          <Box sx={{ "& svg": { fontSize: 18, opacity: 0.75 } }}>{icon}</Box>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Box sx={{ display: "flex", "& svg": { fontSize: 20, opacity: 0.75 } }}>
+            {icon}
+          </Box>
           <Typography fontWeight={800}>{label}</Typography>
         </Stack>
       }
       labelPlacement="start"
       sx={{
         m: 0,
-        px: 1,
-        py: 0.5,
+        px: 1.5,
+        minHeight: 52,
         borderRadius: 2,
         justifyContent: "space-between",
         bgcolor: "action.hover",

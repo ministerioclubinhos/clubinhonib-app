@@ -1,5 +1,12 @@
 # Features & State Management
 
+## Shared idea submission
+
+The `/compartilhar-ideia` route remains protected by `FEATURE.IDEA_SUBMISSION`.
+The dedicated flow accepts 1–20 media items, follows backend file size and
+format limits, and reports progress and saved success without waiting for
+background work. The API owns the accepted formats and generated media labels.
+
 This application uses a modular feature-based architecture supported by Redux Toolkit for state management.
 
 ## 📂 Feature Organization
@@ -26,3 +33,5 @@ We use **Redux Toolkit** for efficient global state management.
 
 - **Configuration**: Axios is configured in `src/config/axiosConfig.ts` with interceptors for token management.
 - **Error Handling**: Centralized error utilities in `src/utils/apiError.ts` ensure consistent user feedback.
+
+`FEATURE.IDEA_AI_ENHANCEMENT` maps to `idea_ai_enhancement` and defaults to false. It controls the teacher's automatic background-processing notice/trigger on the API. It is not a route guard and must not disable the moderation queue, comparison, history, publication or manual reprocessing. Those routes keep `IDEA_MODERATION`.

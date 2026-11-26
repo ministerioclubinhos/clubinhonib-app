@@ -26,7 +26,7 @@ const BackHeader: React.FC<BackHeaderProps> = ({
   const navigate = useNavigate();
 
   return isXs ? (
-    <Box
+    <Box data-testid="header-back-header"
       sx={{
         mb: 3,
         display: "flex",
@@ -35,13 +35,15 @@ const BackHeader: React.FC<BackHeaderProps> = ({
       }}
     >
       <Tooltip title="Voltar">
+        {/* Sem `edge="start"`: a margem negativa cortava o botão nas telas sem padding. */}
         <IconButton
-          edge="start"
           onClick={() => navigate(-1)}
           aria-label="Voltar para a página anterior"
           sx={{
             bgcolor: "white",
             boxShadow: 1,
+            minWidth: 44,
+            minHeight: 44,
             "&:hover": { bgcolor: "grey.100" },
           }}
         >
@@ -62,7 +64,7 @@ const BackHeader: React.FC<BackHeaderProps> = ({
       </Typography>
     </Box>
   ) : (
-    <Typography
+    <Typography data-testid="header-back-header"
       variant="h4"
       fontWeight={700}
       textAlign="center"

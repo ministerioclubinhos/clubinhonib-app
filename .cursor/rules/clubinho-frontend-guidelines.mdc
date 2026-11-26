@@ -1,0 +1,10 @@
+---
+description: Mandatory Clubinho NIB frontend architecture and quality rules
+alwaysApply: true
+---
+
+# Clubinho NIB Frontend Rules
+
+Before editing, read [`AGENTS.md`](../../AGENTS.md), [`docs/CLUBINHO_FRONTEND_BEST_PRACTICES.md`](../../docs/CLUBINHO_FRONTEND_BEST_PRACTICES.md), and applicable domain docs.
+
+Use the shared Axios client, feature-driven separation, deliberate Redux/TanStack Query ownership, mandatory input and output DTOs for all API operations, mandatory dedicated files for `types` and `constants`, mandatory domain enums for finite sets (no magic strings), mandatory dedicated `utils` files for pure logic, strict typed contracts with NEVER any `any` under any circumstances, Material UI, existing guards, mobile-first accessible UI, privacy-safe logging, and Vitest coverage. Never duplicate refresh or backend permission logic. Keep the diff scoped.

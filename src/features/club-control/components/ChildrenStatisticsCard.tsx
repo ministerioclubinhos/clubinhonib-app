@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Paper,
-  Grid,
+  Grid2,
   Box,
   Typography,
   useTheme,
@@ -26,7 +26,7 @@ export const ChildrenStatisticsCard: React.FC<ChildrenStatisticsCardProps> = ({
   const theme = useTheme();
 
   return (
-    <Paper
+    <Paper data-testid="club-control-children-statistics-card"
       elevation={0}
       sx={{
         p: { xs: 1.5, sm: 2 },
@@ -36,8 +36,8 @@ export const ChildrenStatisticsCard: React.FC<ChildrenStatisticsCardProps> = ({
         bgcolor: 'background.paper',
       }}
     >
-      <Grid container spacing={{ xs: 1, sm: 2 }}>
-        <Grid item xs={4} sm={4}>
+      <Grid2 container spacing={{ xs: 1, sm: 2 }}>
+        <Grid2 size={{ xs: 4, sm: 4 }}>
           <Box sx={{ textAlign: 'center' }}>
             <Groups sx={{ fontSize: { xs: 20, sm: 28 }, color: theme.palette.primary.main, mb: { xs: 0.5, sm: 1 } }} />
             <Typography 
@@ -52,8 +52,8 @@ export const ChildrenStatisticsCard: React.FC<ChildrenStatisticsCardProps> = ({
               Total de Crianças
             </Typography>
           </Box>
-        </Grid>
-        <Grid item xs={4} sm={4}>
+        </Grid2>
+        <Grid2 size={{ xs: 4, sm: 4 }}>
           <Box sx={{ textAlign: 'center' }}>
             <Assignment sx={{ fontSize: { xs: 20, sm: 28 }, color: theme.palette.success.main, mb: { xs: 0.5, sm: 1 } }} />
             <Typography 
@@ -68,8 +68,8 @@ export const ChildrenStatisticsCard: React.FC<ChildrenStatisticsCardProps> = ({
               Com Pagela
             </Typography>
           </Box>
-        </Grid>
-        <Grid item xs={4} sm={4}>
+        </Grid2>
+        <Grid2 size={{ xs: 4, sm: 4 }}>
           <Box sx={{ textAlign: 'center' }}>
             <PersonOff sx={{ fontSize: { xs: 20, sm: 28 }, color: theme.palette.error.main, mb: { xs: 0.5, sm: 1 } }} />
             <Typography 
@@ -84,8 +84,8 @@ export const ChildrenStatisticsCard: React.FC<ChildrenStatisticsCardProps> = ({
               Sem Pagela
             </Typography>
           </Box>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Paper>
   );
 };

@@ -1,19 +1,39 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Typography, Paper, useTheme, useMediaQuery } from '@mui/material';
-import { motion } from 'framer-motion';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material';
+import CollectionsIcon from '@mui/icons-material/Collections';
+import PublicIcon from '@mui/icons-material/Public';
+import SaveIcon from '@mui/icons-material/Save';
 
-import api from '@/config/axiosConfig';
-import { setData, clearData, SectionData } from '@/store/slices/image-section/imageSectionSlice';
-import { MediaType, MediaUploadType, MediaPlatform } from '@/store/slices/types';
+import BackHeader from '@/components/common/header/BackHeader';
 import { RootState } from '@/store/slices';
-import { GENERIC_ERROR_MESSAGES, FORM_VALIDATION_MESSAGES } from '@/constants/errorMessages';
-import { FEATURE_SUCCESS_MESSAGES } from '@/constants/successMessages';
+import { clearData, setData, SectionData } from '@/store/slices/image-section/imageSectionSlice';
+import type { MediaPlatform, MediaType, MediaUploadType } from '@/store/slices/types';
+import { extractErrorMessage } from '@/utils/apiError';
+import { FORM_VALIDATION_MESSAGES, GENERIC_ERROR_MESSAGES } from '@/constants/errorMessages';
 
 import { LoadingSpinner } from '@/pages/TeacherArea/components/Modals';
 import { NotificationModal } from '@/pages/TeacherArea/components/Modals';
 import ImageSectionEditor from '@/pages/TeacherArea/ImageSection/ImageSectionEditor';
+
+import { apiFetchImageSection, apiUpdateImageSection } from './api';
+import { validateClubinhoPublication } from './media-utils';
+import { buildSectionFormData, buildSectionUpload } from './utils';
+import type { ImageSectionResponse } from './types';
+
+/** Para onde a revisão volta quando termina. */
+const LIST_ROUTE = '/adm/fotos-clubinhos';
 
 interface NotificationState {
   open: boolean;
@@ -21,13 +41,48 @@ interface NotificationState {
   severity: 'success' | 'error';
 }
 
+/** A publicação vinda da API, no formato que o editor entende. */
+function toSectionData(section: ImageSectionResponse): SectionData {
+  return {
+    id: section.id,
+    caption: section.caption,
+    description: section.description,
+    public: section.public,
+    createdAt: section.createdAt,
+    updatedAt: section.updatedAt,
+    mediaItems: section.mediaItems.map((media) => ({
+      id: media.id,
+      title: media.title ?? '',
+      description: media.description ?? '',
+      uploadType: media.uploadType as MediaUploadType,
+      mediaType: media.mediaType as MediaType,
+      isLocalFile: media.isLocalFile,
+      url: media.url,
+      platformType: (media.platformType as MediaPlatform) || undefined,
+      originalName: media.originalName || undefined,
+      size: media.size || undefined,
+    })),
+  };
+}
+
+/**
+ * Revisão de uma publicação de fotos.
+ *
+ * A tela funciona pelo id da rota. Antes ela dependia só do que a listagem
+ * deixava no Redux: recarregar a página ou abrir o link direto devolvia o
+ * revisor para a lista, com o trabalho perdido.
+ */
 export default function ImageSectionEditorAdmin() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const sectionData = useSelector((state: RootState) => state.imageSection.data) as SectionData | null;
+  const { id: routeId } = useParams<{ id: string }>();
 
+  const sectionData = useSelector(
+    (state: RootState) => state.imageSection.data
+  ) as SectionData | null;
+
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState<NotificationState>({
     open: false,
@@ -35,9 +90,43 @@ export default function ImageSectionEditorAdmin() {
     severity: 'success',
   });
 
-  const showError = (message: string) => {
+  const sectionId = routeId ?? sectionData?.id;
+
+  const showError = (message: string) =>
     setNotification({ open: true, message, severity: 'error' });
-  };
+
+  // Sem nada em memória, a publicação vem da API pelo id da rota.
+  useEffect(() => {
+    if (sectionData?.id && (!routeId || sectionData.id === routeId)) return;
+
+    if (!routeId) {
+      navigate(LIST_ROUTE, { replace: true });
+      return;
+    }
+
+    let cancelado = false;
+
+    const carregar = async () => {
+      setLoading(true);
+      setLoadError('');
+      try {
+        const section = await apiFetchImageSection(routeId);
+        if (!cancelado) dispatch(setData(toSectionData(section)));
+      } catch (error: unknown) {
+        if (!cancelado) {
+          setLoadError(extractErrorMessage(error, 'Erro ao carregar a publicação'));
+        }
+      } finally {
+        if (!cancelado) setLoading(false);
+      }
+    };
+
+    void carregar();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [routeId, sectionData?.id, dispatch, navigate]);
 
   const validate = useCallback((): boolean => {
     if (!sectionData?.caption?.trim()) {
@@ -48,80 +137,42 @@ export default function ImageSectionEditorAdmin() {
       showError(FORM_VALIDATION_MESSAGES.SHARED_GALLERY_DESCRIPTION_REQUIRED);
       return false;
     }
-    if (!sectionData?.mediaItems?.length) {
-      showError(FORM_VALIDATION_MESSAGES.SHARED_GALLERY_MEDIA_REQUIRED);
+    const mediaError = validateClubinhoPublication(sectionData.mediaItems, true);
+    if (mediaError) {
+      showError(mediaError);
       return false;
     }
     return true;
   }, [sectionData]);
 
-  const prepareFormData = useCallback((): FormData => {
-    const formData = new FormData();
-
-    const mediaItems = sectionData!.mediaItems.map((media, index) => {
-      const base = {
-        isLocalFile: media.isLocalFile,
-        url: media.url || '',
-        uploadType: media.uploadType || MediaUploadType.UPLOAD,
-        mediaType: MediaType.IMAGE,
-        title: media.title || '',
-        description: media.description || '',
-        platformType: media.platformType || MediaPlatform.ANY,
-        originalName: media.originalName,
-        size: media.size,
-      };
-
-      if (media.isLocalFile && media.file) {
-        const fieldKey = `file_${index}`;
-        formData.append(fieldKey, media.file);
-        return { ...base, fieldKey, id: media.id };
-      }
-
-      return { ...base, id: media.id };
-    });
-
-    const payload = {
-      caption: sectionData!.caption,
-      description: sectionData!.description,
-      public: sectionData!.public,
-      mediaItems,
-    };
-
-    formData.append('sectionData', JSON.stringify(payload));
-    return formData;
-  }, [sectionData]);
-
-  const saveSection = async (formData: FormData) => {
-    if (!sectionData?.id) {
+  /**
+   * Grava a revisão.
+   *
+   * `publicar` decide o destino: aprovada vai ao ar, guardada continua na fila
+   * com o texto e as fotos já ajustados.
+   */
+  const salvar = async (publicar: boolean) => {
+    if (!validate()) return;
+    if (!sectionId) {
       showError(FORM_VALIDATION_MESSAGES.SECTION_ID_NOT_FOUND);
       return;
     }
 
-    await api.patch(`/image-sections/${sectionData.id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-
-    setNotification({
-      open: true,
-      message: FEATURE_SUCCESS_MESSAGES.IMAGES_SHARED,
-      severity: 'success',
-    });
-
-    dispatch(clearData());
-  };
-
-  const handleSave = async () => {
-    if (!validate()) return;
-
     setIsSaving(true);
-    const formData = prepareFormData();
-
     try {
-      await saveSection(formData);
-      navigate('/adm/fotos-clubinhos');
-    } catch (error) {
-      console.error('Erro ao salvar a seção:', error);
-      showError(GENERIC_ERROR_MESSAGES.SAVE_ERROR);
+      const { payload, uploads } = buildSectionUpload({
+        caption: sectionData!.caption,
+        description: sectionData!.description,
+        public: publicar,
+        mediaItems: sectionData!.mediaItems,
+      });
+
+      await apiUpdateImageSection(sectionId, buildSectionFormData(payload, uploads));
+
+      dispatch(clearData());
+      navigate(LIST_ROUTE);
+    } catch (error: unknown) {
+      showError(extractErrorMessage(error, GENERIC_ERROR_MESSAGES.SAVE_ERROR));
     } finally {
       setIsSaving(false);
     }
@@ -131,217 +182,156 @@ export default function ImageSectionEditorAdmin() {
     dispatch(setData({ ...(sectionData || {}), ...updatedData } as SectionData));
   };
 
-  useEffect(() => {
-    if (!sectionData) {
-      navigate('/adm/fotos-clubinhos');
-    }
-  }, [sectionData, navigate]);
-
-  if (!sectionData) {
-    return null;
+  if (loading) {
+    return (
+      <Box
+        data-testid="image-sections-image-section-editor-admin"
+        sx={{ display: 'flex', justifyContent: 'center', py: 8 }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
+
+  if (loadError) {
+    return (
+      <Container
+        data-testid="image-sections-image-section-editor-admin"
+        maxWidth="lg"
+        sx={{ py: 4 }}
+      >
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" onClick={() => navigate(LIST_ROUTE)}>
+              Voltar
+            </Button>
+          }
+        >
+          {loadError}
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (!sectionData) return null;
+
+  const noAr = sectionData.public;
 
   return (
     <Box
+      data-testid="image-sections-image-section-editor-admin"
       sx={{
         minHeight: '100vh',
-        bgcolor: '#f5f7fa',
-        py: { xs: 1, md: 2 },
-        px: { xs: 0.5, md: 0 },
+        '@supports (min-height: 100dvh)': { minHeight: '100dvh' },
+        bgcolor: '#f9fafb',
+        px: { xs: 2, md: 0 },
+        pb: 4,
       }}
     >
-      <Container maxWidth="lg" sx={{ px: { xs: 1, md: 2 } }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+      <Container maxWidth="lg" disableGutters>
+        <BackHeader title="Revisar fotos e vídeos" />
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 1.5, md: 2 },
+            mb: 2,
+            borderRadius: 3,
+            border: 1,
+            borderColor: 'divider',
+          }}
         >
-
-          <Paper
-            elevation={2}
-            sx={{
-              mb: 2,
-              borderRadius: 2,
-              background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
-              color: 'white',
-            }}
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={{ xs: 1.5, md: 2 }}
+            alignItems={{ xs: 'stretch', md: 'center' }}
+            justifyContent="space-between"
           >
-            <Box
-              sx={{
-                p: { xs: 1.5, md: 2 },
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexDirection: { xs: 'column', sm: 'row' },
-                gap: 1,
-              }}
-            >
-              <Box>
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
-                  sx={{
-                    fontSize: { xs: '1.1rem', md: '1.3rem' },
-                    mb: 0.5,
-                  }}
-                >
-                  🛠️ Editor de Imagens Compartilhadas
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    opacity: 0.9,
-                    fontSize: { xs: '0.8rem', md: '0.85rem' },
-                  }}
-                >
-                  Editar e publicar imagens compartilhadas dos Clubinhos
-                </Typography>
-              </Box>
-
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: 1,
-                  flexDirection: { xs: 'row', sm: 'row' },
-                  width: { xs: '100%', sm: 'auto' },
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate('/adm/fotos-clubinhos')}
-                  disabled={isSaving}
-                  size="small"
-                  sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
-                    '&:hover': {
-                      borderColor: 'white',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                    fontSize: '0.8rem',
-                  }}
-                >
-                  ← Voltar
-                </Button>
-
-                <Button
-                  variant="contained"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  size="small"
-                  sx={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    color: 'white',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                    },
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                  }}
-                >
-                  {isSaving ? 'Publicando...' : '💾 Publicar Alterações'}
-                </Button>
-              </Box>
-            </Box>
-          </Paper>
-
-          <Paper
-            elevation={1}
-            sx={{
-              p: { xs: 1.5, md: 2 },
-              borderRadius: 2,
-              bgcolor: 'white',
-              border: '1px solid #e5e7eb',
-            }}
-          >
-
-            <LoadingSpinner open={isSaving} aria-label="Salvando a seção" />
-
-            <NotificationModal
-              open={notification.open}
-              message={notification.message}
-              severity={notification.severity}
-              onClose={() => setNotification({ ...notification, open: false })}
-            />
-
-            <Box
-              sx={{
-                mb: 2,
-                p: { xs: 1.5, md: 2 },
-                bgcolor: '#f8fafc',
-                borderRadius: 2,
-                border: '1px solid #e2e8f0',
-              }}
-            >
-              <Typography
-                variant="h6"
-                fontWeight={600}
-                sx={{ mb: 1.5, color: '#1e293b', fontSize: { xs: '1rem', md: '1.1rem' } }}
-              >
-                📋 Informações da Galeria Compartilhada
-              </Typography>
-
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
-                  gap: { xs: 1.5, md: 2 },
-                }}
-              >
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                    ID da Seção
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace', color: '#64748b' }}>
-                    {sectionData?.id || 'N/A'}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                    Status
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: sectionData?.public ? '#059669' : '#dc2626',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {sectionData?.public ? '🌐 Público' : '🔒 Privado'}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                    Imagens Compartilhadas
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
-                    {sectionData?.mediaItems?.length || 0} imagens
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <ImageSectionEditor
-                isEditMode={true}
-                initialCaption={sectionData?.caption || ''}
-                initialDescription={sectionData?.description || ''}
-                initialIsPublic={sectionData?.public ?? true}
-                initialMediaItems={sectionData?.mediaItems || []}
-                onChange={handleChange}
-                captionPlaceholder="EX: Clubinho 90: Gincana de Páscoa - Crianças aprendendo sobre ressurreição"
-                descriptionPlaceholder="EX: Revisar e aprimorar a descrição das atividades do Clubinho: dinâmicas, brincadeiras, ensinamentos bíblicos e momentos especiais registrados."
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              <Chip
+                size="small"
+                color={noAr ? 'success' : 'warning'}
+                label={noAr ? 'No feed' : 'Aguardando aprovação'}
               />
-            </motion.div>
-          </Paper>
-        </motion.div>
+              <Chip
+                size="small"
+                variant="outlined"
+                icon={<CollectionsIcon />}
+                label={
+                  sectionData.mediaItems.length === 1
+                    ? '1 mídia'
+                    : `${sectionData.mediaItems.length} mídias`
+                }
+              />
+            </Stack>
+
+            <Stack
+              direction={{ xs: 'column-reverse', sm: 'row' }}
+              spacing={1}
+              sx={{ width: { xs: '100%', md: 'auto' } }}
+            >
+              <Button
+                variant="outlined"
+                onClick={() => void salvar(false)}
+                disabled={isSaving}
+                startIcon={<SaveIcon />}
+                fullWidth={false}
+                sx={{ minHeight: { xs: 44, sm: 'auto' } }}
+              >
+                Salvar sem publicar
+              </Button>
+
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => void salvar(true)}
+                disabled={isSaving}
+                startIcon={<PublicIcon />}
+                sx={{ minHeight: { xs: 44, sm: 'auto' } }}
+              >
+                {noAr ? 'Salvar e manter no feed' : 'Aprovar e publicar'}
+              </Button>
+            </Stack>
+          </Stack>
+
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+            Confira o título, a descrição e as fotos ou o vídeo antes de decidir. Publicar leva o
+            registro para o feed do clubinho.
+          </Typography>
+        </Paper>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 1.5, md: 2 },
+            borderRadius: 3,
+            border: 1,
+            borderColor: 'divider',
+          }}
+        >
+          <LoadingSpinner open={isSaving} aria-label="Salvando a publicação" />
+
+          <NotificationModal
+            open={notification.open}
+            message={notification.message}
+            severity={notification.severity}
+            onClose={() => setNotification({ ...notification, open: false })}
+          />
+
+          <ImageSectionEditor
+            isEditMode
+            disabled={isSaving}
+            initialCaption={sectionData.caption || ''}
+            initialDescription={sectionData.description || ''}
+            // Fora do ar por padrão: publicar é escolha explícita nos botões.
+            initialIsPublic={sectionData.public ?? false}
+            initialMediaItems={sectionData.mediaItems || []}
+            onChange={handleChange}
+            captionPlaceholder="EX: Clubinho 90: Gincana de Páscoa"
+            descriptionPlaceholder="EX: dinâmicas, brincadeiras e momentos especiais registrados."
+          />
+        </Paper>
       </Container>
     </Box>
   );

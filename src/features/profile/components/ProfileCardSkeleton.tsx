@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 
 const ProfileCardSkeleton: React.FC = () => (
-    <Paper
+    <Paper data-testid="profile-profile-card-skeleton"
         elevation={0}
         sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.06)', p: 2 }}
     >

@@ -31,6 +31,7 @@ export enum ValidationErrorCode {
     FILE_REQUIRED = 'VAL_4004',
     INVALID_DATE_RANGE = 'VAL_4005',
     INVALID_FORMAT = 'VAL_4006',
+    ACADEMIC_PERIOD_CLOSED = 'VAL_4007',
 }
 
 export enum ResourceErrorCode {
@@ -76,6 +77,8 @@ export enum ContentErrorCode {
     FEEDBACK_NOT_FOUND = 'CONTENT_8610',
     PAGELA_NOT_FOUND = 'CONTENT_8611',
     WEEK_MATERIAL_NOT_FOUND = 'CONTENT_8612',
+    /** O encontro de clubinho é mantido pelo cadastro do clubinho, não pela agenda. */
+    CLUB_MEETING_NOT_EDITABLE = 'CONTENT_8613',
 }
 
 export enum InternalErrorCode {
@@ -102,7 +105,8 @@ export type ApiErrorCode =
 
 export interface ApiErrorDetail {
     field?: string;
-    [key: string]: any;
+    /** O back manda o que for útil para a tela; o valor não é conhecido aqui. */
+    [key: string]: unknown;
 }
 
 export interface ApiErrorData {

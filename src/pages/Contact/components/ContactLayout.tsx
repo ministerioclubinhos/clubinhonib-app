@@ -7,8 +7,7 @@ interface ContactLayoutProps {
 
 const ContactLayout: React.FC<ContactLayoutProps> = ({ children }) => {
   return (
-    <Box
-      component="main"
+    <Box data-testid="contact-contact-layout"
       sx={{
         minHeight: 'calc(100vh - 128px)',
         background: 'linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 50%, #f0f8ff 100%)',

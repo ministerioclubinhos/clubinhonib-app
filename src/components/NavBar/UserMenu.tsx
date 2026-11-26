@@ -16,6 +16,7 @@ import { useDispatch } from 'react-redux';
 import { signOut, User } from '@/store/slices/auth/authSlice';
 import { UserRole } from "@/types/shared";
 import { useFeatureFlags } from '@/hooks';
+import { FEATURE } from '@/features/feature-flags';
 import type { AppDispatch } from '@/store/slices';
 import PersonIcon from '@mui/icons-material/Person';
 import SchoolIcon from '@mui/icons-material/School';
@@ -58,7 +59,6 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
 
     const isAdmin = user?.role === UserRole.ADMIN;
     const isCoordinator = user?.role === UserRole.COORDINATOR;
-    const isTeacher = user?.role === UserRole.TEACHER;
 
     const { flags } = useFeatureFlags();
 
@@ -76,7 +76,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
 
     if (isMobile) {
         return (
-            <Box sx={{ width: '100%', pt: 2, pl: 2, borderTop: '1px solid rgba(255,255,255,0.2)', mt: 2 }}>
+            <Box data-testid="nav-bar-user-menu" sx={{ width: '100%', pt: 2, pl: 2, borderTop: '1px solid rgba(255,255,255,0.2)', mt: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, px: 0 }}>
                     <Avatar
                         sx={{ width: 40, height: 40, bgcolor: 'secondary.main', mr: 2 }}
@@ -134,7 +134,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                     Área do Professor
                 </Button>
 
-                {(isAdmin || (isCoordinator && flags.coordinator_children_access) || (isTeacher && flags.teacher_children_access)) && (
+                {flags[FEATURE.CHILDREN_AREA] && (
                     <Button
                         onClick={() => handleNavigate('/area-das-criancas')}
                         fullWidth
@@ -197,15 +197,14 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
 
     return (
         <React.Fragment>
-            <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
+            <Box data-testid="nav-bar-user-menu" sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
                 <Tooltip title="Configurações da conta">
                     <IconButton
                         onClick={handleClick}
                         size="small"
                         aria-controls={open ? 'account-menu' : undefined}
                         aria-haspopup="true"
-                        aria-expanded={open ? 'true' : undefined}
-                    >
+                        aria-expanded={open ? 'true' : undefined} aria-label="Configurações da conta">
                         <Avatar
                             sx={{
                                 width: 40,
@@ -222,7 +221,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                     </IconButton>
                 </Tooltip>
             </Box>
-            <Menu
+            <Menu data-testid="nav-bar-user-menu"
                 anchorEl={anchorEl}
                 id="account-menu"
                 open={open}
@@ -275,7 +274,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onCloseMobile, isMobile }) =>
                     Área do Professor
                 </MenuItem>
 
-                {(isAdmin || (isCoordinator && flags.coordinator_children_access) || (isTeacher && flags.teacher_children_access)) && (
+                {flags[FEATURE.CHILDREN_AREA] && (
                     <MenuItem onClick={() => handleNavigate('/area-das-criancas')}>
                         <ListItemIcon>
                             <ChildCareIcon fontSize="small" />

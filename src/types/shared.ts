@@ -55,6 +55,8 @@ export interface ClubLite {
     weekday: string;
     time?: string;
     isActive?: boolean;
+    district?: string | null;
+    city?: string | null;
 }
 
 export interface TeacherProfileLite {

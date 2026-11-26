@@ -1,0 +1,281 @@
+import { DEFAULT_LESSON_VISUAL_STYLE } from './constants';
+import { AiProviderProfile } from '@/features/ai-providers/types';
+import type { ProductionConfirmCopy, VisualConfigForm } from './production.types';
+import {
+  LessonStageStatus,
+  LessonStageType,
+  ProductionConfirmationKind,
+  StudioHubAction,
+} from './types';
+import type { lessonProductionActions } from './workflow';
+
+/** Width of the header's actions column on desktop; the title takes what is left. */
+export const PRODUCTION_HEADER_ACTIONS_WIDTH = 280;
+/** Room left under the page so the fixed mobile bar never covers the last control. */
+export const PRODUCTION_UNSAVED_BAR_CLEARANCE = 88;
+export const PRODUCTION_STAGE_CARD_ID = 'ai-lesson-production-stage-card';
+export const PRODUCTION_SKELETON_STAGE_ROWS = 5;
+export const AI_PROVIDER_SETTINGS_ROUTE = '/adm/config-provedores-ia';
+export const PRODUCTION_SAVE_SHORTCUT_KEY = 's';
+/**
+ * Appended to the lesson id in the drafts snapshot key. The instructions live beside the
+ * document drafts so the same logout/user purge covers them.
+ */
+export const PRODUCTION_INSTRUCTIONS_KEY_SUFFIX = 'instructions';
+
+/** Until the lesson loads nothing can be done to it. */
+export const PRODUCTION_NO_ACTIONS: ReturnType<typeof lessonProductionActions> = {
+  canEdit: false,
+  canSave: false,
+  canGenerate: false,
+  regenerationLocked: false,
+  canComplete: false,
+  dependencyReady: true,
+};
+export const EMPTY_VISUAL_CONFIG_FORM: VisualConfigForm = {
+  visualType: '',
+  visualOrientation: '',
+  visualQuantity: '',
+  visualStyle: DEFAULT_LESSON_VISUAL_STYLE,
+};
+
+/** Hub actions that are done in this screen; the others happen in the review screen. */
+export const PRODUCTION_STEP_ACTIONS: readonly StudioHubAction[] = [
+  StudioHubAction.FIX_CHANGES,
+  StudioHubAction.RETRY_FAILED,
+  StudioHubAction.CONTINUE,
+  StudioHubAction.START,
+];
+
+/**
+ * Short status names for the mobile tabs, where the full ones ("Concluída pelo produtor")
+ * push the item name out of view. Other screens keep `LESSON_STAGE_STATUS_LABELS`.
+ */
+export const LESSON_STAGE_STATUS_SHORT_LABELS: Record<LessonStageStatus, string> = {
+  NOT_STARTED: 'A fazer',
+  GENERATING: 'Gerando',
+  DRAFT: 'Em produção',
+  PRODUCER_APPROVED: 'Concluída',
+  IN_REVIEW: 'Em revisão',
+  CHANGES_REQUESTED: 'Ajustes',
+  APPROVED: 'Aprovada',
+  FAILED: 'Falhou',
+  STALE: 'Desatualizada',
+};
+export const LESSON_STAGE_UNSAVED_LABEL = 'Edição não salva';
+export const LESSON_STAGE_UNSAVED_SHORT_LABEL = 'Não salva';
+export const STAGE_NAVIGATION_TEXTS = {
+  title: 'Fluxo da produção',
+  subtitle: 'Selecione a etapa para ver, editar e concluir os materiais.',
+  collapse: 'Recolher fluxo',
+  expand: 'Expandir fluxo',
+} as const;
+export const STAGE_NAVIGATION_WIDTH = { expanded: 320, collapsed: 72 } as const;
+
+export const AI_PROVIDER_PROFILE_CAPTIONS: Record<AiProviderProfile, string> = {
+  [AiProviderProfile.TEST]: 'perfil de teste',
+  [AiProviderProfile.PRODUCTION]: 'perfil de produção',
+  [AiProviderProfile.CUSTOM]: 'perfil personalizado',
+};
+
+export const PRODUCTION_CONFIRM_COPY: Record<ProductionConfirmationKind, ProductionConfirmCopy> = {
+  [ProductionConfirmationKind.COMPLETE_OUTDATED]: {
+    title: () => 'Concluir este item sem gerar novamente?',
+    confirmText: 'Continua válido, concluir',
+    confirmColor: 'primary',
+  },
+  [ProductionConfirmationKind.SAVE]: {
+    title: () => 'Salvar e desatualizar os itens seguintes?',
+    confirmText: 'Salvar mesmo assim',
+    confirmColor: 'primary',
+  },
+  [ProductionConfirmationKind.REGENERATE]: {
+    title: (stageLabel) => `Regenerar “${stageLabel}” com IA?`,
+    confirmText: 'Regenerar',
+    confirmColor: 'primary',
+  },
+  [ProductionConfirmationKind.REBASE]: {
+    title: () => 'Reaplicar sua edição sobre a versão atual?',
+    confirmText: 'Reaplicar minha edição',
+    confirmColor: 'primary',
+  },
+  [ProductionConfirmationKind.DISCARD]: {
+    title: () => 'Descartar a edição desta etapa?',
+    confirmText: 'Descartar edição',
+    confirmColor: 'error',
+  },
+};
+
+/** Items that print the memory verse: the tool to change it is offered in each of them. */
+export const VERSE_TOOL_STAGES: readonly LessonStageType[] = [
+  LessonStageType.LESSON,
+  LessonStageType.VERSE_VISUALS,
+  LessonStageType.VERSE_FIXATION,
+  LessonStageType.MEDITATION_YOUNGER,
+  LessonStageType.MEDITATION_OLDER,
+];
+
+/** Limits of the verse form, the same the API enforces. */
+export const VERSE_FIELD_LIMITS = {
+  textMin: 10,
+  textMax: 600,
+  referenceMax: 120,
+} as const;
+
+/** Item statuses that count as concluded: changing the verse withdraws them. */
+export const VERSE_CONCLUDED_STATUSES: readonly LessonStageStatus[] = [
+  LessonStageStatus.PRODUCER_APPROVED,
+  LessonStageStatus.IN_REVIEW,
+  LessonStageStatus.APPROVED,
+];
+
+export const LESSON_VERSE_TEXTS = {
+  label: 'Versículo para memorizar',
+  change: 'Alterar versículo',
+  changeLabel: 'Alterar o versículo da lição',
+  dialogTitle: 'Alterar versículo',
+  warningTitle: 'Você está alterando o versículo.',
+  warningBody:
+    'Ele é usado em toda a lição: visuais do versículo, fixação e meditações. O item 1 volta para produção e você precisará concluí-lo de novo.',
+  impactTitle: 'Estes itens já gerados ficam desatualizados e precisam ser gerados de novo:',
+  noImpact: 'Nenhum item depois do item 1 foi gerado ainda.',
+  textLabel: 'Texto do versículo (NVI)',
+  referenceLabel: 'Referência',
+  referenceHelper: 'Livro capítulo:versículo, por exemplo João 3:16',
+  versionChip: 'NVI',
+  acknowledge: 'Entendo que o item 1 volta para produção e que os itens acima precisam ser gerados de novo.',
+  confirm: 'Alterar versículo',
+  saving: 'Alterando…',
+  cancel: 'Cancelar',
+  unchanged: 'Altere o texto ou a referência para continuar.',
+  textTooShort: 'O texto do versículo precisa ter ao menos 10 caracteres.',
+  textTooLong: 'O texto do versículo pode ter no máximo 600 caracteres.',
+  referenceRequired: 'Informe a referência do versículo.',
+  unsaved: 'Salve ou descarte a edição deste item antes de alterar o versículo.',
+  published: 'Lição publicada: o versículo não pode mais ser alterado.',
+  busy: 'Aguarde a geração em andamento para alterar o versículo.',
+  error: 'Não foi possível alterar o versículo.',
+  done: (reference: string) => `Versículo alterado para ${reference}.`,
+  doneNext: 'O item 1 voltou para produção: conclua-o e gere de novo os itens desatualizados.',
+} as const;
+
+/** Presentation image of the lesson, shown with item 1. */
+export const LESSON_COVER_TEXTS = {
+  title: 'Imagem de apresentação',
+  caption: 'Capa do material publicado',
+  /** Label of the compact row beside item 1. */
+  rowLabel: 'Imagem de apresentação',
+  description:
+    'Ilustração com o título curto e o personagem principal da lição. Ela será a imagem do card do material quando a lição for publicada. Gerar outra imagem substitui esta e não altera nenhum item.',
+  empty: 'Ainda sem imagem. Gere uma para o card do material.',
+  alt: 'Imagem de apresentação da lição',
+  view: 'Ver imagem',
+  viewLabel: 'Ver a imagem de apresentação',
+  generate: 'Gerar imagem',
+  regenerate: 'Gerar outra imagem',
+  generating: 'Gerando…',
+  generatingHint: 'A imagem leva alguns segundos. Você pode continuar aqui.',
+  openOriginal: 'Abrir em tamanho original',
+  close: 'Fechar',
+  published: 'Lição publicada: a imagem da rota já foi definida e não pode mais ser trocada.',
+  busy: 'Aguarde a geração em andamento para gerar a imagem.',
+  error: 'Não foi possível gerar a imagem de apresentação.',
+} as const;
+
+export const PRODUCTION_TEXTS = {
+  back: 'Voltar para Produção de Lições',
+  backFromError: 'Voltar para lições',
+  loading: 'Carregando detalhes da lição...',
+  loadError: 'Não foi possível carregar os detalhes da lição.',
+  deleteError: 'Não foi possível excluir a lição.',
+  stageMissing:
+    'Esta etapa não faz parte deste pacote. Selecione outra etapa no fluxo da produção.',
+
+  // Cabeçalho
+  goToReview: 'Ir para a revisão',
+  moreActions: 'Mais ações',
+  deleteLesson: 'Excluir lição',
+  progressLabel: 'Progresso geral da lição',
+  progressApproved: 'aprovados',
+  progressCompleted: 'itens concluídos',
+  specialContextPrefix: 'Ideia da história:',
+  editorialPurposePrefix: 'Propósito definido:',
+
+  // Avisos da página
+  draftRecovered:
+    'Rascunho recuperado: suas edições não salvas desta lição foram restauradas neste navegador. Revise e salve para não perdê-las.',
+  unsavedNotice:
+    'Há edições não salvas. Você pode alternar as etapas; salve ou descarte as edições antes de concluir ou gerar conteúdo.',
+  draftOutdated:
+    'Esta etapa recebeu uma versão mais nova em outra sessão enquanto você editava. Sua edição foi preservada, mas não pode ser salva sobre a versão antiga.',
+  viewRemote: 'Ver versão remota',
+  rebase: 'Reaplicar minha edição sobre a versão atual',
+
+  // Orientações do item
+  changesRequested:
+    'Esta etapa recebeu solicitação de ajustes na revisão. Revise as observações abaixo, edite ou regenere o conteúdo e conclua o item novamente.',
+  staleUnknownOrigin: 'uma etapa anterior do fluxo',
+  dependencyMissing: 'Conclua a etapa anterior do fluxo antes de gerar esta.',
+  commentsTitle: 'Observações da Revisão',
+  generationFailedTitle: 'A geração deste item falhou.',
+  retryGeneration: 'Tentar de novo',
+  retryNeedsVisualConfig:
+    'Para tentar de novo, confirme abaixo a quantidade, o estilo e o formato dos visuais.',
+  failureDetails: 'Ver detalhes',
+  packageReady: 'O pacote está completo e pronto para a revisão.',
+  dismissNotice: 'Dispensar aviso',
+
+  // Ações do item
+  instructionsLabel: 'Orientações e instruções para a IA (geração ou ajuste)',
+  instructionsPlaceholder:
+    'Ex: Enfatize o amor de Deus, mantenha linguagem acessível para crianças de 6 anos...',
+  generate: 'Gerar com IA',
+  regenerate: 'Regenerar com IA',
+  generating: 'Gerando com IA…',
+  save: 'Salvar edição',
+  saving: 'Salvando…',
+  preview: 'Visualizar PDF do item',
+  previewNeedsSave: 'Salve para visualizar',
+  complete: 'Concluir item para o pacote',
+  completing: 'Concluindo…',
+  completed: 'Item concluído',
+  discard: 'Descartar edição desta etapa',
+  providerSettingsLink: 'Alterar',
+  completeBlockedOverflow:
+    'O conteúdo ultrapassa a folha de impressão. Reduza o texto antes de concluir o item.',
+  completeBlockedDrafts: 'Salve ou descarte as edições pendentes antes de concluir.',
+  completeBlockedDone:
+    'Este item já foi concluído. Ao salvar uma nova edição ele volta para produção e pode ser concluído de novo.',
+  saveConflict:
+    'Esta etapa foi alterada em outra sessão. Sua edição foi preservada; aguarde a versão atual carregar para compará-la ou reaplicar sua edição.',
+  saveFailed: 'Não foi possível salvar. Sua edição foi preservada; tente novamente.',
+  completeConflict:
+    'Esta etapa foi atualizada em outra sessão. A versão mais recente foi recarregada; revise o conteúdo antes de concluir o item.',
+  completeFailed:
+    'Não foi possível concluir o item para o pacote. Verifique se o conteúdo e as ilustrações estão prontos e tente novamente.',
+
+  // Barra de edição não salva
+  unsavedBarLabel: 'Edição não salva nesta etapa',
+  unsavedBarSaveName: 'Salvar edição desta etapa',
+  unsavedBarDiscard: 'Descartar',
+  unsavedBarShortcut: 'Ctrl/Cmd + S salva',
+
+  // Confirmações
+  confirmSaveBody:
+    'Salvar esta edição marca como desatualizados os itens abaixo, que dependem dela. Eles perdem a conclusão e precisarão ser revistos e concluídos novamente. Itens aprovados ou em revisão não são alterados:',
+  confirmRegenerateSignedOff: 'Este item já foi concluído. Regenerar descarta essa conclusão.',
+  confirmRegenerateBody:
+    'A IA criará uma nova versão que substitui o conteúdo atual deste item. A versão anterior fica apenas no histórico e a geração consome créditos do provedor.',
+  confirmRegenerateImpact: 'Os itens abaixo também ficarão desatualizados:',
+  confirmRegenerateNoImpact: 'Os demais itens não serão alterados.',
+  confirmRegenerateNoImpactInReview:
+    'O pacote está em revisão: os demais itens não serão alterados e os aprovados continuam aprovados.',
+  confirmRebaseBody:
+    'Seu texto passa a substituir a versão que está no servidor quando você salvar. As alterações feitas na outra sessão que você não incorporou serão sobrescritas. Use “Ver versão remota” antes, se quiser comparar.',
+  confirmDiscardBody:
+    'A edição local desta etapa será apagada e a versão atual do servidor será carregada.',
+  confirmOutdatedUnknownOrigin: ' dos itens anteriores',
+
+  remoteVersionTitle: 'Versão atual no servidor —',
+  close: 'Fechar',
+} as const;

@@ -1,9 +1,12 @@
-export const MOTIVATION_TEXT = '💬 Que tal aproveitar esta semana para compartilhar o amor de Jesus com as crianças da sua comunidade?';
-
 export interface BibleVerse {
   text: string;
   reference: string;
 }
+
+export const EVANGELISM_VERSE: BibleVerse = {
+  text: 'E não nos cansemos de fazer o bem, porque a seu tempo ceifaremos, se não desfalecermos.',
+  reference: 'Gálatas 6:9',
+};
 
 export const WEEKLY_VERSES: BibleVerse[] = [
   {
@@ -117,7 +120,7 @@ export const TEACHING_STEPS = [
 export const SECTION_DATA = [
   {
     icon: 'CheckCircle',
-    color: '#4caf50',
+    color: '#2e7d32',
     title: 'Objetivos da Área',
     items: [
       '📅 Materiais atualizados semanalmente seguindo o calendário bíblico',
@@ -132,10 +135,10 @@ export const SECTION_DATA = [
   },
   {
     icon: 'Info',
-    color: '#2196f3',
+    color: '#1565c0',
     title: 'Orientações Importantes',
     items: [
-      '🚩 Consulte o banner semanal para o tema e versículo atual',
+      '🚩 Consulte o card semanal para o tema e lição atual',
       '🎨 Adapte os materiais à realidade e idade da sua turma',
       '💬 Compartilhe experiências e ideias com outros professores',
       '📖 Mantenha-se atualizado com as novidades da plataforma',
@@ -147,7 +150,7 @@ export const SECTION_DATA = [
   },
   {
     icon: 'Lightbulb',
-    color: '#ff9800',
+    color: '#ef6c00',
     title: 'Dicas de Ouro',
     items: [
       '⏰ Prepare sua aula com antecedência para maior segurança',
@@ -169,9 +172,9 @@ export const BANNER_STYLES = {
     boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
   },
   ideasSharing: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    borderRadius: '20px',
-    boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+    background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+    borderRadius: '16px',
+    boxShadow: '0 8px 24px rgba(79, 70, 229, 0.22)',
   },
   motivation: {
     backgroundColor: '#e3f2fd',
@@ -184,31 +187,36 @@ export const BANNER_HEIGHTS = {
   sideBySide: {
     xs: 200,
     sm: 230,
-    md: 280,
+    md: 260,
   },
   standalone: {
-    xs: 220,
-    sm: 260,
-    md: 320,
+    xs: 200,
+    sm: 240,
+    md: 280,
   },
   standaloneCompact: {
-    xs: 220,
-    sm: 260,
-    md: 240,
+    xs: 200,
+    sm: 220,
+    md: 220,
   },
 };
 
 export const CONTAINER_STYLES = {
   main: {
-    width: '100%',
-    mt: 3,
-    mb: 8,
-    px: { xs: 2, md: 4 },
-    bgcolor: '#f5f7fa',
+    width: { xs: '98%', md: '95%' },
+    maxWidth: 'none !important',
+    mx: 'auto',
+    pt: { xs: 1.5, md: 3 },
+    pb: { xs: 5, md: 8 },
+    px: '0 !important',
+    minHeight: '100vh',
+    bgcolor: '#f4f6f9',
   },
   paper: {
-    p: { xs: 2, md: 5 },
-    borderRadius: 3,
-    background: 'linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%)',
+    p: { xs: 1.75, sm: 2.5, md: 4 },
+    borderRadius: { xs: 2.5, md: 3 },
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)',
   },
 };

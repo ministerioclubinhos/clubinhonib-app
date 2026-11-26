@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Button, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
+import { Button, CircularProgress } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 
 interface DownloadButtonProps {
@@ -17,8 +17,6 @@ export default function DownloadButton({
   size = 'small',
   fullWidth = false 
 }: DownloadButtonProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [loading, setLoading] = useState(false);
   const mountedRef = useRef(true);
   const controllerRef = useRef<AbortController | null>(null);
@@ -55,14 +53,19 @@ export default function DownloadButton({
       document.body.removeChild(link);
 
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-    } catch {
+    } catch (downloadError) {
+      // A aba já foi aberta com o arquivo; o download direto é um extra que
+      // falha em URL de outro domínio sem CORS.
+      if (!controller.signal.aborted) {
+        console.warn('Falha ao baixar o documento diretamente:', downloadError);
+      }
     } finally {
       if (mountedRef.current && !controller.signal.aborted) setLoading(false);
     }
   };
 
   return (
-    <Button
+    <Button data-testid="page-view-ideas-material-viewpage-download-button"
       variant="contained"
       color="primary"
       startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <DownloadIcon />}
@@ -71,16 +74,13 @@ export default function DownloadButton({
       size={size}
       fullWidth={fullWidth}
       sx={{
-        borderRadius: { xs: 1.5, sm: 2 },
+        borderRadius: 2,
         textTransform: 'none',
-        fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
-        py: { xs: 0.4, sm: 0.5, md: 0.75 },
-        minHeight: { xs: 28, sm: 32, md: 36 },
-        '&:hover': {
-          bgcolor: 'primary.dark',
-          transform: 'translateY(-1px)',
-        },
-        transition: 'all 0.2s ease',
+        // 44 px é o alvo mínimo de toque das telas do site; o botão vinha com
+        // 28 px de altura e letra de 0,7 rem no celular.
+        minHeight: 44,
+        px: 2,
+        '&:hover': { bgcolor: 'primary.dark' },
       }}
     >
       {loading ? 'Baixando...' : 'Baixar'}

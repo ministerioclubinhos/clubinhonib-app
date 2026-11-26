@@ -9,3 +9,6 @@ export { default as ProfileDetailModal } from './ProfileDetailModal';
 export { default as BirthdaySection } from './BirthdaySection';
 export { default as ProfileCard } from './ProfileCard';
 export { default as ProfileCardSkeleton } from './ProfileCardSkeleton';
+export { default as ProfileListRow } from './ProfileListRow';
+export { default as ProfilesStats } from './ProfilesStats';
+export { default as ProfilesToolbar } from './ProfilesToolbar';
