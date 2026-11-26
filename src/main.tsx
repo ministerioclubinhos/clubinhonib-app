@@ -1,3 +1,5 @@
+// Antes de tudo: precisa se registrar antes do roteador (ver o módulo).
+import './utils/popstateInterceptors';
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";

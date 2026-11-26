@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
+import { addPopStateInterceptor } from '@/utils/popstateInterceptors';
 
 /**
  * Leave guard for Studio screens. BrowserRouter has no blocker, so a rejected history pop is
@@ -35,8 +36,7 @@ export function useStudioUnsavedChanges(dirty: boolean) {
       };
       setOpen(true);
     };
-    window.addEventListener('popstate', onPopState, true);
-    return () => window.removeEventListener('popstate', onPopState, true);
+    return addPopStateInterceptor(onPopState);
   }, [dirty]);
   const requestLeave = useCallback((leave: () => void) => {
     if (!dirtyRef.current) {
