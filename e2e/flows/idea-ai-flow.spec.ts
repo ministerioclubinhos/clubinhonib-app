@@ -8,10 +8,9 @@ import {
 } from '@/features/ideas-sections/types';
 
 import { aiFakeRequestsContaining } from '../support/aiFakeJournal';
-import { ApiClient, uniqueSuffix } from '../support/api';
-import { TEACHER_EMAIL, TEACHER_PASSWORD } from '../support/env';
-import { enableProductFlags } from '../support/featureFlags';
+import { TEACHER_EMAIL } from '../support/env';
 import { waitForIdeaAi } from '../support/ideaAi';
+import { IdeaAiScenarioFixture } from '../support/ideaAiScenario';
 import { expectNoHorizontalOverflow } from '../support/responsive';
 import { selectMuiOption } from '../support/ui';
 
@@ -21,83 +20,22 @@ import { selectMuiOption } from '../support/ui';
  * administrador revisa pela tela e o banco guarda o escolhido. Só a LLM é
  * substituída; as falhas são encenadas pelo marcador `[[ai-fake:...]]`.
  */
-const DESCRIPTION = 'separe 3 bolas e  forme 2 equipes antes da brincadeira. leia João 3:16 com as crianças';
-
-const VIDEO_LINK = {
-  title: 'Vídeo de apoio',
-  uploadType: 'link',
-  mediaType: 'video',
-  isLocalFile: false,
-  url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-  platformType: 'youtube',
-};
-
 test.describe('Ideias compartilhadas com IA', () => {
   // A fila processa uma chamada por vez e o worker consulta a cada 5 s.
   test.describe.configure({ timeout: 120_000 });
+  const scenario = new IdeaAiScenarioFixture();
 
-  let admin: ApiClient;
-  let teacher: ApiClient;
-  let restoreFlags: () => Promise<void>;
-  let pageId = '';
-  let pageTitle = '';
-  const ideas: string[] = [];
+  test.beforeAll(() => scenario.setUp());
+  test.afterAll(() => scenario.tearDown());
 
-  test.beforeAll(async () => {
-    admin = await ApiClient.login();
-    teacher = await ApiClient.login(TEACHER_EMAIL, TEACHER_PASSWORD);
-    restoreFlags = await enableProductFlags(admin);
-    const flags = await admin.get<Record<string, boolean>>('/feature-flags/map');
-    expect(flags.idea_ai_enhancement).toBe(true);
-    pageTitle = `E2E Destino IA ${uniqueSuffix()}`;
-    const page = await admin.postMultipart<{ id: string }>('/ideas-pages', {
-      ideasMaterialsPageData: JSON.stringify({
-        title: pageTitle,
-        description: 'Destino das ideias do teste',
-        public: true,
-        sections: [{ title: 'Seção base', description: 'd', public: true, medias: [] }],
-      }),
-    });
-    pageId = page.id;
-  });
-
-  test.afterAll(async () => {
-    if (pageId) await admin.delete(`/ideas-pages/${pageId}`);
-    for (const id of ideas) await admin.delete(`/ideas-sections/${id}`);
-    await restoreFlags?.();
-    await Promise.all([admin?.dispose(), teacher?.dispose()]);
-  });
-
-  /** O professor envia uma ideia; o marcador escolhe como a IA simulada responde. */
-  async function submitIdea(scenario: string): Promise<{ id: string; title: string; description: string; marker: string }> {
-    const id = uniqueSuffix();
-    const marker = scenario ? `[[ai-fake:${scenario}#${id}]]` : `ref ${id}`;
-    const title = `E2E Gincana ${id}`;
-    const description = `${DESCRIPTION} ${marker}`;
-    const idea = await teacher.postMultipart<{ id: string }>('/ideas-sections', {
-      // Toda ideia leva ao menos um material; o vídeo por link não vai para a IA.
-      sectionData: JSON.stringify({ title, description, medias: [VIDEO_LINK] }),
-    });
-    ideas.push(idea.id);
-    return { id: idea.id, title, description, marker };
-  }
-
-  async function openReview(page: Page, ideaId: string): Promise<void> {
-    await page.goto(`/adm/editar-ideias-compartilhadas/${ideaId}`);
-    await expect(page.getByTestId('ideas-sections-ideas-section-review-page')).toBeVisible();
-  }
-
-  async function publish(page: Page): Promise<void> {
-    await selectMuiOption(page, page.getByRole('combobox', { name: 'Página de destino' }), pageTitle);
-    await selectMuiOption(page, page.getByRole('combobox', { name: 'Visibilidade' }), 'Pública');
-    await page.getByRole('button', { name: 'Publicar ideia' }).click();
-  }
-
-  const stored = (ideaId: string) => admin.get<IdeasSectionResponse>(`/ideas-sections/${ideaId}`);
+  const submitIdea = (kind: string) => scenario.submit(kind);
+  const openReview = (page: Page, ideaId: string) => scenario.openReview(page, ideaId);
+  const publish = (page: Page) => scenario.publish(page);
+  const stored = (ideaId: string) => scenario.stored(ideaId);
 
   test('a revisão fiel é destacada e publicada só depois de confirmar as escolhas', async ({ page }) => {
     const idea = await submitIdea('polish');
-    const ready = await waitForIdeaAi(admin, idea.id);
+    const ready = await waitForIdeaAi(scenario.admin, idea.id);
     const result = ready.aiEnhancement!.currentResult!;
     // O vídeo por link não é melhorado pela IA e isso não torna o resultado parcial.
     expect(result.status).toBe(IdeaAiStatus.COMPLETED);
@@ -109,7 +47,7 @@ test.describe('Ideias compartilhadas com IA', () => {
     await expect(page.getByTestId('idea-ai-compare-panel')).toBeVisible();
     await expect(page.getByTestId('idea-ai-diff-added').first()).toBeVisible();
 
-    await selectMuiOption(page, page.getByRole('combobox', { name: 'Página de destino' }), pageTitle);
+    await selectMuiOption(page, page.getByRole('combobox', { name: 'Página de destino' }), scenario.pageTitle);
     await selectMuiOption(page, page.getByRole('combobox', { name: 'Visibilidade' }), 'Pública');
     await page.getByRole('button', { name: 'Publicar ideia' }).click();
     // Sem confirmar, nada é publicado.
@@ -118,7 +56,7 @@ test.describe('Ideias compartilhadas com IA', () => {
 
     await page.getByRole('checkbox', { name: 'Confirmo as escolhas' }).check();
     await page.getByRole('button', { name: 'Publicar ideia' }).click();
-    await expect.poll(async () => (await stored(idea.id)).pageId).toBe(pageId);
+    await expect.poll(async () => (await stored(idea.id)).pageId).toBe(scenario.pageId);
     const published = await stored(idea.id);
     expect(published.public).toBe(true);
     expect(published.description).toBe(result.enhancedDescription);
@@ -128,7 +66,7 @@ test.describe('Ideias compartilhadas com IA', () => {
 
   test('o pedido enviado à IA leva só os dados do professor, com saída estruturada', async () => {
     const idea = await submitIdea('');
-    await waitForIdeaAi(admin, idea.id);
+    await waitForIdeaAi(scenario.admin, idea.id);
 
     const requests = aiFakeRequestsContaining(idea.title).filter((entry) => entry.feature === 'shared_ideas');
     expect(requests.length, 'texto + guarda de essência').toBeGreaterThanOrEqual(2);
@@ -155,7 +93,7 @@ test.describe('Ideias compartilhadas com IA', () => {
 
   test('uma reescrita é reprovada pela guarda e o original do professor fica', async ({ page }) => {
     const idea = await submitIdea('rewrite');
-    const ready = await waitForIdeaAi(admin, idea.id);
+    const ready = await waitForIdeaAi(scenario.admin, idea.id);
     const result = ready.aiEnhancement!.currentResult ?? ready.aiEnhancement!.attemptHistory[0];
     expect(result.textGuard?.approved).toBe(false);
     expect(result.enhancedDescription).toBeNull();
@@ -176,7 +114,7 @@ test.describe('Ideias compartilhadas com IA', () => {
   ]) {
     test(`falha da IA (${failure.label}) é registrada e a ideia original continua publicável`, async ({ page }) => {
       const idea = await submitIdea(failure.scenario);
-      const ready = await waitForIdeaAi(admin, idea.id);
+      const ready = await waitForIdeaAi(scenario.admin, idea.id);
       const attempt = ready.aiEnhancement!.attemptHistory[0];
       expect({ status: attempt.status, errorCode: attempt.errorCode }).toEqual({
         status: IdeaAiStatus.FAILED,
@@ -187,14 +125,14 @@ test.describe('Ideias compartilhadas com IA', () => {
       await openReview(page, idea.id);
       await expect(page.getByTestId('idea-ai-failed')).toBeVisible();
       await publish(page);
-      await expect.poll(async () => (await stored(idea.id)).pageId).toBe(pageId);
+      await expect.poll(async () => (await stored(idea.id)).pageId).toBe(scenario.pageId);
       expect((await stored(idea.id)).description).toBe(idea.description);
     });
   }
 
   test('falha passageira do provedor é superada pelo retry', async () => {
     const idea = await submitIdea('server-error:2');
-    const ready = await waitForIdeaAi(admin, idea.id);
+    const ready = await waitForIdeaAi(scenario.admin, idea.id);
     expect(ready.aiEnhancement!.attemptHistory[0].status).toBe(IdeaAiStatus.COMPLETED);
     const calls = aiFakeRequestsContaining(idea.marker);
     expect(calls.slice(0, 3).map((call) => call.scenario)).toEqual(['server-error', 'server-error', null]);
@@ -204,7 +142,7 @@ test.describe('Ideias compartilhadas com IA', () => {
     test(`reprocessar pela tela recupera uma tentativa que falhou, em ${width}px`, async ({ page }) => {
       // As 4 chamadas da primeira tentativa falham; a segunda tentativa responde.
       const idea = await submitIdea('rate-limit:4');
-      await waitForIdeaAi(admin, idea.id);
+      await waitForIdeaAi(scenario.admin, idea.id);
       await page.setViewportSize({ width, height: 900 });
       await openReview(page, idea.id);
       await expect(page.getByTestId('idea-ai-failed')).toBeVisible();
@@ -237,6 +175,9 @@ test.describe('Ideias compartilhadas com IA', () => {
     const idea = await submitIdea('slow');
     await openReview(page, idea.id);
     await expect(page.getByTestId('idea-ai-progress')).toBeVisible({ timeout: 30_000 });
+    // A edição do administrador precisa sobreviver ao "publicar sem a IA".
+    const editedTitle = `${idea.title} (coordenação)`;
+    await page.getByRole('textbox', { name: 'Título da ideia' }).fill(editedTitle);
     await publish(page);
 
     const dialog = page.getByTestId('idea-ai-publish-original-dialog');
@@ -246,23 +187,23 @@ test.describe('Ideias compartilhadas com IA', () => {
 
     await page.getByRole('button', { name: 'Publicar ideia' }).click();
     await dialog.getByTestId('idea-ai-confirm-publish-original').click();
-    await expect.poll(async () => (await stored(idea.id)).pageId).toBe(pageId);
-    expect((await stored(idea.id)).description).toBe(idea.description);
+    await expect.poll(async () => (await stored(idea.id)).pageId).toBe(scenario.pageId);
+    expect(await stored(idea.id)).toMatchObject({ title: editedTitle, description: idea.description });
   });
 
   test('com a flag da IA desligada o envio não vai para a LLM e a ideia continua publicável', async ({ page }) => {
-    await admin.patch('/feature-flags/idea_ai_enhancement', { enabled: false });
+    await scenario.admin.patch('/feature-flags/idea_ai_enhancement', { enabled: false });
     try {
       const idea = await submitIdea('');
       await openReview(page, idea.id);
       await expect(page.getByTestId('idea-ai-status-panel')).toHaveCount(0);
       await publish(page);
-      await expect.poll(async () => (await stored(idea.id)).pageId).toBe(pageId);
+      await expect.poll(async () => (await stored(idea.id)).pageId).toBe(scenario.pageId);
       expect(aiFakeRequestsContaining(idea.title)).toEqual([]);
-      const refused = await admin.send('POST', `/ideas-sections/${idea.id}/ai-enhancement`, {});
+      const refused = await scenario.admin.send('POST', `/ideas-sections/${idea.id}/ai-enhancement`, {});
       expect({ status: refused.status, code: refused.code }).toMatchObject({ status: 403 });
     } finally {
-      await admin.patch('/feature-flags/idea_ai_enhancement', { enabled: true });
+      await scenario.admin.patch('/feature-flags/idea_ai_enhancement', { enabled: true });
     }
   });
 });
