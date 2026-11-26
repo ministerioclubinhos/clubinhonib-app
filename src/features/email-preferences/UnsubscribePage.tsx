@@ -12,7 +12,10 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
 import { Link as RouterLink, useSearchParams } from "react-router-dom";
 
-import { UNSUBSCRIBE_TOKEN_PARAM } from "./constants";
+import {
+  UNSUBSCRIBE_MISSING_TOKEN_MESSAGE,
+  UNSUBSCRIBE_TOKEN_PARAM,
+} from "./constants";
 import { useUnsubscribeFromNotices } from "./hooks";
 
 /**
@@ -82,6 +85,12 @@ export default function UnsubscribePage() {
               </Typography>
             </>
           )}
+
+          {!token && !isDone ? (
+            <Alert severity="warning" sx={{ width: "100%", textAlign: "left" }}>
+              {UNSUBSCRIBE_MISSING_TOKEN_MESSAGE}
+            </Alert>
+          ) : null}
 
           {status === "error" ? (
             <Alert severity="error" sx={{ width: "100%", textAlign: "left" }}>

@@ -36,8 +36,9 @@ test.describe('Descadastro de avisos', () => {
     await expect(page.getByRole('alert')).toBeVisible();
   });
 
-  test('sem token, o botão fica desabilitado', async ({ page }) => {
+  test('sem token, o botão fica desabilitado e a tela explica o que fazer', async ({ page }) => {
     await page.goto('/descadastrar');
+    await expect(page.getByRole('alert')).toContainText('Este link está incompleto');
     await expect(page.getByRole('button', { name: /não quero mais receber/i })).toBeDisabled();
   });
 });
