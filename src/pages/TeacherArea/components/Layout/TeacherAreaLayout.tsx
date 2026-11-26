@@ -24,7 +24,7 @@ const TeacherAreaLayout: React.FC = () => {
   );
 
   return (
-    <Box sx={{ bgcolor: '#f4f6f9', minHeight: '100vh', width: '100%' }}>
+    <Box data-testid="teacher-area-layout" sx={{ bgcolor: '#f4f6f9', minHeight: '100vh', width: '100%' }}>
       <Container
         data-testid="teacher-area"
         maxWidth={false}

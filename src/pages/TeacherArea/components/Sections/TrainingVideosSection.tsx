@@ -44,7 +44,7 @@ const TrainingVideosSection: React.FC = () => {
 
   return (
     <TeacherPageCard
-      testId="teacher-area-sections-training-videos-section"
+      data-testid="teacher-area-sections-training-videos-section"
       icon={<VideoLibraryIcon sx={{ fontSize: 22 }} />}
       accent={ACCENT}
       title="Capacitação & Vídeos de Treinamento"

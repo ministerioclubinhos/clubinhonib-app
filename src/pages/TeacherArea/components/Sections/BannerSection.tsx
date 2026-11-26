@@ -19,7 +19,7 @@ const BannerSection: React.FC<BannerSectionProps> = ({ showMeditationBanner }) =
   }
 
   return (
-    <Box sx={{ mb: { xs: 3, md: 4 } }}>
+    <Box data-testid="teacher-area-banner" sx={{ mb: { xs: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, px: 0.5 }}>
         <Typography
           variant="overline"

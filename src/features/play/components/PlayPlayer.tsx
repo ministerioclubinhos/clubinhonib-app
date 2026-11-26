@@ -40,7 +40,7 @@ function UploadPlayer({ video, startAt, onStart, onProgress, onEnded }: PlayPlay
   };
 
   return (
-    <Paper elevation={0} sx={FRAME_SX}>
+    <Paper data-testid="play-player-upload" elevation={0} sx={FRAME_SX}>
       <Box
         ref={ref}
         component="video"
@@ -141,7 +141,7 @@ function YouTubePlayerView({ video, startAt, onStart, onProgress, onEnded }: Pla
   }, [video.id]);
 
   return (
-    <Paper elevation={0} sx={FRAME_SX}>
+    <Paper data-testid="play-player-youtube" elevation={0} sx={FRAME_SX}>
       <Box
         ref={host}
         sx={{
@@ -160,17 +160,17 @@ function EmbedPlayer({ video, onStart }: PlayPlayerProps) {
     onStart();
     // Uma visualização por vídeo aberto.
   }, [video.id]);
-  return <VideoPlayer video={toMediaItem(video)} />;
+  return <VideoPlayer data-testid="play-player-embed" video={toMediaItem(video)} />;
 }
 
 /** Player do Play: escolhe a implementação pela origem do vídeo. */
 export default function PlayPlayer(props: PlayPlayerProps) {
   const { video } = props;
   if (video.uploadType === MediaUploadType.UPLOAD || video.isLocalFile) {
-    return <UploadPlayer key={video.id} {...props} />;
+    return <UploadPlayer data-testid="play-player-upload-slot" key={video.id} {...props} />;
   }
   if (video.platformType === MediaPlatform.YOUTUBE && getYouTubeId(video.url)) {
-    return <YouTubePlayerView key={video.id} {...props} />;
+    return <YouTubePlayerView data-testid="play-player-youtube-slot" key={video.id} {...props} />;
   }
-  return <EmbedPlayer key={video.id} {...props} />;
+  return <EmbedPlayer data-testid="play-player-embed-slot" key={video.id} {...props} />;
 }

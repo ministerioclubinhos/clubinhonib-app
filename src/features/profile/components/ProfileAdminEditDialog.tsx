@@ -172,7 +172,7 @@ const ProfileAdminEditDialog: React.FC<ProfileAdminEditDialogProps> = ({
         </DialogActions>
       </Dialog>
 
-      <Dialog open={open && confirmingClear} onClose={() => !clearing && setConfirmingClear(false)} maxWidth="xs" fullWidth>
+      <Dialog data-testid="profile-admin-clear-confirm" open={open && confirmingClear} onClose={() => !clearing && setConfirmingClear(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Limpar dados de {profile.name}?</DialogTitle>
         <DialogContent>
           <DialogContentText>

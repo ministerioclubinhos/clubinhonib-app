@@ -30,7 +30,7 @@ export default function PdfRenderer({ objectUrl, onError }: RendererProps) {
   }, []);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+    <Box data-testid="document-viewer-pdf" sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <Box
         ref={wrapperRef}
         // scrollbarGutter reserva a calha da barra: sem isso a barra aparece/some, muda a

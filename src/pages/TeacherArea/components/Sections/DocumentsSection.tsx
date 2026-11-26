@@ -94,7 +94,7 @@ const DocumentsSection: React.FC = () => {
 
   return (
     <TeacherPageCard
-      testId="teacher-area-sections-documents-section"
+      data-testid="teacher-area-sections-documents-section"
       icon={<DescriptionIcon sx={{ fontSize: 22 }} />}
       accent={ACCENT}
       title="Documentos & Apostilas de Apoio"

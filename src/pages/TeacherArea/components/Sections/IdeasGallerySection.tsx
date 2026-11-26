@@ -47,7 +47,7 @@ const IdeasGallerySection: React.FC = () => {
 
   return (
     <TeacherPageCard
-      testId="teacher-area-sections-ideas-gallery-section"
+      data-testid="teacher-area-sections-ideas-gallery-section"
       icon={<LightbulbOutlinedIcon sx={{ fontSize: 22 }} />}
       accent={ACCENT}
       title="Banco de Ideias & Dinâmicas"

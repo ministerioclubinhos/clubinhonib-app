@@ -144,7 +144,7 @@ export default function IdeasPageView({ idToFetch }: IdeasPageViewProps) {
 
   return (
     <TeacherPageCard
-      testId="page-view-ideas-material-viewpage-ideas-page-view"
+      data-testid="page-view-ideas-material-viewpage-ideas-page-view"
       icon={<LightbulbOutlinedIcon sx={{ fontSize: 22 }} />}
       accent="#9333ea"
       backTo={TEACHER_LIST_PATH[MediaTargetType.IdeasPage]}

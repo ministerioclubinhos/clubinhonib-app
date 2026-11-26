@@ -215,7 +215,7 @@ export default function IdeasSectionDetailsModal({
         </Button>
       </DialogActions>
     </Dialog>
-    <IdeasMediaPreviewDialog media={previewing} onClose={() => setPreviewing(null)} />
+    <IdeasMediaPreviewDialog data-testid="ideas-sections-details-media-preview" media={previewing} onClose={() => setPreviewing(null)} />
     </>
   );
 }

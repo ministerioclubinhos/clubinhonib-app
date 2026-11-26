@@ -32,7 +32,7 @@ function VideoPageContent({ idToFetch, variant = 'teacher' }: VideoPageViewProps
 
   if (loading) {
     return (
-      <TeacherPageCard {...cardProps} title="Carregando...">
+      <TeacherPageCard data-testid="page-view-video-loading" {...cardProps} title="Carregando...">
         <Grid container spacing={{ xs: 1.5, md: 2 }}>
           {[0, 1, 2].map((slot) => (
             <Grid item xs={12} sm={6} lg={4} key={slot}>
@@ -46,7 +46,7 @@ function VideoPageContent({ idToFetch, variant = 'teacher' }: VideoPageViewProps
 
   if (error) {
     return (
-      <TeacherPageCard {...cardProps} title="Vídeos">
+      <TeacherPageCard data-testid="page-view-video-error" {...cardProps} title="Vídeos">
         <Alert severity="error">{error}</Alert>
       </TeacherPageCard>
     );
@@ -54,7 +54,7 @@ function VideoPageContent({ idToFetch, variant = 'teacher' }: VideoPageViewProps
 
   if (!videoData) {
     return (
-      <TeacherPageCard {...cardProps} title="Vídeos">
+      <TeacherPageCard data-testid="page-view-video-not-found" {...cardProps} title="Vídeos">
         <Alert severity="info">Nenhuma página de vídeos encontrada.</Alert>
       </TeacherPageCard>
     );
@@ -63,7 +63,7 @@ function VideoPageContent({ idToFetch, variant = 'teacher' }: VideoPageViewProps
   const videos = videoData.videos ?? [];
 
   return (
-    <TeacherPageCard
+    <TeacherPageCard data-testid="page-view-video-content"
       {...cardProps}
       title={videoData.title}
       count={videos.length}
@@ -99,9 +99,9 @@ function VideoPageContent({ idToFetch, variant = 'teacher' }: VideoPageViewProps
 
 /** Na versão pública a página ganha só uma moldura de largura; a casca é a do site. */
 export default function PageVideoView(props: VideoPageViewProps) {
-  if (props.variant !== 'public') return <VideoPageContent {...props} />;
+  if (props.variant !== 'public') return <VideoPageContent data-testid="page-view-video-embedded" {...props} />;
   return (
-    <Box sx={{ bgcolor: '#f4f6f9', py: { xs: 2, md: 4 } }}>
+    <Box data-testid="page-view-video-public" sx={{ bgcolor: '#f4f6f9', py: { xs: 2, md: 4 } }}>
       <Container maxWidth={false} disableGutters sx={{ width: PUBLIC_MEDIA_PAGE_WIDTH }}>
         <VideoPageContent {...props} />
       </Container>

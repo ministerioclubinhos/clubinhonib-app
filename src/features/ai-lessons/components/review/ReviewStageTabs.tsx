@@ -8,7 +8,7 @@ import { LessonStageStatus, type LessonStageType } from '../../types';
 /** One tab per package item, with its review status. */
 export function ReviewStageTabs({ lesson, stageOrder, selectedType, onSelect }: ReviewStageTabsProps) {
   return (
-    <Paper
+    <Paper data-testid="ai-lessons-review-stage-tabs"
       elevation={0}
       sx={{
         mb: 2,

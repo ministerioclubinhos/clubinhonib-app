@@ -41,7 +41,7 @@ const PhotoTile: React.FC<TileProps> = ({ src, alt, featured, overlayCount, onOp
   const [failed, setFailed] = useState(false);
 
   return (
-    <Box
+    <Box data-testid="page-view-image-photo-tile"
       component="button"
       type="button"
       onClick={onOpen}

@@ -282,7 +282,7 @@ export default function PageSectionView({ idToFetch, feed, variant = 'teacher' }
     : { onClick: handleBack };
 
   return (
-    <Box sx={{ bgcolor: isPublic ? '#f4f6f9' : 'transparent', minHeight: isPublic ? '70vh' : undefined }}>
+    <Box data-testid="page-view-image-sections" sx={{ bgcolor: isPublic ? '#f4f6f9' : 'transparent', minHeight: isPublic ? '70vh' : undefined }}>
     <Container
       data-testid="page-view-image-page-view-page-section-view"
       maxWidth={isPublic ? false : 'xl'}

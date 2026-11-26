@@ -67,7 +67,7 @@ export default function ImageSectionPage() {
   };
   return (
     <TeacherPageCard
-      testId="teacher-area-image-section-image-section-page"
+      data-testid="teacher-area-image-section-image-section-page"
       icon={<PhotoCameraOutlined sx={{ fontSize: 22 }} />}
       accent="#16a34a"
       title="Fotos do Clubinho"

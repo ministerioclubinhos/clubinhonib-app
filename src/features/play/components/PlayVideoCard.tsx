@@ -22,7 +22,7 @@ function Thumbnail({ video }: { video: PlayVideo }) {
   const duration = formatDuration(video.durationSeconds);
 
   return (
-    <Box
+    <Box data-testid="play-video-card-thumbnail"
       sx={{
         position: 'relative',
         aspectRatio: '16 / 9',

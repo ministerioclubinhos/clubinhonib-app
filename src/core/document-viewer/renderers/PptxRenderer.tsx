@@ -43,7 +43,7 @@ export default function PptxRenderer({ bytes, onError }: RendererProps) {
   }, [bytes]);
 
   return (
-    <Box sx={{ height: '100%', overflow: 'auto', bgcolor: 'grey.200', p: 1.5 }}>
+    <Box data-testid="document-viewer-pptx" sx={{ height: '100%', overflow: 'auto', bgcolor: 'grey.200', p: 1.5 }}>
       <div ref={hostRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }} />
     </Box>
   );

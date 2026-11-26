@@ -25,7 +25,7 @@ export function ReviewHeader({
   onArchive,
 }: ReviewHeaderProps) {
   return (
-    <Paper
+    <Paper data-testid="ai-lessons-review-header"
       component="header"
       elevation={0}
       sx={{

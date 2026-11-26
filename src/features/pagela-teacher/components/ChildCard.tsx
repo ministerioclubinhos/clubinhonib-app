@@ -44,7 +44,7 @@ type ChildCardProps = {
 
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+    <Stack data-testid="pagela-teacher-child-info-row" direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
       <Box sx={{ display: "flex", color: "text.secondary", opacity: 0.8 }}>{icon}</Box>
       <Typography variant="body2" color="text.secondary" noWrap title={value} sx={{ minWidth: 0 }}>
         {label}: <Box component="span" sx={{ color: "text.primary", fontWeight: 600 }}>{value}</Box>

@@ -54,7 +54,7 @@ export const LessonReviewDetailPage: React.FC = () => {
   return (
     <>
       {content}
-      <UnsavedChangesDialog {...leave.dialog} />
+      <UnsavedChangesDialog data-testid="ai-lessons-review-leave-guard" {...leave.dialog} />
     </>
   );
 };

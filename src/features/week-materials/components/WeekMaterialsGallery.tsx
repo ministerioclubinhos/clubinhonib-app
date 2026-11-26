@@ -34,7 +34,7 @@ export function WeekMaterialsGallery() {
 
   return (
     <TeacherPageCard
-      testId="week-materials-gallery"
+      data-testid="week-materials-gallery"
       icon={<AutoStoriesOutlined sx={{ fontSize: 22 }} />}
       accent="#0284c7"
       title="Materiais Semanais"

@@ -24,7 +24,7 @@ interface Props {
  * laranja para texto ainda não salvo, azul para etapa personalizada.
  */
 export const PromptStageTabs: React.FC<Props> = ({ category, stage, preferences, drafts, onChange }) => (
-  <Paper
+  <Paper data-testid="ai-lessons-prompt-stage-tabs"
     elevation={0}
     sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}
   >

@@ -63,7 +63,6 @@ export default function WeekMaterialsPageView({
 
   const backTo = TEACHER_LIST_PATH[MediaTargetType.WeekMaterialsPage];
   const cardProps = {
-    testId: 'page-view-week-material-view-page-week-materials-page-view',
     icon: <AutoStoriesOutlinedIcon sx={{ fontSize: 22 }} />,
     accent: '#0284c7',
     backTo,
@@ -72,7 +71,7 @@ export default function WeekMaterialsPageView({
 
   if (loading) {
     return (
-      <TeacherPageCard {...cardProps} title="Carregando...">
+      <TeacherPageCard data-testid="page-view-week-material-loading" {...cardProps} title="Carregando...">
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="40vh">
           <CircularProgress size={48} aria-label="Carregando materiais" />
         </Box>
@@ -82,7 +81,7 @@ export default function WeekMaterialsPageView({
 
   if (error) {
     return (
-      <TeacherPageCard {...cardProps} title="Material da semana">
+      <TeacherPageCard data-testid="page-view-week-material-error" {...cardProps} title="Material da semana">
         <Alert severity="error">{error}</Alert>
       </TeacherPageCard>
     );
@@ -90,7 +89,7 @@ export default function WeekMaterialsPageView({
 
   if (!material) {
     return (
-      <TeacherPageCard {...cardProps} title="Material da semana">
+      <TeacherPageCard data-testid="page-view-week-material-not-found" {...cardProps} title="Material da semana">
         <Alert severity="info">Nenhum material encontrado.</Alert>
       </TeacherPageCard>
     );
@@ -99,7 +98,7 @@ export default function WeekMaterialsPageView({
   const currentTab = mediaTabs[activeTab];
 
   return (
-    <TeacherPageCard {...cardProps} title={material.title} subtitle={material.subtitle || undefined}>
+    <TeacherPageCard data-testid="page-view-week-material-view-page-week-materials-page-view" {...cardProps} title={material.title} subtitle={material.subtitle || undefined}>
       {material.description && (
         <Typography
           sx={{ mb: 2.5, maxWidth: 800, color: '#475569', fontSize: { xs: '0.95rem', md: '1rem' }, whiteSpace: 'pre-wrap' }}

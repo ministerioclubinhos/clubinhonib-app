@@ -60,7 +60,7 @@ export function IdeaShareForm() {
   if (share.isSuccess)
     return (
       <TeacherPageCard
-        testId="idea-share-success"
+        data-testid="idea-share-success"
         icon={<ShareOutlined sx={{ fontSize: 22 }} />}
         accent="#7c3aed"
         title="Compartilhar Ideia"
@@ -115,7 +115,7 @@ export function IdeaShareForm() {
     );
 
   return (
-    <TeacherPageCard
+    <TeacherPageCard data-testid="ideas-sections-share-form"
       icon={<ShareOutlined sx={{ fontSize: 22 }} />}
       accent="#7c3aed"
       title="Compartilhar Ideia"

@@ -11,7 +11,7 @@ interface Props {
   count?: number;
   /** Slot à direita do cabeçalho (busca, botões). No mobile desce para baixo do título. */
   actions?: React.ReactNode;
-  testId?: string;
+  'data-testid'?: string;
   /** Quando presente, mostra a seta de voltar para a listagem de origem. */
   backTo?: string;
   backLabel?: string;
@@ -30,7 +30,7 @@ const TeacherPageCard: React.FC<Props> = ({
   subtitle,
   count,
   actions,
-  testId,
+  'data-testid': testId,
   backTo,
   backLabel = 'Voltar',
   children,

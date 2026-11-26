@@ -126,7 +126,7 @@ export default function PlayWatchPage() {
 
   if (video.loading && !video.data) {
     return (
-      <Box display="flex" justifyContent="center" py={8}>
+      <Box data-testid="play-watch-loading" display="flex" justifyContent="center" py={8}>
         <CircularProgress />
       </Box>
     );

@@ -27,7 +27,7 @@ import type { PlayCategory, PlayStats } from './types';
 
 function StatTile({ label, value }: { label: string; value: number }) {
   return (
-    <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, flex: 1, minWidth: 130 }}>
+    <Paper data-testid="play-admin-stat-tile" variant="outlined" sx={{ p: 2, borderRadius: 3, flex: 1, minWidth: 130 }}>
       <Typography variant="h5" fontWeight={800}>
         {value.toLocaleString('pt-BR')}
       </Typography>

@@ -27,7 +27,7 @@ const GRID_SX = {
 const Group: React.FC<{ kind: PublicMediaKind; items: PublicMediaItem[]; showTitle: boolean }> = ({ kind, items, showTitle }) => {
   if (items.length === 0) return null;
   return (
-    <Box component="section" sx={{ mb: { xs: 4, md: 6 } }}>
+    <Box data-testid="public-media-gallery-group" component="section" sx={{ mb: { xs: 4, md: 6 } }}>
       {showTitle && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 2 }}>
           <Box sx={{ width: 6, height: 26, borderRadius: 3, bgcolor: PUBLIC_MEDIA_ACCENT[kind] }} />

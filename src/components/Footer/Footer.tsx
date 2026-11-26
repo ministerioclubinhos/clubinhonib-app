@@ -78,7 +78,7 @@ const Footer: React.FC = () => {
 
         <Stack spacing={0.5} alignItems="center">
           <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
-            © 2025 NIB - Nova Igreja Batista. Todos os direitos reservados.
+            © {new Date().getFullYear()} NIB - Nova Igreja Batista. Todos os direitos reservados.
           </Typography>
           <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
             Desenvolvido por{" "}

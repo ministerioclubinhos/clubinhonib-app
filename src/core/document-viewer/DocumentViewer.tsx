@@ -66,7 +66,7 @@ export default function DocumentViewer({ target }: Props) {
 
   if (state.status === 'loading') {
     return (
-      <Box sx={centered}>
+      <Box data-testid="document-viewer-loading" sx={centered}>
         <CircularProgress />
         <Typography variant="body2">Carregando documento…</Typography>
       </Box>
@@ -75,7 +75,7 @@ export default function DocumentViewer({ target }: Props) {
 
   if (state.status === 'failed') {
     return (
-      <Box sx={centered} role="alert">
+      <Box data-testid="document-viewer-error" sx={centered} role="alert">
         <Typography variant="h6" fontWeight={600}>{state.message}</Typography>
         <Typography variant="body2">Você ainda pode abrir o arquivo em uma nova aba ou baixá-lo.</Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -98,7 +98,7 @@ export default function DocumentViewer({ target }: Props) {
         : PptxRenderer;
 
   return (
-    <Suspense fallback={<Box sx={centered}><CircularProgress /></Box>}>
+    <Suspense data-testid="document-viewer-content" fallback={<Box sx={centered}><CircularProgress /></Box>}>
       <Box sx={{ height: '100%' }} data-testid={`document-viewer-${target.format}`}>
         <Renderer bytes={state.bytes} objectUrl={state.objectUrl} onError={fail} />
       </Box>

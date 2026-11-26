@@ -16,7 +16,7 @@ interface Props {
 const ProfileCoordinatorClubs: React.FC<Props> = ({ clubs }) => {
   const [openId, setOpenId] = useState<string | null>(null);
 
-  if (clubs.length === 1) return <ProfileClubCard club={clubs[0]} />;
+  if (clubs.length === 1) return <ProfileClubCard data-testid="profile-coordinator-single-club" club={clubs[0]} />;
 
   const opened = clubs.find((club) => club.id === openId) ?? null;
 

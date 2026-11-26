@@ -40,7 +40,7 @@ export default function DocxRenderer({ bytes, onError }: RendererProps) {
   }, [bytes]);
 
   return (
-    <Box sx={{ height: '100%', overflow: 'auto', bgcolor: 'grey.200' }}>
+    <Box data-testid="document-viewer-docx" sx={{ height: '100%', overflow: 'auto', bgcolor: 'grey.200' }}>
       <div ref={styleRef} />
       {/* O estilo do docx-preview é escopado em .docx-view; o fundo cinza vem do wrapper dele. */}
       <div ref={bodyRef} />

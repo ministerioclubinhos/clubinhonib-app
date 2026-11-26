@@ -21,7 +21,7 @@ export function ReviewStagePanel({
   newerUpstream,
 }: ReviewStagePanelProps) {
   return (
-    <Paper
+    <Paper data-testid="ai-lessons-review-stage-panel"
       elevation={0}
       sx={{
         p: { xs: 1.5, sm: 3 },

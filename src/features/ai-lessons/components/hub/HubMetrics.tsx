@@ -30,7 +30,7 @@ export const HubMetrics: React.FC<Props> = ({ metrics }) => {
     theme.palette.primary;
 
   return (
-    <Box
+    <Box data-testid="ai-lessons-hub-metrics"
       component="nav"
       aria-label="Lições por situação"
       sx={{
