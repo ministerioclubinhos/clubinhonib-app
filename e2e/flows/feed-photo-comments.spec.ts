@@ -63,7 +63,7 @@ test.describe('Comentários das fotos: aprovação e acesso', () => {
   test('usuário ativo envia no celular, admin aprova e retira do público', async ({
     page,
     browser,
-  }) => {
+  }, testInfo) => {
     test.setTimeout(120_000);
     const context = await browser.newContext({
       baseURL: APP_URL,
@@ -116,7 +116,7 @@ test.describe('Comentários das fotos: aprovação e acesso', () => {
       await expect(authorPage.getByTestId(`feed-photo-comment-${comment.id}`)).toContainText(text);
       await expect(commentsPanel).not.toContainText(/aprova|triagem|modera/i);
       await authorPage.screenshot({
-        path: '/tmp/feed-comments-mobile.png',
+        path: testInfo.outputPath('feed-comments-mobile.png'),
         animations: 'disabled',
       });
 
@@ -127,7 +127,7 @@ test.describe('Comentários das fotos: aprovação e acesso', () => {
       await expect(page.getByTestId('feed-photo-comments-manager')).toBeVisible();
       await page.getByTestId(`feed-photo-comment-review-${comment.id}`).click();
       await expect(page.getByTestId('feed-photo-comment-review-text')).toHaveText(text);
-      await page.screenshot({ path: '/tmp/feed-comments-admin.png', animations: 'disabled' });
+      await page.screenshot({ path: testInfo.outputPath('feed-comments-admin.png'), animations: 'disabled' });
       await page.getByTestId('feed-photo-comment-approve').click();
       await expect(page.getByTestId('feed-photo-comment-review-dialog')).toBeHidden();
 
@@ -204,28 +204,30 @@ test.describe('Comentários das fotos: aprovação e acesso', () => {
       ).toBe(404);
       await authorPage.getByTestId('clubinho-feed-lightbox-close').click();
       await authorPage.getByTestId('nav-bar-notifications-bell').click();
-      await authorPage.getByTestId(`nav-bar-photo-notification-${notice.id}`).click();
-      const notificationDialog = authorPage.getByTestId('feed-photo-comment-notification-dialog');
-      await expect(notificationDialog).toContainText(text);
-      await expect(authorPage.getByTestId('feed-photo-comment-notification-reason')).toContainText(
+      // Central de notificações: abrir o aviso mostra o comentário e o motivo.
+      await authorPage.getByTestId(`notifications-item-open-${notice.id}`).click();
+      const detail = authorPage.getByTestId('notifications-detail');
+      await expect(detail.getByTestId('notifications-detail-comment')).toHaveText(text);
+      await expect(detail.getByTestId('notifications-detail-reason')).toContainText(
         'Ajuste solicitado pela administração.'
       );
       await authorPage.screenshot({
-        path: '/tmp/feed-rejection-notification-mobile.png',
+        path: testInfo.outputPath('feed-rejection-notification-mobile.png'),
         animations: 'disabled',
       });
-      await authorPage.getByTestId('feed-photo-comment-notification-read').click();
-      await expect(notificationDialog).toBeHidden();
-      const readInbox = await author.get<PhotoCommentNotificationsPage>(
-        '/feed-photo-comments/notifications'
-      );
-      expect(readInbox.unreadCount).toBe(0);
-      expect(readInbox.data[0].readAt).toBeTruthy();
+      const inboxAfterOpen = () =>
+        author.get<PhotoCommentNotificationsPage>('/feed-photo-comments/notifications');
+      // Abrir não basta: só "Entendi" grava a leitura.
+      expect((await inboxAfterOpen()).unreadCount).toBe(1);
+      await detail.getByTestId('notifications-detail-read').click();
+      await expect.poll(async () => (await inboxAfterOpen()).unreadCount).toBe(0);
+      expect((await inboxAfterOpen()).data[0].readAt).toBeTruthy();
       await authorPage.reload();
       await authorPage.getByTestId('nav-bar-notifications-bell').click();
-      await authorPage.getByTestId(`nav-bar-photo-notification-${notice.id}`).click();
-      await expect(authorPage.getByTestId('feed-photo-comment-notification-read')).toHaveCount(0);
-      await notificationDialog.getByRole('button', { name: 'Fechar', exact: true }).click();
+      await expect(authorPage.getByTestId(`notifications-item-${notice.id}`)).toBeVisible();
+      await expect(authorPage.getByTestId(`notifications-item-unread-${notice.id}`)).toHaveCount(0);
+      await authorPage.keyboard.press('Escape');
+      await expect(authorPage.getByTestId('notifications-center-dialog')).toBeHidden();
       await authorPage.getByTestId(`clubinho-feed-post-comment-${section.id}`).click();
       await authorPage.getByTestId('feed-photo-comments-mine-tab').click();
       await authorPage
@@ -362,6 +364,5 @@ test.describe('Comentários das fotos: aprovação e acesso', () => {
         true
       );
     }
-    await page.screenshot({ path: '/tmp/feed-wide-desktop.png' });
   });
 });
