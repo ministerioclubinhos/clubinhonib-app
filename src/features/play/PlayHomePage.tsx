@@ -165,7 +165,15 @@ export default function PlayHomePage() {
         sx={{ mb: 1.5, maxWidth: { md: 520 } }}
       />
 
-      <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
+      {/* No celular os botões quebram de linha em vez de espremer o texto. */}
+      <Stack
+        data-testid="play-home-actions"
+        direction="row"
+        spacing={1}
+        useFlexGap
+        flexWrap="wrap"
+        sx={{ mb: 1.5, '& > .MuiButton-root': { flex: { xs: '1 1 auto', sm: '0 0 auto' }, whiteSpace: 'nowrap', minHeight: 44 } }}
+      >
         <Button
           variant="contained"
           startIcon={<PlayArrowIcon />}

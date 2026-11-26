@@ -21,9 +21,9 @@ export default function PlayRow({ section, onToggleFavorite }: PlayRowProps) {
           gap: 1.5,
           overflowX: 'auto',
           scrollSnapType: 'x proximity',
+          // Sem margem negativa: o container não tem padding no celular, e ela
+          // empurrava os cartões e a página para fora da tela.
           pb: 1,
-          mx: { xs: -1.5, md: 0 },
-          px: { xs: 1.5, md: 0 },
           '&::-webkit-scrollbar': { height: 6 },
           '&::-webkit-scrollbar-thumb': { bgcolor: 'divider', borderRadius: 3 },
         }}

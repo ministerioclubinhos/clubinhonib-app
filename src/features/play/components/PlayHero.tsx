@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 
 import { playWatchPath } from '../constants';
 import type { PlayVideo } from '../types';
+import PlayThumbnailImage from './PlayThumbnailImage';
 
 const ROTATE_MS = 7000;
 
@@ -36,10 +37,8 @@ export default function PlayHero({ videos }: { videos: PlayVideo[] }) {
       }}
     >
       {video.thumbnailUrl && (
-        <Box
-          component="img"
+        <PlayThumbnailImage
           src={video.thumbnailUrl}
-          alt=""
           sx={{
             position: 'absolute',
             inset: 0,

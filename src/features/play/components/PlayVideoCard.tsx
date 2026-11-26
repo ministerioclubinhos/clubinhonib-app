@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 
 import { playWatchPath } from '../constants';
 import type { PlayVideo } from '../types';
+import PlayThumbnailImage from './PlayThumbnailImage';
 import { formatDuration, formatViews, progressPercent, timeAgo } from '../utils';
 
 interface PlayVideoCardProps {
@@ -15,6 +16,14 @@ interface PlayVideoCardProps {
   onToggleFavorite?: (video: PlayVideo) => void;
   /** Destaca o vídeo que está tocando agora. */
   active?: boolean;
+}
+
+function MissingThumbnail() {
+  return (
+    <Stack data-testid="play-thumbnail-placeholder" alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
+      <PlayCircleOutlineIcon sx={{ fontSize: 44, color: 'rgba(255,255,255,0.85)' }} />
+    </Stack>
+  );
 }
 
 function Thumbnail({ video }: { video: PlayVideo }) {
@@ -34,17 +43,14 @@ function Thumbnail({ video }: { video: PlayVideo }) {
       }}
     >
       {video.thumbnailUrl ? (
-        <Box
-          component="img"
+        <PlayThumbnailImage
           src={video.thumbnailUrl}
-          alt=""
-          loading="lazy"
+          lazy
+          fallback={<MissingThumbnail />}
           sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
       ) : (
-        <Stack alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
-          <PlayCircleOutlineIcon sx={{ fontSize: 44, color: 'rgba(255,255,255,0.85)' }} />
-        </Stack>
+        <MissingThumbnail />
       )}
       {duration && (
         <Typography
