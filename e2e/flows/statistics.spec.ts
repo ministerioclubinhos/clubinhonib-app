@@ -312,7 +312,7 @@ test.describe('Estatísticas: avisos de quem não lançou a pagela', () => {
 
   test('clubinho que não lançou a pagela da semana passada aparece pelo nome no resumo e em Clubinhos', async ({ page }) => {
     const { status } = await missingLastWeek();
-    test.skip(status !== 'missing', `a API não o considera faltante na semana passada (${status})`);
+    expect(status, 'pré-condição: faltante na semana passada (período letivo aberto)').toBe('missing');
 
     // Pagela faltando é grave: faixa e aviso ficam vermelhos.
     await page.goto('/adm/estatisticas');
@@ -332,14 +332,22 @@ test.describe('Estatísticas: avisos de quem não lançou a pagela', () => {
 
   test('depois de lançar a pagela da semana passada, o clubinho some do aviso', async ({ page }) => {
     const { launch, lastWeek, status } = await missingLastWeek();
-    test.skip(status !== 'missing' || !launch.open || lastWeek < 1, 'cenário indisponível neste banco');
+    expect({ status, open: launch.open, hasLastWeek: lastWeek >= 1 }, 'pré-condição do período letivo').toEqual({
+      status: 'missing',
+      open: true,
+      hasLastWeek: true,
+    });
 
     await api.post('/pagelas', pagelaBody(child!.id, launch, { week: lastWeek }));
+    expect((await missingLastWeek()).status).not.toBe('missing');
     await page.goto('/adm/estatisticas?aba=clubinhos');
     await expect(page.getByTestId('statistics-clubs-view')).toBeVisible();
     await page.waitForLoadState('networkidle');
+    // Só o aviso da semana passada: o desta semana continua, com razão, citando o
+    // clubinho enquanto não houver pagela dela.
+    const attention = page.getByTestId('statistics-clubs-attention').getByTestId('statistics-plain-attention-item');
     await expect(
-      page.getByTestId('statistics-clubs-attention').getByText(`Clubinho ${clubNumber}`, { exact: true }),
+      attention.filter({ hasText: 'semana passada' }).getByText(`Clubinho ${clubNumber}`, { exact: true }),
     ).toHaveCount(0);
   });
 

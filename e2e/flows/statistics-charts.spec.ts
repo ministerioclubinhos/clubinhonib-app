@@ -1,3 +1,4 @@
+import { ApiClient } from '../support/api';
 import { expect, test } from '@playwright/test';
 
 /**
@@ -44,11 +45,16 @@ test.describe('Estatísticas: gráficos', () => {
     test('o número grande sobe e termina no valor que a API mandou', async ({ page }) => {
       await page.goto('/adm/estatisticas');
       const value = page.getByTestId('statistics-summary-children-value');
-      // Com movimento ligado o número sobe por menos de 1s; depois fica no total.
-      await expect(value).toHaveText(/^[1-9]\d*$/, { timeout: 20_000 });
-      const settled = await value.innerText();
+      const api = await ApiClient.login();
+      const overview = await api.get<{ summary: { totalChildren: number } }>('/statistics/overview');
+      await api.dispose();
+      expect(overview.summary.totalChildren).toBeGreaterThan(0);
+      // Com movimento ligado o número sobe por menos de 1s; os valores do caminho
+      // são intermediários, o que vale é onde ele para.
+      const total = String(overview.summary.totalChildren);
+      await expect(value).toHaveText(total, { timeout: 20_000 });
       await page.waitForTimeout(1200);
-      expect(await value.innerText()).toBe(settled);
+      expect(await value.innerText()).toBe(total);
     });
 
     test('as colunas das semanas crescem até a altura final', async ({ page }) => {
